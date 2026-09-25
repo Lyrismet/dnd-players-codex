@@ -8,11 +8,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.toStatusColor
 
 @Composable
 fun NpcListUi(
@@ -22,7 +26,11 @@ fun NpcListUi(
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
-            FloatingActionButton(onClick = { state.eventSink(NpcListEvent.AddSampleNpcClicked) }) {
+            FloatingActionButton(
+                onClick = { state.eventSink(NpcListEvent.AddSampleNpcClicked) },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ) {
                 Text("+")
             }
         },
@@ -32,14 +40,28 @@ fun NpcListUi(
                 modifier = Modifier.fillMaxSize().padding(contentPadding),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("No NPCs yet - tap + to add one")
+                Text("No NPCs yet - tap + to add one", color = AppPalette.TextSecondary)
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
                 items(state.npcs, key = { it.id }) { npc ->
+                    val statusColor = npc.status.toStatusColor()
                     ListItem(
-                        headlineContent = { Text(npc.name) },
-                        supportingContent = { Text(npc.status.name) },
+                        headlineContent = {
+                            Text(
+                                npc.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = AppPalette.TextHeading,
+                            )
+                        },
+                        supportingContent = {
+                            Text(
+                                npc.status.name,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = statusColor.foreground,
+                            )
+                        },
+                        colors = ListItemDefaults.colors(containerColor = AppPalette.Surface),
                         modifier = Modifier.clickable { state.eventSink(NpcListEvent.NpcClicked(npc.id)) },
                     )
                 }
