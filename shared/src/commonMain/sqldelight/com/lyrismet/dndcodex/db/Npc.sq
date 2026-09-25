@@ -1,0 +1,35 @@
+import com.lyrismet.dndcodex.domain.model.NpcStatus;
+
+CREATE TABLE npc (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    status TEXT AS NpcStatus NOT NULL,
+    description TEXT NOT NULL,
+    location_id INTEGER REFERENCES location(id) ON DELETE SET NULL
+);
+
+CREATE INDEX npc_location_id ON npc(location_id);
+
+selectAll:
+SELECT * FROM npc ORDER BY name;
+
+selectById:
+SELECT * FROM npc WHERE id = ?;
+
+selectByLocation:
+SELECT * FROM npc WHERE location_id = ?;
+
+insert:
+INSERT INTO npc(name, status, description, location_id)
+VALUES (?, ?, ?, ?);
+
+update:
+UPDATE npc
+SET name = ?, status = ?, description = ?, location_id = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM npc WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

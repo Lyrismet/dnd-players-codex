@@ -1,0 +1,30 @@
+import kotlinx.datetime.LocalDateTime;
+
+CREATE TABLE session_note (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    session_date TEXT AS LocalDateTime NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+selectAll:
+SELECT * FROM session_note ORDER BY session_date DESC;
+
+selectById:
+SELECT * FROM session_note WHERE id = ?;
+
+insert:
+INSERT INTO session_note(title, content, session_date, created_at)
+VALUES (?, ?, ?, ?);
+
+update:
+UPDATE session_note
+SET title = ?, content = ?, session_date = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM session_note WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

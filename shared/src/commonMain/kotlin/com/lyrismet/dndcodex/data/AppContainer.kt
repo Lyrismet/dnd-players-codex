@@ -1,0 +1,29 @@
+package com.lyrismet.dndcodex.data
+
+import com.lyrismet.dndcodex.data.db.DatabaseDriverFactory
+import com.lyrismet.dndcodex.data.db.createAppDatabase
+import com.lyrismet.dndcodex.data.repository.NpcRepositoryImpl
+import com.lyrismet.dndcodex.domain.repository.NpcRepository
+import com.lyrismet.dndcodex.presentation.npcdetail.addNpcDetailUi
+import com.lyrismet.dndcodex.presentation.npcdetail.npcDetailScreenRegistration
+import com.lyrismet.dndcodex.presentation.npclist.addNpcListUi
+import com.lyrismet.dndcodex.presentation.npclist.npcListScreenRegistration
+import com.slack.circuit.foundation.Circuit
+import com.slack.circuit.serialization.SerializableCircuitSaver
+
+class AppContainer(
+    databaseDriverFactory: DatabaseDriverFactory,
+) {
+    private val database = createAppDatabase(databaseDriverFactory.createDriver())
+
+    val npcRepository: NpcRepository = NpcRepositoryImpl(database)
+
+    val circuit: Circuit =
+        Circuit
+            .Builder()
+            .addNpcListUi(npcRepository)
+            .addNpcDetailUi(npcRepository)
+            .setCircuitSaver(
+                SerializableCircuitSaver(listOf(npcListScreenRegistration, npcDetailScreenRegistration)),
+            ).build()
+}

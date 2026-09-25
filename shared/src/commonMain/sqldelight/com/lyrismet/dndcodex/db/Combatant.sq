@@ -1,0 +1,28 @@
+CREATE TABLE combatant (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    combat_scratchpad_id INTEGER NOT NULL REFERENCES combat_scratchpad(id) ON DELETE CASCADE,
+    npc_id INTEGER REFERENCES npc(id) ON DELETE SET NULL,
+    name TEXT NOT NULL,
+    initiative INTEGER NOT NULL,
+    hp_current INTEGER NOT NULL,
+    hp_max INTEGER NOT NULL,
+    is_player_character INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX combatant_scratchpad_id ON combatant(combat_scratchpad_id);
+
+selectByScratchpad:
+SELECT * FROM combatant WHERE combat_scratchpad_id = ? ORDER BY initiative DESC;
+
+insert:
+INSERT INTO combatant(combat_scratchpad_id, npc_id, name, initiative, hp_current, hp_max, is_player_character)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateHp:
+UPDATE combatant SET hp_current = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM combatant WHERE id = ?;
+
+deleteByScratchpad:
+DELETE FROM combatant WHERE combat_scratchpad_id = ?;

@@ -1,0 +1,32 @@
+CREATE TABLE combat_scratchpad (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    session_note_id INTEGER REFERENCES session_note(id) ON DELETE SET NULL,
+    boss_name TEXT NOT NULL,
+    boss_hp_current INTEGER NOT NULL,
+    boss_hp_max INTEGER NOT NULL,
+    notes TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM combat_scratchpad ORDER BY id DESC;
+
+selectById:
+SELECT * FROM combat_scratchpad WHERE id = ?;
+
+insert:
+INSERT INTO combat_scratchpad(session_note_id, boss_name, boss_hp_current, boss_hp_max, notes)
+VALUES (?, ?, ?, ?, ?);
+
+updateBossHp:
+UPDATE combat_scratchpad SET boss_hp_current = ? WHERE id = ?;
+
+update:
+UPDATE combat_scratchpad
+SET session_note_id = ?, boss_name = ?, boss_hp_current = ?, boss_hp_max = ?, notes = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM combat_scratchpad WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

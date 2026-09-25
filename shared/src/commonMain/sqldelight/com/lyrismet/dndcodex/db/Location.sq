@@ -1,0 +1,27 @@
+CREATE TABLE location (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    description TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM location ORDER BY name;
+
+selectById:
+SELECT * FROM location WHERE id = ?;
+
+insert:
+INSERT INTO location(name, type, description)
+VALUES (?, ?, ?);
+
+update:
+UPDATE location
+SET name = ?, type = ?, description = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM location WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

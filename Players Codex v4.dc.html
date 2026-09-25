@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Alegreya:ital,wght@0,500;0,600;0,700;1,500&amp;family=Lora:ital,wght@0,500;0,600;0,700;1,500&amp;family=PT+Serif:ital,wght@0,400;0,700;1,400&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0C10;-webkit-font-smoothing:antialiased}
+a{color:#E2C044;text-decoration:none}a:hover{color:#F0D46A}
+*::-webkit-scrollbar{width:0;height:0}
+textarea::placeholder,input::placeholder{color:#6B7385}
+button{font-family:inherit}
+</style>
+</helmet>
+<div ref="{{ rootRef }}" style="min-height:100vh;background:#0B0C10;display:flex;flex-wrap:wrap;gap:56px;justify-content:center;align-items:flex-start;padding:48px 32px;box-sizing:border-box;font-family:Inter,system-ui,sans-serif">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="position:absolute;inset:0;background:#121318;color:#E2E8F0;font-family:Inter,system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+<div style="height:54px;flex:none"></div>
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;position:relative">
+
+<sc-if value="{{ isSessionList }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column">
+  <div style="padding:6px 20px 14px;flex:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;height:32px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.18em;color:#D4AF37;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ campaignUpper }}</div>
+      <button onClick="{{ newSession }}" style="flex:none;height:32px;padding:0 12px;border-radius:10px;background:rgba(212,175,55,0.12);border:1px solid rgba(212,175,55,0.4);color:#E2C044;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:rgba(212,175,55,0.2)">+ Сессия</button>
+    </div>
+    <div style="font-family:var(--serif,'Alegreya',serif);font-size:32px;font-weight:600;line-height:1.15;margin-top:4px;color:#F1EBDD">Дневник сессий</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:12px"><div style="height:1px;width:28px;background:#D4AF37"></div><div style="width:5px;height:5px;transform:rotate(45deg);border:1px solid #D4AF37"></div><div style="flex:1;height:1px;background:#2C2F3A"></div></div>
+  </div>
+  <div style="flex:1;min-height:0;overflow-y:auto;padding:2px 16px 20px;display:flex;flex-direction:column;gap:10px">
+    <sc-if value="{{ hasLive }}" hint-placeholder-val="{{ true }}">
+    <div onClick="{{ live.onClick }}" style="background:#1A1B23;border:1px solid rgba(212,175,55,0.45);border-radius:16px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.14em;color:#E2C044"><span style="width:7px;height:7px;border-radius:50%;background:#6FCF97;box-shadow:0 0 0 3px rgba(63,169,124,0.25)"></span>ТЕКУЩАЯ СЕССИЯ<span style="margin-left:auto;color:#8A93A6;letter-spacing:0;font-weight:500">{{ live.date }}</span></div>
+      <div style="display:flex;gap:14px;align-items:flex-end">
+        <div style="font-family:var(--serif,'Alegreya',serif);font-size:{{ live.numSize }};line-height:0.9;color:#D4AF37;font-weight:600;white-space:nowrap">{{ live.numLabel }}</div>
+        <div style="min-width:0"><div style="font-size:12px;color:#8A93A6">{{ live.sub }}</div><div style="font-family:var(--serif,'Alegreya',serif);font-size:23px;font-weight:600;color:#F1EBDD;line-height:1.2">{{ live.title }}</div></div>
+      </div>
+      <sc-if value="{{ live.hasMentions }}">
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <sc-for list="{{ live.mentions }}" as="m" hint-placeholder-count="3">
+          <span onClick="{{ m.onClick }}" style="display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;line-height:1.6;color:{{ m.fg }};background:{{ m.bg }};box-shadow:{{ m.sh }};border-radius:{{ m.rad }};padding:{{ m.pad }};text-decoration:{{ m.deco }};cursor:pointer;white-space:nowrap"><span style="font-size:8px">{{ m.glyph }}</span>{{ m.label }}</span>
+        </sc-for>
+      </div>
+      </sc-if>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #2C2F3A;font-size:13px"><span style="color:#8A93A6">{{ live.meta }}</span><span style="color:#E2C044;font-weight:600">Продолжить →</span></div>
+    </div>
+    </sc-if>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 4px 2px;font-size:11px;font-weight:600;letter-spacing:0.16em;color:#8A93A6"><span>АРХИВ</span><span style="letter-spacing:0;font-weight:500">{{ archiveCount }}</span></div>
+    <sc-for list="{{ archive }}" as="s" hint-placeholder-count="4">
+      <div onClick="{{ s.onClick }}" style="display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;align-items:start;background:#17181F;border:1px solid #262833;border-radius:14px;padding:14px;cursor:pointer" style-hover="background:#1C1D26;border-color:#343746">
+        <div style="font-family:var(--serif,'Alegreya',serif);font-size:{{ s.numSize }};font-weight:600;color:#B8993A;text-align:center;line-height:1.35;white-space:nowrap">{{ s.numLabel }}</div>
+        <div style="min-width:0;display:flex;flex-direction:column;gap:4px">
+          <div style="font-family:var(--serif,'Alegreya',serif);font-size:18px;font-weight:600;color:#F1EBDD;line-height:1.25">{{ s.title }}</div>
+          <div style="font-size:12px;color:#8A93A6">{{ s.meta }}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">
+            <sc-if value="{{ s.multiDay }}"><span style="font-size:11px;font-weight:600;color:#D8C9A3;padding:2px 8px;border-radius:6px;background:rgba(216,201,163,0.1);box-shadow:inset 0 0 0 1px rgba(216,201,163,0.3)">{{ s.daysLabel }}</span></sc-if>
+            <sc-for list="{{ s.tags }}" as="t" hint-placeholder-count="2"><span style="font-size:11px;font-weight:500;color:#C9D0DC;padding:2px 8px;border-radius:6px;background:#22242E;box-shadow:inset 0 0 0 1px #2C2F3A">{{ t.label }}</span></sc-for>
+            <sc-if value="{{ s.hasMentions }}"><span style="font-size:11px;font-weight:500;color:#D4AF37;padding:2px 8px;border-radius:6px;background:rgba(212,175,55,0.08)">{{ s.mentionLabel }}</span></sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSessionDetail }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column">
+  <div style="padding:0 16px 12px;flex:none;border-bottom:1px solid #22242E">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;height:38px">
+      <button onClick="{{ backToList }}" style="background:transparent;border:0;color:#E2C044;font-size:15px;font-weight:500;cursor:pointer;padding:6px 4px 6px 0">‹ Дневник</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <sc-if value="{{ cur.isLive }}">
+          <span style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:0.12em;color:#6FCF97;padding:4px 8px;border-radius:7px;background:rgba(63,169,124,0.14)"><span style="width:6px;height:6px;border-radius:50%;background:#6FCF97;box-shadow:0 0 0 3px rgba(63,169,124,0.25)"></span>ИДЁТ</span>
+          <button onClick="{{ endSession }}" style="height:30px;padding:0 12px;border-radius:9px;background:rgba(155,44,44,0.16);border:1px solid rgba(155,44,44,0.7);color:#F08A8A;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:rgba(155,44,44,0.28)">■ Завершить</button>
+        </sc-if>
+        <sc-if value="{{ cur.isDone }}">
+          <span style="font-size:11px;font-weight:600;letter-spacing:0.12em;color:#6B7385">ЗАВЕРШЕНА</span>
+          <button onClick="{{ resumeSession }}" style="height:30px;padding:0 12px;border-radius:9px;background:rgba(212,175,55,0.12);border:1px solid rgba(212,175,55,0.45);color:#E2C044;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:rgba(212,175,55,0.2)">↻ Возобновить</button>
+        </sc-if>
+      </div>
+    </div>
+    <div style="font-size:11px;letter-spacing:0.14em;color:#D4AF37;font-weight:600;margin-top:4px">{{ cur.overline }}</div>
+    <input value="{{ cur.title }}" onChange="{{ onTitle }}" style="width:100%;box-sizing:border-box;background:transparent;border:0;outline:0;padding:0;margin-top:2px;font-family:var(--serif,'Alegreya',serif);font-size:27px;font-weight:600;color:#F1EBDD">
+    <div style="font-size:13px;color:#8A93A6;margin-top:2px">{{ cur.dateLine }}</div>
+    <sc-if value="{{ cur.hasMentions }}">
+    <div style="display:flex;gap:6px;overflow-x:auto;margin:10px -16px 0;padding:0 16px">
+      <sc-for list="{{ cur.mentions }}" as="m" hint-placeholder-count="3">
+        <span onClick="{{ m.onClick }}" style="flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;line-height:1.7;color:{{ m.fg }};background:{{ m.bg }};box-shadow:{{ m.sh }};border-radius:{{ m.rad }};padding:{{ m.pad }};text-decoration:{{ m.deco }};cursor:pointer;white-space:nowrap"><span style="font-size:8px">{{ m.glyph }}</span>{{ m.label }}</span>
+      </sc-for>
+    </div>
+    </sc-if>
+  </div>
+  <div ref="{{ feedRef }}" style="flex:1;min-height:0;overflow-y:auto;padding:16px 16px 20px;display:flex;flex-direction:column;gap:16px">
+    <sc-for list="{{ cur.feed }}" as="n" hint-placeholder-count="3">
+      <sc-if value="{{ n.isSep }}">
+        <div style="display:flex;align-items:center;gap:10px;font-size:11px;font-weight:600;letter-spacing:0.14em;color:#D8C9A3"><span style="flex:none">{{ n.sepLabel }}</span><span style="flex:1;height:1px;background:#2C2F3A"></span></div>
+      </sc-if>
+      <sc-if value="{{ n.isNote }}">
+      <div style="display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px">
+        <div style="font-size:12px;color:#6B7385;padding-top:4px;font-variant-numeric:tabular-nums">{{ n.time }}</div>
+        <sc-if value="{{ n.isText }}">
+          <div style="font-size:15px;line-height:1.65;color:#E2E8F0;text-wrap:pretty;white-space:pre-wrap"><sc-for list="{{ n.segs }}" as="seg"><sc-if value="{{ seg.isText }}"><span>{{ seg.t }}</span></sc-if><sc-if value="{{ seg.isChip }}"><span onClick="{{ seg.onClick }}" style="display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:500;line-height:1.5;color:{{ seg.fg }};background:{{ seg.bg }};box-shadow:{{ seg.sh }};border-radius:{{ seg.rad }};padding:{{ seg.pad }};text-decoration:{{ seg.deco }};cursor:pointer;white-space:nowrap"><span style="font-size:7px">{{ seg.glyph }}</span>{{ seg.label }}</span></sc-if></sc-for></div>
+        </sc-if>
+        <sc-if value="{{ n.isCombat }}">
+          <div style="background:#17181F;border:1px solid rgba(155,44,44,0.5);border-radius:14px;overflow:hidden">
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px 6px">
+              <div style="flex:1;min-width:0"><div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#F08A8A">БОЙ · {{ n.cb.metaUpper }}</div><div style="font-family:var(--serif,'Alegreya',serif);font-size:18px;font-weight:600;color:#F1EBDD;margin-top:2px;line-height:1.25">{{ n.cb.title }}</div></div>
+              <span style="flex:none;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:{{ n.cb.oFg }};background:{{ n.cb.oBg }};box-shadow:inset 0 0 0 1px {{ n.cb.oBd }}">{{ n.cb.oLabel }}</span>
+            </div>
+            <div style="padding:0 14px 4px"><div style="display:grid;grid-template-columns:minmax(0,1fr) 46px 58px;gap:8px;padding:7px 0;font-size:9.5px;font-weight:600;letter-spacing:0.12em;color:#6B7385"><span>УЧАСТНИК</span><span style="text-align:right">НАНЁС</span><span style="text-align:right">ПОЛУЧИЛ</span></div>
+<sc-for list="{{ n.cb.rows }}" as="w" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:minmax(0,1fr) 46px 58px;gap:8px;align-items:center;padding:7px 0;border-top:1px solid {{ w.bt }}"><div style="min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#E2E8F0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:{{ w.dot }}"></span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ w.name }}</span></div><div style="font-size:11px;color:{{ w.resC }};margin-top:1px;padding-left:12px">{{ w.result }}</div></div><div style="text-align:right;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:#E2E8F0">{{ w.dealt }}</div><div style="text-align:right;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:#F08A8A">{{ w.taken }}</div></div></sc-for></div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;padding:10px 14px;border-top:1px solid #262833;background:#15161C"><sc-for list="{{ n.cb.highlights }}" as="hh" hint-placeholder-count="2"><span style="font-size:11px;color:#C9D0DC;padding:3px 8px;border-radius:6px;background:#22242E">{{ hh.t }}</span></sc-for></div>
+            <button onClick="{{ n.onToggle }}" style="width:100%;height:34px;background:#15161C;border:0;border-top:1px solid #262833;color:#E2C044;font-size:12px;font-weight:600;cursor:pointer">{{ n.toggleLabel }}</button>
+            <sc-if value="{{ n.expanded }}"><div style="padding:4px 14px 12px;background:#15161C;display:flex;flex-direction:column;gap:5px"><sc-for list="{{ n.cb.log }}" as="l"><div style="display:grid;grid-template-columns:26px minmax(0,1fr);gap:8px;font-size:12px;line-height:1.45"><span style="color:#6B7385">Р{{ l.r }}</span><span style="color:#C9D0DC">{{ l.t }}</span></div></sc-for></div></sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ n.isAudio }}">
+          <div style="display:flex;align-items:center;gap:12px;background:#1A1B23;border:1px solid #2C2F3A;border-radius:12px;padding:10px 12px">
+            <button onClick="{{ n.onPlay }}" style="width:34px;height:34px;border-radius:50%;background:#D4AF37;border:0;display:flex;align-items:center;justify-content:center;gap:3px;cursor:pointer;flex:none;padding:0">
+              <sc-if value="{{ n.playing }}"><span style="width:3px;height:11px;background:#121318;border-radius:1px"></span><span style="width:3px;height:11px;background:#121318;border-radius:1px"></span></sc-if>
+              <sc-if value="{{ n.paused }}"><span style="width:0;height:0;border-left:10px solid #121318;border-top:6px solid transparent;border-bottom:6px solid transparent;margin-left:3px"></span></sc-if>
+            </button>
+            <div style="flex:1;min-width:0;display:flex;align-items:center;gap:2px;height:28px;overflow:hidden">
+              <sc-for list="{{ n.bars }}" as="b" hint-placeholder-count="24"><div style="flex:none;width:3px;border-radius:2px;height:{{ b.h }};background:{{ b.c }}"></div></sc-for>
+            </div>
+            <div style="font-size:12px;color:#8A93A6;font-variant-numeric:tabular-nums">{{ n.dur }}</div>
+          </div>
+        </sc-if>
+      </div>
+      </sc-if>
+    </sc-for>
+    <sc-if value="{{ cur.empty }}">
+      <div style="margin:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;padding:0 12px">
+        <div style="width:10px;height:10px;transform:rotate(45deg);border:1px solid #D4AF37"></div>
+        <div style="font-family:var(--serif,'Alegreya',serif);font-size:21px;font-weight:600;color:#F1EBDD">Чистая страница</div>
+        <div style="font-size:14px;line-height:1.55;color:#8A93A6;max-width:260px;text-wrap:pretty">Записывайте, что происходит. Введите @, чтобы связать заметку с NPC, локацией или квестом.</div>
+      </div>
+    </sc-if>
+  </div>
+  <div style="flex:none;position:relative;padding:10px 12px 12px;background:#16171E;border-top:1px solid #262833">
+    <sc-if value="{{ showSugg }}">
+      <div style="position:absolute;left:12px;right:12px;bottom:100%;margin-bottom:6px;background:#22242E;border:1px solid #343746;border-radius:14px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:2px;z-index:5">
+        <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385;padding:4px 8px">УПОМЯНУТЬ</div>
+        <sc-for list="{{ sugg }}" as="g" hint-placeholder-count="3">
+          <div onMouseDown="{{ g.onPick }}" style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:9px;cursor:pointer" style-hover="background:#2C2F3A">
+            <span style="color:{{ g.fg }};font-size:9px;width:14px;text-align:center">{{ g.glyph }}</span>
+            <span style="font-size:14px;color:#E2E8F0;flex:1">{{ g.name }}</span>
+            <span style="font-size:11px;color:#8A93A6">{{ g.typeLabel }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ notRec }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#1E1F28;border:1px solid #2C2F3A;border-radius:14px;padding:10px 12px 8px;display:flex;flex-direction:column;gap:6px">
+        <textarea ref="{{ taRef }}" value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onKey }}" rows="2" placeholder="Что произошло? @ — упомянуть NPC, место, квест" style="width:100%;box-sizing:border-box;resize:none;background:transparent;border:0;outline:0;color:#E2E8F0;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;padding:0"></textarea>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button onClick="{{ insertAt }}" style="height:32px;min-width:32px;padding:0 10px;border-radius:9px;background:#2A2C37;color:#E2C044;border:0;font-size:15px;font-weight:600;cursor:pointer">@</button>
+          <div style="font-size:11px;color:#6B7385">Enter — сохранить</div>
+          <button onClick="{{ startRec }}" style="margin-left:auto;width:38px;height:38px;border-radius:50%;background:rgba(155,44,44,0.22);border:1px solid rgba(155,44,44,0.65);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;padding:0">
+            <span style="width:8px;height:13px;border-radius:4px;background:#F08A8A"></span><span style="width:2px;height:3px;background:#F08A8A"></span>
+          </button>
+          <button onClick="{{ submit }}" style="height:38px;padding:0 16px;border-radius:19px;background:{{ sendBg }};color:{{ sendFg }};border:0;font-size:14px;font-weight:600;cursor:pointer">Записать</button>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isRec }}">
+      <div style="background:rgba(155,44,44,0.16);border:1px solid rgba(155,44,44,0.65);border-radius:14px;padding:12px;display:flex;align-items:center;gap:12px">
+        <div style="width:10px;height:10px;border-radius:50%;background:#E5484D;opacity:{{ recDot }};transition:opacity .3s;flex:none"></div>
+        <div style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;color:#F6CACA;width:38px">{{ recTime }}</div>
+        <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:2px;height:30px;overflow:hidden">
+          <sc-for list="{{ recBars }}" as="b" hint-placeholder-count="20"><div style="flex:none;width:3px;border-radius:2px;height:{{ b.h }};background:#F08A8A;transition:height .1s"></div></sc-for>
+        </div>
+        <button onClick="{{ cancelRec }}" style="width:34px;height:34px;border-radius:50%;background:transparent;border:1px solid #4A3036;color:#E9B8B8;font-size:14px;cursor:pointer;flex:none">✕</button>
+        <button onClick="{{ stopRec }}" style="width:40px;height:40px;border-radius:50%;background:#9B2C2C;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none"><span style="width:12px;height:12px;border-radius:2px;background:#FFFFFF"></span></button>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCodex }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column">
+  <div style="padding:6px 20px 12px;flex:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;height:32px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.18em;color:#D4AF37">БАЗА ЗНАНИЙ</div>
+      <button onClick="{{ openNew }}" style="flex:none;height:32px;padding:0 12px;border-radius:10px;background:rgba(212,175,55,0.12);border:1px solid rgba(212,175,55,0.4);color:#E2C044;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:rgba(212,175,55,0.2)">+ Запись</button>
+    </div>
+    <div style="font-family:var(--serif,'Alegreya',serif);font-size:32px;font-weight:600;line-height:1.15;margin-top:4px;color:#F1EBDD">Кодекс</div>
+    <div style="margin-top:14px;display:flex;align-items:center;gap:10px;background:#1A1B23;border:1px solid #2C2F3A;border-radius:12px;padding:0 12px;height:42px">
+      <div style="width:10px;height:10px;border:1.5px solid #6B7385;border-radius:50%;flex:none"></div>
+      <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Имя, фракция, награда…" style="flex:1;min-width:0;background:transparent;border:0;outline:0;color:#E2E8F0;font-family:Inter,system-ui,sans-serif;font-size:14px">
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:4px;background:#1A1B23;border:1px solid #262833;border-radius:12px">
+      <sc-for list="{{ codexTabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.onClick }}" style="height:34px;border-radius:9px;border:0;background:{{ t.bg }};color:{{ t.fg }};font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:0">{{ t.label }}<span style="font-size:11px;opacity:0.65">{{ t.count }}</span></button>
+      </sc-for>
+    </div>
+    <sc-if value="{{ hasFilters }}">
+    <div style="margin:10px -20px 0;padding:0 20px;display:flex;gap:6px;overflow-x:auto">
+      <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+        <button onClick="{{ f.onClick }}" style="flex:none;height:30px;padding:0 12px;border-radius:15px;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.fg }};font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px;cursor:pointer"><span style="display:{{ f.dotDisp }};width:6px;height:6px;border-radius:50%;background:{{ f.dot }}"></span>{{ f.label }}<span style="opacity:0.6">{{ f.count }}</span></button>
+      </sc-for>
+    </div>
+    </sc-if>
+  </div>
+  <div style="flex:1;min-height:0;overflow-y:auto;padding:2px 16px 20px;display:flex;flex-direction:column;gap:8px">
+    <sc-for list="{{ npcItems }}" as="c" hint-placeholder-count="4">
+      <div onClick="{{ c.onClick }}" style="display:flex;gap:12px;align-items:center;background:#1A1B23;border:1px solid #262833;border-radius:14px;padding:12px 14px;cursor:pointer" style-hover="border-color:#3A3D4B;background:#1D1E27">
+        <div style="width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:#121318;box-shadow:inset 0 0 0 1.5px {{ c.ring }};font-family:var(--serif,'Alegreya',serif);font-size:20px;font-weight:600;color:{{ c.fg }}">{{ c.initial }}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-family:var(--serif,'Alegreya',serif);font-size:18px;font-weight:600;color:#F1EBDD;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:{{ c.deco }}">{{ c.name }}</div>
+            <span style="flex:none;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:{{ c.fg }};background:{{ c.bg }};box-shadow:inset 0 0 0 1px {{ c.bd }}">{{ c.badge }}</span>
+          </div>
+          <div style="font-size:13px;color:#8A93A6;margin-top:2px">{{ c.sub }}</div>
+          <div style="font-size:12px;color:#6B7385;margin-top:6px">{{ c.meta }}</div>
+        </div>
+      </div>
+    </sc-for>
+    <sc-for list="{{ questItems }}" as="c" hint-placeholder-count="0">
+      <div onClick="{{ c.onClick }}" style="background:#1A1B23;border:1px solid #262833;border-radius:14px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:12px" style-hover="border-color:#3A3D4B;background:#1D1E27">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="color:{{ c.fg }};font-size:10px;padding-top:6px">◆</div>
+          <div style="font-family:var(--serif,'Alegreya',serif);font-size:18px;font-weight:600;color:#F1EBDD;flex:1;min-width:0;line-height:1.3">{{ c.name }}</div>
+          <span style="flex:none;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:{{ c.fg }};background:{{ c.bg }};box-shadow:inset 0 0 0 1px {{ c.bd }}">{{ c.badge }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;font-size:13px;padding-left:20px">
+          <span style="color:#6B7385">Кто дал</span>
+          <span><span onClick="{{ c.openGiver }}" style="color:{{ c.giverFg }};font-weight:500;cursor:pointer;box-shadow:inset 0 -1px 0 {{ c.giverFg }};text-decoration:{{ c.giverDeco }}">{{ c.giver }}</span></span>
+          <span style="color:#6B7385">Награда</span>
+          <span style="color:#E2E8F0">{{ c.reward }}</span>
+        </div>
+      </div>
+    </sc-for>
+    <sc-for list="{{ locItems }}" as="c" hint-placeholder-count="0">
+      <div onClick="{{ c.onClick }}" style="display:flex;gap:12px;align-items:center;background:#1A1B23;border:1px solid #262833;border-radius:14px;padding:12px 14px;cursor:pointer" style-hover="border-color:#3A3D4B;background:#1D1E27">
+        <div style="width:44px;height:44px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(216,201,163,0.08);box-shadow:inset 0 0 0 1px rgba(216,201,163,0.3);color:#D8C9A3;font-size:13px">▲</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--serif,'Alegreya',serif);font-size:18px;font-weight:600;color:#F1EBDD">{{ c.name }}</div>
+          <div style="font-size:13px;color:#8A93A6;margin-top:2px">{{ c.sub }}</div>
+          <div style="font-size:12px;color:#6B7385;margin-top:6px">{{ c.meta }}</div>
+        </div>
+      </div>
+    </sc-for>
+    <sc-if value="{{ codexEmpty }}">
+      <div style="margin:36px 16px;text-align:center;font-size:14px;line-height:1.55;color:#8A93A6">Ничего не найдено. Сбросьте фильтр или измените запрос.</div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCombatSetup }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column">
+  <div style="padding:6px 20px 12px;flex:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;height:32px"><span style="font-size:11px;font-weight:600;letter-spacing:0.18em;color:#F08A8A">БЫСТРЫЙ БОЙ</span><span style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:#A7B0C0;padding:2px 7px;border-radius:5px;background:#22242E">{{ modeBadge }}</span></div>
+    <div style="font-family:var(--serif,'Alegreya',serif);font-size:32px;font-weight:600;line-height:1.15;margin-top:4px;color:#F1EBDD">Новый бой</div>
+    <div style="font-size:13px;color:#8A93A6;margin-top:2px">Итоги попадут в <span style="color:#E2C044">{{ setupTarget }}</span></div>
+  </div>
+  <div style="flex:1;min-height:0;overflow-y:auto;padding:2px 16px 16px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;margin:2px 4px;font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385"><span>1 · ОТРЯД ИЗ КОДЕКСА</span><span style="letter-spacing:0;font-size:12px;color:#8CB8EC">{{ setupPartyCount }}</span></div>
+    <sc-for list="{{ setupParty }}" as="p" hint-placeholder-count="4">
+      <div onClick="{{ p.onToggle }}" style="display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:60px;padding:6px 8px 6px 12px;border-radius:12px;background:#17181F;box-shadow:inset 0 0 0 1px {{ p.bd }};opacity:{{ p.op }};cursor:pointer">
+        <div style="width:22px;height:22px;border-radius:6px;box-sizing:border-box;border:1.5px solid {{ p.boxBd }};background:{{ p.boxBg }};display:flex;align-items:center;justify-content:center;color:#121318;font-size:13px;font-weight:700">{{ p.check }}</div>
+        <div style="min-width:0"><div style="font-size:15px;font-weight:600;color:#E2E8F0">{{ p.name }}</div><div style="font-size:12px;color:#8A93A6;margin-top:1px">{{ p.sub }}</div></div>
+        <button onClick="{{ p.onHp }}" style="height:46px;min-width:78px;padding:0 10px;border-radius:10px;background:#121318;border:1px solid #2C2F3A;color:#E2E8F0;font-size:14px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-variant-numeric:tabular-nums"><span>{{ p.hpLabel }}</span><span style="font-size:10px;font-weight:600;color:#8CB8EC">{{ p.tempLabel }}</span></button>
+      </div>
+    </sc-for>
+    <div style="display:flex;justify-content:space-between;margin:12px 4px 2px;font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385"><span>2 · ПРОТИВНИКИ</span><span style="letter-spacing:0;font-size:12px;color:#F08A8A">{{ setupEnemyCount }}</span></div>
+    <sc-for list="{{ setupEnemies }}" as="e" hint-placeholder-count="0">
+      <div style="display:grid;grid-template-columns:24px minmax(0,1fr) 46px;gap:10px;align-items:center;min-height:60px;padding:6px 8px 6px 12px;border-radius:12px;background:#17181F;box-shadow:inset 0 0 0 1px #2E2226">
+        <div style="width:8px;height:8px;border-radius:50%;background:#C0443F;justify-self:center"></div>
+        <div style="min-width:0"><div style="font-size:15px;font-weight:600;color:#E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.name }}</div><div style="font-size:12px;color:#8A93A6;margin-top:1px">{{ e.sub }}</div></div>
+        <button onClick="{{ e.onRemove }}" style="width:46px;height:46px;border-radius:12px;background:transparent;border:1px solid #3A3D4B;color:#8A93A6;font-size:13px;cursor:pointer;padding:0">✕</button>
+      </div>
+    </sc-for>
+    <sc-if value="{{ noEnemies }}"><div style="padding:14px;border-radius:12px;border:1px dashed #3A3D4B;font-size:13px;line-height:1.5;color:#8A93A6;text-align:center">Добавьте противников — из кодекса, бестиария или вручную</div></sc-if>
+    <div style="display:flex;gap:6px"><input value="{{ addName }}" onChange="{{ onAddName }}" onKeyDown="{{ onAddKey }}" placeholder="Имя противника…" style="flex:1;min-width:0;height:48px;box-sizing:border-box;background:#1A1B23;border:1px solid #2C2F3A;border-radius:12px;outline:0;color:#E2E8F0;font-family:Inter,system-ui,sans-serif;font-size:15px;padding:0 14px"><button onClick="{{ addCustom }}" style="width:48px;height:48px;border-radius:12px;background:#22242E;border:1px solid #2C2F3A;color:#E2C044;font-size:20px;cursor:pointer;padding:0">+</button></div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px"><div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385">ИЗ КОДЕКСА · ВРАГИ</div><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ codexFoes }}" as="c" hint-placeholder-count="1"><button onClick="{{ c.onClick }}" style="height:40px;padding:0 14px;border-radius:20px;border:1px solid rgba(155,44,44,0.6);background:rgba(155,44,44,0.16);color:#F08A8A;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px">+ {{ c.name }}<span style="font-weight:500;color:#A7B0C0">{{ c.hint }}</span></button></sc-for></div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px"><div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385">БЕСТИАРИЙ · SRD 5.1 · ОФЛАЙН</div><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ monsters }}" as="m" hint-placeholder-count="4"><button onClick="{{ m.onClick }}" style="height:40px;padding:0 14px;border-radius:20px;border:1px solid #2C2F3A;background:#1A1B23;color:#C9D0DC;font-size:13px;font-weight:500;cursor:pointer">+ {{ m.name }}</button></sc-for></div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 4px 0;font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385"><span>3 · ОЧЕРЁДНОСТЬ · {{ turnModeLabel }}</span><sc-if value="{{ isOrderMode }}"><button onClick="{{ resetOrder }}" style="height:32px;padding:0 10px;border-radius:8px;background:transparent;border:1px solid #3A3D4B;color:#A7B0C0;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:0">Сбросить</button></sc-if></div>
+    <div style="font-size:12.5px;line-height:1.5;color:#8A93A6;margin:0 4px 2px;text-wrap:pretty">{{ orderHint }}</div>
+    <sc-for list="{{ turnRows }}" as="t" hint-placeholder-count="4">
+      <div onClick="{{ t.onClick }}" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;min-height:60px;padding:6px 8px 6px 14px;border-radius:12px;background:#17181F;box-shadow:inset 0 0 0 1px {{ t.bd }};cursor:pointer">
+        <div style="min-width:0"><div style="display:flex;align-items:center;gap:6px"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:{{ t.dot }}"></span><span style="font-size:15px;font-weight:600;color:#E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</span></div><div style="font-size:12px;color:#8A93A6;margin-top:1px;padding-left:12px">{{ t.sub }}</div></div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <sc-if value="{{ t.canRoll }}"><button onClick="{{ t.onRoll }}" style="height:46px;padding:0 12px;border-radius:12px;background:rgba(212,175,55,0.12);border:1px solid rgba(212,175,55,0.45);color:#E2C044;font-size:13px;font-weight:700;cursor:pointer">{{ t.rollLabel }}</button></sc-if>
+          <div style="width:50px;height:46px;border-radius:{{ t.rad }};box-sizing:border-box;border:1.5px {{ t.bstyle }} {{ t.ring }};background:{{ t.fill }};color:{{ t.fg }};display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums">{{ t.value }}</div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex:none;padding:10px 16px 12px;border-top:1px solid #262833;background:#16171E">
+    <button onClick="{{ startCombat }}" style="width:100%;height:50px;border-radius:14px;background:{{ startBg }};color:{{ startFg }};border:0;font-size:15px;font-weight:700;cursor:pointer">{{ startLabel }}</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCombatActive }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column">
+  <div style="padding:6px 20px 10px;flex:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;height:32px">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;font-weight:600;letter-spacing:0.18em;color:#F08A8A">БОЙ · {{ timer }}</span><span style="font-size:10px;font-weight:600;letter-spacing:0.08em;color:#A7B0C0;padding:2px 7px;border-radius:5px;background:#22242E">{{ modeBadge }}</span></div>
+      <button onClick="{{ openEnd }}" style="height:28px;padding:0 10px;border-radius:8px;background:transparent;border:1px solid rgba(155,44,44,0.7);color:#F08A8A;font-size:12px;font-weight:600;cursor:pointer" style-hover="background:rgba(155,44,44,0.18)">Завершить бой</button>
+    </div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:4px">
+      <div style="min-width:0">
+        <div style="font-family:var(--serif,'Alegreya',serif);font-size:32px;font-weight:600;line-height:1.15;color:#F1EBDD">Раунд {{ round }}</div>
+        <div style="font-size:13px;color:#8A93A6;margin-top:2px">Ходит: <span style="color:#E2C044;font-weight:500">{{ currentName }}</span> · {{ hostileLabel }}</div>
+      </div>
+      <button onClick="{{ nextTurn }}" style="flex:none;height:40px;padding:0 16px;border-radius:12px;background:#D4AF37;color:#121318;border:0;font-size:14px;font-weight:700;cursor:pointer" style-hover="background:#E2C044">Следующий ход ›</button>
+    </div>
+  </div>
+  <sc-if value="{{ allClear }}">
+    <div style="flex:none;margin:0 12px 8px;padding:10px 12px;border-radius:12px;background:rgba(63,169,124,0.12);border:1px solid rgba(63,169,124,0.45);display:flex;align-items:center;gap:10px">
+      <div style="flex:1;font-size:13px;line-height:1.4;color:#BFE8D2">Врагов в строю не осталось</div>
+      <button onClick="{{ openEnd }}" style="height:32px;padding:0 12px;border-radius:9px;background:#3FA97C;border:0;color:#0E1A14;font-size:13px;font-weight:700;cursor:pointer">Подвести итоги</button>
+    </div>
+  </sc-if>
+  <div style="flex:1;min-height:0;overflow-y:auto;padding:2px 12px 12px;display:flex;flex-direction:column;gap:6px">
+    <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+      <div onClick="{{ r.onClick }}" style="display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:{{ r.bg }};box-shadow:inset 0 0 0 1px {{ r.bd }};opacity:{{ r.op }};cursor:pointer;transition:background .15s">
+        <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:{{ r.initBg }};color:{{ r.initFg }};font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">{{ r.init }}</div>
+        <div style="min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;min-width:0">
+            <span style="flex:none;width:6px;height:6px;border-radius:50%;background:{{ r.sideC }}"></span>
+            <span style="font-size:15px;font-weight:600;color:#E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+            <span style="font-size:12px;color:#6B7385;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.role }}</span>
+          </div>
+          <sc-if value="{{ r.showHp }}"><div style="margin-top:7px;height:5px;border-radius:3px;background:#2A2C37;overflow:hidden"><div style="height:100%;width:{{ r.pct }};background:{{ r.hpC }};border-radius:3px;transition:width .35s ease, background .35s"></div></div></sc-if>
+          <sc-if value="{{ r.showWound }}"><div style="margin-top:7px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px"><sc-for list="{{ r.pips }}" as="p" hint-placeholder-count="4"><div style="height:5px;border-radius:3px;background:{{ p.c }};transition:background .3s"></div></sc-for></div></sc-if>
+          <sc-if value="{{ r.hasConds }}"><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:7px"><sc-for list="{{ r.conds }}" as="k"><span style="font-size:10.5px;font-weight:600;padding:2px 6px;border-radius:5px;color:{{ k.fg }};background:{{ k.bg }}">{{ k.label }}</span></sc-for></div></sc-if>
+        </div>
+        <div style="text-align:right">
+          <sc-if value="{{ r.showHp }}"><div style="font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ r.hpTextC }};white-space:nowrap"><sc-if value="{{ r.hasTemp }}"><span style="font-size:12px;color:#8CB8EC;margin-right:4px">+{{ r.temp }}</span></sc-if>{{ r.hp }}<span style="color:#6B7385;font-weight:500;font-size:13px">/{{ r.max }}</span></div></sc-if>
+          <sc-if value="{{ r.showWound }}"><div style="font-size:13px;font-weight:600;color:{{ r.woundC }};white-space:nowrap">{{ r.woundLabel }}</div></sc-if>
+          <div style="font-size:11px;color:#6B7385;margin-top:2px;white-space:nowrap">{{ r.acLabel }}</div>
+        </div>
+      </div>
+    </sc-for>
+    <div style="display:flex;gap:6px;margin-top:4px"><input value="{{ reinfName }}" onChange="{{ onReinf }}" onKeyDown="{{ onReinfKey }}" placeholder="+ Подкрепление: имя противника" style="flex:1;min-width:0;height:36px;box-sizing:border-box;background:transparent;border:1px dashed #3A3D4B;border-radius:10px;outline:0;color:#E2E8F0;font-family:Inter,system-ui,sans-serif;font-size:13px;padding:0 12px"><button onClick="{{ addReinf }}" style="width:36px;height:36px;border-radius:10px;background:#22242E;border:1px solid #2C2F3A;color:#E2C044;font-size:17px;cursor:pointer;padding:0">+</button></div>
+  </div>
+  <sc-if value="{{ hasSel }}">
+  <div style="flex:none;max-height:58%;overflow-y:auto;background:#1A1B23;border-top:1px solid rgba(212,175,55,0.35);border-radius:20px 20px 0 0;padding:14px 16px 14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -12px 30px rgba(0,0,0,0.35)">
+    <div style="display:flex;align-items:flex-start;gap:12px">
+      <div style="min-width:0;flex:1">
+        <div style="display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;letter-spacing:0.14em;color:{{ sel.sideC }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ sel.sideC }}"></span>{{ sel.sideLabel }}</div>
+        <div style="font-family:var(--serif,'Alegreya',serif);font-size:22px;font-weight:600;color:#F1EBDD;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ sel.name }}</div>
+      </div>
+      <div style="text-align:right;flex:none">
+        <sc-if value="{{ sel.showHp }}"><div style="font-size:28px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ sel.hpC }}">{{ sel.hp }}<span style="font-size:15px;color:#6B7385;font-weight:500"> / {{ sel.max }}</span></div><div style="font-size:11px;color:#6B7385;margin-top:4px">{{ sel.hpSub }}</div></sc-if>
+        <sc-if value="{{ sel.showWound }}"><div style="font-size:17px;font-weight:700;line-height:1.1;color:{{ sel.woundC }}">{{ sel.woundLong }}</div><div style="font-size:11px;color:#6B7385;margin-top:4px">по словам мастера · {{ sel.acLabel }}</div></sc-if>
+      </div>
+    </div>
+    <div style="display:flex;gap:3px;padding:3px;background:#121318;border-radius:11px;border:1px solid #262833"><sc-for list="{{ panelTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.onClick }}" style="flex:1;height:28px;border-radius:8px;border:0;background:{{ t.bg }};color:{{ t.fg }};font-size:12px;font-weight:600;cursor:pointer">{{ t.label }}</button></sc-for></div>
+    <sc-if value="{{ isTabAct }}">
+      <sc-if value="{{ sel.showWound }}">
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385">КАК ВЫГЛЯДИТ · СО СЛОВ МАСТЕРА</div><div style="display:flex;gap:3px;padding:3px;background:#121318;border-radius:12px;border:1px solid #262833"><sc-for list="{{ sel.woundOpts }}" as="o" hint-placeholder-count="5"><button onClick="{{ o.onClick }}" style="flex:1;min-width:0;height:40px;border-radius:9px;border:0;background:{{ o.bg }};box-shadow:inset 0 0 0 1px {{ o.bd }};color:{{ o.fg }};font-size:11.5px;font-weight:600;cursor:pointer;padding:0 2px;white-space:nowrap">{{ o.label }}</button></sc-for></div></div>
+      </sc-if>
+      <div style="display:flex;gap:6px"><sc-for list="{{ sel.calcBtns }}" as="b" hint-placeholder-count="3"><button onClick="{{ b.onClick }}" style="flex:1;min-width:0;height:50px;border-radius:12px;border:1px solid {{ b.bd }};background:{{ b.bg }};color:{{ b.fg }};font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 6px;white-space:nowrap"><span style="flex:none;width:13px;height:16px;box-sizing:border-box;border:1.6px solid currentColor;border-radius:3px;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px 2px 2px"><span style="background:currentColor;border-radius:1px"></span><span style="background:currentColor;border-radius:1px"></span><span style="background:currentColor;border-radius:1px"></span><span style="background:currentColor;border-radius:1px"></span></span>{{ b.label }}</button></sc-for></div>
+      <div style="font-size:11.5px;line-height:1.45;color:#6B7385">От лица того, чей ход: <span style="color:#E2C044">{{ currentName }}</span>. В калькуляторе можно выбрать несколько целей.</div>
+    </sc-if>
+    <sc-if value="{{ isTabCond }}">
+      <sc-for list="{{ sel.condGroups }}" as="g" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;letter-spacing:0.14em;color:{{ g.fg }}"><span style="width:6px;height:6px;border-radius:2px;background:{{ g.fg }}"></span>{{ g.title }}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px"><sc-for list="{{ g.items }}" as="k"><button onClick="{{ k.onClick }}" style="height:28px;padding:0 10px;border-radius:14px;border:1px solid {{ k.bd }};background:{{ k.bg }};color:{{ k.fg }};font-size:12px;font-weight:500;cursor:pointer">{{ k.label }}</button></sc-for></div>
+        </div>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{ isTabMore }}">
+      <sc-if value="{{ sel.isEnemy }}">
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385">СТОРОНА</div><div style="display:flex;gap:3px;padding:3px;background:#121318;border-radius:11px;border:1px solid #262833"><sc-for list="{{ sel.stanceOpts }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="flex:1;height:30px;border-radius:8px;border:0;background:{{ o.bg }};box-shadow:inset 0 0 0 1px {{ o.bd }};color:{{ o.fg }};font-size:12px;font-weight:600;cursor:pointer;padding:0">{{ o.label }}</button></sc-for></div><div style="font-size:11px;color:#6B7385">{{ sel.stanceHint }}</div></div>
+      </sc-if>
+      <textarea value="{{ sel.note }}" onChange="{{ sel.onNote }}" rows="2" placeholder="{{ sel.notePh }}" style="width:100%;box-sizing:border-box;resize:none;background:#121318;border:1px solid #2C2F3A;border-radius:10px;outline:0;color:#E2E8F0;font-family:Inter,system-ui,sans-serif;font-size:13px;line-height:1.45;padding:8px 10px"></textarea>
+      <button onClick="{{ removeSel }}" style="align-self:flex-start;height:30px;padding:0 12px;border-radius:9px;background:transparent;border:1px solid #3A3D4B;color:#A7B0C0;font-size:12px;font-weight:500;cursor:pointer">Убрать из боя</button>
+    </sc-if>
+  </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSettings }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column">
+  <div style="padding:6px 20px 14px;flex:none">
+    <div style="display:flex;align-items:center;height:32px;font-size:11px;font-weight:600;letter-spacing:0.18em;color:#D4AF37">ПРИЛОЖЕНИЕ</div>
+    <div style="font-family:var(--serif,'Alegreya',serif);font-size:32px;font-weight:600;line-height:1.15;margin-top:4px;color:#F1EBDD">Настройки</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:12px"><div style="height:1px;width:28px;background:#D4AF37"></div><div style="width:5px;height:5px;transform:rotate(45deg);border:1px solid #D4AF37"></div><div style="flex:1;height:1px;background:#2C2F3A"></div></div>
+  </div>
+  <div style="flex:1;min-height:0;overflow-y:auto;padding:2px 16px 24px;display:flex;flex-direction:column;gap:10px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#8A93A6;margin:0 4px">БЫСТРЫЙ БОЙ</div>
+    <div style="background:#1A1B23;border:1px solid #262833;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:#E2E8F0">Характеристики врагов</div>
+        <div style="font-size:13px;color:#8A93A6;line-height:1.5;margin-top:2px">Как ваш мастер ведёт бой. Хиты пати видны всегда.</div>
+      </div>
+      <sc-for list="{{ modeOpts }}" as="o" hint-placeholder-count="2">
+        <div onClick="{{ o.onClick }}" style="display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;padding:12px;border-radius:12px;background:{{ o.bg }};box-shadow:inset 0 0 0 1px {{ o.bd }};cursor:pointer">
+          <div style="width:18px;height:18px;border-radius:50%;box-sizing:border-box;border:1.5px solid {{ o.ring }};display:flex;align-items:center;justify-content:center;margin-top:1px"><div style="width:8px;height:8px;border-radius:50%;background:{{ o.dot }}"></div></div>
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+            <div style="font-size:14px;font-weight:600;color:#F1EBDD">{{ o.title }}</div>
+            <div style="font-size:12.5px;color:#A7B0C0;line-height:1.5;text-wrap:pretty">{{ o.desc }}</div>
+            <div style="font-family:var(--serif,'Alegreya',serif);font-style:italic;font-size:14px;color:#D8C9A3;margin-top:2px">{{ o.example }}</div>
+          </div>
+        </div>
+      </sc-for>
+      <div style="height:1px;background:#262833;margin:4px 0"></div>
+      <div>
+        <div style="font-size:15px;font-weight:600;color:#E2E8F0">Очерёдность ходов</div>
+        <div style="font-size:13px;color:#8A93A6;line-height:1.5;margin-top:2px">Как в вашей группе определяется порядок.</div>
+      </div>
+      <sc-for list="{{ turnOpts }}" as="o" hint-placeholder-count="2">
+        <div onClick="{{ o.onClick }}" style="display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;padding:12px;border-radius:12px;background:{{ o.bg }};box-shadow:inset 0 0 0 1px {{ o.bd }};cursor:pointer">
+          <div style="width:18px;height:18px;border-radius:50%;box-sizing:border-box;border:1.5px solid {{ o.ring }};display:flex;align-items:center;justify-content:center;margin-top:1px"><div style="width:8px;height:8px;border-radius:50%;background:{{ o.dot }}"></div></div>
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:0"><div style="font-size:14px;font-weight:600;color:#F1EBDD">{{ o.title }}</div><div style="font-size:12.5px;color:#A7B0C0;line-height:1.5;text-wrap:pretty">{{ o.desc }}</div></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#8A93A6;margin:12px 4px 0">ДНЕВНИК</div>
+    <div style="background:#1A1B23;border:1px solid #262833;border-radius:14px;padding:4px 14px">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #262833">
+        <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;color:#E2E8F0">Нумерация сессий</div><div style="font-size:12px;color:#8A93A6;margin-top:2px">Римские сжимаются после XX</div></div>
+        <div style="display:flex;gap:3px;padding:3px;background:#121318;border-radius:10px;border:1px solid #262833">
+          <sc-for list="{{ numOpts }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="height:30px;min-width:54px;padding:0 10px;border-radius:8px;border:0;background:{{ o.bg }};color:{{ o.fg }};font-family:var(--serif,'Alegreya',serif);font-size:16px;font-weight:600;cursor:pointer">{{ o.label }}</button></sc-for>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0">
+        <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;color:#E2E8F0">Упоминания @</div><div style="font-size:12px;color:#8A93A6;margin-top:2px">Вид чипов в заметках</div></div>
+        <div style="display:flex;gap:3px;padding:3px;background:#121318;border-radius:10px;border:1px solid #262833">
+          <sc-for list="{{ mentionOpts }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="height:30px;padding:0 10px;border-radius:8px;border:0;background:{{ o.bg }};color:{{ o.fg }};font-size:12px;font-weight:600;cursor:pointer">{{ o.label }}</button></sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#8A93A6;margin:12px 4px 0">КАМПАНИЯ</div>
+    <div style="background:#1A1B23;border:1px solid #262833;border-radius:14px;padding:4px 14px">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #262833">
+        <div style="font-size:14px;font-weight:500;color:#E2E8F0;flex:none">Название</div>
+        <input value="{{ campaign }}" onChange="{{ onCampaign }}" style="flex:1;min-width:0;text-align:right;background:transparent;border:0;outline:0;color:#E2C044;font-family:var(--serif,'Alegreya',serif);font-size:17px;font-weight:600">
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0">
+        <div style="font-size:14px;font-weight:500;color:#E2E8F0;flex:1">Хранение</div>
+        <div style="font-size:13px;color:#8A93A6">Только на устройстве</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid #262833">
+        <div style="font-size:14px;font-weight:500;color:#E2E8F0;flex:none">Бестиарий</div>
+        <div style="flex:1;text-align:right;font-size:13px;line-height:1.45;color:#8A93A6">SRD 5.1 встроен в приложение (JSON, офлайн) + ваши существа</div>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</div>
+<div style="flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:8px 8px 28px;background:#0F1015;border-top:1px solid #22242E">
+  <button onClick="{{ navS.onClick }}" style="position:relative;background:transparent;border:0;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:6px 0;color:{{ navS.fg }}">
+    <span style="position:absolute;top:-9px;width:22px;height:2px;border-radius:2px;background:{{ navS.bar }}"></span>
+    <span style="width:15px;height:18px;box-sizing:border-box;border:1.6px solid currentColor;border-radius:2px 4px 4px 2px;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:0 3px"><span style="height:1.5px;background:currentColor"></span><span style="height:1.5px;background:currentColor;width:60%"></span></span>
+    <span style="font-size:11px;font-weight:600">Сессии</span>
+  </button>
+  <button onClick="{{ navC.onClick }}" style="position:relative;background:transparent;border:0;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:6px 0;color:{{ navC.fg }}">
+    <span style="position:absolute;top:-9px;width:22px;height:2px;border-radius:2px;background:{{ navC.bar }}"></span>
+    <span style="width:18px;height:18px;display:flex;align-items:center;justify-content:center"><span style="width:12px;height:12px;box-sizing:border-box;border:1.6px solid currentColor;transform:rotate(45deg)"></span></span>
+    <span style="font-size:11px;font-weight:600">Кодекс</span>
+  </button>
+  <button onClick="{{ navB.onClick }}" style="position:relative;background:transparent;border:0;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:6px 0;color:{{ navB.fg }}">
+    <span style="position:absolute;top:-9px;width:22px;height:2px;border-radius:2px;background:{{ navB.bar }}"></span>
+    <span style="position:relative;width:18px;height:18px;box-sizing:border-box;border:1.6px solid currentColor;border-radius:50%;display:flex;align-items:center;justify-content:center"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span><sc-if value="{{ inCombat }}"><span style="position:absolute;top:-6px;left:13px;font-size:9px;font-weight:700;color:#FFE9E9;background:#9B2C2C;border-radius:6px;padding:1px 5px;line-height:1.3">Р{{ round }}</span></sc-if></span>
+    <span style="font-size:11px;font-weight:600">Бой</span>
+  </button>
+  <button onClick="{{ navN.onClick }}" style="position:relative;background:transparent;border:0;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:6px 0;color:{{ navN.fg }}">
+    <span style="position:absolute;top:-9px;width:22px;height:2px;border-radius:2px;background:{{ navN.bar }}"></span>
+    <span style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;gap:3px"><span style="width:4px;height:4px;border-radius:50%;background:currentColor"></span><span style="width:4px;height:4px;border-radius:50%;background:currentColor"></span><span style="width:4px;height:4px;border-radius:50%;background:currentColor"></span></span>
+    <span style="font-size:11px;font-weight:600">Настройки</span>
+  </button>
+</div>
+
+<sc-if value="{{ hasSheet }}">
+<div style="position:absolute;inset:0;z-index:40">
+  <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(5,5,8,0.66);opacity:{{ sheetOp }};transition:opacity .28s ease"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;max-height:88%;display:flex;flex-direction:column;background:#1A1B23;border-radius:26px 26px 0 0;box-shadow:0 -1px 0 {{ sheetEdge }}, 0 -20px 50px rgba(0,0,0,0.5);transform:{{ sheetTf }};transition:transform .32s cubic-bezier(.2,.8,.2,1)">
+    <div style="flex:none;padding:10px 0 4px;display:flex;justify-content:center"><div style="width:40px;height:5px;border-radius:3px;background:#3A3D4B"></div></div>
+    <div ref="{{ sheetRef }}" style="flex:1;min-height:0;overflow-y:auto;padding:6px 20px 44px">
+      <sc-if value="{{ isEntitySheet }}"><div style="display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div style="width:58px;height:58px;border-radius:{{ sh.emblemRad }};flex:none;display:flex;align-items:center;justify-content:center;background:#121318;box-shadow:inset 0 0 0 1.5px {{ sh.ring }};font-family:var(--serif,'Alegreya',serif);font-size:{{ sh.emblemSize }};font-weight:600;color:{{ sh.fg }}">{{ sh.emblem }}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:{{ sh.fg }}">{{ sh.overline }}</div>
+          <div style="font-family:var(--serif,'Alegreya',serif);font-size:27px;font-weight:600;line-height:1.2;color:#F1EBDD;text-decoration:{{ sh.deco }}">{{ sh.title }}</div>
+          <div style="font-size:13px;color:#8A93A6;margin-top:2px">{{ sh.sub }}</div>
+        </div>
+        <button onClick="{{ closeSheet }}" style="align-self:flex-start;width:32px;height:32px;border-radius:50%;background:#262833;border:0;color:#A7B0C0;font-size:13px;cursor:pointer;flex:none">✕</button>
+      </div>
+      <sc-if value="{{ sh.hasStatus }}">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.14em;color:#6B7385">СТАТУС</div>
+        <div style="display:flex;gap:4px;padding:4px;background:#121318;border-radius:12px;border:1px solid #262833">
+          <sc-for list="{{ sh.statusOpts }}" as="o" hint-placeholder-count="4">
+            <button onClick="{{ o.onClick }}" style="flex:1;height:32px;border-radius:9px;border:0;background:{{ o.bg }};box-shadow:inset 0 0 0 1px {{ o.bd }};color:{{ o.fg }};font-size:12px;font-weight:600;cursor:pointer;padding:0">{{ o.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+      <div style="font-size:15px;line-height:1.6;color:#C9D0DC;text-wrap:pretty">{{ sh.desc }}</div>
+      <div style="display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 16px;font-size:14px;padding:14px;border-radius:14px;background:#121318;border:1px solid #262833">
+        <sc-for list="{{ sh.facts }}" as="f" hint-placeholder-count="3">
+          <span style="color:#6B7385">{{ f.k }}</span>
+          <span style="min-width:0">
+            <sc-if value="{{ f.isText }}"><span style="color:#E2E8F0">{{ f.v }}</span></sc-if>
+            <sc-if value="{{ f.isLink }}"><span onClick="{{ f.link.onClick }}" style="display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;line-height:1.6;color:{{ f.link.fg }};background:{{ f.link.bg }};box-shadow:{{ f.link.sh }};border-radius:{{ f.link.rad }};padding:{{ f.link.pad }};text-decoration:{{ f.link.deco }};cursor:pointer;white-space:nowrap"><span style="font-size:8px">{{ f.link.glyph }}</span>{{ f.link.label }}</span></sc-if>
+          </span>
+        </sc-for>
+      </div>
+      <sc-for list="{{ sh.groups }}" as="g" hint-placeholder-count="0">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.14em;color:#6B7385">{{ g.title }}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ g.items }}" as="m"><span onClick="{{ m.onClick }}" style="display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;line-height:1.6;color:{{ m.fg }};background:{{ m.bg }};box-shadow:{{ m.sh }};border-radius:{{ m.rad }};padding:{{ m.pad }};text-decoration:{{ m.deco }};cursor:pointer;white-space:nowrap"><span style="font-size:8px">{{ m.glyph }}</span>{{ m.label }}</span></sc-for>
+          </div>
+        </div>
+      </sc-for>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;letter-spacing:0.14em;color:#6B7385"><span>СВЯЗАННЫЕ ЗАМЕТКИ</span><span style="letter-spacing:0;font-weight:500;color:#D4AF37">авто · {{ sh.relCount }}</span></div>
+        <sc-for list="{{ sh.related }}" as="r" hint-placeholder-count="2">
+          <div onClick="{{ r.onClick }}" style="display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:12px;border-radius:12px;background:#121318;border:1px solid #262833;cursor:pointer" style-hover="border-color:#3A3D4B">
+            <div style="font-family:var(--serif,'Alegreya',serif);font-size:{{ r.numSize }};font-weight:600;color:#D4AF37;text-align:center;line-height:1.3;white-space:nowrap">{{ r.numLabel }}</div>
+            <div style="min-width:0">
+              <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font-size:14px;font-weight:600;color:#F1EBDD">{{ r.title }}</span><span style="font-size:11px;color:#6B7385;white-space:nowrap">{{ r.date }}</span></div>
+              <div style="font-size:13px;color:#A7B0C0;line-height:1.45;margin-top:4px;text-wrap:pretty">«{{ r.snippet }}»</div>
+              <div style="font-size:11px;color:#6B7385;margin-top:6px">{{ r.count }} · открыть сессию →</div>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ sh.relEmpty }}"><div style="font-size:13px;color:#6B7385;padding:10px 0">Пока нигде не упоминается. Добавьте @{{ sh.title }} в заметку сессии.</div></sc-if>
+      </div>
+    </div></sc-if>
+      <sc-if value="{{ isEndSheet }}">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#F08A8A">ИТОГИ БОЯ · {{ endV.metaUpper }}</div>
+            <div style="font-family:var(--serif,'Alegreya',serif);font-size:26px;font-weight:600;line-height:1.2;color:#F1EBDD">{{ endV.title }}</div>
+            <div style="font-size:13px;color:#8A93A6;margin-top:2px">Сохранится в: <span style="color:#E2C044">{{ endV.target }}</span></div>
+          </div>
+          <button onClick="{{ closeSheet }}" style="width:32px;height:32px;border-radius:50%;background:#262833;border:0;color:#A7B0C0;font-size:13px;cursor:pointer;flex:none">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385"><span>ИСХОД</span><span style="letter-spacing:0;font-size:11px;font-weight:500">{{ endV.autoHint }}</span></div>
+          <div style="display:flex;gap:3px;padding:3px;background:#121318;border-radius:11px;border:1px solid #262833"><sc-for list="{{ endV.outcomes }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="flex:1;min-width:0;height:32px;border-radius:8px;border:0;background:{{ o.bg }};box-shadow:inset 0 0 0 1px {{ o.bd }};color:{{ o.fg }};font-size:12px;font-weight:600;cursor:pointer;padding:0 2px">{{ o.label }}</button></sc-for></div>
+        </div>
+        <div style="padding:2px 14px 6px;border-radius:14px;background:#121318;border:1px solid #262833"><div style="display:grid;grid-template-columns:minmax(0,1fr) 46px 58px;gap:8px;padding:7px 0;font-size:9.5px;font-weight:600;letter-spacing:0.12em;color:#6B7385"><span>УЧАСТНИК</span><span style="text-align:right">НАНЁС</span><span style="text-align:right">ПОЛУЧИЛ</span></div>
+<sc-for list="{{ endV.rows }}" as="w" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:minmax(0,1fr) 46px 58px;gap:8px;align-items:center;padding:7px 0;border-top:1px solid {{ w.bt }}"><div style="min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#E2E8F0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:{{ w.dot }}"></span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ w.name }}</span></div><div style="font-size:11px;color:{{ w.resC }};margin-top:1px;padding-left:12px">{{ w.result }}</div></div><div style="text-align:right;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:#E2E8F0">{{ w.dealt }}</div><div style="text-align:right;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:#F08A8A">{{ w.taken }}</div></div></sc-for></div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px"><sc-for list="{{ endV.highlights }}" as="hh" hint-placeholder-count="2"><span style="font-size:11px;color:#C9D0DC;padding:3px 8px;border-radius:6px;background:#22242E">{{ hh.t }}</span></sc-for></div>
+        <div style="font-size:12px;line-height:1.5;color:#6B7385">Хиты отряда обновятся в кодексе. Смена сторон уже применена к NPC.</div>
+        <button onClick="{{ saveCombat }}" style="height:48px;border-radius:14px;background:#D4AF37;border:0;color:#121318;font-size:15px;font-weight:700;cursor:pointer">Сохранить в сессию</button>
+        <button onClick="{{ closeSheet }}" style="height:40px;border-radius:12px;background:transparent;border:1px solid #3A3D4B;color:#C9D0DC;font-size:14px;font-weight:500;cursor:pointer">Вернуться в бой</button>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isPadSheet }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="width:42px;height:42px;border-radius:12px;background:#121318;box-shadow:inset 0 0 0 1px {{ pad.accentBd }};color:{{ pad.accent }};display:flex;align-items:center;justify-content:center;flex:none"><span style="flex:none;width:16px;height:20px;box-sizing:border-box;border:1.6px solid currentColor;border-radius:3px;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:6px 2px 2px"><span style="background:currentColor;border-radius:1px"></span><span style="background:currentColor;border-radius:1px"></span><span style="background:currentColor;border-radius:1px"></span><span style="background:currentColor;border-radius:1px"></span></span></div>
+          <div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:{{ pad.accent }}">{{ pad.overline }}</div><div style="font-family:var(--serif,'Alegreya',serif);font-size:22px;font-weight:600;line-height:1.2;color:#F1EBDD;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pad.title }}</div></div>
+          <button onClick="{{ padClose }}" style="width:40px;height:40px;border-radius:50%;background:#262833;border:0;color:#A7B0C0;font-size:14px;cursor:pointer;flex:none">✕</button>
+        </div>
+        <sc-if value="{{ pad.hasModes }}"><div style="display:flex;gap:3px;padding:3px;background:#121318;border-radius:12px;border:1px solid #262833"><sc-for list="{{ pad.modes }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="flex:1;height:40px;border-radius:9px;border:0;background:{{ o.bg }};box-shadow:inset 0 0 0 1px {{ o.bd }};color:{{ o.fg }};font-size:13px;font-weight:600;cursor:pointer;padding:0">{{ o.label }}</button></sc-for></div></sc-if>
+        <sc-if value="{{ pad.hasTargets }}">
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385">ЦЕЛИ · {{ pad.targetCount }}</div><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ pad.targets }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.onClick }}" style="height:38px;padding:0 12px;border-radius:19px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font-size:13px;font-weight:600;cursor:pointer">{{ c.label }}</button></sc-for></div></div>
+        </sc-if>
+        <div style="padding:12px 16px;border-radius:14px;background:#121318;border:1px solid #262833;display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <div style="font-size:14px;color:#8A93A6;min-height:20px;font-variant-numeric:tabular-nums">{{ pad.expr }}</div>
+          <div style="font-size:46px;font-weight:700;line-height:1;color:{{ pad.accent }};font-variant-numeric:tabular-nums">{{ pad.result }}</div>
+          <sc-for list="{{ pad.preview }}" as="p" hint-placeholder-count="1"><div style="font-size:12.5px;color:#A7B0C0;font-variant-numeric:tabular-nums">{{ p.t }}</div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px"><sc-for list="{{ pad.keys }}" as="k" hint-placeholder-count="12"><button onClick="{{ k.onClick }}" style="grid-column:span {{ k.span }};height:54px;border-radius:12px;border:1px solid {{ k.bd }};background:{{ k.bg }};color:{{ k.fg }};font-size:20px;font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums" style-active="transform:scale(0.96)">{{ k.label }}</button></sc-for></div>
+        <button onClick="{{ pad.onApply }}" style="height:52px;border-radius:14px;border:0;background:{{ pad.applyBg }};color:{{ pad.applyFg }};font-size:15px;font-weight:700;cursor:pointer">{{ pad.applyLabel }}</button>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isNewSheet }}">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#D4AF37">КОДЕКС · НОВАЯ ЗАПИСЬ</div><div style="font-family:var(--serif,'Alegreya',serif);font-size:26px;font-weight:600;line-height:1.2;color:#F1EBDD">{{ fm.heading }}</div></div>
+          <button onClick="{{ closeSheet }}" style="width:40px;height:40px;border-radius:50%;background:#262833;border:0;color:#A7B0C0;font-size:14px;cursor:pointer;flex:none">✕</button>
+        </div>
+        <div style="display:flex;gap:3px;padding:3px;background:#121318;border-radius:12px;border:1px solid #262833"><sc-for list="{{ fm.types }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="flex:1;min-width:0;height:40px;border-radius:9px;border:0;background:{{ o.bg }};color:{{ o.fg }};font-size:13px;font-weight:600;cursor:pointer;padding:0">{{ o.label }}</button></sc-for></div>
+        <sc-for list="{{ fm.fields }}" as="f" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#6B7385">{{ f.label }}</div>
+            <sc-if value="{{ f.isText }}"><input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="height:48px;box-sizing:border-box;background:#121318;border:1px solid #2C2F3A;border-radius:12px;outline:0;color:#E2E8F0;font-family:Inter,system-ui,sans-serif;font-size:15px;padding:0 14px"></sc-if>
+            <sc-if value="{{ f.isArea }}"><textarea value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" rows="3" style="box-sizing:border-box;resize:none;background:#121318;border:1px solid #2C2F3A;border-radius:12px;outline:0;color:#E2E8F0;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;padding:12px 14px"></textarea></sc-if>
+            <sc-if value="{{ f.isChips }}"><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ f.chips }}" as="c"><button onClick="{{ c.onClick }}" style="min-height:40px;padding:0 14px;border-radius:20px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font-size:13px;font-weight:600;cursor:pointer">{{ c.label }}</button></sc-for></div></sc-if>
+            <sc-if value="{{ f.isStep }}"><div style="display:flex;align-items:center;gap:8px"><button onClick="{{ f.onDec }}" style="width:48px;height:48px;border-radius:12px;background:#22242E;border:1px solid #2C2F3A;color:#E2E8F0;font-size:20px;cursor:pointer;padding:0">−</button><button onClick="{{ f.onPad }}" style="flex:1;height:48px;border-radius:12px;background:#121318;border:1px solid #2C2F3A;color:#E2E8F0;font-size:18px;font-weight:700;cursor:pointer;font-variant-numeric:tabular-nums">{{ f.val }}</button><button onClick="{{ f.onInc }}" style="width:48px;height:48px;border-radius:12px;background:#22242E;border:1px solid #2C2F3A;color:#E2E8F0;font-size:20px;cursor:pointer;padding:0">+</button></div></sc-if>
+            <sc-if value="{{ f.isToggle }}"><div onClick="{{ f.onToggle }}" style="display:flex;align-items:center;gap:12px;min-height:52px;padding:0 14px;border-radius:12px;background:#121318;border:1px solid {{ f.bd }};cursor:pointer"><div style="flex:1;font-size:13.5px;color:#C9D0DC;line-height:1.4;padding:8px 0">{{ f.hint }}</div><div style="width:51px;height:31px;border-radius:16px;background:{{ f.trackBg }};position:relative;flex:none;transition:background .2s"><div style="position:absolute;top:2px;left:{{ f.knobX }};width:27px;height:27px;border-radius:50%;background:#FFFFFF;transition:left .2s"></div></div></div></sc-if>
+          </div>
+        </sc-for>
+        <button onClick="{{ fm.onSave }}" style="height:52px;border-radius:14px;border:0;background:{{ fm.saveBg }};color:{{ fm.saveFg }};font-size:15px;font-weight:700;cursor:pointer">{{ fm.saveLabel }}</button>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</sc-if>
+<sc-if value="{{ hasToast }}">
+<div style="position:absolute;left:12px;right:12px;bottom:96px;z-index:35;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 14px;border-radius:12px;background:#2A2C37;box-shadow:0 10px 30px rgba(0,0,0,0.5)">
+  <div style="flex:1;min-width:0;font-size:13px;line-height:1.4;color:#E2E8F0">{{ toastText }}</div>
+  
+</div>
+</sc-if>
+</div>
+</x-import>
+
+<sc-if value="{{ showDS }}" hint-placeholder-val="{{ true }}">
+<div style="width:520px;max-width:100%;display:flex;flex-direction:column;gap:30px;color:#E2E8F0;padding-top:8px">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.18em;color:#D4AF37">DESIGN SYSTEM · v0.4 · KMP</div>
+    <div style="font-family:var(--serif,'Alegreya',serif);font-size:44px;font-weight:600;line-height:1.1;color:#F1EBDD">D&amp;D Player’s Codex</div>
+    <div style="font-size:15px;line-height:1.6;color:#A7B0C0;text-wrap:pretty">Dark Fantasy Codex — гримуар в минималистичной интерпретации. Угольный фон, плоские контрастные карточки, золото для действий, бордо для боя и врагов, изумруд для союзников. Serif — только для имён собственных: сессий, NPC, мест.</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#8A93A6">ЦВЕТ</div>
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px">
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:10px;background:#121318;box-shadow:inset 0 0 0 1px #2C2F3A"></div><div style="font-size:12px;font-weight:600">Фон</div><div style="font-size:11px;color:#8A93A6">#121318</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:10px;background:#1A1B23;box-shadow:inset 0 0 0 1px #2C2F3A"></div><div style="font-size:12px;font-weight:600">Карточка</div><div style="font-size:11px;color:#8A93A6">#1A1B23</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:10px;background:#2C2F3A"></div><div style="font-size:12px;font-weight:600">Граница</div><div style="font-size:11px;color:#8A93A6">#2C2F3A</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:10px;background:#E2E8F0"></div><div style="font-size:12px;font-weight:600">Текст</div><div style="font-size:11px;color:#8A93A6">#E2E8F0</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:10px;background:#D4AF37"></div><div style="font-size:12px;font-weight:600">Золото</div><div style="font-size:11px;color:#8A93A6">#D4AF37 · действия</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:10px;background:#9B2C2C"></div><div style="font-size:12px;font-weight:600">Бордо</div><div style="font-size:11px;color:#8A93A6">#9B2C2C · бой</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:10px;background:#3FA97C"></div><div style="font-size:12px;font-weight:600">Изумруд</div><div style="font-size:11px;color:#8A93A6">#3FA97C · союз</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:10px;background:#D8C9A3"></div><div style="font-size:12px;font-weight:600">Пергамент</div><div style="font-size:11px;color:#8A93A6">#D8C9A3 · места</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:10px;background:#8CB8EC"></div><div style="font-size:12px;font-weight:600">Лазурь</div><div style="font-size:11px;color:#8A93A6">#8CB8EC · отряд</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;border-radius:10px;background:#BFA3EE"></div><div style="font-size:12px;font-weight:600">Аметист</div><div style="font-size:11px;color:#8A93A6">#BFA3EE · ослабления</div></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#8A93A6">ТИПОГРАФИКА</div>
+    <div style="display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;background:#15161C;border:1px solid #262833">
+      <div><div style="font-family:var(--serif,'Alegreya',serif);font-size:30px;font-weight:600;color:#F1EBDD;line-height:1.2">Сессия XII: Осада замка</div><div style="font-size:11px;color:#6B7385;margin-top:4px">{{ serifName }} 600 · 32/27/18 — заголовки, имена, названия</div></div>
+      <div><div style="font-size:15px;line-height:1.6;color:#E2E8F0">Морвен появилась на стене и потребовала отдать клинок.</div><div style="font-size:11px;color:#6B7385;margin-top:4px">Inter 400/600 · 15/13/11 — интерфейс и заметки</div></div>
+      <div><div style="font-size:11px;font-weight:600;letter-spacing:0.18em;color:#D4AF37">БАЗА ЗНАНИЙ</div><div style="font-size:11px;color:#6B7385;margin-top:4px">Надстрочник · Inter 600 · 11 · трекинг 0.18em</div></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#8A93A6">СТАТУСЫ</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:#6FCF97;background:rgba(63,169,124,0.14);box-shadow:inset 0 0 0 1px rgba(63,169,124,0.42)">Друг</span>
+      <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:#F08A8A;background:rgba(155,44,44,0.24);box-shadow:inset 0 0 0 1px rgba(155,44,44,0.65)">Враг</span>
+      <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:#A7B0C0;background:rgba(148,163,184,0.12);box-shadow:inset 0 0 0 1px rgba(148,163,184,0.34)">Нейтрал</span>
+      <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:#8E939C;background:#07080A;box-shadow:inset 0 0 0 1px #3A3C46">Мёртв</span>
+      <span style="width:1px;background:#2C2F3A;margin:0 4px"></span>
+      <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:#E2C044;background:rgba(212,175,55,0.13);box-shadow:inset 0 0 0 1px rgba(212,175,55,0.42)">Активен</span>
+      <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:#6FCF97;background:rgba(63,169,124,0.14);box-shadow:inset 0 0 0 1px rgba(63,169,124,0.42)">Выполнен</span>
+      <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;color:#F08A8A;background:rgba(155,44,44,0.24);box-shadow:inset 0 0 0 1px rgba(155,44,44,0.65)">Провален</span>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#8A93A6">СОСТОЯНИЯ В БОЮ</div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+      <div style="display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:12px;background:#15161C;border:1px solid #262833"><div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#F08A8A">СКОВЫВАНИЕ</div><div style="font-size:12px;line-height:1.5;color:#A7B0C0">Схвачен, опутан, сбит с ног, оглушён, паралич…</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:12px;background:#15161C;border:1px solid #262833"><div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#BFA3EE">ОСЛАБЛЕНИЕ</div><div style="font-size:12px;line-height:1.5;color:#A7B0C0">Ослеплён, оглох, отравлен, испуган, очарован</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:12px;background:#15161C;border:1px solid #262833"><div style="font-size:10px;font-weight:600;letter-spacing:0.14em;color:#E2C044">ЭФФЕКТЫ</div><div style="font-size:12px;line-height:1.5;color:#A7B0C0">Концентрация, невидим</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+      <div style="font-size:12px;color:#8A93A6">Ранения в скрытом режиме — вместо полосы HP</div>
+      <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px">
+        <div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px"><div style="height:5px;border-radius:3px;background:#6FCF97"></div><div style="height:5px;border-radius:3px;background:#6FCF97"></div><div style="height:5px;border-radius:3px;background:#6FCF97"></div><div style="height:5px;border-radius:3px;background:#6FCF97"></div></div><div style="font-size:11px;color:#6FCF97;margin-top:5px">Цел</div></div>
+        <div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px"><div style="height:5px;border-radius:3px;background:#D4AF37"></div><div style="height:5px;border-radius:3px;background:#D4AF37"></div><div style="height:5px;border-radius:3px;background:#D4AF37"></div><div style="height:5px;border-radius:3px;background:#2A2C37"></div></div><div style="font-size:11px;color:#D4AF37;margin-top:5px">Ранен</div></div>
+        <div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px"><div style="height:5px;border-radius:3px;background:#E0794A"></div><div style="height:5px;border-radius:3px;background:#E0794A"></div><div style="height:5px;border-radius:3px;background:#2A2C37"></div><div style="height:5px;border-radius:3px;background:#2A2C37"></div></div><div style="font-size:11px;color:#E0794A;margin-top:5px">Изранен</div></div>
+        <div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px"><div style="height:5px;border-radius:3px;background:#E5484D"></div><div style="height:5px;border-radius:3px;background:#2A2C37"></div><div style="height:5px;border-radius:3px;background:#2A2C37"></div><div style="height:5px;border-radius:3px;background:#2A2C37"></div></div><div style="font-size:11px;color:#E5484D;margin-top:5px">При смерти</div></div>
+        <div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px"><div style="height:5px;border-radius:3px;background:#2A2C37"></div><div style="height:5px;border-radius:3px;background:#2A2C37"></div><div style="height:5px;border-radius:3px;background:#2A2C37"></div><div style="height:5px;border-radius:3px;background:#2A2C37"></div></div><div style="font-size:11px;color:#8A93A6;margin-top:5px">Повержен</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#8A93A6">УПОМИНАНИЯ @</div>
+    <div style="font-size:15px;line-height:1.9;color:#E2E8F0">Цвет NPC-чипа следует статусу:
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:500;line-height:1.5;color:#6FCF97;background:rgba(63,169,124,0.14);box-shadow:inset 0 0 0 1px rgba(63,169,124,0.42);border-radius:6px;padding:0 6px"><span style="font-size:7px">●</span>Громм</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:500;line-height:1.5;color:#8CB8EC;background:rgba(110,160,230,0.14);box-shadow:inset 0 0 0 1px rgba(110,160,230,0.45);border-radius:6px;padding:0 6px"><span style="font-size:7px">■</span>Бран</span> (отряд)
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:500;line-height:1.5;color:#F08A8A;background:rgba(155,44,44,0.24);box-shadow:inset 0 0 0 1px rgba(155,44,44,0.65);border-radius:6px;padding:0 6px"><span style="font-size:7px">●</span>Морвен Блэквуд</span>, места —
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:500;line-height:1.5;color:#D8C9A3;background:rgba(216,201,163,0.10);box-shadow:inset 0 0 0 1px rgba(216,201,163,0.32);border-radius:6px;padding:0 6px"><span style="font-size:7px">▲</span>Замок Блэквуд</span>, квесты —
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:500;line-height:1.5;color:#E2C044;background:rgba(212,175,55,0.12);box-shadow:inset 0 0 0 1px rgba(212,175,55,0.38);border-radius:6px;padding:0 6px"><span style="font-size:7px">◆</span>Поиски меча</span>.
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;padding:16px 18px;border-radius:14px;border:1px dashed #343746">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;color:#D4AF37">НОВОЕ В v4</div>
+    <div style="font-size:13px;line-height:1.7;color:#A7B0C0">Калькулятор урона: сумма бросков (8 + 6 + 4), ½ при сопротивлении, ×2 при уязвимости, несколько целей сразу · Временные хиты — до боя и в бою · Очерёдность: «по словам мастера» (касаниями 1, 2, 3…) или по инициативе, бросок d20 только за себя · Кодекс: «+ Запись» — отряд (с отметкой «мой персонаж»), NPC, квест, место · Бестиарий SRD 5.1 встроен офлайн</div>
+  </div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startTab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;sessions&quot;,&quot;codex&quot;,&quot;combat&quot;,&quot;settings&quot;],&quot;default&quot;:&quot;sessions&quot;,&quot;tsType&quot;:&quot;'sessions'|'codex'|'combat'|'settings'&quot;,&quot;section&quot;:&quot;Прототип&quot;},&quot;headingFont&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Alegreya&quot;,&quot;Lora&quot;,&quot;PT Serif&quot;,&quot;Cormorant Garamond&quot;],&quot;default&quot;:&quot;Alegreya&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Типографика&quot;},&quot;showDesignSystem&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Прототип&quot;}}">
+const PARTY_C = { fg: '#8CB8EC', bg: 'rgba(110,160,230,0.14)', bd: 'rgba(110,160,230,0.45)' };
+const NEU_C = { fg: '#A7B0C0', bg: 'rgba(148,163,184,0.12)', bd: 'rgba(148,163,184,0.34)' };
+const ST = {
+  friend: { label: 'Друг', fg: '#6FCF97', bg: 'rgba(63,169,124,0.14)', bd: 'rgba(63,169,124,0.42)' },
+  enemy: { label: 'Враг', fg: '#F08A8A', bg: 'rgba(155,44,44,0.24)', bd: 'rgba(155,44,44,0.65)' },
+  neutral: { label: 'Нейтрал', ...NEU_C },
+  dead: { label: 'Мёртв', fg: '#8E939C', bg: '#07080A', bd: '#3A3C46' },
+  active: { label: 'Активен', fg: '#E2C044', bg: 'rgba(212,175,55,0.13)', bd: 'rgba(212,175,55,0.42)' },
+  done: { label: 'Выполнен', fg: '#6FCF97', bg: 'rgba(63,169,124,0.14)', bd: 'rgba(63,169,124,0.42)' },
+  failed: { label: 'Провален', fg: '#F08A8A', bg: 'rgba(155,44,44,0.24)', bd: 'rgba(155,44,44,0.65)' },
+  in: { label: 'В составе', ...PARTY_C },
+  away: { label: 'Отсутствует', ...NEU_C },
+};
+const LOC_C = { fg: '#D8C9A3', bg: 'rgba(216,201,163,0.10)', bd: 'rgba(216,201,163,0.32)' };
+const QUEST_C = { fg: '#E2C044', bg: 'rgba(212,175,55,0.12)', bd: 'rgba(212,175,55,0.38)' };
+const TY = { party: { glyph: '■', label: 'Отряд' }, npc: { glyph: '●', label: 'NPC' }, quest: { glyph: '◆', label: 'Квест' }, location: { glyph: '▲', label: 'Локация' } };
+const SETS = { party: ['in', 'away'], npc: ['friend', 'enemy', 'neutral', 'dead'], quest: ['active', 'done', 'failed'] };
+const COND_GROUPS = [
+  { title: 'СКОВЫВАНИЕ', fg: '#F08A8A', on: { fg: '#F6CACA', bg: 'rgba(155,44,44,0.35)', bd: '#9B2C2C' }, chip: { fg: '#F2B8B8', bg: 'rgba(155,44,44,0.28)' }, items: ['Схвачен', 'Опутан', 'Сбит с ног', 'Оглушён', 'Паралич', 'Недееспособен', 'Окаменение'] },
+  { title: 'ОСЛАБЛЕНИЕ', fg: '#BFA3EE', on: { fg: '#DCCBF7', bg: 'rgba(150,110,220,0.24)', bd: 'rgba(150,110,220,0.7)' }, chip: { fg: '#CDB6F2', bg: 'rgba(150,110,220,0.2)' }, items: ['Ослеплён', 'Оглох', 'Отравлен', 'Испуган', 'Очарован'] },
+  { title: 'ЭФФЕКТЫ', fg: '#E2C044', on: { fg: '#E2C044', bg: 'rgba(212,175,55,0.14)', bd: 'rgba(212,175,55,0.55)' }, chip: { fg: '#E2C044', bg: 'rgba(212,175,55,0.14)' }, items: ['Концентрация', 'Невидим'] },
+];
+const condGroup = k => COND_GROUPS.find(g => g.items.includes(k)) || COND_GROUPS[0];
+const WOUNDS = [
+  { k: 'fresh', label: 'Цел', long: 'Невредим', c: '#6FCF97', pips: 4 },
+  { k: 'hurt', label: 'Ранен', long: 'Ранен', c: '#D4AF37', pips: 3 },
+  { k: 'bloodied', label: 'Изранен', long: 'Выглядит плохо', c: '#E0794A', pips: 2 },
+  { k: 'dying', label: 'При смерти', long: 'При смерти', c: '#E5484D', pips: 1 },
+  { k: 'down', label: 'Повержен', long: 'Повержен', c: '#8A93A6', pips: 0 },
+];
+const STANCE = {
+  enemy: { label: 'Враг', dot: '#C0443F', ...ST.enemy },
+  neutral: { label: 'Нейтрал', dot: '#A7B0C0', ...NEU_C },
+  friend: { label: 'Друг', dot: '#3FA97C', ...ST.friend },
+  fled: { label: 'Сбежал', dot: '#6B7385', fg: '#A7B0C0', bg: '#2A2C37', bd: '#3A3D4B' },
+};
+const OUT = { win: { label: 'Победа', ...ST.done }, retreat: { label: 'Отступление', ...ST.active }, peace: { label: 'Мир', ...PARTY_C }, stop: { label: 'Прервано', ...NEU_C } };
+const MONSTERS = [
+  { base: 'Скелет-лучник', hp: 13, ac: 13, kind: 'Нежить' }, { base: 'Зомби', hp: 22, ac: 8, kind: 'Нежить' },
+  { base: 'Гоблин', hp: 7, ac: 15, kind: 'Гуманоид' }, { base: 'Культист', hp: 9, ac: 12, kind: 'Гуманоид' },
+];
+const MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сент', 'окт', 'нояб', 'дек'];
+const roman = n => { let r = ''; for (const [v, s] of [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]) while (n >= v) { r += s; n -= v; } return r; };
+const plural = (n, a, b, c) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? b : c; };
+const pad = n => String(n).padStart(2, '0');
+const nowHM = () => { const d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+const pD = iso => { const [y, m, d] = iso.split('-').map(Number); return { y, m: m - 1, d }; };
+const fmtD = iso => { const p = pD(iso); return p.d + ' ' + MON[p.m] + ' ' + p.y; };
+const fmtDM = iso => { const p = pD(iso); return p.d + ' ' + MON[p.m]; };
+const fmtRange = (a, b) => {
+  if (!b || a === b) return fmtD(a);
+  const A = pD(a), B = pD(b);
+  if (A.y !== B.y) return fmtD(a) + ' – ' + fmtD(b);
+  if (A.m !== B.m) return A.d + ' ' + MON[A.m] + ' – ' + B.d + ' ' + MON[B.m] + ' ' + B.y;
+  return A.d + '–' + B.d + ' ' + MON[A.m] + ' ' + A.y;
+};
+const fmtDur = s => Math.floor(s / 60) + ':' + pad(s % 60);
+const d20 = () => 1 + Math.floor(Math.random() * 20);
+const BARS = 26;
+const seedBars = id => { let s = 7; for (const ch of id) s = (s * 31 + ch.charCodeAt(0)) % 9973; const a = []; for (let i = 0; i < BARS; i++) { s = (s * 9301 + 49297) % 233280; a.push(5 + Math.round((s / 233280) * 21)); } return a; };
+const acEst = rolls => {
+  const h = rolls.filter(r => r.hit).map(r => r.v), m = rolls.filter(r => !r.hit).map(r => r.v);
+  const hi = h.length ? Math.min(...h) : null, lo = m.length ? Math.max(...m) + 1 : null;
+  if (hi == null && lo == null) return 'КД ?';
+  if (hi != null && lo != null) return lo > hi ? 'КД: уточните' : lo === hi ? 'КД ' + hi : 'КД ' + lo + '–' + hi;
+  return hi != null ? 'КД ≤ ' + hi : 'КД ≥ ' + lo;
+};
+
+const ENT = [
+  { id: 'torin', type: 'party', name: 'Торин', race: 'Человек', cls: 'Паладин', lvl: 5, player: 'Максим', status: 'in', hp: 43, max: 52, ac: 18, initB: 0, desc: 'Клятва Преданности. Несёт два фрагмента Клинка Рассвета.' },
+  { id: 'lira', type: 'party', name: 'Лира', race: 'Эльфийка', cls: 'Волшебница', lvl: 5, player: 'вы', me: true, status: 'in', hp: 22, max: 28, ac: 12, initB: 3, desc: 'Школа Воплощения. Ведёт этот дневник.' },
+  { id: 'bran', type: 'party', name: 'Бран', race: 'Полурослик', cls: 'Плут', lvl: 5, player: 'Даня', status: 'in', hp: 31, max: 31, ac: 15, initB: 4, desc: 'Бывший карманник из Мирдейла. Должен Заре Шило.' },
+  { id: 'erin', type: 'party', name: 'Эрин', race: 'Дварф', cls: 'Жрица', lvl: 5, player: 'Оля', status: 'away', hp: 33, max: 33, ac: 17, initB: -1, desc: 'Домен Света. На этой неделе не смогла прийти.' },
+  { id: 'gromm', type: 'npc', name: 'Громм', race: 'Дварф', faction: 'Гильдия Молота', status: 'friend', loc: 'forge', desc: 'Кузнец из-под Серой горы. Ворчлив, честен и помнит каждого клиента за последние восемьдесят лет. Узнал рукоять Клинка Рассвета.' },
+  { id: 'morwen', type: 'npc', name: 'Морвен Блэквуд', race: 'Человек', faction: 'Дом Блэквуд', status: 'enemy', loc: 'castle', hp: 90, ac: 16, desc: 'Хозяйка замка Блэквуд. Ищет Клинок Рассвета, чтобы уничтожить его. Колдует некротику, окружена нежитью.' },
+  { id: 'ilva', type: 'npc', name: 'Сестра Ильва', race: 'Полуэльф', faction: 'Орден Рассвета', status: 'friend', loc: 'temple', desc: 'Жрица Храма Рассвета. Лечит бесплатно, но всегда просит об ответной услуге.' },
+  { id: 'cassian', type: 'npc', name: 'Кассиан Вейл', race: 'Тифлинг', faction: 'Теневой синдикат', status: 'neutral', loc: 'myrdale', hp: 45, ac: 14, desc: 'Посредник синдиката. Вежлив, опасен, злопамятен. После сорванной сделки держит дистанцию.' },
+  { id: 'helm', type: 'npc', name: 'Старый Хельм', race: 'Человек', faction: 'Староста Мирдейла', status: 'dead', loc: 'myrdale', desc: 'Староста деревни. Найден мёртвым у колодца в тумане — следов борьбы нет.' },
+  { id: 'zara', type: 'npc', name: 'Зара Шило', race: 'Полурослик', faction: 'Воровская гильдия', status: 'neutral', loc: 'forge', desc: 'Карманница с острым языком. Замечена у кузницы Громма — что-то вынюхивала.' },
+  { id: 'q_sword', type: 'quest', name: 'Поиски меча', status: 'active', giver: 'gromm', reward: 'Клинок Рассвета + 200 зм', loc: 'castle', desc: 'Собрать три фрагмента Клинка Рассвета. Найдено 2 из 3 — последний в подземельях замка.' },
+  { id: 'q_siege', type: 'quest', name: 'Штурм Блэквуда', status: 'active', giver: 'ilva', reward: 'Благословение Ордена, 500 зм', loc: 'castle', desc: 'Прорвать оборону замка и не дать Морвен завершить ритуал до рассвета.' },
+  { id: 'q_curse', type: 'quest', name: 'Проклятие Мирдейла', status: 'active', giver: 'ilva', reward: 'Свиток снятия проклятия', loc: 'myrdale', desc: 'Выяснить природу тумана над Мирдейлом. След ведёт в Туманный лес.' },
+  { id: 'q_caravan', type: 'quest', name: 'Пропавший караван', status: 'done', giver: 'helm', reward: '150 зм', loc: 'forest', desc: 'Найти караван, пропавший по дороге в Мирдейл. Груз возвращён.' },
+  { id: 'q_debt', type: 'quest', name: 'Долг Кассиана', status: 'failed', giver: 'cassian', reward: '300 зм — не получено', loc: 'temple', desc: 'Доставить ящик в Храм Рассвета, не открывая. Ящик открыт, сделка сорвана.' },
+  { id: 'castle', type: 'location', name: 'Замок Блэквуд', kind: 'Крепость', region: 'Северные пустоши', desc: 'Чёрный замок на скале. Стены патрулирует нежить, в подземельях — последний фрагмент меча.' },
+  { id: 'myrdale', type: 'location', name: 'Мирдейл', kind: 'Деревня', region: 'Долина Эрн', desc: 'Тихая деревня у реки, третий день окутанная неестественным туманом.' },
+  { id: 'forge', type: 'location', name: 'Кузница Громма', kind: 'Мастерская', region: 'Под Серой горой', desc: 'Горн не гаснет сто лет. Скидка для друзей Громма.' },
+  { id: 'forest', type: 'location', name: 'Туманный лес', kind: 'Дикие земли', region: 'Долина Эрн', desc: 'Гоблинские тропы и старые менгиры. Туман гуще всего у каменного круга.' },
+  { id: 'temple', type: 'location', name: 'Храм Рассвета', kind: 'Святилище', region: 'Мирдейл', desc: 'Белый храм Ордена Рассвета. Здесь исцеляют и снимают лёгкие проклятия.' },
+];
+
+const GATE = { title: 'Бой у ворот', outcome: 'win', meta: '3 раунда · 11 мин',
+  rows: [
+    { name: 'Торин', side: 'party', dealt: 21, taken: 9, result: '43/52 HP' },
+    { name: 'Лира', side: 'party', dealt: 14, taken: 6, result: '22/28 HP' },
+    { name: 'Бран', side: 'party', dealt: 11, taken: 0, result: '31/31 HP' },
+    { name: 'Скелет-лучник I', side: 'enemy', dealt: 9, taken: 13, result: 'Повержен · добил Торин' },
+    { name: 'Скелет-лучник II', side: 'enemy', dealt: 6, taken: 19, result: 'Повержен · добил Лира' },
+    { name: 'Гоблин-разведчик', side: 'enemy', dealt: 0, taken: 14, result: 'Сбежал', stance: 'fled' }],
+  highlights: ['Больше всего урона: Торин · 21', 'Добивания: Торин, Лира', 'Попадания: 7 из 10'],
+  log: [{ r: 1, t: 'Торин → Скелет-лучник I: 8 урона' }, { r: 1, t: 'Скелет-лучник I → Торин: 5 урона' }, { r: 1, t: 'Лира → Скелет-лучник II: 11 урона' }, { r: 2, t: 'Торин → Скелет-лучник I: 5 урона · повержен' }, { r: 2, t: 'Скелет-лучник II → Лира: 6 урона' }, { r: 2, t: 'Бран → Гоблин-разведчик: 11 урона' }, { r: 3, t: 'Лира → Скелет-лучник II: 8 урона · повержен' }, { r: 3, t: 'Гоблин-разведчик: Сбежал' }] };
+
+const SES = [
+  { id: 's13', num: 13, title: 'Осада замка', start: '2026-09-25', end: null, status: 'live', tags: ['Бой', 'Сюжет'], notes: [
+    { id: 'n1', day: '2026-09-25', time: '19:05', text: 'Лагерь у стен @Замок Блэквуд. @Сестра Ильва благословила отряд перед штурмом — +1 к спасброскам до рассвета.' },
+    { id: 'n2', day: '2026-09-25', kind: 'audio', time: '19:22', dur: 48 },
+    { id: 'n3', day: '2026-09-25', time: '19:40', text: '@Морвен Блэквуд появилась на стене и потребовала отдать клинок. Отказали — начался @Квест: Штурм Блэквуда.' },
+    { id: 'nc1', day: '2026-09-25', kind: 'combat', time: '20:15', cb: GATE },
+    { id: 'n4', day: '2026-09-25', time: '20:40', text: '@Бран вскрыл калитку в стене. Весть от @Громм: последний фрагмент в подземельях. Обновил @Квест: Поиски меча.' }] },
+  { id: 's12', num: 12, title: 'Кузница под горой', start: '2026-08-29', end: '2026-09-19', status: 'done', tags: ['Сюжет', 'Торговля'], notes: [
+    { id: 'n5', day: '2026-08-29', time: '18:40', text: 'Добрались до @Кузница Громма. @Громм узнал рукоять — работа его деда. Выдал @Квест: Поиски меча.' },
+    { id: 'n6', day: '2026-09-12', time: '19:15', text: 'Торговались за клинок: награда — сам клинок + 200 зм. Скидка в кузнице для всего отряда.' },
+    { id: 'n7', day: '2026-09-19', time: '21:02', text: 'Ночью у кузницы крутилась @Зара Шило — что-то вынюхивала. @Бран проследил до переулка и потерял.' }] },
+  { id: 's11', num: 11, title: 'Туман над Мирдейлом', start: '2026-08-22', end: '2026-08-22', status: 'done', tags: ['Расследование'], notes: [
+    { id: 'n8', time: '18:30', text: 'В @Мирдейл туман не рассеивается третий день. @Старый Хельм найден мёртвым у колодца.' },
+    { id: 'n9', time: '19:50', text: '@Сестра Ильва считает, что это проклятие. Взяли @Квест: Проклятие Мирдейла — след ведёт в @Туманный лес.' },
+    { id: 'n10', kind: 'audio', time: '20:35', dur: 92 }] },
+  { id: 's10', num: 10, title: 'Долг Кассиана', start: '2026-08-15', end: '2026-08-15', status: 'done', tags: ['Интрига'], notes: [
+    { id: 'n11', time: '18:20', text: '@Кассиан Вейл попросил доставить ящик в @Храм Рассвета, не открывая. Открыли. Внутри — печать Дома Блэквуд.' },
+    { id: 'n12', time: '20:05', text: 'Сделка сорвана — @Квест: Долг Кассиана провален. Кассиан вежлив, но запомнил.' }] },
+  { id: 's9', num: 9, title: 'Пропавший караван', start: '2026-08-08', end: '2026-08-08', status: 'done', tags: ['Бой', 'Путешествие'], notes: [
+    { id: 'n13', time: '18:10', text: '@Старый Хельм нанял нас найти караван. Нашли в @Туманный лес — разграблен гоблинами.' },
+    { id: 'n14', time: '21:30', text: 'Вернули груз в @Мирдейл. @Квест: Пропавший караван выполнен, 150 зм на всех.' }] },
+].map(s => ({ ...s, notes: s.notes.map(n => ({ ...n, day: n.day || s.start })) }));
+
+const MENTION_RE = /@([^@\n]{0,24})$/;
+const FONTS = { 'Alegreya': "'Alegreya', serif", 'Lora': "'Lora', serif", 'PT Serif': "'PT Serif', serif", 'Cormorant Garamond': "'Cormorant Garamond', serif" };
+
+class Component extends DCLogic {
+  state = {
+    tab: this.props.startTab || 'sessions', openSession: null,
+    entities: ENT, sessions: SES, campaign: 'Тени Блэквуда',
+    codexTab: 'npc', filter: 'all', query: '',
+    sheet: null, sheetIn: false,
+    draft: '', rec: false, recStart: 0, recNow: 0, recWave: Array(22).fill(3),
+    play: null, expanded: {},
+    combat: null, setup: this.emptySetup(), sel: null, panelTab: 'act', reinfName: '', endOutcome: 'win', now: Date.now(),
+    toast: null, pad: null, form: null,
+    combatMode: 'hidden', turnMode: 'order', numbering: 'roman', mentionStyle: 'filled',
+  };
+  taRef = React.createRef(); sheetRef = React.createRef(); feedRef = React.createRef(); rootRef = React.createRef();
+  evSeq = 0;
+
+  applyFont() { const r = this.rootRef.current; if (r) r.style.setProperty('--serif', FONTS[this.props.headingFont] || FONTS.Alegreya); }
+  componentDidMount() { this.applyFont(); this._tick = setInterval(() => { if (this.state.combat) this.setState({ now: Date.now() }); }, 1000); }
+  componentDidUpdate(pp) { this.applyFont(); if (pp.startTab !== this.props.startTab && this.props.startTab) this.setState({ tab: this.props.startTab }); }
+  componentWillUnmount() { [this._rec, this._play, this._tick].forEach(clearInterval); [this._st, this._tt].forEach(clearTimeout); }
+
+  ent(id) { return this.state.entities.find(e => e.id === id); }
+  names() {
+    const out = [];
+    this.state.entities.forEach(e => { out.push({ k: e.name, e }); if (e.type === 'quest') out.push({ k: 'Квест: ' + e.name, e }); });
+    return out.sort((a, b) => b.k.length - a.k.length);
+  }
+  colors(e) { return e.type === 'npc' || e.type === 'party' ? (e.type === 'party' ? PARTY_C : ST[e.status]) : e.type === 'quest' ? QUEST_C : LOC_C; }
+  chip(e) {
+    const c = this.colors(e), u = this.state.mentionStyle === 'underline';
+    return { isChip: true, isText: false, eid: e.id, label: e.name, glyph: TY[e.type].glyph,
+      fg: c.fg, bg: u ? 'transparent' : c.bg, sh: u ? 'inset 0 -1px 0 ' + c.fg : 'inset 0 0 0 1px ' + c.bd,
+      rad: u ? '0' : '6px', pad: u ? '0 1px' : '0 6px', deco: e.status === 'dead' ? 'line-through' : 'none',
+      onClick: ev => { ev && ev.stopPropagation && ev.stopPropagation(); this.openSheet(e.type, e.id); } };
+  }
+  parse(text, names) {
+    const segs = []; let buf = '', i = 0;
+    while (i < text.length) {
+      if (text[i] === '@') { const m = names.find(n => text.startsWith(n.k, i + 1));
+        if (m) { if (buf) { segs.push({ isText: true, isChip: false, t: buf }); buf = ''; } segs.push(this.chip(m.e)); i += 1 + m.k.length; continue; } }
+      buf += text[i]; i++;
+    }
+    if (buf) segs.push({ isText: true, isChip: false, t: buf });
+    return segs;
+  }
+  mentionsIn(s, names) { const seen = new Map(); s.notes.forEach(n => n.text && this.parse(n.text, names).forEach(g => { if (g.isChip && !seen.has(g.eid)) seen.set(g.eid, g); })); return [...seen.values()]; }
+  strip(t) { const s = t.replace(/@Квест: /g, '').replace(/@/g, ''); return s.length > 110 ? s.slice(0, 108) + '…' : s; }
+  num(n, sizes) {
+    const r = this.state.numbering === 'roman', label = r ? roman(n) : String(n), L = label.length;
+    const size = r ? (L <= 2 ? sizes[0] : L <= 3 ? sizes[1] : L <= 4 ? sizes[2] : L <= 5 ? sizes[3] : sizes[4]) : (L <= 2 ? sizes[0] : L <= 3 ? sizes[1] : sizes[2]);
+    return { numLabel: label, numSize: size + 'px' };
+  }
+  sessionDates(s) {
+    const days = [...new Set([s.start].concat(s.notes.map(n => n.day)))].sort();
+    const end = s.status === 'live' ? days[days.length - 1] : (s.end || days[days.length - 1]);
+    const meet = days.length;
+    return { date: fmtRange(s.start, end), days, meet, meetLabel: meet + ' ' + plural(meet, 'встреча', 'встречи', 'встреч') };
+  }
+  related(e, names) {
+    const out = [];
+    this.state.sessions.forEach(s => {
+      const hits = s.notes.filter(n => n.text && this.parse(n.text, names).some(g => g.eid === e.id));
+      if (hits.length) out.push({ ...this.num(s.num, [20, 18, 16, 14, 12]), title: s.title, date: this.sessionDates(s).date, snippet: this.strip(hits[0].text), count: hits.length + ' ' + plural(hits.length, 'упоминание', 'упоминания', 'упоминаний'), onClick: () => this.goSession(s.id) });
+    });
+    return out;
+  }
+
+  openSheet(type, id) {
+    clearTimeout(this._st);
+    if (this.state.sheet && this.state.sheetIn) { this.setState({ sheet: { type, id } }); if (this.sheetRef.current) this.sheetRef.current.scrollTop = 0; return; }
+    this.setState({ sheet: { type, id }, sheetIn: false });
+    requestAnimationFrame(() => requestAnimationFrame(() => this.setState({ sheetIn: true })));
+  }
+  closeSheet = () => { this.setState({ sheetIn: false }); clearTimeout(this._st); this._st = setTimeout(() => this.setState({ sheet: null }), 320); };
+  goSession(id) { this.closeSheet(); this.setState({ tab: 'sessions', openSession: id, draft: '' }); }
+  setStatus(id, status) { this.setState(s => ({ entities: s.entities.map(e => e.id === id ? { ...e, status } : e) })); }
+  showToast(text) { clearTimeout(this._tt); this.setState({ toast: text }); this._tt = setTimeout(() => this.setState({ toast: null }), 3200); }
+
+  newSession = () => {
+    const num = Math.max(...this.state.sessions.map(s => s.num)) + 1, t = todayISO();
+    const s = { id: 's' + num + '_' + Date.now(), num, title: 'Новая сессия', start: t, end: null, status: 'live', tags: [], notes: [] };
+    this.setState(st => ({ sessions: [s].concat(st.sessions.map(x => x.status === 'live' ? { ...x, status: 'done', end: this.sessionDates(x).days.slice(-1)[0] } : x)), openSession: s.id, draft: '' }));
+  };
+  endSession = () => { this.cancelRec(); const t = todayISO(); this.updSession(s => ({ ...s, status: 'done', end: t > this.sessionDates(s).days.slice(-1)[0] ? t : this.sessionDates(s).days.slice(-1)[0] })); this.showToast('Сессия завершена. Её можно возобновить.'); };
+  resumeSession = () => {
+    this.setState(st => ({ sessions: st.sessions.map(s => s.id === st.openSession ? { ...s, status: 'live', end: null } : s.status === 'live' ? { ...s, status: 'done', end: this.sessionDates(s).days.slice(-1)[0] } : s) }));
+    this.showToast('Сессия возобновлена — новые заметки продлят диапазон дат.');
+  };
+  updSession(fn) { this.setState(st => ({ sessions: st.sessions.map(s => s.id === st.openSession ? fn(s) : s) })); }
+  scrollFeed() { setTimeout(() => { const f = this.feedRef.current; if (f) f.scrollTop = f.scrollHeight; }, 60); }
+  addNote(note) { this.updSession(s => ({ ...s, notes: s.notes.concat(note) })); this.scrollFeed(); }
+  suggestions() {
+    const m = this.state.draft.match(MENTION_RE); if (!m) return null;
+    const q = m[1].toLowerCase().replace(/^квест:\s*/, '');
+    const list = this.state.entities.filter(e => { const n = e.name.toLowerCase(); return n.startsWith(q) || (q.length > 1 && n.includes(q)); }).slice(0, 5);
+    return list.length ? list : null;
+  }
+  pick(e) {
+    const d = this.state.draft.replace(MENTION_RE, () => '@' + (e.type === 'quest' ? 'Квест: ' : '') + e.name + ' ');
+    this.setState({ draft: d }, () => { const t = this.taRef.current; if (t) { t.focus(); t.setSelectionRange(d.length, d.length); } });
+  }
+  submit = () => { const text = this.state.draft.trim(); if (!text) return; this.addNote({ id: 'n' + Date.now(), day: todayISO(), time: nowHM(), text }); this.setState({ draft: '' }); };
+  startRec = () => {
+    clearInterval(this._rec);
+    this.setState({ rec: true, recStart: Date.now(), recNow: Date.now(), recWave: Array(22).fill(3) });
+    this._rec = setInterval(() => this.setState(s => ({ recNow: Date.now(), recWave: s.recWave.slice(1).concat(4 + Math.round(Math.random() * 22)) })), 110);
+  };
+  stopRec = () => { clearInterval(this._rec); const dur = Math.max(1, Math.round((Date.now() - this.state.recStart) / 1000)); this.setState({ rec: false }); this.addNote({ id: 'a' + Date.now(), kind: 'audio', day: todayISO(), time: nowHM(), dur }); };
+  cancelRec = () => { clearInterval(this._rec); if (this.state.rec) this.setState({ rec: false }); };
+  togglePlay(id) {
+    clearInterval(this._play);
+    if (this.state.play && this.state.play.id === id) { this.setState({ play: null }); return; }
+    this.setState({ play: { id, pos: 0 } });
+    this._play = setInterval(() => this.setState(s => { if (!s.play) return null; if (s.play.pos >= BARS) { clearInterval(this._play); return { play: null }; } return { play: { id: s.play.id, pos: s.play.pos + 1 } }; }), 160);
+  }
+
+  // ---------- combat ----------
+  emptySetup() { return { on: {}, enemies: [], addName: '', order: {}, inits: {}, temps: {} }; }
+  updSetup(fn) { this.setState(s => ({ setup: fn(s.setup) })); }
+  isOn(e) { const v = this.state.setup.on[e.id]; return v == null ? e.status === 'in' : v; }
+  addFoe(tpl) { this.updSetup(su => ({ ...su, enemies: su.enemies.concat({ uid: 'u' + Date.now() + Math.floor(Math.random() * 1e4), base: tpl.base, hp: tpl.hp || 10, ac: tpl.ac || 12, kind: tpl.kind || 'Противник', eid: tpl.eid || null }) })); }
+  setupNames(list) { const cnt = {}, idx = {}; list.forEach(x => cnt[x.base] = (cnt[x.base] || 0) + 1); return list.map(x => { idx[x.base] = (idx[x.base] || 0) + 1; return cnt[x.base] > 1 ? x.base + ' ' + roman(idx[x.base]) : x.base; }); }
+  setupParts() {
+    const su = this.state.setup, names = this.setupNames(su.enemies);
+    return this.state.entities.filter(e => e.type === 'party' && this.isOn(e)).map(e => ({ key: 'p:' + e.id, e, name: e.name, side: 'party' }))
+      .concat(su.enemies.map((x, i) => ({ key: 'e:' + x.uid, x, name: names[i], side: 'enemy' })));
+  }
+  startCombat = () => {
+    const su = this.state.setup, parts = this.setupParts(), ord = this.state.turnMode === 'order';
+    if (!su.enemies.length || parts.some(p => ord ? !su.order[p.key] : !su.inits[p.key])) return;
+    const list = parts.map(p => {
+      const pos = su.order[p.key], ini = parseInt(su.inits[p.key], 10) || 0;
+      const common = { sort: ord ? -pos : ini, badge: ord ? pos : ini, conds: [], note: '' };
+      if (p.side === 'party') { const e = p.e; return { id: 'p_' + e.id, pid: e.id, name: e.name, role: e.cls + (e.me ? ' · вы' : ''), side: 'party', stance: 'party', hp: e.hp, max: e.max, temp: su.temps[e.id] || 0, ac: e.ac, ...common }; }
+      const x = p.x; return { id: 'e_' + x.uid, eid: x.eid, base: x.base, name: p.name, role: x.kind, side: 'enemy', stance: 'enemy', hp: x.hp, max: x.hp, temp: 0, ac: x.ac, wound: 'fresh', ...common };
+    }).sort((a, b) => b.sort - a.sort);
+    const live = this.state.sessions.find(s => s.status === 'live') || this.state.sessions[0];
+    this.setState({ combat: { sessionId: live.id, start: Date.now(), round: 1, turn: 0, list, events: [] }, sel: list[0].id, panelTab: 'act', now: Date.now() });
+  };
+  hidden(c) { return c.side === 'enemy' && this.state.combatMode === 'hidden'; }
+  isDown(c) { return this.hidden(c) ? c.wound === 'down' : c.hp === 0; }
+  isOut(c) { return c.side === 'enemy' && (this.isDown(c) || c.stance === 'fled'); }
+  actor() { const cb = this.state.combat; return cb.list[cb.turn]; }
+  commit(list, evs, text, extra) {
+    const cb = this.state.combat, a = this.actor();
+    const events = cb.events.concat(evs.map(e => ({ id: 'ev' + (++this.evSeq), r: cb.round, a: a.id, an: a.name, ...e })));
+    this.setState({ combat: { ...cb, list, events }, ...(extra || {}) });
+    if (text) this.showToast(text);
+  }
+  who(t) { const a = this.actor(); return a.id === t.id ? t.name : a.name + ' → ' + t.name; }
+  patch(c, p) { return this.state.combat.list.map(x => x.id === c.id ? { ...x, ...p } : x); }
+  hit(c, mode, v) {
+    const taken = this.state.combat.events.filter(e => e.type === 'dmg' && e.t === c.id).reduce((a, e) => a + e.v, 0);
+    if (this.hidden(c)) return mode === 'dmg' ? { eff: v, line: c.name + ': получил ' + taken + ' → ' + (taken + v) } : mode === 'heal' ? { eff: v, line: c.name + ': лечение ' + v } : { eff: 0, line: c.name + ': врем. HP не отслеживаются' };
+    const T = c.temp || 0, tl = t => t ? ' (+' + t + ')' : '';
+    if (mode === 'dmg') { const ab = Math.min(T, v), hp = Math.max(0, c.hp - (v - ab)); return { eff: ab + (c.hp - hp), hp, temp: T - ab, line: c.name + ': ' + c.hp + tl(T) + ' → ' + hp + tl(T - ab) + ' HP' }; }
+    if (mode === 'heal') { const hp = Math.min(c.max, c.hp + v); return { eff: hp - c.hp, hp, temp: T, line: c.name + ': ' + c.hp + ' → ' + hp + ' HP' }; }
+    const t2 = Math.max(T, v); return { eff: t2 - T, hp: c.hp, temp: t2, line: c.name + ': врем. ' + T + ' → ' + t2 + (v <= T && T ? ' (не складываются)' : '') };
+  }
+  padValue(p) { const sum = (p.expr || '').split('+').filter(Boolean).reduce((a, t) => a + parseInt(t, 10), 0); return Math.floor(sum * (p.mult || 1)); }
+  openPad(p) { this.setState({ pad: { expr: '', mult: 1, ...p } }); this.openSheet('pad', null); }
+  padClose = () => { const p = this.state.pad; if (p && p.returnTo) this.setState({ sheet: { type: p.returnTo, id: null } }); else this.closeSheet(); };
+  padKey(k) {
+    this.setState(s => { const p = { ...s.pad }; let e = p.expr || '';
+      if (/^\d$/.test(k)) { const last = e.split('+').pop(); if (last.length < 3) e += k; }
+      else if (k === '+') { if (e && !e.endsWith('+')) e += '+'; }
+      else if (k === '⌫') e = e.slice(0, -1);
+      else if (k === 'C') { e = ''; p.mult = 1; }
+      else if (k === '½') p.mult = p.mult === 0.5 ? 1 : 0.5;
+      else if (k === '×2') p.mult = p.mult === 2 ? 1 : 2;
+      p.expr = e; return { pad: p }; });
+  }
+  applyPad = () => {
+    const p = this.state.pad; if (!p || !p.expr) return; const v = this.padValue(p); if (!v && p.purpose === 'combat') return;
+    if (p.purpose === 'combat') {
+      const cb = this.state.combat, tg = cb.list.filter(c => p.targets.includes(c.id)); if (!tg.length) return;
+      let list = cb.list; const evs = [];
+      tg.forEach(c => { const r = this.hit(c, p.mode, v);
+        if (!this.hidden(c)) list = list.map(x => x.id === c.id ? { ...x, hp: r.hp, temp: r.temp } : x);
+        if (p.mode === 'dmg') { evs.push({ type: 'dmg', t: c.id, tn: c.name, v: r.eff }); if (!this.hidden(c) && r.hp === 0 && c.hp > 0) evs.push({ type: 'down', t: c.id, tn: c.name, party: c.side === 'party' }); }
+        else if (p.mode === 'heal') evs.push({ type: 'heal', t: c.id, tn: c.name, v: r.eff });
+        else if (r.eff) evs.push({ type: 'temp', t: c.id, tn: c.name, v }); });
+      const a = this.actor(), what = p.mode === 'dmg' ? v + ' урона' : p.mode === 'heal' ? '+' + v + ' HP' : v + ' врем. HP';
+      const txt = tg.length > 1 ? a.name + ' → ' + tg.length + ' ' + plural(tg.length, 'цель', 'цели', 'целей') + ': по ' + what : this.who(tg[0]) + ': ' + what + (evs.some(e => e.type === 'down') ? (tg[0].side === 'party' ? ' · без сознания' : ' · повержен') : '');
+      this.commit(list, evs, txt); this.closeSheet(); return;
+    }
+    if (p.purpose === 'init') { this.updSetup(su => ({ ...su, inits: { ...su.inits, [p.key]: String(v) } })); this.closeSheet(); return; }
+    if (p.purpose === 'setupHp') {
+      if (p.mode === 'temp') this.updSetup(su => ({ ...su, temps: { ...su.temps, [p.key]: v } }));
+      else this.setState(s => ({ entities: s.entities.map(e => e.id === p.key ? { ...e, hp: Math.max(0, Math.min(e.max, v)) } : e) }));
+      this.closeSheet(); return;
+    }
+    if (p.purpose === 'form') this.setState(s => ({ form: { ...s.form, [p.key]: Math.max(p.min ?? 0, Math.min(p.max ?? 999, v)) }, sheet: { type: 'new', id: null } }));
+  };
+  setWound(c, k) {
+    if (c.wound === k) return; const w = WOUNDS.find(x => x.k === k);
+    const evs = [{ type: 'wound', t: c.id, tn: c.name, v: w.long }]; if (k === 'down') evs.push({ type: 'down', t: c.id, tn: c.name });
+    this.commit(this.patch(c, { wound: k }), evs, c.name + ': ' + w.long.toLowerCase() + (k === 'down' ? ' · добил ' + this.actor().name : ''));
+  }
+  setStance(c, k) {
+    if (c.stance === k) return; const lbl = STANCE[k].label; let extra = null, txt = c.name + ': ' + lbl.toLowerCase();
+    if (c.eid && (k === 'neutral' || k === 'friend' || k === 'enemy')) { extra = { entities: this.state.entities.map(e => e.id === c.eid ? { ...e, status: k } : e) }; txt += ' · кодекс обновлён'; }
+    this.commit(this.patch(c, { stance: k }), [{ type: 'stance', t: c.id, tn: c.name, v: lbl }], txt, extra);
+  }
+  toggleCond(c, k) { const on = c.conds.includes(k); this.commit(this.patch(c, { conds: on ? c.conds.filter(x => x !== k) : c.conds.concat(k) }), [{ type: 'cond', t: c.id, tn: c.name, v: (on ? '− ' : '+ ') + k }], null); }
+  removeSel = () => {
+    const cb = this.state.combat, i = cb.list.findIndex(x => x.id === this.state.sel); if (i < 0) return;
+    const list = cb.list.filter((_, j) => j !== i); if (!list.length) return;
+    let turn = cb.turn; if (i < turn) turn--; if (turn >= list.length) turn = 0;
+    this.setState({ combat: { ...cb, list, turn }, sel: null }); this.showToast(cb.list[i].name + ' убран из боя');
+  };
+  addReinf = () => {
+    const name = this.state.reinfName.trim(), cb = this.state.combat; if (!name || !cb) return;
+    const tpl = MONSTERS.find(m => m.base.toLowerCase() === name.toLowerCase()) || { base: name, hp: 10, ac: 12 };
+    const minS = Math.min(...cb.list.map(c => c.sort)), maxB = Math.max(...cb.list.map(c => +c.badge || 0));
+    const ord = this.state.turnMode === 'order';
+    const c = { id: 'e_r' + Date.now(), base: tpl.base, name: tpl.base, role: 'Подкрепление', side: 'enemy', stance: 'enemy', sort: minS - 1, badge: ord ? maxB + 1 : '—', hp: tpl.hp, max: tpl.hp, temp: 0, ac: tpl.ac, wound: 'fresh', conds: [], note: '' };
+    this.setState({ combat: { ...cb, list: cb.list.concat(c) }, reinfName: '', sel: c.id }); this.showToast(c.name + ' вступает в бой последним в раунде');
+  };
+  nextTurn = () => {
+    const cb = this.state.combat, n = cb.list.length; let t = cb.turn, r = cb.round;
+    for (let i = 0; i < n; i++) { t = (t + 1) % n; if (t === 0) r++; if (!this.isOut(cb.list[t])) break; }
+    this.setState({ combat: { ...cb, turn: t, round: r }, sel: cb.list[t].id, panelTab: 'act' });
+  };
+  openNew = () => { this.setState({ form: { type: this.state.codexTab, name: '', race: '', faction: '', status: null, loc: null, desc: '', cls: '', lvl: 1, player: '', me: false, max: 10, ac: 12, initB: 0, giver: null, reward: '', kind: '', region: '' } }); this.openSheet('new', null); };
+  saveForm = () => {
+    const f = this.state.form; if (!f || !f.name.trim()) return;
+    const id = 'x' + Date.now(), t = f.type, name = f.name.trim();
+    let e = { id, type: t, name, desc: f.desc.trim() || '—' };
+    if (t === 'party') e = { ...e, cls: f.cls || 'Искатель приключений', race: f.race || '—', lvl: f.lvl, player: f.me ? 'вы' : (f.player || '—'), me: f.me, status: f.status || 'in', hp: f.max, max: f.max, ac: f.ac, initB: f.initB };
+    if (t === 'npc') e = { ...e, race: f.race || '—', faction: f.faction || 'Без фракции', status: f.status || 'neutral', loc: f.loc || null };
+    if (t === 'quest') e = { ...e, giver: f.giver, reward: f.reward || '—', loc: f.loc || null, status: f.status || 'active' };
+    if (t === 'location') e = { ...e, kind: f.kind || 'Место', region: f.region || '—' };
+    this.closeSheet();
+    this.setState(s => ({ entities: (f.me ? s.entities.map(x => x.type === 'party' ? { ...x, me: false, player: x.me ? '—' : x.player } : x) : s.entities).concat(e), codexTab: t, filter: 'all', query: '' }));
+    this.showToast('«' + name + '» добавлен в кодекс');
+  };
+  autoOutcome() {
+    const cb = this.state.combat, foes = cb.list.filter(c => c.side === 'enemy'), hostile = foes.filter(c => c.stance === 'enemy' && !this.isDown(c));
+    if (hostile.length) return 'stop';
+    return foes.some(c => c.stance === 'neutral' || c.stance === 'friend') && !foes.some(c => this.isDown(c)) ? 'peace' : 'win';
+  }
+  openEnd = () => { this.setState({ endOutcome: this.autoOutcome() }); this.openSheet('end', null); };
+  summary(cb, outcome) {
+    const sum = (f) => cb.events.filter(f).reduce((a, e) => a + e.v, 0);
+    const lastDown = id => { const d = cb.events.filter(e => e.type === 'down' && e.t === id).pop(); return d && d.a !== id ? d.an : null; };
+    const ordered = cb.list.filter(c => c.side === 'party').concat(cb.list.filter(c => c.side === 'enemy'));
+    const rows = ordered.map(c => {
+      let result;
+      if (c.side === 'party') result = c.hp > 0 ? c.hp + '/' + c.max + ' HP' : 'Без сознания';
+      else if (c.stance === 'fled') result = 'Сбежал';
+      else if (c.stance === 'neutral') result = 'Сдался · нейтрал';
+      else if (c.stance === 'friend') result = 'Перешёл на нашу сторону';
+      else if (this.isDown(c)) { const k = lastDown(c.id); result = 'Повержен' + (k ? ' · добил ' + k : ''); }
+      else result = this.hidden(c) ? WOUNDS.find(w => w.k === c.wound).long : c.hp + '/' + c.max + ' HP';
+      return { name: c.name, side: c.side, stance: c.stance, dealt: sum(e => e.type === 'dmg' && e.a === c.id), taken: sum(e => e.type === 'dmg' && e.t === c.id), result };
+    });
+    const top = rows.filter(r => r.side === 'party').sort((a, b) => b.dealt - a.dealt)[0];
+    const killers = [...new Set(cb.events.filter(e => e.type === 'down' && !e.party && e.a !== e.t).map(e => e.an))];
+    const hits = cb.events.filter(e => e.type === 'hit').length, misses = cb.events.filter(e => e.type === 'miss').length;
+    const highlights = [top && top.dealt ? 'Больше всего урона: ' + top.name + ' · ' + top.dealt : '', killers.length ? 'Добивания: ' + killers.join(', ') : '', ''].filter(Boolean);
+    const txt = e => { const w = e.a === e.t ? e.tn : e.an + ' → ' + e.tn;
+      return e.type === 'dmg' ? w + ': ' + e.v + ' урона' : e.type === 'heal' ? w + ': +' + e.v + ' HP' : e.type === 'down' ? e.tn + (e.party ? ': без сознания' : ': повержен' + (e.a !== e.t ? ' (' + e.an + ')' : '')) :
+        e.type === 'temp' ? w + ': ' + e.v + ' врем. HP' : e.tn + ': ' + e.v; };
+    const log = cb.events.filter(e => e.type !== 'cond').map(e => ({ r: e.r, t: txt(e) }));
+    const foes = cb.list.filter(c => c.side === 'enemy'), named = foes.find(c => c.eid);
+    const grp = {}; foes.forEach(c => grp[c.base] = (grp[c.base] || 0) + 1);
+    const title = named ? 'Бой с ' + named.base : 'Бой: ' + Object.keys(grp).slice(0, 2).map(k => grp[k] > 1 ? k + ' ×' + grp[k] : k).join(', ');
+    const mins = Math.max(1, Math.round((this.state.now - cb.start) / 60000));
+    return { title, outcome, meta: cb.round + ' ' + plural(cb.round, 'раунд', 'раунда', 'раундов') + ' · ' + mins + ' мин', rows, highlights, log };
+  }
+  saveCombat = () => {
+    const cb = this.state.combat; if (!cb) return;
+    const note = { id: 'cb' + Date.now(), kind: 'combat', day: todayISO(), time: nowHM(), cb: this.summary(cb, this.state.endOutcome) };
+    const ents = this.state.entities.map(e => { const p = cb.list.find(c => c.pid === e.id); return p ? { ...e, hp: p.hp } : e; });
+    this.closeSheet();
+    this.setState(s => ({ entities: ents, sessions: s.sessions.map(x => x.id === cb.sessionId ? { ...x, notes: x.notes.concat(note) } : x), combat: null, setup: this.emptySetup(), sel: null, tab: 'sessions', openSession: cb.sessionId }));
+    this.showToast('Итоги боя сохранены в сессию, хиты отряда — в кодекс'); this.scrollFeed();
+  };
+  viewSummary(cb, id) {
+    const o = OUT[cb.outcome];
+    return { title: cb.title, metaUpper: cb.meta.toUpperCase(), oLabel: o.label, oFg: o.fg, oBg: o.bg, oBd: o.bd,
+      rows: cb.rows.map((w, i) => { const firstFoe = w.side === 'enemy' && (i === 0 || cb.rows[i - 1].side !== 'enemy');
+        const st = w.stance && STANCE[w.stance];
+        return { name: w.name, dealt: w.dealt || '—', taken: w.taken || '—', result: w.result, dot: w.side === 'party' ? '#8CB8EC' : st ? st.dot : '#C0443F',
+          resC: /Повержен|Без сознания/.test(w.result) ? '#F08A8A' : /Сбежал/.test(w.result) ? '#A7B0C0' : /Сдался|сторону/.test(w.result) ? '#8CB8EC' : '#8A93A6', bt: firstFoe ? '#3A3D4B' : '#23252F' }; }),
+      highlights: cb.highlights.map(t => ({ t })), log: cb.log };
+  }
+
+  renderVals() {
+    const st = this.state, names = this.names();
+    const tab = st.tab, cur0 = st.sessions.find(s => s.id === st.openSession);
+    const nav = k => ({ fg: tab === k ? '#E2C044' : '#6B7385', bar: tab === k ? '#D4AF37' : 'transparent', onClick: () => { if (k === 'sessions' && tab === 'sessions') this.setState({ openSession: null }); this.setState({ tab: k }); } });
+    const noteCount = n => n + ' ' + plural(n, 'заметка', 'заметки', 'заметок');
+    const seg = (opts, curV, key) => opts.map(([v, label]) => ({ label, bg: curV === v ? '#2A2C37' : 'transparent', fg: curV === v ? '#E2C044' : '#8A93A6', onClick: () => this.setState({ [key]: v }) }));
+
+    const liveS = st.sessions.find(s => s.status === 'live');
+    const live = liveS && (() => {
+      const m = this.mentionsIn(liveS, names), last = liveS.notes[liveS.notes.length - 1], d = this.sessionDates(liveS);
+      return { ...this.num(liveS.num, [46, 40, 34, 28, 24]), sub: 'Сессия ' + liveS.num + (d.meet > 1 ? ' · встреча ' + d.meet : ''), title: liveS.title, date: d.date, mentions: m.slice(0, 5), hasMentions: m.length > 0,
+        meta: liveS.notes.length ? noteCount(liveS.notes.length) + ' · последняя в ' + last.time : 'Пока без заметок', onClick: () => this.setState({ openSession: liveS.id }) };
+    })();
+    const archive = st.sessions.filter(s => s !== liveS).sort((a, b) => b.num - a.num).map(s => {
+      const m = this.mentionsIn(s, names), d = this.sessionDates(s);
+      return { ...this.num(s.num, [24, 21, 18, 15, 13]), title: s.title, meta: d.date + ' · ' + noteCount(s.notes.length), multiDay: d.meet > 1, daysLabel: d.meetLabel, tags: s.tags.map(label => ({ label })),
+        hasMentions: m.length > 0, mentionLabel: '@ ' + m.length, onClick: () => this.setState({ openSession: s.id }) };
+    });
+
+    let cur = {};
+    if (cur0) {
+      const m = this.mentionsIn(cur0, names), d = this.sessionDates(cur0), multi = d.meet > 1;
+      const feed = []; let lastDay = null;
+      cur0.notes.forEach(n => {
+        if (multi && n.day !== lastDay) { feed.push({ isSep: true, isNote: false, sepLabel: 'ВСТРЕЧА ' + (d.days.indexOf(n.day) + 1) + ' · ' + fmtDM(n.day).toUpperCase() }); lastDay = n.day; }
+        const kind = n.kind || 'text', playing = !!(st.play && st.play.id === n.id), exp = !!st.expanded[n.id];
+        feed.push({ isSep: false, isNote: true, time: n.time, isText: kind === 'text', isAudio: kind === 'audio', isCombat: kind === 'combat',
+          segs: kind === 'text' ? this.parse(n.text, names) : [], playing, paused: !playing,
+          dur: kind === 'audio' ? (playing ? fmtDur(Math.round((st.play.pos / BARS) * n.dur)) : fmtDur(n.dur)) : '',
+          bars: kind === 'audio' ? seedBars(n.id).map((h, i) => ({ h: h + 'px', c: playing ? (i < st.play.pos ? '#E2C044' : '#4A4D5C') : '#6B6F80' })) : [],
+          onPlay: () => this.togglePlay(n.id),
+          cb: kind === 'combat' ? this.viewSummary(n.cb, n.id) : {}, expanded: exp, toggleLabel: exp ? 'Свернуть ход боя ▴' : 'Ход боя по раундам ▾',
+          onToggle: () => this.setState(s => ({ expanded: { ...s.expanded, [n.id]: !s.expanded[n.id] } })) });
+      });
+      cur = { overline: 'СЕССИЯ ' + this.num(cur0.num, [0, 0, 0, 0, 0]).numLabel, dateLine: d.date + (multi ? ' · ' + d.meetLabel : ''),
+        title: cur0.title, isLive: cur0.status === 'live', isDone: cur0.status !== 'live', mentions: m, hasMentions: m.length > 0, empty: !cur0.notes.length, feed };
+    }
+    const sugg = cur0 && !st.rec ? this.suggestions() : null;
+
+    const q = st.query.trim().toLowerCase();
+    const matchQ = e => !q || [e.name, e.race, e.faction, e.cls, e.player, e.reward, e.kind, e.region, e.giver && this.ent(e.giver).name].filter(Boolean).join(' ').toLowerCase().includes(q);
+    const base = st.entities.filter(e => e.type === st.codexTab && matchQ(e));
+    const shown = base.filter(e => st.filter === 'all' || e.status === st.filter);
+    const filters = SETS[st.codexTab] ? [{ key: 'all', label: 'Все' }].concat(SETS[st.codexTab].map(k => ({ key: k, label: ST[k].label }))).map(f => {
+      const a = st.filter === f.key, sc = f.key === 'all' ? null : ST[f.key];
+      return { label: f.label, count: f.key === 'all' ? base.length : base.filter(e => e.status === f.key).length,
+        fg: a ? '#121318' : '#C9D0DC', bg: a ? '#D4AF37' : '#1A1B23', bd: a ? '#D4AF37' : '#2C2F3A', dot: a ? '#121318' : (sc ? sc.fg : 'transparent'), dotDisp: sc ? 'block' : 'none', onClick: () => this.setState({ filter: f.key }) };
+    }) : [];
+    const codexTabs = [['party', 'Отряд'], ['npc', 'NPC'], ['quest', 'Квесты'], ['location', 'Места']].map(([k, label]) => ({ label, count: st.entities.filter(e => e.type === k).length,
+      bg: st.codexTab === k ? '#2A2C37' : 'transparent', fg: st.codexTab === k ? '#E2C044' : '#8A93A6', onClick: () => this.setState({ codexTab: k, filter: 'all' }) }));
+    const open = e => () => this.openSheet(e.type, e.id);
+    const npcItems = st.codexTab === 'npc' ? shown.map(e => {
+      const s = ST[e.status], rel = this.related(e, names).length;
+      return { name: e.name, sub: e.race + ' · ' + e.faction, badge: s.label, fg: s.fg, bg: s.bg, bd: s.bd, ring: s.bd, initial: e.name[0], deco: e.status === 'dead' ? 'line-through' : 'none',
+        meta: rel ? 'Упоминается в ' + rel + ' ' + plural(rel, 'сессии', 'сессиях', 'сессиях') : 'Ещё не упоминался', onClick: open(e) };
+    }) : st.codexTab === 'party' ? shown.map(e => {
+      const s = ST[e.status];
+      return { name: e.name + (e.me ? ' · вы' : ''), sub: e.cls + ' ' + e.lvl + ' ур. · ' + e.race, badge: s.label, fg: s.fg, bg: s.bg, bd: s.bd, ring: PARTY_C.bd, initial: e.name[0], deco: 'none',
+        meta: (e.me ? 'Ваш персонаж' : 'Игрок: ' + e.player) + ' · КД ' + e.ac + ' · ' + e.hp + '/' + e.max + ' HP', onClick: open(e) };
+    }) : [];
+    const questItems = st.codexTab !== 'quest' ? [] : shown.map(e => {
+      const s = ST[e.status], g = this.ent(e.giver);
+      return { name: e.name, badge: s.label, fg: s.fg, bg: s.bg, bd: s.bd, reward: e.reward, giver: g.name, giverFg: ST[g.status].fg, giverDeco: g.status === 'dead' ? 'line-through' : 'none',
+        openGiver: ev => { ev.stopPropagation(); this.openSheet('npc', g.id); }, onClick: open(e) };
+    });
+    const locItems = st.codexTab !== 'location' ? [] : shown.map(e => {
+      const here = st.entities.filter(x => x.type === 'npc' && x.loc === e.id).map(x => x.name), rel = this.related(e, names).length;
+      return { name: e.name, sub: e.kind + ' · ' + e.region, meta: [here.length ? 'Здесь: ' + here.join(', ') : '', rel ? rel + ' ' + plural(rel, 'сессия', 'сессии', 'сессий') : ''].filter(Boolean).join(' · ') || 'Нет связей', onClick: open(e) };
+    });
+
+    let sh = {};
+    const isEntitySheet = !!(st.sheet && ['end', 'pad', 'new'].indexOf(st.sheet.type) < 0);
+    if (isEntitySheet) {
+      const e = this.ent(st.sheet.id), c = this.colors(e), rel = this.related(e, names);
+      const fact = (k, v) => ({ k, v, isText: true, isLink: false, link: {} });
+      const link = (k, x) => ({ k, v: '', isText: false, isLink: true, link: this.chip(x) });
+      sh = { title: e.name, fg: c.fg, ring: c.bd, deco: e.status === 'dead' ? 'line-through' : 'none', desc: e.desc, related: rel, relCount: rel.length, relEmpty: !rel.length,
+        hasStatus: !!SETS[e.type], statusOpts: (SETS[e.type] || []).map(k => { const s = ST[k], a = e.status === k; return { label: s.label, fg: a ? s.fg : '#8A93A6', bg: a ? s.bg : 'transparent', bd: a ? s.bd : 'transparent', onClick: () => this.setStatus(e.id, k) }; }) };
+      if (e.type === 'party') Object.assign(sh, { overline: 'ОТРЯД · ' + e.cls.toUpperCase() + (e.me ? ' · ВЫ' : ''), sub: e.race + ' · ' + e.lvl + ' уровень', emblem: e.name[0], emblemRad: '50%', emblemSize: '26px',
+        facts: [fact('Игрок', e.me ? 'Вы' : e.player), fact('Класс', e.cls + ', ' + e.lvl + ' ур.'), fact('КД', String(e.ac)), fact('Хиты', e.hp + ' / ' + e.max + ' · после последнего боя')], groups: [] });
+      else if (e.type === 'npc') { const qs = st.entities.filter(x => x.type === 'quest' && x.giver === e.id);
+        Object.assign(sh, { overline: 'NPC · ' + ST[e.status].label.toUpperCase(), sub: e.race + ' · ' + e.faction, emblem: e.name[0], emblemRad: '50%', emblemSize: '26px',
+          facts: [fact('Раса', e.race), fact('Фракция', e.faction), link('Где встретить', this.ent(e.loc))], groups: qs.length ? [{ title: 'ВЫДАЛ КВЕСТЫ', items: qs.map(x => this.chip(x)) }] : [] }); }
+      else if (e.type === 'quest') Object.assign(sh, { overline: 'КВЕСТ · ' + ST[e.status].label.toUpperCase(), sub: e.reward, emblem: '◆', emblemRad: '14px', emblemSize: '18px',
+        facts: [link('Кто дал', this.ent(e.giver)), fact('Награда', e.reward), link('Где', this.ent(e.loc))], groups: [] });
+      else { const npcs = st.entities.filter(x => x.type === 'npc' && x.loc === e.id), qs = st.entities.filter(x => x.type === 'quest' && x.loc === e.id);
+        Object.assign(sh, { overline: 'ЛОКАЦИЯ · ' + e.kind.toUpperCase(), sub: e.region, emblem: '▲', emblemRad: '14px', emblemSize: '16px', facts: [fact('Тип', e.kind), fact('Регион', e.region)],
+          groups: [npcs.length && { title: 'КТО ЗДЕСЬ', items: npcs.map(x => this.chip(x)) }, qs.length && { title: 'КВЕСТЫ', items: qs.map(x => this.chip(x)) }].filter(Boolean) }); }
+    }
+
+    // combat
+    const cb = st.combat, su = st.setup, liveTarget = liveS || st.sessions[0], ord = st.turnMode === 'order';
+    const targetName = s => 'Сессия ' + this.num(s.num, [0, 0, 0, 0, 0]).numLabel + ' · ' + s.title;
+    const hpColor = c => c.hp === 0 ? '#4A4D5C' : c.hp / c.max > 0.5 ? '#3FA97C' : c.hp / c.max > 0.25 ? '#D4AF37' : '#C0443F';
+    let setupV = {}, act = {};
+    if (!cb) {
+      const partyAll = st.entities.filter(e => e.type === 'party'), onCount = partyAll.filter(e => this.isOn(e)).length, enNames = this.setupNames(su.enemies);
+      const mentioned = liveS ? this.mentionsIn(liveS, names).map(m => m.eid) : [];
+      const parts = this.setupParts(), missing = parts.filter(p => ord ? !su.order[p.key] : !su.inits[p.key]).length;
+      const ready = su.enemies.length && !missing;
+      const addCustom = () => { const n = this.state.setup.addName.trim(); if (!n) return; const t = MONSTERS.find(m => m.base.toLowerCase() === n.toLowerCase()); this.addFoe(t || { base: n }); this.updSetup(s => ({ ...s, addName: '' })); };
+      setupV = {
+        setupTarget: targetName(liveTarget), setupPartyCount: onCount + ' из ' + partyAll.length,
+        setupParty: partyAll.map(e => { const on = this.isOn(e), tmp = su.temps[e.id] || 0;
+          return { name: e.name + (e.me ? ' · вы' : ''), sub: e.cls + ' · ' + (on ? 'в бою' : ST[e.status].label.toLowerCase()), hpLabel: e.hp + '/' + e.max, tempLabel: tmp ? '+' + tmp + ' врем.' : 'HP',
+            bd: on ? 'rgba(110,160,230,0.45)' : '#262833', op: on ? 1 : 0.55, boxBd: on ? '#8CB8EC' : '#4A4D5C', boxBg: on ? '#8CB8EC' : 'transparent', check: on ? '✓' : '',
+            onToggle: () => this.updSetup(s => ({ ...s, on: { ...s.on, [e.id]: !on } })),
+            onHp: ev => { ev.stopPropagation(); this.openPad({ purpose: 'setupHp', mode: 'hp', key: e.id, name: e.name }); } }; }),
+        setupEnemyCount: String(su.enemies.length), noEnemies: !su.enemies.length,
+        setupEnemies: su.enemies.map((x, i) => ({ name: enNames[i], sub: st.combatMode === 'hidden' ? x.kind + ' · характеристики скрыты' : x.kind + ' · ' + x.hp + ' HP · КД ' + x.ac,
+          onRemove: () => this.updSetup(s => { const o = { ...s.order }, n = { ...s.inits }; delete o['e:' + x.uid]; delete n['e:' + x.uid]; return { ...s, enemies: s.enemies.filter(y => y.uid !== x.uid), order: o, inits: n }; }) })),
+        addName: su.addName, onAddName: ev => { const v = ev.target.value; this.updSetup(s => ({ ...s, addName: v })); },
+        onAddKey: ev => { if (ev.key === 'Enter') addCustom(); }, addCustom,
+        codexFoes: st.entities.filter(e => e.type === 'npc' && e.status === 'enemy').map(e => ({ name: e.name, hint: mentioned.includes(e.id) ? '· в заметках' : '', onClick: () => this.addFoe({ base: e.name, hp: e.hp || 30, ac: e.ac || 14, kind: 'NPC', eid: e.id }) })),
+        monsters: MONSTERS.map(m => ({ name: m.base, onClick: () => this.addFoe(m) })),
+        isOrderMode: ord, turnModeLabel: ord ? 'ПО СЛОВАМ МАСТЕРА' : 'ПО ИНИЦИАТИВЕ',
+        orderHint: ord ? 'Нажимайте участников в том порядке, как их называет мастер: первый нажатый ходит первым. Повторное нажатие снимает номер.' : 'Нажмите на поле, чтобы ввести результат броска. За своего персонажа можно бросить d20 прямо здесь.',
+        resetOrder: () => this.updSetup(s => ({ ...s, order: {} })),
+        turnRows: parts.map(p => {
+          const isP = p.side === 'party', pos = su.order[p.key], ini = su.inits[p.key], has = ord ? !!pos : !!ini;
+          const sub = isP ? p.e.cls + (ord ? '' : ' · бонус ' + (p.e.initB >= 0 ? '+' : '') + p.e.initB) : p.x.kind;
+          return { name: p.name + (isP && p.e.me ? ' · вы' : ''), sub, dot: isP ? '#8CB8EC' : '#C0443F', bd: has ? 'rgba(212,175,55,0.35)' : '#262833',
+            value: ord ? (pos || '') : (ini || '—'), rad: ord ? '50%' : '12px', bstyle: has ? 'solid' : 'dashed', ring: has ? '#D4AF37' : '#4A4D5C',
+            fill: ord && has ? '#D4AF37' : '#121318', fg: ord && has ? '#121318' : has ? '#E2E8F0' : '#6B7385',
+            canRoll: !ord && isP && !!p.e.me, rollLabel: 'd20 ' + (isP && p.e.initB >= 0 ? '+' : '') + (isP ? p.e.initB : ''),
+            onRoll: ev => { ev.stopPropagation(); const r = d20(), v = r + p.e.initB; this.updSetup(s => ({ ...s, inits: { ...s.inits, [p.key]: String(v) } })); this.showToast(p.name + ': на кубике ' + r + (p.e.initB ? (p.e.initB > 0 ? ' + ' : ' − ') + Math.abs(p.e.initB) : '') + ' = ' + v); },
+            onClick: () => {
+              if (!ord) { this.openPad({ purpose: 'init', key: p.key, name: p.name }); return; }
+              this.updSetup(s => { const o = { ...s.order }; if (o[p.key]) delete o[p.key]; else { const used = new Set(Object.values(o)); let n = 1; while (used.has(n)) n++; o[p.key] = n; } return { ...s, order: o }; });
+            } };
+        }),
+        startCombat: this.startCombat, startBg: ready ? '#D4AF37' : '#2A2C37', startFg: ready ? '#121318' : '#8A93A6',
+        startLabel: !su.enemies.length ? 'Добавьте противника' : missing ? (ord ? 'Назначьте очередь: осталось ' : 'Введите инициативу: осталось ') + missing : 'В бой · ' + parts.length + ' ' + plural(parts.length, 'участник', 'участника', 'участников'),
+      };
+    } else {
+      const curF = cb.list[cb.turn] || cb.list[0];
+      const taken = id => cb.events.filter(e => e.type === 'dmg' && e.t === id).reduce((a, e) => a + e.v, 0);
+      const hostile = cb.list.filter(c => c.side === 'enemy' && c.stance === 'enemy' && !this.isDown(c)).length;
+      const rows = cb.list.map(c => {
+        const isCur = c.id === curF.id, isSel = c.id === st.sel, down = this.isDown(c), hid = this.hidden(c), w = WOUNDS.find(x => x.k === (c.wound || 'fresh'));
+        const stc = c.side === 'enemy' ? STANCE[c.stance] : null, tk = taken(c.id);
+        const conds = (down ? [{ label: c.side === 'enemy' ? 'Повержен' : 'Без сознания', fg: '#A7B0C0', bg: '#2A2C37' }] : [])
+          .concat(stc && c.stance !== 'enemy' ? [{ label: stc.label, fg: stc.fg, bg: stc.bg }] : [])
+          .concat(c.conds.map(label => ({ label, ...condGroup(label).chip })));
+        return { name: c.name, role: c.role, init: c.badge, hp: c.hp, max: c.max, temp: c.temp || 0, hasTemp: !hid && !!c.temp, pct: (c.hp / c.max) * 100 + '%', hpC: hpColor(c), hpTextC: down ? '#6B7385' : '#E2E8F0',
+          showHp: !hid, showWound: hid, woundLabel: w.label, woundC: w.c, pips: [0, 1, 2, 3].map(i => ({ c: i < w.pips ? w.c : '#2A2C37' })),
+          acLabel: hid ? (tk ? 'получил ' + tk : '') : 'КД ' + c.ac, conds, hasConds: conds.length > 0,
+          sideC: c.side === 'party' ? '#8CB8EC' : stc.dot, bg: isSel ? '#22242E' : '#17181F', bd: isCur ? 'rgba(212,175,55,0.7)' : isSel ? '#3A3D4B' : '#23252F',
+          op: down || c.stance === 'fled' ? 0.5 : 1, initBg: isCur ? '#D4AF37' : '#23252F', initFg: isCur ? '#121318' : '#C9D0DC',
+          onClick: () => this.setState({ sel: st.sel === c.id ? null : c.id }) };
+      });
+      const sc = cb.list.find(c => c.id === st.sel);
+      let sel = {};
+      if (sc) {
+        const hid = this.hidden(sc), w = WOUNDS.find(x => x.k === (sc.wound || 'fresh'));
+        const cbtn = (mode, label, fg, bg, bd) => ({ label, fg, bg, bd, onClick: () => this.openPad({ purpose: 'combat', mode, targets: [sc.id] }) });
+        sel = { name: sc.name, hp: sc.hp, max: sc.max, hpC: sc.hp === 0 ? '#6B7385' : hpColor(sc), showHp: !hid, showWound: hid, isEnemy: sc.side === 'enemy',
+          hpSub: 'хиты · КД ' + sc.ac + (sc.temp ? ' · +' + sc.temp + ' врем.' : ''), woundLong: w.long, woundC: w.c, acLabel: taken(sc.id) ? 'получил ' + taken(sc.id) : 'урон не записан',
+          sideLabel: (sc.side === 'party' ? 'ОТРЯД · ' : STANCE[sc.stance].label.toUpperCase() + ' · ') + sc.role.toUpperCase(), sideC: sc.side === 'party' ? '#8CB8EC' : STANCE[sc.stance].fg,
+          note: sc.note, notePh: sc.side === 'enemy' ? 'Что заметили: уязвимости, сопротивления, тактика…' : 'Ресурсы, заклинания, заметки…',
+          onNote: ev => { const v = ev.target.value; this.setState(s => ({ combat: { ...s.combat, list: s.combat.list.map(c => c.id === sc.id ? { ...c, note: v } : c) } })); },
+          woundOpts: WOUNDS.map(o => { const a = o.k === w.k; return { label: o.label, fg: a ? o.c : '#8A93A6', bg: a ? '#22242E' : 'transparent', bd: a ? o.c : 'transparent', onClick: () => this.setWound(sc, o.k) }; }),
+          calcBtns: [cbtn('dmg', 'Урон', '#F08A8A', 'rgba(155,44,44,0.18)', 'rgba(155,44,44,0.6)'), cbtn('heal', 'Лечение', '#6FCF97', 'rgba(63,169,124,0.12)', 'rgba(63,169,124,0.45)')]
+            .concat(hid ? [] : [cbtn('temp', 'Врем. HP', '#8CB8EC', 'rgba(110,160,230,0.12)', 'rgba(110,160,230,0.45)')]),
+          stanceOpts: ['enemy', 'neutral', 'friend', 'fled'].map(k => { const s = STANCE[k], a = sc.stance === k; return { label: s.label, fg: a ? s.fg : '#8A93A6', bg: a ? s.bg : 'transparent', bd: a ? s.bd : 'transparent', onClick: () => this.setStance(sc, k) }; }),
+          stanceHint: sc.eid ? 'Связан с кодексом — статус NPC обновится автоматически' : 'Нейтралы и друзья не считаются врагами в строю',
+          condGroups: COND_GROUPS.map(g => ({ title: g.title, fg: g.fg, items: g.items.map(k => { const on = sc.conds.includes(k);
+            return { label: k, fg: on ? g.on.fg : '#8A93A6', bg: on ? g.on.bg : 'transparent', bd: on ? g.on.bd : '#2C2F3A', onClick: () => this.toggleCond(sc, k) }; }) })) };
+      }
+      act = { timer: fmtDur(Math.floor((st.now - cb.start) / 1000)), round: cb.round, currentName: curF.name, rows, hasSel: !!sc, sel,
+        hostileLabel: hostile ? 'врагов в строю: ' + hostile : 'врагов нет', allClear: hostile === 0,
+        panelTabs: [['act', 'Действия'], ['cond', 'Состояния'], ['more', 'Ещё']].map(([k, label]) => ({ label, bg: st.panelTab === k ? '#2A2C37' : 'transparent', fg: st.panelTab === k ? '#E2C044' : '#8A93A6', onClick: () => this.setState({ panelTab: k }) })),
+        isTabAct: st.panelTab === 'act', isTabCond: st.panelTab === 'cond', isTabMore: st.panelTab === 'more', removeSel: this.removeSel,
+        reinfName: st.reinfName, onReinf: ev => this.setState({ reinfName: ev.target.value }), onReinfKey: ev => { if (ev.key === 'Enter') this.addReinf(); }, addReinf: this.addReinf,
+        nextTurn: this.nextTurn, openEnd: this.openEnd };
+    }
+    const isEndSheet = !!(st.sheet && st.sheet.type === 'end' && cb);
+    let endV = {};
+    if (isEndSheet) {
+      const auto = this.autoOutcome(), s = this.summary(cb, st.endOutcome), v = this.viewSummary(s);
+      endV = { ...v, target: targetName(st.sessions.find(x => x.id === cb.sessionId)), autoHint: 'предложено: ' + OUT[auto].label.toLowerCase(),
+        outcomes: Object.keys(OUT).map(k => { const o = OUT[k], a = st.endOutcome === k; return { label: o.label, fg: a ? o.fg : '#8A93A6', bg: a ? o.bg : 'transparent', bd: a ? o.bd : 'transparent', onClick: () => this.setState({ endOutcome: k }) }; }) };
+    }
+    const isPadSheet = !!(st.sheet && st.sheet.type === 'pad' && st.pad && (st.pad.purpose !== 'combat' || cb));
+    let pad = {};
+    if (isPadSheet) {
+      const p = st.pad, val = this.padValue(p), terms = (p.expr || '').split('+').filter(Boolean);
+      const ACC = { dmg: ['#F08A8A', 'rgba(155,44,44,0.6)', '#9B2C2C', '#FFFFFF'], heal: ['#6FCF97', 'rgba(63,169,124,0.5)', '#3FA97C', '#0E1A14'], temp: ['#8CB8EC', 'rgba(110,160,230,0.5)', '#8CB8EC', '#10151D'], hp: ['#E2C044', 'rgba(212,175,55,0.5)', '#D4AF37', '#121318'] };
+      const ac = ACC[p.purpose === 'combat' || p.purpose === 'setupHp' ? p.mode : 'hp'];
+      const K = (label, fn, o) => ({ label, span: 1, fg: '#E2E8F0', bg: '#22242E', bd: '#2C2F3A', onClick: fn || (() => this.padKey(label)), ...(o || {}) });
+      const op = { fg: '#E2C044', bg: '#1A1B23', bd: '#343746' }, blank = K('', () => {}, { bg: 'transparent', bd: 'transparent' });
+      const multOn = m => p.mult === m ? { fg: '#FFFFFF', bg: ac[2], bd: ac[2] } : op;
+      const modeSeg = list => list.map(([k, l]) => { const on = p.mode === k, cc = ACC[k]; return { label: l, fg: on ? cc[0] : '#8A93A6', bg: on ? '#22242E' : 'transparent', bd: on ? cc[1] : 'transparent', onClick: () => this.setState(s => ({ pad: { ...s.pad, mode: k, mult: 1 } })) }; });
+      let keys, modes = [], hasTargets = false, targets = [], preview = [], title = '', overline = '', applyLabel = 'Готово';
+      if (p.purpose === 'combat') {
+        const tg = cb.list.filter(c => p.targets.includes(c.id)), a = cb.list[cb.turn];
+        overline = 'ХОД: ' + a.name.toUpperCase(); title = p.mode === 'dmg' ? 'Урон' : p.mode === 'heal' ? 'Лечение' : 'Временные хиты';
+        modes = modeSeg([['dmg', 'Урон'], ['heal', 'Лечение'], ['temp', 'Врем. HP']]); hasTargets = true;
+        targets = cb.list.map(c => { const on = p.targets.includes(c.id), pc = c.side === 'party' ? PARTY_C : ST.enemy;
+          return { label: (on ? '✓ ' : '') + c.name, fg: on ? pc.fg : '#8A93A6', bg: on ? pc.bg : 'transparent', bd: on ? pc.bd : '#2C2F3A',
+            onClick: () => this.setState(s => ({ pad: { ...s.pad, targets: on ? s.pad.targets.filter(x => x !== c.id) : s.pad.targets.concat(c.id) } })) }; });
+        preview = val ? tg.slice(0, 3).map(c => ({ t: this.hit(c, p.mode, val).line })).concat(tg.length > 3 ? [{ t: '…и ещё ' + (tg.length - 3) }] : []) : [{ t: tg.length ? 'Цели: ' + tg.map(c => c.name).join(', ') : 'Выберите цель' }];
+        keys = [K('7'), K('8'), K('9'), K('⌫', null, op), K('4'), K('5'), K('6'), K('+', null, op), K('1'), K('2'), K('3'),
+          p.mode === 'dmg' ? K('½', null, multOn(0.5)) : blank, K('C', null, op), K('0', null, { span: 2 }), p.mode === 'dmg' ? K('×2', null, multOn(2)) : blank];
+        const n = tg.length, what = p.mode === 'dmg' ? 'Нанести ' + val + ' урона' : p.mode === 'heal' ? 'Вылечить ' + val : 'Дать ' + val + ' врем. HP';
+        applyLabel = !n ? 'Выберите цель' : !val ? 'Введите число' : what + (n > 1 ? ' · ' + n + ' ' + plural(n, 'цели', 'целям', 'целям') : '');
+      } else {
+        keys = [K('7'), K('8'), K('9'), K('⌫', null, op), K('4'), K('5'), K('6'), K('C', null, op), K('1'), K('2'), K('3'), K('0')];
+        if (p.purpose === 'init') { overline = 'ИНИЦИАТИВА'; title = p.name; preview = [{ t: 'Результат броска d20 с модификатором' }]; }
+        if (p.purpose === 'setupHp') { const e = this.ent(p.key); overline = 'ПЕРЕД БОЕМ'; title = p.name; modes = modeSeg([['hp', 'Хиты'], ['temp', 'Врем. HP']]);
+          preview = [{ t: p.mode === 'hp' ? 'Сейчас ' + e.hp + ' из ' + e.max + (val > e.max ? ' · максимум ' + e.max : '') : 'Сейчас ' + (st.setup.temps[e.id] || 0) + ' временных' }]; applyLabel = 'Сохранить'; }
+        if (p.purpose === 'form') { overline = 'КОДЕКС'; title = p.label; preview = [{ t: 'От ' + (p.min ?? 0) + ' до ' + (p.max ?? 999) }]; }
+      }
+      const ok = p.purpose === 'combat' ? val > 0 && p.targets.length > 0 : !!p.expr;
+      pad = { overline, title, accent: ac[0], accentBd: ac[1], hasModes: modes.length > 0, modes, hasTargets, targets, targetCount: String(p.targets ? p.targets.length : 0),
+        expr: terms.length > 1 || p.mult !== 1 ? terms.join(' + ') + (p.mult === 0.5 ? ' · ½' : p.mult === 2 ? ' · ×2' : '') : '', result: p.expr ? String(val) : '0', preview, keys,
+        applyLabel, applyBg: ok ? ac[2] : '#2A2C37', applyFg: ok ? ac[3] : '#6B7385', onApply: this.applyPad };
+    }
+    const isNewSheet = !!(st.sheet && st.sheet.type === 'new' && st.form);
+    let fm = {};
+    if (isNewSheet) {
+      const f = st.form, setF = (k, v) => this.setState(s => ({ form: { ...s.form, [k]: v } }));
+      const text = (k, label, placeholder) => ({ label, isText: true, value: f[k], placeholder, onChange: ev => setF(k, ev.target.value) });
+      const area = (k, label, placeholder) => ({ label, isArea: true, value: f[k], placeholder, onChange: ev => setF(k, ev.target.value) });
+      const chips = (k, label, opts) => ({ label, isChips: true, chips: opts.map(([v, l, c]) => { const on = f[k] === v; c = c || QUEST_C; return { label: l, fg: on ? c.fg : '#A7B0C0', bg: on ? c.bg : 'transparent', bd: on ? c.bd : '#2C2F3A', onClick: () => setF(k, on ? null : v) }; }) });
+      const step = (k, label, min, max) => ({ label, isStep: true, val: (k === 'initB' && f[k] > 0 ? '+' : '') + f[k], onDec: () => setF(k, Math.max(min, f[k] - 1)), onInc: () => setF(k, Math.min(max, f[k] + 1)),
+        onPad: () => { if (min < 0) return; this.setState({ pad: { purpose: 'form', key: k, label: label.charAt(0) + label.slice(1).toLowerCase(), min, max, expr: '', mult: 1, returnTo: 'new' }, sheet: { type: 'pad', id: null } }); } });
+      const stat = t => SETS[t].map(k => [k, ST[k].label, ST[k]]);
+      const locs = st.entities.filter(e => e.type === 'location').map(e => [e.id, e.name, LOC_C]);
+      const T = f.type;
+      const fields = T === 'party' ? [
+        { label: 'ЧЕЙ ПЕРСОНАЖ', isToggle: true, hint: f.me ? 'Мой персонаж — отмечен «вы», за него можно бросать инициативу в приложении' : 'Персонаж другого игрока', bd: f.me ? 'rgba(212,175,55,0.5)' : '#2C2F3A', trackBg: f.me ? '#D4AF37' : '#3A3D4B', knobX: f.me ? '22px' : '2px', onToggle: () => setF('me', !f.me) },
+        text('name', 'ИМЯ ПЕРСОНАЖА', 'Например, Кайра'), ...(f.me ? [] : [text('player', 'ИГРОК', 'Кто играет')]),
+        text('cls', 'КЛАСС', 'Воин, бард…'), text('race', 'РАСА', 'Эльф, дварф…'), step('lvl', 'УРОВЕНЬ', 1, 20), step('max', 'МАКСИМУМ ХИТОВ', 1, 400), step('ac', 'КЛАСС ДОСПЕХА', 1, 30), step('initB', 'БОНУС ИНИЦИАТИВЫ', -5, 15),
+        chips('status', 'СОСТАВ', stat('party')) ]
+      : T === 'npc' ? [ text('name', 'ИМЯ', 'Например, брат Одо'), text('race', 'РАСА', 'Человек, тифлинг…'), text('faction', 'ФРАКЦИЯ', 'Гильдия, орден, дом…'), chips('status', 'ОТНОШЕНИЕ', stat('npc')), chips('loc', 'ГДЕ ВСТРЕТИТЬ', locs), area('desc', 'ЗАМЕТКИ', 'Внешность, мотивы, что обещал…') ]
+      : T === 'quest' ? [ text('name', 'НАЗВАНИЕ', 'Например, Ключ от склепа'), chips('giver', 'КТО ДАЛ', st.entities.filter(e => e.type === 'npc').map(e => [e.id, e.name, ST[e.status]])), text('reward', 'НАГРАДА', '200 зм, предмет, услуга…'), chips('loc', 'ГДЕ', locs), chips('status', 'СТАТУС', stat('quest')), area('desc', 'ОПИСАНИЕ', 'Что нужно сделать') ]
+      : [ text('name', 'НАЗВАНИЕ', 'Например, Сторожевая башня'), text('kind', 'ТИП', 'Город, руины, таверна…'), text('region', 'РЕГИОН', 'Где находится'), area('desc', 'ОПИСАНИЕ', 'Что здесь есть') ];
+      const ok = !!f.name.trim();
+      fm = { heading: { party: 'Персонаж отряда', npc: 'Новый NPC', quest: 'Новый квест', location: 'Новое место' }[T],
+        types: [['party', 'Отряд'], ['npc', 'NPC'], ['quest', 'Квест'], ['location', 'Место']].map(([k, l]) => ({ label: l, bg: T === k ? '#2A2C37' : 'transparent', fg: T === k ? '#E2C044' : '#8A93A6', onClick: () => this.setState(s => ({ form: { ...s.form, type: k, status: null } })) })),
+        fields, onSave: this.saveForm, saveBg: ok ? '#D4AF37' : '#2A2C37', saveFg: ok ? '#121318' : '#6B7385', saveLabel: ok ? 'Добавить в кодекс' : 'Введите название' };
+    }
+    const turnOpts = [
+      { k: 'order', title: 'По словам мастера', desc: 'Все бросают, мастер объявляет порядок: «первой ходит Лира, вторым скелет…». Отмечаете участников касанием — номера не повторяются.' },
+      { k: 'init', title: 'По инициативе', desc: 'Вводите результаты бросков, приложение само сортирует очередь. За своего персонажа можно бросить d20.' },
+    ].map(o => { const a = st.turnMode === o.k; return { ...o, bg: a ? 'rgba(212,175,55,0.07)' : '#121318', bd: a ? 'rgba(212,175,55,0.5)' : '#262833', ring: a ? '#D4AF37' : '#4A4D5C', dot: a ? '#D4AF37' : 'transparent', onClick: () => this.setState({ turnMode: o.k }) }; });
+
+    const modeOpts = [
+      { k: 'open', title: 'Открытые', desc: 'Мастер называет HP и КД врагов. Кнопки урона и лечения доступны для всех участников.', example: '«У скелета осталось 6 хитов»' },
+      { k: 'hidden', title: 'Скрытые', desc: 'Только описания мастера. Отмечайте, как выглядит враг; нанесённый урон всё равно записывается — в итогах будет видно, сколько он выдержал.', example: '«Скелет едва держится на ногах»' },
+    ].map(o => { const a = st.combatMode === o.k; return { ...o, bg: a ? 'rgba(212,175,55,0.07)' : '#121318', bd: a ? 'rgba(212,175,55,0.5)' : '#262833', ring: a ? '#D4AF37' : '#4A4D5C', dot: a ? '#D4AF37' : 'transparent', onClick: () => this.setState({ combatMode: o.k }) }; });
+
+    const hasDraft = !!st.draft.trim();
+    return {
+      rootRef: this.rootRef, serifName: this.props.headingFont || 'Alegreya', stop: ev => ev.stopPropagation(),
+      showDS: this.props.showDesignSystem ?? true, campaignUpper: st.campaign.toUpperCase(), campaign: st.campaign, onCampaign: ev => this.setState({ campaign: ev.target.value }),
+      isSessionList: tab === 'sessions' && !cur0, isSessionDetail: tab === 'sessions' && !!cur0, isCodex: tab === 'codex', isSettings: tab === 'settings',
+      isCombatSetup: tab === 'combat' && !cb, isCombatActive: tab === 'combat' && !!cb, inCombat: !!cb,
+      navS: nav('sessions'), navC: nav('codex'), navB: nav('combat'), navN: nav('settings'),
+      newSession: this.newSession, hasLive: !!live, live: live || {}, archive, archiveCount: archive.length + ' ' + plural(archive.length, 'сессия', 'сессии', 'сессий'),
+      cur, backToList: () => { this.cancelRec(); this.setState({ openSession: null }); }, endSession: this.endSession, resumeSession: this.resumeSession,
+      onTitle: ev => { const v = ev.target.value; this.updSession(s => ({ ...s, title: v })); },
+      feedRef: this.feedRef, taRef: this.taRef, draft: st.draft, onDraft: ev => this.setState({ draft: ev.target.value }),
+      onKey: ev => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); const s = this.suggestions(); if (s) this.pick(s[0]); else this.submit(); } },
+      showSugg: !!sugg, sugg: (sugg || []).map(e => ({ name: e.name, glyph: TY[e.type].glyph, typeLabel: TY[e.type].label, fg: this.colors(e).fg, onPick: ev => { ev.preventDefault(); this.pick(e); } })),
+      insertAt: () => { const d = st.draft, nd = d + (d && !/\s$/.test(d) ? ' @' : '@'); this.setState({ draft: nd }, () => { const t = this.taRef.current; if (t) { t.focus(); t.setSelectionRange(nd.length, nd.length); } }); },
+      submit: this.submit, sendBg: hasDraft ? '#D4AF37' : '#2A2C37', sendFg: hasDraft ? '#121318' : '#6B7385',
+      isRec: st.rec, notRec: !st.rec, startRec: this.startRec, stopRec: this.stopRec, cancelRec: this.cancelRec,
+      recTime: fmtDur(Math.floor((st.recNow - st.recStart) / 1000)), recDot: Math.floor((st.recNow - st.recStart) / 500) % 2 ? 0.25 : 1, recBars: st.recWave.map(h => ({ h: h + 'px' })),
+      codexTotal: st.entities.length + ' ' + plural(st.entities.length, 'запись', 'записи', 'записей'), query: st.query, onQuery: ev => this.setState({ query: ev.target.value }),
+      codexTabs, filters, hasFilters: filters.length > 0, npcItems, questItems, locItems, codexEmpty: shown.length === 0,
+      modeBadge: st.combatMode === 'hidden' ? 'СКРЫТЫЕ HP' : 'ОТКРЫТЫЕ HP', round: cb ? cb.round : 1,
+      ...setupV, ...act,
+      modeOpts, turnOpts, numOpts: seg([['roman', 'XIII'], ['arabic', '13']], st.numbering, 'numbering'), mentionOpts: seg([['filled', 'Заливка'], ['underline', 'Линия']], st.mentionStyle, 'mentionStyle'),
+      hasSheet: !!st.sheet && (isEntitySheet || isEndSheet || isPadSheet || isNewSheet), isEntitySheet, isEndSheet, isPadSheet, isNewSheet, pad, padClose: this.padClose, fm, openNew: this.openNew, sh, endV, saveCombat: this.saveCombat, sheetRef: this.sheetRef, closeSheet: this.closeSheet,
+      sheetOp: st.sheetIn ? 1 : 0, sheetTf: st.sheetIn ? 'translateY(0)' : 'translateY(100%)', sheetEdge: isEndSheet ? 'rgba(155,44,44,0.6)' : 'rgba(212,175,55,0.4)',
+      hasToast: !!st.toast, toastText: st.toast || '',
+    };
+  }
+}
+</script>
+</body>
+</html>
