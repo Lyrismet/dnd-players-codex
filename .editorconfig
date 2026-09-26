@@ -2,3 +2,12 @@ root = true
 
 [*.{kt,kts}]
 ktlint_function_naming_ignore_when_annotated_with = Composable
+# matches detekt's MaxLineLength default (config/detekt/detekt.yml has no override) - without this,
+# ktlintFormat has no width to wrap at and keeps collapsing lines detekt then rejects
+max_line_length = 120
+
+# ktlint-gradle applies excludes unreliably to KMP source sets whose kotlin dirs include
+# generated code (SQLDelight, Compose resources) - see
+# https://github.com/JLLeitschuh/ktlint-gradle/issues/746
+[**/build/generated/**]
+ktlint = disabled

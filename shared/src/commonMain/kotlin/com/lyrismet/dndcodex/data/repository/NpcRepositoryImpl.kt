@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 class NpcRepositoryImpl(
-    private val database: AppDatabase,
+    database: AppDatabase,
 ) : NpcRepository {
     private val queries = database.npcQueries
 

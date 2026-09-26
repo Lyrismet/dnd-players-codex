@@ -1,1 +1,19 @@
 # project-specific overrides on top of detekt's default ruleset (buildUponDefaultConfig = true)
+
+naming:
+  FunctionNaming:
+    # matches the ktlint_function_naming_ignore_when_annotated_with override in .editorconfig
+    ignoreAnnotated: ['Composable']
+
+complexity:
+  LongParameterList:
+    # Composable UI builders idiomatically take many optional, defaulted styling params
+    # (see Material3's own Button/TextField) - this is standard Compose shape, not a smell
+    ignoreAnnotated: ['Composable']
+
+coroutines:
+  InjectDispatcher:
+    # this project wires dependencies by hand (no DI framework, see AppContainer) and has no test
+    # suite exercising repository coroutines yet - revisit once either of those changes
+    active: false
+

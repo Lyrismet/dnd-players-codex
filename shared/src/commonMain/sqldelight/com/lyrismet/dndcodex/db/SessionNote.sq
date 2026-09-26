@@ -3,8 +3,8 @@ import kotlinx.datetime.LocalDateTime;
 CREATE TABLE session_note (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
-    content TEXT NOT NULL,
     session_date TEXT AS LocalDateTime NOT NULL,
+    ended_at TEXT AS LocalDateTime,
     created_at INTEGER NOT NULL
 );
 
@@ -15,12 +15,12 @@ selectById:
 SELECT * FROM session_note WHERE id = ?;
 
 insert:
-INSERT INTO session_note(title, content, session_date, created_at)
+INSERT INTO session_note(title, session_date, ended_at, created_at)
 VALUES (?, ?, ?, ?);
 
 update:
 UPDATE session_note
-SET title = ?, content = ?, session_date = ?
+SET title = ?, session_date = ?, ended_at = ?
 WHERE id = ?;
 
 deleteById:

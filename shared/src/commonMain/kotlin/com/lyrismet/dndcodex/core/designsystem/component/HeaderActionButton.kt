@@ -8,25 +8,29 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 
-/** the small gold-tinted pill button in a screen header, e.g. "+ Сессия" or "+ Запись" */
+/** small tinted pill button in a screen header, e.g. "+ Сессия" (gold) or "Завершить" (maroon) */
 @Composable
 fun HeaderActionButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    foreground: Color = AppPalette.GoldBright,
+    background: Color = AppPalette.Gold.copy(alpha = 0.12f),
+    border: Color = AppPalette.Gold.copy(alpha = 0.4f),
 ) {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.height(32.dp),
         contentPadding = ButtonDefaults.ContentPadding,
-        border = BorderStroke(1.dp, AppPalette.Gold.copy(alpha = 0.4f)),
+        border = BorderStroke(1.dp, border),
         colors =
             ButtonDefaults.outlinedButtonColors(
-                containerColor = AppPalette.Gold.copy(alpha = 0.12f),
-                contentColor = AppPalette.GoldBright,
+                containerColor = background,
+                contentColor = foreground,
             ),
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge)

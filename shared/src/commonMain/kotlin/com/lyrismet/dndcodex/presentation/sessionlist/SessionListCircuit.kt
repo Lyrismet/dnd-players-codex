@@ -5,8 +5,8 @@ import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.serialization.CircuitSerializerRegistration
 
 fun Circuit.Builder.addSessionListUi(sessionNoteRepository: SessionNoteRepository): Circuit.Builder =
-    addPresenter<SessionListScreen, SessionListState> { _, _, _ ->
-        SessionListPresenter(sessionNoteRepository)
+    addPresenter<SessionListScreen, SessionListState> { _, navigator, _ ->
+        SessionListPresenter(navigator, sessionNoteRepository)
     }.addUi<SessionListScreen, SessionListState> { state, modifier ->
         SessionListUi(state, modifier)
     }

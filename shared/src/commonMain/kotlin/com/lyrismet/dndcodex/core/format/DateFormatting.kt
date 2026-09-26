@@ -24,3 +24,10 @@ fun LocalDateTime.toDisplayDate(): String {
     val month = RUSSIAN_GENITIVE_MONTHS.getValue(this.month)
     return "${this.day} $month ${this.year}"
 }
+
+/** "09:41" - the timestamp shown next to each entry in a session's feed */
+fun LocalDateTime.toDisplayTime(): String {
+    val hour = this.hour.toString().padStart(2, '0')
+    val minute = this.minute.toString().padStart(2, '0')
+    return "$hour:$minute"
+}

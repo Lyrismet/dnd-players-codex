@@ -6,16 +6,21 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.lyrismet.dndcodex.data.AppContainer
 import com.lyrismet.dndcodex.data.db.DatabaseDriverFactory
+import com.lyrismet.dndcodex.data.settings.SettingsFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        val appContainer = AppContainer(DatabaseDriverFactory(applicationContext))
+        val appContainer =
+            AppContainer(
+                DatabaseDriverFactory(applicationContext),
+                SettingsFactory(applicationContext),
+            )
 
         setContent {
-            App(appContainer.circuit)
+            App(appContainer)
         }
     }
 }

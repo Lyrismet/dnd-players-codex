@@ -14,13 +14,15 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 
+private const val DIAMOND_ROTATION_DEGREES = 45f
+
 /** short gold line + rotated diamond + long border line - the ornamental rule under a screen title */
 @Composable
 fun HeaderDivider(modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Spacer(Modifier.width(28.dp).height(1.dp).background(AppPalette.Gold))
         Spacer(Modifier.width(8.dp))
-        Spacer(Modifier.size(5.dp).rotate(45f).border(1.dp, AppPalette.Gold))
+        Spacer(Modifier.size(5.dp).rotate(DIAMOND_ROTATION_DEGREES).border(1.dp, AppPalette.Gold))
         Spacer(Modifier.width(8.dp))
         Spacer(Modifier.weight(1f).height(1.dp).background(AppPalette.Border))
     }

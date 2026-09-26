@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- must match AppPalette.Background in core/designsystem - this is what the OS
+         paints before Compose has drawn its first frame (cold start / window transitions) -->
+    <color name="app_background">#FF121318</color>
+</resources>

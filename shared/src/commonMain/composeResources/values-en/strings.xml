@@ -1,0 +1,25 @@
+<resources>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+
+    <string name="session_list_title">Session Diary</string>
+    <string name="session_list_new_session_button">+ Session</string>
+    <string name="session_list_empty">No sessions yet - tap “+ Session” to start</string>
+    <string name="session_list_archive_section">Archive</string>
+    <string name="session_list_delete_content_description">Delete session</string>
+    <string name="session_list_delete_dialog_title">Delete session?</string>
+    <string name="session_list_delete_dialog_text">“%1$s” and all its notes will be permanently deleted.</string>
+    <string name="new_session_default_title">New session</string>
+    <string name="default_campaign_name">My campaign</string>
+    <string name="session_overline_format">Session %1$s</string>
+
+    <string name="session_detail_back">‹ Diary</string>
+    <string name="session_detail_end_button">■ End</string>
+    <string name="session_detail_resume_button">↻ Resume</string>
+    <string name="session_detail_live_badge">LIVE</string>
+    <string name="session_detail_ended_badge">ENDED</string>
+    <string name="session_detail_composer_placeholder">What happened?</string>
+    <string name="session_detail_submit_button">Log</string>
+    <string name="session_detail_empty_feed">A blank page - write down what\'s happening</string>
+    <string name="session_detail_delete_entry_title">Delete entry?</string>
+</resources>

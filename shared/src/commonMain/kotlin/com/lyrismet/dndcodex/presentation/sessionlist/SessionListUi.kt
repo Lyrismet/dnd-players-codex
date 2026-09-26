@@ -3,7 +3,6 @@ package com.lyrismet.dndcodex.presentation.sessionlist
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,47 +13,61 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
+import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.ScreenHeader
 import com.lyrismet.dndcodex.core.designsystem.component.SectionOverline
-import com.lyrismet.dndcodex.core.designsystem.component.TagChip
+import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.session_list_archive_section
+import dndplayerscodex.shared.generated.resources.session_list_delete_content_description
+import dndplayerscodex.shared.generated.resources.session_list_delete_dialog_text
+import dndplayerscodex.shared.generated.resources.session_list_delete_dialog_title
+import dndplayerscodex.shared.generated.resources.session_list_empty
+import dndplayerscodex.shared.generated.resources.session_list_new_session_button
+import dndplayerscodex.shared.generated.resources.session_list_title
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SessionListUi(
     state: SessionListState,
     modifier: Modifier = Modifier,
 ) {
+    // pending confirmation before a session is actually deleted - purely a transient ui flag
+    var pendingDeleteSession by remember { mutableStateOf<SessionListItem?>(null) }
+
     Scaffold(modifier = modifier) { contentPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             ScreenHeader(
                 overline = state.campaignName,
-                title = "Дневник сессий",
+                title = stringResource(Res.string.session_list_title),
                 overlineTrailingContent = {
                     HeaderActionButton(
-                        text = "+ Сессия",
+                        text = stringResource(Res.string.session_list_new_session_button),
                         onClick = { state.eventSink(SessionListEvent.NewSessionClicked) },
                     )
                 },
             )
             if (state.sessions.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        "Нет ни одной сессии - нажмите «+ Сессия», чтобы начать",
-                        color = AppPalette.TextSecondary,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 32.dp),
-                    )
-                }
+                EmptyStatePlaceholder(text = stringResource(Res.string.session_list_empty))
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -63,7 +76,7 @@ fun SessionListUi(
                 ) {
                     item {
                         SectionOverline(
-                            text = "Архив",
+                            text = stringResource(Res.string.session_list_archive_section),
                             color = AppPalette.TextSecondary,
                             trailingContent = {
                                 Text(
@@ -78,11 +91,24 @@ fun SessionListUi(
                         SessionArchiveRow(
                             session = session,
                             onClick = { state.eventSink(SessionListEvent.SessionClicked(session.id)) },
+                            onDeleteClick = { pendingDeleteSession = session },
                         )
                     }
                 }
             }
         }
+    }
+
+    pendingDeleteSession?.let { session ->
+        ConfirmationDialog(
+            title = stringResource(Res.string.session_list_delete_dialog_title),
+            text = stringResource(Res.string.session_list_delete_dialog_text, session.title),
+            onConfirm = {
+                state.eventSink(SessionListEvent.DeleteSessionClicked(session.id))
+                pendingDeleteSession = null
+            },
+            onDismiss = { pendingDeleteSession = null },
+        )
     }
 }
 
@@ -90,6 +116,7 @@ fun SessionListUi(
 private fun SessionArchiveRow(
     session: SessionListItem,
     onClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -99,7 +126,8 @@ private fun SessionArchiveRow(
                 .clip(RoundedCornerShape(14.dp))
                 .background(AppPalette.SurfaceVariant)
                 .clickable(onClick = onClick)
-                .padding(14.dp),
+                .padding(start = 14.dp, top = 14.dp, bottom = 14.dp, end = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
@@ -112,14 +140,15 @@ private fun SessionArchiveRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(session.title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
             Text(session.dateLabel, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
-            if (session.hasMentions) {
-                TagChip(
-                    text = "Есть упоминания",
-                    foreground = AppPalette.Gold,
-                    background = AppPalette.Gold.copy(alpha = 0.08f),
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-            }
+        }
+        IconButton(onClick = onDeleteClick) {
+            // neutral color deliberately - the destructive emphasis belongs on the confirm
+            // dialog's button, not on an always-visible row icon
+            Icon(
+                Icons.Outlined.Delete,
+                contentDescription = stringResource(Res.string.session_list_delete_content_description),
+                tint = AppPalette.TextTertiary,
+            )
         }
     }
 }

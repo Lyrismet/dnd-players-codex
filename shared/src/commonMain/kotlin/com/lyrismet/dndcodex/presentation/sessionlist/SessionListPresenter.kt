@@ -8,18 +8,21 @@ import com.lyrismet.dndcodex.core.format.toDisplayDate
 import com.lyrismet.dndcodex.core.format.toRomanNumeral
 import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
+import com.lyrismet.dndcodex.presentation.sessiondetail.SessionDetailScreen
+import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
+import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.default_campaign_name
+import dndplayerscodex.shared.generated.resources.new_session_default_title
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-// campaign name isn't backed by settings yet - the Settings screen will own this once it exists
-private const val PLACEHOLDER_CAMPAIGN_NAME = "Моя кампания"
-
-// takes a Navigator once session detail exists to navigate to on SessionClicked
 class SessionListPresenter(
+    private val navigator: Navigator,
     private val sessionNoteRepository: SessionNoteRepository,
 ) : Presenter<SessionListState> {
     @OptIn(ExperimentalTime::class)
@@ -27,28 +30,34 @@ class SessionListPresenter(
     override fun present(): SessionListState {
         val sessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
         val scope = rememberCoroutineScope()
+        // campaign name isn't backed by settings yet - the Settings screen will own this once it exists
+        val campaignName = stringResource(Res.string.default_campaign_name)
+        val newSessionTitle = stringResource(Res.string.new_session_default_title)
 
         return SessionListState(
-            campaignName = PLACEHOLDER_CAMPAIGN_NAME,
+            campaignName = campaignName,
             sessions = sessions.toListItems(),
         ) { event ->
             when (event) {
                 SessionListEvent.NewSessionClicked ->
                     scope.launch {
-                        sessionNoteRepository.upsert(
-                            SessionNote(
-                                id = 0,
-                                title = "Новая сессия",
-                                content = "",
-                                sessionDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-                                mentionedNpcIds = emptyList(),
-                                mentionedQuestIds = emptyList(),
-                                mentionedLocationIds = emptyList(),
-                            ),
-                        )
+                        val id =
+                            sessionNoteRepository.upsert(
+                                SessionNote(
+                                    id = 0,
+                                    title = newSessionTitle,
+                                    sessionDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+                                    endedAt = null,
+                                ),
+                            )
+                        navigator.goTo(SessionDetailScreen(id))
                     }
-                // session detail screen doesn't exist yet - nothing to navigate to
-                is SessionListEvent.SessionClicked -> Unit
+                is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
+
+                is SessionListEvent.DeleteSessionClicked ->
+                    scope.launch {
+                        sessionNoteRepository.delete(event.id)
+                    }
             }
         }
     }
@@ -60,10 +69,6 @@ class SessionListPresenter(
                 numberLabel = (size - index).toRomanNumeral(),
                 title = note.title,
                 dateLabel = note.sessionDate.toDisplayDate(),
-                hasMentions =
-                    note.mentionedNpcIds.isNotEmpty() ||
-                        note.mentionedQuestIds.isNotEmpty() ||
-                        note.mentionedLocationIds.isNotEmpty(),
             )
         }
 }
