@@ -13,11 +13,12 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 class SessionNoteRepositoryImpl(
-    private val database: AppDatabase,
+    database: AppDatabase,
 ) : SessionNoteRepository {
     private val queries = database.sessionNoteQueries
 
-    override fun observeAll(): Flow<List<SessionNote>> = queries.selectAll(::toDomain).asFlow().mapToList(Dispatchers.Default)
+    override fun observeAll(): Flow<List<SessionNote>> =
+        queries.selectAll(::toDomain).asFlow().mapToList(Dispatchers.Default)
 
     override suspend fun getById(id: Long): SessionNote? =
         withContext(Dispatchers.Default) {
@@ -47,6 +48,8 @@ class SessionNoteRepositoryImpl(
         }
     }
 
+    // createdAt is required to match selectAll's column order even though the domain model doesn't expose it
+    @Suppress("UnusedParameter")
     private fun toDomain(
         id: Long,
         title: String,

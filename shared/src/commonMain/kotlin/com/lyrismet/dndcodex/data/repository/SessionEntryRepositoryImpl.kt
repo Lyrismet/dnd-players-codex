@@ -15,7 +15,7 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 class SessionEntryRepositoryImpl(
-    private val database: AppDatabase,
+    database: AppDatabase,
 ) : SessionEntryRepository {
     private val queries = database.sessionEntryQueries
 

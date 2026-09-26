@@ -70,17 +70,50 @@ fun headingFontFamily(font: HeadingFont = HeadingFont.ALEGREYA): FontFamily =
 fun appTypography(headingFontFamily: FontFamily = headingFontFamily(HeadingFont.ALEGREYA)): Typography {
     val body = interFontFamily()
     return Typography(
-        displayLarge = TextStyle(fontFamily = headingFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 32.sp, lineHeight = 37.sp),
-        headlineLarge = TextStyle(fontFamily = headingFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 27.sp, lineHeight = 32.sp),
-        headlineMedium = TextStyle(fontFamily = headingFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 23.sp, lineHeight = 28.sp),
-        titleLarge = TextStyle(fontFamily = headingFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 24.sp),
-        titleMedium = TextStyle(fontFamily = headingFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, lineHeight = 23.sp),
-        titleSmall = TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 20.sp),
+        displayLarge =
+            TextStyle(
+                fontFamily = headingFontFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 32.sp,
+                lineHeight = 37.sp,
+            ),
+        headlineLarge =
+            TextStyle(
+                fontFamily = headingFontFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 27.sp,
+                lineHeight = 32.sp,
+            ),
+        headlineMedium =
+            TextStyle(
+                fontFamily = headingFontFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 23.sp,
+                lineHeight = 28.sp,
+            ),
+        titleLarge =
+            TextStyle(
+                fontFamily = headingFontFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.sp,
+                lineHeight = 24.sp,
+            ),
+        titleMedium =
+            TextStyle(
+                fontFamily = headingFontFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                lineHeight = 23.sp,
+            ),
+        titleSmall =
+            TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 20.sp),
         bodyLarge = TextStyle(fontFamily = body, fontWeight = FontWeight.Normal, fontSize = 15.sp, lineHeight = 24.sp),
         bodyMedium = TextStyle(fontFamily = body, fontWeight = FontWeight.Normal, fontSize = 13.sp, lineHeight = 19.sp),
         bodySmall = TextStyle(fontFamily = body, fontWeight = FontWeight.Normal, fontSize = 12.sp, lineHeight = 17.sp),
-        labelLarge = TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, lineHeight = 18.sp),
-        labelMedium = TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, lineHeight = 16.sp),
+        labelLarge =
+            TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, lineHeight = 18.sp),
+        labelMedium =
+            TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, lineHeight = 16.sp),
         // overline section labels (АРХИВ, БАЗА ЗНАНИЙ...) - the wide tracking is what gives them away
         labelSmall =
             TextStyle(

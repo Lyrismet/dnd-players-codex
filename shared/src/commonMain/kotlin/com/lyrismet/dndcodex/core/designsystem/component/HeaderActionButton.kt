@@ -12,9 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 
-/**
- * the small tinted pill button in a screen header, e.g. "+ Сессия" (gold, default) or "Завершить" (maroon)
- */
+/** small tinted pill button in a screen header, e.g. "+ Сессия" (gold) or "Завершить" (maroon) */
 @Composable
 fun HeaderActionButton(
     text: String,

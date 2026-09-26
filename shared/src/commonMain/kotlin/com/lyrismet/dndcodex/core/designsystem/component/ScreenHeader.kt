@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 
-/** overline + serif title + optional ornamental divider - the top of every top-level screen (Сессии, Кодекс, Настройки...) */
+/** overline + serif title + optional divider - top of every top-level screen (Сессии, Кодекс...) */
 @Composable
 fun ScreenHeader(
     overline: String,
