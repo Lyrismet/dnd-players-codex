@@ -24,7 +24,7 @@ Stack: Compose Multiplatform (UI), Circuit (navigation/presentation), SQLDelight
 - **Occam's Razor**: The simplest solution that accurately satisfies all requirements is the best one.
 
 ### UI vs Presenter boundary (Circuit)
-Each feature under `presentation/<feature>/` is four files — see `presentation/npclist/{NpcListScreen,NpcListPresenter,NpcListUi,NpcListCircuit}.kt` for the reference shape:
+Each feature under `presentation/<feature>/` is four files — see `presentation/sessionlist/{SessionListScreen,SessionListPresenter,SessionListUi,SessionListCircuit}.kt` for the reference shape:
 - **`<Feature>Screen.kt`** — the `@Serializable` `Screen` (navigation key), the `CircuitUiState` data class (always ends with an `eventSink: (XEvent) -> Unit = {}` field), and the `sealed interface XEvent : CircuitUiEvent`.
 - **`<Feature>Presenter.kt`** — a `Presenter<XState>` with `@Composable override fun present(): XState`. Owns all data loading (repository flows via `collectAsState`/`produceState`), async orchestration (`rememberCoroutineScope().launch { ... }`), and navigation (`Navigator.goTo`/`pop`). Builds and returns the `eventSink` `when`-block that reacts to `XEvent`.
 - **`<Feature>Ui.kt`** — `@Composable fun XUi(state: XState, modifier: Modifier = Modifier)`. Pure render: reads `state`, dispatches user actions through `state.eventSink(XEvent...)`. Never touches a repository, `Navigator`, or a coroutine scope directly.
@@ -33,6 +33,7 @@ Each feature under `presentation/<feature>/` is four files — see `presentation
 - Before finishing a new/changed Ui or Presenter, state its responsibility in one sentence without "and" (e.g. "renders the NPC list" / "loads and mutates the NPC list"). If a Ui's sentence needs "and manages X state" — move that into the Presenter.
 - Compare footprint to sibling `presentation/<feature>` folders. If a new Presenter is doing meaningfully more than its siblings, that's a signal to split the screen.
 - `CircuitUiState` should expose only what the Ui needs to render and react to (plain values + the single `eventSink`), never a repository reference or a `Navigator` — SOLID's ISP applied concretely.
+- Exception: `presentation/codex/CodexScreen.kt` is intentionally one Circuit screen with an internal, Presenter-owned sub-tab switch across 4 related entity types (Отряд/NPC/Квесты/Места), not 4 independent features - the design mock treats it as one screen with tab UI, not 4 screens, so splitting it would fight the source of truth for no benefit.
 
 ### Kotlin typing rules
 - Strict, non-nullable-by-default typing. Avoid `Any`, unchecked `as` casts, and `!!` — prefer `as?` with explicit handling, or remove the need for the cast with a `sealed interface`/`sealed class`.

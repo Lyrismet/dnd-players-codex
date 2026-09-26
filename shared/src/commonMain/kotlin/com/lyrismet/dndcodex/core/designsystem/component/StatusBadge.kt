@@ -1,0 +1,33 @@
+package com.lyrismet.dndcodex.core.designsystem.component
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import com.lyrismet.dndcodex.core.designsystem.StatusColor
+
+/** small bordered status pill - NPC/quest status badges in the codex */
+@Composable
+fun StatusBadge(
+    text: String,
+    color: StatusColor,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = color.foreground,
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(color.background)
+                .border(1.dp, color.border, RoundedCornerShape(6.dp))
+                .padding(horizontal = 8.dp, vertical = 3.dp),
+    )
+}

@@ -11,6 +11,7 @@ object AppPalette {
     val Background = Color(0xFF121318)
     val NavBar = Color(0xFF0F1015)
     val Surface = Color(0xFF1A1B23)
+    val SurfaceElevated = Color(0xFF2A2C37)
     val SurfaceVariant = Color(0xFF17181F)
     val SurfaceSunken = Color(0xFF15161C)
     val Border = Color(0xFF2C2F3A)

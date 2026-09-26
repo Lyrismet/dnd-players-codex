@@ -22,4 +22,33 @@
     <string name="session_detail_submit_button">Записать</string>
     <string name="session_detail_empty_feed">Чистая страница - запишите, что происходит</string>
     <string name="session_detail_delete_entry_title">Удалить запись?</string>
+
+    <string name="codex_overline">База знаний</string>
+    <string name="codex_title">Кодекс</string>
+    <string name="codex_add_entry_button">+ Запись</string>
+    <string name="codex_search_placeholder">Имя, фракция, награда…</string>
+    <string name="codex_tab_party">Отряд</string>
+    <string name="codex_tab_npc">NPC</string>
+    <string name="codex_tab_quest">Квесты</string>
+    <string name="codex_tab_location">Места</string>
+    <string name="codex_filter_all">Все</string>
+    <string name="codex_npc_status_friend">Друг</string>
+    <string name="codex_npc_status_enemy">Враг</string>
+    <string name="codex_npc_status_neutral">Нейтрал</string>
+    <string name="codex_npc_status_dead">Мёртв</string>
+    <string name="codex_quest_status_active">Активен</string>
+    <string name="codex_quest_status_completed">Выполнен</string>
+    <string name="codex_quest_status_failed">Провален</string>
+    <string name="codex_quest_given_by_label">Кто дал</string>
+    <string name="codex_quest_given_by_none">—</string>
+    <string name="codex_quest_reward_label">Награда</string>
+    <string name="codex_party_empty">Отряд появится в одном из следующих обновлений</string>
+    <string name="codex_empty_filtered">Ничего не найдено. Сбросьте фильтр или измените запрос.</string>
+
+    <string name="bottom_tab_sessions">Сессии</string>
+    <string name="bottom_tab_codex">Кодекс</string>
+    <string name="bottom_tab_combat">Бой</string>
+    <string name="bottom_tab_settings">Настройки</string>
+    <string name="combat_tab_placeholder">Бой скоро появится здесь</string>
+    <string name="settings_tab_placeholder">Настройки скоро появятся здесь</string>
 </resources>
