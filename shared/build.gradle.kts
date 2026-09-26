@@ -133,5 +133,7 @@ ktlint {
 }
 
 tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask>().configureEach {
-    exclude("**/build/**")
+    // a glob like "**/build/**" can't match here - generated KMP source dirs are themselves rooted
+    // inside build/, so paths relative to them never contain a "build" segment to match against
+    exclude { it.file.path.contains("/generated/") }
 }

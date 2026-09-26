@@ -1,7 +1,6 @@
 package com.lyrismet.dndcodex.presentation.npclist
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,9 +12,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
 
 @Composable
@@ -36,16 +35,10 @@ fun NpcListUi(
         },
     ) { contentPadding ->
         if (state.npcs.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(contentPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    "No NPCs yet - tap + to add one",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = AppPalette.TextSecondary,
-                )
-            }
+            EmptyStatePlaceholder(
+                text = "No NPCs yet - tap + to add one",
+                modifier = Modifier.padding(contentPadding),
+            )
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
                 items(state.npcs, key = { it.id }) { npc ->
