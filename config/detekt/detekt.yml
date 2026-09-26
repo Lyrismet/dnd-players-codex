@@ -1,1 +1,7 @@
 # project-specific overrides on top of detekt's default ruleset (buildUponDefaultConfig = true)
+
+naming:
+  FunctionNaming:
+    # matches the ktlint_function_naming_ignore_when_annotated_with override in .editorconfig
+    ignoreAnnotated: ['Composable']
+

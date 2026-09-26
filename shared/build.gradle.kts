@@ -1,3 +1,4 @@
+import dev.detekt.gradle.Detekt
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -109,6 +110,20 @@ sqldelight {
 detekt {
     buildUponDefaultConfig = true
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+}
+
+tasks.withType<Detekt>().configureEach {
+    // Gradle's SourceTask exclude works here (unlike ktlint's, see .editorconfig) but KMP source
+    // sets pull in generated code (SQLDelight, Compose resources) that must not be linted
+    exclude { it.file.path.contains("/generated/") }
+}
+
+// the plain aggregate `detekt` task has no source of its own in a KMP module and reports
+// NO-SOURCE unless it's wired to the real per-source-set/per-compilation tasks below - test source
+// sets are left out here, since detekt's production-code rules (eg MagicNumber) aren't a good fit
+// for test code and this project hasn't opted into a separate test ruleset
+tasks.named("detekt") {
+    dependsOn(tasks.withType<Detekt>().matching { it.name != "detekt" && !it.name.contains("Test") })
 }
 
 ktlint {

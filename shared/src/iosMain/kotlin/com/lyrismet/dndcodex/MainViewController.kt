@@ -5,7 +5,7 @@ import androidx.compose.ui.window.ComposeUIViewController
 import com.lyrismet.dndcodex.data.AppContainer
 import com.lyrismet.dndcodex.data.db.DatabaseDriverFactory
 
-@Suppress("ktlint:standard:function-naming")
+@Suppress("ktlint:standard:function-naming", "FunctionNaming")
 fun MainViewController() =
     ComposeUIViewController {
         val appContainer = remember { AppContainer(DatabaseDriverFactory()) }
