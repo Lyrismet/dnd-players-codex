@@ -2,10 +2,10 @@ package com.lyrismet.dndcodex.presentation.npcdetail
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -25,8 +25,20 @@ fun NpcDetailUi(
     Scaffold(modifier = modifier) { contentPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             when {
-                state.isLoading -> Text("Loading...", modifier = Modifier.align(Alignment.Center))
-                state.npc == null -> Text("NPC not found", modifier = Modifier.align(Alignment.Center))
+                state.isLoading ->
+                    Text(
+                        "Loading...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = AppPalette.TextSecondary,
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                state.npc == null ->
+                    Text(
+                        "NPC not found",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = AppPalette.TextSecondary,
+                        modifier = Modifier.align(Alignment.Center),
+                    )
                 else -> {
                     val statusColor = state.npc.status.toStatusColor()
                     Column(modifier = Modifier.padding(16.dp)) {

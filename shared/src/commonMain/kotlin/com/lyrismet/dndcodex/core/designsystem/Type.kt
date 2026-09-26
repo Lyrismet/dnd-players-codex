@@ -18,12 +18,13 @@ import org.jetbrains.compose.resources.Font
 
 /** ui and body text - matches Inter 400/500/600/700 from the design system */
 @Composable
-fun interFontFamily(): FontFamily = FontFamily(
-    Font(Res.font.inter_variable, weight = FontWeight.Normal),
-    Font(Res.font.inter_variable, weight = FontWeight.Medium),
-    Font(Res.font.inter_variable, weight = FontWeight.SemiBold),
-    Font(Res.font.inter_variable, weight = FontWeight.Bold),
-)
+fun interFontFamily(): FontFamily =
+    FontFamily(
+        Font(Res.font.inter_variable, weight = FontWeight.Normal),
+        Font(Res.font.inter_variable, weight = FontWeight.Medium),
+        Font(Res.font.inter_variable, weight = FontWeight.SemiBold),
+        Font(Res.font.inter_variable, weight = FontWeight.Bold),
+    )
 
 /** the four heading serifs offered in Settings > Кампания, matching the design's `FONTS` map */
 enum class HeadingFont {
@@ -35,29 +36,34 @@ enum class HeadingFont {
 
 /** [font] is the injection point for the future serif-picker setting, default matches the design's default */
 @Composable
-fun headingFontFamily(font: HeadingFont = HeadingFont.ALEGREYA): FontFamily = when (font) {
-    HeadingFont.ALEGREYA -> FontFamily(
-        Font(Res.font.alegreya_variable, weight = FontWeight.Medium),
-        Font(Res.font.alegreya_variable, weight = FontWeight.SemiBold),
-        Font(Res.font.alegreya_variable, weight = FontWeight.Bold),
-    )
-    HeadingFont.LORA -> FontFamily(
-        Font(Res.font.lora_variable, weight = FontWeight.Medium),
-        Font(Res.font.lora_variable, weight = FontWeight.SemiBold),
-        Font(Res.font.lora_variable, weight = FontWeight.Bold),
-    )
-    // PT Serif ships as static Regular/Bold only (no variable weight axis) - SemiBold requests fall back to Bold
-    HeadingFont.PT_SERIF -> FontFamily(
-        Font(Res.font.pt_serif_regular, weight = FontWeight.Medium),
-        Font(Res.font.pt_serif_bold, weight = FontWeight.SemiBold),
-        Font(Res.font.pt_serif_bold, weight = FontWeight.Bold),
-    )
-    HeadingFont.CORMORANT_GARAMOND -> FontFamily(
-        Font(Res.font.cormorant_garamond_variable, weight = FontWeight.Medium),
-        Font(Res.font.cormorant_garamond_variable, weight = FontWeight.SemiBold),
-        Font(Res.font.cormorant_garamond_variable, weight = FontWeight.Bold),
-    )
-}
+fun headingFontFamily(font: HeadingFont = HeadingFont.ALEGREYA): FontFamily =
+    when (font) {
+        HeadingFont.ALEGREYA ->
+            FontFamily(
+                Font(Res.font.alegreya_variable, weight = FontWeight.Medium),
+                Font(Res.font.alegreya_variable, weight = FontWeight.SemiBold),
+                Font(Res.font.alegreya_variable, weight = FontWeight.Bold),
+            )
+        HeadingFont.LORA ->
+            FontFamily(
+                Font(Res.font.lora_variable, weight = FontWeight.Medium),
+                Font(Res.font.lora_variable, weight = FontWeight.SemiBold),
+                Font(Res.font.lora_variable, weight = FontWeight.Bold),
+            )
+        // PT Serif ships as static Regular/Bold only (no variable weight axis) - SemiBold requests fall back to Bold
+        HeadingFont.PT_SERIF ->
+            FontFamily(
+                Font(Res.font.pt_serif_regular, weight = FontWeight.Medium),
+                Font(Res.font.pt_serif_bold, weight = FontWeight.SemiBold),
+                Font(Res.font.pt_serif_bold, weight = FontWeight.Bold),
+            )
+        HeadingFont.CORMORANT_GARAMOND ->
+            FontFamily(
+                Font(Res.font.cormorant_garamond_variable, weight = FontWeight.Medium),
+                Font(Res.font.cormorant_garamond_variable, weight = FontWeight.SemiBold),
+                Font(Res.font.cormorant_garamond_variable, weight = FontWeight.Bold),
+            )
+    }
 
 /** [headingFontFamily] is the injection point for the future serif-picker setting */
 @Composable
@@ -76,6 +82,13 @@ fun appTypography(headingFontFamily: FontFamily = headingFontFamily(HeadingFont.
         labelLarge = TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, lineHeight = 18.sp),
         labelMedium = TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, lineHeight = 16.sp),
         // overline section labels (АРХИВ, БАЗА ЗНАНИЙ...) - the wide tracking is what gives them away
-        labelSmall = TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, lineHeight = 16.sp, letterSpacing = 0.18.em),
+        labelSmall =
+            TextStyle(
+                fontFamily = body,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 11.sp,
+                lineHeight = 16.sp,
+                letterSpacing = 0.18.em,
+            ),
     )
 }

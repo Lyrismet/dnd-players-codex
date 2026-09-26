@@ -40,7 +40,11 @@ fun NpcListUi(
                 modifier = Modifier.fillMaxSize().padding(contentPadding),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("No NPCs yet - tap + to add one", color = AppPalette.TextSecondary)
+                Text(
+                    "No NPCs yet - tap + to add one",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = AppPalette.TextSecondary,
+                )
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
