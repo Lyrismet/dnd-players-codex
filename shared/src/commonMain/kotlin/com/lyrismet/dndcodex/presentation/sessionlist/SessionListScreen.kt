@@ -20,13 +20,16 @@ data class SessionListItem(
     val numberLabel: String,
     val title: String,
     val dateLabel: String,
-    val hasMentions: Boolean,
 )
 
 sealed interface SessionListEvent : CircuitUiEvent {
     data object NewSessionClicked : SessionListEvent
 
     data class SessionClicked(
+        val id: Long,
+    ) : SessionListEvent
+
+    data class DeleteSessionClicked(
         val id: Long,
     ) : SessionListEvent
 }

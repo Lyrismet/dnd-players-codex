@@ -1,0 +1,23 @@
+import kotlinx.datetime.LocalDateTime;
+
+CREATE TABLE session_entry (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    session_note_id INTEGER NOT NULL REFERENCES session_note(id) ON DELETE CASCADE,
+    created_at TEXT AS LocalDateTime NOT NULL,
+    body TEXT NOT NULL
+);
+
+CREATE INDEX session_entry_session_note_id ON session_entry(session_note_id);
+
+selectForSession:
+SELECT * FROM session_entry WHERE session_note_id = ? ORDER BY created_at ASC;
+
+insert:
+INSERT INTO session_entry(session_note_id, created_at, body)
+VALUES (?, ?, ?);
+
+deleteById:
+DELETE FROM session_entry WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

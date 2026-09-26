@@ -1,0 +1,25 @@
+<resources>
+    <string name="action_delete">Удалить</string>
+    <string name="action_cancel">Отмена</string>
+
+    <string name="session_list_title">Дневник сессий</string>
+    <string name="session_list_new_session_button">+ Сессия</string>
+    <string name="session_list_empty">Нет ни одной сессии - нажмите «+ Сессия», чтобы начать</string>
+    <string name="session_list_archive_section">Архив</string>
+    <string name="session_list_delete_content_description">Удалить сессию</string>
+    <string name="session_list_delete_dialog_title">Удалить сессию?</string>
+    <string name="session_list_delete_dialog_text">«%1$s» и все её заметки будут удалены безвозвратно.</string>
+    <string name="new_session_default_title">Новая сессия</string>
+    <string name="default_campaign_name">Моя кампания</string>
+    <string name="session_overline_format">Сессия %1$s</string>
+
+    <string name="session_detail_back">‹ Дневник</string>
+    <string name="session_detail_end_button">■ Завершить</string>
+    <string name="session_detail_resume_button">↻ Возобновить</string>
+    <string name="session_detail_live_badge">ИДЁТ</string>
+    <string name="session_detail_ended_badge">ЗАВЕРШЕНА</string>
+    <string name="session_detail_composer_placeholder">Что произошло?</string>
+    <string name="session_detail_submit_button">Записать</string>
+    <string name="session_detail_empty_feed">Чистая страница - запишите, что происходит</string>
+    <string name="session_detail_delete_entry_title">Удалить запись?</string>
+</resources>
