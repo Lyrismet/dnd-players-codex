@@ -49,8 +49,7 @@ fun AppBottomSheet(
         content = {
             Box {
                 content()
-                // overlaid on the content, not the drag handle - matches the design's close button sitting
-                // beside the entity title rather than up in the sheet's own chrome
+                // overlaid on the content, not the drag handle, to match the design's close button placement
                 SheetCloseButton(
                     onClick = onDismissRequest,
                     modifier = Modifier.align(Alignment.TopEnd).padding(top = 6.dp, end = 20.dp),
@@ -60,9 +59,7 @@ fun AppBottomSheet(
     )
 }
 
-// Material3's Surface paints its own background/shadow over whatever border a caller-supplied modifier
-// draws, so the gold edge can't be a plain Modifier.border() from outside - it's drawn by hand here instead,
-// tracing only the top-left arc, the top edge and the top-right arc (never the sides or bottom)
+// Material3's Surface discards an external Modifier.border(), so the gold edge is hand-drawn here instead
 @Composable
 private fun AppBottomSheetDragHandle() {
     Box(

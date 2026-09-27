@@ -151,7 +151,7 @@ fun EntitySummarySheetContent(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 28.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(top = 44.dp, bottom = 28.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         when (item) {

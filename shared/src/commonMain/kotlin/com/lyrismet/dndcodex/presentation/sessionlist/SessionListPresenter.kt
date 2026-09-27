@@ -113,6 +113,7 @@ class SessionListPresenter(
         return LiveSessionItem(
             id = item.id,
             numberLabel = item.numberLabel,
+            // the design keeps this sub-label arabic even though the glyph above and the detail screen stay roman
             overline = stringResource(Res.string.session_overline_format, item.arabicNumber),
             title = item.title,
             dateLabel = item.dateLabel,
