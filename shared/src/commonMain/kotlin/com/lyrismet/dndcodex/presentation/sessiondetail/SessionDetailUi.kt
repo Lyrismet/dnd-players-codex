@@ -172,8 +172,7 @@ private fun SessionDetailHeader(
             color = AppPalette.Gold,
             modifier = Modifier.padding(top = 4.dp),
         )
-        // BasicTextField, not Material3's TextField - its built-in content padding and minimum height
-        // are exactly the "extra padding around the title" the design doesn't have (padding:0)
+        // BasicTextField, not Material3's TextField, whose built-in padding and minimum height don't match the design
         BasicTextField(
             value = state.title,
             onValueChange = { state.eventSink(SessionDetailEvent.TitleChanged(it)) },

@@ -20,8 +20,15 @@ import com.lyrismet.dndcodex.domain.model.NpcStatus
 import com.lyrismet.dndcodex.domain.model.Quest
 import com.lyrismet.dndcodex.domain.model.QuestStatus
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_npc_status_dead
+import dndplayerscodex.shared.generated.resources.codex_npc_status_enemy
+import dndplayerscodex.shared.generated.resources.codex_npc_status_friend
+import dndplayerscodex.shared.generated.resources.codex_npc_status_neutral
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
+import dndplayerscodex.shared.generated.resources.codex_quest_status_active
+import dndplayerscodex.shared.generated.resources.codex_quest_status_completed
+import dndplayerscodex.shared.generated.resources.codex_quest_status_failed
 import org.jetbrains.compose.resources.stringResource
 
 /** the one codex entity a chip, a mention or a codex list row can point at - never more than one kind at a time */
@@ -108,6 +115,35 @@ fun buildEntitySummary(
                 )
             }
     }
+
+@Composable
+fun npcStatusLabels(): Map<NpcStatus, String> =
+    mapOf(
+        NpcStatus.FRIEND to stringResource(Res.string.codex_npc_status_friend),
+        NpcStatus.ENEMY to stringResource(Res.string.codex_npc_status_enemy),
+        NpcStatus.NEUTRAL to stringResource(Res.string.codex_npc_status_neutral),
+        NpcStatus.DEAD to stringResource(Res.string.codex_npc_status_dead),
+    )
+
+@Composable
+fun questStatusLabels(): Map<QuestStatus, String> =
+    mapOf(
+        QuestStatus.ACTIVE to stringResource(Res.string.codex_quest_status_active),
+        QuestStatus.COMPLETED to stringResource(Res.string.codex_quest_status_completed),
+        QuestStatus.FAILED to stringResource(Res.string.codex_quest_status_failed),
+    )
+
+/** the shared "resolve whatever's tapped" used by every screen that owns a nullable [EntityRef] selection */
+@Composable
+fun selectedEntitySummary(
+    ref: EntityRef?,
+    npcs: List<Npc>,
+    locations: List<Location>,
+    quests: List<Quest>,
+): EntitySummaryItem? {
+    if (ref == null) return null
+    return buildEntitySummary(ref, EntityLookup(npcs, locations, quests, npcStatusLabels(), questStatusLabels()))
+}
 
 @Composable
 fun EntitySummarySheetContent(

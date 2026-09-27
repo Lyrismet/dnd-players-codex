@@ -74,11 +74,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
             )
     }
 
-/**
- * the colored "●NPC name"/"▲Location"/"◆Quest" pill used for inline mentions and mention summaries.
- * [fontSize] defaults to the standalone-chip size from the design (13sp) - pass 14sp for a chip sitting
- * inline in a paragraph of 15sp body text, where the design bumps mention chips a notch to match
- */
+/** the colored "●NPC name"/"▲Location"/"◆Quest" mention pill - pass 14sp for [fontSize] inline in a paragraph */
 @Composable
 fun MentionChip(
     item: MentionChipItem,

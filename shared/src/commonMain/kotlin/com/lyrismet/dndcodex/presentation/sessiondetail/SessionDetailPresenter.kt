@@ -11,12 +11,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.dndcodex.core.designsystem.LocationMentionColor
-import com.lyrismet.dndcodex.core.designsystem.component.EntityLookup
 import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
-import com.lyrismet.dndcodex.core.designsystem.component.EntitySummaryItem
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
 import com.lyrismet.dndcodex.core.designsystem.component.MentionGlyph
-import com.lyrismet.dndcodex.core.designsystem.component.buildEntitySummary
+import com.lyrismet.dndcodex.core.designsystem.component.selectedEntitySummary
 import com.lyrismet.dndcodex.core.designsystem.component.toChipItem
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
 import com.lyrismet.dndcodex.core.format.toDisplayDate
@@ -34,11 +32,6 @@ import com.lyrismet.dndcodex.core.mention.mentionKey
 import com.lyrismet.dndcodex.core.mention.mentionsIn
 import com.lyrismet.dndcodex.core.mention.parseMentions
 import com.lyrismet.dndcodex.core.mention.trailingMentionQuery
-import com.lyrismet.dndcodex.domain.model.Location
-import com.lyrismet.dndcodex.domain.model.Npc
-import com.lyrismet.dndcodex.domain.model.NpcStatus
-import com.lyrismet.dndcodex.domain.model.Quest
-import com.lyrismet.dndcodex.domain.model.QuestStatus
 import com.lyrismet.dndcodex.domain.model.SessionEntry
 import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
@@ -47,13 +40,6 @@ import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_npc_status_dead
-import dndplayerscodex.shared.generated.resources.codex_npc_status_enemy
-import dndplayerscodex.shared.generated.resources.codex_npc_status_friend
-import dndplayerscodex.shared.generated.resources.codex_npc_status_neutral
-import dndplayerscodex.shared.generated.resources.codex_quest_status_active
-import dndplayerscodex.shared.generated.resources.codex_quest_status_completed
-import dndplayerscodex.shared.generated.resources.codex_quest_status_failed
 import dndplayerscodex.shared.generated.resources.session_detail_meeting_separator_format
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
@@ -187,8 +173,7 @@ class SessionDetailPresenter(
         currentNote?.let { note -> scope.launch { sessionNoteRepository.upsert(note.copy(title = title)) } }
     }
 
-    // the cursor always lands at the end of the new text - a trailing "@" or a just-picked mention
-    // left at the caret's old position is exactly the bug this fixes (was a plain String before)
+    // cursor always lands at the end of the new text, not stuck at the caret's old position
     private fun onInsertMentionTrigger(draft: MutableState<TextFieldValue>) {
         val current = draft.value.text
         val next = if (current.isEmpty() || current.endsWith(" ")) "$current@" else "$current @"
@@ -233,30 +218,6 @@ class SessionDetailPresenter(
     ) {
         currentNote?.let { note -> scope.launch { sessionNoteRepository.upsert(note.copy(endedAt = null)) } }
     }
-}
-
-@Composable
-private fun selectedEntitySummary(
-    ref: EntityRef?,
-    npcs: List<Npc>,
-    locations: List<Location>,
-    quests: List<Quest>,
-): EntitySummaryItem? {
-    if (ref == null) return null
-    val npcStatusLabels =
-        mapOf(
-            NpcStatus.FRIEND to stringResource(Res.string.codex_npc_status_friend),
-            NpcStatus.ENEMY to stringResource(Res.string.codex_npc_status_enemy),
-            NpcStatus.NEUTRAL to stringResource(Res.string.codex_npc_status_neutral),
-            NpcStatus.DEAD to stringResource(Res.string.codex_npc_status_dead),
-        )
-    val questStatusLabels =
-        mapOf(
-            QuestStatus.ACTIVE to stringResource(Res.string.codex_quest_status_active),
-            QuestStatus.COMPLETED to stringResource(Res.string.codex_quest_status_completed),
-            QuestStatus.FAILED to stringResource(Res.string.codex_quest_status_failed),
-        )
-    return buildEntitySummary(ref, EntityLookup(npcs, locations, quests, npcStatusLabels, questStatusLabels))
 }
 
 /** groups [entries] under a "ВСТРЕЧА N" separator per calendar day, only when the session spans more than one */

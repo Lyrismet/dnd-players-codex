@@ -8,6 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import com.lyrismet.dndcodex.core.designsystem.component.EntityLookup
 import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
 import com.lyrismet.dndcodex.core.designsystem.component.buildEntitySummary
+import com.lyrismet.dndcodex.core.designsystem.component.npcStatusLabels
+import com.lyrismet.dndcodex.core.designsystem.component.questStatusLabels
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
 import com.lyrismet.dndcodex.domain.model.NpcStatus
 import com.lyrismet.dndcodex.domain.model.QuestStatus
@@ -18,13 +20,6 @@ import com.slack.circuit.retained.rememberRetained
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_filter_all
-import dndplayerscodex.shared.generated.resources.codex_npc_status_dead
-import dndplayerscodex.shared.generated.resources.codex_npc_status_enemy
-import dndplayerscodex.shared.generated.resources.codex_npc_status_friend
-import dndplayerscodex.shared.generated.resources.codex_npc_status_neutral
-import dndplayerscodex.shared.generated.resources.codex_quest_status_active
-import dndplayerscodex.shared.generated.resources.codex_quest_status_completed
-import dndplayerscodex.shared.generated.resources.codex_quest_status_failed
 import org.jetbrains.compose.resources.stringResource
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
@@ -56,19 +51,8 @@ class CodexPresenter(
         val fields = CodexFields(activeTab, searchQuery, npcStatusFilter, questStatusFilter, selectedEntityRef)
 
         val allLabel = stringResource(Res.string.codex_filter_all)
-        val npcStatusLabels =
-            mapOf(
-                NpcStatus.FRIEND to stringResource(Res.string.codex_npc_status_friend),
-                NpcStatus.ENEMY to stringResource(Res.string.codex_npc_status_enemy),
-                NpcStatus.NEUTRAL to stringResource(Res.string.codex_npc_status_neutral),
-                NpcStatus.DEAD to stringResource(Res.string.codex_npc_status_dead),
-            )
-        val questStatusLabels =
-            mapOf(
-                QuestStatus.ACTIVE to stringResource(Res.string.codex_quest_status_active),
-                QuestStatus.COMPLETED to stringResource(Res.string.codex_quest_status_completed),
-                QuestStatus.FAILED to stringResource(Res.string.codex_quest_status_failed),
-            )
+        val npcStatusLabels = npcStatusLabels()
+        val questStatusLabels = questStatusLabels()
 
         val query = searchQuery.value.trim()
         val npcsById = npcs.associateBy { it.id }

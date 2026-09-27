@@ -46,8 +46,7 @@ internal fun SessionComposer(
     state: SessionDetailState,
     modifier: Modifier = Modifier,
 ) {
-    // suggestions are driven purely by draft text, which doesn't clear on an outside tap - gating their
-    // visibility on focus too is what makes tapping empty space dismiss the popover, not just the keyboard
+    // gating suggestions on focus too (not just draft text) is what makes an outside tap dismiss the popover
     var isDraftFocused by remember { mutableStateOf(false) }
     val draftFocusRequester = remember { FocusRequester() }
 
