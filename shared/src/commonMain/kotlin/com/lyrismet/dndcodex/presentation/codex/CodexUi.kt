@@ -9,7 +9,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.ScreenHeader
 import dndplayerscodex.shared.generated.resources.Res
@@ -30,18 +32,7 @@ fun CodexUi(
     state: CodexState,
     modifier: Modifier = Modifier,
 ) {
-    val tabItems =
-        listOf(
-            CodexTabRowItem(
-                CodexTab.ALL,
-                stringResource(Res.string.codex_filter_all),
-                state.tabCounts.npc + state.tabCounts.quest + state.tabCounts.location,
-            ),
-            CodexTabRowItem(CodexTab.PARTY, stringResource(Res.string.codex_tab_party), state.tabCounts.party),
-            CodexTabRowItem(CodexTab.NPC, stringResource(Res.string.codex_tab_npc), state.tabCounts.npc),
-            CodexTabRowItem(CodexTab.QUEST, stringResource(Res.string.codex_tab_quest), state.tabCounts.quest),
-            CodexTabRowItem(CodexTab.LOCATION, stringResource(Res.string.codex_tab_location), state.tabCounts.location),
-        )
+    val tabItems = codexTabItems(state)
 
     Scaffold(modifier = modifier) { contentPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
@@ -90,4 +81,24 @@ fun CodexUi(
             }
         }
     }
+
+    state.selectedEntity?.let { entity ->
+        AppBottomSheet(onDismissRequest = { state.eventSink(CodexEvent.SheetDismissed) }) {
+            EntitySummarySheetContent(entity)
+        }
+    }
 }
+
+@Composable
+private fun codexTabItems(state: CodexState): List<CodexTabRowItem> =
+    listOf(
+        CodexTabRowItem(
+            CodexTab.ALL,
+            stringResource(Res.string.codex_filter_all),
+            state.tabCounts.npc + state.tabCounts.quest + state.tabCounts.location,
+        ),
+        CodexTabRowItem(CodexTab.PARTY, stringResource(Res.string.codex_tab_party), state.tabCounts.party),
+        CodexTabRowItem(CodexTab.NPC, stringResource(Res.string.codex_tab_npc), state.tabCounts.npc),
+        CodexTabRowItem(CodexTab.QUEST, stringResource(Res.string.codex_tab_quest), state.tabCounts.quest),
+        CodexTabRowItem(CodexTab.LOCATION, stringResource(Res.string.codex_tab_location), state.tabCounts.location),
+    )

@@ -6,10 +6,12 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,9 +19,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -27,8 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,23 +37,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
+import com.lyrismet.dndcodex.core.designsystem.component.MentionChip
+import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_delete
 import dndplayerscodex.shared.generated.resources.session_detail_back
-import dndplayerscodex.shared.generated.resources.session_detail_composer_placeholder
 import dndplayerscodex.shared.generated.resources.session_detail_delete_entry_title
 import dndplayerscodex.shared.generated.resources.session_detail_empty_feed
 import dndplayerscodex.shared.generated.resources.session_detail_end_button
 import dndplayerscodex.shared.generated.resources.session_detail_ended_badge
 import dndplayerscodex.shared.generated.resources.session_detail_live_badge
 import dndplayerscodex.shared.generated.resources.session_detail_resume_button
-import dndplayerscodex.shared.generated.resources.session_detail_submit_button
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -68,7 +72,7 @@ fun SessionDetailUi(
         Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             SessionDetailHeader(state)
 
-            if (state.entries.isEmpty()) {
+            if (state.feed.isEmpty()) {
                 EmptyStatePlaceholder(
                     text = stringResource(Res.string.session_detail_empty_feed),
                     modifier = Modifier.weight(1f),
@@ -79,8 +83,18 @@ fun SessionDetailUi(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    items(state.entries, key = { it.id }) { entry ->
-                        SessionEntryRow(entry, onDeleteClick = { pendingDeleteEntry = entry })
+                    items(state.feed, key = { it.key }) { feedItem ->
+                        when (feedItem) {
+                            is SessionFeedItem.DaySeparator -> DaySeparatorRow(feedItem.label)
+                            is SessionFeedItem.Note ->
+                                SessionEntryRow(
+                                    entry = feedItem.entry,
+                                    onDeleteClick = { pendingDeleteEntry = feedItem.entry },
+                                    onMentionClick = { ref ->
+                                        state.eventSink(SessionDetailEvent.MentionChipClicked(ref))
+                                    },
+                                )
+                        }
                     }
                 }
             }
@@ -94,7 +108,7 @@ fun SessionDetailUi(
     pendingDeleteEntry?.let { entry ->
         ConfirmationDialog(
             title = stringResource(Res.string.session_detail_delete_entry_title),
-            text = entry.body,
+            text = entry.segments.joinToString("") { segment -> segment.plainText() },
             onConfirm = {
                 state.eventSink(SessionDetailEvent.DeleteEntryClicked(entry.id))
                 pendingDeleteEntry = null
@@ -102,7 +116,19 @@ fun SessionDetailUi(
             onDismiss = { pendingDeleteEntry = null },
         )
     }
+
+    state.selectedEntity?.let { entity ->
+        AppBottomSheet(onDismissRequest = { state.eventSink(SessionDetailEvent.SheetDismissed) }) {
+            EntitySummarySheetContent(entity)
+        }
+    }
 }
+
+private fun SessionEntrySegment.plainText(): String =
+    when (this) {
+        is SessionEntrySegment.Text -> text
+        is SessionEntrySegment.Mention -> chip.label
+    }
 
 @Composable
 private fun SessionDetailHeader(
@@ -146,22 +172,40 @@ private fun SessionDetailHeader(
             color = AppPalette.Gold,
             modifier = Modifier.padding(top = 4.dp),
         )
-        TextField(
+        // BasicTextField, not Material3's TextField, whose built-in padding and minimum height don't match the design
+        BasicTextField(
             value = state.title,
             onValueChange = { state.eventSink(SessionDetailEvent.TitleChanged(it)) },
             textStyle = MaterialTheme.typography.headlineLarge.copy(color = AppPalette.TextHeading),
             singleLine = true,
-            colors =
-                TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = AppPalette.Gold,
-                ),
-            modifier = Modifier.fillMaxWidth(),
+            cursorBrush = SolidColor(AppPalette.Gold),
+            modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
         )
         Text(state.dateLabel, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextSecondary)
+        if (state.headerMentions.isNotEmpty()) {
+            HeaderMentionsRow(state.headerMentions, state.eventSink, modifier = Modifier.padding(top = 10.dp))
+        }
+    }
+}
+
+@Composable
+private fun HeaderMentionsRow(
+    mentions: List<MentionChipItem>,
+    eventSink: (SessionDetailEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        mentions.forEach { chip ->
+            MentionChip(
+                item = chip,
+                onClick = chip.entityRef?.let { ref -> { eventSink(SessionDetailEvent.MentionChipClicked(ref)) } },
+                fontSize = 12.sp,
+            )
+        }
     }
 }
 
@@ -197,12 +241,31 @@ private fun SessionStatusBadge(
     }
 }
 
+@Composable
+private fun DaySeparatorRow(
+    label: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.labelSmall, color = AppPalette.Parchment)
+        Box(
+            modifier =
+                Modifier
+                    .padding(start = 10.dp)
+                    .weight(1f)
+                    .height(1.dp)
+                    .background(AppPalette.Border),
+        )
+    }
+}
+
 // long-press to reveal actions, Telegram-style, instead of a permanently visible delete icon
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SessionEntryRow(
     entry: SessionEntryItem,
     onDeleteClick: () -> Unit,
+    onMentionClick: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -222,12 +285,7 @@ private fun SessionEntryRow(
                 color = AppPalette.TextTertiary,
                 modifier = Modifier.width(38.dp),
             )
-            Text(
-                entry.body,
-                style = MaterialTheme.typography.bodyLarge,
-                color = AppPalette.TextPrimary,
-                modifier = Modifier.weight(1f),
-            )
+            SessionEntryBody(entry.segments, onMentionClick, modifier = Modifier.weight(1f))
         }
         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
             DropdownMenuItem(
@@ -244,43 +302,34 @@ private fun SessionEntryRow(
     }
 }
 
+// wraps word-by-word like the note text around it, so a chip never gets stranded on its own line
 @Composable
-private fun SessionComposer(
-    state: SessionDetailState,
+private fun SessionEntryBody(
+    segments: List<SessionEntrySegment>,
+    onMentionClick: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .background(AppPalette.SurfaceSunken)
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.Bottom,
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        TextField(
-            value = state.draft,
-            onValueChange = { state.eventSink(SessionDetailEvent.DraftChanged(it)) },
-            placeholder = {
-                Text(
-                    stringResource(Res.string.session_detail_composer_placeholder),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = AppPalette.TextTertiary,
-                )
-            },
-            textStyle = MaterialTheme.typography.bodyLarge.copy(color = AppPalette.TextPrimary),
-            colors =
-                TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = AppPalette.Gold,
-                ),
-            modifier = Modifier.weight(1f),
-        )
-        Button(onClick = { state.eventSink(SessionDetailEvent.SubmitEntryClicked) }) {
-            Text(stringResource(Res.string.session_detail_submit_button))
+        segments.forEach { segment ->
+            when (segment) {
+                is SessionEntrySegment.Text ->
+                    segment.text.split(' ').forEach { word ->
+                        if (word.isNotEmpty()) {
+                            Text(word, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
+                        }
+                    }
+
+                is SessionEntrySegment.Mention ->
+                    MentionChip(
+                        item = segment.chip,
+                        onClick = segment.chip.entityRef?.let { ref -> { onMentionClick(ref) } },
+                        fontSize = 14.sp,
+                    )
+            }
         }
     }
 }

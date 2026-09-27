@@ -11,14 +11,13 @@ import com.lyrismet.dndcodex.data.repository.SessionNoteRepositoryImpl
 import com.lyrismet.dndcodex.data.settings.SettingsFactory
 import com.lyrismet.dndcodex.domain.repository.LanguageRepository
 import com.lyrismet.dndcodex.domain.repository.LocationRepository
+import com.lyrismet.dndcodex.domain.repository.MentionRepositories
 import com.lyrismet.dndcodex.domain.repository.NpcRepository
 import com.lyrismet.dndcodex.domain.repository.QuestRepository
 import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
 import com.lyrismet.dndcodex.presentation.codex.addCodexUi
 import com.lyrismet.dndcodex.presentation.codex.codexScreenRegistration
-import com.lyrismet.dndcodex.presentation.npcdetail.addNpcDetailUi
-import com.lyrismet.dndcodex.presentation.npcdetail.npcDetailScreenRegistration
 import com.lyrismet.dndcodex.presentation.sessiondetail.addSessionDetailUi
 import com.lyrismet.dndcodex.presentation.sessiondetail.sessionDetailScreenRegistration
 import com.lyrismet.dndcodex.presentation.sessionlist.addSessionListUi
@@ -40,6 +39,7 @@ class AppContainer(
     val npcRepository: NpcRepository = NpcRepositoryImpl(database)
     val questRepository: QuestRepository = QuestRepositoryImpl(database)
     val locationRepository: LocationRepository = LocationRepositoryImpl(database)
+    private val mentionRepositories = MentionRepositories(npcRepository, locationRepository, questRepository)
 
     // инфраструктура
     val languageRepository: LanguageRepository = LanguageRepositoryImpl(settingsFactory.createSettings())
@@ -48,18 +48,16 @@ class AppContainer(
         Circuit
             .Builder()
             // сессии
-            .addSessionListUi(sessionNoteRepository)
-            .addSessionDetailUi(sessionNoteRepository, sessionEntryRepository)
+            .addSessionListUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories)
+            .addSessionDetailUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories)
             // кодекс
             .addCodexUi(npcRepository, questRepository, locationRepository)
-            .addNpcDetailUi(npcRepository)
             .setCircuitSaver(
                 SerializableCircuitSaver(
                     listOf(
                         sessionListScreenRegistration,
                         sessionDetailScreenRegistration,
                         codexScreenRegistration,
-                        npcDetailScreenRegistration,
                     ),
                 ),
             ).build()

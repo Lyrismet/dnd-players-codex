@@ -11,8 +11,8 @@ fun Circuit.Builder.addCodexUi(
     questRepository: QuestRepository,
     locationRepository: LocationRepository,
 ): Circuit.Builder =
-    addPresenter<CodexScreen, CodexState> { _, navigator, _ ->
-        CodexPresenter(navigator, npcRepository, questRepository, locationRepository)
+    addPresenter<CodexScreen, CodexState> { _, _, _ ->
+        CodexPresenter(npcRepository, questRepository, locationRepository)
     }.addUi<CodexScreen, CodexState> { state, modifier ->
         CodexUi(state, modifier)
     }

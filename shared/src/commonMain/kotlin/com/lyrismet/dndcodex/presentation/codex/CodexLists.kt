@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_empty_filtered
 import dndplayerscodex.shared.generated.resources.codex_tab_location
@@ -57,7 +58,7 @@ internal fun CodexNpcList(
             )
         },
     ) { npc ->
-        NpcCodexCard(item = npc, onClick = { state.eventSink(CodexEvent.NpcClicked(npc.id)) })
+        NpcCodexCard(item = npc, onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Npc(npc.id))) })
     }
 }
 
@@ -78,7 +79,11 @@ internal fun CodexQuestList(
             )
         },
     ) { quest ->
-        QuestCodexCard(item = quest, onGiverClick = { state.eventSink(CodexEvent.NpcClicked(it)) })
+        QuestCodexCard(
+            item = quest,
+            onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Quest(quest.id))) },
+            onGiverClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Npc(it))) },
+        )
     }
 }
 
@@ -95,7 +100,10 @@ internal fun CodexLocationList(
             CodexFilterChipRow(items = state.locationFilterOptions, selected = null, onSelected = {})
         },
     ) { location ->
-        LocationCodexCard(item = location)
+        LocationCodexCard(
+            item = location,
+            onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Location(location.id))) },
+        )
     }
 }
 
@@ -116,19 +124,26 @@ internal fun CodexAllList(
         if (state.npcs.isNotEmpty()) {
             item { CodexSectionHeader(stringResource(Res.string.codex_tab_npc)) }
             items(state.npcs, key = { "npc_${it.id}" }) { npc ->
-                NpcCodexCard(item = npc, onClick = { state.eventSink(CodexEvent.NpcClicked(npc.id)) })
+                NpcCodexCard(item = npc, onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Npc(npc.id))) })
             }
         }
         if (state.quests.isNotEmpty()) {
             item { CodexSectionHeader(stringResource(Res.string.codex_tab_quest)) }
             items(state.quests, key = { "quest_${it.id}" }) { quest ->
-                QuestCodexCard(item = quest, onGiverClick = { state.eventSink(CodexEvent.NpcClicked(it)) })
+                QuestCodexCard(
+                    item = quest,
+                    onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Quest(quest.id))) },
+                    onGiverClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Npc(it))) },
+                )
             }
         }
         if (state.locations.isNotEmpty()) {
             item { CodexSectionHeader(stringResource(Res.string.codex_tab_location)) }
             items(state.locations, key = { "location_${it.id}" }) { location ->
-                LocationCodexCard(item = location)
+                LocationCodexCard(
+                    item = location,
+                    onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Location(location.id))) },
+                )
             }
         }
     }
