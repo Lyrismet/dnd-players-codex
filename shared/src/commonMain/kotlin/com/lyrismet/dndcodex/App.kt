@@ -9,12 +9,9 @@ import com.lyrismet.dndcodex.core.localization.AppEnvironment
 import com.lyrismet.dndcodex.core.localization.customAppLocale
 import com.lyrismet.dndcodex.data.AppContainer
 import com.lyrismet.dndcodex.domain.model.AppLanguage
-import com.lyrismet.dndcodex.presentation.sessionlist.SessionListScreen
-import com.slack.circuit.backstack.rememberSaveableBackStack
 import com.slack.circuit.foundation.CircuitCompositionLocals
-import com.slack.circuit.foundation.NavigableCircuitContent
-import com.slack.circuit.foundation.rememberCircuitNavigator
 
+/** composition root - wires locale, theme and the Circuit instance, then hands off to the navigation shell */
 @Composable
 fun App(appContainer: AppContainer) {
     val language by appContainer.languageRepository.observeLanguage().collectAsState(initial = AppLanguage.RUSSIAN)
@@ -23,9 +20,7 @@ fun App(appContainer: AppContainer) {
     AppEnvironment {
         AppTheme {
             CircuitCompositionLocals(appContainer.circuit) {
-                val backStack = rememberSaveableBackStack(root = SessionListScreen)
-                val navigator = rememberCircuitNavigator(backStack, onRootPop = {})
-                NavigableCircuitContent(navigator = navigator, backStack = backStack)
+                AppTabHost()
             }
         }
     }
