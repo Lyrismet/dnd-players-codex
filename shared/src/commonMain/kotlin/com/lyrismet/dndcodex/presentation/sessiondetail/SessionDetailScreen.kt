@@ -1,5 +1,9 @@
 package com.lyrismet.dndcodex.presentation.sessiondetail
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextRange
+import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
+import com.lyrismet.dndcodex.core.designsystem.component.MentionGlyph
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -16,16 +20,53 @@ data class SessionDetailState(
     val title: String = "",
     val dateLabel: String = "",
     val isLive: Boolean = true,
-    val entries: List<SessionEntryItem> = emptyList(),
+    val headerMentions: List<MentionChipItem> = emptyList(),
+    val feed: List<SessionFeedItem> = emptyList(),
     val draft: String = "",
+    val draftSelection: TextRange = TextRange.Zero,
+    val mentionSuggestions: List<SessionMentionSuggestion> = emptyList(),
     val eventSink: (SessionDetailEvent) -> Unit = {},
 ) : CircuitUiState
+
+/** one row in the note feed - either a meeting-day separator (multi-day sessions only) or a timestamped note */
+sealed interface SessionFeedItem {
+    val key: String
+
+    data class DaySeparator(
+        override val key: String,
+        val label: String,
+    ) : SessionFeedItem
+
+    data class Note(
+        val entry: SessionEntryItem,
+    ) : SessionFeedItem {
+        override val key: String get() = "note-${entry.id}"
+    }
+}
 
 /** pre-formatted for direct rendering - the Ui never touches a domain model or does formatting itself */
 data class SessionEntryItem(
     val id: Long,
     val timeLabel: String,
-    val body: String,
+    val segments: List<SessionEntrySegment>,
+)
+
+sealed interface SessionEntrySegment {
+    data class Text(
+        val text: String,
+    ) : SessionEntrySegment
+
+    data class Mention(
+        val chip: MentionChipItem,
+    ) : SessionEntrySegment
+}
+
+data class SessionMentionSuggestion(
+    val candidateKey: String,
+    val glyph: MentionGlyph,
+    val tint: Color,
+    val name: String,
+    val typeLabel: String,
 )
 
 sealed interface SessionDetailEvent : CircuitUiEvent {
@@ -37,6 +78,17 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
 
     data class DraftChanged(
         val text: String,
+        val selection: TextRange,
+    ) : SessionDetailEvent
+
+    data object InsertMentionTriggerClicked : SessionDetailEvent
+
+    data class MentionSuggestionPicked(
+        val candidateKey: String,
+    ) : SessionDetailEvent
+
+    data class MentionChipClicked(
+        val npcId: Long,
     ) : SessionDetailEvent
 
     data object SubmitEntryClicked : SessionDetailEvent

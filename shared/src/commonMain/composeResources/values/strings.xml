@@ -6,6 +6,10 @@
     <string name="session_list_new_session_button">+ Сессия</string>
     <string name="session_list_empty">Нет ни одной сессии - нажмите «+ Сессия», чтобы начать</string>
     <string name="session_list_archive_section">Архив</string>
+    <string name="session_list_live_label">ТЕКУЩАЯ СЕССИЯ</string>
+    <string name="session_list_live_notes_summary_format">Заметок: %1$d · последняя в %2$s</string>
+    <string name="session_list_live_no_notes">Пока без заметок</string>
+    <string name="session_list_live_continue">Продолжить →</string>
     <string name="session_list_delete_content_description">Удалить сессию</string>
     <string name="session_list_delete_dialog_title">Удалить сессию?</string>
     <string name="session_list_delete_dialog_text">«%1$s» и все её заметки будут удалены безвозвратно.</string>
@@ -18,10 +22,16 @@
     <string name="session_detail_resume_button">↻ Возобновить</string>
     <string name="session_detail_live_badge">ИДЁТ</string>
     <string name="session_detail_ended_badge">ЗАВЕРШЕНА</string>
-    <string name="session_detail_composer_placeholder">Что произошло?</string>
+    <string name="session_detail_composer_placeholder">Что произошло? @ — упомянуть NPC, место, квест</string>
+    <string name="session_detail_mention_suggestions_header">УПОМЯНУТЬ</string>
     <string name="session_detail_submit_button">Записать</string>
     <string name="session_detail_empty_feed">Чистая страница - запишите, что происходит</string>
     <string name="session_detail_delete_entry_title">Удалить запись?</string>
+    <string name="session_detail_quest_mention_prefix">Квест: </string>
+    <string name="session_detail_meeting_separator_format">ВСТРЕЧА %1$d · %2$s</string>
+    <string name="session_detail_mention_type_npc">NPC</string>
+    <string name="session_detail_mention_type_location">Локация</string>
+    <string name="session_detail_mention_type_quest">Квест</string>
 
     <string name="codex_overline">База знаний</string>
     <string name="codex_title">Кодекс</string>

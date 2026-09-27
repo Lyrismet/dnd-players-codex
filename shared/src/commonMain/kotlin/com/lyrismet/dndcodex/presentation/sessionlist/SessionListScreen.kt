@@ -1,5 +1,6 @@
 package com.lyrismet.dndcodex.presentation.sessionlist
 
+import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -10,6 +11,7 @@ data object SessionListScreen : Screen
 
 data class SessionListState(
     val campaignName: String = "",
+    val liveSession: LiveSessionItem? = null,
     val sessions: List<SessionListItem> = emptyList(),
     val eventSink: (SessionListEvent) -> Unit = {},
 ) : CircuitUiState
@@ -22,6 +24,17 @@ data class SessionListItem(
     val dateLabel: String,
 )
 
+/** the "currently running" session card shown above the archive - tapping it resumes note-taking */
+data class LiveSessionItem(
+    val id: Long,
+    val numberLabel: String,
+    val overline: String,
+    val title: String,
+    val dateLabel: String,
+    val notesSummary: String,
+    val mentions: List<MentionChipItem>,
+)
+
 sealed interface SessionListEvent : CircuitUiEvent {
     data object NewSessionClicked : SessionListEvent
 
@@ -31,5 +44,9 @@ sealed interface SessionListEvent : CircuitUiEvent {
 
     data class DeleteSessionClicked(
         val id: Long,
+    ) : SessionListEvent
+
+    data class MentionChipClicked(
+        val npcId: Long,
     ) : SessionListEvent
 }

@@ -6,6 +6,10 @@
     <string name="session_list_new_session_button">+ Session</string>
     <string name="session_list_empty">No sessions yet - tap “+ Session” to start</string>
     <string name="session_list_archive_section">Archive</string>
+    <string name="session_list_live_label">CURRENT SESSION</string>
+    <string name="session_list_live_notes_summary_format">Notes: %1$d · last at %2$s</string>
+    <string name="session_list_live_no_notes">No notes yet</string>
+    <string name="session_list_live_continue">Continue →</string>
     <string name="session_list_delete_content_description">Delete session</string>
     <string name="session_list_delete_dialog_title">Delete session?</string>
     <string name="session_list_delete_dialog_text">“%1$s” and all its notes will be permanently deleted.</string>
@@ -18,10 +22,16 @@
     <string name="session_detail_resume_button">↻ Resume</string>
     <string name="session_detail_live_badge">LIVE</string>
     <string name="session_detail_ended_badge">ENDED</string>
-    <string name="session_detail_composer_placeholder">What happened?</string>
+    <string name="session_detail_composer_placeholder">What happened? @ to mention an NPC, place, quest</string>
+    <string name="session_detail_mention_suggestions_header">MENTION</string>
     <string name="session_detail_submit_button">Log</string>
     <string name="session_detail_empty_feed">A blank page - write down what\'s happening</string>
     <string name="session_detail_delete_entry_title">Delete entry?</string>
+    <string name="session_detail_quest_mention_prefix">Quest: </string>
+    <string name="session_detail_meeting_separator_format">MEETING %1$d · %2$s</string>
+    <string name="session_detail_mention_type_npc">NPC</string>
+    <string name="session_detail_mention_type_location">Location</string>
+    <string name="session_detail_mention_type_quest">Quest</string>
 
     <string name="codex_overline">Knowledge Base</string>
     <string name="codex_title">Codex</string>

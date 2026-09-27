@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.component.BottomTabBar
 import com.lyrismet.dndcodex.core.designsystem.component.BottomTabBarItem
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.dndcodex.core.designsystem.component.dismissKeyboardOnTap
 import com.lyrismet.dndcodex.core.designsystem.component.icons.CodexTabIcon
 import com.lyrismet.dndcodex.core.designsystem.component.icons.CombatTabIcon
 import com.lyrismet.dndcodex.core.designsystem.component.icons.SessionsTabIcon
@@ -49,7 +50,7 @@ internal fun AppTabHost() {
     var selectedTabIndex by rememberSaveable { mutableStateOf(AppTab.SESSIONS.ordinal) }
     val selectedTab = AppTab.entries[selectedTabIndex]
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().dismissKeyboardOnTap()) {
         // tabs stay composed and zero-sized when hidden so their nav stack and ui state survive switching away
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             Box(modifier = tabContentModifier(selectedTab == AppTab.SESSIONS)) {
