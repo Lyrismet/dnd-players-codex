@@ -11,60 +11,39 @@ data class StatusColor(
     val border: Color,
 )
 
+private fun statusColor(
+    foreground: Color,
+    background: Color,
+    borderAlpha: Float = 0.4f,
+): StatusColor =
+    StatusColor(foreground = foreground, background = background, border = foreground.copy(alpha = borderAlpha))
+
 fun NpcStatus.toStatusColor(): StatusColor =
     when (this) {
         NpcStatus.FRIEND ->
-            StatusColor(
-                foreground = AppPalette.EmeraldBright,
-                background = AppPalette.Emerald.copy(alpha = 0.14f),
-                border = AppPalette.EmeraldBright.copy(alpha = 0.4f),
-            )
+            statusColor(foreground = AppPalette.EmeraldBright, background = AppPalette.Emerald.copy(alpha = 0.14f))
         NpcStatus.ENEMY ->
-            StatusColor(
-                foreground = AppPalette.MaroonBright,
-                background = AppPalette.Maroon.copy(alpha = 0.24f),
-                border = AppPalette.MaroonBright.copy(alpha = 0.4f),
-            )
+            statusColor(foreground = AppPalette.MaroonBright, background = AppPalette.Maroon.copy(alpha = 0.24f))
         NpcStatus.NEUTRAL ->
-            StatusColor(
-                foreground = AppPalette.TextMuted,
-                background = AppPalette.TextMuted.copy(alpha = 0.12f),
-                border = AppPalette.TextMuted.copy(alpha = 0.4f),
-            )
+            statusColor(foreground = AppPalette.TextMuted, background = AppPalette.TextMuted.copy(alpha = 0.12f))
         NpcStatus.DEAD ->
-            StatusColor(
-                foreground = AppPalette.Dead,
-                background = AppPalette.DeadBackground,
-                border = AppPalette.Dead.copy(alpha = 0.4f),
-            )
+            statusColor(foreground = AppPalette.Dead, background = AppPalette.DeadBackground)
     }
 
 fun QuestStatus.toStatusColor(): StatusColor =
     when (this) {
         QuestStatus.ACTIVE ->
-            StatusColor(
-                foreground = AppPalette.GoldBright,
-                background = AppPalette.Gold.copy(alpha = 0.13f),
-                border = AppPalette.GoldBright.copy(alpha = 0.4f),
-            )
+            statusColor(foreground = AppPalette.GoldBright, background = AppPalette.Gold.copy(alpha = 0.13f))
         QuestStatus.COMPLETED ->
-            StatusColor(
-                foreground = AppPalette.EmeraldBright,
-                background = AppPalette.Emerald.copy(alpha = 0.14f),
-                border = AppPalette.EmeraldBright.copy(alpha = 0.4f),
-            )
+            statusColor(foreground = AppPalette.EmeraldBright, background = AppPalette.Emerald.copy(alpha = 0.14f))
         QuestStatus.FAILED ->
-            StatusColor(
-                foreground = AppPalette.MaroonBright,
-                background = AppPalette.Maroon.copy(alpha = 0.24f),
-                border = AppPalette.MaroonBright.copy(alpha = 0.4f),
-            )
+            statusColor(foreground = AppPalette.MaroonBright, background = AppPalette.Maroon.copy(alpha = 0.24f))
     }
 
 /** location mention chips always use the parchment accent, regardless of any per-entity state */
 val LocationMentionColor =
-    StatusColor(
+    statusColor(
         foreground = AppPalette.Parchment,
         background = AppPalette.Parchment.copy(alpha = 0.10f),
-        border = AppPalette.Parchment.copy(alpha = 0.3f),
+        borderAlpha = 0.3f,
     )

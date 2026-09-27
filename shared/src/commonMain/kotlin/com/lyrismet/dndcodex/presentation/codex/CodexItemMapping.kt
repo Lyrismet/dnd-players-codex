@@ -12,10 +12,10 @@ internal fun Npc.matchesQuery(query: String): Boolean =
 
 internal fun Quest.matchesQuery(
     query: String,
-    npcs: List<Npc>,
+    npcsById: Map<Long, Npc>,
 ): Boolean {
     if (query.isEmpty()) return true
-    val giverName = npcs.find { it.id == givenByNpcId }?.name.orEmpty()
+    val giverName = npcsById[givenByNpcId]?.name.orEmpty()
     return title.contains(query, ignoreCase = true) ||
         reward.contains(query, ignoreCase = true) ||
         giverName.contains(query, ignoreCase = true)
@@ -38,11 +38,11 @@ internal fun List<Npc>.toCodexItems(statusLabels: Map<NpcStatus, String>): List<
     }
 
 internal fun List<Quest>.toCodexItems(
-    npcs: List<Npc>,
+    npcsById: Map<Long, Npc>,
     statusLabels: Map<QuestStatus, String>,
 ): List<QuestCodexItem> =
     map { quest ->
-        val giverNpc = npcs.find { it.id == quest.givenByNpcId }
+        val giverNpc = npcsById[quest.givenByNpcId]
         QuestCodexItem(
             id = quest.id,
             title = quest.title,

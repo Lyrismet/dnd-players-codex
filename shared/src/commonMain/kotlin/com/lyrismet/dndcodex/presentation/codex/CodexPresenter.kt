@@ -38,9 +38,8 @@ class CodexPresenter(
         val quests by questRepository.observeAll().collectAsState(initial = emptyList())
         val locations by locationRepository.observeAll().collectAsState(initial = emptyList())
 
-        // rememberRetained (not remember) so the active tab/search/filters survive pushing
-        // NpcDetailScreen on top and popping back, not just plain recomposition
-        val activeTab = rememberRetained { mutableStateOf(CodexTab.PARTY) }
+        // rememberRetained not remember - state must survive push/pop navigation, not just recomposition
+        val activeTab = rememberRetained { mutableStateOf(CodexTab.ALL) }
         val searchQuery = rememberRetained { mutableStateOf("") }
         val npcStatusFilter = rememberRetained { mutableStateOf<NpcStatus?>(null) }
         val questStatusFilter = rememberRetained { mutableStateOf<QuestStatus?>(null) }
@@ -61,8 +60,9 @@ class CodexPresenter(
             )
 
         val query = searchQuery.value.trim()
+        val npcsById = npcs.associateBy { it.id }
         val searchedNpcs = npcs.filter { it.matchesQuery(query) }
-        val searchedQuests = quests.filter { it.matchesQuery(query, npcs) }
+        val searchedQuests = quests.filter { it.matchesQuery(query, npcsById) }
         val searchedLocations = locations.filter { it.matchesQuery(query) }
         val filteredNpcs = searchedNpcs.filter { npcStatusFilter.value == null || it.status == npcStatusFilter.value }
         val filteredQuests =
@@ -76,11 +76,15 @@ class CodexPresenter(
             npcStatusFilter = npcStatusFilter.value,
             npcFilterOptions =
                 npcFilterOptions(searchedNpcs.groupingBy { it.status }.eachCount(), npcStatusLabels, allLabel),
-            quests = filteredQuests.toCodexItems(npcs, questStatusLabels),
+            quests = filteredQuests.toCodexItems(npcsById, questStatusLabels),
             questStatusFilter = questStatusFilter.value,
             questFilterOptions =
                 questFilterOptions(searchedQuests.groupingBy { it.status }.eachCount(), questStatusLabels, allLabel),
             locations = searchedLocations.toCodexItems(),
+            locationFilterOptions =
+                listOf(
+                    CodexFilterOption(value = null, label = allLabel, count = searchedLocations.size, dotColor = null),
+                ),
         ) { event ->
             onEvent(event, activeTab, searchQuery, npcStatusFilter, questStatusFilter)
         }

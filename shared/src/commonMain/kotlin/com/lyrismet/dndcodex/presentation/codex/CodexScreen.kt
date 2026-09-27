@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 data object CodexScreen : Screen
 
 enum class CodexTab {
+    ALL,
     PARTY,
     NPC,
     QUEST,
@@ -20,6 +21,7 @@ enum class CodexTab {
 }
 
 data class CodexTabCounts(
+    // todo stays 0 until the party domain model lands, see FEATURES.md section 4
     val party: Int = 0,
     val npc: Int = 0,
     val quest: Int = 0,
@@ -77,6 +79,7 @@ data class CodexState(
     val questStatusFilter: QuestStatus? = null,
     val questFilterOptions: List<CodexFilterOption<QuestStatus>> = emptyList(),
     val locations: List<LocationCodexItem> = emptyList(),
+    val locationFilterOptions: List<CodexFilterOption<Nothing>> = emptyList(),
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
 

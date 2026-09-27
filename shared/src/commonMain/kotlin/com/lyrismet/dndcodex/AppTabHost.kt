@@ -50,9 +50,7 @@ internal fun AppTabHost() {
     val selectedTab = AppTab.entries[selectedTabIndex]
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // every tab's content stays composed permanently (sized to zero when hidden) rather than
-        // being torn down and rebuilt on tab switch, so each tab's own push-navigation stack and
-        // in-memory ui state (search/filters) survive switching away and back
+        // tabs stay composed and zero-sized when hidden so their nav stack and ui state survive switching away
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             Box(modifier = tabContentModifier(selectedTab == AppTab.SESSIONS)) {
                 TabBackstackHost(root = SessionListScreen)
