@@ -13,11 +13,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
@@ -42,6 +40,7 @@ import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
+import com.lyrismet.dndcodex.core.designsystem.component.GlowingDot
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChip
 import com.lyrismet.dndcodex.core.designsystem.component.ScreenHeader
@@ -167,7 +166,7 @@ private fun LiveSessionCard(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(Modifier.size(7.dp).clip(CircleShape).background(AppPalette.EmeraldBright))
+            GlowingDot(dotSize = 7.dp)
             Text(
                 stringResource(Res.string.session_list_live_label),
                 style = MaterialTheme.typography.labelSmall,

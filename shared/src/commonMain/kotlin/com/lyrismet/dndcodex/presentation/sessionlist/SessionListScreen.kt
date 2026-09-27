@@ -23,6 +23,7 @@ data class SessionListState(
 data class SessionListItem(
     val id: Long,
     val numberLabel: String,
+    val arabicNumber: Int,
     val title: String,
     val dateLabel: String,
 )

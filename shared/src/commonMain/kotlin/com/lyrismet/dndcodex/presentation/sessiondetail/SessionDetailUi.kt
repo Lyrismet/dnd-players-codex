@@ -3,6 +3,7 @@ package com.lyrismet.dndcodex.presentation.sessiondetail
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,11 +14,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -30,6 +31,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +48,7 @@ import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
+import com.lyrismet.dndcodex.core.designsystem.component.GlowingDot
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChip
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
@@ -78,7 +81,9 @@ fun SessionDetailUi(
                     modifier = Modifier.weight(1f),
                 )
             } else {
+                val listState = rememberLazyListState()
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -95,6 +100,12 @@ fun SessionDetailUi(
                                     },
                                 )
                         }
+                    }
+                }
+                // always jump to the newest entry, chat-app style - no "stay where the user scrolled" tracking
+                LaunchedEffect(state.feed.size) {
+                    if (state.feed.isNotEmpty()) {
+                        listState.animateScrollToItem(state.feed.lastIndex)
                     }
                 }
             }
@@ -132,6 +143,17 @@ private fun SessionEntrySegment.plainText(): String =
 
 @Composable
 private fun SessionDetailHeader(
+    state: SessionDetailState,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        SessionDetailHeaderContent(state)
+        Box(Modifier.fillMaxWidth().height(1.dp).background(AppPalette.BorderSubtle))
+    }
+}
+
+@Composable
+private fun SessionDetailHeaderContent(
     state: SessionDetailState,
     modifier: Modifier = Modifier,
 ) {
@@ -194,10 +216,9 @@ private fun HeaderMentionsRow(
     eventSink: (SessionDetailEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    FlowRow(
-        modifier = modifier,
+    Row(
+        modifier = modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         mentions.forEach { chip ->
             MentionChip(
@@ -224,7 +245,7 @@ private fun SessionStatusBadge(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(Modifier.size(6.dp).clip(CircleShape).background(AppPalette.EmeraldBright))
+            GlowingDot(dotSize = 6.dp)
             Text(
                 stringResource(Res.string.session_detail_live_badge),
                 style = MaterialTheme.typography.labelMedium,

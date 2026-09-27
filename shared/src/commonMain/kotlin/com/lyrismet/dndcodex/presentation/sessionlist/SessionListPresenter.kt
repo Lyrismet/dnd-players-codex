@@ -113,7 +113,7 @@ class SessionListPresenter(
         return LiveSessionItem(
             id = item.id,
             numberLabel = item.numberLabel,
-            overline = stringResource(Res.string.session_overline_format, item.numberLabel),
+            overline = stringResource(Res.string.session_overline_format, item.arabicNumber),
             title = item.title,
             dateLabel = item.dateLabel,
             notesSummary = notesSummary,
@@ -142,6 +142,7 @@ class SessionListPresenter(
                         )
                     navigator.goTo(SessionDetailScreen(id))
                 }
+
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
             is SessionListEvent.DeleteSessionClicked -> scope.launch { sessionNoteRepository.delete(event.id) }
             is SessionListEvent.MentionChipClicked -> selectedEntityRef.value = event.ref
@@ -155,6 +156,7 @@ class SessionListPresenter(
             SessionListItem(
                 id = note.id,
                 numberLabel = (size - index).toRomanNumeral(),
+                arabicNumber = size - index,
                 title = note.title,
                 dateLabel = note.sessionDate.toDisplayDate(),
             )
