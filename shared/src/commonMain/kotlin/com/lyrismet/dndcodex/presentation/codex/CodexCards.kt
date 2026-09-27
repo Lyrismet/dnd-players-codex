@@ -85,6 +85,7 @@ internal fun NpcCodexCard(
 @Composable
 internal fun QuestCodexCard(
     item: QuestCodexItem,
+    onClick: () -> Unit,
     onGiverClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -95,6 +96,7 @@ internal fun QuestCodexCard(
                 .clip(RoundedCornerShape(14.dp))
                 .background(AppPalette.Surface)
                 .border(1.dp, AppPalette.BorderSubtle, RoundedCornerShape(14.dp))
+                .clickable(onClick = onClick)
                 .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -148,6 +150,7 @@ internal fun QuestCodexCard(
 @Composable
 internal fun LocationCodexCard(
     item: LocationCodexItem,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -157,6 +160,7 @@ internal fun LocationCodexCard(
                 .clip(RoundedCornerShape(14.dp))
                 .background(AppPalette.Surface)
                 .border(1.dp, AppPalette.BorderSubtle, RoundedCornerShape(14.dp))
+                .clickable(onClick = onClick)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),

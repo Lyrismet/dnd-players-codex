@@ -40,8 +40,7 @@ data class MentionChipItem(
     val label: String,
     val color: StatusColor,
     val strikeThrough: Boolean = false,
-    // only NPCs have a detail screen to open today - location/quest chips render but don't navigate anywhere yet
-    val npcId: Long? = null,
+    val entityRef: EntityRef? = null,
 )
 
 fun MentionEntity.toChipItem(): MentionChipItem =
@@ -53,7 +52,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
                 label = name,
                 color = status.toStatusColor(),
                 strikeThrough = status == NpcStatus.DEAD,
-                npcId = id,
+                entityRef = EntityRef.Npc(id),
             )
 
         is MentionEntity.LocationMention ->
@@ -62,6 +61,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
                 glyph = MentionGlyph.LOCATION,
                 label = name,
                 color = LocationMentionColor,
+                entityRef = EntityRef.Location(id),
             )
 
         is MentionEntity.QuestMention ->
@@ -70,6 +70,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
                 glyph = MentionGlyph.QUEST,
                 label = name,
                 color = status.toStatusColor(),
+                entityRef = EntityRef.Quest(id),
             )
     }
 

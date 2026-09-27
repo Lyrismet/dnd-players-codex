@@ -41,8 +41,11 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChip
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
@@ -87,8 +90,8 @@ fun SessionDetailUi(
                                 SessionEntryRow(
                                     entry = feedItem.entry,
                                     onDeleteClick = { pendingDeleteEntry = feedItem.entry },
-                                    onMentionClick = { npcId ->
-                                        state.eventSink(SessionDetailEvent.MentionChipClicked(npcId))
+                                    onMentionClick = { ref ->
+                                        state.eventSink(SessionDetailEvent.MentionChipClicked(ref))
                                     },
                                 )
                         }
@@ -112,6 +115,12 @@ fun SessionDetailUi(
             },
             onDismiss = { pendingDeleteEntry = null },
         )
+    }
+
+    state.selectedEntity?.let { entity ->
+        AppBottomSheet(onDismissRequest = { state.eventSink(SessionDetailEvent.SheetDismissed) }) {
+            EntitySummarySheetContent(entity)
+        }
     }
 }
 
@@ -194,7 +203,7 @@ private fun HeaderMentionsRow(
         mentions.forEach { chip ->
             MentionChip(
                 item = chip,
-                onClick = chip.npcId?.let { npcId -> { eventSink(SessionDetailEvent.MentionChipClicked(npcId)) } },
+                onClick = chip.entityRef?.let { ref -> { eventSink(SessionDetailEvent.MentionChipClicked(ref)) } },
                 fontSize = 12.sp,
             )
         }
@@ -257,7 +266,7 @@ private fun DaySeparatorRow(
 private fun SessionEntryRow(
     entry: SessionEntryItem,
     onDeleteClick: () -> Unit,
-    onMentionClick: (Long) -> Unit,
+    onMentionClick: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -298,7 +307,7 @@ private fun SessionEntryRow(
 @Composable
 private fun SessionEntryBody(
     segments: List<SessionEntrySegment>,
-    onMentionClick: (Long) -> Unit,
+    onMentionClick: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     FlowRow(
@@ -318,7 +327,7 @@ private fun SessionEntryBody(
                 is SessionEntrySegment.Mention ->
                     MentionChip(
                         item = segment.chip,
-                        onClick = segment.chip.npcId?.let { npcId -> { onMentionClick(npcId) } },
+                        onClick = segment.chip.entityRef?.let { ref -> { onMentionClick(ref) } },
                         fontSize = 14.sp,
                     )
             }

@@ -1,10 +1,16 @@
 package com.lyrismet.dndcodex.presentation.sessionlist
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import com.lyrismet.dndcodex.core.designsystem.component.EntityLookup
+import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummaryItem
+import com.lyrismet.dndcodex.core.designsystem.component.buildEntitySummary
 import com.lyrismet.dndcodex.core.designsystem.component.toChipItem
 import com.lyrismet.dndcodex.core.format.toDisplayDate
 import com.lyrismet.dndcodex.core.format.toDisplayTime
@@ -14,17 +20,25 @@ import com.lyrismet.dndcodex.core.mention.mentionEntitiesFrom
 import com.lyrismet.dndcodex.core.mention.mentionsIn
 import com.lyrismet.dndcodex.domain.model.Location
 import com.lyrismet.dndcodex.domain.model.Npc
+import com.lyrismet.dndcodex.domain.model.NpcStatus
 import com.lyrismet.dndcodex.domain.model.Quest
+import com.lyrismet.dndcodex.domain.model.QuestStatus
 import com.lyrismet.dndcodex.domain.model.SessionEntry
 import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
 import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
-import com.lyrismet.dndcodex.presentation.npcdetail.NpcDetailScreen
 import com.lyrismet.dndcodex.presentation.sessiondetail.SessionDetailScreen
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_npc_status_dead
+import dndplayerscodex.shared.generated.resources.codex_npc_status_enemy
+import dndplayerscodex.shared.generated.resources.codex_npc_status_friend
+import dndplayerscodex.shared.generated.resources.codex_npc_status_neutral
+import dndplayerscodex.shared.generated.resources.codex_quest_status_active
+import dndplayerscodex.shared.generated.resources.codex_quest_status_completed
+import dndplayerscodex.shared.generated.resources.codex_quest_status_failed
 import dndplayerscodex.shared.generated.resources.default_campaign_name
 import dndplayerscodex.shared.generated.resources.new_session_default_title
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
@@ -74,11 +88,15 @@ class SessionListPresenter(
                 buildLiveSession(item, liveEntries, npcs, locations, quests, questPrefix, noNotesLabel)
             }
 
+        val selectedEntityRef = remember { mutableStateOf<EntityRef?>(null) }
+        val selectedEntity = selectedEntitySummary(selectedEntityRef.value, npcs, locations, quests)
+
         return SessionListState(
             campaignName = campaignName,
             liveSession = liveSession,
             sessions = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems,
-        ) { event -> onEvent(event, scope, newSessionTitle) }
+            selectedEntity = selectedEntity,
+        ) { event -> onEvent(event, scope, newSessionTitle, selectedEntityRef) }
     }
 
     @Composable
@@ -117,6 +135,7 @@ class SessionListPresenter(
         event: SessionListEvent,
         scope: CoroutineScope,
         newSessionTitle: String,
+        selectedEntityRef: MutableState<EntityRef?>,
     ) {
         when (event) {
             SessionListEvent.NewSessionClicked ->
@@ -134,7 +153,8 @@ class SessionListPresenter(
                 }
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
             is SessionListEvent.DeleteSessionClicked -> scope.launch { sessionNoteRepository.delete(event.id) }
-            is SessionListEvent.MentionChipClicked -> navigator.goTo(NpcDetailScreen(event.npcId))
+            is SessionListEvent.MentionChipClicked -> selectedEntityRef.value = event.ref
+            SessionListEvent.SheetDismissed -> selectedEntityRef.value = null
         }
     }
 
@@ -148,4 +168,28 @@ class SessionListPresenter(
                 dateLabel = note.sessionDate.toDisplayDate(),
             )
         }
+}
+
+@Composable
+private fun selectedEntitySummary(
+    ref: EntityRef?,
+    npcs: List<Npc>,
+    locations: List<Location>,
+    quests: List<Quest>,
+): EntitySummaryItem? {
+    if (ref == null) return null
+    val npcStatusLabels =
+        mapOf(
+            NpcStatus.FRIEND to stringResource(Res.string.codex_npc_status_friend),
+            NpcStatus.ENEMY to stringResource(Res.string.codex_npc_status_enemy),
+            NpcStatus.NEUTRAL to stringResource(Res.string.codex_npc_status_neutral),
+            NpcStatus.DEAD to stringResource(Res.string.codex_npc_status_dead),
+        )
+    val questStatusLabels =
+        mapOf(
+            QuestStatus.ACTIVE to stringResource(Res.string.codex_quest_status_active),
+            QuestStatus.COMPLETED to stringResource(Res.string.codex_quest_status_completed),
+            QuestStatus.FAILED to stringResource(Res.string.codex_quest_status_failed),
+        )
+    return buildEntitySummary(ref, EntityLookup(npcs, locations, quests, npcStatusLabels, questStatusLabels))
 }

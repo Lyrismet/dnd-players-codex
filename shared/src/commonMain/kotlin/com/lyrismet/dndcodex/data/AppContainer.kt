@@ -18,8 +18,6 @@ import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
 import com.lyrismet.dndcodex.presentation.codex.addCodexUi
 import com.lyrismet.dndcodex.presentation.codex.codexScreenRegistration
-import com.lyrismet.dndcodex.presentation.npcdetail.addNpcDetailUi
-import com.lyrismet.dndcodex.presentation.npcdetail.npcDetailScreenRegistration
 import com.lyrismet.dndcodex.presentation.sessiondetail.addSessionDetailUi
 import com.lyrismet.dndcodex.presentation.sessiondetail.sessionDetailScreenRegistration
 import com.lyrismet.dndcodex.presentation.sessionlist.addSessionListUi
@@ -54,14 +52,12 @@ class AppContainer(
             .addSessionDetailUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories)
             // кодекс
             .addCodexUi(npcRepository, questRepository, locationRepository)
-            .addNpcDetailUi(npcRepository)
             .setCircuitSaver(
                 SerializableCircuitSaver(
                     listOf(
                         sessionListScreenRegistration,
                         sessionDetailScreenRegistration,
                         codexScreenRegistration,
-                        npcDetailScreenRegistration,
                     ),
                 ),
             ).build()

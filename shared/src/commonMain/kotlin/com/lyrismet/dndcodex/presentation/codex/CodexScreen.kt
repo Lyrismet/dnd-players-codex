@@ -2,6 +2,8 @@ package com.lyrismet.dndcodex.presentation.codex
 
 import androidx.compose.ui.graphics.Color
 import com.lyrismet.dndcodex.core.designsystem.StatusColor
+import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummaryItem
 import com.lyrismet.dndcodex.domain.model.NpcStatus
 import com.lyrismet.dndcodex.domain.model.QuestStatus
 import com.slack.circuit.runtime.CircuitUiEvent
@@ -80,6 +82,7 @@ data class CodexState(
     val questFilterOptions: List<CodexFilterOption<QuestStatus>> = emptyList(),
     val locations: List<LocationCodexItem> = emptyList(),
     val locationFilterOptions: List<CodexFilterOption<Nothing>> = emptyList(),
+    val selectedEntity: EntitySummaryItem? = null,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
 
@@ -100,9 +103,11 @@ sealed interface CodexEvent : CircuitUiEvent {
         val status: QuestStatus?,
     ) : CodexEvent
 
-    data class NpcClicked(
-        val npcId: Long,
+    data class EntityClicked(
+        val ref: EntityRef,
     ) : CodexEvent
+
+    data object SheetDismissed : CodexEvent
 
     data object AddEntryClicked : CodexEvent
 }

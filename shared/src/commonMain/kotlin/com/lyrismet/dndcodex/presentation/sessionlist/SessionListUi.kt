@@ -37,8 +37,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChip
 import com.lyrismet.dndcodex.core.designsystem.component.ScreenHeader
@@ -94,6 +97,12 @@ fun SessionListUi(
             onDismiss = { pendingDeleteSession = null },
         )
     }
+
+    state.selectedEntity?.let { entity ->
+        AppBottomSheet(onDismissRequest = { state.eventSink(SessionListEvent.SheetDismissed) }) {
+            EntitySummarySheetContent(entity)
+        }
+    }
 }
 
 @Composable
@@ -112,7 +121,7 @@ private fun SessionListContent(
                 LiveSessionCard(
                     session = live,
                     onClick = { state.eventSink(SessionListEvent.SessionClicked(live.id)) },
-                    onMentionClick = { npcId -> state.eventSink(SessionListEvent.MentionChipClicked(npcId)) },
+                    onMentionClick = { ref -> state.eventSink(SessionListEvent.MentionChipClicked(ref)) },
                 )
             }
         }
@@ -143,7 +152,7 @@ private fun SessionListContent(
 private fun LiveSessionCard(
     session: LiveSessionItem,
     onClick: () -> Unit,
-    onMentionClick: (Long) -> Unit,
+    onMentionClick: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -180,7 +189,7 @@ private fun LiveSessionCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 session.mentions.forEach { chip ->
-                    MentionChip(item = chip, onClick = chip.npcId?.let { npcId -> { onMentionClick(npcId) } })
+                    MentionChip(item = chip, onClick = chip.entityRef?.let { ref -> { onMentionClick(ref) } })
                 }
             }
         }

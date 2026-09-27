@@ -2,6 +2,8 @@ package com.lyrismet.dndcodex.presentation.sessiondetail
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
+import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummaryItem
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
 import com.lyrismet.dndcodex.core.designsystem.component.MentionGlyph
 import com.slack.circuit.runtime.CircuitUiEvent
@@ -25,6 +27,7 @@ data class SessionDetailState(
     val draft: String = "",
     val draftSelection: TextRange = TextRange.Zero,
     val mentionSuggestions: List<SessionMentionSuggestion> = emptyList(),
+    val selectedEntity: EntitySummaryItem? = null,
     val eventSink: (SessionDetailEvent) -> Unit = {},
 ) : CircuitUiState
 
@@ -88,8 +91,10 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     ) : SessionDetailEvent
 
     data class MentionChipClicked(
-        val npcId: Long,
+        val ref: EntityRef,
     ) : SessionDetailEvent
+
+    data object SheetDismissed : SessionDetailEvent
 
     data object SubmitEntryClicked : SessionDetailEvent
 

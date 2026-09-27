@@ -1,5 +1,7 @@
 package com.lyrismet.dndcodex.presentation.sessionlist
 
+import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummaryItem
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
@@ -13,6 +15,7 @@ data class SessionListState(
     val campaignName: String = "",
     val liveSession: LiveSessionItem? = null,
     val sessions: List<SessionListItem> = emptyList(),
+    val selectedEntity: EntitySummaryItem? = null,
     val eventSink: (SessionListEvent) -> Unit = {},
 ) : CircuitUiState
 
@@ -47,6 +50,8 @@ sealed interface SessionListEvent : CircuitUiEvent {
     ) : SessionListEvent
 
     data class MentionChipClicked(
-        val npcId: Long,
+        val ref: EntityRef,
     ) : SessionListEvent
+
+    data object SheetDismissed : SessionListEvent
 }

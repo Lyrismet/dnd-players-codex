@@ -11,8 +11,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.dndcodex.core.designsystem.LocationMentionColor
+import com.lyrismet.dndcodex.core.designsystem.component.EntityLookup
+import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummaryItem
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
 import com.lyrismet.dndcodex.core.designsystem.component.MentionGlyph
+import com.lyrismet.dndcodex.core.designsystem.component.buildEntitySummary
 import com.lyrismet.dndcodex.core.designsystem.component.toChipItem
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
 import com.lyrismet.dndcodex.core.format.toDisplayDate
@@ -30,15 +34,26 @@ import com.lyrismet.dndcodex.core.mention.mentionKey
 import com.lyrismet.dndcodex.core.mention.mentionsIn
 import com.lyrismet.dndcodex.core.mention.parseMentions
 import com.lyrismet.dndcodex.core.mention.trailingMentionQuery
+import com.lyrismet.dndcodex.domain.model.Location
+import com.lyrismet.dndcodex.domain.model.Npc
+import com.lyrismet.dndcodex.domain.model.NpcStatus
+import com.lyrismet.dndcodex.domain.model.Quest
+import com.lyrismet.dndcodex.domain.model.QuestStatus
 import com.lyrismet.dndcodex.domain.model.SessionEntry
 import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
 import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
-import com.lyrismet.dndcodex.presentation.npcdetail.NpcDetailScreen
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_npc_status_dead
+import dndplayerscodex.shared.generated.resources.codex_npc_status_enemy
+import dndplayerscodex.shared.generated.resources.codex_npc_status_friend
+import dndplayerscodex.shared.generated.resources.codex_npc_status_neutral
+import dndplayerscodex.shared.generated.resources.codex_quest_status_active
+import dndplayerscodex.shared.generated.resources.codex_quest_status_completed
+import dndplayerscodex.shared.generated.resources.codex_quest_status_failed
 import dndplayerscodex.shared.generated.resources.session_detail_meeting_separator_format
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
@@ -53,6 +68,13 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+
+/** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
+private class SessionDetailFields(
+    val titleField: MutableState<String?>,
+    val draft: MutableState<TextFieldValue>,
+    val selectedEntityRef: MutableState<EntityRef?>,
+)
 
 class SessionDetailPresenter(
     private val screen: SessionDetailScreen,
@@ -79,6 +101,8 @@ class SessionDetailPresenter(
         // edited locally so live Flow re-emissions from other screens don't clobber in-progress typing
         val titleField = remember(screen.sessionNoteId) { mutableStateOf<String?>(null) }
         val draft = remember(screen.sessionNoteId) { mutableStateOf(TextFieldValue("")) }
+        val selectedEntityRef = remember(screen.sessionNoteId) { mutableStateOf<EntityRef?>(null) }
+        val fields = SessionDetailFields(titleField, draft, selectedEntityRef)
 
         LaunchedEffect(currentNote?.id) {
             if (titleField.value == null && currentNote != null) {
@@ -103,6 +127,8 @@ class SessionDetailPresenter(
                 .orEmpty()
                 .map { it.toSuggestion(questPrefix, npcTypeLabel, locationTypeLabel, questTypeLabel) }
 
+        val selectedEntity = selectedEntitySummary(selectedEntityRef.value, npcs, locations, quests)
+
         // deliberately renders the same header/feed/composer shape whether or not currentNote
         // has arrived yet from the Flow's cold start - swapping to a distinct "loading" screen
         // for that one frame was the cause of a visible flash on every navigation into this screen
@@ -117,7 +143,8 @@ class SessionDetailPresenter(
             draft = draft.value.text,
             draftSelection = draft.value.selection,
             mentionSuggestions = suggestions,
-        ) { event -> onEvent(event, currentNote, scope, titleField, draft) }
+            selectedEntity = selectedEntity,
+        ) { event -> onEvent(event, currentNote, scope, fields) }
     }
 
     private fun numberLabelFor(allSessions: List<SessionNote>): String? =
@@ -131,17 +158,19 @@ class SessionDetailPresenter(
         event: SessionDetailEvent,
         currentNote: SessionNote?,
         scope: CoroutineScope,
-        titleField: MutableState<String?>,
-        draft: MutableState<TextFieldValue>,
+        fields: SessionDetailFields,
     ) {
         when (event) {
             SessionDetailEvent.BackClicked -> navigator.pop()
-            is SessionDetailEvent.TitleChanged -> onTitleChanged(event.title, currentNote, scope, titleField)
-            is SessionDetailEvent.DraftChanged -> draft.value = TextFieldValue(event.text, event.selection)
-            SessionDetailEvent.InsertMentionTriggerClicked -> onInsertMentionTrigger(draft)
-            is SessionDetailEvent.MentionSuggestionPicked -> onMentionSuggestionPicked(event.candidateKey, draft)
-            is SessionDetailEvent.MentionChipClicked -> navigator.goTo(NpcDetailScreen(event.npcId))
-            SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, draft)
+            is SessionDetailEvent.TitleChanged -> onTitleChanged(event.title, currentNote, scope, fields.titleField)
+            is SessionDetailEvent.DraftChanged ->
+                fields.draft.value = TextFieldValue(event.text, event.selection)
+            SessionDetailEvent.InsertMentionTriggerClicked -> onInsertMentionTrigger(fields.draft)
+            is SessionDetailEvent.MentionSuggestionPicked ->
+                onMentionSuggestionPicked(event.candidateKey, fields.draft)
+            is SessionDetailEvent.MentionChipClicked -> fields.selectedEntityRef.value = event.ref
+            SessionDetailEvent.SheetDismissed -> fields.selectedEntityRef.value = null
+            SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, fields.draft)
             is SessionDetailEvent.DeleteEntryClicked -> scope.launch { sessionEntryRepository.delete(event.id) }
             SessionDetailEvent.EndSessionClicked -> onEndSession(currentNote, scope)
             SessionDetailEvent.ResumeSessionClicked -> onResumeSession(currentNote, scope)
@@ -204,6 +233,30 @@ class SessionDetailPresenter(
     ) {
         currentNote?.let { note -> scope.launch { sessionNoteRepository.upsert(note.copy(endedAt = null)) } }
     }
+}
+
+@Composable
+private fun selectedEntitySummary(
+    ref: EntityRef?,
+    npcs: List<Npc>,
+    locations: List<Location>,
+    quests: List<Quest>,
+): EntitySummaryItem? {
+    if (ref == null) return null
+    val npcStatusLabels =
+        mapOf(
+            NpcStatus.FRIEND to stringResource(Res.string.codex_npc_status_friend),
+            NpcStatus.ENEMY to stringResource(Res.string.codex_npc_status_enemy),
+            NpcStatus.NEUTRAL to stringResource(Res.string.codex_npc_status_neutral),
+            NpcStatus.DEAD to stringResource(Res.string.codex_npc_status_dead),
+        )
+    val questStatusLabels =
+        mapOf(
+            QuestStatus.ACTIVE to stringResource(Res.string.codex_quest_status_active),
+            QuestStatus.COMPLETED to stringResource(Res.string.codex_quest_status_completed),
+            QuestStatus.FAILED to stringResource(Res.string.codex_quest_status_failed),
+        )
+    return buildEntitySummary(ref, EntityLookup(npcs, locations, quests, npcStatusLabels, questStatusLabels))
 }
 
 /** groups [entries] under a "ВСТРЕЧА N" separator per calendar day, only when the session spans more than one */
