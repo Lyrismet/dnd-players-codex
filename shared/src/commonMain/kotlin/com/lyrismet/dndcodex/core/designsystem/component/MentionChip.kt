@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.LocationMentionColor
 import com.lyrismet.dndcodex.core.designsystem.StatusColor
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
+import com.lyrismet.dndcodex.core.entitysummary.EntityRef
 import com.lyrismet.dndcodex.core.mention.MentionEntity
 import com.lyrismet.dndcodex.core.mention.dedupeKey
 import com.lyrismet.dndcodex.domain.model.Location

@@ -2,8 +2,8 @@ package com.lyrismet.dndcodex.presentation.codex
 
 import androidx.compose.ui.graphics.Color
 import com.lyrismet.dndcodex.core.designsystem.StatusColor
-import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
-import com.lyrismet.dndcodex.core.designsystem.component.EntitySummaryItem
+import com.lyrismet.dndcodex.core.entitysummary.EntityRef
+import com.lyrismet.dndcodex.core.entitysummary.EntitySummaryItem
 import com.lyrismet.dndcodex.domain.model.NpcStatus
 import com.lyrismet.dndcodex.domain.model.QuestStatus
 import com.slack.circuit.runtime.CircuitUiEvent

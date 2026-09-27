@@ -30,6 +30,16 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.entitysummary.EntityEmblem
+import com.lyrismet.dndcodex.core.entitysummary.EntityEmblemShape
+import com.lyrismet.dndcodex.core.entitysummary.EntityRef
+import com.lyrismet.dndcodex.core.entitysummary.EntitySummaryItem
+import com.lyrismet.dndcodex.core.entitysummary.EntitySummarySheetActions
+import com.lyrismet.dndcodex.core.entitysummary.FactRow
+import com.lyrismet.dndcodex.core.entitysummary.FactValue
+import com.lyrismet.dndcodex.core.entitysummary.RelatedNoteItem
+import com.lyrismet.dndcodex.core.entitysummary.RelationGroup
+import com.lyrismet.dndcodex.core.entitysummary.StatusOption
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_overline_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_count_format

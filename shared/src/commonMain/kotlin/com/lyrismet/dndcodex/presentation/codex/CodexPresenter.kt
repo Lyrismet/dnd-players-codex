@@ -6,11 +6,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
-import com.lyrismet.dndcodex.core.designsystem.component.npcStatusLabels
-import com.lyrismet.dndcodex.core.designsystem.component.questStatusLabels
-import com.lyrismet.dndcodex.core.designsystem.component.selectedEntitySummary
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
+import com.lyrismet.dndcodex.core.entitysummary.EntityRef
+import com.lyrismet.dndcodex.core.entitysummary.EntitySheetInteractions
+import com.lyrismet.dndcodex.core.entitysummary.npcStatusLabels
+import com.lyrismet.dndcodex.core.entitysummary.questStatusLabels
+import com.lyrismet.dndcodex.core.entitysummary.selectedEntitySummary
 import com.lyrismet.dndcodex.core.mention.mentionCandidates
 import com.lyrismet.dndcodex.core.mention.mentionEntitiesFrom
 import com.lyrismet.dndcodex.domain.model.NpcStatus
@@ -20,8 +21,6 @@ import com.lyrismet.dndcodex.domain.repository.NpcRepository
 import com.lyrismet.dndcodex.domain.repository.QuestRepository
 import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
-import com.lyrismet.dndcodex.domain.repository.updateStatus
-import com.lyrismet.dndcodex.presentation.sessiondetail.SessionDetailScreen
 import com.slack.circuit.retained.rememberRetained
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
@@ -29,7 +28,6 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_filter_all
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
@@ -39,6 +37,7 @@ private class CodexFields(
     val npcStatusFilter: MutableState<NpcStatus?>,
     val questStatusFilter: MutableState<QuestStatus?>,
     val selectedEntityRef: MutableState<EntityRef?>,
+    val entitySheet: EntitySheetInteractions,
 )
 
 class CodexPresenter(
@@ -64,7 +63,9 @@ class CodexPresenter(
         val npcStatusFilter = rememberRetained { mutableStateOf<NpcStatus?>(null) }
         val questStatusFilter = rememberRetained { mutableStateOf<QuestStatus?>(null) }
         val selectedEntityRef = rememberRetained { mutableStateOf<EntityRef?>(null) }
-        val fields = CodexFields(activeTab, searchQuery, npcStatusFilter, questStatusFilter, selectedEntityRef)
+        val entitySheet = EntitySheetInteractions(selectedEntityRef, npcRepository, questRepository, navigator)
+        val fields =
+            CodexFields(activeTab, searchQuery, npcStatusFilter, questStatusFilter, selectedEntityRef, entitySheet)
 
         val allLabel = stringResource(Res.string.codex_filter_all)
         val npcStatusLabels = npcStatusLabels()
@@ -157,15 +158,12 @@ class CodexPresenter(
             is CodexEvent.SearchQueryChanged -> fields.searchQuery.value = event.query
             is CodexEvent.NpcStatusFilterSelected -> fields.npcStatusFilter.value = event.status
             is CodexEvent.QuestStatusFilterSelected -> fields.questStatusFilter.value = event.status
-            is CodexEvent.EntityClicked -> fields.selectedEntityRef.value = event.ref
-            is CodexEvent.NpcStatusSelected -> scope.launch { npcRepository.updateStatus(event.npcId, event.status) }
+            is CodexEvent.EntityClicked -> fields.entitySheet.onEntityClicked(event.ref)
+            is CodexEvent.NpcStatusSelected -> fields.entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
             is CodexEvent.QuestStatusSelected ->
-                scope.launch { questRepository.updateStatus(event.questId, event.status) }
-            is CodexEvent.RelatedNoteClicked -> {
-                fields.selectedEntityRef.value = null
-                navigator.goTo(SessionDetailScreen(event.sessionNoteId))
-            }
-            CodexEvent.SheetDismissed -> fields.selectedEntityRef.value = null
+                fields.entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
+            is CodexEvent.RelatedNoteClicked -> fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId)
+            CodexEvent.SheetDismissed -> fields.entitySheet.onDismissed()
             // creation form is out of scope for now (FEATURES.md section 6) - the header button stays inert
             CodexEvent.AddEntryClicked -> Unit
         }

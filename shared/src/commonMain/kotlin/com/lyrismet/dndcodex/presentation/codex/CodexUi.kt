@@ -11,11 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
-import com.lyrismet.dndcodex.core.designsystem.component.EntitySummaryItem
-import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetActions
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.ScreenHeader
+import com.lyrismet.dndcodex.core.entitysummary.EntitySummaryItem
+import com.lyrismet.dndcodex.core.entitysummary.EntitySummarySheetActions
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_add_entry_button
 import dndplayerscodex.shared.generated.resources.codex_filter_all

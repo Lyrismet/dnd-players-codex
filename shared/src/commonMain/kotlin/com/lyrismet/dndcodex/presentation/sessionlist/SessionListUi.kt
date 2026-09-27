@@ -38,14 +38,14 @@ import com.lyrismet.dndcodex.core.designsystem.AppPalette
 import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
-import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
-import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetActions
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.GlowingDot
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChip
 import com.lyrismet.dndcodex.core.designsystem.component.ScreenHeader
 import com.lyrismet.dndcodex.core.designsystem.component.SectionOverline
+import com.lyrismet.dndcodex.core.entitysummary.EntityRef
+import com.lyrismet.dndcodex.core.entitysummary.EntitySummarySheetActions
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_list_archive_section
 import dndplayerscodex.shared.generated.resources.session_list_delete_content_description
