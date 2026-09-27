@@ -39,6 +39,7 @@ import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetActions
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.GlowingDot
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
@@ -99,7 +100,20 @@ fun SessionListUi(
 
     state.selectedEntity?.let { entity ->
         AppBottomSheet(onDismissRequest = { state.eventSink(SessionListEvent.SheetDismissed) }) {
-            EntitySummarySheetContent(entity)
+            EntitySummarySheetContent(
+                item = entity,
+                actions =
+                    EntitySummarySheetActions(
+                        onEntityRefClicked = { ref -> state.eventSink(SessionListEvent.MentionChipClicked(ref)) },
+                        onNpcStatusSelected = { id, status ->
+                            state.eventSink(SessionListEvent.NpcStatusSelected(id, status))
+                        },
+                        onQuestStatusSelected = { id, status ->
+                            state.eventSink(SessionListEvent.QuestStatusSelected(id, status))
+                        },
+                        onRelatedNoteClicked = { id -> state.eventSink(SessionListEvent.RelatedNoteClicked(id)) },
+                    ),
+            )
         }
     }
 }

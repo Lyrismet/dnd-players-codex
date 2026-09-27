@@ -6,6 +6,8 @@ import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummaryItem
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
 import com.lyrismet.dndcodex.core.designsystem.component.MentionGlyph
+import com.lyrismet.dndcodex.domain.model.NpcStatus
+import com.lyrismet.dndcodex.domain.model.QuestStatus
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -92,6 +94,20 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
 
     data class MentionChipClicked(
         val ref: EntityRef,
+    ) : SessionDetailEvent
+
+    data class NpcStatusSelected(
+        val npcId: Long,
+        val status: NpcStatus,
+    ) : SessionDetailEvent
+
+    data class QuestStatusSelected(
+        val questId: Long,
+        val status: QuestStatus,
+    ) : SessionDetailEvent
+
+    data class RelatedNoteClicked(
+        val sessionNoteId: Long,
     ) : SessionDetailEvent
 
     data object SheetDismissed : SessionDetailEvent

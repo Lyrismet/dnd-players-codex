@@ -51,8 +51,13 @@ class AppContainer(
             .addSessionListUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories)
             .addSessionDetailUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories)
             // кодекс
-            .addCodexUi(npcRepository, questRepository, locationRepository)
-            .setCircuitSaver(
+            .addCodexUi(
+                npcRepository,
+                questRepository,
+                locationRepository,
+                sessionNoteRepository,
+                sessionEntryRepository,
+            ).setCircuitSaver(
                 SerializableCircuitSaver(
                     listOf(
                         sessionListScreenRegistration,

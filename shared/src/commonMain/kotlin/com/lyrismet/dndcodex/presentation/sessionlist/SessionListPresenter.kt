@@ -10,20 +10,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
 import com.lyrismet.dndcodex.core.designsystem.component.selectedEntitySummary
 import com.lyrismet.dndcodex.core.designsystem.component.toChipItem
+import com.lyrismet.dndcodex.core.format.chronologicalIndex
+import com.lyrismet.dndcodex.core.format.chronologicalNumberLabels
 import com.lyrismet.dndcodex.core.format.toDisplayDate
 import com.lyrismet.dndcodex.core.format.toDisplayTime
-import com.lyrismet.dndcodex.core.format.toRomanNumeral
+import com.lyrismet.dndcodex.core.mention.MentionCandidate
 import com.lyrismet.dndcodex.core.mention.mentionCandidates
 import com.lyrismet.dndcodex.core.mention.mentionEntitiesFrom
 import com.lyrismet.dndcodex.core.mention.mentionsIn
-import com.lyrismet.dndcodex.domain.model.Location
-import com.lyrismet.dndcodex.domain.model.Npc
-import com.lyrismet.dndcodex.domain.model.Quest
 import com.lyrismet.dndcodex.domain.model.SessionEntry
 import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
 import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
+import com.lyrismet.dndcodex.domain.repository.updateStatus
 import com.lyrismet.dndcodex.presentation.sessiondetail.SessionDetailScreen
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
@@ -53,6 +53,7 @@ class SessionListPresenter(
     @Composable
     override fun present(): SessionListState {
         val sessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
+        val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
         val npcs by mentionRepositories.npcRepository.observeAll().collectAsState(initial = emptyList())
         val locations by mentionRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
         val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
@@ -62,6 +63,7 @@ class SessionListPresenter(
         val newSessionTitle = stringResource(Res.string.new_session_default_title)
         val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
+        val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix)
 
         val liveNote = sessions.firstOrNull { it.isLive }
         val liveEntriesFlow: Flow<List<SessionEntry>> =
@@ -72,13 +74,11 @@ class SessionListPresenter(
 
         val allItems = sessions.toListItems()
         val liveItem = liveNote?.let { note -> allItems.first { it.id == note.id } }
-        val liveSession =
-            liveItem?.let { item ->
-                buildLiveSession(item, liveEntries, npcs, locations, quests, questPrefix, noNotesLabel)
-            }
+        val liveSession = liveItem?.let { item -> buildLiveSession(item, liveEntries, candidates, noNotesLabel) }
 
         val selectedEntityRef = remember { mutableStateOf<EntityRef?>(null) }
-        val selectedEntity = selectedEntitySummary(selectedEntityRef.value, npcs, locations, quests)
+        val selectedEntity =
+            selectedEntitySummary(selectedEntityRef.value, npcs, locations, quests, sessions, allEntries, candidates)
 
         return SessionListState(
             campaignName = campaignName,
@@ -92,13 +92,9 @@ class SessionListPresenter(
     private fun buildLiveSession(
         item: SessionListItem,
         liveEntries: List<SessionEntry>,
-        npcs: List<Npc>,
-        locations: List<Location>,
-        quests: List<Quest>,
-        questPrefix: String,
+        candidates: List<MentionCandidate>,
         noNotesLabel: String,
     ): LiveSessionItem {
-        val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix)
         // reversed so a dedupe-by-first-seen keeps each entity's most recent mention, not its oldest one
         val mentions =
             mentionsIn(liveEntries.asReversed().map { it.body }, candidates).take(5).map { it.toChipItem() }
@@ -147,19 +143,30 @@ class SessionListPresenter(
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
             is SessionListEvent.DeleteSessionClicked -> scope.launch { sessionNoteRepository.delete(event.id) }
             is SessionListEvent.MentionChipClicked -> selectedEntityRef.value = event.ref
+            is SessionListEvent.NpcStatusSelected ->
+                scope.launch { mentionRepositories.npcRepository.updateStatus(event.npcId, event.status) }
+            is SessionListEvent.QuestStatusSelected ->
+                scope.launch { mentionRepositories.questRepository.updateStatus(event.questId, event.status) }
+            is SessionListEvent.RelatedNoteClicked -> {
+                selectedEntityRef.value = null
+                navigator.goTo(SessionDetailScreen(event.sessionNoteId))
+            }
             SessionListEvent.SheetDismissed -> selectedEntityRef.value = null
         }
     }
 
     // numbered by chronological order (oldest = I) even though [this] arrives newest-first from the repo
-    private fun List<SessionNote>.toListItems(): List<SessionListItem> =
-        mapIndexed { index, note ->
+    private fun List<SessionNote>.toListItems(): List<SessionListItem> {
+        val numberLabels = chronologicalNumberLabels()
+        val arabicNumbers = chronologicalIndex()
+        return map { note ->
             SessionListItem(
                 id = note.id,
-                numberLabel = (size - index).toRomanNumeral(),
-                arabicNumber = size - index,
+                numberLabel = numberLabels.getValue(note.id),
+                arabicNumber = arabicNumbers.getValue(note.id),
                 title = note.title,
                 dateLabel = note.sessionDate.toDisplayDate(),
             )
         }
+    }
 }

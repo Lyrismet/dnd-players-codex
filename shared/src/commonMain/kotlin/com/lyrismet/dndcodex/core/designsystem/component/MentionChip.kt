@@ -23,7 +23,10 @@ import com.lyrismet.dndcodex.core.designsystem.StatusColor
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
 import com.lyrismet.dndcodex.core.mention.MentionEntity
 import com.lyrismet.dndcodex.core.mention.dedupeKey
+import com.lyrismet.dndcodex.domain.model.Location
+import com.lyrismet.dndcodex.domain.model.Npc
 import com.lyrismet.dndcodex.domain.model.NpcStatus
+import com.lyrismet.dndcodex.domain.model.Quest
 
 enum class MentionGlyph(
     val symbol: String,
@@ -73,6 +76,12 @@ fun MentionEntity.toChipItem(): MentionChipItem =
                 entityRef = EntityRef.Quest(id),
             )
     }
+
+fun Npc.toMentionChip(): MentionChipItem = MentionEntity.NpcMention(id, name, status).toChipItem()
+
+fun Location.toMentionChip(): MentionChipItem = MentionEntity.LocationMention(id, name).toChipItem()
+
+fun Quest.toMentionChip(): MentionChipItem = MentionEntity.QuestMention(id, title, status).toChipItem()
 
 /** the colored "●NPC name"/"▲Location"/"◆Quest" mention pill - pass 14sp for [fontSize] inline in a paragraph */
 @Composable

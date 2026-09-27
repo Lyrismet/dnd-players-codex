@@ -5,7 +5,9 @@ CREATE TABLE npc (
     name TEXT NOT NULL,
     status TEXT AS NpcStatus NOT NULL,
     description TEXT NOT NULL,
-    location_id INTEGER REFERENCES location(id) ON DELETE SET NULL
+    location_id INTEGER REFERENCES location(id) ON DELETE SET NULL,
+    race TEXT NOT NULL DEFAULT '',
+    faction TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX npc_location_id ON npc(location_id);
@@ -20,12 +22,12 @@ selectByLocation:
 SELECT * FROM npc WHERE location_id = ?;
 
 insert:
-INSERT INTO npc(name, status, description, location_id)
-VALUES (?, ?, ?, ?);
+INSERT INTO npc(name, status, description, location_id, race, faction)
+VALUES (?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE npc
-SET name = ?, status = ?, description = ?, location_id = ?
+SET name = ?, status = ?, description = ?, location_id = ?, race = ?, faction = ?
 WHERE id = ?;
 
 deleteById:

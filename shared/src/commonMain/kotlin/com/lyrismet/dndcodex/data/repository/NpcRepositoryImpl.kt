@@ -28,10 +28,10 @@ class NpcRepositoryImpl(
     override suspend fun upsert(npc: Npc): Long =
         withContext(Dispatchers.Default) {
             if (npc.id == 0L) {
-                queries.insert(npc.name, npc.status, npc.description, npc.locationId)
+                queries.insert(npc.name, npc.status, npc.description, npc.locationId, npc.race, npc.faction)
                 queries.lastInsertRowId().executeAsOne()
             } else {
-                queries.update(npc.name, npc.status, npc.description, npc.locationId, npc.id)
+                queries.update(npc.name, npc.status, npc.description, npc.locationId, npc.race, npc.faction, npc.id)
                 npc.id
             }
         }
@@ -42,11 +42,15 @@ class NpcRepositoryImpl(
         }
     }
 
+    // one param per npc table column - dictated by SQLDelight's generated query mapper shape, not real complexity
+    @Suppress("LongParameterList")
     private fun toDomain(
         id: Long,
         name: String,
         status: NpcStatus,
         description: String,
         locationId: Long?,
-    ) = Npc(id, name, status, description, locationId)
+        race: String,
+        faction: String,
+    ) = Npc(id, name, status, description, locationId, race, faction)
 }

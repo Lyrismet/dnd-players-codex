@@ -107,6 +107,20 @@ sealed interface CodexEvent : CircuitUiEvent {
         val ref: EntityRef,
     ) : CodexEvent
 
+    data class NpcStatusSelected(
+        val npcId: Long,
+        val status: NpcStatus,
+    ) : CodexEvent
+
+    data class QuestStatusSelected(
+        val questId: Long,
+        val status: QuestStatus,
+    ) : CodexEvent
+
+    data class RelatedNoteClicked(
+        val sessionNoteId: Long,
+    ) : CodexEvent
+
     data object SheetDismissed : CodexEvent
 
     data object AddEntryClicked : CodexEvent

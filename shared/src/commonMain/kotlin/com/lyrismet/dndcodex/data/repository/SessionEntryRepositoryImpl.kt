@@ -22,6 +22,9 @@ class SessionEntryRepositoryImpl(
     override fun observeForSession(sessionNoteId: Long): Flow<List<SessionEntry>> =
         queries.selectForSession(sessionNoteId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
 
+    override fun observeAll(): Flow<List<SessionEntry>> =
+        queries.selectAll(::toDomain).asFlow().mapToList(Dispatchers.Default)
+
     @OptIn(ExperimentalTime::class)
     override suspend fun add(
         sessionNoteId: Long,

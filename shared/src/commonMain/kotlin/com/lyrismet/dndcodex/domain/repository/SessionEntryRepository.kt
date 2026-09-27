@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.Flow
 interface SessionEntryRepository {
     fun observeForSession(sessionNoteId: Long): Flow<List<SessionEntry>>
 
+    fun observeAll(): Flow<List<SessionEntry>>
+
     suspend fun add(
         sessionNoteId: Long,
         body: String,

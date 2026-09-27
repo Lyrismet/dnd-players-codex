@@ -5,21 +5,31 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import com.lyrismet.dndcodex.core.designsystem.component.EntityLookup
+import androidx.compose.runtime.rememberCoroutineScope
 import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
-import com.lyrismet.dndcodex.core.designsystem.component.buildEntitySummary
 import com.lyrismet.dndcodex.core.designsystem.component.npcStatusLabels
 import com.lyrismet.dndcodex.core.designsystem.component.questStatusLabels
+import com.lyrismet.dndcodex.core.designsystem.component.selectedEntitySummary
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
+import com.lyrismet.dndcodex.core.mention.mentionCandidates
+import com.lyrismet.dndcodex.core.mention.mentionEntitiesFrom
 import com.lyrismet.dndcodex.domain.model.NpcStatus
 import com.lyrismet.dndcodex.domain.model.QuestStatus
 import com.lyrismet.dndcodex.domain.repository.LocationRepository
 import com.lyrismet.dndcodex.domain.repository.NpcRepository
 import com.lyrismet.dndcodex.domain.repository.QuestRepository
+import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
+import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
+import com.lyrismet.dndcodex.domain.repository.updateStatus
+import com.lyrismet.dndcodex.presentation.sessiondetail.SessionDetailScreen
 import com.slack.circuit.retained.rememberRetained
+import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_filter_all
+import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
@@ -32,15 +42,21 @@ private class CodexFields(
 )
 
 class CodexPresenter(
+    private val navigator: Navigator,
     private val npcRepository: NpcRepository,
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
+    private val sessionNoteRepository: SessionNoteRepository,
+    private val sessionEntryRepository: SessionEntryRepository,
 ) : Presenter<CodexState> {
     @Composable
     override fun present(): CodexState {
         val npcs by npcRepository.observeAll().collectAsState(initial = emptyList())
         val quests by questRepository.observeAll().collectAsState(initial = emptyList())
         val locations by locationRepository.observeAll().collectAsState(initial = emptyList())
+        val sessionNotes by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
+        val sessionEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
+        val scope = rememberCoroutineScope()
 
         // rememberRetained not remember - state must survive push/pop navigation, not just recomposition
         val activeTab = rememberRetained { mutableStateOf(CodexTab.ALL) }
@@ -53,6 +69,8 @@ class CodexPresenter(
         val allLabel = stringResource(Res.string.codex_filter_all)
         val npcStatusLabels = npcStatusLabels()
         val questStatusLabels = questStatusLabels()
+        val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
+        val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix)
 
         val query = searchQuery.value.trim()
         val npcsById = npcs.associateBy { it.id }
@@ -64,9 +82,15 @@ class CodexPresenter(
             searchedQuests.filter { questStatusFilter.value == null || it.status == questStatusFilter.value }
 
         val selectedEntity =
-            selectedEntityRef.value?.let { ref ->
-                buildEntitySummary(ref, EntityLookup(npcs, locations, quests, npcStatusLabels, questStatusLabels))
-            }
+            selectedEntitySummary(
+                selectedEntityRef.value,
+                npcs,
+                locations,
+                quests,
+                sessionNotes,
+                sessionEntries,
+                candidates,
+            )
 
         return CodexState(
             activeTab = activeTab.value,
@@ -86,7 +110,7 @@ class CodexPresenter(
                     CodexFilterOption(value = null, label = allLabel, count = searchedLocations.size, dotColor = null),
                 ),
             selectedEntity = selectedEntity,
-        ) { event -> onEvent(event, fields) }
+        ) { event -> onEvent(event, fields, scope) }
     }
 
     private fun npcFilterOptions(
@@ -126,6 +150,7 @@ class CodexPresenter(
     private fun onEvent(
         event: CodexEvent,
         fields: CodexFields,
+        scope: CoroutineScope,
     ) {
         when (event) {
             is CodexEvent.TabSelected -> fields.activeTab.value = event.tab
@@ -133,6 +158,13 @@ class CodexPresenter(
             is CodexEvent.NpcStatusFilterSelected -> fields.npcStatusFilter.value = event.status
             is CodexEvent.QuestStatusFilterSelected -> fields.questStatusFilter.value = event.status
             is CodexEvent.EntityClicked -> fields.selectedEntityRef.value = event.ref
+            is CodexEvent.NpcStatusSelected -> scope.launch { npcRepository.updateStatus(event.npcId, event.status) }
+            is CodexEvent.QuestStatusSelected ->
+                scope.launch { questRepository.updateStatus(event.questId, event.status) }
+            is CodexEvent.RelatedNoteClicked -> {
+                fields.selectedEntityRef.value = null
+                navigator.goTo(SessionDetailScreen(event.sessionNoteId))
+            }
             CodexEvent.SheetDismissed -> fields.selectedEntityRef.value = null
             // creation form is out of scope for now (FEATURES.md section 6) - the header button stays inert
             CodexEvent.AddEntryClicked -> Unit
