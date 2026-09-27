@@ -12,6 +12,9 @@ CREATE INDEX session_entry_session_note_id ON session_entry(session_note_id);
 selectForSession:
 SELECT * FROM session_entry WHERE session_note_id = ? ORDER BY created_at ASC;
 
+selectAll:
+SELECT * FROM session_entry ORDER BY created_at ASC;
+
 insert:
 INSERT INTO session_entry(session_note_id, created_at, body)
 VALUES (?, ?, ?);

@@ -17,9 +17,9 @@ import com.lyrismet.dndcodex.core.designsystem.component.MentionGlyph
 import com.lyrismet.dndcodex.core.designsystem.component.selectedEntitySummary
 import com.lyrismet.dndcodex.core.designsystem.component.toChipItem
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
+import com.lyrismet.dndcodex.core.format.chronologicalNumberLabels
 import com.lyrismet.dndcodex.core.format.toDisplayDate
 import com.lyrismet.dndcodex.core.format.toDisplayTime
-import com.lyrismet.dndcodex.core.format.toRomanNumeral
 import com.lyrismet.dndcodex.core.format.toShortDayMonthUpper
 import com.lyrismet.dndcodex.core.mention.MentionCandidate
 import com.lyrismet.dndcodex.core.mention.MentionEntity
@@ -37,6 +37,7 @@ import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
 import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
+import com.lyrismet.dndcodex.domain.repository.updateStatus
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
@@ -73,6 +74,7 @@ class SessionDetailPresenter(
     @Composable
     override fun present(): SessionDetailState {
         val allSessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
+        val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
         val entries by sessionEntryRepository
             .observeForSession(screen.sessionNoteId)
             .collectAsState(initial = emptyList())
@@ -113,7 +115,16 @@ class SessionDetailPresenter(
                 .orEmpty()
                 .map { it.toSuggestion(questPrefix, npcTypeLabel, locationTypeLabel, questTypeLabel) }
 
-        val selectedEntity = selectedEntitySummary(selectedEntityRef.value, npcs, locations, quests)
+        val selectedEntity =
+            selectedEntitySummary(
+                selectedEntityRef.value,
+                npcs,
+                locations,
+                quests,
+                allSessions,
+                allEntries,
+                candidates,
+            )
 
         // deliberately renders the same header/feed/composer shape whether or not currentNote
         // has arrived yet from the Flow's cold start - swapping to a distinct "loading" screen
@@ -134,12 +145,10 @@ class SessionDetailPresenter(
     }
 
     private fun numberLabelFor(allSessions: List<SessionNote>): String? =
-        allSessions
-            .sortedBy { it.sessionDate }
-            .indexOfFirst { it.id == screen.sessionNoteId }
-            .takeIf { it >= 0 }
-            ?.let { (it + 1).toRomanNumeral() }
+        allSessions.chronologicalNumberLabels()[screen.sessionNoteId]
 
+    // flat circuit event-dispatch table, grows one branch per event variant - not real branching complexity
+    @Suppress("CyclomaticComplexMethod")
     private fun onEvent(
         event: SessionDetailEvent,
         currentNote: SessionNote?,
@@ -155,6 +164,14 @@ class SessionDetailPresenter(
             is SessionDetailEvent.MentionSuggestionPicked ->
                 onMentionSuggestionPicked(event.candidateKey, fields.draft)
             is SessionDetailEvent.MentionChipClicked -> fields.selectedEntityRef.value = event.ref
+            is SessionDetailEvent.NpcStatusSelected ->
+                scope.launch { mentionRepositories.npcRepository.updateStatus(event.npcId, event.status) }
+            is SessionDetailEvent.QuestStatusSelected ->
+                scope.launch { mentionRepositories.questRepository.updateStatus(event.questId, event.status) }
+            is SessionDetailEvent.RelatedNoteClicked -> {
+                fields.selectedEntityRef.value = null
+                navigator.goTo(SessionDetailScreen(event.sessionNoteId))
+            }
             SessionDetailEvent.SheetDismissed -> fields.selectedEntityRef.value = null
             SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, fields.draft)
             is SessionDetailEvent.DeleteEntryClicked -> scope.launch { sessionEntryRepository.delete(event.id) }

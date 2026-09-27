@@ -2,7 +2,8 @@ CREATE TABLE location (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    description TEXT NOT NULL
+    description TEXT NOT NULL,
+    region TEXT NOT NULL DEFAULT ''
 );
 
 selectAll:
@@ -12,12 +13,12 @@ selectById:
 SELECT * FROM location WHERE id = ?;
 
 insert:
-INSERT INTO location(name, type, description)
-VALUES (?, ?, ?);
+INSERT INTO location(name, type, description, region)
+VALUES (?, ?, ?, ?);
 
 update:
 UPDATE location
-SET name = ?, type = ?, description = ?
+SET name = ?, type = ?, description = ?, region = ?
 WHERE id = ?;
 
 deleteById:

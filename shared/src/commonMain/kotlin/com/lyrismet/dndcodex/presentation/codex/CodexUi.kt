@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummaryItem
+import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetActions
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.ScreenHeader
@@ -82,10 +84,27 @@ fun CodexUi(
         }
     }
 
-    state.selectedEntity?.let { entity ->
-        AppBottomSheet(onDismissRequest = { state.eventSink(CodexEvent.SheetDismissed) }) {
-            EntitySummarySheetContent(entity)
-        }
+    state.selectedEntity?.let { entity -> CodexEntitySheet(state, entity) }
+}
+
+@Composable
+private fun CodexEntitySheet(
+    state: CodexState,
+    entity: EntitySummaryItem,
+) {
+    AppBottomSheet(onDismissRequest = { state.eventSink(CodexEvent.SheetDismissed) }) {
+        EntitySummarySheetContent(
+            item = entity,
+            actions =
+                EntitySummarySheetActions(
+                    onEntityRefClicked = { ref -> state.eventSink(CodexEvent.EntityClicked(ref)) },
+                    onNpcStatusSelected = { id, status -> state.eventSink(CodexEvent.NpcStatusSelected(id, status)) },
+                    onQuestStatusSelected = { id, status ->
+                        state.eventSink(CodexEvent.QuestStatusSelected(id, status))
+                    },
+                    onRelatedNoteClicked = { id -> state.eventSink(CodexEvent.RelatedNoteClicked(id)) },
+                ),
+        )
     }
 }
 

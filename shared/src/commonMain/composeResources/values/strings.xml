@@ -55,6 +55,22 @@
     <string name="codex_party_empty">Отряд появится в одном из следующих обновлений</string>
     <string name="codex_empty_filtered">Ничего не найдено. Сбросьте фильтр или измените запрос.</string>
 
+    <string name="entity_sheet_overline_format">%1$s · %2$s</string>
+    <string name="entity_sheet_status_label">Статус</string>
+    <string name="entity_sheet_npc_race_label">Раса</string>
+    <string name="entity_sheet_npc_faction_label">Фракция</string>
+    <string name="entity_sheet_npc_location_label">Где встретить</string>
+    <string name="entity_sheet_quest_location_label">Где</string>
+    <string name="entity_sheet_location_type_label">Тип</string>
+    <string name="entity_sheet_location_region_label">Регион</string>
+    <string name="entity_sheet_group_npc_quests_given">Выдал квесты</string>
+    <string name="entity_sheet_group_location_npcs">Кто здесь</string>
+    <string name="entity_sheet_group_location_quests">Квесты</string>
+    <string name="entity_sheet_related_title">Связанные заметки</string>
+    <string name="entity_sheet_related_count_format">авто · %1$d</string>
+    <string name="entity_sheet_related_meta_format">%1$d упоминаний · открыть сессию →</string>
+    <string name="entity_sheet_related_empty_format">Пока нигде не упоминается. Добавьте @%1$s в заметку сессии.</string>
+
     <string name="bottom_tab_sessions">Сессии</string>
     <string name="bottom_tab_codex">Кодекс</string>
     <string name="bottom_tab_combat">Бой</string>

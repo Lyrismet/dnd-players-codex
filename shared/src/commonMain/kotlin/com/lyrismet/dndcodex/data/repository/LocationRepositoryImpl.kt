@@ -25,10 +25,10 @@ class LocationRepositoryImpl(
     override suspend fun upsert(location: Location): Long =
         withContext(Dispatchers.Default) {
             if (location.id == 0L) {
-                queries.insert(location.name, location.type, location.description)
+                queries.insert(location.name, location.type, location.description, location.region)
                 queries.lastInsertRowId().executeAsOne()
             } else {
-                queries.update(location.name, location.type, location.description, location.id)
+                queries.update(location.name, location.type, location.description, location.region, location.id)
                 location.id
             }
         }
@@ -44,5 +44,6 @@ class LocationRepositoryImpl(
         name: String,
         type: String,
         description: String,
-    ) = Location(id, name, type, description)
+        region: String,
+    ) = Location(id, name, type, description, region)
 }

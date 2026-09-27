@@ -6,6 +6,8 @@ data class Npc(
     val status: NpcStatus,
     val description: String,
     val locationId: Long?,
+    val race: String,
+    val faction: String,
 )
 
 enum class NpcStatus {

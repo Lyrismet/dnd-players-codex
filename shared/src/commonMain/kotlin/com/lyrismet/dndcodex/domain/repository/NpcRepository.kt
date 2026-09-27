@@ -1,6 +1,7 @@
 package com.lyrismet.dndcodex.domain.repository
 
 import com.lyrismet.dndcodex.domain.model.Npc
+import com.lyrismet.dndcodex.domain.model.NpcStatus
 import kotlinx.coroutines.flow.Flow
 
 interface NpcRepository {
@@ -13,4 +14,11 @@ interface NpcRepository {
     suspend fun upsert(npc: Npc): Long
 
     suspend fun delete(id: Long)
+}
+
+suspend fun NpcRepository.updateStatus(
+    npcId: Long,
+    status: NpcStatus,
+) {
+    getById(npcId)?.let { npc -> upsert(npc.copy(status = status)) }
 }

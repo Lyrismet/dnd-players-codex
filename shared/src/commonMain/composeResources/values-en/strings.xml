@@ -55,6 +55,22 @@
     <string name="codex_party_empty">Party will arrive in a future update</string>
     <string name="codex_empty_filtered">Nothing found. Clear the filter or change your search.</string>
 
+    <string name="entity_sheet_overline_format">%1$s · %2$s</string>
+    <string name="entity_sheet_status_label">Status</string>
+    <string name="entity_sheet_npc_race_label">Race</string>
+    <string name="entity_sheet_npc_faction_label">Faction</string>
+    <string name="entity_sheet_npc_location_label">Where to find</string>
+    <string name="entity_sheet_quest_location_label">Where</string>
+    <string name="entity_sheet_location_type_label">Type</string>
+    <string name="entity_sheet_location_region_label">Region</string>
+    <string name="entity_sheet_group_npc_quests_given">Quests given</string>
+    <string name="entity_sheet_group_location_npcs">Who\'s here</string>
+    <string name="entity_sheet_group_location_quests">Quests</string>
+    <string name="entity_sheet_related_title">Related notes</string>
+    <string name="entity_sheet_related_count_format">auto · %1$d</string>
+    <string name="entity_sheet_related_meta_format">%1$d mentions · open session →</string>
+    <string name="entity_sheet_related_empty_format">Not mentioned anywhere yet. Add @%1$s to a session note.</string>
+
     <string name="bottom_tab_sessions">Sessions</string>
     <string name="bottom_tab_codex">Codex</string>
     <string name="bottom_tab_combat">Combat</string>
