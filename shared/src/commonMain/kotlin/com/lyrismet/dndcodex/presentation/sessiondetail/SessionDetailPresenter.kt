@@ -11,12 +11,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.dndcodex.core.designsystem.LocationMentionColor
-import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
 import com.lyrismet.dndcodex.core.designsystem.component.MentionGlyph
-import com.lyrismet.dndcodex.core.designsystem.component.selectedEntitySummary
 import com.lyrismet.dndcodex.core.designsystem.component.toChipItem
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
+import com.lyrismet.dndcodex.core.entitysummary.EntityRef
+import com.lyrismet.dndcodex.core.entitysummary.EntitySheetInteractions
+import com.lyrismet.dndcodex.core.entitysummary.selectedEntitySummary
 import com.lyrismet.dndcodex.core.format.chronologicalNumberLabels
 import com.lyrismet.dndcodex.core.format.toDisplayDate
 import com.lyrismet.dndcodex.core.format.toDisplayTime
@@ -37,7 +38,6 @@ import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
 import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
-import com.lyrismet.dndcodex.domain.repository.updateStatus
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
@@ -61,6 +61,7 @@ private class SessionDetailFields(
     val titleField: MutableState<String?>,
     val draft: MutableState<TextFieldValue>,
     val selectedEntityRef: MutableState<EntityRef?>,
+    val entitySheet: EntitySheetInteractions,
 )
 
 class SessionDetailPresenter(
@@ -90,7 +91,8 @@ class SessionDetailPresenter(
         val titleField = remember(screen.sessionNoteId) { mutableStateOf<String?>(null) }
         val draft = remember(screen.sessionNoteId) { mutableStateOf(TextFieldValue("")) }
         val selectedEntityRef = remember(screen.sessionNoteId) { mutableStateOf<EntityRef?>(null) }
-        val fields = SessionDetailFields(titleField, draft, selectedEntityRef)
+        val fields =
+            SessionDetailFields(titleField, draft, selectedEntityRef, entitySheetInteractions(selectedEntityRef))
 
         LaunchedEffect(currentNote?.id) {
             if (titleField.value == null && currentNote != null) {
@@ -147,6 +149,14 @@ class SessionDetailPresenter(
     private fun numberLabelFor(allSessions: List<SessionNote>): String? =
         allSessions.chronologicalNumberLabels()[screen.sessionNoteId]
 
+    private fun entitySheetInteractions(selectedEntityRef: MutableState<EntityRef?>) =
+        EntitySheetInteractions(
+            selectedEntityRef,
+            mentionRepositories.npcRepository,
+            mentionRepositories.questRepository,
+            navigator,
+        )
+
     // flat circuit event-dispatch table, grows one branch per event variant - not real branching complexity
     @Suppress("CyclomaticComplexMethod")
     private fun onEvent(
@@ -163,16 +173,13 @@ class SessionDetailPresenter(
             SessionDetailEvent.InsertMentionTriggerClicked -> onInsertMentionTrigger(fields.draft)
             is SessionDetailEvent.MentionSuggestionPicked ->
                 onMentionSuggestionPicked(event.candidateKey, fields.draft)
-            is SessionDetailEvent.MentionChipClicked -> fields.selectedEntityRef.value = event.ref
+            is SessionDetailEvent.MentionChipClicked -> fields.entitySheet.onEntityClicked(event.ref)
             is SessionDetailEvent.NpcStatusSelected ->
-                scope.launch { mentionRepositories.npcRepository.updateStatus(event.npcId, event.status) }
+                fields.entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
             is SessionDetailEvent.QuestStatusSelected ->
-                scope.launch { mentionRepositories.questRepository.updateStatus(event.questId, event.status) }
-            is SessionDetailEvent.RelatedNoteClicked -> {
-                fields.selectedEntityRef.value = null
-                navigator.goTo(SessionDetailScreen(event.sessionNoteId))
-            }
-            SessionDetailEvent.SheetDismissed -> fields.selectedEntityRef.value = null
+                fields.entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
+            is SessionDetailEvent.RelatedNoteClicked -> fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId)
+            SessionDetailEvent.SheetDismissed -> fields.entitySheet.onDismissed()
             SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, fields.draft)
             is SessionDetailEvent.DeleteEntryClicked -> scope.launch { sessionEntryRepository.delete(event.id) }
             SessionDetailEvent.EndSessionClicked -> onEndSession(currentNote, scope)

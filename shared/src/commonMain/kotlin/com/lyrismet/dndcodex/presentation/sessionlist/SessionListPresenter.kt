@@ -1,15 +1,15 @@
 package com.lyrismet.dndcodex.presentation.sessionlist
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
-import com.lyrismet.dndcodex.core.designsystem.component.selectedEntitySummary
 import com.lyrismet.dndcodex.core.designsystem.component.toChipItem
+import com.lyrismet.dndcodex.core.entitysummary.EntityRef
+import com.lyrismet.dndcodex.core.entitysummary.EntitySheetInteractions
+import com.lyrismet.dndcodex.core.entitysummary.selectedEntitySummary
 import com.lyrismet.dndcodex.core.format.chronologicalIndex
 import com.lyrismet.dndcodex.core.format.chronologicalNumberLabels
 import com.lyrismet.dndcodex.core.format.toDisplayDate
@@ -23,7 +23,6 @@ import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
 import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
-import com.lyrismet.dndcodex.domain.repository.updateStatus
 import com.lyrismet.dndcodex.presentation.sessiondetail.SessionDetailScreen
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
@@ -77,6 +76,13 @@ class SessionListPresenter(
         val liveSession = liveItem?.let { item -> buildLiveSession(item, liveEntries, candidates, noNotesLabel) }
 
         val selectedEntityRef = remember { mutableStateOf<EntityRef?>(null) }
+        val entitySheet =
+            EntitySheetInteractions(
+                selectedEntityRef,
+                mentionRepositories.npcRepository,
+                mentionRepositories.questRepository,
+                navigator,
+            )
         val selectedEntity =
             selectedEntitySummary(selectedEntityRef.value, npcs, locations, quests, sessions, allEntries, candidates)
 
@@ -85,7 +91,7 @@ class SessionListPresenter(
             liveSession = liveSession,
             sessions = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems,
             selectedEntity = selectedEntity,
-        ) { event -> onEvent(event, scope, newSessionTitle, selectedEntityRef) }
+        ) { event -> onEvent(event, scope, newSessionTitle, entitySheet) }
     }
 
     @Composable
@@ -123,7 +129,7 @@ class SessionListPresenter(
         event: SessionListEvent,
         scope: CoroutineScope,
         newSessionTitle: String,
-        selectedEntityRef: MutableState<EntityRef?>,
+        entitySheet: EntitySheetInteractions,
     ) {
         when (event) {
             SessionListEvent.NewSessionClicked ->
@@ -142,16 +148,13 @@ class SessionListPresenter(
 
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
             is SessionListEvent.DeleteSessionClicked -> scope.launch { sessionNoteRepository.delete(event.id) }
-            is SessionListEvent.MentionChipClicked -> selectedEntityRef.value = event.ref
+            is SessionListEvent.MentionChipClicked -> entitySheet.onEntityClicked(event.ref)
             is SessionListEvent.NpcStatusSelected ->
-                scope.launch { mentionRepositories.npcRepository.updateStatus(event.npcId, event.status) }
+                entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
             is SessionListEvent.QuestStatusSelected ->
-                scope.launch { mentionRepositories.questRepository.updateStatus(event.questId, event.status) }
-            is SessionListEvent.RelatedNoteClicked -> {
-                selectedEntityRef.value = null
-                navigator.goTo(SessionDetailScreen(event.sessionNoteId))
-            }
-            SessionListEvent.SheetDismissed -> selectedEntityRef.value = null
+                entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
+            is SessionListEvent.RelatedNoteClicked -> entitySheet.onRelatedNoteClicked(event.sessionNoteId)
+            SessionListEvent.SheetDismissed -> entitySheet.onDismissed()
         }
     }
 

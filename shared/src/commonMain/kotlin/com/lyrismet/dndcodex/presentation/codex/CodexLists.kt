@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
-import com.lyrismet.dndcodex.core.designsystem.component.EntityRef
+import com.lyrismet.dndcodex.core.entitysummary.EntityRef
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_empty_filtered
 import dndplayerscodex.shared.generated.resources.codex_tab_location

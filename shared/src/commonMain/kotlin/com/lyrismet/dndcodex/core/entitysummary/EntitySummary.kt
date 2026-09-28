@@ -1,8 +1,10 @@
-package com.lyrismet.dndcodex.core.designsystem.component
+package com.lyrismet.dndcodex.core.entitysummary
 
 import androidx.compose.runtime.Composable
 import com.lyrismet.dndcodex.core.designsystem.LocationMentionColor
 import com.lyrismet.dndcodex.core.designsystem.StatusColor
+import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
+import com.lyrismet.dndcodex.core.designsystem.component.toMentionChip
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
 import com.lyrismet.dndcodex.core.format.chronologicalNumberLabels
 import com.lyrismet.dndcodex.core.format.toDisplayDate

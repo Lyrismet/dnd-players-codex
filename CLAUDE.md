@@ -12,9 +12,13 @@ Kotlin Multiplatform (KMP) app targeting Android and iOS, sharing UI (Compose Mu
   - `domain/model`, `domain/repository` — plain models and repository interfaces, no platform/framework dependencies.
   - `data/repository` — repository implementations (SQLDelight-backed), `data/db` — SQLDelight driver/database wiring, `data/AppContainer.kt` — manual DI container (no DI framework; wire new dependencies here, including registering each feature's UI on the `Circuit.Builder`).
   - `presentation/<feature>/` — one Circuit screen per feature: `Screen` + `CircuitUiState` + `CircuitUiEvent`, a `Presenter`, a `@Composable` UI, and a `Circuit.Builder` wiring extension (see boundary rule below).
+  - `core/designsystem/` — pure visual building blocks (palette, type, reusable `@Composable`s) with no domain-model or repository awareness. Logic that maps, filters, or cross-references domain models for reuse across 3+ features (not one feature's own view state) gets its own `core/<name>` package instead — see `core/mention`, `core/format`, `core/entitysummary`.
 - `shared/src/androidMain`, `shared/src/iosMain` — `actual` implementations of `commonMain`'s `expect` declarations (e.g. `Platform`, `DatabaseDriverFactory`). Put platform-only code here, not in `commonMain`.
 
 Stack: Compose Multiplatform (UI), Circuit (navigation/presentation), SQLDelight (local DB), Ktor (networking), Multiplatform Settings (prefs), kotlinx.serialization/coroutines/datetime.
+
+### Scaffolding ahead of a feature
+Laying down a `domain/model`, a repository interface, and a SQLDelight schema for a large feature that's tracked in `FEATURES.md` but not started yet (e.g. `CombatScratchpad`/`Combatant` ahead of Бой) is intentional groundwork, not a half-finished implementation — it's fine for it to have no repository `Impl` and no `AppContainer` wiring yet. "No half-finished implementations" means don't leave a feature you're actively building partially wired; it doesn't mean every interface needs a caller the moment it's typed.
 
 ### Engineering & Architecture Principles
 - **OOP & Clean Code**: Design modular, maintainable, and loosely coupled components. Encapsulate business logic cleanly.
@@ -33,6 +37,7 @@ Each feature under `presentation/<feature>/` is four files — see `presentation
 - Before finishing a new/changed Ui or Presenter, state its responsibility in one sentence without "and" (e.g. "renders the NPC list" / "loads and mutates the NPC list"). If a Ui's sentence needs "and manages X state" — move that into the Presenter.
 - Compare footprint to sibling `presentation/<feature>` folders. If a new Presenter is doing meaningfully more than its siblings, that's a signal to split the screen.
 - `CircuitUiState` should expose only what the Ui needs to render and react to (plain values + the single `eventSink`), never a repository reference or a `Navigator` — SOLID's ISP applied concretely.
+- When 3+ presenters need identical interactive behavior around a shared `core/<name>` model (e.g. tap a mention chip → show the entity sheet → dismiss/update-status/follow a related note), extract the event handling into a plain class in that `core/<name>` package (see `EntitySheetInteractions` in `core/entitysummary`) that each presenter constructs and delegates its matching event branches to — don't let the same `when` branches get copy-pasted per presenter.
 - Exception: `presentation/codex/CodexScreen.kt` is intentionally one Circuit screen with an internal, Presenter-owned sub-tab switch across 4 related entity types (Отряд/NPC/Квесты/Места), not 4 independent features - the design mock treats it as one screen with tab UI, not 4 screens, so splitting it would fight the source of truth for no benefit.
 
 ### Kotlin typing rules
@@ -51,7 +56,10 @@ No more than 1 line, concise, and only where the code actually needs explaining 
 - **Do not downgrade AGP** to silence IntelliJ IDEA's "incompatible AGP version" warning (IntelliJ's bundled Android plugin currently caps at AGP 9.0.0). Compose Multiplatform 1.12.1's Android artifacts require AGP 9.1+ — downgrading breaks the real Gradle build (`checkDebugAarMetadata` fails on ~14 dependencies). The warning is IDE-only; ignore it or update IntelliJ instead.
 
 ### Recurring review feedback — check before opening a PR
-No KMP-specific review feedback has accumulated yet — this section is a placeholder. Fill it in the same way as before: concrete mistakes a reviewer actually caught in this repo, not generic style suggestions.
+- Don't copy-paste the same `when`-block across presenters for shared interactive state (e.g. the entity-sheet tap/dismiss/status-update/related-note flow) — extract it once into the relevant `core/<name>` package and have each presenter delegate to it.
+- Logic that maps/queries domain models for reuse across 3+ features doesn't belong inside `designsystem/component`, even if a design-system component renders its output — give it its own `core/<name>`.
+- Pre-built scaffolding (domain model + repository interface + SQLDelight schema) for a large feature tracked in FEATURES.md but not started is fine to merge without an `Impl` or `AppContainer` wiring.
+- Pure logic added under `core/*` (parsing, formatting, mapping) needs a `commonTest` unit test alongside it — this repo went 5 PRs with only the generated placeholder tests before anyone noticed.
 
 ## Git commits
 - Never create git commits (`git commit`). Prepare and stage changes, but leave committing to the user.
