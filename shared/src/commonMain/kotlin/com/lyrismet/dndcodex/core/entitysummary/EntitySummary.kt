@@ -375,4 +375,5 @@ data class EntitySummarySheetActions(
     val onNpcStatusSelected: (npcId: Long, status: NpcStatus) -> Unit,
     val onQuestStatusSelected: (questId: Long, status: QuestStatus) -> Unit,
     val onRelatedNoteClicked: (sessionNoteId: Long) -> Unit,
+    val onEditClicked: ((EntityRef) -> Unit)? = null,
 )

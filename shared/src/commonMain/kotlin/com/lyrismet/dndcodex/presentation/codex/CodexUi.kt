@@ -85,6 +85,21 @@ fun CodexUi(
     }
 
     state.selectedEntity?.let { entity -> CodexEntitySheet(state, entity) }
+    state.entryForm?.let { form -> CodexEntryFormSheet(state, form) }
+}
+
+@Composable
+private fun CodexEntryFormSheet(
+    state: CodexState,
+    form: CodexEntryFormState,
+) {
+    AppBottomSheet(onDismissRequest = { state.eventSink(CodexEvent.EntryFormClosed) }) {
+        CodexEntryFormUi(
+            form = form,
+            eventSink = state.eventSink,
+            onClose = { state.eventSink(CodexEvent.EntryFormClosed) },
+        )
+    }
 }
 
 @Composable
@@ -103,7 +118,9 @@ private fun CodexEntitySheet(
                         state.eventSink(CodexEvent.QuestStatusSelected(id, status))
                     },
                     onRelatedNoteClicked = { id -> state.eventSink(CodexEvent.RelatedNoteClicked(id)) },
+                    onEditClicked = { ref -> state.eventSink(CodexEvent.EditEntryRequested(ref)) },
                 ),
+            onClose = { state.eventSink(CodexEvent.SheetDismissed) },
         )
     }
 }

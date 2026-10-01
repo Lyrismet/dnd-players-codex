@@ -24,6 +24,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
@@ -55,16 +56,7 @@ fun AppBottomSheet(
         containerColor = AppPalette.Surface,
         scrimColor = SheetScrimColor,
         dragHandle = { AppBottomSheetDragHandle() },
-        content = {
-            Box {
-                content()
-                // overlaid on the content, not the drag handle, to match the design's close button placement
-                SheetCloseButton(
-                    onClick = onDismissRequest,
-                    modifier = Modifier.align(Alignment.TopEnd).padding(top = 6.dp, end = 20.dp),
-                )
-            }
-        },
+        content = { content() },
     )
 }
 
@@ -104,14 +96,15 @@ private fun AppBottomSheetDragHandle() {
 
 // raw "✕" glyph, not a Material icon - matches this codebase's existing raw-glyph precedent (CodexCards.kt's "◆"/"▲")
 @Composable
-private fun SheetCloseButton(
+fun SheetCloseButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    size: Dp = 32.dp,
 ) {
     Box(
         modifier =
             modifier
-                .size(32.dp)
+                .size(size)
                 .clip(CircleShape)
                 .background(AppPalette.BorderSubtle)
                 .clickable(onClick = onClick),

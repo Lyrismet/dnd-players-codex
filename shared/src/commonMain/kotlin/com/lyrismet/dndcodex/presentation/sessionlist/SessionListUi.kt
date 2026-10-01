@@ -17,10 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -44,6 +40,7 @@ import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChip
 import com.lyrismet.dndcodex.core.designsystem.component.ScreenHeader
 import com.lyrismet.dndcodex.core.designsystem.component.SectionOverline
+import com.lyrismet.dndcodex.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.dndcodex.core.entitysummary.EntityRef
 import com.lyrismet.dndcodex.core.entitysummary.EntitySummarySheetActions
 import dndplayerscodex.shared.generated.resources.Res
@@ -113,6 +110,7 @@ fun SessionListUi(
                         },
                         onRelatedNoteClicked = { id -> state.eventSink(SessionListEvent.RelatedNoteClicked(id)) },
                     ),
+                onClose = { state.eventSink(SessionListEvent.SheetDismissed) },
             )
         }
     }
@@ -156,6 +154,7 @@ private fun SessionListContent(
                 session = session,
                 onClick = { state.eventSink(SessionListEvent.SessionClicked(session.id)) },
                 onDeleteClick = { onDeleteRequest(session) },
+                modifier = Modifier.animateItem(),
             )
         }
     }
@@ -225,36 +224,33 @@ private fun SessionArchiveRow(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(AppPalette.SurfaceVariant)
-                .clickable(onClick = onClick)
-                .padding(start = 14.dp, top = 14.dp, bottom = 14.dp, end = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    SwipeToDeleteRow(
+        onDeleteRequested = onDeleteClick,
+        modifier = modifier,
+        deleteContentDescription = stringResource(Res.string.session_list_delete_content_description),
     ) {
-        Text(
-            text = session.numberLabel,
-            style = MaterialTheme.typography.titleMedium,
-            color = AppPalette.GoldDim,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.width(52.dp),
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(session.title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
-            Text(session.dateLabel, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
-        }
-        IconButton(onClick = onDeleteClick) {
-            // neutral color deliberately - the destructive emphasis belongs on the confirm
-            // dialog's button, not on an always-visible row icon
-            Icon(
-                Icons.Outlined.Delete,
-                contentDescription = stringResource(Res.string.session_list_delete_content_description),
-                tint = AppPalette.TextTertiary,
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(AppPalette.SurfaceVariant)
+                    .clickable(onClick = onClick)
+                    .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = session.numberLabel,
+                style = MaterialTheme.typography.titleMedium,
+                color = AppPalette.GoldDim,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.width(52.dp),
             )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(session.title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
+                Text(session.dateLabel, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
+            }
         }
     }
 }

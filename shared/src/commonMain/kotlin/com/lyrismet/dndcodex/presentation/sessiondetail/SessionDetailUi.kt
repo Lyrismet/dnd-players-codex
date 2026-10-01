@@ -21,8 +21,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -51,11 +49,13 @@ import com.lyrismet.dndcodex.core.designsystem.component.GlowingDot
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChip
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
+import com.lyrismet.dndcodex.core.designsystem.component.icons.AppIcons
 import com.lyrismet.dndcodex.core.entitysummary.EntityRef
 import com.lyrismet.dndcodex.core.entitysummary.EntitySummaryItem
 import com.lyrismet.dndcodex.core.entitysummary.EntitySummarySheetActions
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_delete
+import dndplayerscodex.shared.generated.resources.action_edit
 import dndplayerscodex.shared.generated.resources.session_detail_back
 import dndplayerscodex.shared.generated.resources.session_detail_delete_entry_title
 import dndplayerscodex.shared.generated.resources.session_detail_empty_feed
@@ -96,6 +96,9 @@ fun SessionDetailUi(
                             is SessionFeedItem.Note ->
                                 SessionEntryRow(
                                     entry = feedItem.entry,
+                                    onEditClick = {
+                                        state.eventSink(SessionDetailEvent.EditEntryClicked(feedItem.entry.id))
+                                    },
                                     onDeleteClick = { pendingDeleteEntry = feedItem.entry },
                                     onMentionClick = { ref ->
                                         state.eventSink(SessionDetailEvent.MentionChipClicked(ref))
@@ -152,6 +155,7 @@ private fun SessionDetailEntitySheet(
                     },
                     onRelatedNoteClicked = { id -> state.eventSink(SessionDetailEvent.RelatedNoteClicked(id)) },
                 ),
+            onClose = { state.eventSink(SessionDetailEvent.SheetDismissed) },
         )
     }
 }
@@ -306,6 +310,7 @@ private fun DaySeparatorRow(
 @Composable
 private fun SessionEntryRow(
     entry: SessionEntryItem,
+    onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onMentionClick: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
@@ -331,9 +336,19 @@ private fun SessionEntryRow(
         }
         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
             DropdownMenuItem(
+                text = { Text(stringResource(Res.string.action_edit), color = AppPalette.GoldBright) },
+                leadingIcon = {
+                    Icon(AppIcons.Edit, contentDescription = null, tint = AppPalette.GoldBright)
+                },
+                onClick = {
+                    showMenu = false
+                    onEditClick()
+                },
+            )
+            DropdownMenuItem(
                 text = { Text(stringResource(Res.string.action_delete), color = AppPalette.MaroonBright) },
                 leadingIcon = {
-                    Icon(Icons.Outlined.Delete, contentDescription = null, tint = AppPalette.MaroonBright)
+                    Icon(AppIcons.Delete, contentDescription = null, tint = AppPalette.MaroonBright)
                 },
                 onClick = {
                     showMenu = false

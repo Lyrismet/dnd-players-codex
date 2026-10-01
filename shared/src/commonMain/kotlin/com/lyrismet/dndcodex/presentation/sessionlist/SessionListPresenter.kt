@@ -134,15 +134,13 @@ class SessionListPresenter(
         when (event) {
             SessionListEvent.NewSessionClicked ->
                 scope.launch {
+                    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                     val id =
                         sessionNoteRepository.upsert(
-                            SessionNote(
-                                id = 0,
-                                title = newSessionTitle,
-                                sessionDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-                                endedAt = null,
-                            ),
+                            SessionNote(id = 0, title = newSessionTitle, sessionDate = now, endedAt = null),
                         )
+                    // only one session may be live at a time - starting a new one closes out the old one
+                    sessionNoteRepository.endOtherLiveSessions(exceptId = id, endedAt = now)
                     navigator.goTo(SessionDetailScreen(id))
                 }
 

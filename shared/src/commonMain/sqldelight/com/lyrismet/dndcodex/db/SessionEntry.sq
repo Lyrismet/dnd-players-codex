@@ -19,6 +19,9 @@ insert:
 INSERT INTO session_entry(session_note_id, created_at, body)
 VALUES (?, ?, ?);
 
+updateBody:
+UPDATE session_entry SET body = ? WHERE id = ?;
+
 deleteById:
 DELETE FROM session_entry WHERE id = ?;
 

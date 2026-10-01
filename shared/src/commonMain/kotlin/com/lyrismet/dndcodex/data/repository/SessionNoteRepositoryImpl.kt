@@ -48,6 +48,15 @@ class SessionNoteRepositoryImpl(
         }
     }
 
+    override suspend fun endOtherLiveSessions(
+        exceptId: Long,
+        endedAt: LocalDateTime,
+    ) {
+        withContext(Dispatchers.Default) {
+            queries.endOtherLive(endedAt, exceptId)
+        }
+    }
+
     // createdAt is required to match selectAll's column order even though the domain model doesn't expose it
     @Suppress("UnusedParameter")
     private fun toDomain(

@@ -13,5 +13,10 @@ interface SessionEntryRepository {
         body: String,
     ): Long
 
+    suspend fun update(
+        id: Long,
+        body: String,
+    )
+
     suspend fun delete(id: Long)
 }

@@ -2,6 +2,7 @@ package com.lyrismet.dndcodex.presentation.codex
 
 import androidx.compose.ui.graphics.Color
 import com.lyrismet.dndcodex.core.designsystem.StatusColor
+import com.lyrismet.dndcodex.core.designsystem.component.FormChipOption
 import com.lyrismet.dndcodex.core.entitysummary.EntityRef
 import com.lyrismet.dndcodex.core.entitysummary.EntitySummaryItem
 import com.lyrismet.dndcodex.domain.model.NpcStatus
@@ -70,6 +71,34 @@ data class CodexFilterOption<T>(
     val dotColor: Color?,
 )
 
+// Party excluded - no domain model exists yet, see FEATURES.md section 4/6
+enum class CodexEntryType { NPC, QUEST, LOCATION }
+
+/** pre-formatted create/edit sheet state - null fields/lists are simply unused for the current [type] */
+data class CodexEntryFormState(
+    val overline: String,
+    val heading: String,
+    val isEditing: Boolean,
+    val type: CodexEntryType,
+    val name: String = "",
+    val description: String = "",
+    val race: String = "",
+    val faction: String = "",
+    val reward: String = "",
+    val locationType: String = "",
+    val locationRegion: String = "",
+    val npcStatusOptions: List<FormChipOption<NpcStatus>> = emptyList(),
+    val questStatusOptions: List<FormChipOption<QuestStatus>> = emptyList(),
+    val locationOptions: List<FormChipOption<Long>> = emptyList(),
+    val npcOptions: List<FormChipOption<Long>> = emptyList(),
+    val canSave: Boolean = false,
+    val saveLabel: String = "",
+)
+
+enum class CodexEntryField { NAME, DESCRIPTION, RACE, FACTION, REWARD, LOCATION_TYPE, LOCATION_REGION }
+
+enum class CodexEntryChipField { NPC_LOCATION, QUEST_GIVER, QUEST_LOCATION }
+
 data class CodexState(
     val activeTab: CodexTab = CodexTab.PARTY,
     val searchQuery: String = "",
@@ -83,6 +112,7 @@ data class CodexState(
     val locations: List<LocationCodexItem> = emptyList(),
     val locationFilterOptions: List<CodexFilterOption<Nothing>> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
+    val entryForm: CodexEntryFormState? = null,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
 
@@ -124,4 +154,34 @@ sealed interface CodexEvent : CircuitUiEvent {
     data object SheetDismissed : CodexEvent
 
     data object AddEntryClicked : CodexEvent
+
+    data class EditEntryRequested(
+        val ref: EntityRef,
+    ) : CodexEvent
+
+    data class EntryTypeChanged(
+        val type: CodexEntryType,
+    ) : CodexEvent
+
+    data class EntryFieldChanged(
+        val field: CodexEntryField,
+        val text: String,
+    ) : CodexEvent
+
+    data class EntryNpcStatusChanged(
+        val status: NpcStatus,
+    ) : CodexEvent
+
+    data class EntryQuestStatusChanged(
+        val status: QuestStatus,
+    ) : CodexEvent
+
+    data class EntryChipToggled(
+        val field: CodexEntryChipField,
+        val id: Long,
+    ) : CodexEvent
+
+    data object EntryFormSaveClicked : CodexEvent
+
+    data object EntryFormClosed : CodexEvent
 }

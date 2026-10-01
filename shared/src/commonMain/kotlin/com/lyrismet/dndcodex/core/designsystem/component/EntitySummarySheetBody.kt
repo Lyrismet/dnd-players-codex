@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.component.icons.AppIcons
 import com.lyrismet.dndcodex.core.entitysummary.EntityEmblem
 import com.lyrismet.dndcodex.core.entitysummary.EntityEmblemShape
 import com.lyrismet.dndcodex.core.entitysummary.EntityRef
@@ -56,6 +58,7 @@ import org.jetbrains.compose.resources.stringResource
 fun EntitySummarySheetContent(
     item: EntitySummaryItem,
     actions: EntitySummarySheetActions,
+    onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -65,13 +68,13 @@ fun EntitySummarySheetContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
                 // mockup's sheet content padding is 6px top / 44px bottom - header sits right under the drag handle
-                .padding(top = 8.dp, bottom = 44.dp),
+                .padding(top = 6.dp, bottom = 44.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         when (item) {
-            is EntitySummaryItem.NpcSummary -> NpcSummaryBody(item, actions)
-            is EntitySummaryItem.LocationSummary -> LocationSummaryBody(item, actions)
-            is EntitySummaryItem.QuestSummary -> QuestSummaryBody(item, actions)
+            is EntitySummaryItem.NpcSummary -> NpcSummaryBody(item, actions, onClose)
+            is EntitySummaryItem.LocationSummary -> LocationSummaryBody(item, actions, onClose)
+            is EntitySummaryItem.QuestSummary -> QuestSummaryBody(item, actions, onClose)
         }
     }
 }
@@ -80,6 +83,7 @@ fun EntitySummarySheetContent(
 private fun NpcSummaryBody(
     npc: EntitySummaryItem.NpcSummary,
     actions: EntitySummarySheetActions,
+    onClose: () -> Unit,
 ) {
     EntityHeaderRow(
         emblem = npc.emblem,
@@ -88,6 +92,8 @@ private fun NpcSummaryBody(
         title = npc.name,
         subtitle = npc.subtitle,
         strikeThrough = npc.isDead,
+        onEditClicked = actions.onEditClicked?.let { edit -> { edit(npc.ref) } },
+        onClose = onClose,
     )
     EntityStatusSection(npc.statusOptions, onSelected = { status -> actions.onNpcStatusSelected(npc.ref.id, status) })
     Text(npc.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
@@ -100,6 +106,7 @@ private fun NpcSummaryBody(
 private fun LocationSummaryBody(
     location: EntitySummaryItem.LocationSummary,
     actions: EntitySummarySheetActions,
+    onClose: () -> Unit,
 ) {
     EntityHeaderRow(
         emblem = location.emblem,
@@ -107,6 +114,8 @@ private fun LocationSummaryBody(
         overlineValue = location.typeLabel,
         title = location.name,
         subtitle = location.subtitle,
+        onEditClicked = actions.onEditClicked?.let { edit -> { edit(location.ref) } },
+        onClose = onClose,
     )
     Text(location.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
     EntityFactsGrid(location.facts, actions.onEntityRefClicked)
@@ -118,6 +127,7 @@ private fun LocationSummaryBody(
 private fun QuestSummaryBody(
     quest: EntitySummaryItem.QuestSummary,
     actions: EntitySummarySheetActions,
+    onClose: () -> Unit,
 ) {
     EntityHeaderRow(
         emblem = quest.emblem,
@@ -125,6 +135,8 @@ private fun QuestSummaryBody(
         overlineValue = quest.statusLabel,
         title = quest.title,
         subtitle = quest.subtitle,
+        onEditClicked = actions.onEditClicked?.let { edit -> { edit(quest.ref) } },
+        onClose = onClose,
     )
     EntityStatusSection(
         quest.statusOptions,
@@ -135,6 +147,8 @@ private fun QuestSummaryBody(
     EntityRelatedNotesSection(quest.title, quest.relatedNotes, actions.onRelatedNoteClicked)
 }
 
+private val HeaderButtonSize = 36.dp
+
 @Composable
 private fun EntityHeaderRow(
     emblem: EntityEmblem,
@@ -142,8 +156,10 @@ private fun EntityHeaderRow(
     overlineValue: String,
     title: String,
     subtitle: String,
+    onClose: () -> Unit,
     modifier: Modifier = Modifier,
     strikeThrough: Boolean = false,
+    onEditClicked: (() -> Unit)? = null,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -176,6 +192,32 @@ private fun EntityHeaderRow(
                     modifier = Modifier.padding(top = 2.dp),
                 )
             }
+        }
+        // mockup: "align-self:flex-start;display:flex;gap:6px" - pinned to the top, not centered with the text block
+        Row(
+            modifier = Modifier.align(Alignment.Top),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            onEditClicked?.let { onClick ->
+                Box(
+                    modifier =
+                        Modifier
+                            .size(HeaderButtonSize)
+                            .clip(CircleShape)
+                            .background(AppPalette.Gold.copy(alpha = 0.12f))
+                            .border(1.dp, AppPalette.Gold.copy(alpha = 0.45f), CircleShape)
+                            .clickable(onClick = onClick),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        AppIcons.Edit,
+                        contentDescription = null,
+                        tint = AppPalette.GoldBright,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
+            SheetCloseButton(onClick = onClose, size = HeaderButtonSize)
         }
     }
 }

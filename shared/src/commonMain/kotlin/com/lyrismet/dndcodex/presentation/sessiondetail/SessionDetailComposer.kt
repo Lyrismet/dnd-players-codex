@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -36,8 +37,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.action_cancel
 import dndplayerscodex.shared.generated.resources.session_detail_composer_placeholder
+import dndplayerscodex.shared.generated.resources.session_detail_editing_label_format
 import dndplayerscodex.shared.generated.resources.session_detail_mention_suggestions_header
+import dndplayerscodex.shared.generated.resources.session_detail_save_button
 import dndplayerscodex.shared.generated.resources.session_detail_submit_button
 import org.jetbrains.compose.resources.stringResource
 
@@ -60,6 +64,7 @@ internal fun SessionComposer(
             if (isDraftFocused && state.mentionSuggestions.isNotEmpty()) {
                 MentionSuggestionsPopover(state)
             }
+            state.editingEntryTimeLabel?.let { EditingEntryBanner(it, state.eventSink) }
             ComposerInputRow(
                 state = state,
                 onDraftFocusChanged = { isDraftFocused = it },
@@ -123,7 +128,39 @@ private fun ComposerInputRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             modifier = Modifier.height(38.dp),
         ) {
-            Text(stringResource(Res.string.session_detail_submit_button), style = MaterialTheme.typography.labelLarge)
+            val label =
+                if (state.isEditingEntry) {
+                    stringResource(Res.string.session_detail_save_button)
+                } else {
+                    stringResource(Res.string.session_detail_submit_button)
+                }
+            Text(label, style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+@Composable
+private fun EditingEntryBanner(
+    timeLabel: String,
+    eventSink: (SessionDetailEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            stringResource(Res.string.session_detail_editing_label_format, timeLabel),
+            style = MaterialTheme.typography.labelSmall,
+            color = AppPalette.GoldBright,
+        )
+        TextButton(onClick = { eventSink(SessionDetailEvent.CancelEditEntryClicked) }) {
+            Text(
+                stringResource(Res.string.action_cancel),
+                style = MaterialTheme.typography.labelMedium,
+                color = AppPalette.TextSecondary,
+            )
         }
     }
 }

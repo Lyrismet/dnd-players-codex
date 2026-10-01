@@ -33,6 +33,9 @@ import com.lyrismet.dndcodex.core.mention.mentionKey
 import com.lyrismet.dndcodex.core.mention.mentionsIn
 import com.lyrismet.dndcodex.core.mention.parseMentions
 import com.lyrismet.dndcodex.core.mention.trailingMentionQuery
+import com.lyrismet.dndcodex.domain.model.Location
+import com.lyrismet.dndcodex.domain.model.Npc
+import com.lyrismet.dndcodex.domain.model.Quest
 import com.lyrismet.dndcodex.domain.model.SessionEntry
 import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
@@ -60,6 +63,7 @@ import kotlin.time.ExperimentalTime
 private class SessionDetailFields(
     val titleField: MutableState<String?>,
     val draft: MutableState<TextFieldValue>,
+    val editingEntryId: MutableState<Long?>,
     val selectedEntityRef: MutableState<EntityRef?>,
     val entitySheet: EntitySheetInteractions,
 )
@@ -90,9 +94,16 @@ class SessionDetailPresenter(
         // edited locally so live Flow re-emissions from other screens don't clobber in-progress typing
         val titleField = remember(screen.sessionNoteId) { mutableStateOf<String?>(null) }
         val draft = remember(screen.sessionNoteId) { mutableStateOf(TextFieldValue("")) }
+        val editingEntryId = remember(screen.sessionNoteId) { mutableStateOf<Long?>(null) }
         val selectedEntityRef = remember(screen.sessionNoteId) { mutableStateOf<EntityRef?>(null) }
         val fields =
-            SessionDetailFields(titleField, draft, selectedEntityRef, entitySheetInteractions(selectedEntityRef))
+            SessionDetailFields(
+                titleField,
+                draft,
+                editingEntryId,
+                selectedEntityRef,
+                entitySheetInteractions(selectedEntityRef),
+            )
 
         LaunchedEffect(currentNote?.id) {
             if (titleField.value == null && currentNote != null) {
@@ -100,22 +111,9 @@ class SessionDetailPresenter(
             }
         }
 
-        val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
-        val mentionEntities = mentionEntitiesFrom(npcs, locations, quests)
-        val candidates = mentionCandidates(mentionEntities, questPrefix)
-
-        val npcTypeLabel = stringResource(Res.string.session_detail_mention_type_npc)
-        val locationTypeLabel = stringResource(Res.string.session_detail_mention_type_location)
-        val questTypeLabel = stringResource(Res.string.session_detail_mention_type_quest)
-
-        val feed = buildFeed(entries, currentNote?.sessionDate?.date, candidates)
-        val headerMentions = headerMentions(entries, candidates)
-
-        val suggestions =
-            trailingMentionQuery(draft.value.text)
-                ?.let { matchingMentionEntities(mentionEntities, it, questPrefix) }
-                .orEmpty()
-                .map { it.toSuggestion(questPrefix, npcTypeLabel, locationTypeLabel, questTypeLabel) }
+        val mention = buildMentionContext(npcs, locations, quests, draft.value.text)
+        val feed = buildFeed(entries, currentNote?.sessionDate?.date, mention.candidates)
+        val headerMentions = headerMentions(entries, mention.candidates)
 
         val selectedEntity =
             selectedEntitySummary(
@@ -125,8 +123,11 @@ class SessionDetailPresenter(
                 quests,
                 allSessions,
                 allEntries,
-                candidates,
+                mention.candidates,
             )
+
+        val editingEntryTimeLabel =
+            editingEntryId.value?.let { id -> entries.find { it.id == id }?.createdAt?.toDisplayTime() }
 
         // deliberately renders the same header/feed/composer shape whether or not currentNote
         // has arrived yet from the Flow's cold start - swapping to a distinct "loading" screen
@@ -141,9 +142,10 @@ class SessionDetailPresenter(
             feed = feed,
             draft = draft.value.text,
             draftSelection = draft.value.selection,
-            mentionSuggestions = suggestions,
+            mentionSuggestions = mention.suggestions,
             selectedEntity = selectedEntity,
-        ) { event -> onEvent(event, currentNote, scope, fields) }
+            editingEntryTimeLabel = editingEntryTimeLabel,
+        ) { event -> onEvent(event, currentNote, entries, scope, fields) }
     }
 
     private fun numberLabelFor(allSessions: List<SessionNote>): String? =
@@ -162,6 +164,7 @@ class SessionDetailPresenter(
     private fun onEvent(
         event: SessionDetailEvent,
         currentNote: SessionNote?,
+        entries: List<SessionEntry>,
         scope: CoroutineScope,
         fields: SessionDetailFields,
     ) {
@@ -180,7 +183,12 @@ class SessionDetailPresenter(
                 fields.entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
             is SessionDetailEvent.RelatedNoteClicked -> fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId)
             SessionDetailEvent.SheetDismissed -> fields.entitySheet.onDismissed()
-            SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, fields.draft)
+            SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, fields)
+            is SessionDetailEvent.EditEntryClicked -> onEditEntry(event.id, entries, fields)
+            SessionDetailEvent.CancelEditEntryClicked -> {
+                fields.editingEntryId.value = null
+                fields.draft.value = TextFieldValue("")
+            }
             is SessionDetailEvent.DeleteEntryClicked -> scope.launch { sessionEntryRepository.delete(event.id) }
             SessionDetailEvent.EndSessionClicked -> onEndSession(currentNote, scope)
             SessionDetailEvent.ResumeSessionClicked -> onResumeSession(currentNote, scope)
@@ -214,13 +222,32 @@ class SessionDetailPresenter(
 
     private fun onSubmitEntry(
         scope: CoroutineScope,
-        draft: MutableState<TextFieldValue>,
+        fields: SessionDetailFields,
     ) {
-        val body = draft.value.text.trim()
-        if (body.isNotEmpty()) {
-            draft.value = TextFieldValue("")
-            scope.launch { sessionEntryRepository.add(screen.sessionNoteId, body) }
+        val body =
+            fields.draft.value.text
+                .trim()
+        if (body.isEmpty()) return
+        val editingId = fields.editingEntryId.value
+        fields.draft.value = TextFieldValue("")
+        fields.editingEntryId.value = null
+        scope.launch {
+            if (editingId != null) {
+                sessionEntryRepository.update(editingId, body)
+            } else {
+                sessionEntryRepository.add(screen.sessionNoteId, body)
+            }
         }
+    }
+
+    private fun onEditEntry(
+        id: Long,
+        entries: List<SessionEntry>,
+        fields: SessionDetailFields,
+    ) {
+        val entry = entries.find { it.id == id } ?: return
+        fields.editingEntryId.value = id
+        fields.draft.value = TextFieldValue(entry.body, TextRange(entry.body.length))
     }
 
     @OptIn(ExperimentalTime::class)
@@ -236,12 +263,49 @@ class SessionDetailPresenter(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     private fun onResumeSession(
         currentNote: SessionNote?,
         scope: CoroutineScope,
     ) {
-        currentNote?.let { note -> scope.launch { sessionNoteRepository.upsert(note.copy(endedAt = null)) } }
+        currentNote?.let { note ->
+            scope.launch {
+                sessionNoteRepository.upsert(note.copy(endedAt = null))
+                // only one session may be live at a time - resuming this one closes out any other
+                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                sessionNoteRepository.endOtherLiveSessions(exceptId = note.id, endedAt = now)
+            }
+        }
     }
+}
+
+private data class MentionContext(
+    val candidates: List<MentionCandidate>,
+    val suggestions: List<SessionMentionSuggestion>,
+)
+
+/** resolves mention candidates once and, from the same data, the trailing-@-query autocomplete suggestions */
+@Composable
+private fun buildMentionContext(
+    npcs: List<Npc>,
+    locations: List<Location>,
+    quests: List<Quest>,
+    draftText: String,
+): MentionContext {
+    val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
+    val mentionEntities = mentionEntitiesFrom(npcs, locations, quests)
+    val candidates = mentionCandidates(mentionEntities, questPrefix)
+
+    val npcTypeLabel = stringResource(Res.string.session_detail_mention_type_npc)
+    val locationTypeLabel = stringResource(Res.string.session_detail_mention_type_location)
+    val questTypeLabel = stringResource(Res.string.session_detail_mention_type_quest)
+    val suggestions =
+        trailingMentionQuery(draftText)
+            ?.let { matchingMentionEntities(mentionEntities, it, questPrefix) }
+            .orEmpty()
+            .map { it.toSuggestion(questPrefix, npcTypeLabel, locationTypeLabel, questTypeLabel) }
+
+    return MentionContext(candidates, suggestions)
 }
 
 /** groups [entries] under a "ВСТРЕЧА N" separator per calendar day, only when the session spans more than one */
