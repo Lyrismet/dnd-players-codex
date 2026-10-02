@@ -3,6 +3,7 @@ package com.lyrismet.dndcodex.core.designsystem.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -47,20 +49,25 @@ fun BottomTabBar(
             tabs.forEachIndexed { index, tab ->
                 val selected = index == selectedIndex
                 val tint = if (selected) AppPalette.GoldBright else AppPalette.TextTertiary
-                Column(
-                    modifier = Modifier.weight(1f).clickable { onTabSelected(index) },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(5.dp),
-                ) {
+                Box(modifier = Modifier.weight(1f).clickable { onTabSelected(index) }) {
+                    // sits on the bar's top border line, 9dp above the button like the design's `top: -9px`
                     Spacer(
                         Modifier
+                            .align(Alignment.TopCenter)
+                            .offset(y = (-9).dp)
                             .width(22.dp)
                             .height(2.dp)
                             .clip(RoundedCornerShape(1.dp))
                             .background(if (selected) AppPalette.GoldBright else Color.Transparent),
                     )
-                    tab.icon(tint)
-                    Text(text = tab.label, style = MaterialTheme.typography.labelMedium, color = tint)
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(5.dp),
+                    ) {
+                        tab.icon(tint)
+                        Text(text = tab.label, style = MaterialTheme.typography.labelMedium, color = tint)
+                    }
                 }
             }
         }
