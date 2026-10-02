@@ -295,7 +295,6 @@ private fun EntityFactsGrid(
             when (val value = fact.value) {
                 is FactValue.Text -> Text(value.text, style = factTextStyle, color = AppPalette.TextPrimary)
 
-
                 is FactValue.Link ->
                     MentionChip(
                         item = value.chip,
