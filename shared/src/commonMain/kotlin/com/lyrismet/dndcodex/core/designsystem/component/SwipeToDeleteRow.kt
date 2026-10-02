@@ -86,11 +86,8 @@ private class SwipeState(
         isDragging = false
         settledOffset.snapTo(releasedAt)
         when {
-            // a full swipe commits the delete - close the row back up first so it never looks stuck mid-swipe
-            -releasedAt > fullWidthPx -> {
-                settle(0f, false)
-                onDeleteRequested()
-            }
+            // a full swipe commits the delete from where the finger left the row, no snap back
+            -releasedAt > fullWidthPx -> onDeleteRequested()
             -releasedAt > openWidthPx / 2 -> settle(-openWidthPx, true)
             else -> settle(0f, false)
         }
@@ -112,9 +109,10 @@ private class SwipeState(
         settledOffset.animateTo(target, animationSpec = tween(SWIPE_ANIMATION_DURATION_MS, easing = SwipeEasing))
     }
 
-    suspend fun onDeleteButtonClicked(onDeleteRequested: () -> Unit) {
-        settle(0f, false)
-        onDeleteRequested()
+    // brings a row back to rest without animation, for when the delete did not happen after all
+    suspend fun reset() {
+        isOpen = false
+        settledOffset.snapTo(0f)
     }
 }
 
@@ -142,6 +140,7 @@ fun SwipeToDeleteRow(
             onDeleteRequested()
             // still composed after the grace period means nothing was deleted, so bring the row back
             delay(REMOVAL_GRACE_MS)
+            state.reset()
             isRemoving = false
         }
     }
@@ -153,9 +152,7 @@ fun SwipeToDeleteRow(
         modifier = modifier,
     ) {
         Box {
-            SwipeDeleteBackground(state, density, deleteContentDescription) {
-                scope.launch { state.onDeleteButtonClicked { isRemoving = true } }
-            }
+            SwipeDeleteBackground(state, density, deleteContentDescription) { isRemoving = true }
             Box(
                 modifier =
                     Modifier
