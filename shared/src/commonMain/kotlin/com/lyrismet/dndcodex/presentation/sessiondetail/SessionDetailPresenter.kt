@@ -199,8 +199,7 @@ class SessionDetailPresenter(
             is SessionDetailEvent.RelatedNoteClicked -> fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId)
             SessionDetailEvent.SheetDismissed -> fields.entitySheet.onDismissed()
             SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, fields)
-            is SessionDetailEvent.EntryClicked ->
-                fields.selectedEntryId.value = if (fields.selectedEntryId.value == event.id) null else event.id
+            is SessionDetailEvent.EntryClicked -> onEntryClicked(event.id, fields.selectedEntryId)
             is SessionDetailEvent.EditEntryClicked -> onEditEntry(event.id, entries, fields)
             SessionDetailEvent.CancelEditEntryClicked -> {
                 fields.editingEntryId.value = null
@@ -304,6 +303,14 @@ class SessionDetailPresenter(
             }
         }
     }
+}
+
+// tapping the already selected note deselects it
+private fun onEntryClicked(
+    id: Long,
+    selectedEntryId: MutableState<Long?>,
+) {
+    selectedEntryId.value = if (selectedEntryId.value == id) null else id
 }
 
 private data class MentionContext(

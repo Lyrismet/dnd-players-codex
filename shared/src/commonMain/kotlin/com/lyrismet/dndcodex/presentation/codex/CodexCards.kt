@@ -52,7 +52,7 @@ internal fun NpcCodexCard(
             border = item.statusColor.border,
             borderWidth = 1.5.dp,
         ) {
-            Text(item.initial, style = MaterialTheme.typography.titleMedium, color = item.statusColor.foreground)
+            Text(item.initial, style = MaterialTheme.typography.titleLarge, color = item.statusColor.foreground)
         }
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -69,10 +69,11 @@ internal fun NpcCodexCard(
             }
             Text(
                 text = item.subtitle,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = AppPalette.TextSecondary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 2.dp),
             )
         }
     }
@@ -162,17 +163,16 @@ internal fun LocationCodexCard(
             background = AppPalette.Parchment.copy(alpha = 0.08f),
             border = AppPalette.Parchment.copy(alpha = 0.3f),
         ) {
-            Text(MentionGlyph.LOCATION.symbol, color = AppPalette.Parchment)
+            Text(MentionGlyph.LOCATION.symbol, fontSize = 13.sp, color = AppPalette.Parchment)
         }
         Column(modifier = Modifier.weight(1f)) {
+            Text(text = item.name, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
             Text(
-                text = item.name,
-                style = MaterialTheme.typography.titleMedium,
-                color = AppPalette.TextHeading,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                item.subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppPalette.TextSecondary,
+                modifier = Modifier.padding(top = 2.dp),
             )
-            Text(item.subtitle, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
         }
     }
 }

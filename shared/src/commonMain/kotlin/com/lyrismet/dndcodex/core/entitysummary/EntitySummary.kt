@@ -217,7 +217,7 @@ private fun buildQuestSummary(
         reward = quest.reward,
         description = quest.description,
         emblem = EntityEmblem(MentionGlyph.QUEST.symbol, EntityEmblemShape.ROUNDED, quest.status.toStatusColor()),
-        subtitle = location?.name.orEmpty(),
+        subtitle = quest.reward,
         statusOptions =
             statusOptions(QuestStatus.entries, quest.status, lookup.questStatusLabels) { status ->
                 status.toStatusColor()
