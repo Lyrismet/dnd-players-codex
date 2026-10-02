@@ -169,15 +169,6 @@ class CodexPresenter(
                     allLabel,
                 ),
             locations = search.searchedLocations.toCodexItems(),
-            locationFilterOptions =
-                listOf(
-                    CodexFilterOption(
-                        value = null,
-                        label = allLabel,
-                        count = search.searchedLocations.size,
-                        dotColor = null,
-                    ),
-                ),
             activeSheet = codexActiveSheet(formController.buildState(npcs, locations), selectedEntity),
         ) { event ->
             onEvent(event, fields, formController, npcs, quests, locations, undoDeletedTitle, entityTypeLabels, scope)

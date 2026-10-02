@@ -32,6 +32,7 @@ fun <T> SegmentedControl(
     containerBorder: Color = AppPalette.BorderSubtle,
     itemShape: Shape = RoundedCornerShape(9.dp),
     itemHeight: Dp = 34.dp,
+    itemSpacing: Dp = 3.dp,
     itemBorder: ((T) -> Color)? = null,
     itemContent: @Composable (T) -> Unit,
 ) {
@@ -43,7 +44,7 @@ fun <T> SegmentedControl(
                 .background(containerBackground)
                 .border(1.dp, containerBorder, containerShape)
                 .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
+        horizontalArrangement = Arrangement.spacedBy(itemSpacing),
     ) {
         items.forEach { item ->
             Box(

@@ -1,6 +1,5 @@
 package com.lyrismet.dndcodex.presentation.codex
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,20 +47,20 @@ fun CodexUi(
                     )
                 },
             )
-            Column(
-                modifier = Modifier.padding(horizontal = 20.dp).padding(bottom = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
+            Column(modifier = Modifier.padding(bottom = 12.dp)) {
                 CodexSearchField(
                     query = state.searchQuery,
                     onQueryChange = { state.eventSink(CodexEvent.SearchQueryChanged(it)) },
                     placeholder = stringResource(Res.string.codex_search_placeholder),
+                    modifier = Modifier.padding(horizontal = 20.dp),
                 )
                 CodexTabRow(
                     items = tabItems,
                     selected = state.activeTab,
                     onSelected = { state.eventSink(CodexEvent.TabSelected(it)) },
+                    modifier = Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp),
                 )
+                CodexFilters(state, modifier = Modifier.padding(top = 10.dp))
             }
             Box(modifier = Modifier.weight(1f)) {
                 when (state.activeTab) {
@@ -88,6 +87,33 @@ fun CodexUi(
         is CodexSheet.EntryForm -> CodexEntryFormSheet(state, sheet.form)
         is CodexSheet.EntityView -> CodexEntitySheet(state, sheet.entity)
         null -> Unit
+    }
+}
+
+// only the NPC and quest tabs have statuses to filter by, party and places have none
+@Composable
+private fun CodexFilters(
+    state: CodexState,
+    modifier: Modifier = Modifier,
+) {
+    when (state.activeTab) {
+        CodexTab.NPC ->
+            CodexFilterChipRow(
+                items = state.npcFilterOptions,
+                selected = state.npcStatusFilter,
+                onSelected = { state.eventSink(CodexEvent.NpcStatusFilterSelected(it)) },
+                modifier = modifier,
+            )
+
+        CodexTab.QUEST ->
+            CodexFilterChipRow(
+                items = state.questFilterOptions,
+                selected = state.questStatusFilter,
+                onSelected = { state.eventSink(CodexEvent.QuestStatusFilterSelected(it)) },
+                modifier = modifier,
+            )
+
+        CodexTab.ALL, CodexTab.PARTY, CodexTab.LOCATION -> Unit
     }
 }
 

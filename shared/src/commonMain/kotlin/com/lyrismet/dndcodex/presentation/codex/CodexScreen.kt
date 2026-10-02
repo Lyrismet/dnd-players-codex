@@ -121,7 +121,6 @@ data class CodexState(
     val questStatusFilter: QuestStatus? = null,
     val questFilterOptions: List<CodexFilterOption<QuestStatus>> = emptyList(),
     val locations: List<LocationCodexItem> = emptyList(),
-    val locationFilterOptions: List<CodexFilterOption<Nothing>> = emptyList(),
     val activeSheet: CodexSheet? = null,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
