@@ -6,7 +6,8 @@ CREATE TABLE quest (
     status TEXT AS QuestStatus NOT NULL,
     reward TEXT NOT NULL,
     given_by_npc_id INTEGER REFERENCES npc(id) ON DELETE SET NULL,
-    location_id INTEGER REFERENCES location(id) ON DELETE SET NULL
+    location_id INTEGER REFERENCES location(id) ON DELETE SET NULL,
+    description TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX quest_given_by_npc_id ON quest(given_by_npc_id);
@@ -25,12 +26,12 @@ selectByLocation:
 SELECT * FROM quest WHERE location_id = ?;
 
 insert:
-INSERT INTO quest(title, status, reward, given_by_npc_id, location_id)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO quest(title, status, reward, given_by_npc_id, location_id, description)
+VALUES (?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE quest
-SET title = ?, status = ?, reward = ?, given_by_npc_id = ?, location_id = ?
+SET title = ?, status = ?, reward = ?, given_by_npc_id = ?, location_id = ?, description = ?
 WHERE id = ?;
 
 deleteById:

@@ -7,6 +7,7 @@ data class Quest(
     val reward: String,
     val givenByNpcId: Long?,
     val locationId: Long?,
+    val description: String = "",
 )
 
 enum class QuestStatus {

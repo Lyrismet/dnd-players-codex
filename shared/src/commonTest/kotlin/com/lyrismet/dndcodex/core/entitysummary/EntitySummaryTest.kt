@@ -124,6 +124,15 @@ class EntitySummaryTest {
     }
 
     @Test
+    fun `buildEntitySummary for a quest carries its description`() {
+        val described = swordQuest.copy(id = 7, description = "Найти три фрагмента")
+        val summary =
+            buildEntitySummary(EntityRef.Quest(7), lookup(quests = listOf(described))) as EntitySummaryItem.QuestSummary
+
+        assertEquals("Найти три фрагмента", summary.description)
+    }
+
+    @Test
     fun `buildEntitySummary for a quest without a giver omits that fact`() {
         val orphanQuest = swordQuest.copy(id = 6, givenByNpcId = null)
         val summary =

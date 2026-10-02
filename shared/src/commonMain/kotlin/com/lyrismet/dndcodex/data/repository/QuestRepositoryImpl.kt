@@ -28,10 +28,10 @@ class QuestRepositoryImpl(
     override suspend fun upsert(quest: Quest): Long =
         withContext(Dispatchers.Default) {
             if (quest.id == 0L) {
-                queries.insert(quest.title, quest.status, quest.reward, quest.givenByNpcId, quest.locationId)
+                queries.insert(quest.title, quest.status, quest.reward, quest.givenByNpcId, quest.locationId, quest.description)
                 queries.lastInsertRowId().executeAsOne()
             } else {
-                queries.update(quest.title, quest.status, quest.reward, quest.givenByNpcId, quest.locationId, quest.id)
+                queries.update(quest.title, quest.status, quest.reward, quest.givenByNpcId, quest.locationId, quest.description, quest.id)
                 quest.id
             }
         }
@@ -51,5 +51,6 @@ class QuestRepositoryImpl(
         reward: String,
         givenByNpcId: Long?,
         locationId: Long?,
-    ) = Quest(id, title, status, reward, givenByNpcId, locationId)
+        description: String,
+    ) = Quest(id, title, status, reward, givenByNpcId, locationId, description)
 }

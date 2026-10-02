@@ -45,6 +45,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_fa
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_notes
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_race
+import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_description
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_reward
 import dndplayerscodex.shared.generated.resources.codex_entry_type_location
@@ -169,6 +170,12 @@ private fun QuestEntryFields(
         label = stringResource(Res.string.codex_entry_label_status),
         options = form.questStatusOptions,
         onClick = { eventSink(CodexEvent.EntryQuestStatusChanged(it)) },
+    )
+    FormTextArea(
+        label = stringResource(Res.string.codex_entry_label_description),
+        value = form.description,
+        onChange = { eventSink(CodexEvent.EntryFieldChanged(CodexEntryField.DESCRIPTION, it)) },
+        placeholder = stringResource(Res.string.codex_entry_placeholder_quest_description),
     )
 }
 

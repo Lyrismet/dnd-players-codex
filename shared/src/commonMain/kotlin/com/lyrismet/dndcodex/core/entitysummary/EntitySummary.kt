@@ -137,6 +137,7 @@ sealed interface EntitySummaryItem {
         val title: String,
         val statusLabel: String,
         val reward: String,
+        val description: String,
         val emblem: EntityEmblem,
         val subtitle: String,
         val statusOptions: List<StatusOption<QuestStatus>>,
@@ -214,6 +215,7 @@ private fun buildQuestSummary(
         title = quest.title,
         statusLabel = lookup.questStatusLabels.getValue(quest.status),
         reward = quest.reward,
+        description = quest.description,
         emblem = EntityEmblem(MentionGlyph.QUEST.symbol, EntityEmblemShape.ROUNDED, quest.status.toStatusColor()),
         subtitle = location?.name.orEmpty(),
         statusOptions =
