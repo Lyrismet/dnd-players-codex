@@ -17,7 +17,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.AppDivider
@@ -33,6 +36,7 @@ import com.lyrismet.dndcodex.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.dndcodex.core.designsystem.component.appCard
 import com.lyrismet.dndcodex.core.entitysummary.EntityRef
 import com.lyrismet.dndcodex.core.entitysummary.EntitySummarySheetActions
+import com.lyrismet.dndcodex.core.format.NumberSizeLadder
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_list_archive_section
 import dndplayerscodex.shared.generated.resources.session_list_delete_content_description
@@ -96,7 +100,7 @@ private fun SessionListContent(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 2.dp),
+        contentPadding = PaddingValues(start = 16.dp, top = 2.dp, end = 16.dp, bottom = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         state.liveSession?.let { live ->
@@ -116,11 +120,17 @@ private fun SessionListContent(
         item {
             SectionOverline(
                 text = stringResource(Res.string.session_list_archive_section),
+                modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 10.dp, bottom = 2.dp),
                 color = AppPalette.TextSecondary,
+                letterSpacing = 0.16.em,
                 trailingContent = {
                     Text(
                         state.sessions.size.toString(),
-                        style = MaterialTheme.typography.labelMedium,
+                        style =
+                            MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Medium,
+                                letterSpacing = 0.em,
+                            ),
                         color = AppPalette.TextSecondary,
                     )
                 },
@@ -155,23 +165,8 @@ private fun LiveSessionCard(
                 ).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            GlowingDot(dotSize = 7.dp)
-            Text(
-                stringResource(Res.string.session_list_live_label),
-                style = MaterialTheme.typography.labelSmall,
-                color = AppPalette.GoldBright,
-                modifier = Modifier.weight(1f),
-            )
-            Text(session.dateLabel, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(session.numberLabel, style = MaterialTheme.typography.displayLarge, color = AppPalette.Gold)
-            Column {
-                Text(session.overline, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
-                Text(session.title, style = MaterialTheme.typography.headlineMedium, color = AppPalette.TextHeading)
-            }
-        }
+        LiveCardStatusRow(session.dateLabel)
+        LiveCardTitleRow(session)
         if (session.mentions.isNotEmpty()) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -182,9 +177,77 @@ private fun LiveSessionCard(
                 }
             }
         }
+        LiveCardFooter(session.notesSummary)
+    }
+}
+
+@Composable
+private fun LiveCardStatusRow(
+    dateLabel: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        GlowingDot(dotSize = 7.dp)
+        Text(
+            stringResource(Res.string.session_list_live_label),
+            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.14.em),
+            color = AppPalette.GoldBright,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            dateLabel,
+            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+            color = AppPalette.TextSecondary,
+        )
+    }
+}
+
+// number and title share a bottom edge, the number's line height is tightened so it doesn't float above the title
+@Composable
+private fun LiveCardTitleRow(
+    session: LiveSessionItem,
+    modifier: Modifier = Modifier,
+) {
+    val numberSize = NumberSizeLadder.LIVE_SESSION.sizeFor(session.numberLabel).sp
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        Text(
+            session.numberLabel,
+            style =
+                MaterialTheme.typography.displayLarge.copy(
+                    fontSize = numberSize,
+                    lineHeight = numberSize * 0.9f,
+                ),
+            color = AppPalette.Gold,
+            maxLines = 1,
+            softWrap = false,
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(session.overline, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
+            Text(session.title, style = MaterialTheme.typography.headlineMedium, color = AppPalette.TextHeading)
+        }
+    }
+}
+
+@Composable
+private fun LiveCardFooter(
+    notesSummary: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
         AppDivider(color = AppPalette.Border)
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(session.notesSummary, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextSecondary)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(notesSummary, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextSecondary)
             Text(
                 stringResource(Res.string.session_list_live_continue),
                 style = MaterialTheme.typography.labelLarge,
@@ -213,14 +276,14 @@ private fun SessionArchiveRow(
                     .appCard(
                         shape = RoundedCornerShape(14.dp),
                         background = AppPalette.SurfaceVariant,
-                        border = null,
+                        border = AppPalette.BorderSubtle,
                         onClick = onClick,
                     ).padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             NumberLabel(text = session.numberLabel, width = 52.dp, color = AppPalette.GoldDim)
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(session.title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
                 Text(session.dateLabel, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
             }

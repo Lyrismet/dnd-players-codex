@@ -9,21 +9,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.format.NumberSizeLadder
 
-/** centered fixed-width index (session number, note number) in front of a list row */
+/** centered fixed-width index (session number, note number) in front of a list row, shrinking as the label grows */
 @Composable
 fun NumberLabel(
     text: String,
     modifier: Modifier = Modifier,
-    width: Dp = 32.dp,
+    width: Dp = 44.dp,
     color: Color = AppPalette.Gold,
+    sizeLadder: NumberSizeLadder = NumberSizeLadder.ARCHIVE_SESSION,
+    lineHeightFactor: Float = 1.35f,
 ) {
+    val fontSize = sizeLadder.sizeFor(text).sp
     Text(
         text = text,
-        style = MaterialTheme.typography.titleMedium,
+        style =
+            MaterialTheme.typography.titleMedium.copy(
+                fontSize = fontSize,
+                lineHeight = fontSize * lineHeightFactor,
+            ),
         color = color,
         textAlign = TextAlign.Center,
+        maxLines = 1,
+        softWrap = false,
         modifier = modifier.width(width),
     )
 }

@@ -106,9 +106,7 @@ class SessionListPresenter(
         candidates: List<MentionCandidate>,
         noNotesLabel: String,
     ): LiveSessionItem {
-        // reversed so a dedupe-by-first-seen keeps each entity's most recent mention, not its oldest one
-        val mentions =
-            mentionsIn(liveEntries.asReversed().map { it.body }, candidates).take(5).map { it.toChipItem() }
+        val mentions = mentionsIn(liveEntries.map { it.body }, candidates).take(5).map { it.toChipItem() }
         val notesSummary =
             liveEntries.lastOrNull()?.let { last ->
                 stringResource(

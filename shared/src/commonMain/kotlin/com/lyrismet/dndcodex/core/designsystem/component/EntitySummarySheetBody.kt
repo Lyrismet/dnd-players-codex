@@ -35,6 +35,7 @@ import com.lyrismet.dndcodex.core.entitysummary.FactValue
 import com.lyrismet.dndcodex.core.entitysummary.RelatedNoteItem
 import com.lyrismet.dndcodex.core.entitysummary.RelationGroup
 import com.lyrismet.dndcodex.core.entitysummary.StatusOption
+import com.lyrismet.dndcodex.core.format.NumberSizeLadder
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_overline_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_count_format
@@ -246,6 +247,7 @@ private fun <T> EntityStatusSection(
             itemBorder = { option -> if (option.isSelected) option.color.border else Color.Transparent },
             containerBackground = AppPalette.Background,
             itemHeight = 32.dp,
+            itemSpacing = 4.dp,
         ) { option ->
             Text(
                 option.label,
@@ -370,7 +372,7 @@ private fun EntityRelatedNoteRow(
                 .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        NumberLabel(text = item.numberLabel)
+        NumberLabel(text = item.numberLabel, sizeLadder = NumberSizeLadder.RELATED_NOTE, lineHeightFactor = 1.3f)
         Column(modifier = Modifier.weight(1f)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 // mockup: title font-size:14px in the plain Inter face, not the 18sp serif titleMedium
