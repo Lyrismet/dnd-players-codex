@@ -13,6 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -90,51 +93,52 @@ internal fun QuestCodexCard(
                 .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(MentionGlyph.QUEST.symbol, fontSize = 10.sp, color = item.statusColor.foreground)
+        Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                MentionGlyph.QUEST.symbol,
+                fontSize = 10.sp,
+                color = item.statusColor.foreground,
+                modifier = Modifier.padding(top = 6.dp),
+            )
             Text(
                 text = item.title,
                 style = MaterialTheme.typography.titleMedium,
                 color = AppPalette.TextHeading,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
             StatusBadge(text = item.statusLabel, color = item.statusColor)
         }
-        item.giver?.let { giver ->
-            Row(
-                modifier = Modifier.padding(start = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                Text(
-                    stringResource(Res.string.codex_quest_given_by_label),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppPalette.TextTertiary,
-                )
-                Text(
-                    text = giver.name,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = giver.color.foreground,
-                    textDecoration =
-                        if (giver.isDead) {
-                            TextDecoration.combine(listOf(TextDecoration.Underline, TextDecoration.LineThrough))
-                        } else {
-                            TextDecoration.Underline
-                        },
-                    modifier = Modifier.clickable { onGiverClick(giver.npcId) },
-                )
+        Row(modifier = Modifier.padding(start = 20.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (item.giver != null) QuestFactLabel(stringResource(Res.string.codex_quest_given_by_label))
+                QuestFactLabel(stringResource(Res.string.codex_quest_reward_label))
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                item.giver?.let { giver ->
+                    Text(
+                        text = giver.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = giver.color.foreground,
+                        textDecoration = if (giver.isDead) TextDecoration.LineThrough else TextDecoration.None,
+                        modifier =
+                            Modifier
+                                .clickable { onGiverClick(giver.npcId) }
+                                .drawBehind {
+                                    val y = size.height - 0.5.dp.toPx()
+                                    drawLine(giver.color.foreground, Offset(0f, y), Offset(size.width, y), 1.dp.toPx())
+                                },
+                    )
+                }
+                Text(item.reward, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextPrimary)
             }
         }
-        Row(modifier = Modifier.padding(start = 20.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text(
-                stringResource(Res.string.codex_quest_reward_label),
-                style = MaterialTheme.typography.bodySmall,
-                color = AppPalette.TextTertiary,
-            )
-            Text(item.reward, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextPrimary)
-        }
     }
+}
+
+@Composable
+private fun QuestFactLabel(text: String) {
+    Text(text, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextTertiary)
 }
 
 @Composable
