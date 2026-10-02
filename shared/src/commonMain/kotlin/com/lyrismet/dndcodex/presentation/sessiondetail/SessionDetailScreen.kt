@@ -31,6 +31,8 @@ data class SessionDetailState(
     val mentionSuggestions: List<SessionMentionSuggestion> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
     val editingEntryTimeLabel: String? = null,
+    val selectedEntryId: Long? = null,
+    val editingEntryId: Long? = null,
     val eventSink: (SessionDetailEvent) -> Unit = {},
 ) : CircuitUiState {
     val isEditingEntry: Boolean get() = editingEntryTimeLabel != null
@@ -116,6 +118,10 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     data object SheetDismissed : SessionDetailEvent
 
     data object SubmitEntryClicked : SessionDetailEvent
+
+    data class EntryClicked(
+        val id: Long,
+    ) : SessionDetailEvent
 
     data class EditEntryClicked(
         val id: Long,

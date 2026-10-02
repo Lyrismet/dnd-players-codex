@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,6 +92,9 @@ fun MentionChip(
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     fontSize: TextUnit = 13.sp,
+    glyphSize: TextUnit = 8.sp,
+    glyphGap: Dp = 5.dp,
+    lineHeightFactor: Float = 1.6f,
 ) {
     val shape = RoundedCornerShape(6.dp)
     Row(
@@ -102,13 +106,13 @@ fun MentionChip(
                 .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
                 .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        horizontalArrangement = Arrangement.spacedBy(glyphGap),
     ) {
-        Text(item.glyph.symbol, fontSize = 8.sp, color = item.color.foreground)
+        Text(item.glyph.symbol, fontSize = glyphSize, color = item.color.foreground)
         Text(
             text = item.label,
             fontSize = fontSize,
-            lineHeight = fontSize * 1.6f,
+            lineHeight = fontSize * lineHeightFactor,
             fontWeight = FontWeight.Medium,
             fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
             color = item.color.foreground,

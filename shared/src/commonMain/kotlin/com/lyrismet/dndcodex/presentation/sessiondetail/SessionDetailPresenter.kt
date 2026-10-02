@@ -68,6 +68,7 @@ private class SessionDetailFields(
     val titleField: MutableState<String?>,
     val draft: MutableState<TextFieldValue>,
     val editingEntryId: MutableState<Long?>,
+    val selectedEntryId: MutableState<Long?>,
     val selectedEntityRef: MutableState<EntityRef?>,
     val entitySheet: EntitySheetInteractions,
 )
@@ -94,21 +95,14 @@ class SessionDetailPresenter(
         val scope = rememberCoroutineScope()
 
         val currentNote = allSessions.find { it.id == screen.sessionNoteId }
-        val numberLabel = numberLabelFor(allSessions)
+        val numberLabel = allSessions.chronologicalNumberLabels()[screen.sessionNoteId]
 
-        // edited locally so live Flow re-emissions from other screens don't clobber in-progress typing
-        val titleField = remember(screen.sessionNoteId) { mutableStateOf<String?>(null) }
-        val draft = remember(screen.sessionNoteId) { mutableStateOf(TextFieldValue("")) }
-        val editingEntryId = remember(screen.sessionNoteId) { mutableStateOf<Long?>(null) }
-        val selectedEntityRef = remember(screen.sessionNoteId) { mutableStateOf<EntityRef?>(null) }
-        val fields =
-            SessionDetailFields(
-                titleField,
-                draft,
-                editingEntryId,
-                selectedEntityRef,
-                entitySheetInteractions(selectedEntityRef),
-            )
+        val fields = rememberFields()
+        val titleField = fields.titleField
+        val draft = fields.draft
+        val editingEntryId = fields.editingEntryId
+        val selectedEntryId = fields.selectedEntryId
+        val selectedEntityRef = fields.selectedEntityRef
 
         LaunchedEffect(currentNote?.id) {
             if (titleField.value == null && currentNote != null) {
@@ -151,11 +145,25 @@ class SessionDetailPresenter(
             mentionSuggestions = mention.suggestions,
             selectedEntity = selectedEntity,
             editingEntryTimeLabel = editingEntryTimeLabel,
+            selectedEntryId = selectedEntryId.value,
+            editingEntryId = editingEntryId.value,
         ) { event -> onEvent(event, currentNote, entries, undoDeletedEntryTitle, scope, fields) }
     }
 
-    private fun numberLabelFor(allSessions: List<SessionNote>): String? =
-        allSessions.chronologicalNumberLabels()[screen.sessionNoteId]
+    // edited locally so live Flow re-emissions from other screens don't clobber in-progress typing
+    @Composable
+    private fun rememberFields(): SessionDetailFields {
+        val noteId = screen.sessionNoteId
+        val selectedEntityRef = remember(noteId) { mutableStateOf<EntityRef?>(null) }
+        return SessionDetailFields(
+            titleField = remember(noteId) { mutableStateOf<String?>(null) },
+            draft = remember(noteId) { mutableStateOf(TextFieldValue("")) },
+            editingEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
+            selectedEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
+            selectedEntityRef = selectedEntityRef,
+            entitySheet = entitySheetInteractions(selectedEntityRef),
+        )
+    }
 
     private fun entitySheetInteractions(selectedEntityRef: MutableState<EntityRef?>) =
         EntitySheetInteractions(
@@ -191,6 +199,8 @@ class SessionDetailPresenter(
             is SessionDetailEvent.RelatedNoteClicked -> fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId)
             SessionDetailEvent.SheetDismissed -> fields.entitySheet.onDismissed()
             SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, fields)
+            is SessionDetailEvent.EntryClicked ->
+                fields.selectedEntryId.value = if (fields.selectedEntryId.value == event.id) null else event.id
             is SessionDetailEvent.EditEntryClicked -> onEditEntry(event.id, entries, fields)
             SessionDetailEvent.CancelEditEntryClicked -> {
                 fields.editingEntryId.value = null
@@ -262,6 +272,7 @@ class SessionDetailPresenter(
         fields: SessionDetailFields,
     ) {
         val entry = entries.find { it.id == id } ?: return
+        fields.selectedEntryId.value = null
         fields.editingEntryId.value = id
         fields.draft.value = TextFieldValue(entry.body, TextRange(entry.body.length))
     }
@@ -312,6 +323,7 @@ private fun onDeleteEntryClicked(
     undoController: UndoController,
 ) {
     val entry = entries.find { it.id == id } ?: return
+    fields.selectedEntryId.value = null
     if (fields.editingEntryId.value == id) {
         fields.editingEntryId.value = null
         fields.draft.value = TextFieldValue("")

@@ -3,6 +3,8 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_edit">Edit</string>
     <string name="action_undo">Undo</string>
+    <string name="swipe_delete_label">Delete</string>
+    <string name="swipe_delete_release_label">Release</string>
 
     <string name="session_list_title">Session Diary</string>
     <string name="session_list_new_session_button">+ Session</string>
@@ -28,7 +30,9 @@
     <string name="session_detail_submit_button">Log</string>
     <string name="session_detail_save_button">Save</string>
     <string name="session_detail_editing_label_format">EDITING · %1$s</string>
-    <string name="session_detail_empty_feed">A blank page - write down what\'s happening</string>
+    <string name="session_detail_empty_feed">A blank page</string>
+    <string name="session_detail_empty_feed_hint">Write down what\'s happening. Type @ to link a note to an NPC, place or quest.</string>
+    <string name="session_detail_composer_hint">Enter to save</string>
     <string name="session_detail_undo_deleted_entry_title">Entry deleted</string>
     <string name="session_detail_quest_mention_prefix">Quest: </string>
     <string name="session_detail_meeting_separator_format">MEETING %1$d · %2$s</string>
