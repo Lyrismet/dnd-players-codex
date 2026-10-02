@@ -166,6 +166,7 @@ class SessionListPresenter(
     }
 
     // deletes immediately and offers undo - restoring re-inserts the note and all its entries with fresh ids
+    @OptIn(ExperimentalTime::class)
     private fun onDeleteSessionClicked(
         id: Long,
         sessions: List<SessionNote>,
@@ -178,7 +179,15 @@ class SessionListPresenter(
             val entries = sessionEntryRepository.observeForSession(id).first()
             sessionNoteRepository.delete(id)
             undoController.show(undoDeletedTitle, "$numLabel · ${note.title}") {
-                val newId = sessionNoteRepository.upsert(note.copy(id = 0))
+                // another session may have gone live meanwhile, so the restored one comes back ended
+                val anotherIsLive = sessionNoteRepository.observeAll().first().any { it.isLive }
+                val restored =
+                    if (note.isLive && anotherIsLive) {
+                        note.copy(id = 0, endedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()))
+                    } else {
+                        note.copy(id = 0)
+                    }
+                val newId = sessionNoteRepository.upsert(restored)
                 entries.forEach { entry -> sessionEntryRepository.restore(entry.copy(sessionNoteId = newId)) }
             }
         }

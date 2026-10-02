@@ -43,6 +43,7 @@ class UndoController(
         val action = _current.value ?: return
         dismissJob?.cancel()
         _current.value = null
-        scope.launch { action.onUndo() }
+        // a failed restore must not crash the app from the shared scope
+        scope.launch { runCatching { action.onUndo() } }
     }
 }

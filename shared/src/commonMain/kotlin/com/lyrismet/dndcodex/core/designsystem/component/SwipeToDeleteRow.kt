@@ -50,6 +50,7 @@ private val RowCornerRadius = 14.dp
 private const val SWIPE_ANIMATION_DURATION_MS = 300
 
 private const val COLLAPSE_ANIMATION_DURATION_MS = 220
+private const val REMOVAL_GRACE_MS = 1000L
 
 // top and bottom edges converge on the center as the row collapses, Gmail-delete-style, not a one-sided slide
 private fun collapseExit(durationMs: Int = COLLAPSE_ANIMATION_DURATION_MS) =
@@ -58,16 +59,7 @@ private fun collapseExit(durationMs: Int = COLLAPSE_ANIMATION_DURATION_MS) =
 // matches the mockup's swipe/snap transition: cubic-bezier(.2,.8,.2,1)
 private val SwipeEasing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
 
-/**
- * px thresholds + the shared drag state for one row. While a finger is down, [dragPx] is a plain snapshot-state
- * float that the gesture callback writes to *synchronously* - no suspend call, no coroutine launch per pixel of
- * movement, so the row tracks the finger exactly. [settledOffset] (an [Animatable]) only takes over once the
- * finger lifts, to animate the snap-open/snap-closed transition - mirroring the mockup's own split between a
- * synchronous `setState` during `onMove` and an async `animateTo`-style transition only on `onUp`/`onCancel`.
- * Driving the live drag through the Animatable instead (one `scope.launch { snapTo(...) }` per move callback) is
- * what caused the earlier "jerks away from the finger, then snaps back" bug: each move spawned its own coroutine
- * racing the Animatable's internal mutex, so updates could apply out of order.
- */
+// live drag writes a plain float synchronously and the animatable only takes over after release
 private class SwipeState(
     val openWidthPx: Float,
     val fullWidthPx: Float,
@@ -94,8 +86,7 @@ private class SwipeState(
         isDragging = false
         settledOffset.snapTo(releasedAt)
         when {
-            // a full swipe commits straight to the confirm flow - close back up first so the row
-            // never sits revealed behind the dialog (it would otherwise look stuck mid-swipe)
+            // a full swipe commits the delete - close the row back up first so it never looks stuck mid-swipe
             -releasedAt > fullWidthPx -> {
                 settle(0f, false)
                 onDeleteRequested()
@@ -103,6 +94,14 @@ private class SwipeState(
             -releasedAt > openWidthPx / 2 -> settle(-openWidthPx, true)
             else -> settle(0f, false)
         }
+    }
+
+    // a cancelled gesture is not a release, so it returns to where the row was and never commits a delete
+    suspend fun onDragCancel() {
+        val cancelledAt = dragPx
+        isDragging = false
+        settledOffset.snapTo(cancelledAt)
+        if (isOpen) settle(-openWidthPx, true) else settle(0f, false)
     }
 
     suspend fun settle(
@@ -141,6 +140,9 @@ fun SwipeToDeleteRow(
         if (isRemoving) {
             delay(COLLAPSE_ANIMATION_DURATION_MS.toLong())
             onDeleteRequested()
+            // still composed after the grace period means nothing was deleted, so bring the row back
+            delay(REMOVAL_GRACE_MS)
+            isRemoving = false
         }
     }
 
@@ -162,7 +164,7 @@ fun SwipeToDeleteRow(
                             detectHorizontalDragGestures(
                                 onDragStart = { state.onDragStart() },
                                 onDragEnd = { scope.launch { state.onDragEnd { isRemoving = true } } },
-                                onDragCancel = { scope.launch { state.onDragEnd { isRemoving = true } } },
+                                onDragCancel = { scope.launch { state.onDragCancel() } },
                             ) { change, dragAmount ->
                                 change.consume()
                                 state.onDrag(dragAmount)

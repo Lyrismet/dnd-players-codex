@@ -69,6 +69,7 @@ import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
 private const val ENTRY_COLLAPSE_ANIMATION_DURATION_MS = 220
+private const val ENTRY_REMOVAL_GRACE_MS = 1000L
 
 // top and bottom edges converge on the center as the row collapses, Gmail-delete-style, not a one-sided slide
 private fun entryCollapseExit() =
@@ -311,6 +312,9 @@ private fun SessionEntryRow(
         if (isRemoving) {
             delay(ENTRY_COLLAPSE_ANIMATION_DURATION_MS.toLong())
             onDeleteClick()
+            // still composed after the grace period means nothing was deleted, so bring the entry back
+            delay(ENTRY_REMOVAL_GRACE_MS)
+            isRemoving = false
         }
     }
 
