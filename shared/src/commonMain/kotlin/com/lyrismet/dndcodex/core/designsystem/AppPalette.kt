@@ -20,6 +20,7 @@ object AppPalette {
 
     // текст
     val TextPrimary = Color(0xFFE2E8F0)
+    val TextDescription = Color(0xFFC9D0DC)
     val TextHeading = Color(0xFFF1EBDD)
     val TextSecondary = Color(0xFF8A93A6)
     val TextTertiary = Color(0xFF6B7385)

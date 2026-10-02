@@ -135,6 +135,9 @@ private fun QuestSummaryBody(
         quest.statusOptions,
         onSelected = { status -> actions.onQuestStatusSelected(quest.ref.id, status) },
     )
+    if (quest.description.isNotBlank()) {
+        Text(quest.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextDescription)
+    }
     EntityFactsGrid(quest.facts, actions.onEntityRefClicked)
     EntityRelationGroups(quest.groups, actions.onEntityRefClicked)
     EntityRelatedNotesSection(quest.title, quest.relatedNotes, actions.onRelatedNoteClicked)

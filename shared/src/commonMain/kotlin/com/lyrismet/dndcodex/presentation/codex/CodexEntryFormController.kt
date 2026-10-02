@@ -162,6 +162,7 @@ class CodexEntryFormController private constructor(
                             reward = current.reward.trim(),
                             givenByNpcId = current.questGiverId,
                             locationId = current.questLocationId,
+                            description = current.description.trim(),
                         ),
                     )
 
@@ -268,6 +269,7 @@ private fun Quest.toFields(ref: EntityRef.Quest) =
         originalName = title,
         type = CodexEntryType.QUEST,
         name = title,
+        description = description,
         reward = reward,
         questGiverId = givenByNpcId,
         questLocationId = locationId,

@@ -88,6 +88,7 @@
     <string name="codex_entry_placeholder_npc_faction">Гильдия, орден, дом…</string>
     <string name="codex_entry_placeholder_npc_notes">Внешность, мотивы, что обещал…</string>
     <string name="codex_entry_placeholder_quest_name">Например, Ключ от склепа</string>
+    <string name="codex_entry_placeholder_quest_description">Что нужно сделать</string>
     <string name="codex_entry_placeholder_quest_reward">200 зм, предмет, услуга…</string>
     <string name="codex_entry_placeholder_location_name">Например, Сторожевая башня</string>
     <string name="codex_entry_placeholder_location_type">Город, руины, таверна…</string>

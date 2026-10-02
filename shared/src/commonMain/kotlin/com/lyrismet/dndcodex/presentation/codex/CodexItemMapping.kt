@@ -19,6 +19,7 @@ internal fun Quest.matchesQuery(
     val giverName = npcsById[givenByNpcId]?.name.orEmpty()
     return title.contains(query, ignoreCase = true) ||
         reward.contains(query, ignoreCase = true) ||
+        description.contains(query, ignoreCase = true) ||
         giverName.contains(query, ignoreCase = true)
 }
 

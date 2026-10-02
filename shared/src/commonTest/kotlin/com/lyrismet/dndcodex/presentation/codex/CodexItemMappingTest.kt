@@ -73,6 +73,22 @@ class CodexItemMappingTest {
     }
 
     @Test
+    fun `Quest matchesQuery matches the description`() {
+        val quest =
+            Quest(
+                id = 1,
+                title = "Меч",
+                status = QuestStatus.ACTIVE,
+                reward = "50 золота",
+                givenByNpcId = null,
+                locationId = null,
+                description = "Найти три фрагмента клинка",
+            )
+        assertTrue(quest.matchesQuery("фрагмент", emptyMap()))
+        assertFalse(quest.matchesQuery("дракон", emptyMap()))
+    }
+
+    @Test
     fun `Quest matchesQuery matches the giver name`() {
         val quest =
             Quest(
