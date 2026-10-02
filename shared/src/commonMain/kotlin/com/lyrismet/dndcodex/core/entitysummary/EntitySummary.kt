@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import com.lyrismet.dndcodex.core.designsystem.LocationMentionColor
 import com.lyrismet.dndcodex.core.designsystem.StatusColor
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
+import com.lyrismet.dndcodex.core.designsystem.component.MentionGlyph
 import com.lyrismet.dndcodex.core.designsystem.component.toMentionChip
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
 import com.lyrismet.dndcodex.core.format.chronologicalNumberLabels
@@ -213,7 +214,7 @@ private fun buildQuestSummary(
         title = quest.title,
         statusLabel = lookup.questStatusLabels.getValue(quest.status),
         reward = quest.reward,
-        emblem = EntityEmblem("◆", EntityEmblemShape.ROUNDED, quest.status.toStatusColor()),
+        emblem = EntityEmblem(MentionGlyph.QUEST.symbol, EntityEmblemShape.ROUNDED, quest.status.toStatusColor()),
         subtitle = location?.name.orEmpty(),
         statusOptions =
             statusOptions(QuestStatus.entries, quest.status, lookup.questStatusLabels) { status ->
@@ -243,7 +244,7 @@ private fun buildLocationSummary(
         name = location.name,
         typeLabel = location.type,
         description = location.description,
-        emblem = EntityEmblem("▲", EntityEmblemShape.ROUNDED, LocationMentionColor),
+        emblem = EntityEmblem(MentionGlyph.LOCATION.symbol, EntityEmblemShape.ROUNDED, LocationMentionColor),
         subtitle = location.region,
         facts =
             listOf(

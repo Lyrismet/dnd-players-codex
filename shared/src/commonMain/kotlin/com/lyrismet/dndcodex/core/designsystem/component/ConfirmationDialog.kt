@@ -1,14 +1,10 @@
 package com.lyrismet.dndcodex.core.designsystem.component
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -17,9 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -31,11 +25,7 @@ import dndplayerscodex.shared.generated.resources.action_cancel
 import dndplayerscodex.shared.generated.resources.action_delete
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * "are you sure?" dialog for any destructive action (delete an entry, remove an NPC...) -
- * call it from a screen's own pending-confirmation ui state, never trigger the action directly.
- * Built on the generic [AppDialog] shell with a maroon border, matching the mockup's `hasConfirm` card.
- */
+/** "are you sure?" dialog - call it from pending-confirmation state, never trigger the action directly */
 @Composable
 fun ConfirmationDialog(
     title: String,
@@ -52,14 +42,11 @@ fun ConfirmationDialog(
         modifier = modifier,
         borderColor = AppPalette.Maroon.copy(alpha = 0.7f),
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(AppPalette.Maroon.copy(alpha = 0.2f))
-                    .border(1.dp, AppPalette.Maroon.copy(alpha = 0.7f), RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center,
+        IconBadge(
+            size = 44.dp,
+            shape = RoundedCornerShape(12.dp),
+            background = AppPalette.Maroon.copy(alpha = 0.2f),
+            border = AppPalette.Maroon.copy(alpha = 0.7f),
         ) {
             Icon(AppIcons.Delete, contentDescription = null, tint = AppPalette.MaroonBright)
         }

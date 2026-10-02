@@ -35,7 +35,7 @@ fun BottomTabBar(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Spacer(Modifier.fillMaxWidth().height(1.dp).background(AppPalette.BorderSubtle))
+        AppDivider()
         Row(
             modifier =
                 Modifier

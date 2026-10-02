@@ -1,24 +1,16 @@
 package com.lyrismet.dndcodex.presentation.codex
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
@@ -27,6 +19,7 @@ import com.lyrismet.dndcodex.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.dndcodex.core.designsystem.component.FormTextArea
 import com.lyrismet.dndcodex.core.designsystem.component.FormTextField
 import com.lyrismet.dndcodex.core.designsystem.component.SectionOverline
+import com.lyrismet.dndcodex.core.designsystem.component.SegmentedControl
 import com.lyrismet.dndcodex.core.designsystem.component.SheetCloseButton
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_label_description
@@ -222,34 +215,20 @@ private fun CodexEntryTypeSwitch(
             CodexEntryType.QUEST to stringResource(Res.string.codex_entry_type_quest),
             CodexEntryType.LOCATION to stringResource(Res.string.codex_entry_type_location),
         )
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(AppPalette.Background)
-                .border(1.dp, AppPalette.BorderSubtle, RoundedCornerShape(12.dp))
-                .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
-    ) {
-        options.forEach { (type, label) ->
-            val isSelected = type == selected
-            Box(
-                modifier =
-                    Modifier
-                        .weight(1f)
-                        .height(40.dp)
-                        .clip(RoundedCornerShape(9.dp))
-                        .background(if (isSelected) AppPalette.SurfaceElevated else Color.Transparent)
-                        .clickable { onSelected(type) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    label,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = if (isSelected) AppPalette.GoldBright else AppPalette.TextSecondary,
-                )
-            }
-        }
+    SegmentedControl(
+        items = options,
+        onSelected = { (type, _) -> onSelected(type) },
+        itemBackground = { (type, _) ->
+            if (type == selected) AppPalette.SurfaceElevated else Color.Transparent
+        },
+        modifier = modifier,
+        containerBackground = AppPalette.Background,
+        itemHeight = 40.dp,
+    ) { (type, label) ->
+        Text(
+            label,
+            style = MaterialTheme.typography.labelLarge,
+            color = if (type == selected) AppPalette.GoldBright else AppPalette.TextSecondary,
+        )
     }
 }

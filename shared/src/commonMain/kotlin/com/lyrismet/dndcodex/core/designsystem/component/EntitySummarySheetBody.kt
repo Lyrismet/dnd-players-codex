@@ -1,15 +1,10 @@
 package com.lyrismet.dndcodex.core.designsystem.component
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,10 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -199,15 +192,11 @@ private fun EntityHeaderRow(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             onEditClicked?.let { onClick ->
-                Box(
-                    modifier =
-                        Modifier
-                            .size(HeaderButtonSize)
-                            .clip(CircleShape)
-                            .background(AppPalette.Gold.copy(alpha = 0.12f))
-                            .border(1.dp, AppPalette.Gold.copy(alpha = 0.45f), CircleShape)
-                            .clickable(onClick = onClick),
-                    contentAlignment = Alignment.Center,
+                IconBadge(
+                    size = HeaderButtonSize,
+                    background = AppPalette.Gold.copy(alpha = 0.12f),
+                    border = AppPalette.Gold.copy(alpha = 0.45f),
+                    onClick = onClick,
                 ) {
                     Icon(
                         AppIcons.Edit,
@@ -228,14 +217,12 @@ private fun EntityEmblemBox(
     modifier: Modifier = Modifier,
 ) {
     val shape = if (emblem.shape == EntityEmblemShape.CIRCLE) CircleShape else RoundedCornerShape(14.dp)
-    Box(
-        modifier =
-            modifier
-                .size(58.dp)
-                .clip(shape)
-                .background(AppPalette.Background)
-                .border(1.5.dp, emblem.color.border, shape),
-        contentAlignment = Alignment.Center,
+    IconBadge(
+        modifier = modifier,
+        size = 58.dp,
+        shape = shape,
+        border = emblem.color.border,
+        borderWidth = 1.5.dp,
     ) {
         Text(emblem.text, style = MaterialTheme.typography.headlineMedium, color = emblem.color.foreground)
     }
@@ -249,40 +236,20 @@ private fun <T> EntityStatusSection(
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionOverline(text = stringResource(Res.string.entity_sheet_status_label), color = AppPalette.TextTertiary)
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(AppPalette.Background)
-                    .border(1.dp, AppPalette.BorderSubtle, RoundedCornerShape(12.dp))
-                    .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            options.forEach { option ->
-                val optionShape = RoundedCornerShape(9.dp)
-                Box(
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .height(32.dp)
-                            .clip(optionShape)
-                            .background(if (option.isSelected) option.color.background else Color.Transparent)
-                            .border(
-                                1.dp,
-                                if (option.isSelected) option.color.border else Color.Transparent,
-                                optionShape,
-                            ).clickable { onSelected(option.value) },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        option.label,
-                        // mockup: font-size:12px - one step up from labelMedium's 11sp
-                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
-                        color = if (option.isSelected) option.color.foreground else AppPalette.TextSecondary,
-                    )
-                }
-            }
+        SegmentedControl(
+            items = options,
+            onSelected = { onSelected(it.value) },
+            itemBackground = { option -> if (option.isSelected) option.color.background else Color.Transparent },
+            itemBorder = { option -> if (option.isSelected) option.color.border else Color.Transparent },
+            containerBackground = AppPalette.Background,
+            itemHeight = 32.dp,
+        ) { option ->
+            Text(
+                option.label,
+                // mockup: font-size:12px - one step up from labelMedium's 11sp
+                style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
+                color = if (option.isSelected) option.color.foreground else AppPalette.TextSecondary,
+            )
         }
     }
 }
@@ -300,8 +267,7 @@ private fun EntityFactsGrid(
         modifier =
             modifier
                 .fillMaxWidth()
-                .background(AppPalette.Background, RoundedCornerShape(14.dp))
-                .border(1.dp, AppPalette.BorderSubtle, RoundedCornerShape(14.dp))
+                .appCard(shape = RoundedCornerShape(14.dp), background = AppPalette.Background)
                 .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -397,20 +363,11 @@ private fun EntityRelatedNoteRow(
         modifier =
             modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(AppPalette.Background)
-                .border(1.dp, AppPalette.BorderSubtle, RoundedCornerShape(12.dp))
-                .clickable(onClick = onClick)
+                .appCard(shape = RoundedCornerShape(12.dp), background = AppPalette.Background, onClick = onClick)
                 .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            item.numberLabel,
-            style = MaterialTheme.typography.titleMedium,
-            color = AppPalette.Gold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.width(32.dp),
-        )
+        NumberLabel(text = item.numberLabel)
         Column(modifier = Modifier.weight(1f)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 // mockup: title font-size:14px in the plain Inter face, not the 18sp serif titleMedium

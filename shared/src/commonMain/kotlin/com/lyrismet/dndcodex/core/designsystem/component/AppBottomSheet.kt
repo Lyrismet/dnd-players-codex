@@ -1,14 +1,11 @@
 package com.lyrismet.dndcodex.core.designsystem.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -94,22 +91,14 @@ private fun AppBottomSheetDragHandle() {
     }
 }
 
-// raw "✕" glyph, not a Material icon - matches this codebase's existing raw-glyph precedent (CodexCards.kt's "◆"/"▲")
+// raw "✕" glyph, not a Material icon - matches this codebase's existing raw-glyph precedent (MentionGlyph's symbols)
 @Composable
 fun SheetCloseButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Dp = 32.dp,
 ) {
-    Box(
-        modifier =
-            modifier
-                .size(size)
-                .clip(CircleShape)
-                .background(AppPalette.BorderSubtle)
-                .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
+    IconBadge(modifier = modifier, size = size, background = AppPalette.BorderSubtle, onClick = onClick) {
         Text("✕", fontSize = 13.sp, color = AppPalette.TextMuted)
     }
 }

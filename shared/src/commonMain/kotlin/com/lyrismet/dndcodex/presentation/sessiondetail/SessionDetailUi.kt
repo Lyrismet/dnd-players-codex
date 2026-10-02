@@ -1,7 +1,6 @@
 package com.lyrismet.dndcodex.presentation.sessiondetail
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,12 +34,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.GoldCursorBrush
 import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
+import com.lyrismet.dndcodex.core.designsystem.component.AppDivider
 import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
@@ -49,6 +47,7 @@ import com.lyrismet.dndcodex.core.designsystem.component.GlowingDot
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChip
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChipItem
+import com.lyrismet.dndcodex.core.designsystem.component.appCard
 import com.lyrismet.dndcodex.core.designsystem.component.icons.AppIcons
 import com.lyrismet.dndcodex.core.entitysummary.EntityRef
 import com.lyrismet.dndcodex.core.entitysummary.EntitySummaryItem
@@ -173,7 +172,7 @@ private fun SessionDetailHeader(
 ) {
     Column(modifier = modifier) {
         SessionDetailHeaderContent(state)
-        Box(Modifier.fillMaxWidth().height(1.dp).background(AppPalette.BorderSubtle))
+        AppDivider()
     }
 }
 
@@ -225,7 +224,7 @@ private fun SessionDetailHeaderContent(
             onValueChange = { state.eventSink(SessionDetailEvent.TitleChanged(it)) },
             textStyle = MaterialTheme.typography.headlineLarge.copy(color = AppPalette.TextHeading),
             singleLine = true,
-            cursorBrush = SolidColor(AppPalette.Gold),
+            cursorBrush = GoldCursorBrush,
             modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
         )
         Text(state.dateLabel, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextSecondary)
@@ -264,9 +263,11 @@ private fun SessionStatusBadge(
         Row(
             modifier =
                 modifier
-                    .clip(RoundedCornerShape(7.dp))
-                    .background(AppPalette.Emerald.copy(alpha = 0.14f))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .appCard(
+                        shape = RoundedCornerShape(7.dp),
+                        background = AppPalette.Emerald.copy(alpha = 0.14f),
+                        border = null,
+                    ).padding(horizontal = 8.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -294,14 +295,7 @@ private fun DaySeparatorRow(
 ) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = MaterialTheme.typography.labelSmall, color = AppPalette.Parchment)
-        Box(
-            modifier =
-                Modifier
-                    .padding(start = 10.dp)
-                    .weight(1f)
-                    .height(1.dp)
-                    .background(AppPalette.Border),
-        )
+        AppDivider(modifier = Modifier.padding(start = 10.dp).weight(1f), color = AppPalette.Border)
     }
 }
 

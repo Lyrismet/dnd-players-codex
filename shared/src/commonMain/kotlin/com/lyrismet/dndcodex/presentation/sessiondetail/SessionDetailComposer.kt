@@ -1,7 +1,6 @@
 package com.lyrismet.dndcodex.presentation.sessiondetail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +35,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.component.AppDivider
+import com.lyrismet.dndcodex.core.designsystem.component.IconBadge
+import com.lyrismet.dndcodex.core.designsystem.component.appCard
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_cancel
 import dndplayerscodex.shared.generated.resources.session_detail_composer_placeholder
@@ -55,8 +57,8 @@ internal fun SessionComposer(
     val draftFocusRequester = remember { FocusRequester() }
 
     Column(modifier = modifier.fillMaxWidth().background(AppPalette.SurfaceSunken)) {
-        // the design's footer sits below a hairline that separates it from the feed above
-        Box(Modifier.fillMaxWidth().height(1.dp).background(AppPalette.BorderSubtle))
+        // the design's footer sits below a divider that separates it from the feed above
+        AppDivider()
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -85,9 +87,7 @@ private fun ComposerInputRow(
         modifier =
             modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(AppPalette.Surface)
-                .border(1.dp, AppPalette.Border, RoundedCornerShape(14.dp))
+                .appCard(shape = RoundedCornerShape(14.dp), border = AppPalette.Border)
                 .padding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -171,14 +171,12 @@ private fun MentionTriggerButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier =
-            modifier
-                .size(32.dp)
-                .clip(RoundedCornerShape(9.dp))
-                .background(AppPalette.SurfaceElevated)
-                .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
+    IconBadge(
+        modifier = modifier,
+        size = 32.dp,
+        shape = RoundedCornerShape(9.dp),
+        background = AppPalette.SurfaceElevated,
+        onClick = onClick,
     ) {
         Text("@", style = MaterialTheme.typography.titleMedium, color = AppPalette.GoldBright)
     }
@@ -193,10 +191,11 @@ private fun MentionSuggestionsPopover(
         modifier =
             modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(AppPalette.SurfaceElevated)
-                .border(1.dp, AppPalette.BorderHover, RoundedCornerShape(14.dp))
-                .padding(6.dp),
+                .appCard(
+                    shape = RoundedCornerShape(14.dp),
+                    background = AppPalette.SurfaceElevated,
+                    border = AppPalette.BorderHover,
+                ).padding(6.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(

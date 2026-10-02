@@ -1,19 +1,13 @@
 package com.lyrismet.dndcodex.presentation.sessionlist
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,20 +21,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
+import com.lyrismet.dndcodex.core.designsystem.component.AppDivider
 import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.GlowingDot
 import com.lyrismet.dndcodex.core.designsystem.component.HeaderActionButton
 import com.lyrismet.dndcodex.core.designsystem.component.MentionChip
+import com.lyrismet.dndcodex.core.designsystem.component.NumberLabel
 import com.lyrismet.dndcodex.core.designsystem.component.ScreenHeader
 import com.lyrismet.dndcodex.core.designsystem.component.SectionOverline
 import com.lyrismet.dndcodex.core.designsystem.component.SwipeToDeleteRow
+import com.lyrismet.dndcodex.core.designsystem.component.appCard
 import com.lyrismet.dndcodex.core.entitysummary.EntityRef
 import com.lyrismet.dndcodex.core.entitysummary.EntitySummarySheetActions
 import dndplayerscodex.shared.generated.resources.Res
@@ -171,11 +166,11 @@ private fun LiveSessionCard(
         modifier =
             modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(AppPalette.Surface)
-                .border(1.dp, AppPalette.Gold.copy(alpha = 0.45f), RoundedCornerShape(16.dp))
-                .clickable(onClick = onClick)
-                .padding(16.dp),
+                .appCard(
+                    shape = RoundedCornerShape(16.dp),
+                    border = AppPalette.Gold.copy(alpha = 0.45f),
+                    onClick = onClick,
+                ).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -205,7 +200,7 @@ private fun LiveSessionCard(
                 }
             }
         }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(AppPalette.Border))
+        AppDivider(color = AppPalette.Border)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(session.notesSummary, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextSecondary)
             Text(
@@ -233,20 +228,16 @@ private fun SessionArchiveRow(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(AppPalette.SurfaceVariant)
-                    .clickable(onClick = onClick)
-                    .padding(14.dp),
+                    .appCard(
+                        shape = RoundedCornerShape(14.dp),
+                        background = AppPalette.SurfaceVariant,
+                        border = null,
+                        onClick = onClick,
+                    ).padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(
-                text = session.numberLabel,
-                style = MaterialTheme.typography.titleMedium,
-                color = AppPalette.GoldDim,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.width(52.dp),
-            )
+            NumberLabel(text = session.numberLabel, width = 52.dp, color = AppPalette.GoldDim)
             Column(modifier = Modifier.weight(1f)) {
                 Text(session.title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
                 Text(session.dateLabel, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
