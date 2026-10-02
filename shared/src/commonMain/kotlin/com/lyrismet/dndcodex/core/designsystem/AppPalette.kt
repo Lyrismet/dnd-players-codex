@@ -31,6 +31,7 @@ object AppPalette {
     val GoldDim = Color(0xFFB8993A)
     val Maroon = Color(0xFF9B2C2C)
     val MaroonBright = Color(0xFFF08A8A)
+    val MaroonHover = Color(0xFFB23434)
     val Emerald = Color(0xFF3FA97C)
     val EmeraldBright = Color(0xFF6FCF97)
     val Parchment = Color(0xFFD8C9A3)

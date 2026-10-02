@@ -1,5 +1,6 @@
 package com.lyrismet.dndcodex.presentation.sessionlist
 
+import com.lyrismet.dndcodex.core.undo.UndoController
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
 import com.lyrismet.dndcodex.domain.repository.SessionEntryRepository
 import com.lyrismet.dndcodex.domain.repository.SessionNoteRepository
@@ -10,6 +11,7 @@ fun Circuit.Builder.addSessionListUi(
     sessionNoteRepository: SessionNoteRepository,
     sessionEntryRepository: SessionEntryRepository,
     mentionRepositories: MentionRepositories,
+    undoController: UndoController,
 ): Circuit.Builder =
     addPresenter<SessionListScreen, SessionListState> { _, navigator, _ ->
         SessionListPresenter(
@@ -17,6 +19,7 @@ fun Circuit.Builder.addSessionListUi(
             sessionNoteRepository,
             sessionEntryRepository,
             mentionRepositories,
+            undoController,
         )
     }.addUi<SessionListScreen, SessionListState> { state, modifier ->
         SessionListUi(state, modifier)

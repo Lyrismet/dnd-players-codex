@@ -1,6 +1,8 @@
 <resources>
     <string name="action_delete">Delete</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_undo">Undo</string>
 
     <string name="session_list_title">Session Diary</string>
     <string name="session_list_new_session_button">+ Session</string>
@@ -11,8 +13,7 @@
     <string name="session_list_live_no_notes">No notes yet</string>
     <string name="session_list_live_continue">Continue →</string>
     <string name="session_list_delete_content_description">Delete session</string>
-    <string name="session_list_delete_dialog_title">Delete session?</string>
-    <string name="session_list_delete_dialog_text">“%1$s” and all its notes will be permanently deleted.</string>
+    <string name="session_list_undo_deleted_title">Session deleted</string>
     <string name="new_session_default_title">New session</string>
     <string name="default_campaign_name">My campaign</string>
     <string name="session_overline_format">Session %1$s</string>
@@ -25,8 +26,10 @@
     <string name="session_detail_composer_placeholder">What happened? @ to mention an NPC, place, quest</string>
     <string name="session_detail_mention_suggestions_header">MENTION</string>
     <string name="session_detail_submit_button">Log</string>
+    <string name="session_detail_save_button">Save</string>
+    <string name="session_detail_editing_label_format">EDITING · %1$s</string>
     <string name="session_detail_empty_feed">A blank page - write down what\'s happening</string>
-    <string name="session_detail_delete_entry_title">Delete entry?</string>
+    <string name="session_detail_undo_deleted_entry_title">Entry deleted</string>
     <string name="session_detail_quest_mention_prefix">Quest: </string>
     <string name="session_detail_meeting_separator_format">MEETING %1$d · %2$s</string>
     <string name="session_detail_mention_type_npc">NPC</string>
@@ -54,6 +57,45 @@
     <string name="codex_quest_reward_label">Reward</string>
     <string name="codex_party_empty">Party will arrive in a future update</string>
     <string name="codex_empty_filtered">Nothing found. Clear the filter or change your search.</string>
+    <string name="codex_delete_content_description">Delete codex entry</string>
+    <string name="codex_undo_deleted_title">Removed from codex</string>
+
+    <string name="codex_entry_overline_create">CODEX · NEW ENTRY</string>
+    <string name="codex_entry_overline_edit">CODEX · EDITING</string>
+    <string name="codex_entry_heading_new_npc">New NPC</string>
+    <string name="codex_entry_heading_new_quest">New quest</string>
+    <string name="codex_entry_heading_new_location">New place</string>
+    <string name="codex_entry_type_npc">NPC</string>
+    <string name="codex_entry_type_quest">Quest</string>
+    <string name="codex_entry_type_location">Place</string>
+    <string name="codex_entry_label_name_npc">Name</string>
+    <string name="codex_entry_label_name_quest">Title</string>
+    <string name="codex_entry_label_name_location">Name</string>
+    <string name="codex_entry_label_race">Race</string>
+    <string name="codex_entry_label_faction">Faction</string>
+    <string name="codex_entry_label_relationship">Relationship</string>
+    <string name="codex_entry_label_where_to_meet">Where to find</string>
+    <string name="codex_entry_label_notes">Notes</string>
+    <string name="codex_entry_label_description">Description</string>
+    <string name="codex_entry_label_where">Where</string>
+    <string name="codex_entry_label_status">Status</string>
+    <string name="codex_entry_label_reward">Reward</string>
+    <string name="codex_entry_label_giver">Given by</string>
+    <string name="codex_entry_label_type">Type</string>
+    <string name="codex_entry_label_region">Region</string>
+    <string name="codex_entry_placeholder_npc_name">E.g. Brother Odo</string>
+    <string name="codex_entry_placeholder_npc_race">Human, tiefling…</string>
+    <string name="codex_entry_placeholder_npc_faction">Guild, order, house…</string>
+    <string name="codex_entry_placeholder_npc_notes">Appearance, motives, what they promised…</string>
+    <string name="codex_entry_placeholder_quest_name">E.g. Key to the crypt</string>
+    <string name="codex_entry_placeholder_quest_reward">200 gp, an item, a favor…</string>
+    <string name="codex_entry_placeholder_location_name">E.g. Watchtower</string>
+    <string name="codex_entry_placeholder_location_type">City, ruins, tavern…</string>
+    <string name="codex_entry_placeholder_location_region">Where it is</string>
+    <string name="codex_entry_placeholder_location_description">What\'s here</string>
+    <string name="codex_entry_save_label_invalid">Enter a name</string>
+    <string name="codex_entry_save_label_create">Add to codex</string>
+    <string name="codex_entry_save_label_edit">Save changes</string>
 
     <string name="entity_sheet_overline_format">%1$s · %2$s</string>
     <string name="entity_sheet_status_label">Status</string>

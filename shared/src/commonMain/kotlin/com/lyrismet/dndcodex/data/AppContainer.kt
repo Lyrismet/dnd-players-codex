@@ -1,5 +1,6 @@
 package com.lyrismet.dndcodex.data
 
+import com.lyrismet.dndcodex.core.undo.UndoController
 import com.lyrismet.dndcodex.data.db.DatabaseDriverFactory
 import com.lyrismet.dndcodex.data.db.createAppDatabase
 import com.lyrismet.dndcodex.data.repository.LanguageRepositoryImpl
@@ -24,6 +25,9 @@ import com.lyrismet.dndcodex.presentation.sessionlist.addSessionListUi
 import com.lyrismet.dndcodex.presentation.sessionlist.sessionListScreenRegistration
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.serialization.SerializableCircuitSaver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 class AppContainer(
     databaseDriverFactory: DatabaseDriverFactory,
@@ -43,13 +47,15 @@ class AppContainer(
 
     // инфраструктура
     val languageRepository: LanguageRepository = LanguageRepositoryImpl(settingsFactory.createSettings())
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    val undoController = UndoController(appScope)
 
     val circuit: Circuit =
         Circuit
             .Builder()
             // сессии
-            .addSessionListUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories)
-            .addSessionDetailUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories)
+            .addSessionListUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories, undoController)
+            .addSessionDetailUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories, undoController)
             // кодекс
             .addCodexUi(
                 npcRepository,
@@ -57,6 +63,7 @@ class AppContainer(
                 locationRepository,
                 sessionNoteRepository,
                 sessionEntryRepository,
+                undoController,
             ).setCircuitSaver(
                 SerializableCircuitSaver(
                     listOf(

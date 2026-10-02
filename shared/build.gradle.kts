@@ -20,6 +20,8 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            // silences "Cannot infer a bundle ID" - matches the Android namespace below for one consistent id
+            freeCompilerArgs += "-Xbinary=bundleId=com.lyrismet.dndcodex.shared"
         }
     }
 

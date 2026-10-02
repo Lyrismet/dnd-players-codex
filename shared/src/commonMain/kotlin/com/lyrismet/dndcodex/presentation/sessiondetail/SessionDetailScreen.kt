@@ -30,8 +30,11 @@ data class SessionDetailState(
     val draftSelection: TextRange = TextRange.Zero,
     val mentionSuggestions: List<SessionMentionSuggestion> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
+    val editingEntryTimeLabel: String? = null,
     val eventSink: (SessionDetailEvent) -> Unit = {},
-) : CircuitUiState
+) : CircuitUiState {
+    val isEditingEntry: Boolean get() = editingEntryTimeLabel != null
+}
 
 /** one row in the note feed - either a meeting-day separator (multi-day sessions only) or a timestamped note */
 sealed interface SessionFeedItem {
@@ -113,6 +116,12 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     data object SheetDismissed : SessionDetailEvent
 
     data object SubmitEntryClicked : SessionDetailEvent
+
+    data class EditEntryClicked(
+        val id: Long,
+    ) : SessionDetailEvent
+
+    data object CancelEditEntryClicked : SessionDetailEvent
 
     data class DeleteEntryClicked(
         val id: Long,

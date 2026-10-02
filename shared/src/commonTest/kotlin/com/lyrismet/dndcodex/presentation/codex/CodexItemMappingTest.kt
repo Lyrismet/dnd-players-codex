@@ -6,6 +6,7 @@ import com.lyrismet.dndcodex.domain.model.NpcStatus
 import com.lyrismet.dndcodex.domain.model.Quest
 import com.lyrismet.dndcodex.domain.model.QuestStatus
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -106,5 +107,30 @@ class CodexItemMappingTest {
         assertTrue(forge.matchesQuery("кузница"))
         assertTrue(forge.matchesQuery("мастерская"))
         assertFalse(forge.matchesQuery("таверна"))
+    }
+
+    @Test
+    fun `Npc toCodexItems subtitle combines race and faction`() {
+        val items = listOf(ragnar).toCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"))
+        assertEquals("Дварф · Гильдия", items.single().subtitle)
+    }
+
+    @Test
+    fun `Location toCodexItems subtitle combines type and region`() {
+        val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "Север")
+        assertEquals("Мастерская · Север", listOf(forge).toCodexItems().single().subtitle)
+    }
+
+    @Test
+    fun `Npc toCodexItems subtitle has no dangling separator when race and faction are blank`() {
+        val bare = ragnar.copy(race = "", faction = "")
+        val items = listOf(bare).toCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"))
+        assertEquals("", items.single().subtitle)
+    }
+
+    @Test
+    fun `Location toCodexItems subtitle has no dangling separator when region is blank`() {
+        val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "")
+        assertEquals("Мастерская", listOf(forge).toCodexItems().single().subtitle)
     }
 }

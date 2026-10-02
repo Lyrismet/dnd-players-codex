@@ -1,14 +1,11 @@
 package com.lyrismet.dndcodex.core.designsystem.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -24,6 +21,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
@@ -55,16 +53,7 @@ fun AppBottomSheet(
         containerColor = AppPalette.Surface,
         scrimColor = SheetScrimColor,
         dragHandle = { AppBottomSheetDragHandle() },
-        content = {
-            Box {
-                content()
-                // overlaid on the content, not the drag handle, to match the design's close button placement
-                SheetCloseButton(
-                    onClick = onDismissRequest,
-                    modifier = Modifier.align(Alignment.TopEnd).padding(top = 6.dp, end = 20.dp),
-                )
-            }
-        },
+        content = { content() },
     )
 }
 
@@ -102,21 +91,14 @@ private fun AppBottomSheetDragHandle() {
     }
 }
 
-// raw "✕" glyph, not a Material icon - matches this codebase's existing raw-glyph precedent (CodexCards.kt's "◆"/"▲")
+// raw "✕" glyph, not a Material icon - matches this codebase's existing raw-glyph precedent (MentionGlyph's symbols)
 @Composable
-private fun SheetCloseButton(
+fun SheetCloseButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    size: Dp = 32.dp,
 ) {
-    Box(
-        modifier =
-            modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(AppPalette.BorderSubtle)
-                .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
+    IconBadge(modifier = modifier, size = size, background = AppPalette.BorderSubtle, onClick = onClick) {
         Text("✕", fontSize = 13.sp, color = AppPalette.TextMuted)
     }
 }

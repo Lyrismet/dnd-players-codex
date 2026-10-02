@@ -18,6 +18,7 @@ import com.lyrismet.dndcodex.core.mention.MentionCandidate
 import com.lyrismet.dndcodex.core.mention.mentionCandidates
 import com.lyrismet.dndcodex.core.mention.mentionEntitiesFrom
 import com.lyrismet.dndcodex.core.mention.mentionsIn
+import com.lyrismet.dndcodex.core.undo.UndoController
 import com.lyrismet.dndcodex.domain.model.SessionEntry
 import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
@@ -32,9 +33,11 @@ import dndplayerscodex.shared.generated.resources.new_session_default_title
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import dndplayerscodex.shared.generated.resources.session_list_live_no_notes
 import dndplayerscodex.shared.generated.resources.session_list_live_notes_summary_format
+import dndplayerscodex.shared.generated.resources.session_list_undo_deleted_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -48,6 +51,7 @@ class SessionListPresenter(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val mentionRepositories: MentionRepositories,
+    private val undoController: UndoController,
 ) : Presenter<SessionListState> {
     @Composable
     override fun present(): SessionListState {
@@ -62,6 +66,7 @@ class SessionListPresenter(
         val newSessionTitle = stringResource(Res.string.new_session_default_title)
         val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
+        val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
         val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix)
 
         val liveNote = sessions.firstOrNull { it.isLive }
@@ -91,7 +96,7 @@ class SessionListPresenter(
             liveSession = liveSession,
             sessions = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems,
             selectedEntity = selectedEntity,
-        ) { event -> onEvent(event, scope, newSessionTitle, entitySheet) }
+        ) { event -> onEvent(event, scope, newSessionTitle, undoDeletedTitle, sessions, entitySheet) }
     }
 
     @Composable
@@ -125,29 +130,31 @@ class SessionListPresenter(
     }
 
     @OptIn(ExperimentalTime::class)
+    @Suppress("LongParameterList")
     private fun onEvent(
         event: SessionListEvent,
         scope: CoroutineScope,
         newSessionTitle: String,
+        undoDeletedTitle: String,
+        sessions: List<SessionNote>,
         entitySheet: EntitySheetInteractions,
     ) {
         when (event) {
             SessionListEvent.NewSessionClicked ->
                 scope.launch {
+                    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                     val id =
                         sessionNoteRepository.upsert(
-                            SessionNote(
-                                id = 0,
-                                title = newSessionTitle,
-                                sessionDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-                                endedAt = null,
-                            ),
+                            SessionNote(id = 0, title = newSessionTitle, sessionDate = now, endedAt = null),
                         )
+                    // only one session may be live at a time - starting a new one closes out the old one
+                    sessionNoteRepository.endOtherLiveSessions(exceptId = id, endedAt = now)
                     navigator.goTo(SessionDetailScreen(id))
                 }
 
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
-            is SessionListEvent.DeleteSessionClicked -> scope.launch { sessionNoteRepository.delete(event.id) }
+            is SessionListEvent.DeleteSessionClicked ->
+                onDeleteSessionClicked(event.id, sessions, undoDeletedTitle, scope)
             is SessionListEvent.MentionChipClicked -> entitySheet.onEntityClicked(event.ref)
             is SessionListEvent.NpcStatusSelected ->
                 entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
@@ -155,6 +162,34 @@ class SessionListPresenter(
                 entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
             is SessionListEvent.RelatedNoteClicked -> entitySheet.onRelatedNoteClicked(event.sessionNoteId)
             SessionListEvent.SheetDismissed -> entitySheet.onDismissed()
+        }
+    }
+
+    // deletes immediately and offers undo - restoring re-inserts the note and all its entries with fresh ids
+    @OptIn(ExperimentalTime::class)
+    private fun onDeleteSessionClicked(
+        id: Long,
+        sessions: List<SessionNote>,
+        undoDeletedTitle: String,
+        scope: CoroutineScope,
+    ) {
+        val note = sessions.find { it.id == id } ?: return
+        val numLabel = sessions.chronologicalNumberLabels()[id].orEmpty()
+        scope.launch {
+            val entries = sessionEntryRepository.observeForSession(id).first()
+            sessionNoteRepository.delete(id)
+            undoController.show(undoDeletedTitle, "$numLabel · ${note.title}") {
+                // another session may have gone live meanwhile, so the restored one comes back ended
+                val anotherIsLive = sessionNoteRepository.observeAll().first().any { it.isLive }
+                val restored =
+                    if (note.isLive && anotherIsLive) {
+                        note.copy(id = 0, endedAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()))
+                    } else {
+                        note.copy(id = 0)
+                    }
+                val newId = sessionNoteRepository.upsert(restored)
+                entries.forEach { entry -> sessionEntryRepository.restore(entry.copy(sessionNoteId = newId)) }
+            }
         }
     }
 

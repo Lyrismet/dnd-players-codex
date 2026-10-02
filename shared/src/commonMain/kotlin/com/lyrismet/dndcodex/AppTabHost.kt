@@ -8,20 +8,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.component.BottomTabBar
 import com.lyrismet.dndcodex.core.designsystem.component.BottomTabBarItem
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.dndcodex.core.designsystem.component.UndoToast
 import com.lyrismet.dndcodex.core.designsystem.component.dismissKeyboardOnTap
 import com.lyrismet.dndcodex.core.designsystem.component.icons.CodexTabIcon
 import com.lyrismet.dndcodex.core.designsystem.component.icons.CombatTabIcon
 import com.lyrismet.dndcodex.core.designsystem.component.icons.SessionsTabIcon
 import com.lyrismet.dndcodex.core.designsystem.component.icons.SettingsTabIcon
+import com.lyrismet.dndcodex.core.undo.UndoController
 import com.lyrismet.dndcodex.presentation.codex.CodexScreen
 import com.lyrismet.dndcodex.presentation.sessionlist.SessionListScreen
 import com.slack.circuit.backstack.rememberSaveableBackStack
@@ -46,9 +50,10 @@ private enum class AppTab {
 
 /** owns the selected bottom tab and hosts each tab's own navigation - relies on an ambient Circuit */
 @Composable
-internal fun AppTabHost() {
+internal fun AppTabHost(undoController: UndoController) {
     var selectedTabIndex by rememberSaveable { mutableStateOf(AppTab.SESSIONS.ordinal) }
     val selectedTab = AppTab.entries[selectedTabIndex]
+    val pendingUndo by undoController.current.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().dismissKeyboardOnTap()) {
         // tabs stay composed and zero-sized when hidden so their nav stack and ui state survive switching away
@@ -65,6 +70,11 @@ internal fun AppTabHost() {
             Box(modifier = tabContentModifier(selectedTab == AppTab.SETTINGS)) {
                 SettingsPlaceholder()
             }
+            UndoToast(
+                action = pendingUndo,
+                onUndo = undoController::undo,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+            )
         }
         BottomTabBar(
             tabs = appTabBarItems(),

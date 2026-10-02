@@ -24,6 +24,6 @@ fun HeaderDivider(modifier: Modifier = Modifier) {
         Spacer(Modifier.width(8.dp))
         Spacer(Modifier.size(5.dp).rotate(DIAMOND_ROTATION_DEGREES).border(1.dp, AppPalette.Gold))
         Spacer(Modifier.width(8.dp))
-        Spacer(Modifier.weight(1f).height(1.dp).background(AppPalette.Border))
+        AppDivider(modifier = Modifier.weight(1f), color = AppPalette.Border)
     }
 }

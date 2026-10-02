@@ -36,6 +36,21 @@ class SessionEntryRepositoryImpl(
             queries.lastInsertRowId().executeAsOne()
         }
 
+    override suspend fun restore(entry: SessionEntry): Long =
+        withContext(Dispatchers.Default) {
+            queries.insert(entry.sessionNoteId, entry.createdAt, entry.body)
+            queries.lastInsertRowId().executeAsOne()
+        }
+
+    override suspend fun update(
+        id: Long,
+        body: String,
+    ) {
+        withContext(Dispatchers.Default) {
+            queries.updateBody(body, id)
+        }
+    }
+
     override suspend fun delete(id: Long) {
         withContext(Dispatchers.Default) {
             queries.deleteById(id)

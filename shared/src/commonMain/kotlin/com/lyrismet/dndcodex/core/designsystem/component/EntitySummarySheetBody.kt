@@ -1,15 +1,10 @@
 package com.lyrismet.dndcodex.core.designsystem.component
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,19 +12,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.component.icons.AppIcons
 import com.lyrismet.dndcodex.core.entitysummary.EntityEmblem
 import com.lyrismet.dndcodex.core.entitysummary.EntityEmblemShape
 import com.lyrismet.dndcodex.core.entitysummary.EntityRef
@@ -56,6 +51,7 @@ import org.jetbrains.compose.resources.stringResource
 fun EntitySummarySheetContent(
     item: EntitySummaryItem,
     actions: EntitySummarySheetActions,
+    onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -65,13 +61,13 @@ fun EntitySummarySheetContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
                 // mockup's sheet content padding is 6px top / 44px bottom - header sits right under the drag handle
-                .padding(top = 8.dp, bottom = 44.dp),
+                .padding(top = 6.dp, bottom = 44.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         when (item) {
-            is EntitySummaryItem.NpcSummary -> NpcSummaryBody(item, actions)
-            is EntitySummaryItem.LocationSummary -> LocationSummaryBody(item, actions)
-            is EntitySummaryItem.QuestSummary -> QuestSummaryBody(item, actions)
+            is EntitySummaryItem.NpcSummary -> NpcSummaryBody(item, actions, onClose)
+            is EntitySummaryItem.LocationSummary -> LocationSummaryBody(item, actions, onClose)
+            is EntitySummaryItem.QuestSummary -> QuestSummaryBody(item, actions, onClose)
         }
     }
 }
@@ -80,6 +76,7 @@ fun EntitySummarySheetContent(
 private fun NpcSummaryBody(
     npc: EntitySummaryItem.NpcSummary,
     actions: EntitySummarySheetActions,
+    onClose: () -> Unit,
 ) {
     EntityHeaderRow(
         emblem = npc.emblem,
@@ -88,6 +85,8 @@ private fun NpcSummaryBody(
         title = npc.name,
         subtitle = npc.subtitle,
         strikeThrough = npc.isDead,
+        onEditClicked = actions.onEditClicked?.let { edit -> { edit(npc.ref) } },
+        onClose = onClose,
     )
     EntityStatusSection(npc.statusOptions, onSelected = { status -> actions.onNpcStatusSelected(npc.ref.id, status) })
     Text(npc.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
@@ -100,6 +99,7 @@ private fun NpcSummaryBody(
 private fun LocationSummaryBody(
     location: EntitySummaryItem.LocationSummary,
     actions: EntitySummarySheetActions,
+    onClose: () -> Unit,
 ) {
     EntityHeaderRow(
         emblem = location.emblem,
@@ -107,6 +107,8 @@ private fun LocationSummaryBody(
         overlineValue = location.typeLabel,
         title = location.name,
         subtitle = location.subtitle,
+        onEditClicked = actions.onEditClicked?.let { edit -> { edit(location.ref) } },
+        onClose = onClose,
     )
     Text(location.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
     EntityFactsGrid(location.facts, actions.onEntityRefClicked)
@@ -118,6 +120,7 @@ private fun LocationSummaryBody(
 private fun QuestSummaryBody(
     quest: EntitySummaryItem.QuestSummary,
     actions: EntitySummarySheetActions,
+    onClose: () -> Unit,
 ) {
     EntityHeaderRow(
         emblem = quest.emblem,
@@ -125,6 +128,8 @@ private fun QuestSummaryBody(
         overlineValue = quest.statusLabel,
         title = quest.title,
         subtitle = quest.subtitle,
+        onEditClicked = actions.onEditClicked?.let { edit -> { edit(quest.ref) } },
+        onClose = onClose,
     )
     EntityStatusSection(
         quest.statusOptions,
@@ -135,6 +140,8 @@ private fun QuestSummaryBody(
     EntityRelatedNotesSection(quest.title, quest.relatedNotes, actions.onRelatedNoteClicked)
 }
 
+private val HeaderButtonSize = 36.dp
+
 @Composable
 private fun EntityHeaderRow(
     emblem: EntityEmblem,
@@ -142,8 +149,10 @@ private fun EntityHeaderRow(
     overlineValue: String,
     title: String,
     subtitle: String,
+    onClose: () -> Unit,
     modifier: Modifier = Modifier,
     strikeThrough: Boolean = false,
+    onEditClicked: (() -> Unit)? = null,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -177,6 +186,28 @@ private fun EntityHeaderRow(
                 )
             }
         }
+        // mockup: "align-self:flex-start;display:flex;gap:6px" - pinned to the top, not centered with the text block
+        Row(
+            modifier = Modifier.align(Alignment.Top),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            onEditClicked?.let { onClick ->
+                IconBadge(
+                    size = HeaderButtonSize,
+                    background = AppPalette.Gold.copy(alpha = 0.12f),
+                    border = AppPalette.Gold.copy(alpha = 0.45f),
+                    onClick = onClick,
+                ) {
+                    Icon(
+                        AppIcons.Edit,
+                        contentDescription = null,
+                        tint = AppPalette.GoldBright,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
+            SheetCloseButton(onClick = onClose, size = HeaderButtonSize)
+        }
     }
 }
 
@@ -186,14 +217,12 @@ private fun EntityEmblemBox(
     modifier: Modifier = Modifier,
 ) {
     val shape = if (emblem.shape == EntityEmblemShape.CIRCLE) CircleShape else RoundedCornerShape(14.dp)
-    Box(
-        modifier =
-            modifier
-                .size(58.dp)
-                .clip(shape)
-                .background(AppPalette.Background)
-                .border(1.5.dp, emblem.color.border, shape),
-        contentAlignment = Alignment.Center,
+    IconBadge(
+        modifier = modifier,
+        size = 58.dp,
+        shape = shape,
+        border = emblem.color.border,
+        borderWidth = 1.5.dp,
     ) {
         Text(emblem.text, style = MaterialTheme.typography.headlineMedium, color = emblem.color.foreground)
     }
@@ -207,40 +236,20 @@ private fun <T> EntityStatusSection(
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionOverline(text = stringResource(Res.string.entity_sheet_status_label), color = AppPalette.TextTertiary)
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(AppPalette.Background)
-                    .border(1.dp, AppPalette.BorderSubtle, RoundedCornerShape(12.dp))
-                    .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            options.forEach { option ->
-                val optionShape = RoundedCornerShape(9.dp)
-                Box(
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .height(32.dp)
-                            .clip(optionShape)
-                            .background(if (option.isSelected) option.color.background else Color.Transparent)
-                            .border(
-                                1.dp,
-                                if (option.isSelected) option.color.border else Color.Transparent,
-                                optionShape,
-                            ).clickable { onSelected(option.value) },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        option.label,
-                        // mockup: font-size:12px - one step up from labelMedium's 11sp
-                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
-                        color = if (option.isSelected) option.color.foreground else AppPalette.TextSecondary,
-                    )
-                }
-            }
+        SegmentedControl(
+            items = options,
+            onSelected = { onSelected(it.value) },
+            itemBackground = { option -> if (option.isSelected) option.color.background else Color.Transparent },
+            itemBorder = { option -> if (option.isSelected) option.color.border else Color.Transparent },
+            containerBackground = AppPalette.Background,
+            itemHeight = 32.dp,
+        ) { option ->
+            Text(
+                option.label,
+                // mockup: font-size:12px - one step up from labelMedium's 11sp
+                style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
+                color = if (option.isSelected) option.color.foreground else AppPalette.TextSecondary,
+            )
         }
     }
 }
@@ -258,8 +267,7 @@ private fun EntityFactsGrid(
         modifier =
             modifier
                 .fillMaxWidth()
-                .background(AppPalette.Background, RoundedCornerShape(14.dp))
-                .border(1.dp, AppPalette.BorderSubtle, RoundedCornerShape(14.dp))
+                .appCard(shape = RoundedCornerShape(14.dp), background = AppPalette.Background)
                 .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -355,20 +363,11 @@ private fun EntityRelatedNoteRow(
         modifier =
             modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(AppPalette.Background)
-                .border(1.dp, AppPalette.BorderSubtle, RoundedCornerShape(12.dp))
-                .clickable(onClick = onClick)
+                .appCard(shape = RoundedCornerShape(12.dp), background = AppPalette.Background, onClick = onClick)
                 .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            item.numberLabel,
-            style = MaterialTheme.typography.titleMedium,
-            color = AppPalette.Gold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.width(32.dp),
-        )
+        NumberLabel(text = item.numberLabel)
         Column(modifier = Modifier.weight(1f)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 // mockup: title font-size:14px in the plain Inter face, not the 18sp serif titleMedium

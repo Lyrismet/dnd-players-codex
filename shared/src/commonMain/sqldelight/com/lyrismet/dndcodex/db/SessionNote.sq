@@ -26,5 +26,10 @@ WHERE id = ?;
 deleteById:
 DELETE FROM session_note WHERE id = ?;
 
+endOtherLive:
+UPDATE session_note
+SET ended_at = ?
+WHERE ended_at IS NULL AND id != ?;
+
 lastInsertRowId:
 SELECT last_insert_rowid();

@@ -1,6 +1,7 @@
 package com.lyrismet.dndcodex.presentation.codex
 
 import com.lyrismet.dndcodex.core.designsystem.toStatusColor
+import com.lyrismet.dndcodex.core.format.joinWithDot
 import com.lyrismet.dndcodex.domain.model.Location
 import com.lyrismet.dndcodex.domain.model.Npc
 import com.lyrismet.dndcodex.domain.model.NpcStatus
@@ -33,7 +34,7 @@ internal fun List<Npc>.toCodexItems(statusLabels: Map<NpcStatus, String>): List<
             isDead = npc.status == NpcStatus.DEAD,
             statusLabel = statusLabels.getValue(npc.status),
             statusColor = npc.status.toStatusColor(),
-            subtitle = npc.description,
+            subtitle = joinWithDot(npc.race, npc.faction),
         )
     }
 
@@ -62,4 +63,10 @@ internal fun List<Quest>.toCodexItems(
     }
 
 internal fun List<Location>.toCodexItems(): List<LocationCodexItem> =
-    map { location -> LocationCodexItem(id = location.id, name = location.name, subtitle = location.type) }
+    map { location ->
+        LocationCodexItem(
+            id = location.id,
+            name = location.name,
+            subtitle = joinWithDot(location.type, location.region),
+        )
+    }

@@ -1,8 +1,5 @@
 package com.lyrismet.dndcodex.presentation.codex
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,9 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -23,13 +18,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
+import com.lyrismet.dndcodex.core.designsystem.GoldCursorBrush
+import com.lyrismet.dndcodex.core.designsystem.component.Dot
+import com.lyrismet.dndcodex.core.designsystem.component.SegmentedControl
+import com.lyrismet.dndcodex.core.designsystem.component.appCard
 
 @Composable
 internal fun CodexSearchField(
@@ -43,9 +40,7 @@ internal fun CodexSearchField(
             modifier
                 .fillMaxWidth()
                 .height(42.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(AppPalette.Surface)
-                .border(1.dp, AppPalette.Border, RoundedCornerShape(12.dp))
+                .appCard(shape = RoundedCornerShape(12.dp), border = AppPalette.Border)
                 .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -60,7 +55,7 @@ internal fun CodexSearchField(
                 onValueChange = onQueryChange,
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyMedium.copy(color = AppPalette.TextPrimary),
-                cursorBrush = SolidColor(AppPalette.Gold),
+                cursorBrush = GoldCursorBrush,
             )
         }
     }
@@ -92,47 +87,30 @@ internal fun CodexTabRow(
     onSelected: (CodexTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(AppPalette.Surface)
-                .border(1.dp, AppPalette.BorderSubtle, RoundedCornerShape(12.dp))
-                .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
-    ) {
-        items.forEach { item ->
-            val isSelected = item.tab == selected
-            val tint = if (isSelected) AppPalette.GoldBright else AppPalette.TextSecondary
-            Box(
-                modifier =
-                    Modifier
-                        .weight(1f)
-                        .height(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
-                        .background(if (isSelected) AppPalette.SurfaceElevated else Color.Transparent)
-                        .clickable { onSelected(item.tab) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(3.dp),
-                ) {
-                    Text(
-                        text = item.label,
-                        style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.5.sp),
-                        color = tint,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        text = item.count.toString(),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = tint.copy(alpha = 0.65f),
-                    )
-                }
-            }
+    SegmentedControl(
+        items = items,
+        onSelected = { onSelected(it.tab) },
+        itemBackground = { item ->
+            if (item.tab == selected) AppPalette.SurfaceElevated else Color.Transparent
+        },
+        modifier = modifier,
+        itemHeight = 34.dp,
+    ) { item ->
+        val isSelected = item.tab == selected
+        val tint = if (isSelected) AppPalette.GoldBright else AppPalette.TextSecondary
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(
+                text = item.label,
+                style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.5.sp),
+                color = tint,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = item.count.toString(),
+                style = MaterialTheme.typography.labelMedium,
+                color = tint.copy(alpha = 0.65f),
+            )
         }
     }
 }
@@ -157,16 +135,17 @@ internal fun <T> CodexFilterChipRow(
                 modifier =
                     Modifier
                         .height(30.dp)
-                        .clip(RoundedCornerShape(15.dp))
-                        .background(background)
-                        .border(1.dp, border, RoundedCornerShape(15.dp))
-                        .clickable { onSelected(option.value) }
-                        .padding(horizontal = 12.dp),
+                        .appCard(
+                            shape = RoundedCornerShape(15.dp),
+                            background = background,
+                            border = border,
+                            onClick = { onSelected(option.value) },
+                        ).padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 option.dotColor?.let { dotColor ->
-                    Box(Modifier.size(6.dp).clip(CircleShape).background(if (isSelected) foreground else dotColor))
+                    Dot(size = 6.dp, color = if (isSelected) foreground else dotColor)
                 }
                 Text(option.label, style = MaterialTheme.typography.bodySmall, color = foreground)
                 Text(
