@@ -33,14 +33,14 @@ that's the signal to add it here, not to copy-paste it a third time (see CLAUDE.
 | `FormPrimaryButton` | `component/FormFields.kt` | full-width gold 52dp CTA at the bottom of a form/sheet. | `text`, `onClick`, `enabled` |
 | `TagChip` | `component/TagChip.kt` | small rounded label pill - generic tags, badges. | `text`, `foreground`/`background`/`border` |
 | `StatusBadge` | `component/StatusBadge.kt` | `TagChip` pre-wired to a `StatusColor` - NPC/quest status badges. | `text`, `color: StatusColor` |
-| `MentionChip` | `component/MentionChip.kt` | the colored "●NPC name"/"▲Location"/"◆Quest" pill used inline in session notes and entity sheets. Also owns `MentionGlyph` (the canonical `●`/`▲`/`◆` symbols - reference `MentionGlyph.X.symbol`, never retype the glyph). | `item: MentionChipItem`, `onClick`, `fontSize` |
-| `FormChipPicker` | `component/FormFields.kt` | the pill-chip picker for a form field (status, relationship, "given by", "where") - every chip-type field uses this, never a segmented row. | `label`, `options: List<FormChipOption<T>>`, `onClick` |
+| `MentionChip` | `component/MentionChip.kt` | the colored "●NPC name"/"▲Location"/"◆Quest" pill used inline in session notes and entity sheets. Also owns `MentionGlyph` (the canonical `●`/`▲`/`◆` symbols - reference `MentionGlyph.X.symbol`, never retype the glyph). | `item: MentionChipItem`, `onClick`, `fontSize`, `glyphSize`, `glyphGap`, `lineHeightFactor` |
+| `FormChipPicker` | `component/FormFields.kt` | the pill-chip picker for a form field (status, relationship, "given by", "where") - every chip-type field uses this, never a segmented row. A selected option takes the status color it carries in `FormChipOption.selectedColor`, gold otherwise. | `label`, `options: List<FormChipOption<T>>`, `onClick` |
 
 ## Pickers / segmented controls
 
 | Component | File | Use for | Key params |
 |---|---|---|---|
-| `SegmentedControl<T>` | `component/SegmentedControl.kt` | the rounded-rect tab-switcher chrome - codex filter tabs, the entry-type switch, the entity status picker. One bordered container of equal-width clickable items; background/border per item are callbacks so a status-colored picker and a flat gold-accent picker both fit. | `items`, `onSelected`, `itemBackground`, `itemBorder` (nullable), `containerBackground`/`containerBorder`, `itemHeight`, `itemContent` |
+| `SegmentedControl<T>` | `component/SegmentedControl.kt` | the rounded-rect tab-switcher chrome - codex filter tabs, the entry-type switch, the entity status picker. One bordered container of equal-width clickable items; background/border per item are callbacks so a status-colored picker and a flat gold-accent picker both fit. | `items`, `onSelected`, `itemBackground`, `itemBorder` (nullable), `containerBackground`/`containerBorder`, `itemHeight`, `itemSpacing`, `itemContent` |
 
 Don't hand-roll a new `Row { items.forEach { Box(...).clickable{} } }` tab switcher - it's the third time that exact
 shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in the first place.
@@ -51,12 +51,14 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 |---|---|---|---|
 | `AppDivider` | `component/Divider.kt` | the plain 1dp rule between a header/footer and the content beside it. Full-width by default. | `color`, `thickness`, `modifier` (pass your own `weight`/`padding` modifier to override the full-width default) |
 | `HeaderDivider` | `component/HeaderDivider.kt` | the ornamental short-gold-line + diamond + long-border-line rule under a screen title (built out of `AppDivider` + `Spacer`s). | - |
-| `Dot` | `component/Dot.kt` | a plain solid circle at a given size/color - filter-chip status dots, and the core of `GlowingDot` below. | `size`, `color`, `content` (optional, for nesting) |
+| `Dot` | `component/Dot.kt` | a plain solid circle at a given size/color - filter-chip status dots, the core of `GlowingDot` below, and an outlined circle (pass `color = Color.Transparent` with `borderColor`) like the codex search icon. | `size`, `color`, `borderColor` (optional), `borderWidth` (1dp), `content` (optional, for nesting) |
 | `GlowingDot` | `component/GlowingDot.kt` | a `Dot` with a concentric flat-color glow ring - the "live session" indicator. | `dotSize`, `dotColor`, `glowColor`, `ringWidth` |
-| `NumberLabel` | `component/NumberLabel.kt` | centered fixed-width index text in front of a list row (session number, note number). | `text`, `width`, `color` |
-| `SectionOverline` | `component/SectionOverline.kt` | tracked all-caps eyebrow label ("АРХИВ", "БАЗА ЗНАНИЙ"). | `text`, `color`, `trailingContent` |
+| `NumberLabel` | `component/NumberLabel.kt` | centered fixed-width roman-numeral index in front of a list row (session number, note number) - the font shrinks as the label gets longer, per `core/format`'s `NumberSizeLadder`. | `text`, `width` (44dp), `color`, `sizeLadder`, `lineHeightFactor` |
+| `SectionOverline` | `component/SectionOverline.kt` | tracked all-caps single-line eyebrow label ("АРХИВ", "БАЗА ЗНАНИЙ"). The design uses 0.18em for page eyebrows, 0.16em for list sections and 0.14em for sheet and form labels, so pass the tracking. | `text`, `color`, `letterSpacing`, `fontSize`, `trailingContent` |
 | `ScreenHeader` | `component/ScreenHeader.kt` | overline + serif title + optional `HeaderDivider` - top of every top-level screen. | `overline`, `title`, `overlineTrailingContent` |
 | `EmptyStatePlaceholder` | `component/EmptyStatePlaceholder.kt` | centered secondary-text message for an empty list/search/loading state. | `text` |
+| `OrnamentedEmptyState` | `component/OrnamentedEmptyState.kt` | the "blank page" state of a screen meant to be filled: gold diamond, serif title and a hint (empty session feed). | `title`, `hint` |
+| `LabelValueGrid` | `component/LabelValueGrid.kt` | two-column grid (`auto 1fr`): children alternate label, value, the label column is as wide as the longest label and rows are top-aligned (entity sheet facts). | `rowSpacing`, `columnSpacing`, `content` |
 | `SwipeToDeleteRow` | `component/SwipeToDeleteRow.kt` | swipe-left-to-reveal-delete row chrome. Never deletes anything itself - caller drives the real delete, which is usually immediate (see `UndoToast`) rather than a confirm dialog. | `onDeleteRequested`, `deleteContentDescription`, `content` |
 | `UndoToast` | `component/UndoToast.kt` | the "X deleted · Отменить" bar that floats above the bottom tab bar for 5s after an optimistic delete (sessions, entries, codex entities) - driven by `core/undo/UndoController`, not local screen state. | `action: UndoAction?`, `onUndo` |
 | `ConfirmationDialog` | `component/ConfirmationDialog.kt` | "are you sure?" dialog for a destructive action that has no undo (session/entry/codex deletes use `UndoToast` instead), built on `AppDialog` + `IconBadge`. | `title`, `text`, `onConfirm`, `onDismiss` |
@@ -79,7 +81,7 @@ add it here rather than reaching for a raw Material `TextField` in feature code.
 | Component | File | Use for |
 |---|---|---|
 | `BottomTabBar` / `BottomTabBarItem` | `component/BottomTabBar.kt` / `BottomTabBarItem.kt` | the persistent 4-column bottom nav bar. |
-| `AppIcons` | `component/icons/AppIcons.kt` | stock Material glyphs reused across 2+ features (`Edit`, `Delete`). A single-use icon doesn't need an entry here - only add one once a second feature wants the same glyph. |
+| `AppIcons` | `component/icons/AppIcons.kt` | glyphs reused across 2+ features: `Edit` is the design's quill, `Delete` the stock Material bin. A single-use icon doesn't need an entry here - only add one once a second feature wants the same glyph. |
 | `TabIconSlot` + `CodexTabIcon`/`CombatTabIcon`/`SessionsTabIcon`/`SettingsTabIcon` | `component/icons/` | the 4 hand-drawn bottom-nav glyphs, all sharing one fixed-height alignment slot. |
 
 ## Entity sheet (built on the above, not a primitive itself)

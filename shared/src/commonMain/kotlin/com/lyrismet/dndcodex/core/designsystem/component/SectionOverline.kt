@@ -7,6 +7,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.isSpecified
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 
 /** the tracked all-caps label used for page eyebrows and list section headers (e.g. "АРХИВ", "БАЗА ЗНАНИЙ") */
@@ -15,13 +19,22 @@ fun SectionOverline(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = AppPalette.Gold,
+    letterSpacing: TextUnit = 0.18.em,
+    fontSize: TextUnit = TextUnit.Unspecified,
     trailingContent: @Composable RowScope.() -> Unit = {},
 ) {
+    val baseStyle = MaterialTheme.typography.labelSmall
     Row(modifier = modifier) {
         Text(
             text = text.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
+            style =
+                baseStyle.copy(
+                    fontSize = if (fontSize.isSpecified) fontSize else baseStyle.fontSize,
+                    letterSpacing = letterSpacing,
+                ),
             color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
         trailingContent()

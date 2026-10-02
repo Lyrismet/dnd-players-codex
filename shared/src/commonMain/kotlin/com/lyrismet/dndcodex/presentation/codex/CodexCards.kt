@@ -52,7 +52,7 @@ internal fun NpcCodexCard(
             border = item.statusColor.border,
             borderWidth = 1.5.dp,
         ) {
-            Text(item.initial, style = MaterialTheme.typography.titleMedium, color = item.statusColor.foreground)
+            Text(item.initial, style = MaterialTheme.typography.titleLarge, color = item.statusColor.foreground)
         }
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -69,10 +69,11 @@ internal fun NpcCodexCard(
             }
             Text(
                 text = item.subtitle,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = AppPalette.TextSecondary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 2.dp),
             )
         }
     }
@@ -93,12 +94,11 @@ internal fun QuestCodexCard(
                 .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
                 MentionGlyph.QUEST.symbol,
                 fontSize = 10.sp,
                 color = item.statusColor.foreground,
-                modifier = Modifier.padding(top = 6.dp),
             )
             Text(
                 text = item.title,
@@ -162,7 +162,7 @@ internal fun LocationCodexCard(
             background = AppPalette.Parchment.copy(alpha = 0.08f),
             border = AppPalette.Parchment.copy(alpha = 0.3f),
         ) {
-            Text(MentionGlyph.LOCATION.symbol, color = AppPalette.Parchment)
+            Text(MentionGlyph.LOCATION.symbol, fontSize = 13.sp, color = AppPalette.Parchment)
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -172,7 +172,12 @@ internal fun LocationCodexCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(item.subtitle, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
+            Text(
+                item.subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppPalette.TextSecondary,
+                modifier = Modifier.padding(top = 2.dp),
+            )
         }
     }
 }

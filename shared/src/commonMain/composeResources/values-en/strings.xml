@@ -28,7 +28,9 @@
     <string name="session_detail_submit_button">Log</string>
     <string name="session_detail_save_button">Save</string>
     <string name="session_detail_editing_label_format">EDITING · %1$s</string>
-    <string name="session_detail_empty_feed">A blank page - write down what\'s happening</string>
+    <string name="session_detail_empty_feed">A blank page</string>
+    <string name="session_detail_empty_feed_hint">Write down what\'s happening. Type @ to link a note to an NPC, place or quest.</string>
+    <string name="session_detail_composer_hint">Enter to save</string>
     <string name="session_detail_undo_deleted_entry_title">Entry deleted</string>
     <string name="session_detail_quest_mention_prefix">Quest: </string>
     <string name="session_detail_meeting_separator_format">MEETING %1$d · %2$s</string>

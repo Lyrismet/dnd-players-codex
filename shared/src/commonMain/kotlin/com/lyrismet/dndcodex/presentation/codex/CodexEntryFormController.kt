@@ -3,7 +3,9 @@ package com.lyrismet.dndcodex.presentation.codex
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.lyrismet.dndcodex.core.designsystem.LocationMentionColor
 import com.lyrismet.dndcodex.core.designsystem.component.FormChipOption
+import com.lyrismet.dndcodex.core.designsystem.toStatusColor
 import com.lyrismet.dndcodex.core.entitysummary.EntityRef
 import com.lyrismet.dndcodex.core.entitysummary.npcStatusLabels
 import com.lyrismet.dndcodex.core.entitysummary.questStatusLabels
@@ -208,17 +210,35 @@ class CodexEntryFormController private constructor(
             locationRegion = current.locationRegion,
             npcStatusOptions =
                 NpcStatus.entries.map { status ->
-                    FormChipOption(status, npcLabels.getValue(status), status == current.npcStatus)
+                    FormChipOption(
+                        status,
+                        npcLabels.getValue(status),
+                        status == current.npcStatus,
+                        status.toStatusColor(),
+                    )
                 },
             questStatusOptions =
                 QuestStatus.entries.map { status ->
-                    FormChipOption(status, questLabels.getValue(status), status == current.questStatus)
+                    FormChipOption(
+                        status,
+                        questLabels.getValue(status),
+                        status == current.questStatus,
+                        status.toStatusColor(),
+                    )
                 },
             locationOptions =
                 locations.map { location ->
-                    FormChipOption(location.id, location.name, location.id == selectedLocationId)
+                    FormChipOption(
+                        location.id,
+                        location.name,
+                        location.id == selectedLocationId,
+                        LocationMentionColor,
+                    )
                 },
-            npcOptions = npcs.map { npc -> FormChipOption(npc.id, npc.name, npc.id == current.questGiverId) },
+            npcOptions =
+                npcs.map { npc ->
+                    FormChipOption(npc.id, npc.name, npc.id == current.questGiverId, npc.status.toStatusColor())
+                },
             canSave = current.name.isNotBlank(),
             saveLabel = saveLabel(current.name.isNotBlank(), isEditing),
         )

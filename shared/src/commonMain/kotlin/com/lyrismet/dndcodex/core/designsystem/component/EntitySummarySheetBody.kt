@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 import com.lyrismet.dndcodex.core.designsystem.component.icons.AppIcons
@@ -35,6 +35,7 @@ import com.lyrismet.dndcodex.core.entitysummary.FactValue
 import com.lyrismet.dndcodex.core.entitysummary.RelatedNoteItem
 import com.lyrismet.dndcodex.core.entitysummary.RelationGroup
 import com.lyrismet.dndcodex.core.entitysummary.StatusOption
+import com.lyrismet.dndcodex.core.format.NumberSizeLadder
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_overline_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_count_format
@@ -89,7 +90,7 @@ private fun NpcSummaryBody(
         onClose = onClose,
     )
     EntityStatusSection(npc.statusOptions, onSelected = { status -> actions.onNpcStatusSelected(npc.ref.id, status) })
-    Text(npc.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
+    Text(npc.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextDescription)
     EntityFactsGrid(npc.facts, actions.onEntityRefClicked)
     EntityRelationGroups(npc.groups, actions.onEntityRefClicked)
     EntityRelatedNotesSection(npc.name, npc.relatedNotes, actions.onRelatedNoteClicked)
@@ -110,7 +111,7 @@ private fun LocationSummaryBody(
         onEditClicked = actions.onEditClicked?.let { edit -> { edit(location.ref) } },
         onClose = onClose,
     )
-    Text(location.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
+    Text(location.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextDescription)
     EntityFactsGrid(location.facts, actions.onEntityRefClicked)
     EntityRelationGroups(location.groups, actions.onEntityRefClicked)
     EntityRelatedNotesSection(location.name, location.relatedNotes, actions.onRelatedNoteClicked)
@@ -170,7 +171,7 @@ private fun EntityHeaderRow(
                     overlineTypeLabel.uppercase(),
                     overlineValue.uppercase(),
                 ),
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.16.em),
                 color = emblem.color.foreground,
             )
             Text(
@@ -227,7 +228,18 @@ private fun EntityEmblemBox(
         border = emblem.color.border,
         borderWidth = 1.5.dp,
     ) {
-        Text(emblem.text, style = MaterialTheme.typography.headlineMedium, color = emblem.color.foreground)
+        // the design sizes the NPC initial at 26, the quest diamond at 18 and the location triangle at 16
+        val textSize =
+            when {
+                emblem.shape == EntityEmblemShape.CIRCLE -> 26.sp
+                emblem.text == MentionGlyph.QUEST.symbol -> 18.sp
+                else -> 16.sp
+            }
+        Text(
+            emblem.text,
+            style = MaterialTheme.typography.headlineMedium.copy(fontSize = textSize),
+            color = emblem.color.foreground,
+        )
     }
 }
 
@@ -238,7 +250,11 @@ private fun <T> EntityStatusSection(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionOverline(text = stringResource(Res.string.entity_sheet_status_label), color = AppPalette.TextTertiary)
+        SectionOverline(
+            text = stringResource(Res.string.entity_sheet_status_label),
+            color = AppPalette.TextTertiary,
+            letterSpacing = 0.14.em,
+        )
         SegmentedControl(
             items = options,
             onSelected = { onSelected(it.value) },
@@ -246,6 +262,7 @@ private fun <T> EntityStatusSection(
             itemBorder = { option -> if (option.isSelected) option.color.border else Color.Transparent },
             containerBackground = AppPalette.Background,
             itemHeight = 32.dp,
+            itemSpacing = 4.dp,
         ) { option ->
             Text(
                 option.label,
@@ -266,31 +283,23 @@ private fun EntityFactsGrid(
     if (facts.isEmpty()) return
     // mockup sets font-size:14px on the whole facts grid container, one size up from the bodyMedium default
     val factTextStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp)
-    Column(
+    LabelValueGrid(
         modifier =
             modifier
                 .fillMaxWidth()
                 .appCard(shape = RoundedCornerShape(14.dp), background = AppPalette.Background)
                 .padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         facts.forEach { fact ->
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(fact.label),
-                    style = factTextStyle,
-                    color = AppPalette.TextTertiary,
-                    modifier = Modifier.width(120.dp),
-                )
-                when (val value = fact.value) {
-                    is FactValue.Text -> Text(value.text, style = factTextStyle, color = AppPalette.TextPrimary)
+            Text(stringResource(fact.label), style = factTextStyle, color = AppPalette.TextTertiary)
+            when (val value = fact.value) {
+                is FactValue.Text -> Text(value.text, style = factTextStyle, color = AppPalette.TextPrimary)
 
-                    is FactValue.Link ->
-                        MentionChip(
-                            item = value.chip,
-                            onClick = value.chip.entityRef?.let { ref -> { onEntityRefClicked(ref) } },
-                        )
-                }
+                is FactValue.Link ->
+                    MentionChip(
+                        item = value.chip,
+                        onClick = value.chip.entityRef?.let { ref -> { onEntityRefClicked(ref) } },
+                    )
             }
         }
     }
@@ -306,7 +315,11 @@ private fun EntityRelationGroups(
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(14.dp)) {
         groups.forEach { group ->
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionOverline(text = stringResource(group.title), color = AppPalette.TextTertiary)
+                SectionOverline(
+                    text = stringResource(group.title),
+                    color = AppPalette.TextTertiary,
+                    letterSpacing = 0.14.em,
+                )
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -331,6 +344,7 @@ private fun EntityRelatedNotesSection(
         SectionOverline(
             text = stringResource(Res.string.entity_sheet_related_title),
             color = AppPalette.TextTertiary,
+            letterSpacing = 0.14.em,
             trailingContent = {
                 Text(
                     stringResource(Res.string.entity_sheet_related_count_format, relatedNotes.size),
@@ -370,7 +384,7 @@ private fun EntityRelatedNoteRow(
                 .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        NumberLabel(text = item.numberLabel)
+        NumberLabel(text = item.numberLabel, sizeLadder = NumberSizeLadder.RELATED_NOTE, lineHeightFactor = 1.3f)
         Column(modifier = Modifier.weight(1f)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 // mockup: title font-size:14px in the plain Inter face, not the 18sp serif titleMedium

@@ -14,9 +14,13 @@ object AppPalette {
     val SurfaceElevated = Color(0xFF2A2C37)
     val SurfaceVariant = Color(0xFF17181F)
     val SurfaceSunken = Color(0xFF15161C)
+    val SurfaceInput = Color(0xFF1E1F28)
+    val SurfaceFooter = Color(0xFF16171E)
+    val SurfacePopover = Color(0xFF22242E)
     val Border = Color(0xFF2C2F3A)
     val BorderSubtle = Color(0xFF262833)
     val BorderHover = Color(0xFF3A3D4B)
+    val BorderPopover = Color(0xFF343746)
 
     // текст
     val TextPrimary = Color(0xFFE2E8F0)

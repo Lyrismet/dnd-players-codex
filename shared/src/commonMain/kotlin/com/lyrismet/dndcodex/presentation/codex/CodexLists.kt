@@ -19,7 +19,7 @@ import dndplayerscodex.shared.generated.resources.codex_tab_npc
 import dndplayerscodex.shared.generated.resources.codex_tab_quest
 import org.jetbrains.compose.resources.stringResource
 
-private val LIST_CONTENT_PADDING = PaddingValues(horizontal = 16.dp, vertical = 2.dp)
+private val LIST_CONTENT_PADDING = PaddingValues(start = 16.dp, top = 2.dp, end = 16.dp, bottom = 20.dp)
 
 @Composable
 private fun CodexDeletableRow(
@@ -41,7 +41,6 @@ private fun <T> CodexEntityList(
     items: List<T>,
     itemKey: (T) -> Any,
     modifier: Modifier = Modifier,
-    header: (@Composable () -> Unit)? = null,
     itemContent: @Composable (T) -> Unit,
 ) {
     if (items.isEmpty()) {
@@ -51,9 +50,8 @@ private fun <T> CodexEntityList(
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = LIST_CONTENT_PADDING,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        header?.let { renderHeader -> item { renderHeader() } }
         items(items, key = itemKey) { itemContent(it) }
     }
 }
@@ -67,13 +65,6 @@ internal fun CodexNpcList(
         items = state.npcs,
         itemKey = { it.id },
         modifier = modifier,
-        header = {
-            CodexFilterChipRow(
-                items = state.npcFilterOptions,
-                selected = state.npcStatusFilter,
-                onSelected = { state.eventSink(CodexEvent.NpcStatusFilterSelected(it)) },
-            )
-        },
     ) { npc ->
         CodexDeletableRow(ref = EntityRef.Npc(npc.id), eventSink = state.eventSink) {
             NpcCodexCard(item = npc, onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Npc(npc.id))) })
@@ -90,13 +81,6 @@ internal fun CodexQuestList(
         items = state.quests,
         itemKey = { it.id },
         modifier = modifier,
-        header = {
-            CodexFilterChipRow(
-                items = state.questFilterOptions,
-                selected = state.questStatusFilter,
-                onSelected = { state.eventSink(CodexEvent.QuestStatusFilterSelected(it)) },
-            )
-        },
     ) { quest ->
         CodexDeletableRow(ref = EntityRef.Quest(quest.id), eventSink = state.eventSink) {
             QuestCodexCard(
@@ -117,9 +101,6 @@ internal fun CodexLocationList(
         items = state.locations,
         itemKey = { it.id },
         modifier = modifier,
-        header = {
-            CodexFilterChipRow(items = state.locationFilterOptions, selected = null, onSelected = {})
-        },
     ) { location ->
         CodexDeletableRow(ref = EntityRef.Location(location.id), eventSink = state.eventSink) {
             LocationCodexCard(
@@ -142,10 +123,10 @@ internal fun CodexAllList(
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = LIST_CONTENT_PADDING,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (state.npcs.isNotEmpty()) {
-            item { CodexSectionHeader(stringResource(Res.string.codex_tab_npc)) }
+            item { CodexSectionHeader(stringResource(Res.string.codex_tab_npc), state.npcs.size, isFirst = true) }
             items(state.npcs, key = { "npc_${it.id}" }) { npc ->
                 CodexDeletableRow(ref = EntityRef.Npc(npc.id), eventSink = state.eventSink) {
                     NpcCodexCard(
@@ -156,7 +137,13 @@ internal fun CodexAllList(
             }
         }
         if (state.quests.isNotEmpty()) {
-            item { CodexSectionHeader(stringResource(Res.string.codex_tab_quest)) }
+            item {
+                CodexSectionHeader(
+                    stringResource(Res.string.codex_tab_quest),
+                    state.quests.size,
+                    isFirst = state.npcs.isEmpty(),
+                )
+            }
             items(state.quests, key = { "quest_${it.id}" }) { quest ->
                 CodexDeletableRow(ref = EntityRef.Quest(quest.id), eventSink = state.eventSink) {
                     QuestCodexCard(
@@ -168,7 +155,13 @@ internal fun CodexAllList(
             }
         }
         if (state.locations.isNotEmpty()) {
-            item { CodexSectionHeader(stringResource(Res.string.codex_tab_location)) }
+            item {
+                CodexSectionHeader(
+                    stringResource(Res.string.codex_tab_location),
+                    state.locations.size,
+                    isFirst = state.npcs.isEmpty() && state.quests.isEmpty(),
+                )
+            }
             items(state.locations, key = { "location_${it.id}" }) { location ->
                 CodexDeletableRow(ref = EntityRef.Location(location.id), eventSink = state.eventSink) {
                     LocationCodexCard(

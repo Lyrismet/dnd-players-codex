@@ -28,7 +28,9 @@
     <string name="session_detail_submit_button">Записать</string>
     <string name="session_detail_save_button">Сохранить</string>
     <string name="session_detail_editing_label_format">РЕДАКТИРОВАНИЕ · %1$s</string>
-    <string name="session_detail_empty_feed">Чистая страница - запишите, что происходит</string>
+    <string name="session_detail_empty_feed">Чистая страница</string>
+    <string name="session_detail_empty_feed_hint">Записывайте, что происходит. Введите @, чтобы связать заметку с NPC, локацией или квестом.</string>
+    <string name="session_detail_composer_hint">Enter — сохранить</string>
     <string name="session_detail_undo_deleted_entry_title">Запись удалена</string>
     <string name="session_detail_quest_mention_prefix">Квест: </string>
     <string name="session_detail_meeting_separator_format">ВСТРЕЧА %1$d · %2$s</string>
