@@ -136,7 +136,7 @@ private fun QuestSummaryBody(
         onSelected = { status -> actions.onQuestStatusSelected(quest.ref.id, status) },
     )
     if (quest.description.isNotBlank()) {
-        Text(quest.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
+        Text(quest.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextDescription)
     }
     EntityFactsGrid(quest.facts, actions.onEntityRefClicked)
     EntityRelationGroups(quest.groups, actions.onEntityRefClicked)
