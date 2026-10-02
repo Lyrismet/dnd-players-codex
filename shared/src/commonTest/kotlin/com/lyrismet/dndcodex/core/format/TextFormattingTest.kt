@@ -23,4 +23,16 @@ class TextFormattingTest {
     fun `capitalizeFirst on an empty string stays empty`() {
         assertEquals("", "".capitalizeFirst())
     }
+
+    @Test
+    fun `joinWithDot joins filled parts with a dot`() {
+        assertEquals("Дварф · Гильдия", joinWithDot("Дварф", "Гильдия"))
+    }
+
+    @Test
+    fun `joinWithDot skips blank parts without a dangling separator`() {
+        assertEquals("Дварф", joinWithDot("Дварф", ""))
+        assertEquals("Гильдия", joinWithDot("  ", "Гильдия"))
+        assertEquals("", joinWithDot("", ""))
+    }
 }

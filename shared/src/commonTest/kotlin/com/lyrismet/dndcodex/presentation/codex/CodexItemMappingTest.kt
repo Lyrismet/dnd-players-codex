@@ -120,4 +120,17 @@ class CodexItemMappingTest {
         val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "Север")
         assertEquals("Мастерская · Север", listOf(forge).toCodexItems().single().subtitle)
     }
+
+    @Test
+    fun `Npc toCodexItems subtitle has no dangling separator when race and faction are blank`() {
+        val bare = ragnar.copy(race = "", faction = "")
+        val items = listOf(bare).toCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"))
+        assertEquals("", items.single().subtitle)
+    }
+
+    @Test
+    fun `Location toCodexItems subtitle has no dangling separator when region is blank`() {
+        val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "")
+        assertEquals("Мастерская", listOf(forge).toCodexItems().single().subtitle)
+    }
 }
