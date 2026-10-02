@@ -159,8 +159,7 @@ class CodexPresenter(
                         dotColor = null,
                     ),
                 ),
-            selectedEntity = selectedEntity,
-            entryForm = formController.buildState(npcs, locations),
+            activeSheet = codexActiveSheet(formController.buildState(npcs, locations), selectedEntity),
         ) { event -> onEvent(event, fields, formController, scope) }
 
     private fun buildSearchResults(
@@ -250,6 +249,17 @@ class CodexPresenter(
         }
     }
 }
+
+// the form always wins so editing never leaves the entity-view sheet stacked underneath it
+private fun codexActiveSheet(
+    formState: CodexEntryFormState?,
+    selectedEntity: EntitySummaryItem?,
+): CodexSheet? =
+    when {
+        formState != null -> CodexSheet.EntryForm(formState)
+        selectedEntity != null -> CodexSheet.EntityView(selectedEntity)
+        else -> null
+    }
 
 // mirrors the mockup's openNew(): "Все" (and the unsupported "Отряд") fall back to NPC, every other tab keeps its type
 private fun CodexTab.toEntryType(): CodexEntryType =

@@ -99,6 +99,17 @@ enum class CodexEntryField { NAME, DESCRIPTION, RACE, FACTION, REWARD, LOCATION_
 
 enum class CodexEntryChipField { NPC_LOCATION, QUEST_GIVER, QUEST_LOCATION }
 
+/** the Codex screen shows at most one bottom sheet at a time - the form always wins over the entity view */
+sealed interface CodexSheet {
+    data class EntityView(
+        val entity: EntitySummaryItem,
+    ) : CodexSheet
+
+    data class EntryForm(
+        val form: CodexEntryFormState,
+    ) : CodexSheet
+}
+
 data class CodexState(
     val activeTab: CodexTab = CodexTab.PARTY,
     val searchQuery: String = "",
@@ -111,8 +122,7 @@ data class CodexState(
     val questFilterOptions: List<CodexFilterOption<QuestStatus>> = emptyList(),
     val locations: List<LocationCodexItem> = emptyList(),
     val locationFilterOptions: List<CodexFilterOption<Nothing>> = emptyList(),
-    val selectedEntity: EntitySummaryItem? = null,
-    val entryForm: CodexEntryFormState? = null,
+    val activeSheet: CodexSheet? = null,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
 

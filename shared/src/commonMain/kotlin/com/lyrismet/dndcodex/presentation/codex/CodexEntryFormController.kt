@@ -148,8 +148,8 @@ class CodexEntryFormController private constructor(
                             status = current.npcStatus,
                             description = current.description.trim(),
                             locationId = current.npcLocationId,
-                            race = current.race.trim(),
-                            faction = current.faction.trim(),
+                            race = current.race.trim().capitalizeFirst(),
+                            faction = current.faction.trim().capitalizeFirst(),
                         ),
                     )
 
@@ -170,9 +170,9 @@ class CodexEntryFormController private constructor(
                         Location(
                             id = (current.editingRef as? EntityRef.Location)?.id ?: 0,
                             name = current.name.trim().capitalizeFirst(),
-                            type = current.locationType.trim(),
+                            type = current.locationType.trim().capitalizeFirst(),
                             description = current.description.trim(),
-                            region = current.locationRegion.trim(),
+                            region = current.locationRegion.trim().capitalizeFirst(),
                         ),
                     )
             }

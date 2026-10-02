@@ -33,7 +33,7 @@ internal fun List<Npc>.toCodexItems(statusLabels: Map<NpcStatus, String>): List<
             isDead = npc.status == NpcStatus.DEAD,
             statusLabel = statusLabels.getValue(npc.status),
             statusColor = npc.status.toStatusColor(),
-            subtitle = npc.description,
+            subtitle = "${npc.race} · ${npc.faction}",
         )
     }
 
@@ -62,4 +62,6 @@ internal fun List<Quest>.toCodexItems(
     }
 
 internal fun List<Location>.toCodexItems(): List<LocationCodexItem> =
-    map { location -> LocationCodexItem(id = location.id, name = location.name, subtitle = location.type) }
+    map { location ->
+        LocationCodexItem(id = location.id, name = location.name, subtitle = "${location.type} · ${location.region}")
+    }

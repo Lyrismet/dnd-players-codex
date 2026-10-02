@@ -84,8 +84,11 @@ fun CodexUi(
         }
     }
 
-    state.selectedEntity?.let { entity -> CodexEntitySheet(state, entity) }
-    state.entryForm?.let { form -> CodexEntryFormSheet(state, form) }
+    when (val sheet = state.activeSheet) {
+        is CodexSheet.EntryForm -> CodexEntryFormSheet(state, sheet.form)
+        is CodexSheet.EntityView -> CodexEntitySheet(state, sheet.entity)
+        null -> Unit
+    }
 }
 
 @Composable
