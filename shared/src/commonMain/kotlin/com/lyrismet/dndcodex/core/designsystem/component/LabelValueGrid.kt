@@ -23,7 +23,9 @@ fun LabelValueGrid(
         val rowSpacingPx = rowSpacing.roundToPx()
         val columnSpacingPx = columnSpacing.roundToPx()
         val pairs = measurables.chunked(2)
-        val labels = pairs.map { it.first().measure(Constraints()) }
+        // capped at half the row so an unusually long label can't starve the value column to zero width
+        val labelMaxWidth = ((constraints.maxWidth - columnSpacingPx).coerceAtLeast(0)) / 2
+        val labels = pairs.map { it.first().measure(Constraints(maxWidth = labelMaxWidth)) }
         val labelWidth = labels.maxOfOrNull { it.width } ?: 0
         val valueMaxWidth = (constraints.maxWidth - labelWidth - columnSpacingPx).coerceAtLeast(0)
         val valueConstraints = Constraints(maxWidth = valueMaxWidth)

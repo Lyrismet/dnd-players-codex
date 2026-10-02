@@ -94,12 +94,11 @@ internal fun QuestCodexCard(
                 .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
                 MentionGlyph.QUEST.symbol,
                 fontSize = 10.sp,
                 color = item.statusColor.foreground,
-                modifier = Modifier.padding(top = 6.dp),
             )
             Text(
                 text = item.title,
@@ -166,7 +165,13 @@ internal fun LocationCodexCard(
             Text(MentionGlyph.LOCATION.symbol, fontSize = 13.sp, color = AppPalette.Parchment)
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = item.name, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
+            Text(
+                text = item.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = AppPalette.TextHeading,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             Text(
                 item.subtitle,
                 style = MaterialTheme.typography.bodyMedium,

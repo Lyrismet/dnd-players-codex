@@ -153,6 +153,7 @@ fun <T> FormChipPicker(
     onClick: (T) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (options.isEmpty()) return
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         SectionOverline(text = label, color = AppPalette.TextTertiary)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
