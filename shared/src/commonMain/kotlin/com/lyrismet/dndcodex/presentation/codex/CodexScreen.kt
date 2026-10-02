@@ -169,6 +169,10 @@ sealed interface CodexEvent : CircuitUiEvent {
         val ref: EntityRef,
     ) : CodexEvent
 
+    data class EntityDeleteRequested(
+        val ref: EntityRef,
+    ) : CodexEvent
+
     data class EntryTypeChanged(
         val type: CodexEntryType,
     ) : CodexEvent

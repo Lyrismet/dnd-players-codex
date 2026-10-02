@@ -2,6 +2,7 @@
     <string name="action_delete">Удалить</string>
     <string name="action_cancel">Отмена</string>
     <string name="action_edit">Изменить</string>
+    <string name="action_undo">Отменить</string>
 
     <string name="session_list_title">Дневник сессий</string>
     <string name="session_list_new_session_button">+ Сессия</string>
@@ -12,8 +13,7 @@
     <string name="session_list_live_no_notes">Пока без заметок</string>
     <string name="session_list_live_continue">Продолжить →</string>
     <string name="session_list_delete_content_description">Удалить сессию</string>
-    <string name="session_list_delete_dialog_title">Удалить сессию?</string>
-    <string name="session_list_delete_dialog_text">«%1$s» и все её заметки будут удалены безвозвратно.</string>
+    <string name="session_list_undo_deleted_title">Сессия удалена</string>
     <string name="new_session_default_title">Новая сессия</string>
     <string name="default_campaign_name">Моя кампания</string>
     <string name="session_overline_format">Сессия %1$s</string>
@@ -29,7 +29,7 @@
     <string name="session_detail_save_button">Сохранить</string>
     <string name="session_detail_editing_label_format">РЕДАКТИРОВАНИЕ · %1$s</string>
     <string name="session_detail_empty_feed">Чистая страница - запишите, что происходит</string>
-    <string name="session_detail_delete_entry_title">Удалить запись?</string>
+    <string name="session_detail_undo_deleted_entry_title">Запись удалена</string>
     <string name="session_detail_quest_mention_prefix">Квест: </string>
     <string name="session_detail_meeting_separator_format">ВСТРЕЧА %1$d · %2$s</string>
     <string name="session_detail_mention_type_npc">NPC</string>
@@ -57,6 +57,8 @@
     <string name="codex_quest_reward_label">Награда</string>
     <string name="codex_party_empty">Отряд появится в одном из следующих обновлений</string>
     <string name="codex_empty_filtered">Ничего не найдено. Сбросьте фильтр или измените запрос.</string>
+    <string name="codex_delete_content_description">Удалить запись кодекса</string>
+    <string name="codex_undo_deleted_title">Удалено из кодекса</string>
 
     <string name="codex_entry_overline_create">КОДЕКС · НОВАЯ ЗАПИСЬ</string>
     <string name="codex_entry_overline_edit">КОДЕКС · РЕДАКТИРОВАНИЕ</string>

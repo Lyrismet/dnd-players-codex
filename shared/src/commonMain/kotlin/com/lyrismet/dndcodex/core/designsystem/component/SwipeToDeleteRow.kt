@@ -1,8 +1,12 @@
 package com.lyrismet.dndcodex.core.designsystem.component
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -17,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +38,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 import com.lyrismet.dndcodex.core.designsystem.component.icons.AppIcons
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -42,6 +48,12 @@ private val FullSwipeWidth = 190.dp
 private val MaxDragWidth = 300.dp
 private val RowCornerRadius = 14.dp
 private const val SWIPE_ANIMATION_DURATION_MS = 300
+
+private const val COLLAPSE_ANIMATION_DURATION_MS = 220
+
+// top and bottom edges converge on the center as the row collapses, Gmail-delete-style, not a one-sided slide
+private fun collapseExit(durationMs: Int = COLLAPSE_ANIMATION_DURATION_MS) =
+    shrinkVertically(tween(durationMs), shrinkTowards = Alignment.CenterVertically) + fadeOut(tween(durationMs))
 
 // matches the mockup's swipe/snap transition: cubic-bezier(.2,.8,.2,1)
 private val SwipeEasing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
@@ -107,14 +119,7 @@ private class SwipeState(
     }
 }
 
-/**
- * swipe-left-to-reveal-delete row, matching the mockup's "ПАТТЕРНЫ" swipe spec (Players Codex v5.dc.html): a
- * short swipe reveals a bordeaux delete button whose width tracks the drag, a long swipe (past [FullSwipeWidth])
- * commits straight to [onDeleteRequested] without a second tap, and the background brightens to
- * [AppPalette.MaroonHover] past that threshold as a "release to delete" cue. Tapping the revealed button, or a
- * full swipe, both call [onDeleteRequested] - this never deletes anything itself, the caller still owns its own
- * confirm-then-delete flow (see [ConfirmationDialog]).
- */
+// swipe-left-to-reveal-delete row chrome - caller owns the real delete, usually immediate with an undo toast
 @Composable
 fun SwipeToDeleteRow(
     onDeleteRequested: () -> Unit,
@@ -130,40 +135,55 @@ fun SwipeToDeleteRow(
                 SwipeState(OpenWidth.toPx(), FullSwipeWidth.toPx(), MaxDragWidth.toPx())
             }
         }
+    // collapses in place first, Gmail-style, instead of just vanishing once the row is actually deleted
+    var isRemoving by remember { mutableStateOf(false) }
+    LaunchedEffect(isRemoving) {
+        if (isRemoving) {
+            delay(COLLAPSE_ANIMATION_DURATION_MS.toLong())
+            onDeleteRequested()
+        }
+    }
 
-    Box(modifier = modifier) {
-        SwipeDeleteBackground(state, density, deleteContentDescription) {
-            scope.launch { state.onDeleteButtonClicked(onDeleteRequested) }
-        }
-        Box(
-            modifier =
-                Modifier
-                    .offset { IntOffset(state.offsetPx.roundToInt(), 0) }
-                    .pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onDragStart = { state.onDragStart() },
-                            onDragEnd = { scope.launch { state.onDragEnd(onDeleteRequested) } },
-                            onDragCancel = { scope.launch { state.onDragEnd(onDeleteRequested) } },
-                        ) { change, dragAmount ->
-                            change.consume()
-                            state.onDrag(dragAmount)
-                        }
-                    },
-        ) {
-            content()
-        }
-        // tap-to-close catcher - only intercepts while revealed, so a closed row's own click still reaches content
-        if (state.isOpen) {
+    AnimatedVisibility(
+        visible = !isRemoving,
+        enter = EnterTransition.None,
+        exit = collapseExit(),
+        modifier = modifier,
+    ) {
+        Box {
+            SwipeDeleteBackground(state, density, deleteContentDescription) {
+                scope.launch { state.onDeleteButtonClicked { isRemoving = true } }
+            }
             Box(
                 modifier =
                     Modifier
-                        .matchParentSize()
                         .offset { IntOffset(state.offsetPx.roundToInt(), 0) }
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                        ) { scope.launch { state.settle(0f, false) } },
-            )
+                        .pointerInput(Unit) {
+                            detectHorizontalDragGestures(
+                                onDragStart = { state.onDragStart() },
+                                onDragEnd = { scope.launch { state.onDragEnd { isRemoving = true } } },
+                                onDragCancel = { scope.launch { state.onDragEnd { isRemoving = true } } },
+                            ) { change, dragAmount ->
+                                change.consume()
+                                state.onDrag(dragAmount)
+                            }
+                        },
+            ) {
+                content()
+            }
+            // tap-to-close catcher - only intercepts while revealed, so a closed row's own click still reaches content
+            if (state.isOpen) {
+                Box(
+                    modifier =
+                        Modifier
+                            .matchParentSize()
+                            .offset { IntOffset(state.offsetPx.roundToInt(), 0) }
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) { scope.launch { state.settle(0f, false) } },
+                )
+            }
         }
     }
 }

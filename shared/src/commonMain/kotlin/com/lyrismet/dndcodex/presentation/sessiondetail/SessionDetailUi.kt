@@ -1,5 +1,10 @@
 package com.lyrismet.dndcodex.presentation.sessiondetail
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -40,7 +45,6 @@ import com.lyrismet.dndcodex.core.designsystem.AppPalette
 import com.lyrismet.dndcodex.core.designsystem.GoldCursorBrush
 import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.AppDivider
-import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.GlowingDot
@@ -56,22 +60,28 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_delete
 import dndplayerscodex.shared.generated.resources.action_edit
 import dndplayerscodex.shared.generated.resources.session_detail_back
-import dndplayerscodex.shared.generated.resources.session_detail_delete_entry_title
 import dndplayerscodex.shared.generated.resources.session_detail_empty_feed
 import dndplayerscodex.shared.generated.resources.session_detail_end_button
 import dndplayerscodex.shared.generated.resources.session_detail_ended_badge
 import dndplayerscodex.shared.generated.resources.session_detail_live_badge
 import dndplayerscodex.shared.generated.resources.session_detail_resume_button
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
+
+private const val ENTRY_COLLAPSE_ANIMATION_DURATION_MS = 220
+
+// top and bottom edges converge on the center as the row collapses, Gmail-delete-style, not a one-sided slide
+private fun entryCollapseExit() =
+    shrinkVertically(
+        animationSpec = tween(ENTRY_COLLAPSE_ANIMATION_DURATION_MS),
+        shrinkTowards = Alignment.CenterVertically,
+    ) + fadeOut(animationSpec = tween(ENTRY_COLLAPSE_ANIMATION_DURATION_MS))
 
 @Composable
 fun SessionDetailUi(
     state: SessionDetailState,
     modifier: Modifier = Modifier,
 ) {
-    // pending confirmation before an entry is actually deleted - purely a transient ui flag
-    var pendingDeleteEntry by remember { mutableStateOf<SessionEntryItem?>(null) }
-
     Scaffold(modifier = modifier) { contentPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             SessionDetailHeader(state)
@@ -98,10 +108,13 @@ fun SessionDetailUi(
                                     onEditClick = {
                                         state.eventSink(SessionDetailEvent.EditEntryClicked(feedItem.entry.id))
                                     },
-                                    onDeleteClick = { pendingDeleteEntry = feedItem.entry },
+                                    onDeleteClick = {
+                                        state.eventSink(SessionDetailEvent.DeleteEntryClicked(feedItem.entry.id))
+                                    },
                                     onMentionClick = { ref ->
                                         state.eventSink(SessionDetailEvent.MentionChipClicked(ref))
                                     },
+                                    modifier = Modifier.animateItem(),
                                 )
                         }
                     }
@@ -118,18 +131,6 @@ fun SessionDetailUi(
                 SessionComposer(state)
             }
         }
-    }
-
-    pendingDeleteEntry?.let { entry ->
-        ConfirmationDialog(
-            title = stringResource(Res.string.session_detail_delete_entry_title),
-            text = entry.segments.joinToString("") { segment -> segment.plainText() },
-            onConfirm = {
-                state.eventSink(SessionDetailEvent.DeleteEntryClicked(entry.id))
-                pendingDeleteEntry = null
-            },
-            onDismiss = { pendingDeleteEntry = null },
-        )
     }
 
     state.selectedEntity?.let { entity -> SessionDetailEntitySheet(state, entity) }
@@ -158,12 +159,6 @@ private fun SessionDetailEntitySheet(
         )
     }
 }
-
-private fun SessionEntrySegment.plainText(): String =
-    when (this) {
-        is SessionEntrySegment.Text -> text
-        is SessionEntrySegment.Mention -> chip.label
-    }
 
 @Composable
 private fun SessionDetailHeader(
@@ -310,45 +305,60 @@ private fun SessionEntryRow(
     modifier: Modifier = Modifier,
 ) {
     var showMenu by remember { mutableStateOf(false) }
-
-    Box(modifier = modifier) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .combinedClickable(onClick = {}, onLongClick = { showMenu = true }),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Text(
-                entry.timeLabel,
-                style = MaterialTheme.typography.bodySmall,
-                color = AppPalette.TextTertiary,
-                modifier = Modifier.width(38.dp),
-            )
-            SessionEntryBody(entry.segments, onMentionClick, modifier = Modifier.weight(1f))
+    // collapses in place first, Gmail-style, instead of just vanishing once the entry is actually deleted
+    var isRemoving by remember { mutableStateOf(false) }
+    LaunchedEffect(isRemoving) {
+        if (isRemoving) {
+            delay(ENTRY_COLLAPSE_ANIMATION_DURATION_MS.toLong())
+            onDeleteClick()
         }
-        DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.action_edit), color = AppPalette.GoldBright) },
-                leadingIcon = {
-                    Icon(AppIcons.Edit, contentDescription = null, tint = AppPalette.GoldBright)
-                },
-                onClick = {
-                    showMenu = false
-                    onEditClick()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.action_delete), color = AppPalette.MaroonBright) },
-                leadingIcon = {
-                    Icon(AppIcons.Delete, contentDescription = null, tint = AppPalette.MaroonBright)
-                },
-                onClick = {
-                    showMenu = false
-                    onDeleteClick()
-                },
-            )
+    }
+
+    AnimatedVisibility(
+        visible = !isRemoving,
+        enter = EnterTransition.None,
+        exit = entryCollapseExit(),
+        modifier = modifier,
+    ) {
+        Box {
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .combinedClickable(onClick = {}, onLongClick = { showMenu = true }),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Text(
+                    entry.timeLabel,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppPalette.TextTertiary,
+                    modifier = Modifier.width(38.dp),
+                )
+                SessionEntryBody(entry.segments, onMentionClick, modifier = Modifier.weight(1f))
+            }
+            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.action_edit), color = AppPalette.GoldBright) },
+                    leadingIcon = {
+                        Icon(AppIcons.Edit, contentDescription = null, tint = AppPalette.GoldBright)
+                    },
+                    onClick = {
+                        showMenu = false
+                        onEditClick()
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.action_delete), color = AppPalette.MaroonBright) },
+                    leadingIcon = {
+                        Icon(AppIcons.Delete, contentDescription = null, tint = AppPalette.MaroonBright)
+                    },
+                    onClick = {
+                        showMenu = false
+                        isRemoving = true
+                    },
+                )
+            }
         }
     }
 }

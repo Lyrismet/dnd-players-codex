@@ -33,6 +33,7 @@ import com.lyrismet.dndcodex.core.mention.mentionKey
 import com.lyrismet.dndcodex.core.mention.mentionsIn
 import com.lyrismet.dndcodex.core.mention.parseMentions
 import com.lyrismet.dndcodex.core.mention.trailingMentionQuery
+import com.lyrismet.dndcodex.core.undo.UndoController
 import com.lyrismet.dndcodex.domain.model.Location
 import com.lyrismet.dndcodex.domain.model.Npc
 import com.lyrismet.dndcodex.domain.model.Quest
@@ -49,6 +50,7 @@ import dndplayerscodex.shared.generated.resources.session_detail_mention_type_lo
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
+import dndplayerscodex.shared.generated.resources.session_detail_undo_deleted_entry_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -58,6 +60,8 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+
+private const val ENTRY_PREVIEW_LENGTH = 60
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
 private class SessionDetailFields(
@@ -74,6 +78,7 @@ class SessionDetailPresenter(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val mentionRepositories: MentionRepositories,
+    private val undoController: UndoController,
 ) : Presenter<SessionDetailState> {
     @OptIn(ExperimentalTime::class)
     @Composable
@@ -128,6 +133,7 @@ class SessionDetailPresenter(
 
         val editingEntryTimeLabel =
             editingEntryId.value?.let { id -> entries.find { it.id == id }?.createdAt?.toDisplayTime() }
+        val undoDeletedEntryTitle = stringResource(Res.string.session_detail_undo_deleted_entry_title)
 
         // deliberately renders the same header/feed/composer shape whether or not currentNote
         // has arrived yet from the Flow's cold start - swapping to a distinct "loading" screen
@@ -145,7 +151,7 @@ class SessionDetailPresenter(
             mentionSuggestions = mention.suggestions,
             selectedEntity = selectedEntity,
             editingEntryTimeLabel = editingEntryTimeLabel,
-        ) { event -> onEvent(event, currentNote, entries, scope, fields) }
+        ) { event -> onEvent(event, currentNote, entries, undoDeletedEntryTitle, scope, fields) }
     }
 
     private fun numberLabelFor(allSessions: List<SessionNote>): String? =
@@ -160,11 +166,12 @@ class SessionDetailPresenter(
         )
 
     // flat circuit event-dispatch table, grows one branch per event variant - not real branching complexity
-    @Suppress("CyclomaticComplexMethod")
+    @Suppress("CyclomaticComplexMethod", "LongParameterList")
     private fun onEvent(
         event: SessionDetailEvent,
         currentNote: SessionNote?,
         entries: List<SessionEntry>,
+        undoDeletedEntryTitle: String,
         scope: CoroutineScope,
         fields: SessionDetailFields,
     ) {
@@ -189,7 +196,16 @@ class SessionDetailPresenter(
                 fields.editingEntryId.value = null
                 fields.draft.value = TextFieldValue("")
             }
-            is SessionDetailEvent.DeleteEntryClicked -> scope.launch { sessionEntryRepository.delete(event.id) }
+            is SessionDetailEvent.DeleteEntryClicked ->
+                onDeleteEntryClicked(
+                    event.id,
+                    entries,
+                    undoDeletedEntryTitle,
+                    scope,
+                    fields,
+                    sessionEntryRepository,
+                    undoController,
+                )
             SessionDetailEvent.EndSessionClicked -> onEndSession(currentNote, scope)
             SessionDetailEvent.ResumeSessionClicked -> onResumeSession(currentNote, scope)
         }
@@ -283,6 +299,32 @@ private data class MentionContext(
     val candidates: List<MentionCandidate>,
     val suggestions: List<SessionMentionSuggestion>,
 )
+
+// deletes immediately and offers undo - clears in-progress editing if the edited entry is the one removed
+@Suppress("LongParameterList")
+private fun onDeleteEntryClicked(
+    id: Long,
+    entries: List<SessionEntry>,
+    undoDeletedEntryTitle: String,
+    scope: CoroutineScope,
+    fields: SessionDetailFields,
+    sessionEntryRepository: SessionEntryRepository,
+    undoController: UndoController,
+) {
+    val entry = entries.find { it.id == id } ?: return
+    if (fields.editingEntryId.value == id) {
+        fields.editingEntryId.value = null
+        fields.draft.value = TextFieldValue("")
+    }
+    scope.launch {
+        sessionEntryRepository.delete(id)
+        val preview = entry.body.take(ENTRY_PREVIEW_LENGTH)
+        val suffix = if (entry.body.length > ENTRY_PREVIEW_LENGTH) "…" else ""
+        undoController.show(undoDeletedEntryTitle, "${entry.createdAt.toDisplayTime()} · $preview$suffix") {
+            sessionEntryRepository.restore(entry)
+        }
+    }
+}
 
 /** resolves mention candidates once and, from the same data, the trailing-@-query autocomplete suggestions */
 @Composable

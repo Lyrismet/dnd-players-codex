@@ -15,17 +15,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 import com.lyrismet.dndcodex.core.designsystem.component.AppBottomSheet
 import com.lyrismet.dndcodex.core.designsystem.component.AppDivider
-import com.lyrismet.dndcodex.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.dndcodex.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.dndcodex.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.dndcodex.core.designsystem.component.GlowingDot
@@ -41,8 +36,6 @@ import com.lyrismet.dndcodex.core.entitysummary.EntitySummarySheetActions
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_list_archive_section
 import dndplayerscodex.shared.generated.resources.session_list_delete_content_description
-import dndplayerscodex.shared.generated.resources.session_list_delete_dialog_text
-import dndplayerscodex.shared.generated.resources.session_list_delete_dialog_title
 import dndplayerscodex.shared.generated.resources.session_list_empty
 import dndplayerscodex.shared.generated.resources.session_list_live_continue
 import dndplayerscodex.shared.generated.resources.session_list_live_label
@@ -55,9 +48,6 @@ fun SessionListUi(
     state: SessionListState,
     modifier: Modifier = Modifier,
 ) {
-    // pending confirmation before a session is actually deleted - purely a transient ui flag
-    var pendingDeleteSession by remember { mutableStateOf<SessionListItem?>(null) }
-
     Scaffold(modifier = modifier) { contentPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             ScreenHeader(
@@ -73,21 +63,9 @@ fun SessionListUi(
             if (state.liveSession == null && state.sessions.isEmpty()) {
                 EmptyStatePlaceholder(text = stringResource(Res.string.session_list_empty))
             } else {
-                SessionListContent(state, onDeleteRequest = { pendingDeleteSession = it })
+                SessionListContent(state)
             }
         }
-    }
-
-    pendingDeleteSession?.let { session ->
-        ConfirmationDialog(
-            title = stringResource(Res.string.session_list_delete_dialog_title),
-            text = stringResource(Res.string.session_list_delete_dialog_text, session.title),
-            onConfirm = {
-                state.eventSink(SessionListEvent.DeleteSessionClicked(session.id))
-                pendingDeleteSession = null
-            },
-            onDismiss = { pendingDeleteSession = null },
-        )
     }
 
     state.selectedEntity?.let { entity ->
@@ -114,7 +92,6 @@ fun SessionListUi(
 @Composable
 private fun SessionListContent(
     state: SessionListState,
-    onDeleteRequest: (SessionListItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -124,11 +101,16 @@ private fun SessionListContent(
     ) {
         state.liveSession?.let { live ->
             item {
-                LiveSessionCard(
-                    session = live,
-                    onClick = { state.eventSink(SessionListEvent.SessionClicked(live.id)) },
-                    onMentionClick = { ref -> state.eventSink(SessionListEvent.MentionChipClicked(ref)) },
-                )
+                SwipeToDeleteRow(
+                    onDeleteRequested = { state.eventSink(SessionListEvent.DeleteSessionClicked(live.id)) },
+                    deleteContentDescription = stringResource(Res.string.session_list_delete_content_description),
+                ) {
+                    LiveSessionCard(
+                        session = live,
+                        onClick = { state.eventSink(SessionListEvent.SessionClicked(live.id)) },
+                        onMentionClick = { ref -> state.eventSink(SessionListEvent.MentionChipClicked(ref)) },
+                    )
+                }
             }
         }
         item {
@@ -148,7 +130,7 @@ private fun SessionListContent(
             SessionArchiveRow(
                 session = session,
                 onClick = { state.eventSink(SessionListEvent.SessionClicked(session.id)) },
-                onDeleteClick = { onDeleteRequest(session) },
+                onDeleteClick = { state.eventSink(SessionListEvent.DeleteSessionClicked(session.id)) },
                 modifier = Modifier.animateItem(),
             )
         }

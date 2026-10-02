@@ -2,6 +2,7 @@
     <string name="action_delete">Delete</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_edit">Edit</string>
+    <string name="action_undo">Undo</string>
 
     <string name="session_list_title">Session Diary</string>
     <string name="session_list_new_session_button">+ Session</string>
@@ -12,8 +13,7 @@
     <string name="session_list_live_no_notes">No notes yet</string>
     <string name="session_list_live_continue">Continue →</string>
     <string name="session_list_delete_content_description">Delete session</string>
-    <string name="session_list_delete_dialog_title">Delete session?</string>
-    <string name="session_list_delete_dialog_text">“%1$s” and all its notes will be permanently deleted.</string>
+    <string name="session_list_undo_deleted_title">Session deleted</string>
     <string name="new_session_default_title">New session</string>
     <string name="default_campaign_name">My campaign</string>
     <string name="session_overline_format">Session %1$s</string>
@@ -29,7 +29,7 @@
     <string name="session_detail_save_button">Save</string>
     <string name="session_detail_editing_label_format">EDITING · %1$s</string>
     <string name="session_detail_empty_feed">A blank page - write down what\'s happening</string>
-    <string name="session_detail_delete_entry_title">Delete entry?</string>
+    <string name="session_detail_undo_deleted_entry_title">Entry deleted</string>
     <string name="session_detail_quest_mention_prefix">Quest: </string>
     <string name="session_detail_meeting_separator_format">MEETING %1$d · %2$s</string>
     <string name="session_detail_mention_type_npc">NPC</string>
@@ -57,6 +57,8 @@
     <string name="codex_quest_reward_label">Reward</string>
     <string name="codex_party_empty">Party will arrive in a future update</string>
     <string name="codex_empty_filtered">Nothing found. Clear the filter or change your search.</string>
+    <string name="codex_delete_content_description">Delete codex entry</string>
+    <string name="codex_undo_deleted_title">Removed from codex</string>
 
     <string name="codex_entry_overline_create">CODEX · NEW ENTRY</string>
     <string name="codex_entry_overline_edit">CODEX · EDITING</string>

@@ -18,6 +18,7 @@ import com.lyrismet.dndcodex.core.mention.MentionCandidate
 import com.lyrismet.dndcodex.core.mention.mentionCandidates
 import com.lyrismet.dndcodex.core.mention.mentionEntitiesFrom
 import com.lyrismet.dndcodex.core.mention.mentionsIn
+import com.lyrismet.dndcodex.core.undo.UndoController
 import com.lyrismet.dndcodex.domain.model.SessionEntry
 import com.lyrismet.dndcodex.domain.model.SessionNote
 import com.lyrismet.dndcodex.domain.repository.MentionRepositories
@@ -32,9 +33,11 @@ import dndplayerscodex.shared.generated.resources.new_session_default_title
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import dndplayerscodex.shared.generated.resources.session_list_live_no_notes
 import dndplayerscodex.shared.generated.resources.session_list_live_notes_summary_format
+import dndplayerscodex.shared.generated.resources.session_list_undo_deleted_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -48,6 +51,7 @@ class SessionListPresenter(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val mentionRepositories: MentionRepositories,
+    private val undoController: UndoController,
 ) : Presenter<SessionListState> {
     @Composable
     override fun present(): SessionListState {
@@ -62,6 +66,7 @@ class SessionListPresenter(
         val newSessionTitle = stringResource(Res.string.new_session_default_title)
         val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
+        val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
         val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix)
 
         val liveNote = sessions.firstOrNull { it.isLive }
@@ -91,7 +96,7 @@ class SessionListPresenter(
             liveSession = liveSession,
             sessions = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems,
             selectedEntity = selectedEntity,
-        ) { event -> onEvent(event, scope, newSessionTitle, entitySheet) }
+        ) { event -> onEvent(event, scope, newSessionTitle, undoDeletedTitle, sessions, entitySheet) }
     }
 
     @Composable
@@ -125,10 +130,13 @@ class SessionListPresenter(
     }
 
     @OptIn(ExperimentalTime::class)
+    @Suppress("LongParameterList")
     private fun onEvent(
         event: SessionListEvent,
         scope: CoroutineScope,
         newSessionTitle: String,
+        undoDeletedTitle: String,
+        sessions: List<SessionNote>,
         entitySheet: EntitySheetInteractions,
     ) {
         when (event) {
@@ -145,7 +153,8 @@ class SessionListPresenter(
                 }
 
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
-            is SessionListEvent.DeleteSessionClicked -> scope.launch { sessionNoteRepository.delete(event.id) }
+            is SessionListEvent.DeleteSessionClicked ->
+                onDeleteSessionClicked(event.id, sessions, undoDeletedTitle, scope)
             is SessionListEvent.MentionChipClicked -> entitySheet.onEntityClicked(event.ref)
             is SessionListEvent.NpcStatusSelected ->
                 entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
@@ -153,6 +162,25 @@ class SessionListPresenter(
                 entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
             is SessionListEvent.RelatedNoteClicked -> entitySheet.onRelatedNoteClicked(event.sessionNoteId)
             SessionListEvent.SheetDismissed -> entitySheet.onDismissed()
+        }
+    }
+
+    // deletes immediately and offers undo - restoring re-inserts the note and all its entries with fresh ids
+    private fun onDeleteSessionClicked(
+        id: Long,
+        sessions: List<SessionNote>,
+        undoDeletedTitle: String,
+        scope: CoroutineScope,
+    ) {
+        val note = sessions.find { it.id == id } ?: return
+        val numLabel = sessions.chronologicalNumberLabels()[id].orEmpty()
+        scope.launch {
+            val entries = sessionEntryRepository.observeForSession(id).first()
+            sessionNoteRepository.delete(id)
+            undoController.show(undoDeletedTitle, "$numLabel · ${note.title}") {
+                val newId = sessionNoteRepository.upsert(note.copy(id = 0))
+                entries.forEach { entry -> sessionEntryRepository.restore(entry.copy(sessionNoteId = newId)) }
+            }
         }
     }
 

@@ -15,6 +15,7 @@ import com.lyrismet.dndcodex.core.entitysummary.questStatusLabels
 import com.lyrismet.dndcodex.core.entitysummary.selectedEntitySummary
 import com.lyrismet.dndcodex.core.mention.mentionCandidates
 import com.lyrismet.dndcodex.core.mention.mentionEntitiesFrom
+import com.lyrismet.dndcodex.core.undo.UndoController
 import com.lyrismet.dndcodex.domain.model.Location
 import com.lyrismet.dndcodex.domain.model.Npc
 import com.lyrismet.dndcodex.domain.model.NpcStatus
@@ -29,9 +30,14 @@ import com.slack.circuit.retained.rememberRetained
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_entry_type_location
+import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
+import dndplayerscodex.shared.generated.resources.codex_entry_type_quest
 import dndplayerscodex.shared.generated.resources.codex_filter_all
+import dndplayerscodex.shared.generated.resources.codex_undo_deleted_title
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
@@ -54,6 +60,7 @@ private data class CodexSearchResults(
     val filteredQuests: List<Quest>,
 )
 
+@Suppress("LongParameterList")
 class CodexPresenter(
     private val navigator: Navigator,
     private val npcRepository: NpcRepository,
@@ -61,6 +68,7 @@ class CodexPresenter(
     private val locationRepository: LocationRepository,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
+    private val undoController: UndoController,
 ) : Presenter<CodexState> {
     @Composable
     override fun present(): CodexState {
@@ -88,6 +96,13 @@ class CodexPresenter(
         val questStatusLabels = questStatusLabels()
         val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
         val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix)
+        val undoDeletedTitle = stringResource(Res.string.codex_undo_deleted_title)
+        val entityTypeLabels =
+            mapOf(
+                CodexEntryType.NPC to stringResource(Res.string.codex_entry_type_npc),
+                CodexEntryType.QUEST to stringResource(Res.string.codex_entry_type_quest),
+                CodexEntryType.LOCATION to stringResource(Res.string.codex_entry_type_location),
+            )
 
         val search = buildSearchResults(npcs, quests, locations, fields)
 
@@ -113,6 +128,8 @@ class CodexPresenter(
             npcStatusLabels,
             questStatusLabels,
             allLabel,
+            undoDeletedTitle,
+            entityTypeLabels,
             scope,
         )
     }
@@ -131,6 +148,8 @@ class CodexPresenter(
         npcStatusLabels: Map<NpcStatus, String>,
         questStatusLabels: Map<QuestStatus, String>,
         allLabel: String,
+        undoDeletedTitle: String,
+        entityTypeLabels: Map<CodexEntryType, String>,
         scope: CoroutineScope,
     ): CodexState =
         CodexState(
@@ -160,7 +179,9 @@ class CodexPresenter(
                     ),
                 ),
             activeSheet = codexActiveSheet(formController.buildState(npcs, locations), selectedEntity),
-        ) { event -> onEvent(event, fields, formController, scope) }
+        ) { event ->
+            onEvent(event, fields, formController, npcs, quests, locations, undoDeletedTitle, entityTypeLabels, scope)
+        }
 
     private fun buildSearchResults(
         npcs: List<Npc>,
@@ -219,11 +240,16 @@ class CodexPresenter(
             }
 
     // flat circuit event-dispatch table, grows one branch per event variant - not real branching complexity
-    @Suppress("CyclomaticComplexMethod")
+    @Suppress("CyclomaticComplexMethod", "LongParameterList")
     private fun onEvent(
         event: CodexEvent,
         fields: CodexFields,
         formController: CodexEntryFormController,
+        npcs: List<Npc>,
+        quests: List<Quest>,
+        locations: List<Location>,
+        undoDeletedTitle: String,
+        entityTypeLabels: Map<CodexEntryType, String>,
         scope: CoroutineScope,
     ) {
         when (event) {
@@ -246,9 +272,92 @@ class CodexPresenter(
             is CodexEvent.EntryChipToggled -> formController.onChipToggled(event.field, event.id)
             CodexEvent.EntryFormSaveClicked -> formController.onSaveClicked(scope)
             CodexEvent.EntryFormClosed -> formController.onClosed()
+            is CodexEvent.EntityDeleteRequested ->
+                onEntityDeleteRequested(event.ref, npcs, quests, locations, undoDeletedTitle, entityTypeLabels, scope)
         }
     }
+
+    // deletes immediately and offers undo - restoring also re-links whatever else referenced the deleted entity
+    @Suppress("LongParameterList")
+    private fun onEntityDeleteRequested(
+        ref: EntityRef,
+        npcs: List<Npc>,
+        quests: List<Quest>,
+        locations: List<Location>,
+        undoDeletedTitle: String,
+        entityTypeLabels: Map<CodexEntryType, String>,
+        scope: CoroutineScope,
+    ) {
+        val plan = codexDeletionPlan(ref, npcs, quests, locations, entityTypeLabels) ?: return
+        scope.launch {
+            plan.delete()
+            undoController.show(undoDeletedTitle, plan.subtitle, plan.restore)
+        }
+    }
+
+    @Suppress("LongParameterList")
+    private fun codexDeletionPlan(
+        ref: EntityRef,
+        npcs: List<Npc>,
+        quests: List<Quest>,
+        locations: List<Location>,
+        entityTypeLabels: Map<CodexEntryType, String>,
+    ): CodexDeletionPlan? =
+        when (ref) {
+            is EntityRef.Npc ->
+                npcs.find { it.id == ref.id }?.let { npc ->
+                    val givenQuestIds = quests.filter { it.givenByNpcId == ref.id }.map { it.id }
+                    CodexDeletionPlan(
+                        subtitle = "${entityTypeLabels.getValue(CodexEntryType.NPC)} · ${npc.name}",
+                        delete = { npcRepository.delete(ref.id) },
+                        restore = {
+                            val newId = npcRepository.upsert(npc.copy(id = 0))
+                            givenQuestIds.forEach { id ->
+                                questRepository.getById(id)?.let {
+                                    questRepository.upsert(it.copy(givenByNpcId = newId))
+                                }
+                            }
+                        },
+                    )
+                }
+
+            is EntityRef.Quest ->
+                quests.find { it.id == ref.id }?.let { quest ->
+                    CodexDeletionPlan(
+                        subtitle = "${entityTypeLabels.getValue(CodexEntryType.QUEST)} · ${quest.title}",
+                        delete = { questRepository.delete(ref.id) },
+                        restore = { questRepository.upsert(quest.copy(id = 0)) },
+                    )
+                }
+
+            is EntityRef.Location ->
+                locations.find { it.id == ref.id }?.let { location ->
+                    val npcIdsHere = npcs.filter { it.locationId == ref.id }.map { it.id }
+                    val questIdsHere = quests.filter { it.locationId == ref.id }.map { it.id }
+                    CodexDeletionPlan(
+                        subtitle = "${entityTypeLabels.getValue(CodexEntryType.LOCATION)} · ${location.name}",
+                        delete = { locationRepository.delete(ref.id) },
+                        restore = {
+                            val newId = locationRepository.upsert(location.copy(id = 0))
+                            npcIdsHere.forEach { id ->
+                                npcRepository.getById(id)?.let { npcRepository.upsert(it.copy(locationId = newId)) }
+                            }
+                            questIdsHere.forEach { id ->
+                                questRepository.getById(id)?.let {
+                                    questRepository.upsert(it.copy(locationId = newId))
+                                }
+                            }
+                        },
+                    )
+                }
+        }
 }
+
+private class CodexDeletionPlan(
+    val subtitle: String,
+    val delete: suspend () -> Unit,
+    val restore: suspend () -> Unit,
+)
 
 // the form always wins so editing never leaves the entity-view sheet stacked underneath it
 private fun codexActiveSheet(

@@ -20,7 +20,7 @@ fun App(appContainer: AppContainer) {
     AppEnvironment {
         AppTheme {
             CircuitCompositionLocals(appContainer.circuit) {
-                AppTabHost()
+                AppTabHost(appContainer.undoController)
             }
         }
     }
