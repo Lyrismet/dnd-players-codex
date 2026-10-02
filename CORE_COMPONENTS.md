@@ -59,7 +59,7 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 | `EmptyStatePlaceholder` | `component/EmptyStatePlaceholder.kt` | centered secondary-text message for an empty list/search/loading state. | `text` |
 | `SwipeToDeleteRow` | `component/SwipeToDeleteRow.kt` | swipe-left-to-reveal-delete row chrome. Never deletes anything itself - caller drives the real delete, which is usually immediate (see `UndoToast`) rather than a confirm dialog. | `onDeleteRequested`, `deleteContentDescription`, `content` |
 | `UndoToast` | `component/UndoToast.kt` | the "X deleted · Отменить" bar that floats above the bottom tab bar for 5s after an optimistic delete (sessions, entries, codex entities) - driven by `core/undo/UndoController`, not local screen state. | `action: UndoAction?`, `onUndo` |
-| `ConfirmationDialog` | `component/ConfirmationDialog.kt` | "are you sure?" dialog for any destructive action, built on `AppDialog` + `IconBadge`. | `title`, `text`, `onConfirm`, `onDismiss` |
+| `ConfirmationDialog` | `component/ConfirmationDialog.kt` | "are you sure?" dialog for a destructive action that has no undo (session/entry/codex deletes use `UndoToast` instead), built on `AppDialog` + `IconBadge`. | `title`, `text`, `onConfirm`, `onDismiss` |
 | `Modifier.dismissKeyboardOnTap()` | `component/DismissKeyboardOnTap.kt` | clears focus/hides keyboard on an unconsumed tap - applied once at the app root. | - |
 
 ## Forms
