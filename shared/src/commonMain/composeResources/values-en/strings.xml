@@ -3,8 +3,6 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_edit">Edit</string>
     <string name="action_undo">Undo</string>
-    <string name="swipe_delete_label">Delete</string>
-    <string name="swipe_delete_release_label">Release</string>
 
     <string name="session_list_title">Session Diary</string>
     <string name="session_list_new_session_button">+ Session</string>

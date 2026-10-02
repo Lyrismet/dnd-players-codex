@@ -14,15 +14,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,21 +31,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.lyrismet.dndcodex.core.designsystem.AppPalette
 import com.lyrismet.dndcodex.core.designsystem.component.icons.AppIcons
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.swipe_delete_label
-import dndplayerscodex.shared.generated.resources.swipe_delete_release_label
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -97,9 +88,7 @@ private class SwipeState(
         when {
             // a full swipe commits the delete from where the finger left the row, no snap back
             -releasedAt > fullWidthPx -> onDeleteRequested()
-
             -releasedAt > openWidthPx / 2 -> settle(-openWidthPx, true)
-
             else -> settle(0f, false)
         }
     }
@@ -227,22 +216,7 @@ private fun BoxScope.SwipeDeleteBackground(
                     .fillMaxHeight(),
             contentAlignment = Alignment.Center,
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                Icon(AppIcons.Delete, contentDescription = deleteContentDescription, tint = Color.White)
-                Text(
-                    text =
-                        stringResource(
-                            if (isPastFull) Res.string.swipe_delete_release_label else Res.string.swipe_delete_label,
-                        ),
-                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = Color.White,
-                    maxLines = 1,
-                    softWrap = false,
-                )
-            }
+            Icon(AppIcons.Delete, contentDescription = deleteContentDescription, tint = AppPalette.MaroonBright)
         }
     }
 }

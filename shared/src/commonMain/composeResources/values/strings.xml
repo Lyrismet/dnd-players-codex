@@ -3,8 +3,6 @@
     <string name="action_cancel">Отмена</string>
     <string name="action_edit">Изменить</string>
     <string name="action_undo">Отменить</string>
-    <string name="swipe_delete_label">Удалить</string>
-    <string name="swipe_delete_release_label">Отпустите</string>
 
     <string name="session_list_title">Дневник сессий</string>
     <string name="session_list_new_session_button">+ Сессия</string>
