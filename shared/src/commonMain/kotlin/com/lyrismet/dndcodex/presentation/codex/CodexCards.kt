@@ -13,6 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -118,13 +120,14 @@ internal fun QuestCodexCard(
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         color = giver.color.foreground,
-                        textDecoration =
-                            if (giver.isDead) {
-                                TextDecoration.combine(listOf(TextDecoration.Underline, TextDecoration.LineThrough))
-                            } else {
-                                TextDecoration.Underline
-                            },
-                        modifier = Modifier.clickable { onGiverClick(giver.npcId) },
+                        textDecoration = if (giver.isDead) TextDecoration.LineThrough else TextDecoration.None,
+                        modifier =
+                            Modifier
+                                .clickable { onGiverClick(giver.npcId) }
+                                .drawBehind {
+                                    val y = size.height - 0.5.dp.toPx()
+                                    drawLine(giver.color.foreground, Offset(0f, y), Offset(size.width, y), 1.dp.toPx())
+                                },
                     )
                 }
                 Text(item.reward, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextPrimary)
