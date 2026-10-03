@@ -7,7 +7,7 @@ import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.designsystem.component.toMentionChip
 import com.lyrismet.incadent.core.designsystem.toStatusColor
-import com.lyrismet.incadent.core.format.chronologicalNumberLabels
+import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.mention.MentionSegment
@@ -20,6 +20,7 @@ import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
+import com.lyrismet.incadent.domain.model.SessionNumbering
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_npc_status_dead
 import dndplayerscodex.shared.generated.resources.codex_npc_status_enemy
@@ -157,6 +158,7 @@ data class EntityLookup(
     val sessionNotes: List<SessionNote>,
     val sessionEntries: List<SessionEntry>,
     val mentionCandidates: List<MentionCandidate>,
+    val sessionNumbering: SessionNumbering = SessionNumbering.ROMAN,
 )
 
 /** resolves [ref] against [lookup] - the one place every "tap a tag" entry point goes through */
@@ -289,7 +291,7 @@ private fun buildRelatedNotes(
     lookup: EntityLookup,
 ): List<RelatedNoteItem> {
     val entriesBySession = lookup.sessionEntries.groupBy { it.sessionNoteId }
-    val numberLabels = lookup.sessionNotes.chronologicalNumberLabels()
+    val numberLabels = lookup.sessionNotes.sessionNumberLabels(lookup.sessionNumbering)
     return lookup.sessionNotes
         .sortedByDescending { it.sessionDate }
         .mapNotNull { note ->
@@ -355,6 +357,7 @@ fun selectedEntitySummary(
     sessionNotes: List<SessionNote>,
     sessionEntries: List<SessionEntry>,
     mentionCandidates: List<MentionCandidate>,
+    sessionNumbering: SessionNumbering,
 ): EntitySummaryItem? {
     if (ref == null) return null
     return buildEntitySummary(
@@ -368,6 +371,7 @@ fun selectedEntitySummary(
             sessionNotes = sessionNotes,
             sessionEntries = sessionEntries,
             mentionCandidates = mentionCandidates,
+            sessionNumbering = sessionNumbering,
         ),
     )
 }

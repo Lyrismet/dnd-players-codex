@@ -21,6 +21,8 @@ import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
+import com.lyrismet.incadent.domain.model.SessionNumbering
+import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.NpcRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
@@ -69,6 +71,7 @@ class CodexPresenter(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val undoController: UndoController,
+    private val appPreferencesRepository: AppPreferencesRepository,
 ) : Presenter<CodexState> {
     @Composable
     override fun present(): CodexState {
@@ -77,6 +80,9 @@ class CodexPresenter(
         val locations by locationRepository.observeAll().collectAsState(initial = emptyList())
         val sessionNotes by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
         val sessionEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
+        val numbering by appPreferencesRepository
+            .observeSessionNumbering()
+            .collectAsState(initial = SessionNumbering.ROMAN)
         val scope = rememberCoroutineScope()
 
         // rememberRetained not remember - state must survive push/pop navigation, not just recomposition
@@ -115,6 +121,7 @@ class CodexPresenter(
                 sessionNotes,
                 sessionEntries,
                 candidates,
+                numbering,
             )
 
         return buildCodexState(

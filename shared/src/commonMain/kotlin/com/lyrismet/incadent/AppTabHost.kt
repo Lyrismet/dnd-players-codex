@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,17 +29,17 @@ import com.lyrismet.incadent.core.designsystem.component.icons.SettingsTabIcon
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.presentation.codex.CodexScreen
 import com.lyrismet.incadent.presentation.sessionlist.SessionListScreen
+import com.lyrismet.incadent.presentation.settings.SettingsScreen
+import com.slack.circuit.backstack.SaveableBackStack
 import com.slack.circuit.backstack.rememberSaveableBackStack
 import com.slack.circuit.foundation.NavigableCircuitContent
 import com.slack.circuit.foundation.rememberCircuitNavigator
-import com.slack.circuit.runtime.screen.Screen
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.bottom_tab_codex
 import dndplayerscodex.shared.generated.resources.bottom_tab_combat
 import dndplayerscodex.shared.generated.resources.bottom_tab_sessions
 import dndplayerscodex.shared.generated.resources.bottom_tab_settings
 import dndplayerscodex.shared.generated.resources.combat_tab_placeholder
-import dndplayerscodex.shared.generated.resources.settings_tab_placeholder
 import org.jetbrains.compose.resources.stringResource
 
 private enum class AppTab {
@@ -48,27 +49,49 @@ private enum class AppTab {
     SETTINGS,
 }
 
-/** owns the selected bottom tab and hosts each tab's own navigation - relies on an ambient Circuit */
+/**
+ * selected tab and every tab's back stack - created above AppEnvironment so a locale change
+ * (which recomposes everything below it) doesn't reset the user's tab or navigation
+ */
+internal class AppTabsState(
+    val selectedTabIndex: MutableState<Int>,
+    val sessionsBackStack: SaveableBackStack,
+    val codexBackStack: SaveableBackStack,
+    val settingsBackStack: SaveableBackStack,
+)
+
 @Composable
-internal fun AppTabHost(undoController: UndoController) {
-    var selectedTabIndex by rememberSaveable { mutableStateOf(AppTab.SESSIONS.ordinal) }
-    val selectedTab = AppTab.entries[selectedTabIndex]
+internal fun rememberAppTabsState(): AppTabsState =
+    AppTabsState(
+        selectedTabIndex = rememberSaveable { mutableStateOf(AppTab.SESSIONS.ordinal) },
+        sessionsBackStack = rememberSaveableBackStack(root = SessionListScreen),
+        codexBackStack = rememberSaveableBackStack(root = CodexScreen),
+        settingsBackStack = rememberSaveableBackStack(root = SettingsScreen),
+    )
+
+/** renders the bottom tab bar and the tab selected in [tabs] - relies on an ambient Circuit */
+@Composable
+internal fun AppTabHost(
+    undoController: UndoController,
+    tabs: AppTabsState,
+) {
     val pendingUndo by undoController.current.collectAsState()
+    val selectedTab = AppTab.entries[tabs.selectedTabIndex.value]
 
     Column(modifier = Modifier.fillMaxSize().dismissKeyboardOnTap()) {
         // tabs stay composed and zero-sized when hidden so their nav stack and ui state survive switching away
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             Box(modifier = tabContentModifier(selectedTab == AppTab.SESSIONS)) {
-                TabBackstackHost(root = SessionListScreen)
+                TabBackstackHost(tabs.sessionsBackStack)
             }
             Box(modifier = tabContentModifier(selectedTab == AppTab.CODEX)) {
-                TabBackstackHost(root = CodexScreen)
+                TabBackstackHost(tabs.codexBackStack)
             }
             Box(modifier = tabContentModifier(selectedTab == AppTab.COMBAT)) {
                 CombatPlaceholder()
             }
             Box(modifier = tabContentModifier(selectedTab == AppTab.SETTINGS)) {
-                SettingsPlaceholder()
+                TabBackstackHost(tabs.settingsBackStack)
             }
             UndoToast(
                 action = pendingUndo,
@@ -78,8 +101,8 @@ internal fun AppTabHost(undoController: UndoController) {
         }
         BottomTabBar(
             tabs = appTabBarItems(),
-            selectedIndex = selectedTabIndex,
-            onTabSelected = { selectedTabIndex = it },
+            selectedIndex = tabs.selectedTabIndex.value,
+            onTabSelected = { tabs.selectedTabIndex.value = it },
         )
     }
 }
@@ -88,8 +111,7 @@ private fun tabContentModifier(visible: Boolean): Modifier =
     if (visible) Modifier.fillMaxSize() else Modifier.size(0.dp)
 
 @Composable
-private fun TabBackstackHost(root: Screen) {
-    val backStack = rememberSaveableBackStack(root = root)
+private fun TabBackstackHost(backStack: SaveableBackStack) {
     val navigator = rememberCircuitNavigator(backStack, onRootPop = {})
     NavigableCircuitContent(navigator = navigator, backStack = backStack)
 }
@@ -99,16 +121,6 @@ private fun CombatPlaceholder() {
     Scaffold { contentPadding ->
         EmptyStatePlaceholder(
             text = stringResource(Res.string.combat_tab_placeholder),
-            modifier = Modifier.padding(contentPadding),
-        )
-    }
-}
-
-@Composable
-private fun SettingsPlaceholder() {
-    Scaffold { contentPadding ->
-        EmptyStatePlaceholder(
-            text = stringResource(Res.string.settings_tab_placeholder),
             modifier = Modifier.padding(contentPadding),
         )
     }

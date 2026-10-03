@@ -18,7 +18,7 @@ import com.lyrismet.incadent.core.designsystem.toStatusColor
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
 import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
-import com.lyrismet.incadent.core.format.chronologicalNumberLabels
+import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.format.toShortDayMonthUpper
@@ -39,6 +39,8 @@ import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
+import com.lyrismet.incadent.domain.model.SessionNumbering
+import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
@@ -73,6 +75,7 @@ private class SessionDetailFields(
     val entitySheet: EntitySheetInteractions,
 )
 
+@Suppress("LongParameterList")
 class SessionDetailPresenter(
     private val screen: SessionDetailScreen,
     private val navigator: Navigator,
@@ -80,6 +83,7 @@ class SessionDetailPresenter(
     private val sessionEntryRepository: SessionEntryRepository,
     private val mentionRepositories: MentionRepositories,
     private val undoController: UndoController,
+    private val appPreferencesRepository: AppPreferencesRepository,
 ) : Presenter<SessionDetailState> {
     @OptIn(ExperimentalTime::class)
     @Composable
@@ -92,10 +96,13 @@ class SessionDetailPresenter(
         val npcs by mentionRepositories.npcRepository.observeAll().collectAsState(initial = emptyList())
         val locations by mentionRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
         val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
+        val numbering by appPreferencesRepository
+            .observeSessionNumbering()
+            .collectAsState(initial = SessionNumbering.ROMAN)
         val scope = rememberCoroutineScope()
 
         val currentNote = allSessions.find { it.id == screen.sessionNoteId }
-        val numberLabel = allSessions.chronologicalNumberLabels()[screen.sessionNoteId]
+        val numberLabel = allSessions.sessionNumberLabels(numbering)[screen.sessionNoteId]
 
         val fields = rememberFields()
         val titleField = fields.titleField
@@ -123,6 +130,7 @@ class SessionDetailPresenter(
                 allSessions,
                 allEntries,
                 mention.candidates,
+                numbering,
             )
 
         val editingEntryTimeLabel =

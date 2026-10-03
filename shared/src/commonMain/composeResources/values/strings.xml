@@ -125,5 +125,28 @@
     <string name="bottom_tab_combat">Бой</string>
     <string name="bottom_tab_settings">Настройки</string>
     <string name="combat_tab_placeholder">Бой скоро появится здесь</string>
-    <string name="settings_tab_placeholder">Настройки скоро появятся здесь</string>
+    <!-- settings -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_section_app">ПРИЛОЖЕНИЕ</string>
+    <string name="settings_language_title">Язык</string>
+    <string name="settings_language_desc">Язык интерфейса приложения</string>
+    <string name="settings_language_ru">Русский</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_section_diary">ДНЕВНИК</string>
+    <string name="settings_numbering_title">Нумерация сессий</string>
+    <string name="settings_numbering_desc">Римские сжимаются после XX</string>
+    <string name="settings_numbering_roman">XIII</string>
+    <string name="settings_numbering_arabic">13</string>
+    <string name="settings_mention_title">Упоминания @</string>
+    <string name="settings_mention_desc">Вид чипов в заметках</string>
+    <string name="settings_mention_filled">Заливка</string>
+    <string name="settings_mention_underline">Линия</string>
+    <string name="settings_section_campaign">КАМПАНИЯ</string>
+    <string name="settings_campaign_name_title">Название</string>
+    <string name="settings_storage_title">Хранение</string>
+    <string name="settings_storage_value">Только на устройстве</string>
+    <string name="settings_rename_title">Название кампании</string>
+    <string name="settings_rename_placeholder">Например, Тени Блэквуда</string>
+    <string name="settings_rename_hint">Показывается над списком сессий и в итогах боёв.</string>
+    <string name="settings_rename_save">Сохранить</string>
 </resources>

@@ -3,6 +3,7 @@ package com.lyrismet.incadent.data
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.data.db.DatabaseDriverFactory
 import com.lyrismet.incadent.data.db.createAppDatabase
+import com.lyrismet.incadent.data.repository.AppPreferencesRepositoryImpl
 import com.lyrismet.incadent.data.repository.LanguageRepositoryImpl
 import com.lyrismet.incadent.data.repository.LocationRepositoryImpl
 import com.lyrismet.incadent.data.repository.NpcRepositoryImpl
@@ -10,6 +11,7 @@ import com.lyrismet.incadent.data.repository.QuestRepositoryImpl
 import com.lyrismet.incadent.data.repository.SessionEntryRepositoryImpl
 import com.lyrismet.incadent.data.repository.SessionNoteRepositoryImpl
 import com.lyrismet.incadent.data.settings.SettingsFactory
+import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.LanguageRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
@@ -23,6 +25,8 @@ import com.lyrismet.incadent.presentation.sessiondetail.addSessionDetailUi
 import com.lyrismet.incadent.presentation.sessiondetail.sessionDetailScreenRegistration
 import com.lyrismet.incadent.presentation.sessionlist.addSessionListUi
 import com.lyrismet.incadent.presentation.sessionlist.sessionListScreenRegistration
+import com.lyrismet.incadent.presentation.settings.addSettingsUi
+import com.lyrismet.incadent.presentation.settings.settingsScreenRegistration
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.serialization.SerializableCircuitSaver
 import kotlinx.coroutines.CoroutineScope
@@ -46,7 +50,9 @@ class AppContainer(
     private val mentionRepositories = MentionRepositories(npcRepository, locationRepository, questRepository)
 
     // инфраструктура
-    val languageRepository: LanguageRepository = LanguageRepositoryImpl(settingsFactory.createSettings())
+    private val settings = settingsFactory.createSettings()
+    val languageRepository: LanguageRepository = LanguageRepositoryImpl(settings)
+    val appPreferencesRepository: AppPreferencesRepository = AppPreferencesRepositoryImpl(settings)
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val undoController = UndoController(appScope)
 
@@ -54,8 +60,19 @@ class AppContainer(
         Circuit
             .Builder()
             // сессии
-            .addSessionListUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories, undoController)
-            .addSessionDetailUi(sessionNoteRepository, sessionEntryRepository, mentionRepositories, undoController)
+            .addSessionListUi(
+                sessionNoteRepository,
+                sessionEntryRepository,
+                mentionRepositories,
+                undoController,
+                appPreferencesRepository,
+            ).addSessionDetailUi(
+                sessionNoteRepository,
+                sessionEntryRepository,
+                mentionRepositories,
+                undoController,
+                appPreferencesRepository,
+            )
             // кодекс
             .addCodexUi(
                 npcRepository,
@@ -64,12 +81,17 @@ class AppContainer(
                 sessionNoteRepository,
                 sessionEntryRepository,
                 undoController,
-            ).setCircuitSaver(
+                appPreferencesRepository,
+            )
+            // настройки
+            .addSettingsUi(languageRepository, appPreferencesRepository)
+            .setCircuitSaver(
                 SerializableCircuitSaver(
                     listOf(
                         sessionListScreenRegistration,
                         sessionDetailScreenRegistration,
                         codexScreenRegistration,
+                        settingsScreenRegistration,
                     ),
                 ),
             ).build()

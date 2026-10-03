@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.presentation.sessionlist
 
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
@@ -12,6 +13,7 @@ fun Circuit.Builder.addSessionListUi(
     sessionEntryRepository: SessionEntryRepository,
     mentionRepositories: MentionRepositories,
     undoController: UndoController,
+    appPreferencesRepository: AppPreferencesRepository,
 ): Circuit.Builder =
     addPresenter<SessionListScreen, SessionListState> { _, navigator, _ ->
         SessionListPresenter(
@@ -20,6 +22,7 @@ fun Circuit.Builder.addSessionListUi(
             sessionEntryRepository,
             mentionRepositories,
             undoController,
+            appPreferencesRepository,
         )
     }.addUi<SessionListScreen, SessionListState> { state, modifier ->
         SessionListUi(state, modifier)
