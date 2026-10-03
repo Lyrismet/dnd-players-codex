@@ -12,6 +12,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -49,10 +50,7 @@ private enum class AppTab {
     SETTINGS,
 }
 
-/**
- * selected tab and every tab's back stack - created above AppEnvironment so a locale change
- * (which recomposes everything below it) doesn't reset the user's tab or navigation
- */
+/** selected tab and each tab's back stack, hoisted above AppEnvironment so a locale change keeps them */
 internal class AppTabsState(
     val selectedTabIndex: MutableState<Int>,
     val sessionsBackStack: SaveableBackStack,
@@ -61,13 +59,15 @@ internal class AppTabsState(
 )
 
 @Composable
-internal fun rememberAppTabsState(): AppTabsState =
-    AppTabsState(
-        selectedTabIndex = rememberSaveable { mutableStateOf(AppTab.SESSIONS.ordinal) },
-        sessionsBackStack = rememberSaveableBackStack(root = SessionListScreen),
-        codexBackStack = rememberSaveableBackStack(root = CodexScreen),
-        settingsBackStack = rememberSaveableBackStack(root = SettingsScreen),
-    )
+internal fun rememberAppTabsState(): AppTabsState {
+    val selectedTabIndex = rememberSaveable { mutableStateOf(AppTab.SESSIONS.ordinal) }
+    val sessionsBackStack = rememberSaveableBackStack(root = SessionListScreen)
+    val codexBackStack = rememberSaveableBackStack(root = CodexScreen)
+    val settingsBackStack = rememberSaveableBackStack(root = SettingsScreen)
+    return remember(selectedTabIndex, sessionsBackStack, codexBackStack, settingsBackStack) {
+        AppTabsState(selectedTabIndex, sessionsBackStack, codexBackStack, settingsBackStack)
+    }
+}
 
 /** renders the bottom tab bar and the tab selected in [tabs] - relies on an ambient Circuit */
 @Composable

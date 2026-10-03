@@ -9,6 +9,7 @@ import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
+import com.lyrismet.incadent.domain.model.SessionNumbering
 import kotlinx.datetime.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -69,6 +70,7 @@ private fun lookup(
     npcs: List<Npc> = listOf(ragnar),
     locations: List<Location> = listOf(forge),
     quests: List<Quest> = listOf(swordQuest),
+    numbering: SessionNumbering = SessionNumbering.ROMAN,
 ): EntityLookup {
     val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), QUEST_PREFIX)
     return EntityLookup(
@@ -80,6 +82,7 @@ private fun lookup(
         sessionNotes = listOf(mentioningNote, unrelatedNote),
         sessionEntries = listOf(mentioningEntry, unrelatedEntry),
         mentionCandidates = candidates,
+        sessionNumbering = numbering,
     )
 }
 
@@ -176,5 +179,18 @@ class EntitySummaryTest {
         val related = summary.relatedNotes.single()
         assertEquals(100L, related.sessionNoteId)
         assertEquals(1, related.matchCount)
+    }
+
+    @Test
+    fun `buildEntitySummary labels related notes with the chosen session numbering`() {
+        val roman = buildEntitySummary(EntityRef.Npc(1), lookup()) as EntitySummaryItem.NpcSummary
+        val arabic =
+            buildEntitySummary(
+                EntityRef.Npc(1),
+                lookup(numbering = SessionNumbering.ARABIC),
+            ) as EntitySummaryItem.NpcSummary
+
+        assertEquals("I", roman.relatedNotes.single().numberLabel)
+        assertEquals("1", arabic.relatedNotes.single().numberLabel)
     }
 }

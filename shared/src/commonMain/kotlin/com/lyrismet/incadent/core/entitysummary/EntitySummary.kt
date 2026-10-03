@@ -158,7 +158,7 @@ data class EntityLookup(
     val sessionNotes: List<SessionNote>,
     val sessionEntries: List<SessionEntry>,
     val mentionCandidates: List<MentionCandidate>,
-    val sessionNumbering: SessionNumbering = SessionNumbering.ROMAN,
+    val sessionNumbering: SessionNumbering,
 )
 
 /** resolves [ref] against [lookup] - the one place every "tap a tag" entry point goes through */

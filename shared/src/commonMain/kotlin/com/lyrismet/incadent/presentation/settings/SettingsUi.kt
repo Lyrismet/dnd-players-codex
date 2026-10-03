@@ -81,7 +81,7 @@ private data class SettingsChoice<T>(
 private val ChoiceLabelSerif = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
 private val ChoiceLabelSans = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
 
-/** renders the settings sections and the campaign rename sheet - every tap goes out through the state's eventSink */
+/** renders the settings screen - every tap goes out through the state's eventSink */
 @Composable
 fun SettingsUi(
     state: SettingsState,
