@@ -16,20 +16,21 @@ dependencies {
     implementation(project(":shared"))
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
 }
 
 android {
-    namespace = "com.lyrismet.dndcodex"
+    namespace = "com.lyrismet.incadent"
     compileSdk =
         libs.versions.android.compileSdk
             .get()
             .toInt()
 
     defaultConfig {
-        applicationId = "com.lyrismet.dndcodex"
+        applicationId = "com.lyrismet.incadent"
         minSdk =
             libs.versions.android.minSdk
                 .get()

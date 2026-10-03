@@ -1,6 +1,6 @@
 # CORE_COMPONENTS.md
 
-Catalog of everything already built in `shared/src/commonMain/kotlin/com/lyrismet/dndcodex/core/designsystem/`.
+Catalog of everything already built in `shared/src/commonMain/kotlin/com/lyrismet/incadent/core/designsystem/`.
 
 **Check this file before writing any new visual block** (a card, a pill, a segmented switch, an icon slot, a divider...).
 If something here already covers the shape you need, use it with different parameters instead of hand-rolling
@@ -53,6 +53,7 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 | `HeaderDivider` | `component/HeaderDivider.kt` | the ornamental short-gold-line + diamond + long-border-line rule under a screen title (built out of `AppDivider` + `Spacer`s). | - |
 | `Dot` | `component/Dot.kt` | a plain solid circle at a given size/color - filter-chip status dots, the core of `GlowingDot` below, and an outlined circle (pass `color = Color.Transparent` with `borderColor`) like the codex search icon. | `size`, `color`, `borderColor` (optional), `borderWidth` (1dp), `content` (optional, for nesting) |
 | `GlowingDot` | `component/GlowingDot.kt` | a `Dot` with a concentric flat-color glow ring - the "live session" indicator. | `dotSize`, `dotColor`, `glowColor`, `ringWidth` |
+| `BrandMark` | `component/BrandMark.kt` | the "sealed d8" brand mark (two locking halves) - the splash screen, and reusable for a future "about" screen or app-icon preview. | `size` (76dp), `tint` |
 | `NumberLabel` | `component/NumberLabel.kt` | centered fixed-width roman-numeral index in front of a list row (session number, note number) - the font shrinks as the label gets longer, per `core/format`'s `NumberSizeLadder`. | `text`, `width` (44dp), `color`, `sizeLadder`, `lineHeightFactor` |
 | `SectionOverline` | `component/SectionOverline.kt` | tracked all-caps single-line eyebrow label ("АРХИВ", "БАЗА ЗНАНИЙ"). The design uses 0.18em for page eyebrows, 0.16em for list sections and 0.14em for sheet and form labels, so pass the tracking. | `text`, `color`, `letterSpacing`, `fontSize`, `trailingContent` |
 | `ScreenHeader` | `component/ScreenHeader.kt` | overline + serif title + optional `HeaderDivider` - top of every top-level screen. | `overline`, `title`, `overlineTrailingContent` |

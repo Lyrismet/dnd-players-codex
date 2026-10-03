@@ -21,12 +21,12 @@ kotlin {
             baseName = "Shared"
             isStatic = true
             // silences "Cannot infer a bundle ID" - matches the Android namespace below for one consistent id
-            freeCompilerArgs += "-Xbinary=bundleId=com.lyrismet.dndcodex.shared"
+            freeCompilerArgs += "-Xbinary=bundleId=com.lyrismet.incadent.shared"
         }
     }
 
     android {
-        namespace = "com.lyrismet.dndcodex.shared"
+        namespace = "com.lyrismet.incadent.shared"
         compileSdk =
             libs.versions.android.compileSdk
                 .get()
@@ -104,7 +104,7 @@ dependencies {
 sqldelight {
     databases {
         create("AppDatabase") {
-            packageName.set("com.lyrismet.dndcodex.db")
+            packageName.set("com.lyrismet.incadent.db")
         }
     }
 }

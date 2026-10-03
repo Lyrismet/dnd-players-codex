@@ -5,4 +5,13 @@
     <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/app_background</item>
     </style>
+
+    <!-- system splash (Android 12+ forces one regardless) - shows the real launcher icon (android:icon
+         fallback, no override here) so it reads as the start of one continuous reveal rather than a
+         separate screen; Splash.kt keeps BrandMark static at the same size/position so nothing jumps
+         when Compose takes over, and only fades in the text underneath it -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/app_background</item>
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
+    </style>
 </resources>
