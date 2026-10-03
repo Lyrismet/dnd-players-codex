@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- dark base theme (android:Theme.Material, unlike its .Light sibling, is dark by default)
-         with the window background pinned to our exact dark color -->
+    <!-- dark base theme, the window background is pinned to our exact dark color -->
     <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/app_background</item>
+    </style>
+
+    <!-- system splash shows the launcher icon, Splash.kt keeps BrandMark at the same size and position -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/app_background</item>
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
     </style>
 </resources>

@@ -4,6 +4,10 @@
     <string name="action_edit">Изменить</string>
     <string name="action_undo">Отменить</string>
 
+    <string name="splash_app_name">Incadent</string>
+    <string name="splash_tagline">TTRPG Journal</string>
+    <string name="splash_attribution">Совместимо с 5e · SRD 5.1</string>
+
     <string name="session_list_title">Дневник сессий</string>
     <string name="session_list_new_session_button">+ Сессия</string>
     <string name="session_list_empty">Нет ни одной сессии - нажмите «+ Сессия», чтобы начать</string>

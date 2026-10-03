@@ -1,0 +1,41 @@
+import com.lyrismet.incadent.domain.model.QuestStatus;
+
+CREATE TABLE quest (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    status TEXT AS QuestStatus NOT NULL,
+    reward TEXT NOT NULL,
+    given_by_npc_id INTEGER REFERENCES npc(id) ON DELETE SET NULL,
+    location_id INTEGER REFERENCES location(id) ON DELETE SET NULL,
+    description TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX quest_given_by_npc_id ON quest(given_by_npc_id);
+CREATE INDEX quest_location_id ON quest(location_id);
+
+selectAll:
+SELECT * FROM quest ORDER BY id DESC;
+
+selectById:
+SELECT * FROM quest WHERE id = ?;
+
+selectByStatus:
+SELECT * FROM quest WHERE status = ?;
+
+selectByLocation:
+SELECT * FROM quest WHERE location_id = ?;
+
+insert:
+INSERT INTO quest(title, status, reward, given_by_npc_id, location_id, description)
+VALUES (?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE quest
+SET title = ?, status = ?, reward = ?, given_by_npc_id = ?, location_id = ?, description = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM quest WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();
