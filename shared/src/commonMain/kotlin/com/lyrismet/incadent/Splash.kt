@@ -45,6 +45,9 @@ private val SPLASH_TEXT_SPACING = 18.dp
 private const val TEXT_START_DELAY_MILLIS = 400L
 private const val TEXT_FADE_MILLIS = 350
 
+// flip to false to turn off the flame sweep over the logo and text
+private const val FLAME_SWEEP_ENABLED = false
+
 /**
  * the sealed-d8 mark, app name and tagline shown for a moment on cold start - see [App]'s fade-out.
  *
@@ -67,7 +70,7 @@ fun Splash(modifier: Modifier = Modifier) {
         // the background fill must stay outside FlameSweepEffect's content - it's composed twice to
         // build the tinted overlay, and an opaque background would turn the whole band solid instead of
         // tracing just the mark/text silhouette (SrcIn masks against whatever content() actually paints)
-        FlameSweepEffect(play = textVisible, modifier = Modifier.fillMaxSize()) {
+        FlameSweepEffect(play = textVisible && FLAME_SWEEP_ENABLED, modifier = Modifier.fillMaxSize()) {
             MarkThenText(
                 modifier = Modifier.fillMaxSize(),
                 spacing = SPLASH_TEXT_SPACING,
