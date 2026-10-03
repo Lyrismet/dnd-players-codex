@@ -37,6 +37,19 @@ private const val PARTICLE_SEED = 1206
 private val FlameColors =
     listOf(Color(0xFFFFF3B0), Color(0xFFFFB347), Color(0xFFFF6A3D), Color(0xFFE4572E))
 
+private class EmberSeed(
+    val xFraction: Float,
+    val radiusFraction: Float,
+    val colorIndex: Int,
+)
+
+private fun emberSeeds(): List<EmberSeed> {
+    val random = Random(PARTICLE_SEED)
+    return List(PARTICLE_COUNT) {
+        EmberSeed(random.nextFloat(), random.nextFloat(), random.nextInt(FlameColors.size))
+    }
+}
+
 /**
  * recolors [content] to flame tones in a band that sweeps bottom-to-top once [play] turns true, tracing
  * [content]'s own silhouette (it's a color mask over the existing pixels, not a separate flame shape) via
@@ -51,6 +64,7 @@ fun FlameSweepEffect(
 ) {
     var started by remember { mutableStateOf(false) }
     val progress = remember { Animatable(0f) }
+    val embers = remember { emberSeeds() }
     LaunchedEffect(play) {
         if (play && !started) {
             started = true
@@ -84,7 +98,7 @@ fun FlameSweepEffect(
                                     blendMode = BlendMode.SrcIn,
                                 )
                             }
-                            drawEmberParticles(progress.value, bandBottom)
+                            drawEmberParticles(embers, progress.value, bandBottom)
                         },
             ) {
                 content()
@@ -94,25 +108,21 @@ fun FlameSweepEffect(
 }
 
 private fun DrawScope.drawEmberParticles(
+    embers: List<EmberSeed>,
     progress: Float,
     bandLeadingEdgeY: Float,
 ) {
     val spanPx = PARTICLE_SPAN_DP.dp.toPx()
     val risePx = PARTICLE_RISE_DP.dp.toPx()
     val centerX = size.width / 2f
-    val random = Random(PARTICLE_SEED)
-    val particles =
-        List(PARTICLE_COUNT) {
-            Triple(random.nextFloat(), random.nextFloat(), random.nextInt(FlameColors.size))
-        }
-    particles.forEachIndexed { i, (xSeed, radiusSeed, colorIndex) ->
+    embers.forEachIndexed { i, seed ->
         val spawnAt = i / PARTICLE_COUNT.toFloat()
         val localT = (progress - spawnAt) / PARTICLE_LIFE_FRACTION
         if (localT in 0f..1f) {
-            val xJitter = (xSeed - 0.5f) * spanPx
-            val radius = PARTICLE_MIN_RADIUS_DP.dp.toPx() + radiusSeed * PARTICLE_RADIUS_JITTER_DP.dp.toPx()
+            val xJitter = (seed.xFraction - 0.5f) * spanPx
+            val radius = PARTICLE_MIN_RADIUS_DP.dp.toPx() + seed.radiusFraction * PARTICLE_RADIUS_JITTER_DP.dp.toPx()
             drawCircle(
-                color = FlameColors[colorIndex].copy(alpha = 1f - localT),
+                color = FlameColors[seed.colorIndex].copy(alpha = 1f - localT),
                 radius = radius,
                 center = Offset(centerX + xJitter, bandLeadingEdgeY - localT * risePx),
             )
