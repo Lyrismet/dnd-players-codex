@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.BrandMark
+import com.lyrismet.incadent.core.designsystem.component.FlameSweepEffect
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.splash_app_name
 import dndplayerscodex.shared.generated.resources.splash_attribution
@@ -51,7 +52,7 @@ private const val TEXT_FADE_MILLIS = 350
  * at (see [MarkThenText] - the mark's position can't depend on the text's size/visibility, or it would
  * shift the instant the text appears). it's never re-animated, so the system splash's icon and this
  * composable's [BrandMark] read as one continuous object rather than the logo "restarting" - only the
- * text fades in underneath it.
+ * text fades in underneath it, with a [FlameSweepEffect] run once over the whole thing afterward.
  */
 @Composable
 fun Splash(modifier: Modifier = Modifier) {
@@ -63,35 +64,40 @@ fun Splash(modifier: Modifier = Modifier) {
     val textAlpha by animateFloatAsState(if (textVisible) 1f else 0f, tween(TEXT_FADE_MILLIS))
 
     Box(modifier = modifier.fillMaxSize().background(AppPalette.Background)) {
-        MarkThenText(
-            modifier = Modifier.fillMaxSize(),
-            spacing = SPLASH_TEXT_SPACING,
-            mark = { BrandMark(size = SPLASH_MARK_SIZE) },
-            text = {
-                Column(
-                    modifier = Modifier.alpha(textAlpha),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(SPLASH_TEXT_SPACING),
-                ) {
-                    Text(
-                        text = stringResource(Res.string.splash_app_name),
-                        style = MaterialTheme.typography.displayLarge,
-                        color = AppPalette.TextHeading,
-                    )
-                    Text(
-                        text = stringResource(Res.string.splash_tagline).uppercase(),
-                        style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.24.em),
-                        color = AppPalette.TextSecondary,
-                    )
-                }
-            },
-        )
-        Text(
-            text = stringResource(Res.string.splash_attribution),
-            style = MaterialTheme.typography.bodySmall,
-            color = AppPalette.TextTertiary,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 46.dp).alpha(textAlpha),
-        )
+        // the background fill must stay outside FlameSweepEffect's content - it's composed twice to
+        // build the tinted overlay, and an opaque background would turn the whole band solid instead of
+        // tracing just the mark/text silhouette (SrcIn masks against whatever content() actually paints)
+        FlameSweepEffect(play = textVisible, modifier = Modifier.fillMaxSize()) {
+            MarkThenText(
+                modifier = Modifier.fillMaxSize(),
+                spacing = SPLASH_TEXT_SPACING,
+                mark = { BrandMark(size = SPLASH_MARK_SIZE) },
+                text = {
+                    Column(
+                        modifier = Modifier.alpha(textAlpha),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(SPLASH_TEXT_SPACING),
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.splash_app_name),
+                            style = MaterialTheme.typography.displayLarge,
+                            color = AppPalette.TextHeading,
+                        )
+                        Text(
+                            text = stringResource(Res.string.splash_tagline).uppercase(),
+                            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.24.em),
+                            color = AppPalette.TextSecondary,
+                        )
+                    }
+                },
+            )
+            Text(
+                text = stringResource(Res.string.splash_attribution),
+                style = MaterialTheme.typography.bodySmall,
+                color = AppPalette.TextTertiary,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 46.dp).alpha(textAlpha),
+            )
+        }
         // forces the text-layout/glyph-cache warm-up to start now, off-screen, rather than only once
         // textAlpha starts animating - otherwise the first real draw attempt still lands a frame late
         Text(text = "", modifier = Modifier.size(0.dp))
