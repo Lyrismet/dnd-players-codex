@@ -10,9 +10,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
@@ -26,9 +30,13 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.mention.MentionEntity
 import com.lyrismet.incadent.core.mention.dedupeKey
 import com.lyrismet.incadent.domain.model.Location
+import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.Quest
+
+/** how inline mention chips are drawn - set once at the app root from Settings */
+val LocalMentionStyle = compositionLocalOf { MentionStyle.FILLED }
 
 enum class MentionGlyph(
     val symbol: String,
@@ -96,15 +104,19 @@ fun MentionChip(
     glyphGap: Dp = 5.dp,
     lineHeightFactor: Float = 1.6f,
 ) {
+    val underlined = LocalMentionStyle.current == MentionStyle.UNDERLINE
     val shape = RoundedCornerShape(6.dp)
     Row(
         modifier =
             modifier
-                .clip(shape)
-                .background(item.color.background)
-                .border(1.dp, item.color.border, shape)
-                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-                .padding(horizontal = 6.dp),
+                .then(
+                    if (underlined) {
+                        Modifier.drawUnderline(item.color.foreground)
+                    } else {
+                        Modifier.clip(shape).background(item.color.background).border(1.dp, item.color.border, shape)
+                    },
+                ).then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+                .padding(horizontal = if (underlined) 1.dp else 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(glyphGap),
     ) {
@@ -120,3 +132,10 @@ fun MentionChip(
         )
     }
 }
+
+private fun Modifier.drawUnderline(color: Color): Modifier =
+    drawBehind {
+        val strokePx = 1.dp.toPx()
+        val y = size.height - strokePx / 2
+        drawLine(color, Offset(0f, y), Offset(size.width, y), strokeWidth = strokePx)
+    }

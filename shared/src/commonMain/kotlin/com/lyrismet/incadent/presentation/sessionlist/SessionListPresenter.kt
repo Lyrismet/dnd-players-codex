@@ -11,7 +11,7 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
 import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
 import com.lyrismet.incadent.core.format.chronologicalIndex
-import com.lyrismet.incadent.core.format.chronologicalNumberLabels
+import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.mention.MentionCandidate
@@ -21,6 +21,8 @@ import com.lyrismet.incadent.core.mention.mentionsIn
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
+import com.lyrismet.incadent.domain.model.SessionNumbering
+import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
@@ -52,6 +54,7 @@ class SessionListPresenter(
     private val sessionEntryRepository: SessionEntryRepository,
     private val mentionRepositories: MentionRepositories,
     private val undoController: UndoController,
+    private val appPreferencesRepository: AppPreferencesRepository,
 ) : Presenter<SessionListState> {
     @Composable
     override fun present(): SessionListState {
@@ -61,8 +64,11 @@ class SessionListPresenter(
         val locations by mentionRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
         val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val scope = rememberCoroutineScope()
-        // campaign name isn't backed by settings yet - the Settings screen will own this once it exists
-        val campaignName = stringResource(Res.string.default_campaign_name)
+        val campaignNameOverride by appPreferencesRepository.observeCampaignName().collectAsState(initial = null)
+        val numbering by appPreferencesRepository
+            .observeSessionNumbering()
+            .collectAsState(initial = SessionNumbering.ROMAN)
+        val defaultCampaignName = stringResource(Res.string.default_campaign_name)
         val newSessionTitle = stringResource(Res.string.new_session_default_title)
         val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
@@ -76,7 +82,7 @@ class SessionListPresenter(
             }
         val liveEntries by liveEntriesFlow.collectAsState(initial = emptyList())
 
-        val allItems = sessions.toListItems()
+        val allItems = sessions.toListItems(numbering)
         val liveItem = liveNote?.let { note -> allItems.first { it.id == note.id } }
         val liveSession = liveItem?.let { item -> buildLiveSession(item, liveEntries, candidates, noNotesLabel) }
 
@@ -89,14 +95,23 @@ class SessionListPresenter(
                 navigator,
             )
         val selectedEntity =
-            selectedEntitySummary(selectedEntityRef.value, npcs, locations, quests, sessions, allEntries, candidates)
+            selectedEntitySummary(
+                selectedEntityRef.value,
+                npcs,
+                locations,
+                quests,
+                sessions,
+                allEntries,
+                candidates,
+                numbering,
+            )
 
         return SessionListState(
-            campaignName = campaignName,
+            campaignName = campaignNameOverride ?: defaultCampaignName,
             liveSession = liveSession,
             sessions = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems,
             selectedEntity = selectedEntity,
-        ) { event -> onEvent(event, scope, newSessionTitle, undoDeletedTitle, sessions, entitySheet) }
+        ) { event -> onEvent(event, scope, newSessionTitle, undoDeletedTitle, sessions, entitySheet, numbering) }
     }
 
     @Composable
@@ -138,6 +153,7 @@ class SessionListPresenter(
         undoDeletedTitle: String,
         sessions: List<SessionNote>,
         entitySheet: EntitySheetInteractions,
+        numbering: SessionNumbering,
     ) {
         when (event) {
             SessionListEvent.NewSessionClicked ->
@@ -154,7 +170,7 @@ class SessionListPresenter(
 
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
             is SessionListEvent.DeleteSessionClicked ->
-                onDeleteSessionClicked(event.id, sessions, undoDeletedTitle, scope)
+                onDeleteSessionClicked(event.id, sessions, undoDeletedTitle, scope, numbering)
             is SessionListEvent.MentionChipClicked -> entitySheet.onEntityClicked(event.ref)
             is SessionListEvent.NpcStatusSelected ->
                 entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
@@ -172,9 +188,10 @@ class SessionListPresenter(
         sessions: List<SessionNote>,
         undoDeletedTitle: String,
         scope: CoroutineScope,
+        numbering: SessionNumbering,
     ) {
         val note = sessions.find { it.id == id } ?: return
-        val numLabel = sessions.chronologicalNumberLabels()[id].orEmpty()
+        val numLabel = sessions.sessionNumberLabels(numbering)[id].orEmpty()
         scope.launch {
             val entries = sessionEntryRepository.observeForSession(id).first()
             sessionNoteRepository.delete(id)
@@ -194,8 +211,8 @@ class SessionListPresenter(
     }
 
     // numbered by chronological order (oldest = I) even though [this] arrives newest-first from the repo
-    private fun List<SessionNote>.toListItems(): List<SessionListItem> {
-        val numberLabels = chronologicalNumberLabels()
+    private fun List<SessionNote>.toListItems(numbering: SessionNumbering): List<SessionListItem> {
+        val numberLabels = sessionNumberLabels(numbering)
         val arabicNumbers = chronologicalIndex()
         return map { note ->
             SessionListItem(

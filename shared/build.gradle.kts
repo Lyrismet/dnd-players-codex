@@ -89,6 +89,8 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.multiplatform.settings.test)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.native.driver)

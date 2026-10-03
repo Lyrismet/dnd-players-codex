@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.core.format
 
 import com.lyrismet.incadent.domain.model.SessionNote
+import com.lyrismet.incadent.domain.model.SessionNumbering
 import kotlinx.datetime.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -37,5 +38,14 @@ class SessionNumberingTest {
         assertEquals("I", labels.getValue(10))
         assertEquals("II", labels.getValue(20))
         assertEquals("III", labels.getValue(30))
+    }
+
+    @Test
+    fun `sessionNumberLabels follows the chosen numbering style`() {
+        val sessions = listOf(note(id = 20, day = 15), note(id = 10, day = 5), note(id = 30, day = 25))
+
+        assertEquals("I", sessions.sessionNumberLabels(SessionNumbering.ROMAN).getValue(10))
+        assertEquals("1", sessions.sessionNumberLabels(SessionNumbering.ARABIC).getValue(10))
+        assertEquals("3", sessions.sessionNumberLabels(SessionNumbering.ARABIC).getValue(30))
     }
 }

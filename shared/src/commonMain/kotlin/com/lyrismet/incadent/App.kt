@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -14,10 +15,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import com.lyrismet.incadent.core.designsystem.AppTheme
+import com.lyrismet.incadent.core.designsystem.component.LocalMentionStyle
 import com.lyrismet.incadent.core.localization.AppEnvironment
 import com.lyrismet.incadent.core.localization.customAppLocale
 import com.lyrismet.incadent.data.AppContainer
 import com.lyrismet.incadent.domain.model.AppLanguage
+import com.lyrismet.incadent.domain.model.MentionStyle
 import com.slack.circuit.foundation.CircuitCompositionLocals
 import kotlinx.coroutines.delay
 
@@ -31,6 +34,9 @@ private enum class SplashPhase { VISIBLE, FADING, GONE }
 fun App(appContainer: AppContainer) {
     val language by appContainer.languageRepository.observeLanguage().collectAsState(initial = AppLanguage.RUSSIAN)
     LaunchedEffect(language) { customAppLocale = language.tag }
+    val mentionStyle by appContainer.appPreferencesRepository
+        .observeMentionStyle()
+        .collectAsState(initial = MentionStyle.FILLED)
 
     var splashPhase by remember { mutableStateOf(SplashPhase.VISIBLE) }
     LaunchedEffect(Unit) {
@@ -40,18 +46,23 @@ fun App(appContainer: AppContainer) {
         splashPhase = SplashPhase.GONE
     }
 
-    AppEnvironment {
-        AppTheme {
-            Box(modifier = Modifier.fillMaxSize()) {
-                CircuitCompositionLocals(appContainer.circuit) {
-                    AppTabHost(appContainer.undoController)
-                }
-                if (splashPhase != SplashPhase.GONE) {
-                    val splashAlpha by animateFloatAsState(
-                        targetValue = if (splashPhase == SplashPhase.VISIBLE) 1f else 0f,
-                        animationSpec = tween(SPLASH_FADE_MILLIS),
-                    )
-                    Splash(modifier = Modifier.alpha(splashAlpha))
+    // circuit and tab state sit above AppEnvironment - its key() recomposes everything below on a language change
+    CircuitCompositionLocals(appContainer.circuit) {
+        val tabs = rememberAppTabsState()
+
+        AppEnvironment {
+            CompositionLocalProvider(LocalMentionStyle provides mentionStyle) {
+                AppTheme {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AppTabHost(appContainer.undoController, tabs)
+                        if (splashPhase != SplashPhase.GONE) {
+                            val splashAlpha by animateFloatAsState(
+                                targetValue = if (splashPhase == SplashPhase.VISIBLE) 1f else 0f,
+                                animationSpec = tween(SPLASH_FADE_MILLIS),
+                            )
+                            Splash(modifier = Modifier.alpha(splashAlpha))
+                        }
+                    }
                 }
             }
         }
