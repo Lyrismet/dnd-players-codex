@@ -34,29 +34,18 @@ import dndplayerscodex.shared.generated.resources.splash_tagline
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
-// matches the on-screen size Android's own system splash renders our launcher icon at (measured ~100x104dp,
-// dead-center) so the mark never visibly resizes when Compose takes over from it
+// same size as the system splash icon so the mark does not jump when compose takes over
 private val SPLASH_MARK_SIZE = 112.dp
 private val SPLASH_TEXT_SPACING = 18.dp
 
-// Android's text-layout engine pays a one-time warm-up cost on the first text draw per process (ICU line
-// breaking, font-fallback resolution, glyph cache) that a Canvas path fill doesn't - this delay gives it
-// a moment before the text tries to fade in, so the fade is actually visible instead of getting skipped
+// the first text draw pays a one-time layout warm-up, so the text waits before it fades in
 private const val TEXT_START_DELAY_MILLIS = 400L
 private const val TEXT_FADE_MILLIS = 350
 
 // flip to false to turn off the flame sweep over the logo and text
 private const val FLAME_SWEEP_ENABLED = false
 
-/**
- * the sealed-d8 mark, app name and tagline shown for a moment on cold start - see [App]'s fade-out.
- *
- * the mark is drawn static, pinned to the exact screen center Android's system splash already showed it
- * at (see [MarkThenText] - the mark's position can't depend on the text's size/visibility, or it would
- * shift the instant the text appears). it's never re-animated, so the system splash's icon and this
- * composable's [BrandMark] read as one continuous object rather than the logo "restarting" - only the
- * text fades in underneath it, with a [FlameSweepEffect] run once over the whole thing afterward.
- */
+/** the sealed-d8 mark, app name and tagline shown on cold start, with only the text fading in */
 @Composable
 fun Splash(modifier: Modifier = Modifier) {
     var textVisible by remember { mutableStateOf(false) }
@@ -67,9 +56,7 @@ fun Splash(modifier: Modifier = Modifier) {
     val textAlpha by animateFloatAsState(if (textVisible) 1f else 0f, tween(TEXT_FADE_MILLIS))
 
     Box(modifier = modifier.fillMaxSize().background(AppPalette.Background)) {
-        // the background fill must stay outside FlameSweepEffect's content - it's composed twice to
-        // build the tinted overlay, and an opaque background would turn the whole band solid instead of
-        // tracing just the mark/text silhouette (SrcIn masks against whatever content() actually paints)
+        // the background must stay outside the flame effect, an opaque fill would tint the whole band solid
         FlameSweepEffect(play = textVisible && FLAME_SWEEP_ENABLED, modifier = Modifier.fillMaxSize()) {
             MarkThenText(
                 modifier = Modifier.fillMaxSize(),
@@ -101,17 +88,12 @@ fun Splash(modifier: Modifier = Modifier) {
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 46.dp).alpha(textAlpha),
             )
         }
-        // forces the text-layout/glyph-cache warm-up to start now, off-screen, rather than only once
-        // textAlpha starts animating - otherwise the first real draw attempt still lands a frame late
+        // starts the text layout warm-up off-screen so the first fade frame is not late
         Text(text = "", modifier = Modifier.size(0.dp))
     }
 }
 
-/**
- * places [mark] centered in the available space and [text] directly below it with [spacing] in between -
- * unlike a plain centered `Column`, [mark]'s position never depends on [text]'s size, so a still-invisible
- * (alpha 0) [text] can't push [mark] off the point Android's system splash already drew it at
- */
+/** centers [mark] independently of [text] so a still-invisible [text] cannot shift it */
 @Composable
 private fun MarkThenText(
     mark: @Composable () -> Unit,

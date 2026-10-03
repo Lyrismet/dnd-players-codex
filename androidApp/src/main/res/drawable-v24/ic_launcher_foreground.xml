@@ -3,8 +3,7 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- sealed d8 brand mark, scaled from the 100x100 design source to 60% of the adaptive icon's
-         safe zone so it has visible margin even under a circular mask -->
+    <!-- sealed d8 brand mark, sized to 60% of the adaptive icon safe zone for margin under a circular mask -->
     <path
         android:fillColor="#D4AF37"
         android:pathData="M54,34.2 L71.22,51.42 L59.17,51.42 L54,56.58 L48.83,51.42 L36.78,51.42 Z

@@ -50,12 +50,7 @@ private fun emberSeeds(): List<EmberSeed> {
     }
 }
 
-/**
- * recolors [content] to flame tones in a band that sweeps bottom-to-top once [play] turns true, tracing
- * [content]'s own silhouette (it's a color mask over the existing pixels, not a separate flame shape) via
- * a `SrcIn`-blended overlay, shedding a few ember particles along the band's leading edge as it goes.
- * [content] is composed twice (once plain, once inside the tinted/clipped overlay) so both line up exactly.
- */
+/** tints [content] with a flame band sweeping bottom-to-top once [play] is true, keeping its silhouette */
 @Composable
 fun FlameSweepEffect(
     play: Boolean,
