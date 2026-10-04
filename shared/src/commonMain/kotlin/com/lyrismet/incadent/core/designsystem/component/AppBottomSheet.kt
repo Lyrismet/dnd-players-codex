@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
@@ -27,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 
 private val SheetShape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)
-private val SheetScrimColor = Color(0xFF050508).copy(alpha = 0.66f)
+private val SheetScrimColor = AppPalette.Scrim.copy(alpha = 0.66f)
 private val SheetEdgeColor = AppPalette.Gold.copy(alpha = 0.4f)
 private val SheetCornerRadius = 26.dp
 

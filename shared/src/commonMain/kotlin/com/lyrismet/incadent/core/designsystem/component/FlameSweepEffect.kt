@@ -15,12 +15,12 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import com.lyrismet.incadent.core.designsystem.AppPalette
 import kotlin.random.Random
 
 private const val SWEEP_DURATION_MILLIS = 600
@@ -35,7 +35,7 @@ private const val PARTICLE_RADIUS_JITTER_DP = 2f
 private const val PARTICLE_SEED = 1206
 
 private val FlameColors =
-    listOf(Color(0xFFFFF3B0), Color(0xFFFFB347), Color(0xFFFF6A3D), Color(0xFFE4572E))
+    listOf(AppPalette.FlameHot, AppPalette.FlameAmber, AppPalette.FlameOrange, AppPalette.FlameEmber)
 
 private class EmberSeed(
     val xFraction: Float,

@@ -2,10 +2,7 @@ package com.lyrismet.incadent.core.designsystem
 
 import androidx.compose.ui.graphics.Color
 
-/**
- * raw palette from the "design system" reference panel in players codex v4.dc.html
- * never reference these hex values directly from feature code - go through [AppColors] or the status mappers instead
- */
+/** raw palette from the v5 design mock - feature code goes through the status mappers instead of these values */
 object AppPalette {
     // фон / поверхности
     val Background = Color(0xFF121318)
@@ -50,4 +47,11 @@ object AppPalette {
     // мёртв
     val Dead = Color(0xFF8E939C)
     val DeadBackground = Color(0xFF07080A)
+
+    // оверлеи и эффекты
+    val Scrim = Color(0xFF050508)
+    val FlameHot = Color(0xFFFFF3B0)
+    val FlameAmber = Color(0xFFFFB347)
+    val FlameOrange = Color(0xFFFF6A3D)
+    val FlameEmber = Color(0xFFE4572E)
 }
