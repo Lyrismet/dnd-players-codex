@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -48,6 +47,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
+import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -140,7 +140,7 @@ private fun ComposerDraftField(
         textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp, color = AppPalette.TextPrimary),
         cursorBrush = GoldCursorBrush,
         minLines = 2,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+        keyboardOptions = SentenceKeyboardOptions.copy(imeAction = ImeAction.Send),
         keyboardActions = KeyboardActions(onSend = { state.eventSink(SessionDetailEvent.SubmitEntryClicked) }),
         modifier =
             modifier

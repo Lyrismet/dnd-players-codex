@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
             )
 
         setContent {
-            App(appContainer)
+            App(appContainer, onExit = { finish() })
         }
     }
 }

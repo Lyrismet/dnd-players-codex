@@ -8,9 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -43,7 +41,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-private val OpenWidth = 96.dp
+private val RevealWidth = 96.dp
 private val FullSwipeWidth = 190.dp
 private val MaxDragWidth = 300.dp
 private val RowCornerRadius = 14.dp
@@ -61,11 +59,9 @@ private val SwipeEasing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
 
 // live drag writes a plain float synchronously and the animatable only takes over after release
 private class SwipeState(
-    val openWidthPx: Float,
     val fullWidthPx: Float,
     val maxDragPx: Float,
 ) {
-    var isOpen by mutableStateOf(false)
     var isDragging by mutableStateOf(false)
     var dragPx by mutableFloatStateOf(0f)
     val settledOffset = Animatable(0f)
@@ -85,38 +81,30 @@ private class SwipeState(
         val releasedAt = dragPx
         isDragging = false
         settledOffset.snapTo(releasedAt)
-        when {
-            // a full swipe commits the delete from where the finger left the row, no snap back
-            -releasedAt > fullWidthPx -> onDeleteRequested()
-            -releasedAt > openWidthPx / 2 -> settle(-openWidthPx, true)
-            else -> settle(0f, false)
-        }
+        // a full swipe commits the delete from where the finger left the row, no snap back
+        if (-releasedAt > fullWidthPx) onDeleteRequested() else settle()
     }
 
-    // a cancelled gesture is not a release, so it returns to where the row was and never commits a delete
+    // a cancelled gesture is not a release, so it returns to rest and never commits a delete
     suspend fun onDragCancel() {
         val cancelledAt = dragPx
         isDragging = false
         settledOffset.snapTo(cancelledAt)
-        if (isOpen) settle(-openWidthPx, true) else settle(0f, false)
+        settle()
     }
 
-    suspend fun settle(
-        target: Float,
-        open: Boolean,
-    ) {
-        isOpen = open
-        settledOffset.animateTo(target, animationSpec = tween(SWIPE_ANIMATION_DURATION_MS, easing = SwipeEasing))
+    // rows never rest partially revealed, so every settle goes back to the original position
+    suspend fun settle() {
+        settledOffset.animateTo(0f, animationSpec = tween(SWIPE_ANIMATION_DURATION_MS, easing = SwipeEasing))
     }
 
     // brings a row back to rest without animation, for when the delete did not happen after all
     suspend fun reset() {
-        isOpen = false
         settledOffset.snapTo(0f)
     }
 }
 
-// swipe-left-to-reveal-delete row chrome - caller owns the real delete, usually immediate with an undo toast
+// swipe-left-to-delete row chrome - caller owns the real delete, usually immediate with an undo toast
 @Composable
 fun SwipeToDeleteRow(
     onDeleteRequested: () -> Unit,
@@ -129,7 +117,7 @@ fun SwipeToDeleteRow(
     val state =
         remember {
             with(density) {
-                SwipeState(OpenWidth.toPx(), FullSwipeWidth.toPx(), MaxDragWidth.toPx())
+                SwipeState(FullSwipeWidth.toPx(), MaxDragWidth.toPx())
             }
         }
     // collapses in place first, Gmail-style, instead of just vanishing once the row is actually deleted
@@ -152,7 +140,7 @@ fun SwipeToDeleteRow(
         modifier = modifier,
     ) {
         Box {
-            SwipeDeleteBackground(state, density, deleteContentDescription) { isRemoving = true }
+            SwipeDeleteBackground(state, density, deleteContentDescription)
             Box(
                 modifier =
                     Modifier
@@ -170,19 +158,6 @@ fun SwipeToDeleteRow(
             ) {
                 content()
             }
-            // tap-to-close catcher - only intercepts while revealed, so a closed row's own click still reaches content
-            if (state.isOpen) {
-                Box(
-                    modifier =
-                        Modifier
-                            .matchParentSize()
-                            .offset { IntOffset(state.offsetPx.roundToInt(), 0) }
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                            ) { scope.launch { state.settle(0f, false) } },
-                )
-            }
         }
     }
 }
@@ -192,7 +167,6 @@ private fun BoxScope.SwipeDeleteBackground(
     state: SwipeState,
     density: Density,
     deleteContentDescription: String?,
-    onClick: () -> Unit,
 ) {
     val isPastFull = -state.offsetPx > state.fullWidthPx
     Row(
@@ -200,19 +174,13 @@ private fun BoxScope.SwipeDeleteBackground(
             Modifier
                 .matchParentSize()
                 .clip(RoundedCornerShape(RowCornerRadius))
-                .background(if (isPastFull) AppPalette.MaroonHover else AppPalette.Maroon)
-                .clickable(
-                    enabled = state.isOpen,
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onClick,
-                ),
+                .background(if (isPastFull) AppPalette.MaroonHover else AppPalette.Maroon),
         horizontalArrangement = Arrangement.End,
     ) {
         Box(
             modifier =
                 Modifier
-                    .width(with(density) { max(state.openWidthPx, -state.offsetPx).toDp() })
+                    .width(with(density) { max(RevealWidth.toPx(), -state.offsetPx).toDp() })
                     .fillMaxHeight(),
             contentAlignment = Alignment.Center,
         ) {

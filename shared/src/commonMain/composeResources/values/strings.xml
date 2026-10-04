@@ -3,6 +3,9 @@
     <string name="action_cancel">Отмена</string>
     <string name="action_edit">Изменить</string>
     <string name="action_undo">Отменить</string>
+    <string name="app_exit_title">Выйти из приложения?</string>
+    <string name="app_exit_text">Приложение закроется.</string>
+    <string name="app_exit_confirm">Выйти</string>
 
     <string name="splash_app_name">Incadent</string>
     <string name="splash_tagline">TTRPG Journal</string>
@@ -34,7 +37,7 @@
     <string name="session_detail_editing_label_format">РЕДАКТИРОВАНИЕ · %1$s</string>
     <string name="session_detail_empty_feed">Чистая страница</string>
     <string name="session_detail_empty_feed_hint">Записывайте, что происходит. Введите @, чтобы связать заметку с NPC, локацией или квестом.</string>
-    <string name="session_detail_composer_hint">Enter — сохранить</string>
+    <string name="session_detail_composer_hint">@ — тег записи</string>
     <string name="session_detail_undo_deleted_entry_title">Запись удалена</string>
     <string name="session_detail_quest_mention_prefix">Квест: </string>
     <string name="session_detail_meeting_separator_format">ВСТРЕЧА %1$d · %2$s</string>
