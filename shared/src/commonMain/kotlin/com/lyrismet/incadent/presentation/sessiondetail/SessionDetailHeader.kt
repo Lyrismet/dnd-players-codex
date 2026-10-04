@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
+import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.GlowingDot
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
@@ -197,6 +198,7 @@ private fun SessionTitleEditor(
             textStyle = titleStyle,
             singleLine = true,
             cursorBrush = GoldCursorBrush,
+            keyboardOptions = SentenceKeyboardOptions,
             modifier =
                 Modifier
                     .weight(1f)

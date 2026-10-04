@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
+import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.component.Dot
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
@@ -56,6 +57,7 @@ internal fun CodexSearchField(
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyMedium.copy(color = AppPalette.TextPrimary),
                 cursorBrush = GoldCursorBrush,
+                keyboardOptions = SentenceKeyboardOptions,
             )
         }
     }

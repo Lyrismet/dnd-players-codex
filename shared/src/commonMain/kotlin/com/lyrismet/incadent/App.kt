@@ -23,6 +23,7 @@ import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.slack.circuit.foundation.CircuitCompositionLocals
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val SPLASH_HOLD_MILLIS = 1500
 private const val SPLASH_FADE_MILLIS = 450
@@ -31,7 +32,10 @@ private enum class SplashPhase { VISIBLE, FADING, GONE }
 
 /** composition root - wires locale, theme and the Circuit instance, then hands off to the navigation shell */
 @Composable
-fun App(appContainer: AppContainer) {
+fun App(
+    appContainer: AppContainer,
+    onExit: () -> Unit = {},
+) {
     val language by appContainer.languageRepository.observeLanguage().collectAsState(initial = AppLanguage.RUSSIAN)
     LaunchedEffect(language) { customAppLocale = language.tag }
     val mentionStyle by appContainer.appPreferencesRepository
@@ -40,9 +44,9 @@ fun App(appContainer: AppContainer) {
 
     var splashPhase by remember { mutableStateOf(SplashPhase.VISIBLE) }
     LaunchedEffect(Unit) {
-        delay(SPLASH_HOLD_MILLIS.toLong())
+        delay(SPLASH_HOLD_MILLIS.toLong().milliseconds)
         splashPhase = SplashPhase.FADING
-        delay(SPLASH_FADE_MILLIS.toLong())
+        delay(SPLASH_FADE_MILLIS.toLong().milliseconds)
         splashPhase = SplashPhase.GONE
     }
 
@@ -54,7 +58,7 @@ fun App(appContainer: AppContainer) {
             CompositionLocalProvider(LocalMentionStyle provides mentionStyle) {
                 AppTheme {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        AppTabHost(appContainer.undoController, tabs)
+                        AppTabHost(appContainer.undoController, tabs, onExit)
                         if (splashPhase != SplashPhase.GONE) {
                             val splashAlpha by animateFloatAsState(
                                 targetValue = if (splashPhase == SplashPhase.VISIBLE) 1f else 0f,

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
+import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.StatusColor
 
 private val FieldShape = RoundedCornerShape(12.dp)
@@ -124,6 +125,7 @@ private fun FormInput(
         minLines = if (singleLine) 1 else AREA_MIN_LINES,
         textStyle = textStyle,
         cursorBrush = GoldCursorBrush,
+        keyboardOptions = SentenceKeyboardOptions,
         modifier =
             modifier
                 .fillMaxWidth()
