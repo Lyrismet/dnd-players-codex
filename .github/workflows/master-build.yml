@@ -3,7 +3,6 @@ name: Master Build
 on:
   push:
     branches: [master]
-    tags: ['v*']
   workflow_dispatch:
 
 concurrency:
@@ -45,23 +44,46 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
     needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version name
+        id: version
+        run: |
+          VERSION=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' androidApp/build.gradle.kts)
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if release already exists
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Download debug APK
+        if: steps.existing.outputs.exists == 'false'
         uses: actions/download-artifact@v4
         with:
           name: app-debug-apk
           path: apk
 
       - name: Publish GitHub release
+        if: steps.existing.outputs.exists == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          mv apk/*.apk "apk/DnD-Players-Codex-${GITHUB_REF_NAME}.apk"
-          gh release create "$GITHUB_REF_NAME" "apk/DnD-Players-Codex-${GITHUB_REF_NAME}.apk" \
-            --title "$GITHUB_REF_NAME" \
+          mv apk/*.apk "apk/DnD-Players-Codex-${TAG}.apk"
+          gh release create "$TAG" "apk/DnD-Players-Codex-${TAG}.apk" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
             --generate-notes
