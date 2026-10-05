@@ -173,48 +173,38 @@ class CodexItemMappingTest {
     }
 
     @Test
-    fun `Npc toCodexItems subtitle combines race and faction`() {
-        val items =
-            listOf(
-                ragnar,
-            ).toNpcCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
-        assertEquals("Дварф · Гильдия", items.single().subtitle)
+    fun `Npc toCodexItem subtitle combines race and faction`() {
+        val item = ragnar.toCodexItem(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
+        assertEquals("Дварф · Гильдия", item.subtitle)
     }
 
     @Test
-    fun `Location toCodexItems subtitle combines type and region`() {
+    fun `Location toCodexItem subtitle combines type and region`() {
         val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "Север")
-        assertEquals("Мастерская · Север", listOf(forge).toCodexItems().single().subtitle)
+        assertEquals("Мастерская · Север", forge.toCodexItem().subtitle)
     }
 
     @Test
-    fun `Npc toCodexItems subtitle has no dangling separator when race and faction are blank`() {
+    fun `Npc toCodexItem subtitle has no dangling separator when race and faction are blank`() {
         val bare = ragnar.copy(race = "", faction = "")
-        val items =
-            listOf(
-                bare,
-            ).toNpcCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
-        assertEquals("", items.single().subtitle)
+        val item = bare.toCodexItem(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
+        assertEquals("", item.subtitle)
     }
 
     @Test
-    fun `Location toCodexItems subtitle has no dangling separator when region is blank`() {
+    fun `Location toCodexItem subtitle has no dangling separator when region is blank`() {
         val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "")
-        assertEquals("Мастерская", listOf(forge).toCodexItems().single().subtitle)
+        assertEquals("Мастерская", forge.toCodexItem().subtitle)
     }
 
     @Test
-    fun `Npc toCodexItems adds a life badge only for the dead`() {
+    fun `Npc toCodexItem adds a life badge only for the dead`() {
         val dead = ragnar.copy(id = 2, lifeState = NpcLifeState.DEAD)
-        val items =
-            listOf(
-                ragnar,
-                dead,
-            ).toNpcCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
+        val statusLabels = mapOf(NpcStatus.FRIEND to "Друг")
 
-        assertNull(items[0].lifeBadge)
-        assertEquals("Мёртв", items[1].lifeBadge?.label)
-        assertTrue(items[1].isDead)
+        assertNull(ragnar.toCodexItem(statusLabels, lifeLabels).lifeBadge)
+        assertEquals("Мёртв", dead.toCodexItem(statusLabels, lifeLabels).lifeBadge?.label)
+        assertTrue(dead.toCodexItem(statusLabels, lifeLabels).isDead)
     }
 
     @Test

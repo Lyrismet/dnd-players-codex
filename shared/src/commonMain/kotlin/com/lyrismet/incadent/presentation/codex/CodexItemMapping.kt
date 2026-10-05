@@ -11,11 +11,6 @@ import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 
-internal fun List<Npc>.toNpcCodexItems(
-    statusLabels: Map<NpcStatus, String>,
-    lifeLabels: Map<NpcLifeState, String>,
-): List<NpcCodexItem> = map { it.toCodexItem(statusLabels, lifeLabels) }
-
 // the grouping's subtitle wins over the default race and faction line when it is set
 internal fun Npc.toCodexItem(
     statusLabels: Map<NpcStatus, String>,
@@ -66,11 +61,6 @@ private fun PartyMember.ownerLine(labels: PartyCardLabels): String =
         else -> "${labels.playerPrefix} $playerName"
     }
 
-internal fun List<Quest>.toCodexItems(
-    npcsById: Map<Long, Npc>,
-    statusLabels: Map<QuestStatus, String>,
-): List<QuestCodexItem> = map { it.toCodexItem(npcsById, statusLabels) }
-
 internal fun Quest.toCodexItem(
     npcsById: Map<Long, Npc>,
     statusLabels: Map<QuestStatus, String>,
@@ -93,8 +83,6 @@ internal fun Quest.toCodexItem(
         reward = reward,
     )
 }
-
-internal fun List<Location>.toCodexItems(): List<LocationCodexItem> = map { it.toCodexItem() }
 
 // the grouping's subtitle wins over the default type and region line when it is set
 internal fun Location.toCodexItem(subtitle: String? = null): LocationCodexItem =
