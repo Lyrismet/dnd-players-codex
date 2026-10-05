@@ -160,6 +160,31 @@ sealed interface CodexSheet {
     ) : CodexSheet
 }
 
+/** a button of the empty state that opens the entry form of [entryType], with [name] prefilled */
+data class CodexEmptyAction(
+    val label: String,
+    val entryType: CodexEntryType,
+    val name: String = "",
+)
+
+/** pre-resolved text of the list area's empty state - the Ui only renders it */
+sealed interface CodexEmptyState {
+    data object Hidden : CodexEmptyState
+
+    data class Blank(
+        val title: String,
+        val text: String,
+        val action: CodexEmptyAction,
+    ) : CodexEmptyState
+
+    data class NoMatch(
+        val title: String,
+        val text: String,
+        val resetLabel: String,
+        val create: CodexEmptyAction?,
+    ) : CodexEmptyState
+}
+
 data class CodexState(
     val activeTab: CodexTab = CodexTab.PARTY,
     val searchQuery: String = "",
@@ -170,6 +195,7 @@ data class CodexState(
     val locations: List<CodexGroup<LocationCodexItem>> = emptyList(),
     val groupBy: CodexGroupBy? = null,
     val groupOptions: List<CodexFilterOption<CodexGroupBy>> = emptyList(),
+    val emptyState: CodexEmptyState = CodexEmptyState.Hidden,
     val activeSheet: CodexSheet? = null,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
@@ -218,6 +244,11 @@ sealed interface CodexEvent : CircuitUiEvent {
     data object SheetDismissed : CodexEvent
 
     data object AddEntryClicked : CodexEvent
+
+    data class EmptyActionClicked(
+        val entryType: CodexEntryType,
+        val name: String,
+    ) : CodexEvent
 
     data class EditEntryRequested(
         val ref: EntityRef,

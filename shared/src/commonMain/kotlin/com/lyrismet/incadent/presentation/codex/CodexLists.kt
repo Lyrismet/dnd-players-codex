@@ -10,11 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.codexgroup.CodexGroup
-import com.lyrismet.incadent.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
+import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_empty_filtered
-import dndplayerscodex.shared.generated.resources.codex_party_empty
 import dndplayerscodex.shared.generated.resources.codex_tab_location
 import dndplayerscodex.shared.generated.resources.codex_tab_npc
 import dndplayerscodex.shared.generated.resources.codex_tab_party
@@ -23,6 +22,7 @@ import org.jetbrains.compose.resources.stringResource
 
 private val LIST_CONTENT_PADDING = PaddingValues(start = 16.dp, top = 2.dp, end = 16.dp, bottom = 20.dp)
 
+// the codex screen only renders a list once its tab has entries - the empty states are handled by CodexEmptyView
 @Composable
 private fun <T> CodexEntityList(
     items: List<T>,
@@ -30,10 +30,6 @@ private fun <T> CodexEntityList(
     modifier: Modifier = Modifier,
     itemContent: @Composable (T) -> Unit,
 ) {
-    if (items.isEmpty()) {
-        EmptyStatePlaceholder(text = stringResource(Res.string.codex_empty_filtered))
-        return
-    }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = LIST_CONTENT_PADDING,
@@ -51,10 +47,6 @@ private fun <T> CodexGroupedList(
     modifier: Modifier = Modifier,
     itemContent: @Composable (T) -> Unit,
 ) {
-    if (groups.isEmpty()) {
-        EmptyStatePlaceholder(text = stringResource(Res.string.codex_empty_filtered))
-        return
-    }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = LIST_CONTENT_PADDING,
@@ -89,11 +81,6 @@ internal fun CodexPartyList(
     state: CodexState,
     modifier: Modifier = Modifier,
 ) {
-    // an empty party is a blank page to fill, a filter that hides everyone is just an empty result
-    if (state.tabCounts.party == 0) {
-        EmptyStatePlaceholder(text = stringResource(Res.string.codex_party_empty))
-        return
-    }
     CodexEntityList(
         items = state.party,
         itemKey = { it.id },
@@ -146,10 +133,6 @@ internal fun CodexAllList(
     val npcs = state.npcs.flatMap { it.items }
     val quests = state.quests.flatMap { it.items }
     val locations = state.locations.flatMap { it.items }
-    if (listOf<List<*>>(state.party, npcs, quests, locations).all { it.isEmpty() }) {
-        EmptyStatePlaceholder(text = stringResource(Res.string.codex_empty_filtered))
-        return
-    }
     // resolved here, not inside the lazy content block, which is not a composable context
     val partyTitle = stringResource(Res.string.codex_tab_party)
     val npcTitle = stringResource(Res.string.codex_tab_npc)
@@ -180,3 +163,36 @@ internal fun CodexAllList(
         ) { LocationRow(location = it, eventSink = state.eventSink) }
     }
 }
+
+// a blank tab offers its create button, a search with no hits offers a clear and a create when the query is long enough
+@Composable
+internal fun CodexEmptyView(
+    state: CodexState,
+    modifier: Modifier = Modifier,
+) {
+    when (val empty = state.emptyState) {
+        CodexEmptyState.Hidden -> Unit
+        is CodexEmptyState.Blank ->
+            EmptyStateActions(
+                title = empty.title,
+                text = empty.text,
+                modifier = modifier,
+                primaryAction = empty.action.toEmptyStateAction(state.eventSink),
+            )
+
+        is CodexEmptyState.NoMatch ->
+            EmptyStateActions(
+                title = empty.title,
+                text = empty.text,
+                modifier = modifier,
+                primaryAction = empty.create?.toEmptyStateAction(state.eventSink),
+                secondaryAction =
+                    EmptyStateAction(label = empty.resetLabel) {
+                        state.eventSink(CodexEvent.SearchQueryChanged(""))
+                    },
+            )
+    }
+}
+
+private fun CodexEmptyAction.toEmptyStateAction(eventSink: (CodexEvent) -> Unit): EmptyStateAction =
+    EmptyStateAction(label = label) { eventSink(CodexEvent.EmptyActionClicked(entryType, name)) }

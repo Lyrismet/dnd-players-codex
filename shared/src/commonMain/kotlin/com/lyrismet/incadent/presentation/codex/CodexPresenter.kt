@@ -267,6 +267,14 @@ class CodexPresenter(
             locations = grouped.locations,
             groupBy = grouped.groupBy,
             groupOptions = grouped.groupOptions,
+            emptyState =
+                codexEmptyState(
+                    codexEmptyKind(
+                        fields.activeTab.value,
+                        fields.searchQuery.value,
+                        search.hasEntriesFor(fields.activeTab.value),
+                    ),
+                ),
             activeSheet = codexActiveSheet(formController.buildState(records.npcs, records.locations), selectedEntity),
         ) { event ->
             onEvent(event, fields, formController, records, labels, scope)
@@ -278,17 +286,29 @@ class CodexPresenter(
     ): CodexSearchResults {
         val query = fields.searchQuery.value.trim()
         val npcsById = records.npcs.associateBy { it.id }
-        val searchedParties = records.parties.filter { it.matchesQuery(query) }
-        val searchedNpcs = records.npcs.filter { it.matchesQuery(query) }
-        val searchedQuests = records.quests.filter { it.matchesQuery(query, npcsById) }
         return CodexSearchResults(
             npcsById = npcsById,
-            searchedParties = searchedParties,
-            searchedNpcs = searchedNpcs,
-            searchedQuests = searchedQuests,
-            searchedLocations = records.locations.filter { it.matchesQuery(query) },
+            searchedParties = records.parties.filter { it.matchesQuery(query) },
+            searchedNpcs = records.npcs.filter { it.matchesQuery(query, records.locations) },
+            searchedQuests = records.quests.filter { it.matchesQuery(query, records.npcs, records.locations) },
+            searchedLocations = records.locations.filter { it.matchesQuery(query, records.locations) },
         )
     }
+
+    private fun CodexSearchResults.hasEntriesFor(tab: CodexTab): Boolean =
+        when (tab) {
+            CodexTab.ALL -> hasAnyEntry()
+            CodexTab.PARTY -> searchedParties.isNotEmpty()
+            CodexTab.NPC -> searchedNpcs.isNotEmpty()
+            CodexTab.QUEST -> searchedQuests.isNotEmpty()
+            CodexTab.LOCATION -> searchedLocations.isNotEmpty()
+        }
+
+    private fun CodexSearchResults.hasAnyEntry(): Boolean =
+        searchedParties.isNotEmpty() ||
+            searchedNpcs.isNotEmpty() ||
+            searchedQuests.isNotEmpty() ||
+            searchedLocations.isNotEmpty()
 
     // flat circuit event-dispatch table, grows one branch per event variant - not real branching complexity
     @Suppress("CyclomaticComplexMethod", "LongMethod")
@@ -314,6 +334,7 @@ class CodexPresenter(
             is CodexEvent.RelatedNoteClicked -> fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId)
             CodexEvent.SheetDismissed -> fields.entitySheet.onDismissed()
             CodexEvent.AddEntryClicked -> formController.onAddEntryClicked(fields.activeTab.value.toEntryType())
+            is CodexEvent.EmptyActionClicked -> formController.onAddEntryClicked(event.entryType, event.name)
             is CodexEvent.EditEntryRequested -> formController.onEditEntryRequested(event.ref, scope)
             is CodexEvent.EntryTypeChanged -> formController.onTypeChanged(event.type)
             is CodexEvent.EntryFieldChanged -> formController.onFieldChanged(event.field, event.text)
@@ -355,13 +376,4 @@ private fun codexActiveSheet(
         formState != null -> CodexSheet.EntryForm(formState)
         selectedEntity != null -> CodexSheet.EntityView(selectedEntity)
         else -> null
-    }
-
-// mirrors the mockup's openNew() - "Все" falls back to NPC, every other tab keeps its own type
-private fun CodexTab.toEntryType(): CodexEntryType =
-    when (this) {
-        CodexTab.PARTY -> CodexEntryType.PARTY
-        CodexTab.QUEST -> CodexEntryType.QUEST
-        CodexTab.LOCATION -> CodexEntryType.LOCATION
-        CodexTab.ALL, CodexTab.NPC -> CodexEntryType.NPC
     }

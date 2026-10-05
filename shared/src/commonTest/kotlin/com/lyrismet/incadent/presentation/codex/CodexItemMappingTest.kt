@@ -71,23 +71,23 @@ private val ragnar =
 class CodexItemMappingTest {
     @Test
     fun `Npc matchesQuery matches everything for an empty query`() {
-        assertTrue(ragnar.matchesQuery(""))
+        assertTrue(ragnar.matchesQuery("", emptyList()))
     }
 
     @Test
     fun `Npc matchesQuery matches the name case-insensitively`() {
-        assertTrue(ragnar.matchesQuery("рагнар"))
-        assertTrue(ragnar.matchesQuery("РАГНАР"))
+        assertTrue(ragnar.matchesQuery("рагнар", emptyList()))
+        assertTrue(ragnar.matchesQuery("РАГНАР", emptyList()))
     }
 
     @Test
     fun `Npc matchesQuery matches the description`() {
-        assertTrue(ragnar.matchesQuery("кузнец"))
+        assertTrue(ragnar.matchesQuery("кузнец", emptyList()))
     }
 
     @Test
     fun `Npc matchesQuery rejects unrelated text`() {
-        assertFalse(ragnar.matchesQuery("гоблин"))
+        assertFalse(ragnar.matchesQuery("гоблин", emptyList()))
     }
 
     @Test
@@ -101,7 +101,7 @@ class CodexItemMappingTest {
                 givenByNpcId = null,
                 locationId = null,
             )
-        assertTrue(quest.matchesQuery("", emptyMap()))
+        assertTrue(quest.matchesQuery("", emptyList(), emptyList()))
     }
 
     @Test
@@ -115,8 +115,8 @@ class CodexItemMappingTest {
                 givenByNpcId = null,
                 locationId = null,
             )
-        assertTrue(quest.matchesQuery("меч", emptyMap()))
-        assertTrue(quest.matchesQuery("золота", emptyMap()))
+        assertTrue(quest.matchesQuery("меч", emptyList(), emptyList()))
+        assertTrue(quest.matchesQuery("золота", emptyList(), emptyList()))
     }
 
     @Test
@@ -131,8 +131,8 @@ class CodexItemMappingTest {
                 locationId = null,
                 description = "Найти три фрагмента клинка",
             )
-        assertTrue(quest.matchesQuery("фрагмент", emptyMap()))
-        assertFalse(quest.matchesQuery("дракон", emptyMap()))
+        assertTrue(quest.matchesQuery("фрагмент", emptyList(), emptyList()))
+        assertFalse(quest.matchesQuery("дракон", emptyList(), emptyList()))
     }
 
     @Test
@@ -146,7 +146,7 @@ class CodexItemMappingTest {
                 givenByNpcId = 1,
                 locationId = null,
             )
-        assertTrue(quest.matchesQuery("рагнар", mapOf(1L to ragnar)))
+        assertTrue(quest.matchesQuery("рагнар", listOf(ragnar), emptyList()))
     }
 
     @Test
@@ -160,16 +160,16 @@ class CodexItemMappingTest {
                 givenByNpcId = 99,
                 locationId = null,
             )
-        assertFalse(quest.matchesQuery("рагнар", emptyMap()))
+        assertFalse(quest.matchesQuery("рагнар", emptyList(), emptyList()))
     }
 
     @Test
     fun `Location matchesQuery matches name and type`() {
         val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "Север")
-        assertTrue(forge.matchesQuery(""))
-        assertTrue(forge.matchesQuery("кузница"))
-        assertTrue(forge.matchesQuery("мастерская"))
-        assertFalse(forge.matchesQuery("таверна"))
+        assertTrue(forge.matchesQuery("", emptyList()))
+        assertTrue(forge.matchesQuery("кузница", emptyList()))
+        assertTrue(forge.matchesQuery("мастерская", emptyList()))
+        assertFalse(forge.matchesQuery("таверна", emptyList()))
     }
 
     @Test
