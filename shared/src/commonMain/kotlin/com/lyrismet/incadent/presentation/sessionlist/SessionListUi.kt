@@ -82,6 +82,9 @@ fun SessionListUi(
                         onNpcStatusSelected = { id, status ->
                             state.eventSink(SessionListEvent.NpcStatusSelected(id, status))
                         },
+                        onNpcLifeSelected = { id, life ->
+                            state.eventSink(SessionListEvent.NpcLifeSelected(id, life))
+                        },
                         onQuestStatusSelected = { id, status ->
                             state.eventSink(SessionListEvent.QuestStatusSelected(id, status))
                         },

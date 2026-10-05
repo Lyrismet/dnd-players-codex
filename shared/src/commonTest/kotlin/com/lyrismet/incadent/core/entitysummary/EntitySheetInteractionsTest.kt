@@ -2,10 +2,14 @@ package com.lyrismet.incadent.core.entitysummary
 
 import androidx.compose.runtime.mutableStateOf
 import com.lyrismet.incadent.domain.model.Npc
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
+import com.lyrismet.incadent.domain.model.PartyMember
+import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.repository.NpcRepository
+import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
 import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
 import com.slack.circuit.runtime.Navigator
@@ -47,6 +51,31 @@ class EntitySheetInteractionsTest {
         }
 
     @Test
+    fun `npc condition change is written through the repository`() =
+        runTest {
+            val npcs = FakeNpcRepository(npc(id = 1, status = NpcStatus.NEUTRAL))
+            val interactions = interactions(npcs = npcs)
+
+            interactions.onNpcLifeSelected(this, npcId = 1, lifeState = NpcLifeState.DEAD)
+            advanceUntilIdle()
+
+            assertEquals(NpcLifeState.DEAD, npcs.stored(1)?.lifeState)
+            assertEquals(NpcStatus.NEUTRAL, npcs.stored(1)?.status)
+        }
+
+    @Test
+    fun `party presence change is written through the repository`() =
+        runTest {
+            val party = FakePartyRepository(member(id = 3, presence = PartyPresence.IN))
+            val interactions = interactions(party = party)
+
+            interactions.onPartyPresenceSelected(this, partyId = 3, presence = PartyPresence.AWAY)
+            advanceUntilIdle()
+
+            assertEquals(PartyPresence.AWAY, party.stored(3)?.presence)
+        }
+
+    @Test
     fun `quest status change is written through the repository`() =
         runTest {
             val quests = FakeQuestRepository(quest(id = 2, status = QuestStatus.ACTIVE))
@@ -74,8 +103,29 @@ class EntitySheetInteractionsTest {
         selected: androidx.compose.runtime.MutableState<EntityRef?> = mutableStateOf(null),
         npcs: FakeNpcRepository = FakeNpcRepository(),
         quests: FakeQuestRepository = FakeQuestRepository(),
+        party: FakePartyRepository = FakePartyRepository(),
         navigator: RecordingNavigator = RecordingNavigator(),
-    ) = EntitySheetInteractions(selected, npcs, quests, navigator)
+    ) = EntitySheetInteractions(selected, npcs, quests, party, navigator)
+
+    private fun member(
+        id: Long,
+        presence: PartyPresence,
+    ) = PartyMember(
+        id = id,
+        name = "Торин",
+        characterClass = "Паладин",
+        race = "Человек",
+        level = 5,
+        playerName = "Максим",
+        isPlayerCharacter = false,
+        presence = presence,
+        hpMax = 52,
+        hpCurrent = 43,
+        armorClass = 18,
+        initiativeBonus = 0,
+        description = "",
+        portraitUri = null,
+    )
 
     private fun npc(
         id: Long,
@@ -84,6 +134,7 @@ class EntitySheetInteractionsTest {
         id = id,
         name = "Кассиан",
         status = status,
+        lifeState = NpcLifeState.ALIVE,
         description = "",
         locationId = null,
         race = "",
@@ -119,6 +170,27 @@ private class FakeNpcRepository(
     override suspend fun upsert(npc: Npc): Long {
         store[npc.id] = npc
         return npc.id
+    }
+
+    override suspend fun delete(id: Long) {
+        store.remove(id)
+    }
+}
+
+private class FakePartyRepository(
+    vararg initial: PartyMember,
+) : PartyRepository {
+    private val store = initial.associateBy { it.id }.toMutableMap()
+
+    fun stored(id: Long): PartyMember? = store[id]
+
+    override fun observeAll(): Flow<List<PartyMember>> = flowOf(store.values.toList())
+
+    override suspend fun getById(id: Long): PartyMember? = store[id]
+
+    override suspend fun upsert(member: PartyMember): Long {
+        store[member.id] = member
+        return member.id
     }
 
     override suspend fun delete(id: Long) {

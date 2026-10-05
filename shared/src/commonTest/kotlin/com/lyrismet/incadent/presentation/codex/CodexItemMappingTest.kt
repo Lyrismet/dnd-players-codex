@@ -2,19 +2,66 @@ package com.lyrismet.incadent.presentation.codex
 
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
+import com.lyrismet.incadent.domain.model.PartyMember
+import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
+
+private val lifeLabels = mapOf(NpcLifeState.ALIVE to "Жив", NpcLifeState.DEAD to "Мёртв")
+
+private val partyCardLabels =
+    PartyCardLabels(
+        presence = mapOf(PartyPresence.IN to "В составе", PartyPresence.AWAY to "Отсутствует"),
+        you = "Ваш персонаж",
+        playerPrefix = "Игрок:",
+        armorClassShort = "КД",
+        hpShort = "HP",
+    )
+
+private val lira =
+    PartyMember(
+        id = 7,
+        name = "Лира",
+        characterClass = "Волшебница",
+        race = "Эльфийка",
+        level = 5,
+        playerName = "",
+        isPlayerCharacter = true,
+        presence = PartyPresence.IN,
+        hpMax = 28,
+        hpCurrent = 22,
+        armorClass = 12,
+        initiativeBonus = 3,
+        description = "",
+        portraitUri = null,
+    )
+
+private val bran =
+    lira.copy(
+        id = 8,
+        name = "Бран",
+        characterClass = "Плут",
+        isPlayerCharacter = false,
+        playerName = "Даня",
+        presence = PartyPresence.AWAY,
+        hpMax = 31,
+        hpCurrent = 31,
+        armorClass = 15,
+    )
 
 private val ragnar =
     Npc(
         id = 1,
         name = "Рагнар",
         status = NpcStatus.FRIEND,
+        lifeState = NpcLifeState.ALIVE,
         description = "Кузнец из Кузницы",
         locationId = null,
         race = "Дварф",
@@ -127,7 +174,10 @@ class CodexItemMappingTest {
 
     @Test
     fun `Npc toCodexItems subtitle combines race and faction`() {
-        val items = listOf(ragnar).toCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"))
+        val items =
+            listOf(
+                ragnar,
+            ).toNpcCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
         assertEquals("Дварф · Гильдия", items.single().subtitle)
     }
 
@@ -140,7 +190,10 @@ class CodexItemMappingTest {
     @Test
     fun `Npc toCodexItems subtitle has no dangling separator when race and faction are blank`() {
         val bare = ragnar.copy(race = "", faction = "")
-        val items = listOf(bare).toCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"))
+        val items =
+            listOf(
+                bare,
+            ).toNpcCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
         assertEquals("", items.single().subtitle)
     }
 
@@ -148,5 +201,77 @@ class CodexItemMappingTest {
     fun `Location toCodexItems subtitle has no dangling separator when region is blank`() {
         val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "")
         assertEquals("Мастерская", listOf(forge).toCodexItems().single().subtitle)
+    }
+
+    @Test
+    fun `Npc toCodexItems adds a life badge only for the dead`() {
+        val dead = ragnar.copy(id = 2, lifeState = NpcLifeState.DEAD)
+        val items =
+            listOf(
+                ragnar,
+                dead,
+            ).toNpcCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
+
+        assertNull(items[0].lifeBadge)
+        assertEquals("Мёртв", items[1].lifeBadge?.label)
+        assertTrue(items[1].isDead)
+    }
+
+    @Test
+    fun `NpcListFilter Dead matches only dead npcs`() {
+        val dead = ragnar.copy(lifeState = NpcLifeState.DEAD)
+        val filter: NpcListFilter? = NpcListFilter.Dead
+        assertTrue(filter.matches(dead))
+        assertFalse(filter.matches(ragnar))
+    }
+
+    @Test
+    fun `NpcListFilter Relation matches by status regardless of life state`() {
+        val deadFriend = ragnar.copy(lifeState = NpcLifeState.DEAD)
+        assertTrue(NpcListFilter.Relation(NpcStatus.FRIEND).matches(deadFriend))
+        assertFalse(NpcListFilter.Relation(NpcStatus.ENEMY).matches(deadFriend))
+    }
+
+    @Test
+    fun `null npc filter matches everyone`() {
+        val noFilter: NpcListFilter? = null
+        assertTrue(noFilter.matches(ragnar))
+    }
+
+    @Test
+    fun `PartyPresence filter matches the member's presence and null matches all`() {
+        val inParty: PartyPresence? = PartyPresence.IN
+        val away: PartyPresence? = PartyPresence.AWAY
+        val noFilter: PartyPresence? = null
+        assertTrue(inParty.matches(lira))
+        assertFalse(away.matches(lira))
+        assertTrue(noFilter.matches(bran))
+    }
+
+    @Test
+    fun `PartyMember matchesQuery matches class and player name`() {
+        assertTrue(bran.matchesQuery("плут"))
+        assertTrue(bran.matchesQuery("даня"))
+        assertFalse(bran.matchesQuery("гоблин"))
+    }
+
+    @Test
+    fun `PartyMember toCodexItems shows the you flag for the player character`() {
+        val item = listOf(lira).toPartyCodexItems(partyCardLabels).single()
+        assertEquals("Ваш персонаж", item.subtitle)
+        assertEquals("КД 12 · HP 22/28", item.meta)
+    }
+
+    @Test
+    fun `PartyMember toCodexItems shows the player's name for everyone else`() {
+        val item = listOf(bran).toPartyCodexItems(partyCardLabels).single()
+        assertEquals("Игрок: Даня", item.subtitle)
+        assertEquals("Отсутствует", item.presenceLabel)
+    }
+
+    @Test
+    fun `PartyMember toCodexItems leaves the subtitle blank when no player is set`() {
+        val unclaimed = bran.copy(playerName = "")
+        assertEquals("", listOf(unclaimed).toPartyCodexItems(partyCardLabels).single().subtitle)
     }
 }

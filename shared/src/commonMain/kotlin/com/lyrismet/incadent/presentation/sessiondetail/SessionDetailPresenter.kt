@@ -42,6 +42,7 @@ import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
+import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.Navigator
@@ -81,10 +82,13 @@ class SessionDetailPresenter(
     private val navigator: Navigator,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
+    private val partyRepository: PartyRepository,
     private val mentionRepositories: MentionRepositories,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
 ) : Presenter<SessionDetailState> {
+    // one collection per source the screen reads - a flat merge, not real complexity
+    @Suppress("LongMethod")
     @OptIn(ExperimentalTime::class)
     @Composable
     override fun present(): SessionDetailState {
@@ -96,6 +100,7 @@ class SessionDetailPresenter(
         val npcs by mentionRepositories.npcRepository.observeAll().collectAsState(initial = emptyList())
         val locations by mentionRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
         val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
+        val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
@@ -131,6 +136,7 @@ class SessionDetailPresenter(
                 allEntries,
                 mention.candidates,
                 numbering,
+                parties,
             )
 
         val editingEntryTimeLabel =
@@ -178,6 +184,7 @@ class SessionDetailPresenter(
             selectedEntityRef,
             mentionRepositories.npcRepository,
             mentionRepositories.questRepository,
+            partyRepository,
             navigator,
         )
 
@@ -202,6 +209,8 @@ class SessionDetailPresenter(
             is SessionDetailEvent.MentionChipClicked -> fields.entitySheet.onEntityClicked(event.ref)
             is SessionDetailEvent.NpcStatusSelected ->
                 fields.entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
+            is SessionDetailEvent.NpcLifeSelected ->
+                fields.entitySheet.onNpcLifeSelected(scope, event.npcId, event.lifeState)
             is SessionDetailEvent.QuestStatusSelected ->
                 fields.entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
             is SessionDetailEvent.RelatedNoteClicked -> fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId)

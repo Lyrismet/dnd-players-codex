@@ -7,30 +7,61 @@ import com.lyrismet.incadent.core.designsystem.LocationMentionColor
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.designsystem.toStatusColor
 import com.lyrismet.incadent.core.entitysummary.EntityRef
+import com.lyrismet.incadent.core.entitysummary.npcLifeLabels
 import com.lyrismet.incadent.core.entitysummary.npcStatusLabels
+import com.lyrismet.incadent.core.entitysummary.partyPresenceLabels
 import com.lyrismet.incadent.core.entitysummary.questStatusLabels
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
+import com.lyrismet.incadent.domain.model.PartyMember
+import com.lyrismet.incadent.domain.model.PartyPresence
+import com.lyrismet.incadent.domain.model.PartyStatRanges
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
+import com.lyrismet.incadent.domain.model.clampedToRanges
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.NpcRepository
+import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
 import com.slack.circuit.retained.rememberRetained
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_location
 import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_npc
+import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_party
 import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_quest
 import dndplayerscodex.shared.generated.resources.codex_entry_overline_create
 import dndplayerscodex.shared.generated.resources.codex_entry_overline_edit
+import dndplayerscodex.shared.generated.resources.codex_entry_owner_me
+import dndplayerscodex.shared.generated.resources.codex_entry_owner_other
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_create
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+
+// defaults for a freshly added party member - the steppers start here, not at the range's floor
+private const val NEW_PARTY_LEVEL = 1
+private const val NEW_PARTY_HP_MAX = 10
+private const val NEW_PARTY_ARMOR_CLASS = 10
+private const val NEW_PARTY_INITIATIVE_BONUS = 0
+
+/** the party-only part of the form, nested so the other entry types never see these fields */
+private data class PartyFormFields(
+    val isPlayerCharacter: Boolean = false,
+    val player: String = "",
+    val characterClass: String = "",
+    val presence: PartyPresence = PartyPresence.IN,
+    val level: Int = NEW_PARTY_LEVEL,
+    val hpMax: Int = NEW_PARTY_HP_MAX,
+    val hpCurrent: Int? = null,
+    val armorClass: Int = NEW_PARTY_ARMOR_CLASS,
+    val initiativeBonus: Int = NEW_PARTY_INITIATIVE_BONUS,
+    val portraitUri: String? = null,
+)
 
 /** the form's own editable-in-place fields - kept separate from [CodexEntryFormState] so typing survives rebuilds */
 private data class CodexEntryFormFields(
@@ -42,6 +73,7 @@ private data class CodexEntryFormFields(
     val race: String = "",
     val faction: String = "",
     val npcStatus: NpcStatus = NpcStatus.NEUTRAL,
+    val npcLife: NpcLifeState = NpcLifeState.ALIVE,
     val npcLocationId: Long? = null,
     val reward: String = "",
     val questGiverId: Long? = null,
@@ -49,11 +81,15 @@ private data class CodexEntryFormFields(
     val questStatus: QuestStatus = QuestStatus.ACTIVE,
     val locationType: String = "",
     val locationRegion: String = "",
+    val party: PartyFormFields = PartyFormFields(),
 )
 
+// one entry point per form action - splitting them across classes would only forward the same calls
+@Suppress("TooManyFunctions")
 class CodexEntryFormController private constructor(
     private val fields: MutableState<CodexEntryFormFields?>,
     private val npcRepository: NpcRepository,
+    private val partyRepository: PartyRepository,
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
 ) {
@@ -61,15 +97,16 @@ class CodexEntryFormController private constructor(
         @Composable
         fun rememberController(
             npcRepository: NpcRepository,
+            partyRepository: PartyRepository,
             questRepository: QuestRepository,
             locationRepository: LocationRepository,
         ): CodexEntryFormController {
             val fields = rememberRetained { mutableStateOf<CodexEntryFormFields?>(null) }
-            return CodexEntryFormController(fields, npcRepository, questRepository, locationRepository)
+            return CodexEntryFormController(fields, npcRepository, partyRepository, questRepository, locationRepository)
         }
     }
 
-    // defaultType mirrors the mockup's openNew(): the active codex tab pre-selects the form's type
+    // defaultType mirrors the mockup's openNew() - the active codex tab pre-selects the form's type
     fun onAddEntryClicked(defaultType: CodexEntryType) {
         fields.value = CodexEntryFormFields(editingRef = null, type = defaultType)
     }
@@ -81,6 +118,7 @@ class CodexEntryFormController private constructor(
         scope.launch {
             val loaded =
                 when (ref) {
+                    is EntityRef.Party -> partyRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Npc -> npcRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Quest -> questRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Location -> locationRepository.getById(ref.id)?.let { it.toFields(ref) }
@@ -107,11 +145,47 @@ class CodexEntryFormController private constructor(
                 CodexEntryField.REWARD -> current.copy(reward = text)
                 CodexEntryField.LOCATION_TYPE -> current.copy(locationType = text)
                 CodexEntryField.LOCATION_REGION -> current.copy(locationRegion = text)
+                CodexEntryField.PARTY_CLASS -> current.copy(party = current.party.copy(characterClass = text))
+                CodexEntryField.PARTY_PLAYER -> current.copy(party = current.party.copy(player = text))
             }
+    }
+
+    // steppers send the value they show - the range is enforced here too, so a bad value never reaches the repository
+    fun onNumberChanged(
+        field: CodexEntryNumberField,
+        value: Int,
+    ) {
+        val current = fields.value ?: return
+        val party = current.party
+        val updated =
+            when (field) {
+                CodexEntryNumberField.PARTY_LEVEL -> party.copy(level = value.coerceIn(PartyStatRanges.level))
+                CodexEntryNumberField.PARTY_HP_MAX -> party.copy(hpMax = value.coerceIn(PartyStatRanges.hpMax))
+                CodexEntryNumberField.PARTY_ARMOR_CLASS ->
+                    party.copy(armorClass = value.coerceIn(PartyStatRanges.armorClass))
+                CodexEntryNumberField.PARTY_INITIATIVE_BONUS ->
+                    party.copy(initiativeBonus = value.coerceIn(PartyStatRanges.initiativeBonus))
+            }
+        fields.value = current.copy(party = updated)
     }
 
     fun onNpcStatusChanged(status: NpcStatus) {
         fields.value = fields.value?.copy(npcStatus = status)
+    }
+
+    fun onNpcLifeChanged(lifeState: NpcLifeState) {
+        fields.value = fields.value?.copy(npcLife = lifeState)
+    }
+
+    // only one party member can be "вы" - the repository clears the flag from the others on save
+    fun onPartyOwnerChanged(isPlayerCharacter: Boolean) {
+        val current = fields.value ?: return
+        fields.value = current.copy(party = current.party.copy(isPlayerCharacter = isPlayerCharacter))
+    }
+
+    fun onPartyPresenceChanged(presence: PartyPresence) {
+        val current = fields.value ?: return
+        fields.value = current.copy(party = current.party.copy(presence = presence))
     }
 
     fun onQuestStatusChanged(status: QuestStatus) {
@@ -142,12 +216,16 @@ class CodexEntryFormController private constructor(
         fields.value = null
         scope.launch {
             when (current.type) {
+                CodexEntryType.PARTY ->
+                    partyRepository.upsert(current.toPartyMember().clampedToRanges())
+
                 CodexEntryType.NPC ->
                     npcRepository.upsert(
                         Npc(
                             id = (current.editingRef as? EntityRef.Npc)?.id ?: 0,
                             name = current.name.trim().capitalizeFirst(),
                             status = current.npcStatus,
+                            lifeState = current.npcLife,
                             description = current.description.trim(),
                             locationId = current.npcLocationId,
                             race = current.race.trim().capitalizeFirst(),
@@ -182,6 +260,8 @@ class CodexEntryFormController private constructor(
         }
     }
 
+    // one assignment per form-state field - a flat mapping, not real complexity
+    @Suppress("LongMethod")
     @Composable
     fun buildState(
         npcs: List<Npc>,
@@ -190,9 +270,12 @@ class CodexEntryFormController private constructor(
         val current = fields.value ?: return null
         val isEditing = current.editingRef != null
         val npcLabels = npcStatusLabels()
+        val lifeLabels = npcLifeLabels()
         val questLabels = questStatusLabels()
+        val partyLabels = partyPresenceLabels()
         val selectedLocationId =
             if (current.type == CodexEntryType.NPC) current.npcLocationId else current.questLocationId
+        val party = current.party
         return CodexEntryFormState(
             overline =
                 stringResource(
@@ -217,6 +300,10 @@ class CodexEntryFormController private constructor(
                         status.toStatusColor(),
                     )
                 },
+            npcLifeOptions =
+                NpcLifeState.entries.map { life ->
+                    FormChipOption(life, lifeLabels.getValue(life), life == current.npcLife, life.toStatusColor())
+                },
             questStatusOptions =
                 QuestStatus.entries.map { status ->
                     FormChipOption(
@@ -239,6 +326,27 @@ class CodexEntryFormController private constructor(
                 npcs.map { npc ->
                     FormChipOption(npc.id, npc.name, npc.id == current.questGiverId, npc.status.toStatusColor())
                 },
+            partyClass = party.characterClass,
+            partyPlayer = party.player,
+            partyIsPlayerCharacter = party.isPlayerCharacter,
+            partyOwnerOptions =
+                listOf(
+                    FormChipOption(true, stringResource(Res.string.codex_entry_owner_me), party.isPlayerCharacter),
+                    FormChipOption(false, stringResource(Res.string.codex_entry_owner_other), !party.isPlayerCharacter),
+                ),
+            partyLevel = party.level,
+            partyHpMax = party.hpMax,
+            partyArmorClass = party.armorClass,
+            partyInitiativeBonus = party.initiativeBonus,
+            partyPresenceOptions =
+                PartyPresence.entries.map { presence ->
+                    FormChipOption(
+                        presence,
+                        partyLabels.getValue(presence),
+                        presence == party.presence,
+                        presence.toStatusColor(),
+                    )
+                },
             canSave = current.name.isNotBlank(),
             saveLabel = saveLabel(current.name.isNotBlank(), isEditing),
         )
@@ -249,6 +357,7 @@ class CodexEntryFormController private constructor(
 private fun newEntryHeading(type: CodexEntryType): String =
     stringResource(
         when (type) {
+            CodexEntryType.PARTY -> Res.string.codex_entry_heading_new_party
             CodexEntryType.NPC -> Res.string.codex_entry_heading_new_npc
             CodexEntryType.QUEST -> Res.string.codex_entry_heading_new_quest
             CodexEntryType.LOCATION -> Res.string.codex_entry_heading_new_location
@@ -270,6 +379,27 @@ private fun saveLabel(
 
 private fun Long?.toggled(id: Long): Long? = if (this == id) null else id
 
+private fun CodexEntryFormFields.toPartyMember(): PartyMember {
+    val party = party
+    return PartyMember(
+        id = (editingRef as? EntityRef.Party)?.id ?: 0,
+        name = name.trim().capitalizeFirst(),
+        characterClass = party.characterClass.trim().capitalizeFirst(),
+        race = race.trim().capitalizeFirst(),
+        level = party.level,
+        // the "вы" flag replaces the player name, so a player character never keeps one
+        playerName = if (party.isPlayerCharacter) "" else party.player.trim().capitalizeFirst(),
+        isPlayerCharacter = party.isPlayerCharacter,
+        presence = party.presence,
+        hpMax = party.hpMax,
+        hpCurrent = party.hpCurrent ?: party.hpMax,
+        armorClass = party.armorClass,
+        initiativeBonus = party.initiativeBonus,
+        description = description.trim(),
+        portraitUri = party.portraitUri,
+    )
+}
+
 private fun Npc.toFields(ref: EntityRef.Npc) =
     CodexEntryFormFields(
         editingRef = ref,
@@ -280,7 +410,31 @@ private fun Npc.toFields(ref: EntityRef.Npc) =
         race = race,
         faction = faction,
         npcStatus = status,
+        npcLife = lifeState,
         npcLocationId = locationId,
+    )
+
+private fun PartyMember.toFields(ref: EntityRef.Party) =
+    CodexEntryFormFields(
+        editingRef = ref,
+        originalName = name,
+        type = CodexEntryType.PARTY,
+        name = name,
+        description = description,
+        race = race,
+        party =
+            PartyFormFields(
+                isPlayerCharacter = isPlayerCharacter,
+                player = playerName,
+                characterClass = characterClass,
+                presence = presence,
+                level = level,
+                hpMax = hpMax,
+                hpCurrent = hpCurrent,
+                armorClass = armorClass,
+                initiativeBonus = initiativeBonus,
+                portraitUri = portraitUri,
+            ),
     )
 
 private fun Quest.toFields(ref: EntityRef.Quest) =

@@ -37,11 +37,13 @@ import com.lyrismet.incadent.core.entitysummary.RelationGroup
 import com.lyrismet.incadent.core.entitysummary.StatusOption
 import com.lyrismet.incadent.core.format.NumberSizeLadder
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.entity_sheet_life_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_overline_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_count_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_empty_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_meta_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_title
+import dndplayerscodex.shared.generated.resources.entity_sheet_relation_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_status_label
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
@@ -69,6 +71,7 @@ fun EntitySummarySheetContent(
             is EntitySummaryItem.NpcSummary -> NpcSummaryBody(item, actions, onClose)
             is EntitySummaryItem.LocationSummary -> LocationSummaryBody(item, actions, onClose)
             is EntitySummaryItem.QuestSummary -> QuestSummaryBody(item, actions, onClose)
+            is EntitySummaryItem.PartySummary -> PartySummaryBody(item, actions, onClose)
         }
     }
 }
@@ -89,7 +92,16 @@ private fun NpcSummaryBody(
         onEditClicked = actions.onEditClicked?.let { edit -> { edit(npc.ref) } },
         onClose = onClose,
     )
-    EntityStatusSection(npc.statusOptions, onSelected = { status -> actions.onNpcStatusSelected(npc.ref.id, status) })
+    EntityStatusSection(
+        title = stringResource(Res.string.entity_sheet_relation_label),
+        options = npc.statusOptions,
+        onSelected = { status -> actions.onNpcStatusSelected(npc.ref.id, status) },
+    )
+    EntityStatusSection(
+        title = stringResource(Res.string.entity_sheet_life_label),
+        options = npc.lifeOptions,
+        onSelected = { life -> actions.onNpcLifeSelected(npc.ref.id, life) },
+    )
     Text(npc.description, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextDescription)
     EntityFactsGrid(npc.facts, actions.onEntityRefClicked)
     EntityRelationGroups(npc.groups, actions.onEntityRefClicked)
@@ -133,7 +145,8 @@ private fun QuestSummaryBody(
         onClose = onClose,
     )
     EntityStatusSection(
-        quest.statusOptions,
+        title = stringResource(Res.string.entity_sheet_status_label),
+        options = quest.statusOptions,
         onSelected = { status -> actions.onQuestStatusSelected(quest.ref.id, status) },
     )
     if (quest.description.isNotBlank()) {
@@ -147,7 +160,7 @@ private fun QuestSummaryBody(
 private val HeaderButtonSize = 36.dp
 
 @Composable
-private fun EntityHeaderRow(
+internal fun EntityHeaderRow(
     emblem: EntityEmblem,
     overlineTypeLabel: String,
     overlineValue: String,
@@ -244,14 +257,15 @@ private fun EntityEmblemBox(
 }
 
 @Composable
-private fun <T> EntityStatusSection(
+internal fun <T> EntityStatusSection(
+    title: String,
     options: List<StatusOption<T>>,
     onSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionOverline(
-            text = stringResource(Res.string.entity_sheet_status_label),
+            text = title,
             color = AppPalette.TextTertiary,
             letterSpacing = 0.14.em,
         )
@@ -275,7 +289,7 @@ private fun <T> EntityStatusSection(
 }
 
 @Composable
-private fun EntityFactsGrid(
+internal fun EntityFactsGrid(
     facts: List<FactRow>,
     onEntityRefClicked: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,

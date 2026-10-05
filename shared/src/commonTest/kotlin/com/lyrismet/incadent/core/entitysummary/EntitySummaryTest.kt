@@ -4,7 +4,10 @@ import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
+import com.lyrismet.incadent.domain.model.PartyMember
+import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.SessionEntry
@@ -23,7 +26,18 @@ private val npcStatusLabels =
         NpcStatus.FRIEND to "Друг",
         NpcStatus.ENEMY to "Враг",
         NpcStatus.NEUTRAL to "Нейтрал",
-        NpcStatus.DEAD to "Мёртв",
+    )
+
+private val npcLifeLabels =
+    mapOf(
+        NpcLifeState.ALIVE to "Жив",
+        NpcLifeState.DEAD to "Мёртв",
+    )
+
+private val partyPresenceLabels =
+    mapOf(
+        PartyPresence.IN to "В составе",
+        PartyPresence.AWAY to "Отсутствует",
     )
 
 private val questStatusLabels =
@@ -38,10 +52,28 @@ private val ragnar =
         id = 1,
         name = "Рагнар",
         status = NpcStatus.FRIEND,
+        lifeState = NpcLifeState.ALIVE,
         description = "Кузнец",
         locationId = 2,
         race = "Дварф",
         faction = "Гильдия",
+    )
+private val lira =
+    PartyMember(
+        id = 7,
+        name = "Лира",
+        characterClass = "Волшебница",
+        race = "Эльфийка",
+        level = 5,
+        playerName = "",
+        isPlayerCharacter = true,
+        presence = PartyPresence.IN,
+        hpMax = 28,
+        hpCurrent = 22,
+        armorClass = 12,
+        initiativeBonus = 3,
+        description = "Школа Воплощения",
+        portraitUri = null,
     )
 private val forge = Location(id = 2, name = "Кузница", type = "Мастерская", description = "", region = "Север")
 private val swordQuest =
@@ -71,6 +103,7 @@ private fun lookup(
     locations: List<Location> = listOf(forge),
     quests: List<Quest> = listOf(swordQuest),
     numbering: SessionNumbering = SessionNumbering.ROMAN,
+    parties: List<PartyMember> = listOf(lira),
 ): EntityLookup {
     val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), QUEST_PREFIX)
     return EntityLookup(
@@ -78,7 +111,11 @@ private fun lookup(
         locations = locations,
         quests = quests,
         npcStatusLabels = npcStatusLabels,
+        npcLifeLabels = npcLifeLabels,
         questStatusLabels = questStatusLabels,
+        parties = parties,
+        partyPresenceLabels = partyPresenceLabels,
+        partyYouLabel = "Вы",
         sessionNotes = listOf(mentioningNote, unrelatedNote),
         sessionEntries = listOf(mentioningEntry, unrelatedEntry),
         mentionCandidates = candidates,
@@ -192,5 +229,28 @@ class EntitySummaryTest {
 
         assertEquals("I", roman.relatedNotes.single().numberLabel)
         assertEquals("1", arabic.relatedNotes.single().numberLabel)
+    }
+
+    @Test
+    fun `buildEntitySummary for a dead npc keeps the relation and marks the condition`() {
+        val dead = ragnar.copy(lifeState = NpcLifeState.DEAD)
+        val summary = buildEntitySummary(EntityRef.Npc(1), lookup(npcs = listOf(dead))) as EntitySummaryItem.NpcSummary
+
+        assertTrue(summary.isDead)
+        assertEquals("Друг · Мёртв", summary.statusLabel)
+    }
+
+    @Test
+    fun `buildEntitySummary for a party member shows its class and the you flag`() {
+        val summary = buildEntitySummary(EntityRef.Party(7), lookup()) as EntitySummaryItem.PartySummary
+
+        assertEquals("Волшебница · Вы", summary.overlineValue)
+        assertEquals("Л", summary.emblem.text)
+        assertEquals("Вы", (summary.facts.first().value as FactValue.Text).text)
+    }
+
+    @Test
+    fun `buildEntitySummary returns null for an unknown party member`() {
+        assertNull(buildEntitySummary(EntityRef.Party(99), lookup()))
     }
 }

@@ -115,6 +115,9 @@ private fun SessionDetailEntitySheet(
                     onNpcStatusSelected = { id, status ->
                         state.eventSink(SessionDetailEvent.NpcStatusSelected(id, status))
                     },
+                    onNpcLifeSelected = { id, life ->
+                        state.eventSink(SessionDetailEvent.NpcLifeSelected(id, life))
+                    },
                     onQuestStatusSelected = { id, status ->
                         state.eventSink(SessionDetailEvent.QuestStatusSelected(id, status))
                     },

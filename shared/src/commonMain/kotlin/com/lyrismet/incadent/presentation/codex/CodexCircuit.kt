@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.NpcRepository
+import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
@@ -13,6 +14,7 @@ import com.slack.circuit.serialization.CircuitSerializerRegistration
 @Suppress("LongParameterList")
 fun Circuit.Builder.addCodexUi(
     npcRepository: NpcRepository,
+    partyRepository: PartyRepository,
     questRepository: QuestRepository,
     locationRepository: LocationRepository,
     sessionNoteRepository: SessionNoteRepository,
@@ -24,6 +26,7 @@ fun Circuit.Builder.addCodexUi(
         CodexPresenter(
             navigator,
             npcRepository,
+            partyRepository,
             questRepository,
             locationRepository,
             sessionNoteRepository,

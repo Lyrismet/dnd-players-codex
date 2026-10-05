@@ -6,6 +6,7 @@ import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.slack.circuit.runtime.CircuitUiEvent
@@ -104,6 +105,11 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     data class NpcStatusSelected(
         val npcId: Long,
         val status: NpcStatus,
+    ) : SessionDetailEvent
+
+    data class NpcLifeSelected(
+        val npcId: Long,
+        val lifeState: NpcLifeState,
     ) : SessionDetailEvent
 
     data class QuestStatusSelected(

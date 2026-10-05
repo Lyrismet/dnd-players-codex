@@ -3,14 +3,17 @@ package com.lyrismet.incadent.presentation.sessiondetail
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
+import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.serialization.CircuitSerializerRegistration
 
+@Suppress("LongParameterList")
 fun Circuit.Builder.addSessionDetailUi(
     sessionNoteRepository: SessionNoteRepository,
     sessionEntryRepository: SessionEntryRepository,
+    partyRepository: PartyRepository,
     mentionRepositories: MentionRepositories,
     undoController: UndoController,
     appPreferencesRepository: AppPreferencesRepository,
@@ -21,6 +24,7 @@ fun Circuit.Builder.addSessionDetailUi(
             navigator,
             sessionNoteRepository,
             sessionEntryRepository,
+            partyRepository,
             mentionRepositories,
             undoController,
             appPreferencesRepository,

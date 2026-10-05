@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.domain.repository
 
 import com.lyrismet.incadent.domain.model.Npc
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import kotlinx.coroutines.flow.Flow
 
@@ -21,4 +22,11 @@ suspend fun NpcRepository.updateStatus(
     status: NpcStatus,
 ) {
     getById(npcId)?.let { npc -> upsert(npc.copy(status = status)) }
+}
+
+suspend fun NpcRepository.updateLifeState(
+    npcId: Long,
+    lifeState: NpcLifeState,
+) {
+    getById(npcId)?.let { npc -> upsert(npc.copy(lifeState = lifeState)) }
 }

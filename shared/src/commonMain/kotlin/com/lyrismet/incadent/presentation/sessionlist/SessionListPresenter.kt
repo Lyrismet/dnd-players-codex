@@ -24,6 +24,7 @@ import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
+import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
@@ -48,10 +49,12 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
+@Suppress("LongParameterList")
 class SessionListPresenter(
     private val navigator: Navigator,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
+    private val partyRepository: PartyRepository,
     private val mentionRepositories: MentionRepositories,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
@@ -63,6 +66,7 @@ class SessionListPresenter(
         val npcs by mentionRepositories.npcRepository.observeAll().collectAsState(initial = emptyList())
         val locations by mentionRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
         val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
+        val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
         val scope = rememberCoroutineScope()
         val campaignNameOverride by appPreferencesRepository.observeCampaignName().collectAsState(initial = null)
         val numbering by appPreferencesRepository
@@ -92,6 +96,7 @@ class SessionListPresenter(
                 selectedEntityRef,
                 mentionRepositories.npcRepository,
                 mentionRepositories.questRepository,
+                partyRepository,
                 navigator,
             )
         val selectedEntity =
@@ -104,6 +109,7 @@ class SessionListPresenter(
                 allEntries,
                 candidates,
                 numbering,
+                parties,
             )
 
         return SessionListState(
@@ -174,6 +180,8 @@ class SessionListPresenter(
             is SessionListEvent.MentionChipClicked -> entitySheet.onEntityClicked(event.ref)
             is SessionListEvent.NpcStatusSelected ->
                 entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
+            is SessionListEvent.NpcLifeSelected ->
+                entitySheet.onNpcLifeSelected(scope, event.npcId, event.lifeState)
             is SessionListEvent.QuestStatusSelected ->
                 entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
             is SessionListEvent.RelatedNoteClicked -> entitySheet.onRelatedNoteClicked(event.sessionNoteId)

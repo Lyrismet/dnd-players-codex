@@ -2,6 +2,7 @@ package com.lyrismet.incadent.core.mention
 
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
@@ -15,6 +16,7 @@ sealed interface MentionEntity {
         override val id: Long,
         override val name: String,
         val status: NpcStatus,
+        val lifeState: NpcLifeState,
     ) : MentionEntity
 
     data class LocationMention(
@@ -34,7 +36,7 @@ fun mentionEntitiesFrom(
     locations: List<Location>,
     quests: List<Quest>,
 ): List<MentionEntity> =
-    npcs.map { MentionEntity.NpcMention(it.id, it.name, it.status) } +
+    npcs.map { MentionEntity.NpcMention(it.id, it.name, it.status, it.lifeState) } +
         locations.map { MentionEntity.LocationMention(it.id, it.name) } +
         quests.map { MentionEntity.QuestMention(it.id, it.title, it.status) }
 
@@ -49,10 +51,14 @@ data class MentionCandidate(
     val entity: MentionEntity,
 )
 
+/** sorted longest key first, so "@Кассиан Вейл" beats "@Кассиан" when both are candidates */
 fun mentionCandidates(
     entities: List<MentionEntity>,
     questPrefix: String,
-): List<MentionCandidate> = entities.map { MentionCandidate(mentionKey(it, questPrefix), it) }
+): List<MentionCandidate> =
+    entities
+        .map { MentionCandidate(mentionKey(it, questPrefix), it) }
+        .sortedByDescending { it.key.length }
 
 sealed interface MentionSegment {
     data class Text(
@@ -64,7 +70,7 @@ sealed interface MentionSegment {
     ) : MentionSegment
 }
 
-/** splits [text] on "@" + a known candidate key, longest key first so "@Кассиан Вейл" beats "@Кассиан" */
+/** splits [text] on "@" + a known candidate key, the candidates must come longest-key-first from [mentionCandidates] */
 fun parseMentions(
     text: String,
     candidates: List<MentionCandidate>,
@@ -79,12 +85,11 @@ private fun splitOnMentions(
     text: String,
     candidates: List<MentionCandidate>,
 ): List<MentionSegment> {
-    val sortedByLongestKey = candidates.sortedByDescending { it.key.length }
     val segments = mutableListOf<MentionSegment>()
     val buffer = StringBuilder()
     var i = 0
     while (i < text.length) {
-        val match = if (text[i] == '@') sortedByLongestKey.firstOrNull { text.startsWith(it.key, i + 1) } else null
+        val match = if (text[i] == '@') candidates.firstOrNull { text.startsWith(it.key, i + 1) } else null
         if (match != null) {
             if (buffer.isNotEmpty()) {
                 segments += MentionSegment.Text(buffer.toString())

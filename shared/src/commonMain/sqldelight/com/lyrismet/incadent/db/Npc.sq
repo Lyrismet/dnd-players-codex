@@ -1,3 +1,4 @@
+import com.lyrismet.incadent.domain.model.NpcLifeState;
 import com.lyrismet.incadent.domain.model.NpcStatus;
 
 CREATE TABLE npc (
@@ -7,7 +8,8 @@ CREATE TABLE npc (
     description TEXT NOT NULL,
     location_id INTEGER REFERENCES location(id) ON DELETE SET NULL,
     race TEXT NOT NULL DEFAULT '',
-    faction TEXT NOT NULL DEFAULT ''
+    faction TEXT NOT NULL DEFAULT '',
+    life_state TEXT AS NpcLifeState NOT NULL DEFAULT 'ALIVE'
 );
 
 CREATE INDEX npc_location_id ON npc(location_id);
@@ -22,12 +24,12 @@ selectByLocation:
 SELECT * FROM npc WHERE location_id = ?;
 
 insert:
-INSERT INTO npc(name, status, description, location_id, race, faction)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO npc(name, status, description, location_id, race, faction, life_state)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE npc
-SET name = ?, status = ?, description = ?, location_id = ?, race = ?, faction = ?
+SET name = ?, status = ?, description = ?, location_id = ?, race = ?, faction = ?, life_state = ?
 WHERE id = ?;
 
 deleteById:

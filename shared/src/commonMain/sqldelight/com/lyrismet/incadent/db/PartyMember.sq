@@ -1,0 +1,43 @@
+import com.lyrismet.incadent.domain.model.PartyPresence;
+
+CREATE TABLE party_member (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    character_class TEXT NOT NULL DEFAULT '',
+    race TEXT NOT NULL DEFAULT '',
+    level INTEGER NOT NULL DEFAULT 1,
+    player_name TEXT NOT NULL DEFAULT '',
+    is_player_character INTEGER NOT NULL DEFAULT 0,
+    presence TEXT AS PartyPresence NOT NULL DEFAULT 'IN',
+    hp_max INTEGER NOT NULL DEFAULT 1,
+    hp_current INTEGER NOT NULL DEFAULT 1,
+    armor_class INTEGER NOT NULL DEFAULT 10,
+    initiative_bonus INTEGER NOT NULL DEFAULT 0,
+    description TEXT NOT NULL DEFAULT '',
+    portrait_uri TEXT
+);
+
+selectAll:
+SELECT * FROM party_member ORDER BY name;
+
+selectById:
+SELECT * FROM party_member WHERE id = ?;
+
+insert:
+INSERT INTO party_member(name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, armor_class, initiative_bonus, description, portrait_uri)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE party_member
+SET name = ?, character_class = ?, race = ?, level = ?, player_name = ?, is_player_character = ?, presence = ?,
+    hp_max = ?, hp_current = ?, armor_class = ?, initiative_bonus = ?, description = ?, portrait_uri = ?
+WHERE id = ?;
+
+clearOtherPlayerCharacters:
+UPDATE party_member SET is_player_character = 0, player_name = '' WHERE is_player_character = 1 AND id != ?;
+
+deleteById:
+DELETE FROM party_member WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

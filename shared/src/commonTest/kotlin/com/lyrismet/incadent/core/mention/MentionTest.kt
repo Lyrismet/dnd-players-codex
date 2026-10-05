@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.core.mention
 
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.QuestStatus
 import kotlin.test.Test
@@ -8,8 +9,8 @@ import kotlin.test.assertNull
 
 private const val QUEST_PREFIX = "Квест: "
 
-private val ragnar = MentionEntity.NpcMention(1, "Рагнар", NpcStatus.FRIEND)
-private val ragnarWithSurname = MentionEntity.NpcMention(2, "Рагнар Каменный", NpcStatus.FRIEND)
+private val ragnar = MentionEntity.NpcMention(1, "Рагнар", NpcStatus.FRIEND, NpcLifeState.ALIVE)
+private val ragnarWithSurname = MentionEntity.NpcMention(2, "Рагнар Каменный", NpcStatus.FRIEND, NpcLifeState.ALIVE)
 private val forge = MentionEntity.LocationMention(3, "Кузница")
 private val sword = MentionEntity.QuestMention(4, "Меч", QuestStatus.ACTIVE)
 
@@ -78,7 +79,15 @@ class MentionTest {
 
     @Test
     fun `matchingMentionEntities respects the limit`() {
-        val many = (1..10).map { MentionEntity.NpcMention(it.toLong(), "Стражник $it", NpcStatus.NEUTRAL) }
+        val many =
+            (1..10).map {
+                MentionEntity.NpcMention(
+                    it.toLong(),
+                    "Стражник $it",
+                    NpcStatus.NEUTRAL,
+                    NpcLifeState.ALIVE,
+                )
+            }
         val matches = matchingMentionEntities(many, "страж", QUEST_PREFIX, limit = 3)
         assertEquals(3, matches.size)
     }

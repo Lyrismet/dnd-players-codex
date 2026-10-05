@@ -7,6 +7,7 @@ import com.lyrismet.incadent.data.repository.AppPreferencesRepositoryImpl
 import com.lyrismet.incadent.data.repository.LanguageRepositoryImpl
 import com.lyrismet.incadent.data.repository.LocationRepositoryImpl
 import com.lyrismet.incadent.data.repository.NpcRepositoryImpl
+import com.lyrismet.incadent.data.repository.PartyRepositoryImpl
 import com.lyrismet.incadent.data.repository.QuestRepositoryImpl
 import com.lyrismet.incadent.data.repository.SessionEntryRepositoryImpl
 import com.lyrismet.incadent.data.repository.SessionNoteRepositoryImpl
@@ -16,6 +17,7 @@ import com.lyrismet.incadent.domain.repository.LanguageRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.NpcRepository
+import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
@@ -46,6 +48,7 @@ class AppContainer(
     // кодекс
     val npcRepository: NpcRepository = NpcRepositoryImpl(database)
     val questRepository: QuestRepository = QuestRepositoryImpl(database)
+    val partyRepository: PartyRepository = PartyRepositoryImpl(database)
     val locationRepository: LocationRepository = LocationRepositoryImpl(database)
     private val mentionRepositories = MentionRepositories(npcRepository, locationRepository, questRepository)
 
@@ -63,12 +66,14 @@ class AppContainer(
             .addSessionListUi(
                 sessionNoteRepository,
                 sessionEntryRepository,
+                partyRepository,
                 mentionRepositories,
                 undoController,
                 appPreferencesRepository,
             ).addSessionDetailUi(
                 sessionNoteRepository,
                 sessionEntryRepository,
+                partyRepository,
                 mentionRepositories,
                 undoController,
                 appPreferencesRepository,
@@ -76,6 +81,7 @@ class AppContainer(
             // кодекс
             .addCodexUi(
                 npcRepository,
+                partyRepository,
                 questRepository,
                 locationRepository,
                 sessionNoteRepository,
