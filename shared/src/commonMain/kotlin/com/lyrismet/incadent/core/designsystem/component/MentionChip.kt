@@ -32,7 +32,7 @@ import com.lyrismet.incadent.core.mention.dedupeKey
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.Npc
-import com.lyrismet.incadent.domain.model.NpcStatus
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.Quest
 
 /** how inline mention chips are drawn - set once at the app root from Settings */
@@ -64,7 +64,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
                 glyph = MentionGlyph.NPC,
                 label = name,
                 color = status.toStatusColor(),
-                strikeThrough = status == NpcStatus.DEAD,
+                strikeThrough = lifeState == NpcLifeState.DEAD,
                 entityRef = EntityRef.Npc(id),
             )
 
@@ -87,7 +87,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
             )
     }
 
-fun Npc.toMentionChip(): MentionChipItem = MentionEntity.NpcMention(id, name, status).toChipItem()
+fun Npc.toMentionChip(): MentionChipItem = MentionEntity.NpcMention(id, name, status, lifeState).toChipItem()
 
 fun Location.toMentionChip(): MentionChipItem = MentionEntity.LocationMention(id, name).toChipItem()
 

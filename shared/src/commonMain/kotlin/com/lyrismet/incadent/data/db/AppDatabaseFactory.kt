@@ -3,6 +3,7 @@ package com.lyrismet.incadent.data.db
 import app.cash.sqldelight.db.SqlDriver
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.db.Npc
+import com.lyrismet.incadent.db.Party_member
 import com.lyrismet.incadent.db.Quest
 import com.lyrismet.incadent.db.Session_entry
 import com.lyrismet.incadent.db.Session_note
@@ -13,7 +14,8 @@ fun createAppDatabase(driver: SqlDriver): AppDatabase {
 
     return AppDatabase(
         driver = driver,
-        npcAdapter = Npc.Adapter(statusAdapter = npcStatusAdapter),
+        npcAdapter = Npc.Adapter(statusAdapter = npcStatusAdapter, life_stateAdapter = npcLifeStateAdapter),
+        party_memberAdapter = Party_member.Adapter(presenceAdapter = partyPresenceAdapter),
         questAdapter = Quest.Adapter(statusAdapter = questStatusAdapter),
         session_entryAdapter = Session_entry.Adapter(created_atAdapter = localDateTimeAdapter),
         session_noteAdapter =

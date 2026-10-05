@@ -2,11 +2,13 @@ package com.lyrismet.incadent.core.entitysummary
 
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.designsystem.LocationMentionColor
+import com.lyrismet.incadent.core.designsystem.PartyMemberColor
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.designsystem.component.toMentionChip
 import com.lyrismet.incadent.core.designsystem.toStatusColor
+import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.mention.MentionCandidate
@@ -15,22 +17,18 @@ import com.lyrismet.incadent.core.mention.dedupeKey
 import com.lyrismet.incadent.core.mention.parseMentions
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
+import com.lyrismet.incadent.domain.model.PartyMember
+import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_npc_status_dead
-import dndplayerscodex.shared.generated.resources.codex_npc_status_enemy
-import dndplayerscodex.shared.generated.resources.codex_npc_status_friend
-import dndplayerscodex.shared.generated.resources.codex_npc_status_neutral
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
-import dndplayerscodex.shared.generated.resources.codex_quest_status_active
-import dndplayerscodex.shared.generated.resources.codex_quest_status_completed
-import dndplayerscodex.shared.generated.resources.codex_quest_status_failed
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_npcs
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_quests
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_npc_quests_given
@@ -39,6 +37,12 @@ import dndplayerscodex.shared.generated.resources.entity_sheet_location_type_lab
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_faction_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_location_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_race_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_party_ac_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_party_class_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_party_hp_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_party_level_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_party_player_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_party_you_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_quest_location_label
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -54,6 +58,10 @@ sealed interface EntityRef {
     ) : EntityRef
 
     data class Quest(
+        val id: Long,
+    ) : EntityRef
+
+    data class Party(
         val id: Long,
     ) : EntityRef
 }
@@ -116,6 +124,7 @@ sealed interface EntitySummaryItem {
         val emblem: EntityEmblem,
         val subtitle: String,
         val statusOptions: List<StatusOption<NpcStatus>>,
+        val lifeOptions: List<StatusOption<NpcLifeState>>,
         val facts: List<FactRow>,
         val groups: List<RelationGroup>,
         val relatedNotes: List<RelatedNoteItem>,
@@ -146,6 +155,17 @@ sealed interface EntitySummaryItem {
         val groups: List<RelationGroup>,
         val relatedNotes: List<RelatedNoteItem>,
     ) : EntitySummaryItem
+
+    data class PartySummary(
+        val ref: EntityRef.Party,
+        val name: String,
+        val overlineValue: String,
+        val subtitle: String,
+        val description: String,
+        val emblem: EntityEmblem,
+        val presenceOptions: List<StatusOption<PartyPresence>>,
+        val facts: List<FactRow>,
+    ) : EntitySummaryItem
 }
 
 /** everything [buildEntitySummary] needs to resolve any [EntityRef] - one instance covers a whole screen */
@@ -154,7 +174,11 @@ data class EntityLookup(
     val locations: List<Location>,
     val quests: List<Quest>,
     val npcStatusLabels: Map<NpcStatus, String>,
+    val npcLifeLabels: Map<NpcLifeState, String>,
     val questStatusLabels: Map<QuestStatus, String>,
+    val parties: List<PartyMember>,
+    val partyPresenceLabels: Map<PartyPresence, String>,
+    val partyYouLabel: String,
     val sessionNotes: List<SessionNote>,
     val sessionEntries: List<SessionEntry>,
     val mentionCandidates: List<MentionCandidate>,
@@ -170,6 +194,7 @@ fun buildEntitySummary(
         is EntityRef.Npc -> lookup.npcs.find { it.id == ref.id }?.let { buildNpcSummary(it, lookup) }
         is EntityRef.Location -> lookup.locations.find { it.id == ref.id }?.let { buildLocationSummary(it, lookup) }
         is EntityRef.Quest -> lookup.quests.find { it.id == ref.id }?.let { buildQuestSummary(it, lookup) }
+        is EntityRef.Party -> lookup.parties.find { it.id == ref.id }?.let { buildPartySummary(it, lookup) }
     }
 
 private fun buildNpcSummary(
@@ -178,16 +203,21 @@ private fun buildNpcSummary(
 ): EntitySummaryItem.NpcSummary {
     val location = npc.locationId?.let { id -> lookup.locations.find { it.id == id } }
     val givenQuests = lookup.quests.filter { it.givenByNpcId == npc.id }
+    val isDead = npc.lifeState == NpcLifeState.DEAD
+    val relationLabel = lookup.npcStatusLabels.getValue(npc.status)
     return EntitySummaryItem.NpcSummary(
         ref = EntityRef.Npc(npc.id),
         name = npc.name,
-        statusLabel = lookup.npcStatusLabels.getValue(npc.status),
-        isDead = npc.status == NpcStatus.DEAD,
+        statusLabel =
+            if (isDead) joinWithDot(relationLabel, lookup.npcLifeLabels.getValue(npc.lifeState)) else relationLabel,
+        isDead = isDead,
         description = npc.description,
         emblem = EntityEmblem(npc.name.take(1).uppercase(), EntityEmblemShape.CIRCLE, npc.status.toStatusColor()),
         subtitle = "${npc.race} · ${npc.faction}",
         statusOptions =
             statusOptions(NpcStatus.entries, npc.status, lookup.npcStatusLabels) { status -> status.toStatusColor() },
+        lifeOptions =
+            statusOptions(NpcLifeState.entries, npc.lifeState, lookup.npcLifeLabels) { life -> life.toStatusColor() },
         facts =
             listOfNotNull(
                 FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(npc.race)),
@@ -203,6 +233,33 @@ private fun buildNpcSummary(
                 },
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Npc(npc.id), lookup),
+    )
+}
+
+private fun buildPartySummary(
+    member: PartyMember,
+    lookup: EntityLookup,
+): EntitySummaryItem.PartySummary {
+    val ownerLabel = if (member.isPlayerCharacter) lookup.partyYouLabel else member.playerName
+    return EntitySummaryItem.PartySummary(
+        ref = EntityRef.Party(member.id),
+        name = member.name,
+        overlineValue = joinWithDot(member.characterClass, if (member.isPlayerCharacter) lookup.partyYouLabel else ""),
+        subtitle = member.race,
+        description = member.description,
+        emblem = EntityEmblem(member.name.take(1).uppercase(), EntityEmblemShape.CIRCLE, PartyMemberColor),
+        presenceOptions =
+            statusOptions(PartyPresence.entries, member.presence, lookup.partyPresenceLabels) { presence ->
+                presence.toStatusColor()
+            },
+        facts =
+            listOf(
+                FactRow(Res.string.entity_sheet_party_player_label, FactValue.Text(ownerLabel)),
+                FactRow(Res.string.entity_sheet_party_class_label, FactValue.Text(member.characterClass)),
+                FactRow(Res.string.entity_sheet_party_level_label, FactValue.Text(member.level.toString())),
+                FactRow(Res.string.entity_sheet_party_ac_label, FactValue.Text(member.armorClass.toString())),
+                FactRow(Res.string.entity_sheet_party_hp_label, FactValue.Text(member.hpMax.toString())),
+            ),
     )
 }
 
@@ -283,6 +340,7 @@ private fun EntityRef.dedupeKey(): String =
         is EntityRef.Npc -> "npc:$id"
         is EntityRef.Location -> "location:$id"
         is EntityRef.Quest -> "quest:$id"
+        is EntityRef.Party -> "party:$id"
     }
 
 /** every session with at least one note that `@mentions` [ref], newest first, with a snippet and hit count */
@@ -330,23 +388,6 @@ private fun plainTextSnippet(
     return if (plain.length > SNIPPET_MAX_LENGTH) plain.take(SNIPPET_MAX_LENGTH - 1) + "…" else plain
 }
 
-@Composable
-fun npcStatusLabels(): Map<NpcStatus, String> =
-    mapOf(
-        NpcStatus.FRIEND to stringResource(Res.string.codex_npc_status_friend),
-        NpcStatus.ENEMY to stringResource(Res.string.codex_npc_status_enemy),
-        NpcStatus.NEUTRAL to stringResource(Res.string.codex_npc_status_neutral),
-        NpcStatus.DEAD to stringResource(Res.string.codex_npc_status_dead),
-    )
-
-@Composable
-fun questStatusLabels(): Map<QuestStatus, String> =
-    mapOf(
-        QuestStatus.ACTIVE to stringResource(Res.string.codex_quest_status_active),
-        QuestStatus.COMPLETED to stringResource(Res.string.codex_quest_status_completed),
-        QuestStatus.FAILED to stringResource(Res.string.codex_quest_status_failed),
-    )
-
 /** the shared "resolve whatever's tapped" used by every screen that owns a nullable [EntityRef] selection */
 @Composable
 fun selectedEntitySummary(
@@ -358,6 +399,7 @@ fun selectedEntitySummary(
     sessionEntries: List<SessionEntry>,
     mentionCandidates: List<MentionCandidate>,
     sessionNumbering: SessionNumbering,
+    parties: List<PartyMember>,
 ): EntitySummaryItem? {
     if (ref == null) return null
     return buildEntitySummary(
@@ -367,7 +409,11 @@ fun selectedEntitySummary(
             locations = locations,
             quests = quests,
             npcStatusLabels = npcStatusLabels(),
+            npcLifeLabels = npcLifeLabels(),
             questStatusLabels = questStatusLabels(),
+            parties = parties,
+            partyPresenceLabels = partyPresenceLabels(),
+            partyYouLabel = stringResource(Res.string.entity_sheet_party_you_label),
             sessionNotes = sessionNotes,
             sessionEntries = sessionEntries,
             mentionCandidates = mentionCandidates,
@@ -380,7 +426,10 @@ fun selectedEntitySummary(
 data class EntitySummarySheetActions(
     val onEntityRefClicked: (EntityRef) -> Unit,
     val onNpcStatusSelected: (npcId: Long, status: NpcStatus) -> Unit,
+    val onNpcLifeSelected: (npcId: Long, lifeState: NpcLifeState) -> Unit,
     val onQuestStatusSelected: (questId: Long, status: QuestStatus) -> Unit,
     val onRelatedNoteClicked: (sessionNoteId: Long) -> Unit,
     val onEditClicked: ((EntityRef) -> Unit)? = null,
+    // null hides the presence picker - only the codex manages party membership
+    val onPartyPresenceSelected: ((partyId: Long, presence: PartyPresence) -> Unit)? = null,
 )

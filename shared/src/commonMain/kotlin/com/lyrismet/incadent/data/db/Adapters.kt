@@ -1,11 +1,15 @@
 package com.lyrismet.incadent.data.db
 
 import app.cash.sqldelight.ColumnAdapter
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
+import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.QuestStatus
 import kotlinx.datetime.LocalDateTime
 
 val npcStatusAdapter = enumColumnAdapter<NpcStatus>()
+val npcLifeStateAdapter = enumColumnAdapter<NpcLifeState>()
+val partyPresenceAdapter = enumColumnAdapter<PartyPresence>()
 val questStatusAdapter = enumColumnAdapter<QuestStatus>()
 
 val localDateTimeAdapter =

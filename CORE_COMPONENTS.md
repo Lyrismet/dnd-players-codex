@@ -74,9 +74,10 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 | `FormTextField` | `component/FormFields.kt` | single-line labeled text input matching the create/edit form style. |
 | `FormTextArea` | `component/FormFields.kt` | multi-line variant of `FormTextField`, 3-line minimum height. |
 | `FormChipPicker` | `component/FormFields.kt` | see "Buttons, badges, chips" above. |
+| `FormStepper` | `component/FormFields.kt` | labeled integer field with −/+ buttons clamped to an `IntRange` - level, max hp, armor class, initiative bonus. |
 | `FormPrimaryButton` | `component/FormFields.kt` | see "Buttons, badges, chips" above. |
 
-Every field in `CodexEntryFormUi.kt` is built from these four - if a new form needs a field type that doesn't fit,
+Every field in `CodexEntryFormUi.kt` is built from these five - if a new form needs a field type that doesn't fit,
 add it here rather than reaching for a raw Material `TextField` in feature code.
 
 ## Navigation / icons

@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
-import com.lyrismet.incadent.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
@@ -19,7 +18,6 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_add_entry_button
 import dndplayerscodex.shared.generated.resources.codex_filter_all
 import dndplayerscodex.shared.generated.resources.codex_overline
-import dndplayerscodex.shared.generated.resources.codex_party_empty
 import dndplayerscodex.shared.generated.resources.codex_search_placeholder
 import dndplayerscodex.shared.generated.resources.codex_tab_location
 import dndplayerscodex.shared.generated.resources.codex_tab_npc
@@ -68,7 +66,7 @@ fun CodexUi(
                         CodexAllList(state = state)
 
                     CodexTab.PARTY ->
-                        EmptyStatePlaceholder(text = stringResource(Res.string.codex_party_empty))
+                        CodexPartyList(state = state)
 
                     CodexTab.NPC ->
                         CodexNpcList(state = state)
@@ -90,18 +88,26 @@ fun CodexUi(
     }
 }
 
-// only the NPC and quest tabs have statuses to filter by, party and places have none
+// only the party, NPC and quest tabs have a filter, places have none
 @Composable
 private fun CodexFilters(
     state: CodexState,
     modifier: Modifier = Modifier,
 ) {
     when (state.activeTab) {
+        CodexTab.PARTY ->
+            CodexFilterChipRow(
+                items = state.partyFilterOptions,
+                selected = state.partyFilter,
+                onSelected = { state.eventSink(CodexEvent.PartyFilterSelected(it)) },
+                modifier = modifier,
+            )
+
         CodexTab.NPC ->
             CodexFilterChipRow(
                 items = state.npcFilterOptions,
-                selected = state.npcStatusFilter,
-                onSelected = { state.eventSink(CodexEvent.NpcStatusFilterSelected(it)) },
+                selected = state.npcFilter,
+                onSelected = { state.eventSink(CodexEvent.NpcFilterSelected(it)) },
                 modifier = modifier,
             )
 
@@ -113,7 +119,7 @@ private fun CodexFilters(
                 modifier = modifier,
             )
 
-        CodexTab.ALL, CodexTab.PARTY, CodexTab.LOCATION -> Unit
+        CodexTab.ALL, CodexTab.LOCATION -> Unit
     }
 }
 
@@ -143,6 +149,10 @@ private fun CodexEntitySheet(
                 EntitySummarySheetActions(
                     onEntityRefClicked = { ref -> state.eventSink(CodexEvent.EntityClicked(ref)) },
                     onNpcStatusSelected = { id, status -> state.eventSink(CodexEvent.NpcStatusSelected(id, status)) },
+                    onNpcLifeSelected = { id, life -> state.eventSink(CodexEvent.NpcLifeSelected(id, life)) },
+                    onPartyPresenceSelected = { id, presence ->
+                        state.eventSink(CodexEvent.PartyPresenceSelected(id, presence))
+                    },
                     onQuestStatusSelected = { id, status ->
                         state.eventSink(CodexEvent.QuestStatusSelected(id, status))
                     },
@@ -160,7 +170,7 @@ private fun codexTabItems(state: CodexState): List<CodexTabRowItem> =
         CodexTabRowItem(
             CodexTab.ALL,
             stringResource(Res.string.codex_filter_all),
-            state.tabCounts.npc + state.tabCounts.quest + state.tabCounts.location,
+            state.tabCounts.party + state.tabCounts.npc + state.tabCounts.quest + state.tabCounts.location,
         ),
         CodexTabRowItem(CodexTab.PARTY, stringResource(Res.string.codex_tab_party), state.tabCounts.party),
         CodexTabRowItem(CodexTab.NPC, stringResource(Res.string.codex_tab_npc), state.tabCounts.npc),

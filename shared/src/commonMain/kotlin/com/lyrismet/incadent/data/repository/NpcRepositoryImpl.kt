@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Npc
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.repository.NpcRepository
 import kotlinx.coroutines.Dispatchers
@@ -28,10 +29,27 @@ class NpcRepositoryImpl(
     override suspend fun upsert(npc: Npc): Long =
         withContext(Dispatchers.Default) {
             if (npc.id == 0L) {
-                queries.insert(npc.name, npc.status, npc.description, npc.locationId, npc.race, npc.faction)
+                queries.insert(
+                    npc.name,
+                    npc.status,
+                    npc.description,
+                    npc.locationId,
+                    npc.race,
+                    npc.faction,
+                    npc.lifeState,
+                )
                 queries.lastInsertRowId().executeAsOne()
             } else {
-                queries.update(npc.name, npc.status, npc.description, npc.locationId, npc.race, npc.faction, npc.id)
+                queries.update(
+                    npc.name,
+                    npc.status,
+                    npc.description,
+                    npc.locationId,
+                    npc.race,
+                    npc.faction,
+                    npc.lifeState,
+                    npc.id,
+                )
                 npc.id
             }
         }
@@ -52,5 +70,6 @@ class NpcRepositoryImpl(
         locationId: Long?,
         race: String,
         faction: String,
-    ) = Npc(id, name, status, description, locationId, race, faction)
+        lifeState: NpcLifeState,
+    ) = Npc(id, name, status, lifeState, description, locationId, race, faction)
 }

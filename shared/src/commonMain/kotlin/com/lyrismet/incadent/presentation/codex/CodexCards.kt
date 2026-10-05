@@ -65,6 +65,7 @@ internal fun NpcCodexCard(
                     textDecoration = if (item.isDead) TextDecoration.LineThrough else TextDecoration.None,
                     modifier = Modifier.weight(1f),
                 )
+                item.lifeBadge?.let { StatusBadge(text = it.label, color = it.color) }
                 StatusBadge(text = item.statusLabel, color = item.statusColor)
             }
             Text(
@@ -73,6 +74,60 @@ internal fun NpcCodexCard(
                 color = AppPalette.TextSecondary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
+    }
+}
+
+@Composable
+internal fun PartyCodexCard(
+    item: PartyCodexItem,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .appCard(shape = RoundedCornerShape(14.dp), onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        IconBadge(
+            size = 44.dp,
+            shape = CircleShape,
+            background = AppPalette.Background,
+            border = item.color.border,
+            borderWidth = 1.5.dp,
+        ) {
+            Text(item.initial, style = MaterialTheme.typography.titleLarge, color = item.color.foreground)
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = AppPalette.TextHeading,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                StatusBadge(text = item.presenceLabel, color = item.presenceColor)
+            }
+            if (item.subtitle.isNotBlank()) {
+                Text(
+                    text = item.subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = AppPalette.TextSecondary,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
+            Text(
+                text = item.meta,
+                style = MaterialTheme.typography.bodySmall,
+                color = AppPalette.TextTertiary,
                 modifier = Modifier.padding(top = 2.dp),
             )
         }

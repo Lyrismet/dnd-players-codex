@@ -1,0 +1,3 @@
+ALTER TABLE npc ADD COLUMN life_state TEXT NOT NULL DEFAULT 'ALIVE';
+UPDATE npc SET life_state = 'DEAD' WHERE status = 'DEAD';
+UPDATE npc SET status = 'NEUTRAL' WHERE status = 'DEAD';

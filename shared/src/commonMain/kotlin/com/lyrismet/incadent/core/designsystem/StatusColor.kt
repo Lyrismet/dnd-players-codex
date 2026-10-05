@@ -1,7 +1,9 @@
 package com.lyrismet.incadent.core.designsystem
 
 import androidx.compose.ui.graphics.Color
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
+import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.QuestStatus
 
 /** foreground/background/border triple for a status chip, e.g. the NPC status badge or a session-note mention */
@@ -26,8 +28,21 @@ fun NpcStatus.toStatusColor(): StatusColor =
             statusColor(foreground = AppPalette.MaroonBright, background = AppPalette.Maroon.copy(alpha = 0.24f))
         NpcStatus.NEUTRAL ->
             statusColor(foreground = AppPalette.TextMuted, background = AppPalette.TextMuted.copy(alpha = 0.12f))
-        NpcStatus.DEAD ->
+    }
+
+fun NpcLifeState.toStatusColor(): StatusColor =
+    when (this) {
+        NpcLifeState.ALIVE ->
+            statusColor(foreground = AppPalette.EmeraldBright, background = AppPalette.Emerald.copy(alpha = 0.14f))
+        NpcLifeState.DEAD ->
             statusColor(foreground = AppPalette.Dead, background = AppPalette.DeadBackground)
+    }
+
+fun PartyPresence.toStatusColor(): StatusColor =
+    when (this) {
+        PartyPresence.IN -> PartyMemberColor
+        PartyPresence.AWAY ->
+            statusColor(foreground = AppPalette.TextMuted, background = AppPalette.TextMuted.copy(alpha = 0.12f))
     }
 
 fun QuestStatus.toStatusColor(): StatusColor =
@@ -46,4 +61,12 @@ val LocationMentionColor =
         foreground = AppPalette.Parchment,
         background = AppPalette.Parchment.copy(alpha = 0.10f),
         borderAlpha = 0.3f,
+    )
+
+/** party members always use the azure accent - the party is the one group of codex entries with its own colour */
+val PartyMemberColor =
+    statusColor(
+        foreground = AppPalette.Azure,
+        background = AppPalette.Azure.copy(alpha = 0.14f),
+        borderAlpha = 0.45f,
     )

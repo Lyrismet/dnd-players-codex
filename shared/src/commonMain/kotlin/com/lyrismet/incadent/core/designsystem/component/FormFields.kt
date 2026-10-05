@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -87,6 +89,57 @@ fun FormTextArea(
             placeholder = placeholder,
             singleLine = false,
             modifier = Modifier.heightIn(min = AreaMinHeight),
+        )
+    }
+}
+
+/** labeled integer stepper with −/+ buttons that stop at the ends of [range] - for bounded numeric fields */
+@Composable
+fun FormStepper(
+    label: String,
+    value: Int,
+    range: IntRange,
+    onChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FormFieldColumn(label, modifier) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(FieldHeight)
+                    .appCard(shape = FieldShape, background = AppPalette.Background, border = AppPalette.Border)
+                    .padding(horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            StepperButton(symbol = "−", enabled = value > range.first) { onChange(value - 1) }
+            Text(
+                value.toString(),
+                style = MaterialTheme.typography.bodyLarge.copy(color = AppPalette.TextPrimary),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f),
+            )
+            StepperButton(symbol = "+", enabled = value < range.last) { onChange(value + 1) }
+        }
+    }
+}
+
+@Composable
+private fun StepperButton(
+    symbol: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    IconBadge(
+        size = FieldHeight - 8.dp,
+        shape = RoundedCornerShape(10.dp),
+        background = AppPalette.SurfaceElevated,
+        onClick = if (enabled) onClick else null,
+    ) {
+        Text(
+            symbol,
+            style = MaterialTheme.typography.titleLarge,
+            color = if (enabled) AppPalette.GoldBright else AppPalette.TextTertiary,
         )
     }
 }

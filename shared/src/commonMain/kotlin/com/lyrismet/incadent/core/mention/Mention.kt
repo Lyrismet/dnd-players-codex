@@ -2,6 +2,7 @@ package com.lyrismet.incadent.core.mention
 
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
+import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
@@ -15,6 +16,7 @@ sealed interface MentionEntity {
         override val id: Long,
         override val name: String,
         val status: NpcStatus,
+        val lifeState: NpcLifeState,
     ) : MentionEntity
 
     data class LocationMention(
@@ -34,7 +36,7 @@ fun mentionEntitiesFrom(
     locations: List<Location>,
     quests: List<Quest>,
 ): List<MentionEntity> =
-    npcs.map { MentionEntity.NpcMention(it.id, it.name, it.status) } +
+    npcs.map { MentionEntity.NpcMention(it.id, it.name, it.status, it.lifeState) } +
         locations.map { MentionEntity.LocationMention(it.id, it.name) } +
         quests.map { MentionEntity.QuestMention(it.id, it.title, it.status) }
 
