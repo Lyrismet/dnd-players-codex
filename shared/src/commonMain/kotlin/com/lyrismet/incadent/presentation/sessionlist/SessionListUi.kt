@@ -24,7 +24,8 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
-import com.lyrismet.incadent.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
+import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.GlowingDot
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
@@ -41,6 +42,8 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_list_archive_section
 import dndplayerscodex.shared.generated.resources.session_list_delete_content_description
 import dndplayerscodex.shared.generated.resources.session_list_empty
+import dndplayerscodex.shared.generated.resources.session_list_empty_button
+import dndplayerscodex.shared.generated.resources.session_list_empty_title
 import dndplayerscodex.shared.generated.resources.session_list_live_continue
 import dndplayerscodex.shared.generated.resources.session_list_live_label
 import dndplayerscodex.shared.generated.resources.session_list_new_session_button
@@ -65,7 +68,14 @@ fun SessionListUi(
                 },
             )
             if (state.liveSession == null && state.sessions.isEmpty()) {
-                EmptyStatePlaceholder(text = stringResource(Res.string.session_list_empty))
+                EmptyStateActions(
+                    title = stringResource(Res.string.session_list_empty_title),
+                    text = stringResource(Res.string.session_list_empty),
+                    primaryAction =
+                        EmptyStateAction(label = stringResource(Res.string.session_list_empty_button)) {
+                            state.eventSink(SessionListEvent.NewSessionClicked)
+                        },
+                )
             } else {
                 SessionListContent(state)
             }

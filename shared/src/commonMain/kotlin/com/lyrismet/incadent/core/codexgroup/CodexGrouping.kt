@@ -37,6 +37,7 @@ fun groupNpcs(
     locations: List<Location>,
     by: NpcGroupBy,
     labels: CodexGroupLabels,
+    regions: CodexRegions = CodexRegions(npcs, emptyList(), locations),
 ): List<CodexGroup<CodexGroupItem<Npc>>> {
     val rows =
         sortNpcs(npcs).map { npc ->
@@ -45,24 +46,26 @@ fun groupNpcs(
     return when (by) {
         NpcGroupBy.NONE -> rows.asUngrouped()
         NpcGroupBy.REGION ->
-            rows.toSections { npcRegion(it.entity, locations).toSectionKey(labels.noPlace) }
+            rows.toSections { regions.regionOfNpc(it.entity).toSectionKey(labels.noPlace) }
         NpcGroupBy.RELATION -> rows.toSections { it.entity.status.toSectionKey(labels.npcStatus) }
         NpcGroupBy.FACTION -> rows.toSections { it.entity.faction.toSectionKey(labels.noFaction) }
     }
 }
 
+@Suppress("LongParameterList")
 fun groupQuests(
     quests: List<Quest>,
     npcs: List<Npc>,
     locations: List<Location>,
     by: QuestGroupBy,
     labels: CodexGroupLabels,
+    regions: CodexRegions = CodexRegions(npcs, quests, locations),
 ): List<CodexGroup<Quest>> {
     val rows = sortQuests(quests)
     return when (by) {
         QuestGroupBy.NONE -> rows.asUngrouped()
         QuestGroupBy.REGION ->
-            rows.toSections { questRegion(it, npcs, locations).toSectionKey(labels.noRegionForQuest) }
+            rows.toSections { regions.regionOfQuest(it).toSectionKey(labels.noRegionForQuest) }
         QuestGroupBy.STATUS -> rows.toSections { it.status.toSectionKey(labels.questStatus) }
         QuestGroupBy.GIVER -> rows.toSections { giverKey(it, npcs, labels) }
     }
@@ -73,19 +76,25 @@ fun groupLocations(
     by: LocationGroupBy,
     allLocations: List<Location>,
     labels: CodexGroupLabels,
+    regions: CodexRegions = CodexRegions(emptyList(), emptyList(), allLocations),
 ): List<CodexGroup<CodexGroupItem<Location>>> {
     val rows =
         sortLocations(locations).map { place ->
-            val subtitle = if (by == LocationGroupBy.REGION) regionSubtitle(place, allLocations) else null
-            CodexGroupItem(place, subtitle)
+            CodexGroupItem(place, locationSubtitle(place, by, regions))
         }
     return when (by) {
         LocationGroupBy.NONE -> rows.asUngrouped()
         LocationGroupBy.REGION ->
-            rows.toSections { it.entity.resolvedRegion(allLocations).toSectionKey(labels.noPlace) }
+            rows.toSections { regions.regionOfLocation(it.entity).toSectionKey(labels.noPlace) }
         LocationGroupBy.TYPE -> rows.toSections { it.entity.type.toSectionKey(labels.noType) }
     }
 }
+
+private fun locationSubtitle(
+    place: Location,
+    by: LocationGroupBy,
+    regions: CodexRegions,
+): String? = if (by == LocationGroupBy.REGION) regionSubtitle(place, regions.regionOfLocation(place)) else null
 
 private fun <T> List<T>.asUngrouped(): List<CodexGroup<T>> =
     if (isEmpty()) emptyList() else listOf(CodexGroup(null, this))

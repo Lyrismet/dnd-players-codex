@@ -61,21 +61,10 @@ fun CodexUi(
                 CodexGroupRow(state, modifier = Modifier.padding(top = 10.dp))
             }
             Box(modifier = Modifier.weight(1f)) {
-                when (state.activeTab) {
-                    CodexTab.ALL ->
-                        CodexAllList(state = state)
-
-                    CodexTab.PARTY ->
-                        CodexPartyList(state = state)
-
-                    CodexTab.NPC ->
-                        CodexNpcList(state = state)
-
-                    CodexTab.QUEST ->
-                        CodexQuestList(state = state)
-
-                    CodexTab.LOCATION ->
-                        CodexLocationList(state = state)
+                if (state.emptyState == CodexEmptyState.Hidden) {
+                    CodexActiveList(state)
+                } else {
+                    CodexEmptyView(state)
                 }
             }
         }
@@ -85,6 +74,17 @@ fun CodexUi(
         is CodexSheet.EntryForm -> CodexEntryFormSheet(state, sheet.form)
         is CodexSheet.EntityView -> CodexEntitySheet(state, sheet.entity)
         null -> Unit
+    }
+}
+
+@Composable
+private fun CodexActiveList(state: CodexState) {
+    when (state.activeTab) {
+        CodexTab.ALL -> CodexAllList(state = state)
+        CodexTab.PARTY -> CodexPartyList(state = state)
+        CodexTab.NPC -> CodexNpcList(state = state)
+        CodexTab.QUEST -> CodexQuestList(state = state)
+        CodexTab.LOCATION -> CodexLocationList(state = state)
     }
 }
 

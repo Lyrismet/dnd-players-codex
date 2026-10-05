@@ -36,6 +36,19 @@ internal class CodexGroupedLists(
     val groupOptions: List<CodexFilterOption<CodexGroupBy>>,
 )
 
+// judged on the lists the tabs render, so the empty state can never disagree with what is shown
+internal fun CodexGroupedLists.hasEntriesFor(
+    tab: CodexTab,
+    party: List<PartyCodexItem>,
+): Boolean =
+    when (tab) {
+        CodexTab.ALL -> party.isNotEmpty() || npcs.isNotEmpty() || quests.isNotEmpty() || locations.isNotEmpty()
+        CodexTab.PARTY -> party.isNotEmpty()
+        CodexTab.NPC -> npcs.isNotEmpty()
+        CodexTab.QUEST -> quests.isNotEmpty()
+        CodexTab.LOCATION -> locations.isNotEmpty()
+    }
+
 /** the group choice of the active tab - null on the tabs that have no group row */
 internal fun codexGroupBy(
     tab: CodexTab,
@@ -75,17 +88,20 @@ internal fun codexGroupedLists(
     val npcBy = if (tab == CodexTab.NPC) selection.npc else NpcGroupBy.NONE
     val questBy = if (tab == CodexTab.QUEST) selection.quest else QuestGroupBy.NONE
     val placeBy = if (tab == CodexTab.LOCATION) selection.place else LocationGroupBy.NONE
+    val regions = search.regions
+    val groupedQuests =
+        groupQuests(search.searchedQuests, records.npcs, records.locations, questBy, labels.titles, regions)
     return CodexGroupedLists(
         npcs =
-            groupNpcs(search.searchedNpcs, records.locations, npcBy, labels.titles).map { group ->
+            groupNpcs(search.searchedNpcs, records.locations, npcBy, labels.titles, regions).map { group ->
                 group.map { row -> row.entity.toCodexItem(labels.titles.npcStatus, labels.npcLife, row.subtitle) }
             },
         quests =
-            groupQuests(search.searchedQuests, records.npcs, records.locations, questBy, labels.titles).map { group ->
+            groupedQuests.map { group ->
                 group.map { quest -> quest.toCodexItem(search.npcsById, labels.titles.questStatus) }
             },
         locations =
-            groupLocations(search.searchedLocations, placeBy, records.locations, labels.titles).map { group ->
+            groupLocations(search.searchedLocations, placeBy, records.locations, labels.titles, regions).map { group ->
                 group.map { row -> row.entity.toCodexItem(row.subtitle) }
             },
         groupBy = codexGroupBy(tab, selection),
