@@ -67,6 +67,19 @@
     <string name="codex_empty_filtered">Nothing found. Clear the filter or change your search.</string>
     <string name="codex_delete_content_description">Delete codex entry</string>
     <string name="codex_undo_deleted_title">Removed from codex</string>
+    <string name="codex_group_none">As list</string>
+    <string name="codex_group_region">Region</string>
+    <string name="codex_group_relation">Relation</string>
+    <string name="codex_group_faction">Faction</string>
+    <string name="codex_group_status">Status</string>
+    <string name="codex_group_giver">Given by</string>
+    <string name="codex_group_type">Type</string>
+    <string name="codex_group_no_region_quest">No region</string>
+    <string name="codex_group_no_place">Place not specified</string>
+    <string name="codex_group_no_faction">No faction</string>
+    <string name="codex_group_no_giver">Unknown giver</string>
+    <string name="codex_group_giver_prefix">From:</string>
+    <string name="codex_group_no_type">No type</string>
 
     <string name="codex_entry_overline_create">CODEX · NEW ENTRY</string>
     <string name="codex_entry_overline_edit">CODEX · EDITING</string>
@@ -152,7 +165,6 @@
     <string name="settings_rename_save">Save</string>
     <string name="codex_npc_life_alive">Alive</string>
     <string name="codex_npc_life_dead">Dead</string>
-    <string name="codex_filter_npc_dead">† Dead</string>
     <string name="codex_party_presence_in">In party</string>
     <string name="codex_party_presence_away">Away</string>
     <string name="codex_party_card_you">Your character</string>

@@ -218,37 +218,6 @@ class CodexItemMappingTest {
     }
 
     @Test
-    fun `NpcListFilter Dead matches only dead npcs`() {
-        val dead = ragnar.copy(lifeState = NpcLifeState.DEAD)
-        val filter: NpcListFilter? = NpcListFilter.Dead
-        assertTrue(filter.matches(dead))
-        assertFalse(filter.matches(ragnar))
-    }
-
-    @Test
-    fun `NpcListFilter Relation matches by status regardless of life state`() {
-        val deadFriend = ragnar.copy(lifeState = NpcLifeState.DEAD)
-        assertTrue(NpcListFilter.Relation(NpcStatus.FRIEND).matches(deadFriend))
-        assertFalse(NpcListFilter.Relation(NpcStatus.ENEMY).matches(deadFriend))
-    }
-
-    @Test
-    fun `null npc filter matches everyone`() {
-        val noFilter: NpcListFilter? = null
-        assertTrue(noFilter.matches(ragnar))
-    }
-
-    @Test
-    fun `PartyPresence filter matches the member's presence and null matches all`() {
-        val inParty: PartyPresence? = PartyPresence.IN
-        val away: PartyPresence? = PartyPresence.AWAY
-        val noFilter: PartyPresence? = null
-        assertTrue(inParty.matches(lira))
-        assertFalse(away.matches(lira))
-        assertTrue(noFilter.matches(bran))
-    }
-
-    @Test
     fun `PartyMember matchesQuery matches class and player name`() {
         assertTrue(bran.matchesQuery("плут"))
         assertTrue(bran.matchesQuery("даня"))
