@@ -125,6 +125,20 @@ class CodexRegionTest {
             ),
         )
     }
+
+    @Test
+    fun `CodexRegions resolves the same regions as the direct lookups`() {
+        val north = location(1, "Север", region = "")
+        val castle = location(2, "Замок", region = "Север")
+        val giver = npc(1, locationId = castle.id)
+        val quest = quest(1, givenByNpcId = giver.id)
+        val all = listOf(north, castle)
+        val regions = CodexRegions(listOf(giver), listOf(quest), all)
+
+        assertEquals(npcRegion(giver, all), regions.regionOfNpc(giver))
+        assertEquals(questRegion(quest, listOf(giver), all), regions.regionOfQuest(quest))
+        assertEquals(castle.resolvedRegion(all), regions.regionOfLocation(castle))
+    }
 }
 
 internal fun location(

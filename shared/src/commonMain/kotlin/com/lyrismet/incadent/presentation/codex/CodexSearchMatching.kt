@@ -1,42 +1,35 @@
 package com.lyrismet.incadent.presentation.codex
 
-import com.lyrismet.incadent.core.codexgroup.npcRegion
-import com.lyrismet.incadent.core.codexgroup.questRegion
-import com.lyrismet.incadent.core.codexgroup.resolvedRegion
+import com.lyrismet.incadent.core.codexgroup.CodexRegions
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.Quest
 
-// the query arrives trimmed from the presenter, and an empty query matches every entry
-private fun matchesAny(
+// the query arrives trimmed from the presenter, and an empty query matches every entry without reading any field
+private inline fun matchesAny(
     query: String,
-    vararg fields: String?,
-): Boolean = query.isEmpty() || fields.any { field -> field?.contains(query, ignoreCase = true) == true }
+    fields: () -> List<String?>,
+): Boolean = query.isEmpty() || fields().any { field -> field?.contains(query, ignoreCase = true) == true }
 
 internal fun Npc.matchesQuery(
     query: String,
-    locations: List<Location>,
-): Boolean = matchesAny(query, name, race, faction, description, npcRegion(this, locations))
+    regions: CodexRegions,
+): Boolean = matchesAny(query) { listOf(name, race, faction, description, regions.regionOfNpc(this)) }
 
 internal fun Quest.matchesQuery(
     query: String,
-    npcs: List<Npc>,
-    locations: List<Location>,
+    npcsById: Map<Long, Npc>,
+    regions: CodexRegions,
 ): Boolean =
-    matchesAny(
-        query,
-        title,
-        reward,
-        description,
-        npcs.firstOrNull { it.id == givenByNpcId }?.name,
-        questRegion(this, npcs, locations),
-    )
+    matchesAny(query) {
+        listOf(title, reward, description, npcsById[givenByNpcId]?.name, regions.regionOfQuest(this))
+    }
 
 internal fun Location.matchesQuery(
     query: String,
-    locations: List<Location>,
-): Boolean = matchesAny(query, name, type, description, region, resolvedRegion(locations))
+    regions: CodexRegions,
+): Boolean = matchesAny(query) { listOf(name, type, description, region, regions.regionOfLocation(this)) }
 
 internal fun PartyMember.matchesQuery(query: String): Boolean =
-    matchesAny(query, name, characterClass, race, playerName, description)
+    matchesAny(query) { listOf(name, characterClass, race, playerName, description) }

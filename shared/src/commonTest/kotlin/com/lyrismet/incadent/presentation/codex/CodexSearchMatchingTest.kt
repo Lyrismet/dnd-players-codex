@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.presentation.codex
 
+import com.lyrismet.incadent.core.codexgroup.CodexRegions
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -62,51 +63,54 @@ private val bard =
         portraitUri = null,
     )
 
+private val regions = CodexRegions(npcs, listOf(errand), locations)
+private val npcsById = npcs.associateBy { it.id }
+
 class CodexSearchMatchingTest {
     @Test
     fun `Npc search matches race faction and description`() {
-        assertTrue(monk.matchesQuery("человек", locations))
-        assertTrue(monk.matchesQuery("орден", locations))
-        assertTrue(monk.matchesQuery("монах", locations))
+        assertTrue(monk.matchesQuery("человек", regions))
+        assertTrue(monk.matchesQuery("орден", regions))
+        assertTrue(monk.matchesQuery("монах", regions))
     }
 
     @Test
     fun `Npc search matches the region of its place through the region chain`() {
-        assertTrue(monk.matchesQuery("королевство", locations))
+        assertTrue(monk.matchesQuery("королевство", regions))
     }
 
     @Test
     fun `Npc search is case-insensitive across fields`() {
-        assertTrue(monk.matchesQuery("ОРДЕН", locations))
+        assertTrue(monk.matchesQuery("ОРДЕН", regions))
     }
 
     @Test
     fun `Npc search rejects text found in no field`() {
-        assertFalse(monk.matchesQuery("гоблин", locations))
+        assertFalse(monk.matchesQuery("гоблин", regions))
     }
 
     @Test
     fun `Quest search matches reward description and giver name`() {
-        assertTrue(errand.matchesQuery("серебро", npcs, locations))
-        assertTrue(errand.matchesQuery("склепе", npcs, locations))
-        assertTrue(errand.matchesQuery("ода", npcs, locations))
+        assertTrue(errand.matchesQuery("серебро", npcsById, regions))
+        assertTrue(errand.matchesQuery("склепе", npcsById, regions))
+        assertTrue(errand.matchesQuery("ода", npcsById, regions))
     }
 
     @Test
     fun `Quest search matches its region through the giver place when it has no where`() {
-        assertTrue(errand.matchesQuery("королевство", npcs, locations))
+        assertTrue(errand.matchesQuery("королевство", npcsById, regions))
     }
 
     @Test
     fun `Location search matches its raw and resolved region`() {
-        assertTrue(tavern.matchesQuery("север", locations))
-        assertTrue(tavern.matchesQuery("королевство", locations))
-        assertTrue(tavern.matchesQuery("постоялый", locations))
+        assertTrue(tavern.matchesQuery("север", regions))
+        assertTrue(tavern.matchesQuery("королевство", regions))
+        assertTrue(tavern.matchesQuery("постоялый", regions))
     }
 
     @Test
     fun `Location search matches its description`() {
-        assertTrue(tavern.matchesQuery("шумная", locations))
+        assertTrue(tavern.matchesQuery("шумная", regions))
     }
 
     @Test
@@ -119,9 +123,9 @@ class CodexSearchMatchingTest {
 
     @Test
     fun `every search matches everything for an empty query`() {
-        assertTrue(monk.matchesQuery("", locations))
-        assertTrue(errand.matchesQuery("", npcs, locations))
-        assertTrue(tavern.matchesQuery("", locations))
+        assertTrue(monk.matchesQuery("", regions))
+        assertTrue(errand.matchesQuery("", npcsById, regions))
+        assertTrue(tavern.matchesQuery("", regions))
         assertTrue(bard.matchesQuery(""))
     }
 }

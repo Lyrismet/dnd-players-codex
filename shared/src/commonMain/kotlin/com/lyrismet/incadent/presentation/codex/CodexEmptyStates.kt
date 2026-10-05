@@ -37,12 +37,14 @@ internal fun codexEmptyState(kind: CodexEmptyKind): CodexEmptyState =
     }
 
 @Composable
-private fun blankEmptyState(tab: CodexTab): CodexEmptyState.Blank =
-    CodexEmptyState.Blank(
-        title = stringResource(tab.blankTitle()),
-        text = stringResource(tab.blankText()),
-        action = CodexEmptyAction(label = stringResource(tab.blankButton()), entryType = tab.toEntryType()),
+private fun blankEmptyState(tab: CodexTab): CodexEmptyState.Blank {
+    val strings = tab.blankStrings()
+    return CodexEmptyState.Blank(
+        title = stringResource(strings.title),
+        text = stringResource(strings.text),
+        action = CodexEmptyAction(label = stringResource(strings.button), entryType = tab.toEntryType()),
     )
+}
 
 @Composable
 private fun noMatchEmptyState(kind: CodexEmptyKind.NoMatch): CodexEmptyState.NoMatch {
@@ -62,31 +64,45 @@ private fun noMatchEmptyState(kind: CodexEmptyKind.NoMatch): CodexEmptyState.NoM
     )
 }
 
-private fun CodexTab.blankTitle(): StringResource =
-    when (this) {
-        CodexTab.ALL -> Res.string.codex_empty_all_title
-        CodexTab.PARTY -> Res.string.codex_empty_party_title
-        CodexTab.NPC -> Res.string.codex_empty_npc_title
-        CodexTab.QUEST -> Res.string.codex_empty_quest_title
-        CodexTab.LOCATION -> Res.string.codex_empty_location_title
-    }
+// the three strings of a tab's blank state, resolved once per tab instead of one switch per field
+private class BlankStrings(
+    val title: StringResource,
+    val text: StringResource,
+    val button: StringResource,
+)
 
-private fun CodexTab.blankText(): StringResource =
+private fun CodexTab.blankStrings(): BlankStrings =
     when (this) {
-        CodexTab.ALL -> Res.string.codex_empty_all_text
-        CodexTab.PARTY -> Res.string.codex_empty_party_text
-        CodexTab.NPC -> Res.string.codex_empty_npc_text
-        CodexTab.QUEST -> Res.string.codex_empty_quest_text
-        CodexTab.LOCATION -> Res.string.codex_empty_location_text
-    }
-
-private fun CodexTab.blankButton(): StringResource =
-    when (this) {
-        CodexTab.ALL -> Res.string.codex_empty_all_button
-        CodexTab.PARTY -> Res.string.codex_empty_party_button
-        CodexTab.NPC -> Res.string.codex_empty_npc_button
-        CodexTab.QUEST -> Res.string.codex_empty_quest_button
-        CodexTab.LOCATION -> Res.string.codex_empty_location_button
+        CodexTab.ALL ->
+            BlankStrings(
+                Res.string.codex_empty_all_title,
+                Res.string.codex_empty_all_text,
+                Res.string.codex_empty_all_button,
+            )
+        CodexTab.PARTY ->
+            BlankStrings(
+                Res.string.codex_empty_party_title,
+                Res.string.codex_empty_party_text,
+                Res.string.codex_empty_party_button,
+            )
+        CodexTab.NPC ->
+            BlankStrings(
+                Res.string.codex_empty_npc_title,
+                Res.string.codex_empty_npc_text,
+                Res.string.codex_empty_npc_button,
+            )
+        CodexTab.QUEST ->
+            BlankStrings(
+                Res.string.codex_empty_quest_title,
+                Res.string.codex_empty_quest_text,
+                Res.string.codex_empty_quest_button,
+            )
+        CodexTab.LOCATION ->
+            BlankStrings(
+                Res.string.codex_empty_location_title,
+                Res.string.codex_empty_location_text,
+                Res.string.codex_empty_location_button,
+            )
     }
 
 private fun CodexEntryType.searchCreateButton(): StringResource =

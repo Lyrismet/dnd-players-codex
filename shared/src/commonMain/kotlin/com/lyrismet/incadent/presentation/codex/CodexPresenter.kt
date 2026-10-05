@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import com.lyrismet.incadent.core.codexgroup.CodexGroupLabels
 import com.lyrismet.incadent.core.codexgroup.CodexGroupingSelection
+import com.lyrismet.incadent.core.codexgroup.CodexRegions
 import com.lyrismet.incadent.core.codexgroup.LocationGroupBy
 import com.lyrismet.incadent.core.codexgroup.NpcGroupBy
 import com.lyrismet.incadent.core.codexgroup.QuestGroupBy
@@ -80,6 +81,7 @@ private class CodexFields(
 /** result of applying the text search query to every list */
 internal data class CodexSearchResults(
     val npcsById: Map<Long, Npc>,
+    val regions: CodexRegions,
     val searchedParties: List<PartyMember>,
     val searchedNpcs: List<Npc>,
     val searchedQuests: List<Quest>,
@@ -250,9 +252,11 @@ class CodexPresenter(
         selectedEntity: EntitySummaryItem?,
         labels: CodexLabels,
         scope: CoroutineScope,
-    ): CodexState =
-        CodexState(
-            activeTab = fields.activeTab.value,
+    ): CodexState {
+        val party = search.searchedParties.toPartyCodexItems(labels.partyCard)
+        val activeTab = fields.activeTab.value
+        return CodexState(
+            activeTab = activeTab,
             searchQuery = fields.searchQuery.value,
             tabCounts =
                 CodexTabCounts(
@@ -261,7 +265,7 @@ class CodexPresenter(
                     quest = records.quests.size,
                     location = records.locations.size,
                 ),
-            party = search.searchedParties.toPartyCodexItems(labels.partyCard),
+            party = party,
             npcs = grouped.npcs,
             quests = grouped.quests,
             locations = grouped.locations,
@@ -269,16 +273,13 @@ class CodexPresenter(
             groupOptions = grouped.groupOptions,
             emptyState =
                 codexEmptyState(
-                    codexEmptyKind(
-                        fields.activeTab.value,
-                        fields.searchQuery.value,
-                        search.hasEntriesFor(fields.activeTab.value),
-                    ),
+                    codexEmptyKind(activeTab, fields.searchQuery.value, grouped.hasEntriesFor(activeTab, party)),
                 ),
             activeSheet = codexActiveSheet(formController.buildState(records.npcs, records.locations), selectedEntity),
         ) { event ->
             onEvent(event, fields, formController, records, labels, scope)
         }
+    }
 
     private fun buildSearchResults(
         records: CodexRecords,
@@ -286,29 +287,16 @@ class CodexPresenter(
     ): CodexSearchResults {
         val query = fields.searchQuery.value.trim()
         val npcsById = records.npcs.associateBy { it.id }
+        val regions = CodexRegions(records.npcs, records.quests, records.locations)
         return CodexSearchResults(
             npcsById = npcsById,
+            regions = regions,
             searchedParties = records.parties.filter { it.matchesQuery(query) },
-            searchedNpcs = records.npcs.filter { it.matchesQuery(query, records.locations) },
-            searchedQuests = records.quests.filter { it.matchesQuery(query, records.npcs, records.locations) },
-            searchedLocations = records.locations.filter { it.matchesQuery(query, records.locations) },
+            searchedNpcs = records.npcs.filter { it.matchesQuery(query, regions) },
+            searchedQuests = records.quests.filter { it.matchesQuery(query, npcsById, regions) },
+            searchedLocations = records.locations.filter { it.matchesQuery(query, regions) },
         )
     }
-
-    private fun CodexSearchResults.hasEntriesFor(tab: CodexTab): Boolean =
-        when (tab) {
-            CodexTab.ALL -> hasAnyEntry()
-            CodexTab.PARTY -> searchedParties.isNotEmpty()
-            CodexTab.NPC -> searchedNpcs.isNotEmpty()
-            CodexTab.QUEST -> searchedQuests.isNotEmpty()
-            CodexTab.LOCATION -> searchedLocations.isNotEmpty()
-        }
-
-    private fun CodexSearchResults.hasAnyEntry(): Boolean =
-        searchedParties.isNotEmpty() ||
-            searchedNpcs.isNotEmpty() ||
-            searchedQuests.isNotEmpty() ||
-            searchedLocations.isNotEmpty()
 
     // flat circuit event-dispatch table, grows one branch per event variant - not real branching complexity
     @Suppress("CyclomaticComplexMethod", "LongMethod")

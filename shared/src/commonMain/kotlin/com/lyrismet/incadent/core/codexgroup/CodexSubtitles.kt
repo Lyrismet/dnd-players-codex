@@ -18,10 +18,9 @@ internal fun placeLine(
 // a place inside a region names the region only when it differs from the group it is shown under
 internal fun regionSubtitle(
     place: Location,
-    locations: List<Location>,
+    groupRegion: String?,
 ): String {
     val ownRegion = place.region.valueOrNull()
-    val groupRegion = place.resolvedRegion(locations)
     val outside = ownRegion?.takeIf { it != groupRegion }?.let { "в $it" }
     return joinWithDot(place.type, outside.orEmpty())
 }

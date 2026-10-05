@@ -42,7 +42,7 @@ internal fun codexEmptyKind(
     return when {
         hasEntries -> CodexEmptyKind.None
         trimmed.isEmpty() -> CodexEmptyKind.Blank(tab)
-        else -> CodexEmptyKind.NoMatch(trimmed, codexSearchCreate(tab, trimmed))
+        else -> CodexEmptyKind.NoMatch(trimmed, codexSearchCreate(tab, query))
     }
 }
 

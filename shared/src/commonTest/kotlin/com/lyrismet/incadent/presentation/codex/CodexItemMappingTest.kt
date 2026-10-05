@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.presentation.codex
 
+import com.lyrismet.incadent.core.codexgroup.CodexRegions
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -15,6 +16,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private val lifeLabels = mapOf(NpcLifeState.ALIVE to "Жив", NpcLifeState.DEAD to "Мёртв")
+
+private val noRegions = CodexRegions(emptyList(), emptyList(), emptyList())
 
 private val partyCardLabels =
     PartyCardLabels(
@@ -71,23 +74,23 @@ private val ragnar =
 class CodexItemMappingTest {
     @Test
     fun `Npc matchesQuery matches everything for an empty query`() {
-        assertTrue(ragnar.matchesQuery("", emptyList()))
+        assertTrue(ragnar.matchesQuery("", noRegions))
     }
 
     @Test
     fun `Npc matchesQuery matches the name case-insensitively`() {
-        assertTrue(ragnar.matchesQuery("рагнар", emptyList()))
-        assertTrue(ragnar.matchesQuery("РАГНАР", emptyList()))
+        assertTrue(ragnar.matchesQuery("рагнар", noRegions))
+        assertTrue(ragnar.matchesQuery("РАГНАР", noRegions))
     }
 
     @Test
     fun `Npc matchesQuery matches the description`() {
-        assertTrue(ragnar.matchesQuery("кузнец", emptyList()))
+        assertTrue(ragnar.matchesQuery("кузнец", noRegions))
     }
 
     @Test
     fun `Npc matchesQuery rejects unrelated text`() {
-        assertFalse(ragnar.matchesQuery("гоблин", emptyList()))
+        assertFalse(ragnar.matchesQuery("гоблин", noRegions))
     }
 
     @Test
@@ -101,7 +104,7 @@ class CodexItemMappingTest {
                 givenByNpcId = null,
                 locationId = null,
             )
-        assertTrue(quest.matchesQuery("", emptyList(), emptyList()))
+        assertTrue(quest.matchesQuery("", emptyMap(), noRegions))
     }
 
     @Test
@@ -115,8 +118,8 @@ class CodexItemMappingTest {
                 givenByNpcId = null,
                 locationId = null,
             )
-        assertTrue(quest.matchesQuery("меч", emptyList(), emptyList()))
-        assertTrue(quest.matchesQuery("золота", emptyList(), emptyList()))
+        assertTrue(quest.matchesQuery("меч", emptyMap(), noRegions))
+        assertTrue(quest.matchesQuery("золота", emptyMap(), noRegions))
     }
 
     @Test
@@ -131,8 +134,8 @@ class CodexItemMappingTest {
                 locationId = null,
                 description = "Найти три фрагмента клинка",
             )
-        assertTrue(quest.matchesQuery("фрагмент", emptyList(), emptyList()))
-        assertFalse(quest.matchesQuery("дракон", emptyList(), emptyList()))
+        assertTrue(quest.matchesQuery("фрагмент", emptyMap(), noRegions))
+        assertFalse(quest.matchesQuery("дракон", emptyMap(), noRegions))
     }
 
     @Test
@@ -146,7 +149,7 @@ class CodexItemMappingTest {
                 givenByNpcId = 1,
                 locationId = null,
             )
-        assertTrue(quest.matchesQuery("рагнар", listOf(ragnar), emptyList()))
+        assertTrue(quest.matchesQuery("рагнар", mapOf(ragnar.id to ragnar), noRegions))
     }
 
     @Test
@@ -160,16 +163,16 @@ class CodexItemMappingTest {
                 givenByNpcId = 99,
                 locationId = null,
             )
-        assertFalse(quest.matchesQuery("рагнар", emptyList(), emptyList()))
+        assertFalse(quest.matchesQuery("рагнар", emptyMap(), noRegions))
     }
 
     @Test
     fun `Location matchesQuery matches name and type`() {
         val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "Север")
-        assertTrue(forge.matchesQuery("", emptyList()))
-        assertTrue(forge.matchesQuery("кузница", emptyList()))
-        assertTrue(forge.matchesQuery("мастерская", emptyList()))
-        assertFalse(forge.matchesQuery("таверна", emptyList()))
+        assertTrue(forge.matchesQuery("", noRegions))
+        assertTrue(forge.matchesQuery("кузница", noRegions))
+        assertTrue(forge.matchesQuery("мастерская", noRegions))
+        assertFalse(forge.matchesQuery("таверна", noRegions))
     }
 
     @Test
