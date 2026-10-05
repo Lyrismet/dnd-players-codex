@@ -87,13 +87,12 @@ internal fun CodexEntryFormUi(
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
-                // matches every bottom-sheet body's content inset (Players Codex v5.dc.html sheetRef: 6px 20px 44px)
+                // matches every bottom-sheet body's content inset, see Players Codex v5.dc.html sheetRef 6px 20px 44px
                 .padding(top = 6.dp, bottom = 44.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // overline + heading sit flush against each other - the mockup gives this pair no gap of its own,
-            // only the blocks around it get the 16dp rhythm
+            // overline and heading sit flush, only the blocks around them get the 16dp rhythm
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 SectionOverline(text = form.overline, color = AppPalette.Gold)
                 Text(form.heading, style = MaterialTheme.typography.headlineLarge, color = AppPalette.TextHeading)

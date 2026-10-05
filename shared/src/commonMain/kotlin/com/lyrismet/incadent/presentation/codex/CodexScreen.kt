@@ -100,7 +100,7 @@ data class CodexFilterOption<T>(
     val dotColor: Color?,
 )
 
-/** the NPC tab's filter: a relation to the party, or the dead shortcut - the two axes are independent */
+/** the NPC tab's filter - a relation to the party, or the dead shortcut, the two axes are independent */
 sealed interface NpcListFilter {
     data class Relation(
         val status: NpcStatus,

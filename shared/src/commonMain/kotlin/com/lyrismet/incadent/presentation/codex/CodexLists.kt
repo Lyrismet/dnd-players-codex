@@ -10,10 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.EmptyStatePlaceholder
-import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
-import com.lyrismet.incadent.core.entitysummary.EntityRef
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_delete_content_description
 import dndplayerscodex.shared.generated.resources.codex_empty_filtered
 import dndplayerscodex.shared.generated.resources.codex_party_empty
 import dndplayerscodex.shared.generated.resources.codex_tab_location
@@ -23,21 +20,6 @@ import dndplayerscodex.shared.generated.resources.codex_tab_quest
 import org.jetbrains.compose.resources.stringResource
 
 private val LIST_CONTENT_PADDING = PaddingValues(start = 16.dp, top = 2.dp, end = 16.dp, bottom = 20.dp)
-
-@Composable
-private fun CodexDeletableRow(
-    ref: EntityRef,
-    eventSink: (CodexEvent) -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    SwipeToDeleteRow(
-        onDeleteRequested = { eventSink(CodexEvent.EntityDeleteRequested(ref)) },
-        modifier = modifier,
-        deleteContentDescription = stringResource(Res.string.codex_delete_content_description),
-        content = content,
-    )
-}
 
 @Composable
 private fun <T> CodexEntityList(
@@ -86,14 +68,7 @@ internal fun CodexPartyList(
         items = state.party,
         itemKey = { it.id },
         modifier = modifier,
-    ) { member ->
-        CodexDeletableRow(ref = EntityRef.Party(member.id), eventSink = state.eventSink) {
-            PartyCodexCard(
-                item = member,
-                onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Party(member.id))) },
-            )
-        }
-    }
+    ) { PartyRow(member = it, eventSink = state.eventSink) }
 }
 
 @Composable
@@ -105,11 +80,7 @@ internal fun CodexNpcList(
         items = state.npcs,
         itemKey = { it.id },
         modifier = modifier,
-    ) { npc ->
-        CodexDeletableRow(ref = EntityRef.Npc(npc.id), eventSink = state.eventSink) {
-            NpcCodexCard(item = npc, onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Npc(npc.id))) })
-        }
-    }
+    ) { NpcRow(npc = it, eventSink = state.eventSink) }
 }
 
 @Composable
@@ -121,15 +92,7 @@ internal fun CodexQuestList(
         items = state.quests,
         itemKey = { it.id },
         modifier = modifier,
-    ) { quest ->
-        CodexDeletableRow(ref = EntityRef.Quest(quest.id), eventSink = state.eventSink) {
-            QuestCodexCard(
-                item = quest,
-                onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Quest(quest.id))) },
-                onGiverClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Npc(it))) },
-            )
-        }
-    }
+    ) { QuestRow(quest = it, eventSink = state.eventSink) }
 }
 
 @Composable
@@ -141,14 +104,7 @@ internal fun CodexLocationList(
         items = state.locations,
         itemKey = { it.id },
         modifier = modifier,
-    ) { location ->
-        CodexDeletableRow(ref = EntityRef.Location(location.id), eventSink = state.eventSink) {
-            LocationCodexCard(
-                item = location,
-                onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Location(location.id))) },
-            )
-        }
-    }
+    ) { LocationRow(location = it, eventSink = state.eventSink) }
 }
 
 @Composable
@@ -170,45 +126,23 @@ internal fun CodexAllList(
         contentPadding = LIST_CONTENT_PADDING,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        codexSection(partyTitle, state.party, isFirst = true, key = { "party_${it.id}" }) { member ->
-            CodexDeletableRow(ref = EntityRef.Party(member.id), eventSink = state.eventSink) {
-                PartyCodexCard(
-                    item = member,
-                    onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Party(member.id))) },
-                )
-            }
+        codexSection(partyTitle, state.party, isFirst = true, key = { "party_${it.id}" }) {
+            PartyRow(member = it, eventSink = state.eventSink)
         }
-        codexSection(npcTitle, state.npcs, isFirst = state.party.isEmpty(), key = { "npc_${it.id}" }) { npc ->
-            CodexDeletableRow(ref = EntityRef.Npc(npc.id), eventSink = state.eventSink) {
-                NpcCodexCard(item = npc, onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Npc(npc.id))) })
-            }
+        codexSection(npcTitle, state.npcs, isFirst = state.party.isEmpty(), key = { "npc_${it.id}" }) {
+            NpcRow(npc = it, eventSink = state.eventSink)
         }
         codexSection(
             questTitle,
             state.quests,
             isFirst = state.party.isEmpty() && state.npcs.isEmpty(),
             key = { "quest_${it.id}" },
-        ) { quest ->
-            CodexDeletableRow(ref = EntityRef.Quest(quest.id), eventSink = state.eventSink) {
-                QuestCodexCard(
-                    item = quest,
-                    onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Quest(quest.id))) },
-                    onGiverClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Npc(it))) },
-                )
-            }
-        }
+        ) { QuestRow(quest = it, eventSink = state.eventSink) }
         codexSection(
             locationTitle,
             state.locations,
             isFirst = state.party.isEmpty() && state.npcs.isEmpty() && state.quests.isEmpty(),
             key = { "location_${it.id}" },
-        ) { location ->
-            CodexDeletableRow(ref = EntityRef.Location(location.id), eventSink = state.eventSink) {
-                LocationCodexCard(
-                    item = location,
-                    onClick = { state.eventSink(CodexEvent.EntityClicked(EntityRef.Location(location.id))) },
-                )
-            }
-        }
+        ) { LocationRow(location = it, eventSink = state.eventSink) }
     }
 }

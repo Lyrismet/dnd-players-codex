@@ -46,22 +46,25 @@ class PartyRepositoryImpl(
                         )
                         queries.lastInsertRowId().executeAsOne()
                     } else {
-                        queries.update(
-                            name = member.name,
-                            character_class = member.characterClass,
-                            race = member.race,
-                            level = member.level.toLong(),
-                            player_name = member.playerName,
-                            is_player_character = if (member.isPlayerCharacter) 1L else 0L,
-                            presence = member.presence,
-                            hp_max = member.hpMax.toLong(),
-                            hp_current = member.hpCurrent.toLong(),
-                            armor_class = member.armorClass.toLong(),
-                            initiative_bonus = member.initiativeBonus.toLong(),
-                            description = member.description,
-                            portrait_uri = member.portraitUri,
-                            id = member.id,
-                        )
+                        val updatedRows =
+                            queries
+                                .update(
+                                    name = member.name,
+                                    character_class = member.characterClass,
+                                    race = member.race,
+                                    level = member.level.toLong(),
+                                    player_name = member.playerName,
+                                    is_player_character = if (member.isPlayerCharacter) 1L else 0L,
+                                    presence = member.presence,
+                                    hp_max = member.hpMax.toLong(),
+                                    hp_current = member.hpCurrent.toLong(),
+                                    armor_class = member.armorClass.toLong(),
+                                    initiative_bonus = member.initiativeBonus.toLong(),
+                                    description = member.description,
+                                    portrait_uri = member.portraitUri,
+                                    id = member.id,
+                                ).value
+                        check(updatedRows > 0L) { "party member ${member.id} no longer exists" }
                         member.id
                     }
                 if (member.isPlayerCharacter) queries.clearOtherPlayerCharacters(id)

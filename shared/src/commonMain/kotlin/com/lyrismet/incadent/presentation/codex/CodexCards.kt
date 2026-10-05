@@ -3,6 +3,7 @@ package com.lyrismet.incadent.presentation.codex
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.designsystem.component.StatusBadge
@@ -30,11 +32,13 @@ import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
 import org.jetbrains.compose.resources.stringResource
 
+/** the shared card chrome - a tappable surface row with a leading badge and a weighted text column */
 @Composable
-internal fun NpcCodexCard(
-    item: NpcCodexItem,
+private fun CodexCardRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    badge: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Row(
         modifier =
@@ -45,38 +49,59 @@ internal fun NpcCodexCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        IconBadge(
-            size = 44.dp,
-            shape = CircleShape,
-            background = AppPalette.Background,
-            border = item.statusColor.border,
-            borderWidth = 1.5.dp,
-        ) {
-            Text(item.initial, style = MaterialTheme.typography.titleLarge, color = item.statusColor.foreground)
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = item.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = AppPalette.TextHeading,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textDecoration = if (item.isDead) TextDecoration.LineThrough else TextDecoration.None,
-                    modifier = Modifier.weight(1f),
-                )
-                item.lifeBadge?.let { StatusBadge(text = it.label, color = it.color) }
-                StatusBadge(text = item.statusLabel, color = item.statusColor)
-            }
+        badge()
+        Column(modifier = Modifier.weight(1f), content = content)
+    }
+}
+
+@Composable
+private fun CodexInitialBadge(
+    initial: String,
+    color: StatusColor,
+) {
+    IconBadge(
+        size = 44.dp,
+        shape = CircleShape,
+        background = AppPalette.Background,
+        border = color.border,
+        borderWidth = 1.5.dp,
+    ) {
+        Text(initial, style = MaterialTheme.typography.titleLarge, color = color.foreground)
+    }
+}
+
+@Composable
+internal fun NpcCodexCard(
+    item: NpcCodexItem,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    CodexCardRow(
+        onClick = onClick,
+        modifier = modifier,
+        badge = { CodexInitialBadge(item.initial, item.statusColor) },
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text = item.subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = AppPalette.TextSecondary,
-                maxLines = 2,
+                text = item.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = AppPalette.TextHeading,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 2.dp),
+                textDecoration = if (item.isDead) TextDecoration.LineThrough else TextDecoration.None,
+                modifier = Modifier.weight(1f),
             )
+            item.lifeBadge?.let { StatusBadge(text = it.label, color = it.color) }
+            StatusBadge(text = item.statusLabel, color = item.statusColor)
         }
+        Text(
+            text = item.subtitle,
+            style = MaterialTheme.typography.bodyMedium,
+            color = AppPalette.TextSecondary,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 2.dp),
+        )
     }
 }
 
@@ -86,51 +111,36 @@ internal fun PartyCodexCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .appCard(shape = RoundedCornerShape(14.dp), onClick = onClick)
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    CodexCardRow(
+        onClick = onClick,
+        modifier = modifier,
+        badge = { CodexInitialBadge(item.initial, item.color) },
     ) {
-        IconBadge(
-            size = 44.dp,
-            shape = CircleShape,
-            background = AppPalette.Background,
-            border = item.color.border,
-            borderWidth = 1.5.dp,
-        ) {
-            Text(item.initial, style = MaterialTheme.typography.titleLarge, color = item.color.foreground)
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = item.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = AppPalette.TextHeading,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                StatusBadge(text = item.presenceLabel, color = item.presenceColor)
-            }
-            if (item.subtitle.isNotBlank()) {
-                Text(
-                    text = item.subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = AppPalette.TextSecondary,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
-            }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text = item.meta,
-                style = MaterialTheme.typography.bodySmall,
-                color = AppPalette.TextTertiary,
+                text = item.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = AppPalette.TextHeading,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            StatusBadge(text = item.presenceLabel, color = item.presenceColor)
+        }
+        if (item.subtitle.isNotBlank()) {
+            Text(
+                text = item.subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppPalette.TextSecondary,
                 modifier = Modifier.padding(top = 2.dp),
             )
         }
+        Text(
+            text = item.meta,
+            style = MaterialTheme.typography.bodySmall,
+            color = AppPalette.TextTertiary,
+            modifier = Modifier.padding(top = 2.dp),
+        )
     }
 }
 
@@ -202,37 +212,32 @@ internal fun LocationCodexCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .appCard(shape = RoundedCornerShape(14.dp), onClick = onClick)
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    CodexCardRow(
+        onClick = onClick,
+        modifier = modifier,
+        badge = {
+            IconBadge(
+                size = 44.dp,
+                shape = RoundedCornerShape(12.dp),
+                background = AppPalette.Parchment.copy(alpha = 0.08f),
+                border = AppPalette.Parchment.copy(alpha = 0.3f),
+            ) {
+                Text(MentionGlyph.LOCATION.symbol, fontSize = 13.sp, color = AppPalette.Parchment)
+            }
+        },
     ) {
-        IconBadge(
-            size = 44.dp,
-            shape = RoundedCornerShape(12.dp),
-            background = AppPalette.Parchment.copy(alpha = 0.08f),
-            border = AppPalette.Parchment.copy(alpha = 0.3f),
-        ) {
-            Text(MentionGlyph.LOCATION.symbol, fontSize = 13.sp, color = AppPalette.Parchment)
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = item.name,
-                style = MaterialTheme.typography.titleMedium,
-                color = AppPalette.TextHeading,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                item.subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = AppPalette.TextSecondary,
-                modifier = Modifier.padding(top = 2.dp),
-            )
-        }
+        Text(
+            text = item.name,
+            style = MaterialTheme.typography.titleMedium,
+            color = AppPalette.TextHeading,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            item.subtitle,
+            style = MaterialTheme.typography.bodyMedium,
+            color = AppPalette.TextSecondary,
+            modifier = Modifier.padding(top = 2.dp),
+        )
     }
 }

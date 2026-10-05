@@ -334,7 +334,7 @@ private fun codexActiveSheet(
         else -> null
     }
 
-// mirrors the mockup's openNew(): "Все" falls back to NPC, every other tab keeps its own type
+// mirrors the mockup's openNew() - "Все" falls back to NPC, every other tab keeps its own type
 private fun CodexTab.toEntryType(): CodexEntryType =
     when (this) {
         CodexTab.PARTY -> CodexEntryType.PARTY

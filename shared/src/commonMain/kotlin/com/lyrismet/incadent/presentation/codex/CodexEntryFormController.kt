@@ -106,7 +106,7 @@ class CodexEntryFormController private constructor(
         }
     }
 
-    // defaultType mirrors the mockup's openNew(): the active codex tab pre-selects the form's type
+    // defaultType mirrors the mockup's openNew() - the active codex tab pre-selects the form's type
     fun onAddEntryClicked(defaultType: CodexEntryType) {
         fields.value = CodexEntryFormFields(editingRef = null, type = defaultType)
     }

@@ -51,10 +51,14 @@ data class MentionCandidate(
     val entity: MentionEntity,
 )
 
+/** sorted longest key first, so "@Кассиан Вейл" beats "@Кассиан" when both are candidates */
 fun mentionCandidates(
     entities: List<MentionEntity>,
     questPrefix: String,
-): List<MentionCandidate> = entities.map { MentionCandidate(mentionKey(it, questPrefix), it) }
+): List<MentionCandidate> =
+    entities
+        .map { MentionCandidate(mentionKey(it, questPrefix), it) }
+        .sortedByDescending { it.key.length }
 
 sealed interface MentionSegment {
     data class Text(
@@ -66,7 +70,7 @@ sealed interface MentionSegment {
     ) : MentionSegment
 }
 
-/** splits [text] on "@" + a known candidate key, longest key first so "@Кассиан Вейл" beats "@Кассиан" */
+/** splits [text] on "@" + a known candidate key, the candidates must come longest-key-first from [mentionCandidates] */
 fun parseMentions(
     text: String,
     candidates: List<MentionCandidate>,
@@ -81,12 +85,11 @@ private fun splitOnMentions(
     text: String,
     candidates: List<MentionCandidate>,
 ): List<MentionSegment> {
-    val sortedByLongestKey = candidates.sortedByDescending { it.key.length }
     val segments = mutableListOf<MentionSegment>()
     val buffer = StringBuilder()
     var i = 0
     while (i < text.length) {
-        val match = if (text[i] == '@') sortedByLongestKey.firstOrNull { text.startsWith(it.key, i + 1) } else null
+        val match = if (text[i] == '@') candidates.firstOrNull { text.startsWith(it.key, i + 1) } else null
         if (match != null) {
             if (buffer.isNotEmpty()) {
                 segments += MentionSegment.Text(buffer.toString())
