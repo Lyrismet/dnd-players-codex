@@ -58,7 +58,7 @@ fun CodexUi(
                     onSelected = { state.eventSink(CodexEvent.TabSelected(it)) },
                     modifier = Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp),
                 )
-                CodexFilters(state, modifier = Modifier.padding(top = 10.dp))
+                CodexGroupRow(state, modifier = Modifier.padding(top = 10.dp))
             }
             Box(modifier = Modifier.weight(1f)) {
                 when (state.activeTab) {
@@ -88,39 +88,19 @@ fun CodexUi(
     }
 }
 
-// only the party, NPC and quest tabs have a filter, places have none
+// the group row only shows on the tabs that group - the ALL and party tabs have no group choice
 @Composable
-private fun CodexFilters(
+private fun CodexGroupRow(
     state: CodexState,
     modifier: Modifier = Modifier,
 ) {
-    when (state.activeTab) {
-        CodexTab.PARTY ->
-            CodexFilterChipRow(
-                items = state.partyFilterOptions,
-                selected = state.partyFilter,
-                onSelected = { state.eventSink(CodexEvent.PartyFilterSelected(it)) },
-                modifier = modifier,
-            )
-
-        CodexTab.NPC ->
-            CodexFilterChipRow(
-                items = state.npcFilterOptions,
-                selected = state.npcFilter,
-                onSelected = { state.eventSink(CodexEvent.NpcFilterSelected(it)) },
-                modifier = modifier,
-            )
-
-        CodexTab.QUEST ->
-            CodexFilterChipRow(
-                items = state.questFilterOptions,
-                selected = state.questStatusFilter,
-                onSelected = { state.eventSink(CodexEvent.QuestStatusFilterSelected(it)) },
-                modifier = modifier,
-            )
-
-        CodexTab.ALL, CodexTab.LOCATION -> Unit
-    }
+    if (state.groupOptions.isEmpty()) return
+    CodexFilterChipRow(
+        items = state.groupOptions,
+        selected = state.groupBy,
+        onSelected = { state.eventSink(CodexEvent.GroupBySelected(it)) },
+        modifier = modifier,
+    )
 }
 
 @Composable

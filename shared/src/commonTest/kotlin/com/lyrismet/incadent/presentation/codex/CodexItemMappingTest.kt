@@ -173,79 +173,38 @@ class CodexItemMappingTest {
     }
 
     @Test
-    fun `Npc toCodexItems subtitle combines race and faction`() {
-        val items =
-            listOf(
-                ragnar,
-            ).toNpcCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
-        assertEquals("Дварф · Гильдия", items.single().subtitle)
+    fun `Npc toCodexItem subtitle combines race and faction`() {
+        val item = ragnar.toCodexItem(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
+        assertEquals("Дварф · Гильдия", item.subtitle)
     }
 
     @Test
-    fun `Location toCodexItems subtitle combines type and region`() {
+    fun `Location toCodexItem subtitle combines type and region`() {
         val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "Север")
-        assertEquals("Мастерская · Север", listOf(forge).toCodexItems().single().subtitle)
+        assertEquals("Мастерская · Север", forge.toCodexItem().subtitle)
     }
 
     @Test
-    fun `Npc toCodexItems subtitle has no dangling separator when race and faction are blank`() {
+    fun `Npc toCodexItem subtitle has no dangling separator when race and faction are blank`() {
         val bare = ragnar.copy(race = "", faction = "")
-        val items =
-            listOf(
-                bare,
-            ).toNpcCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
-        assertEquals("", items.single().subtitle)
+        val item = bare.toCodexItem(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
+        assertEquals("", item.subtitle)
     }
 
     @Test
-    fun `Location toCodexItems subtitle has no dangling separator when region is blank`() {
+    fun `Location toCodexItem subtitle has no dangling separator when region is blank`() {
         val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "")
-        assertEquals("Мастерская", listOf(forge).toCodexItems().single().subtitle)
+        assertEquals("Мастерская", forge.toCodexItem().subtitle)
     }
 
     @Test
-    fun `Npc toCodexItems adds a life badge only for the dead`() {
+    fun `Npc toCodexItem adds a life badge only for the dead`() {
         val dead = ragnar.copy(id = 2, lifeState = NpcLifeState.DEAD)
-        val items =
-            listOf(
-                ragnar,
-                dead,
-            ).toNpcCodexItems(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
+        val statusLabels = mapOf(NpcStatus.FRIEND to "Друг")
 
-        assertNull(items[0].lifeBadge)
-        assertEquals("Мёртв", items[1].lifeBadge?.label)
-        assertTrue(items[1].isDead)
-    }
-
-    @Test
-    fun `NpcListFilter Dead matches only dead npcs`() {
-        val dead = ragnar.copy(lifeState = NpcLifeState.DEAD)
-        val filter: NpcListFilter? = NpcListFilter.Dead
-        assertTrue(filter.matches(dead))
-        assertFalse(filter.matches(ragnar))
-    }
-
-    @Test
-    fun `NpcListFilter Relation matches by status regardless of life state`() {
-        val deadFriend = ragnar.copy(lifeState = NpcLifeState.DEAD)
-        assertTrue(NpcListFilter.Relation(NpcStatus.FRIEND).matches(deadFriend))
-        assertFalse(NpcListFilter.Relation(NpcStatus.ENEMY).matches(deadFriend))
-    }
-
-    @Test
-    fun `null npc filter matches everyone`() {
-        val noFilter: NpcListFilter? = null
-        assertTrue(noFilter.matches(ragnar))
-    }
-
-    @Test
-    fun `PartyPresence filter matches the member's presence and null matches all`() {
-        val inParty: PartyPresence? = PartyPresence.IN
-        val away: PartyPresence? = PartyPresence.AWAY
-        val noFilter: PartyPresence? = null
-        assertTrue(inParty.matches(lira))
-        assertFalse(away.matches(lira))
-        assertTrue(noFilter.matches(bran))
+        assertNull(ragnar.toCodexItem(statusLabels, lifeLabels).lifeBadge)
+        assertEquals("Мёртв", dead.toCodexItem(statusLabels, lifeLabels).lifeBadge?.label)
+        assertTrue(dead.toCodexItem(statusLabels, lifeLabels).isDead)
     }
 
     @Test

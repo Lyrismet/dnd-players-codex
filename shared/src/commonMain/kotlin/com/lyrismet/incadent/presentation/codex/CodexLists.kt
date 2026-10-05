@@ -9,7 +9,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.lyrismet.incadent.core.codexgroup.CodexGroup
 import com.lyrismet.incadent.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_empty_filtered
 import dndplayerscodex.shared.generated.resources.codex_party_empty
@@ -38,6 +40,34 @@ private fun <T> CodexEntityList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(items, key = itemKey) { itemContent(it) }
+    }
+}
+
+// a grouped list - the title header is skipped for the ungrouped "as a list" section
+@Composable
+private fun <T> CodexGroupedList(
+    groups: List<CodexGroup<T>>,
+    itemKey: (T) -> Any,
+    modifier: Modifier = Modifier,
+    itemContent: @Composable (T) -> Unit,
+) {
+    if (groups.isEmpty()) {
+        EmptyStatePlaceholder(text = stringResource(Res.string.codex_empty_filtered))
+        return
+    }
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = LIST_CONTENT_PADDING,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        groups.forEachIndexed { index, group ->
+            group.title?.let { title ->
+                item {
+                    CodexSectionHeader("${MentionGlyph.LOCATION.symbol} $title", group.items.size, isFirst = index == 0)
+                }
+            }
+            items(group.items, key = itemKey) { itemContent(it) }
+        }
     }
 }
 
@@ -76,8 +106,8 @@ internal fun CodexNpcList(
     state: CodexState,
     modifier: Modifier = Modifier,
 ) {
-    CodexEntityList(
-        items = state.npcs,
+    CodexGroupedList(
+        groups = state.npcs,
         itemKey = { it.id },
         modifier = modifier,
     ) { NpcRow(npc = it, eventSink = state.eventSink) }
@@ -88,8 +118,8 @@ internal fun CodexQuestList(
     state: CodexState,
     modifier: Modifier = Modifier,
 ) {
-    CodexEntityList(
-        items = state.quests,
+    CodexGroupedList(
+        groups = state.quests,
         itemKey = { it.id },
         modifier = modifier,
     ) { QuestRow(quest = it, eventSink = state.eventSink) }
@@ -100,8 +130,8 @@ internal fun CodexLocationList(
     state: CodexState,
     modifier: Modifier = Modifier,
 ) {
-    CodexEntityList(
-        items = state.locations,
+    CodexGroupedList(
+        groups = state.locations,
         itemKey = { it.id },
         modifier = modifier,
     ) { LocationRow(location = it, eventSink = state.eventSink) }
@@ -112,7 +142,11 @@ internal fun CodexAllList(
     state: CodexState,
     modifier: Modifier = Modifier,
 ) {
-    if (listOf<List<*>>(state.party, state.npcs, state.quests, state.locations).all { it.isEmpty() }) {
+    // the ALL tab never groups, so every group holds the one ungrouped list and flattening it is lossless
+    val npcs = state.npcs.flatMap { it.items }
+    val quests = state.quests.flatMap { it.items }
+    val locations = state.locations.flatMap { it.items }
+    if (listOf<List<*>>(state.party, npcs, quests, locations).all { it.isEmpty() }) {
         EmptyStatePlaceholder(text = stringResource(Res.string.codex_empty_filtered))
         return
     }
@@ -129,19 +163,19 @@ internal fun CodexAllList(
         codexSection(partyTitle, state.party, isFirst = true, key = { "party_${it.id}" }) {
             PartyRow(member = it, eventSink = state.eventSink)
         }
-        codexSection(npcTitle, state.npcs, isFirst = state.party.isEmpty(), key = { "npc_${it.id}" }) {
+        codexSection(npcTitle, npcs, isFirst = state.party.isEmpty(), key = { "npc_${it.id}" }) {
             NpcRow(npc = it, eventSink = state.eventSink)
         }
         codexSection(
             questTitle,
-            state.quests,
-            isFirst = state.party.isEmpty() && state.npcs.isEmpty(),
+            quests,
+            isFirst = state.party.isEmpty() && npcs.isEmpty(),
             key = { "quest_${it.id}" },
         ) { QuestRow(quest = it, eventSink = state.eventSink) }
         codexSection(
             locationTitle,
-            state.locations,
-            isFirst = state.party.isEmpty() && state.npcs.isEmpty() && state.quests.isEmpty(),
+            locations,
+            isFirst = state.party.isEmpty() && npcs.isEmpty() && quests.isEmpty(),
             key = { "location_${it.id}" },
         ) { LocationRow(location = it, eventSink = state.eventSink) }
     }

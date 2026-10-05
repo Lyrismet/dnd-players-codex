@@ -6,6 +6,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import com.lyrismet.incadent.core.codexgroup.CodexGroupLabels
+import com.lyrismet.incadent.core.codexgroup.CodexGroupingSelection
+import com.lyrismet.incadent.core.codexgroup.LocationGroupBy
+import com.lyrismet.incadent.core.codexgroup.NpcGroupBy
+import com.lyrismet.incadent.core.codexgroup.QuestGroupBy
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
@@ -19,10 +24,8 @@ import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
-import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.PartyMember
-import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.SessionNumbering
@@ -41,8 +44,19 @@ import dndplayerscodex.shared.generated.resources.codex_entry_type_location
 import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_type_party
 import dndplayerscodex.shared.generated.resources.codex_entry_type_quest
-import dndplayerscodex.shared.generated.resources.codex_filter_all
-import dndplayerscodex.shared.generated.resources.codex_filter_npc_dead
+import dndplayerscodex.shared.generated.resources.codex_group_faction
+import dndplayerscodex.shared.generated.resources.codex_group_giver
+import dndplayerscodex.shared.generated.resources.codex_group_giver_prefix
+import dndplayerscodex.shared.generated.resources.codex_group_no_faction
+import dndplayerscodex.shared.generated.resources.codex_group_no_giver
+import dndplayerscodex.shared.generated.resources.codex_group_no_place
+import dndplayerscodex.shared.generated.resources.codex_group_no_region_quest
+import dndplayerscodex.shared.generated.resources.codex_group_no_type
+import dndplayerscodex.shared.generated.resources.codex_group_none
+import dndplayerscodex.shared.generated.resources.codex_group_region
+import dndplayerscodex.shared.generated.resources.codex_group_relation
+import dndplayerscodex.shared.generated.resources.codex_group_status
+import dndplayerscodex.shared.generated.resources.codex_group_type
 import dndplayerscodex.shared.generated.resources.codex_party_card_ac
 import dndplayerscodex.shared.generated.resources.codex_party_card_hp
 import dndplayerscodex.shared.generated.resources.codex_party_card_player_prefix
@@ -58,37 +72,26 @@ import org.jetbrains.compose.resources.stringResource
 private class CodexFields(
     val activeTab: MutableState<CodexTab>,
     val searchQuery: MutableState<String>,
-    val partyFilter: MutableState<PartyPresence?>,
-    val npcFilter: MutableState<NpcListFilter?>,
-    val questStatusFilter: MutableState<QuestStatus?>,
+    val grouping: MutableState<CodexGroupingSelection>,
     val selectedEntityRef: MutableState<EntityRef?>,
     val entitySheet: EntitySheetInteractions,
 )
 
-/** result of applying the search query (and the status filters of the tabs that have one) */
-private data class CodexSearchResults(
+/** result of applying the text search query to every list */
+internal data class CodexSearchResults(
     val npcsById: Map<Long, Npc>,
     val searchedParties: List<PartyMember>,
     val searchedNpcs: List<Npc>,
     val searchedQuests: List<Quest>,
     val searchedLocations: List<Location>,
-    val filteredParties: List<PartyMember>,
-    val filteredNpcs: List<Npc>,
-    val filteredQuests: List<Quest>,
 )
 
 /** the labels the codex screen resolves from resources, collected once per composition */
-@Suppress("LongParameterList")
 private class CodexLabels(
-    val all: String,
-    val npcDead: String,
-    val npcStatus: Map<NpcStatus, String>,
-    val npcLife: Map<NpcLifeState, String>,
-    val questStatus: Map<QuestStatus, String>,
-    val partyPresence: Map<PartyPresence, String>,
     val partyCard: PartyCardLabels,
     val entityType: Map<CodexEntryType, String>,
     val undoDeletedTitle: String,
+    val grouped: CodexGroupedLabels,
 )
 
 @Suppress("LongParameterList")
@@ -122,9 +125,7 @@ class CodexPresenter(
         // rememberRetained not remember - state must survive push/pop navigation, not just recomposition
         val activeTab = rememberRetained { mutableStateOf(CodexTab.ALL) }
         val searchQuery = rememberRetained { mutableStateOf("") }
-        val partyFilter = rememberRetained { mutableStateOf<PartyPresence?>(null) }
-        val npcFilter = rememberRetained { mutableStateOf<NpcListFilter?>(null) }
-        val questStatusFilter = rememberRetained { mutableStateOf<QuestStatus?>(null) }
+        val grouping = rememberRetained { mutableStateOf(CodexGroupingSelection()) }
         val selectedEntityRef = rememberRetained { mutableStateOf<EntityRef?>(null) }
         val entitySheet =
             EntitySheetInteractions(selectedEntityRef, npcRepository, questRepository, partyRepository, navigator)
@@ -139,9 +140,7 @@ class CodexPresenter(
             CodexFields(
                 activeTab,
                 searchQuery,
-                partyFilter,
-                npcFilter,
-                questStatusFilter,
+                grouping,
                 selectedEntityRef,
                 entitySheet,
             )
@@ -150,6 +149,8 @@ class CodexPresenter(
         val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix())
         val records = CodexRecords(parties, npcs, quests, locations)
         val search = buildSearchResults(records, fields)
+        val grouped =
+            codexGroupedLists(search, records, activeTab.value, grouping.value, labels.grouped)
 
         val selectedEntity =
             selectedEntitySummary(
@@ -164,19 +165,13 @@ class CodexPresenter(
                 parties,
             )
 
-        return buildCodexState(fields, formController, records, search, selectedEntity, labels, scope)
+        return buildCodexState(fields, formController, records, search, grouped, selectedEntity, labels, scope)
     }
 
     @Composable
     private fun codexLabels(): CodexLabels {
         val partyPresence = partyPresenceLabels()
         return CodexLabels(
-            all = stringResource(Res.string.codex_filter_all),
-            npcDead = stringResource(Res.string.codex_filter_npc_dead),
-            npcStatus = npcStatusLabels(),
-            npcLife = npcLifeLabels(),
-            questStatus = questStatusLabels(),
-            partyPresence = partyPresence,
             partyCard =
                 PartyCardLabels(
                     presence = partyPresence,
@@ -193,8 +188,52 @@ class CodexPresenter(
                     CodexEntryType.LOCATION to stringResource(Res.string.codex_entry_type_location),
                 ),
             undoDeletedTitle = stringResource(Res.string.codex_undo_deleted_title),
+            grouped = groupedLabels(npcStatusLabels(), questStatusLabels()),
         )
     }
+
+    @Composable
+    private fun groupedLabels(
+        npcStatus: Map<NpcStatus, String>,
+        questStatus: Map<QuestStatus, String>,
+    ): CodexGroupedLabels =
+        CodexGroupedLabels(
+            titles =
+                CodexGroupLabels(
+                    noRegionForQuest = stringResource(Res.string.codex_group_no_region_quest),
+                    noPlace = stringResource(Res.string.codex_group_no_place),
+                    noFaction = stringResource(Res.string.codex_group_no_faction),
+                    noGiver = stringResource(Res.string.codex_group_no_giver),
+                    giverPrefix = stringResource(Res.string.codex_group_giver_prefix),
+                    noType = stringResource(Res.string.codex_group_no_type),
+                    npcStatus = npcStatus,
+                    questStatus = questStatus,
+                ),
+            options =
+                CodexGroupOptionLabels(
+                    npc =
+                        mapOf(
+                            NpcGroupBy.REGION to stringResource(Res.string.codex_group_region),
+                            NpcGroupBy.RELATION to stringResource(Res.string.codex_group_relation),
+                            NpcGroupBy.FACTION to stringResource(Res.string.codex_group_faction),
+                            NpcGroupBy.NONE to stringResource(Res.string.codex_group_none),
+                        ),
+                    quest =
+                        mapOf(
+                            QuestGroupBy.REGION to stringResource(Res.string.codex_group_region),
+                            QuestGroupBy.STATUS to stringResource(Res.string.codex_group_status),
+                            QuestGroupBy.GIVER to stringResource(Res.string.codex_group_giver),
+                            QuestGroupBy.NONE to stringResource(Res.string.codex_group_none),
+                        ),
+                    place =
+                        mapOf(
+                            LocationGroupBy.REGION to stringResource(Res.string.codex_group_region),
+                            LocationGroupBy.TYPE to stringResource(Res.string.codex_group_type),
+                            LocationGroupBy.NONE to stringResource(Res.string.codex_group_none),
+                        ),
+                ),
+            npcLife = npcLifeLabels(),
+        )
 
     @Composable
     private fun questPrefix(): String = stringResource(Res.string.session_detail_quest_mention_prefix)
@@ -207,6 +246,7 @@ class CodexPresenter(
         formController: CodexEntryFormController,
         records: CodexRecords,
         search: CodexSearchResults,
+        grouped: CodexGroupedLists,
         selectedEntity: EntitySummaryItem?,
         labels: CodexLabels,
         scope: CoroutineScope,
@@ -221,21 +261,12 @@ class CodexPresenter(
                     quest = records.quests.size,
                     location = records.locations.size,
                 ),
-            party = search.filteredParties.toPartyCodexItems(labels.partyCard),
-            partyFilter = fields.partyFilter.value,
-            partyFilterOptions = partyFilterOptions(search.searchedParties, labels.partyPresence, labels.all),
-            npcs = search.filteredNpcs.toNpcCodexItems(labels.npcStatus, labels.npcLife),
-            npcFilter = fields.npcFilter.value,
-            npcFilterOptions = npcFilterOptions(search.searchedNpcs, labels.npcStatus, labels.npcDead, labels.all),
-            quests = search.filteredQuests.toCodexItems(search.npcsById, labels.questStatus),
-            questStatusFilter = fields.questStatusFilter.value,
-            questFilterOptions =
-                questFilterOptions(
-                    search.searchedQuests.groupingBy { it.status }.eachCount(),
-                    labels.questStatus,
-                    labels.all,
-                ),
-            locations = search.searchedLocations.toCodexItems(),
+            party = search.searchedParties.toPartyCodexItems(labels.partyCard),
+            npcs = grouped.npcs,
+            quests = grouped.quests,
+            locations = grouped.locations,
+            groupBy = grouped.groupBy,
+            groupOptions = grouped.groupOptions,
             activeSheet = codexActiveSheet(formController.buildState(records.npcs, records.locations), selectedEntity),
         ) { event ->
             onEvent(event, fields, formController, records, labels, scope)
@@ -250,18 +281,12 @@ class CodexPresenter(
         val searchedParties = records.parties.filter { it.matchesQuery(query) }
         val searchedNpcs = records.npcs.filter { it.matchesQuery(query) }
         val searchedQuests = records.quests.filter { it.matchesQuery(query, npcsById) }
-        val partyFilter = fields.partyFilter.value
-        val npcFilter = fields.npcFilter.value
-        val questStatusFilter = fields.questStatusFilter.value
         return CodexSearchResults(
             npcsById = npcsById,
             searchedParties = searchedParties,
             searchedNpcs = searchedNpcs,
             searchedQuests = searchedQuests,
             searchedLocations = records.locations.filter { it.matchesQuery(query) },
-            filteredParties = searchedParties.filter { partyFilter.matches(it) },
-            filteredNpcs = searchedNpcs.filter { npcFilter.matches(it) },
-            filteredQuests = searchedQuests.filter { questStatusFilter == null || it.status == questStatusFilter },
         )
     }
 
@@ -278,9 +303,7 @@ class CodexPresenter(
         when (event) {
             is CodexEvent.TabSelected -> fields.activeTab.value = event.tab
             is CodexEvent.SearchQueryChanged -> fields.searchQuery.value = event.query
-            is CodexEvent.PartyFilterSelected -> fields.partyFilter.value = event.presence
-            is CodexEvent.NpcFilterSelected -> fields.npcFilter.value = event.filter
-            is CodexEvent.QuestStatusFilterSelected -> fields.questStatusFilter.value = event.status
+            is CodexEvent.GroupBySelected -> fields.grouping.value = fields.grouping.value.select(event.choice)
             is CodexEvent.EntityClicked -> fields.entitySheet.onEntityClicked(event.ref)
             is CodexEvent.NpcStatusSelected -> fields.entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
             is CodexEvent.NpcLifeSelected -> fields.entitySheet.onNpcLifeSelected(scope, event.npcId, event.lifeState)

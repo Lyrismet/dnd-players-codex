@@ -67,6 +67,19 @@
     <string name="codex_empty_filtered">Ничего не найдено. Сбросьте фильтр или измените запрос.</string>
     <string name="codex_delete_content_description">Удалить запись кодекса</string>
     <string name="codex_undo_deleted_title">Удалено из кодекса</string>
+    <string name="codex_group_none">Списком</string>
+    <string name="codex_group_region">Регион</string>
+    <string name="codex_group_relation">Отношение</string>
+    <string name="codex_group_faction">Фракция</string>
+    <string name="codex_group_status">Статус</string>
+    <string name="codex_group_giver">Кто дал</string>
+    <string name="codex_group_type">Тип</string>
+    <string name="codex_group_no_region_quest">Без региона</string>
+    <string name="codex_group_no_place">Место не указано</string>
+    <string name="codex_group_no_faction">Без фракции</string>
+    <string name="codex_group_no_giver">Неизвестно от кого</string>
+    <string name="codex_group_giver_prefix">От:</string>
+    <string name="codex_group_no_type">Без типа</string>
 
     <string name="codex_entry_overline_create">КОДЕКС · НОВАЯ ЗАПИСЬ</string>
     <string name="codex_entry_overline_edit">КОДЕКС · РЕДАКТИРОВАНИЕ</string>
@@ -153,7 +166,6 @@
     <string name="settings_rename_save">Сохранить</string>
     <string name="codex_npc_life_alive">Жив</string>
     <string name="codex_npc_life_dead">Мёртв</string>
-    <string name="codex_filter_npc_dead">† Мёртвые</string>
     <string name="codex_party_presence_in">В составе</string>
     <string name="codex_party_presence_away">Отсутствует</string>
     <string name="codex_party_card_you">Ваш персонаж</string>

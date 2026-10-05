@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
+import com.lyrismet.incadent.core.designsystem.component.ChoiceChip
 import com.lyrismet.incadent.core.designsystem.component.Dot
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
@@ -135,7 +136,7 @@ internal fun CodexTabRow(
 internal fun <T> CodexFilterChipRow(
     items: List<CodexFilterOption<T>>,
     selected: T?,
-    onSelected: (T?) -> Unit,
+    onSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -143,37 +144,11 @@ internal fun <T> CodexFilterChipRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         items.forEach { option ->
-            val isSelected = option.value == selected
-            val background = if (isSelected) AppPalette.Gold else AppPalette.Surface
-            val foreground = if (isSelected) AppPalette.Background else AppPalette.TextDescription
-            val border = if (isSelected) AppPalette.Gold else AppPalette.Border
-            Row(
-                modifier =
-                    Modifier
-                        .height(30.dp)
-                        .appCard(
-                            shape = RoundedCornerShape(15.dp),
-                            background = background,
-                            border = border,
-                            onClick = { onSelected(option.value) },
-                        ).padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                option.dotColor?.let { dotColor ->
-                    Dot(size = 6.dp, color = if (isSelected) foreground else dotColor)
-                }
-                Text(
-                    option.label,
-                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                    color = foreground,
-                )
-                Text(
-                    option.count.toString(),
-                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                    color = foreground.copy(alpha = 0.6f),
-                )
-            }
+            ChoiceChip(
+                text = option.label,
+                selected = option.value == selected,
+                onClick = { onSelected(option.value) },
+            )
         }
     }
 }

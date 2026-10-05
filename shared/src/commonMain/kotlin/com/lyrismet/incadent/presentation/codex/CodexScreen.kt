@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.presentation.codex
 
-import androidx.compose.ui.graphics.Color
+import com.lyrismet.incadent.core.codexgroup.CodexGroup
+import com.lyrismet.incadent.core.codexgroup.CodexGroupBy
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.entitysummary.EntityRef
@@ -93,21 +94,11 @@ data class LocationCodexItem(
     val subtitle: String,
 )
 
+/** one chip of the codex group row */
 data class CodexFilterOption<T>(
-    val value: T?,
+    val value: T,
     val label: String,
-    val count: Int,
-    val dotColor: Color?,
 )
-
-/** the NPC tab's filter - a relation to the party, or the dead shortcut, the two axes are independent */
-sealed interface NpcListFilter {
-    data class Relation(
-        val status: NpcStatus,
-    ) : NpcListFilter
-
-    data object Dead : NpcListFilter
-}
 
 enum class CodexEntryType { PARTY, NPC, QUEST, LOCATION }
 
@@ -174,15 +165,11 @@ data class CodexState(
     val searchQuery: String = "",
     val tabCounts: CodexTabCounts = CodexTabCounts(),
     val party: List<PartyCodexItem> = emptyList(),
-    val partyFilter: PartyPresence? = null,
-    val partyFilterOptions: List<CodexFilterOption<PartyPresence>> = emptyList(),
-    val npcs: List<NpcCodexItem> = emptyList(),
-    val npcFilter: NpcListFilter? = null,
-    val npcFilterOptions: List<CodexFilterOption<NpcListFilter>> = emptyList(),
-    val quests: List<QuestCodexItem> = emptyList(),
-    val questStatusFilter: QuestStatus? = null,
-    val questFilterOptions: List<CodexFilterOption<QuestStatus>> = emptyList(),
-    val locations: List<LocationCodexItem> = emptyList(),
+    val npcs: List<CodexGroup<NpcCodexItem>> = emptyList(),
+    val quests: List<CodexGroup<QuestCodexItem>> = emptyList(),
+    val locations: List<CodexGroup<LocationCodexItem>> = emptyList(),
+    val groupBy: CodexGroupBy? = null,
+    val groupOptions: List<CodexFilterOption<CodexGroupBy>> = emptyList(),
     val activeSheet: CodexSheet? = null,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
@@ -196,16 +183,8 @@ sealed interface CodexEvent : CircuitUiEvent {
         val query: String,
     ) : CodexEvent
 
-    data class PartyFilterSelected(
-        val presence: PartyPresence?,
-    ) : CodexEvent
-
-    data class NpcFilterSelected(
-        val filter: NpcListFilter?,
-    ) : CodexEvent
-
-    data class QuestStatusFilterSelected(
-        val status: QuestStatus?,
+    data class GroupBySelected(
+        val choice: CodexGroupBy,
     ) : CodexEvent
 
     data class EntityClicked(

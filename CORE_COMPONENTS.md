@@ -34,6 +34,7 @@ that's the signal to add it here, not to copy-paste it a third time (see CLAUDE.
 | `FormPrimaryButton` | `component/FormFields.kt` | full-width gold 52dp CTA at the bottom of a form/sheet. | `text`, `onClick`, `enabled` |
 | `TagChip` | `component/TagChip.kt` | small rounded label pill - generic tags, badges. | `text`, `foreground`/`background`/`border` |
 | `StatusBadge` | `component/StatusBadge.kt` | `TagChip` pre-wired to a `StatusColor` - NPC/quest status badges. | `text`, `color: StatusColor` |
+| `ChoiceChip` | `component/ChoiceChip.kt` | 30dp selectable pill for one value out of a row - codex group chips. The selected one fills gold. | `text`, `selected`, `onClick`, `modifier` |
 | `MentionChip` | `component/MentionChip.kt` | the colored "●NPC name"/"▲Location"/"◆Quest" pill used inline in session notes and entity sheets. Also owns `MentionGlyph` (the canonical `●`/`▲`/`◆` symbols - reference `MentionGlyph.X.symbol`, never retype the glyph). | `item: MentionChipItem`, `onClick`, `fontSize`, `glyphSize`, `glyphGap`, `lineHeightFactor` |
 | `FormChipPicker` | `component/FormFields.kt` | the pill-chip picker for a form field (status, relationship, "given by", "where") - every chip-type field uses this, never a segmented row. A selected option takes the status color it carries in `FormChipOption.selectedColor`, gold otherwise. | `label`, `options: List<FormChipOption<T>>`, `onClick` |
 
