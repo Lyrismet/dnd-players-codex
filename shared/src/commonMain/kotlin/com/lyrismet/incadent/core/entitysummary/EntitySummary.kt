@@ -104,6 +104,8 @@ data class RelationGroup(
 
 data class RelatedNoteItem(
     val sessionNoteId: Long,
+    // the first matching entry, so opening the note can scroll to and highlight it
+    val entryId: Long,
     val numberLabel: String,
     val title: String,
     val dateLabel: String,
@@ -455,7 +457,7 @@ data class EntitySummarySheetActions(
     val onNpcStatusSelected: (npcId: Long, status: NpcStatus) -> Unit,
     val onNpcLifeSelected: (npcId: Long, lifeState: NpcLifeState) -> Unit,
     val onQuestStatusSelected: (questId: Long, status: QuestStatus) -> Unit,
-    val onRelatedNoteClicked: (sessionNoteId: Long) -> Unit,
+    val onRelatedNoteClicked: (sessionNoteId: Long, entryId: Long) -> Unit,
     val onEditClicked: ((EntityRef) -> Unit)? = null,
     // null hides the presence picker - only the codex manages party membership
     val onPartyPresenceSelected: ((partyId: Long, presence: PartyPresence) -> Unit)? = null,

@@ -32,13 +32,13 @@ class SessionEntryRepositoryImpl(
     ): Long =
         withContext(Dispatchers.Default) {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-            queries.insert(sessionNoteId, now, body)
+            queries.insert(sessionNoteId, now, body, edited = 0L)
             queries.lastInsertRowId().executeAsOne()
         }
 
     override suspend fun restore(entry: SessionEntry): Long =
         withContext(Dispatchers.Default) {
-            queries.insert(entry.sessionNoteId, entry.createdAt, entry.body)
+            queries.insert(entry.sessionNoteId, entry.createdAt, entry.body, if (entry.edited) 1L else 0L)
             queries.lastInsertRowId().executeAsOne()
         }
 
@@ -62,5 +62,6 @@ class SessionEntryRepositoryImpl(
         sessionNoteId: Long,
         createdAt: LocalDateTime,
         body: String,
-    ) = SessionEntry(id = id, sessionNoteId = sessionNoteId, createdAt = createdAt, body = body)
+        edited: Long,
+    ) = SessionEntry(id = id, sessionNoteId = sessionNoteId, createdAt = createdAt, body = body, edited = edited != 0L)
 }

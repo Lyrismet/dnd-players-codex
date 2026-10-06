@@ -39,6 +39,7 @@ internal fun buildRelatedNotes(
             } else {
                 RelatedNoteItem(
                     sessionNoteId = note.id,
+                    entryId = hits.first().id,
                     numberLabel = numberLabels.getValue(note.id),
                     title = note.title,
                     dateLabel = note.sessionDate.toDisplayDate(),

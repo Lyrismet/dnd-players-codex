@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,7 +38,7 @@ private const val HINT_VISIBLE_MS = 2000L
 // the mockup draws the pin at 1.2em of a 17px glyph
 private const val PIN_SIZE_DP = 20.4f
 
-/** the one-time row that teaches holding a field - sits under the card header, dismissed with its own button */
+/** the one-time row that teaches holding a field - dismissed with its own button, the caller sets its spacing */
 @Composable
 fun HoldHintCard(
     text: String,
@@ -50,7 +49,6 @@ fun HoldHintCard(
     Row(
         modifier =
             modifier
-                .offset(y = (-4).dp)
                 .appCard(
                     shape = RoundedCornerShape(12.dp),
                     background = AppPalette.Gold.copy(alpha = 0.08f),

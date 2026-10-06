@@ -248,6 +248,7 @@ sealed interface CodexEvent : CircuitUiEvent {
 
     data class RelatedNoteClicked(
         val sessionNoteId: Long,
+        val entryId: Long,
     ) : CodexEvent
 
     data object SheetDismissed : CodexEvent

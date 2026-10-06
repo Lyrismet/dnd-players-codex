@@ -149,9 +149,12 @@ class EntitySheetInteractions(
         }
     }
 
-    fun onRelatedNoteClicked(sessionNoteId: Long) {
+    fun onRelatedNoteClicked(
+        sessionNoteId: Long,
+        entryId: Long,
+    ) {
         selectedRef.value = null
-        navigator.goTo(SessionDetailScreen(sessionNoteId))
+        navigator.goTo(SessionDetailScreen(sessionNoteId, focusEntryId = entryId))
     }
 
     // a no-op change (same value, unknown field, missing record) writes nothing and offers no undo

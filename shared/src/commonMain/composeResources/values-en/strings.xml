@@ -23,6 +23,7 @@
     <string name="session_list_live_continue">Continue →</string>
     <string name="session_list_delete_content_description">Delete session</string>
     <string name="session_list_undo_deleted_title">Session deleted</string>
+    <string name="session_list_rename_saved_toast">Campaign renamed</string>
     <string name="new_session_default_title">New session</string>
     <string name="default_campaign_name">My campaign</string>
     <string name="session_overline_format">Session %1$s</string>
@@ -41,6 +42,7 @@
     <string name="session_detail_empty_feed_hint">Write down what\'s happening. Type @ to link a note to an NPC, place or quest.</string>
     <string name="session_detail_composer_hint">@ — entry tag</string>
     <string name="session_detail_undo_deleted_entry_title">Entry deleted</string>
+    <string name="session_entry_edited_label">edited</string>
     <string name="session_detail_quest_mention_prefix">Quest: </string>
     <string name="session_detail_meeting_separator_format">MEETING %1$d · %2$s</string>
     <string name="session_detail_mention_type_npc">NPC</string>

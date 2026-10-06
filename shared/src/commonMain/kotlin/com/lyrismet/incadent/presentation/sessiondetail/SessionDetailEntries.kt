@@ -2,6 +2,7 @@ package com.lyrismet.incadent.presentation.sessiondetail
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
@@ -44,11 +45,13 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_delete
 import dndplayerscodex.shared.generated.resources.action_edit
+import dndplayerscodex.shared.generated.resources.session_entry_edited_label
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
 private const val ENTRY_COLLAPSE_ANIMATION_DURATION_MS = 220
 private const val ENTRY_REMOVAL_GRACE_MS = 1000L
+private const val FOCUS_FADE_DURATION_MS = 600
 
 // top and bottom edges converge on the center as the row collapses, Gmail-delete-style, not a one-sided slide
 private fun entryCollapseExit() =
@@ -63,6 +66,7 @@ internal fun SessionEntryRow(
     entry: SessionEntryItem,
     isSelected: Boolean,
     isEditing: Boolean,
+    isHighlighted: Boolean,
     onClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -87,13 +91,11 @@ internal fun SessionEntryRow(
         exit = entryCollapseExit(),
         modifier = modifier,
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                entry.timeLabel,
-                style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
-                color = AppPalette.TextTertiary,
-                modifier = Modifier.width(38.dp).padding(top = 4.dp),
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth().focusFlash(isHighlighted),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            EntryTimeColumn(timeLabel = entry.timeLabel, edited = entry.edited)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SessionEntryBody(
                     segments = entry.segments,
@@ -125,6 +127,26 @@ internal fun SessionEntryRow(
                 }
             }
         }
+    }
+}
+
+// the related-note jump flashes a gold plate that reaches 6dp past the note, then fades out over 600 ms
+@Composable
+private fun Modifier.focusFlash(isHighlighted: Boolean): Modifier {
+    val fill by animateColorAsState(
+        targetValue = if (isHighlighted) AppPalette.Gold.copy(alpha = 0.13f) else Color.Transparent,
+        animationSpec = tween(FOCUS_FADE_DURATION_MS),
+    )
+    val border by animateColorAsState(
+        targetValue = if (isHighlighted) AppPalette.Gold.copy(alpha = 0.55f) else Color.Transparent,
+        animationSpec = tween(FOCUS_FADE_DURATION_MS),
+    )
+    return drawBehind {
+        val topLeft = Offset(-6.dp.toPx(), -6.dp.toPx())
+        val plateSize = Size(size.width + 12.dp.toPx(), size.height + 12.dp.toPx())
+        val radius = CornerRadius(12.dp.toPx())
+        drawRoundRect(fill, topLeft, plateSize, radius)
+        drawRoundRect(border, topLeft, plateSize, radius, style = Stroke(width = 1.dp.toPx()))
     }
 }
 
@@ -167,6 +189,31 @@ private fun EntryActionButton(
             Text(glyph, fontSize = 12.sp, color = foreground)
         }
         Text(label, style = MaterialTheme.typography.labelLarge, color = foreground)
+    }
+}
+
+// the time sits above a small "изм." mark once the note has been edited
+@Composable
+private fun EntryTimeColumn(
+    timeLabel: String,
+    edited: Boolean,
+) {
+    Column(
+        modifier = Modifier.width(38.dp).padding(top = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            timeLabel,
+            style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
+            color = AppPalette.TextTertiary,
+        )
+        if (edited) {
+            Text(
+                stringResource(Res.string.session_entry_edited_label),
+                fontSize = 10.sp,
+                color = AppPalette.TextSecondary,
+            )
+        }
     }
 }
 

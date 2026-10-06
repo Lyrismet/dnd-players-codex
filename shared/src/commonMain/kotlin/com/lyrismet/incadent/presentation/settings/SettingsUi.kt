@@ -34,14 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
-import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
-import com.lyrismet.incadent.core.designsystem.component.FormTextField
+import com.lyrismet.incadent.core.designsystem.component.CampaignRenameSheet
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
-import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.domain.model.AppLanguage
@@ -64,10 +61,6 @@ import dndplayerscodex.shared.generated.resources.settings_numbering_arabic
 import dndplayerscodex.shared.generated.resources.settings_numbering_desc
 import dndplayerscodex.shared.generated.resources.settings_numbering_roman
 import dndplayerscodex.shared.generated.resources.settings_numbering_title
-import dndplayerscodex.shared.generated.resources.settings_rename_hint
-import dndplayerscodex.shared.generated.resources.settings_rename_placeholder
-import dndplayerscodex.shared.generated.resources.settings_rename_save
-import dndplayerscodex.shared.generated.resources.settings_rename_title
 import dndplayerscodex.shared.generated.resources.settings_section_app
 import dndplayerscodex.shared.generated.resources.settings_section_campaign
 import dndplayerscodex.shared.generated.resources.settings_section_diary
@@ -122,7 +115,7 @@ fun SettingsUi(
 
     val renameSheet = state.renameSheet
     if (renameSheet is RenameSheetState.Editing) {
-        RenameCampaignSheet(
+        CampaignRenameSheet(
             draft = renameSheet.draft,
             onDraftChanged = { sink(SettingsEvent.RenameDraftChanged(it)) },
             onSave = { sink(SettingsEvent.RenameSaved) },
@@ -360,49 +353,5 @@ private fun InfoRow(
             color = AppPalette.TextPrimary,
         )
         Text(text = value, fontSize = 13.sp, color = AppPalette.TextSecondary)
-    }
-}
-
-@Composable
-private fun RenameCampaignSheet(
-    draft: String,
-    onDraftChanged: (String) -> Unit,
-    onSave: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    AppBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 28.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    SectionOverline(
-                        text = stringResource(Res.string.settings_section_campaign),
-                        color = AppPalette.Gold,
-                        letterSpacing = 0.14.em,
-                        fontSize = 11.sp,
-                    )
-                    Text(
-                        text = stringResource(Res.string.settings_rename_title),
-                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 26.sp, lineHeight = 30.sp),
-                        color = AppPalette.TextHeading,
-                    )
-                }
-                SheetCloseButton(onClick = onDismiss)
-            }
-            FormTextField(
-                label = stringResource(Res.string.settings_campaign_name_title),
-                value = draft,
-                onChange = onDraftChanged,
-                placeholder = stringResource(Res.string.settings_rename_placeholder),
-            )
-            Text(
-                text = stringResource(Res.string.settings_rename_hint),
-                fontSize = 12.sp,
-                color = AppPalette.TextSecondary,
-            )
-            FormPrimaryButton(text = stringResource(Res.string.settings_rename_save), onClick = onSave)
-        }
     }
 }

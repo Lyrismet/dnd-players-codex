@@ -56,6 +56,7 @@ import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_p
 import dndplayerscodex.shared.generated.resources.session_detail_undo_deleted_entry_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -65,6 +66,7 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 private const val ENTRY_PREVIEW_LENGTH = 60
+private const val HIGHLIGHT_DURATION_MS = 2800L
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
 private class SessionDetailFields(
@@ -110,6 +112,13 @@ class SessionDetailPresenter(
         val numberLabel = allSessions.sessionNumberLabels(numbering)[screen.sessionNoteId]
 
         val fields = rememberFields()
+        val highlightedEntryId = remember { mutableStateOf(screen.focusEntryId) }
+        LaunchedEffect(highlightedEntryId.value) {
+            if (highlightedEntryId.value != null) {
+                delay(HIGHLIGHT_DURATION_MS)
+                highlightedEntryId.value = null
+            }
+        }
         val titleField = fields.titleField
         val draft = fields.draft
         val editingEntryId = fields.editingEntryId
@@ -124,6 +133,10 @@ class SessionDetailPresenter(
 
         val mention = buildMentionContext(npcs, locations, quests, draft.value.text)
         val feed = buildFeed(entries, currentNote?.sessionDate?.date, mention.candidates)
+        val focusIndex =
+            highlightedEntryId.value?.let { id ->
+                feed.indexOfFirst { it is SessionFeedItem.Note && it.entry.id == id }.takeIf { it >= 0 }
+            }
         val headerMentions = headerMentions(entries, mention.candidates)
 
         val selectedEntity =
@@ -161,6 +174,8 @@ class SessionDetailPresenter(
             editingEntryTimeLabel = editingEntryTimeLabel,
             selectedEntryId = selectedEntryId.value,
             editingEntryId = editingEntryId.value,
+            highlightedEntryId = highlightedEntryId.value,
+            focusIndex = focusIndex,
         ) { event -> onEvent(event, currentNote, entries, undoDeletedEntryTitle, scope, fields) }
     }
 
@@ -212,7 +227,8 @@ class SessionDetailPresenter(
                 fields.entitySheet.onNpcLifeSelected(scope, event.npcId, event.lifeState)
             is SessionDetailEvent.QuestStatusSelected ->
                 fields.entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
-            is SessionDetailEvent.RelatedNoteClicked -> fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId)
+            is SessionDetailEvent.RelatedNoteClicked ->
+                fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId, event.entryId)
             SessionDetailEvent.SheetDismissed -> fields.entitySheet.onDismissed()
             SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, fields)
             is SessionDetailEvent.EntryClicked -> onEntryClicked(event.id, fields.selectedEntryId)
@@ -420,6 +436,7 @@ private fun SessionEntry.toItem(candidates: List<MentionCandidate>): SessionEntr
     SessionEntryItem(
         id = id,
         timeLabel = createdAt.toDisplayTime(),
+        edited = edited,
         segments = parseMentions(body, candidates).map { it.toSegment() },
     )
 

@@ -25,6 +25,7 @@ that's the signal to add it here, not to copy-paste it a third time (see CLAUDE.
 | `IconBadge` | `component/IconBadge.kt` | fixed-size tinted slot with centered content - avatar initials, entity emblems, circular header/dialog action buttons (edit, close, "@"). | `size`, `shape` (`CircleShape` by default), `background`, `border` (nullable), `onClick` (nullable), `content` |
 | `AppDialog` | `component/AppDialog.kt` | the generic centered-dialog shell (rounded, bordered, padded `Column`). `ConfirmationDialog` is built on this. | `borderColor`, `content` |
 | `AppBottomSheet` | `component/AppBottomSheet.kt` | the modal bottom sheet shell (26dp top corners, gold edge, drag handle) used by every entity sheet and the entry form. Also hosts `SheetCloseButton` (built on `IconBadge`). | `onDismissRequest`, `content` |
+| `CampaignRenameSheet` | `component/CampaignRenameSheet.kt` | the campaign rename sheet (Settings and the session list header) - an `AppBottomSheet` with the overline, serif title, 56dp input, hint and 52dp save. Save is disabled and refused while the name is blank (`core/campaign`'s `savableCampaignName`). The caller owns the draft state. | `draft`, `onDraftChanged`, `onSave`, `onDismiss` |
 
 ## Buttons, badges, chips
 
@@ -58,8 +59,8 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 | `FlameSweepEffect` | `component/FlameSweepEffect.kt` | one-shot flame band that sweeps bottom-to-top over its content, with ember particles - the splash logo reveal. Wraps `content` and draws it twice, so keep the content cheap. | `play`, `modifier`, `content` |
 | `BrandMark` | `component/BrandMark.kt` | the "sealed d8" brand mark (two locking halves) - the splash screen, and reusable for a future "about" screen or app-icon preview. | `size` (76dp), `tint` |
 | `NumberLabel` | `component/NumberLabel.kt` | centered fixed-width roman-numeral index in front of a list row (session number, note number) - the font shrinks as the label gets longer, per `core/format`'s `NumberSizeLadder`. | `text`, `width` (44dp), `color`, `sizeLadder`, `lineHeightFactor` |
-| `SectionOverline` | `component/SectionOverline.kt` | tracked all-caps single-line eyebrow label ("АРХИВ", "БАЗА ЗНАНИЙ"). The design uses 0.18em for page eyebrows, 0.16em for list sections and 0.14em for sheet and form labels, so pass the tracking. | `text`, `color`, `letterSpacing`, `fontSize`, `trailingContent` |
-| `ScreenHeader` | `component/ScreenHeader.kt` | overline + serif title + optional `HeaderDivider` - top of every top-level screen. | `overline`, `title`, `overlineTrailingContent` |
+| `SectionOverline` | `component/SectionOverline.kt` | tracked all-caps single-line eyebrow label ("АРХИВ", "БАЗА ЗНАНИЙ"). The design uses 0.18em for page eyebrows, 0.16em for list sections and 0.14em for sheet and form labels, so pass the tracking. | `text`, `color`, `letterSpacing`, `fontSize`, `onClick`, `inlineContent` (sits right after the text, e.g. a quill), `trailingContent` |
+| `ScreenHeader` | `component/ScreenHeader.kt` | overline + serif title + optional `HeaderDivider` - top of every top-level screen. `onOverlineClick` makes the overline editable (quill after the text). | `overline`, `title`, `onOverlineClick`, `overlineTrailingContent` |
 | `EmptyStatePlaceholder` | `component/EmptyStatePlaceholder.kt` | centered secondary-text message for an empty list/search/loading state. | `text` |
 | `EmptyStateActions` | `component/EmptyStateActions.kt` | the empty state of a list the user is meant to fill: serif title, hint and up to two buttons (`primaryAction` gold, `secondaryAction` outlined; each an `EmptyStateAction(label, onClick)`). Use it when there is something to do about the emptiness, `EmptyStatePlaceholder` when there isn't. | `title`, `text`, `primaryAction`, `secondaryAction` |
 | `OrnamentedEmptyState` | `component/OrnamentedEmptyState.kt` | the "blank page" state of a screen meant to be filled: gold diamond, serif title and a hint (empty session feed). | `title`, `hint` |
@@ -67,6 +68,7 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 | `UndoToast` | `component/UndoToast.kt` | the "X deleted · Отменить" bar that floats above the bottom tab bar for 5s after an optimistic delete or quick edit (sessions, entries, codex entities) - driven by `core/undo/UndoController`, not local screen state. The codex card hosts its own copy, since the sheet covers the app-level one. | `action: UndoAction?`, `onUndo` |
 | `ConfirmationDialog` | `component/ConfirmationDialog.kt` | "are you sure?" dialog for a destructive action that has no undo (session/entry/codex deletes use `UndoToast` instead), built on `AppDialog` + `IconBadge`. | `title`, `text`, `onConfirm`, `onDismiss` |
 | `Modifier.dismissKeyboardOnTap()` | `component/DismissKeyboardOnTap.kt` | clears focus/hides keyboard on an unconsumed tap - applied once at the app root. | - |
+| `AppToast` | `component/AppToast.kt` | the plain floating message bar - the `UndoToast` chrome without an action, for a timed confirmation ("Кампания переименована"). The caller owns the timer and passes `text` (null hides it). | `text`, `modifier` |
 | `HoldToEditField` | `component/HoldToEditField.kt` | press-and-hold wrapper for in-place editing: a translucent gold (16%) fill covers the full height and grows over 450 ms, released early it falls back in 150 ms ease. `onHeld` fires on completion, a drag past 8dp cancels, an early release reports through `LocalHoldTooShort`. `HoldFrame` presets (`Title`, `Description`, `FactLine`) carry the mockup's negative margins, paddings and radius. Scroll and swipe are not consumed. | `onHeld`, `frame: HoldFrame`, `content` |
 | `RadioOptionRow` | `component/RadioOptionRow.kt` | the settings option row - 18px ring with a gold dot when selected, title and description; a selected row is gold-tinted. | `title`, `description`, `selected`, `onClick` |
 | `HoldHintCard` | `component/HoldHint.kt` | the one-time gold hint row under a card header - pin glyph, text and a "Понятно" button. | `text`, `dismissLabel`, `onDismiss` |
@@ -113,7 +115,7 @@ entity sheet, it almost certainly belongs as a case inside this file, not a new 
 
 ## Not a visual component - don't look here for UI shapes
 
-`core/mention`, `core/format`, `core/entitysummary` hold **logic** (parsing, formatting, cross-entity mapping)
+`core/campaign` holds the campaign-name rule (`savableCampaignName`: trimmed, null when blank). `core/mention`, `core/format`, `core/entitysummary` hold **logic** (parsing, formatting, cross-entity mapping)
 reused across 3+ features, not visual building blocks - see the root `CLAUDE.md` project overview for the
 `core/<name>` vs `core/designsystem` split. `core/entitysummary`'s `EntitySheetInteractions` is the shared
 tap/dismiss/status-update event-handling every presenter delegates to; it has no composable of its own.

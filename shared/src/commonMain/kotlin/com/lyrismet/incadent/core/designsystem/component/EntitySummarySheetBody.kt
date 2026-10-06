@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -26,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -110,7 +113,7 @@ private fun NpcSummaryBody(
     actions: EntitySummarySheetActions,
     onClose: () -> Unit,
 ) {
-    EntityHeaderRow(
+    EntityHeader(
         emblem = npc.emblem,
         overlineTypeLabel = stringResource(Res.string.session_detail_mention_type_npc),
         overlineValue = npc.statusLabel,
@@ -121,7 +124,6 @@ private fun NpcSummaryBody(
         onClose = onClose,
         quick = actions.quickEdit,
     )
-    HoldTipSlot(actions.quickEdit)
     EntityStatusSection(
         title = stringResource(Res.string.entity_sheet_relation_label),
         options = npc.statusOptions,
@@ -146,7 +148,7 @@ private fun LocationSummaryBody(
     actions: EntitySummarySheetActions,
     onClose: () -> Unit,
 ) {
-    EntityHeaderRow(
+    EntityHeader(
         emblem = location.emblem,
         overlineTypeLabel = stringResource(Res.string.session_detail_mention_type_location),
         overlineValue = location.typeLabel,
@@ -156,7 +158,6 @@ private fun LocationSummaryBody(
         onClose = onClose,
         quick = actions.quickEdit,
     )
-    HoldTipSlot(actions.quickEdit)
     EntityDescription(location.description, actions.quickEdit)
     EntityFactsGrid(location.facts, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelationGroups(location.groups, actions.onEntityRefClicked)
@@ -169,7 +170,7 @@ private fun QuestSummaryBody(
     actions: EntitySummarySheetActions,
     onClose: () -> Unit,
 ) {
-    EntityHeaderRow(
+    EntityHeader(
         emblem = quest.emblem,
         overlineTypeLabel = stringResource(Res.string.session_detail_mention_type_quest),
         overlineValue = quest.statusLabel,
@@ -179,7 +180,6 @@ private fun QuestSummaryBody(
         onClose = onClose,
         quick = actions.quickEdit,
     )
-    HoldTipSlot(actions.quickEdit)
     EntityStatusSection(
         title = stringResource(Res.string.entity_sheet_status_label),
         options = quest.statusOptions,
@@ -194,8 +194,9 @@ private fun QuestSummaryBody(
 
 private val HeaderButtonSize = 36.dp
 
+/** the sheet's top block - overline row with its actions, the optional hold tip, then emblem and title */
 @Composable
-internal fun EntityHeaderRow(
+internal fun EntityHeader(
     emblem: EntityEmblem,
     overlineTypeLabel: String,
     overlineValue: String,
@@ -207,55 +208,83 @@ internal fun EntityHeaderRow(
     onEditClicked: (() -> Unit)? = null,
     quick: QuickEditSheet? = null,
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        EntityEmblemBox(emblem)
-        EntityTitleBlock(
+    Column(modifier = modifier.fillMaxWidth()) {
+        EntityOverlineRow(
             overline =
                 stringResource(
                     Res.string.entity_sheet_overline_format,
                     overlineTypeLabel.uppercase(),
                     overlineValue.uppercase(),
                 ),
-            overlineColor = emblem.color.foreground,
-            title = title,
-            subtitle = subtitle,
-            strikeThrough = strikeThrough,
-            quick = quick,
-            modifier = Modifier.weight(1f),
+            color = emblem.color.foreground,
+            onEditClicked = onEditClicked,
+            onClose = onClose,
         )
-        // mockup - align-self flex-start, display flex, gap 6px - pinned to the top, not centered with the text block
+        // mockup - the overline's -6dp and the tip's -4dp margins leave 8dp above the tip and 18dp below it
+        if (quick?.holdTipVisible == true) {
+            Spacer(Modifier.height(8.dp))
+            HoldTipSlot(quick)
+            Spacer(Modifier.height(18.dp))
+        } else {
+            // mockup - the overline's -6dp margin leaves 12dp before the header row
+            Spacer(Modifier.height(12.dp))
+        }
         Row(
-            modifier = Modifier.align(Alignment.Top),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            onEditClicked?.let { onClick ->
-                IconBadge(
-                    size = HeaderButtonSize,
-                    background = AppPalette.Gold.copy(alpha = 0.12f),
-                    border = AppPalette.Gold.copy(alpha = 0.45f),
-                    onClick = onClick,
-                ) {
-                    Icon(
-                        AppIcons.Edit,
-                        contentDescription = null,
-                        tint = AppPalette.GoldBright,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-            }
-            SheetCloseButton(onClick = onClose, size = HeaderButtonSize)
+            EntityEmblemBox(emblem)
+            EntityTitleBlock(
+                title = title,
+                subtitle = subtitle,
+                strikeThrough = strikeThrough,
+                quick = quick,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }
 
 @Composable
-private fun EntityTitleBlock(
+private fun EntityOverlineRow(
     overline: String,
-    overlineColor: Color,
+    color: Color,
+    onEditClicked: (() -> Unit)?,
+    onClose: () -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            overline,
+            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.16.em),
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        onEditClicked?.let { onClick ->
+            IconBadge(
+                size = HeaderButtonSize,
+                background = AppPalette.Gold.copy(alpha = 0.12f),
+                border = AppPalette.Gold.copy(alpha = 0.45f),
+                onClick = onClick,
+            ) {
+                Icon(
+                    AppIcons.Edit,
+                    contentDescription = null,
+                    tint = AppPalette.GoldBright,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        }
+        SheetCloseButton(onClick = onClose, size = HeaderButtonSize)
+    }
+}
+
+@Composable
+private fun EntityTitleBlock(
     title: String,
     subtitle: String,
     strikeThrough: Boolean,
@@ -263,7 +292,6 @@ private fun EntityTitleBlock(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        Text(overline, style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.16.em), color = overlineColor)
         QuickEditableValue(
             field = QuickEditField.NAME,
             label = stringResource(Res.string.quick_edit_label_name),

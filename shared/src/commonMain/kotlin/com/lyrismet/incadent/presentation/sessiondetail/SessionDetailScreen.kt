@@ -17,6 +17,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SessionDetailScreen(
     val sessionNoteId: Long,
+    // set when opened from a related note - the entry is scrolled to and highlighted
+    val focusEntryId: Long? = null,
 ) : Screen
 
 data class SessionDetailState(
@@ -34,6 +36,9 @@ data class SessionDetailState(
     val editingEntryTimeLabel: String? = null,
     val selectedEntryId: Long? = null,
     val editingEntryId: Long? = null,
+    val highlightedEntryId: Long? = null,
+    // feed position the list scrolls to while the highlight is active - null once the entry is not in the feed yet
+    val focusIndex: Int? = null,
     val eventSink: (SessionDetailEvent) -> Unit = {},
 ) : CircuitUiState {
     val isEditingEntry: Boolean get() = editingEntryTimeLabel != null
@@ -59,6 +64,7 @@ sealed interface SessionFeedItem {
 data class SessionEntryItem(
     val id: Long,
     val timeLabel: String,
+    val edited: Boolean,
     val segments: List<SessionEntrySegment>,
 )
 
@@ -119,6 +125,7 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
 
     data class RelatedNoteClicked(
         val sessionNoteId: Long,
+        val entryId: Long,
     ) : SessionDetailEvent
 
     data object SheetDismissed : SessionDetailEvent

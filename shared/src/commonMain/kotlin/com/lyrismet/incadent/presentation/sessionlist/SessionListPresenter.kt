@@ -1,11 +1,14 @@
 package com.lyrismet.incadent.presentation.sessionlist
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import com.lyrismet.incadent.core.campaign.savableCampaignName
 import com.lyrismet.incadent.core.designsystem.component.toChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
@@ -28,6 +31,7 @@ import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
+import com.lyrismet.incadent.presentation.settings.RenameSheetState
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
@@ -36,9 +40,11 @@ import dndplayerscodex.shared.generated.resources.new_session_default_title
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import dndplayerscodex.shared.generated.resources.session_list_live_no_notes
 import dndplayerscodex.shared.generated.resources.session_list_live_notes_summary_format
+import dndplayerscodex.shared.generated.resources.session_list_rename_saved_toast
 import dndplayerscodex.shared.generated.resources.session_list_undo_deleted_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -48,6 +54,32 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+
+private const val TOAST_DURATION_MS = 3200L
+
+/** the rename sheet and its toast - written by the event handlers, read into the state */
+private class CampaignRenameFields(
+    val sheet: MutableState<RenameSheetState>,
+    val toast: MutableState<SessionListToast?>,
+    val savedText: String,
+)
+
+@Composable
+private fun rememberCampaignRenameFields(savedText: String): CampaignRenameFields {
+    val fields =
+        CampaignRenameFields(
+            sheet = remember { mutableStateOf<RenameSheetState>(RenameSheetState.Hidden) },
+            toast = remember { mutableStateOf<SessionListToast?>(null) },
+            savedText = savedText,
+        )
+    LaunchedEffect(fields.toast.value) {
+        if (fields.toast.value != null) {
+            delay(TOAST_DURATION_MS)
+            fields.toast.value = null
+        }
+    }
+    return fields
+}
 
 @Suppress("LongParameterList")
 class SessionListPresenter(
@@ -59,6 +91,8 @@ class SessionListPresenter(
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
 ) : Presenter<SessionListState> {
+    // one collection per source the screen reads plus the rename wiring - a flat merge, not real complexity
+    @Suppress("LongMethod")
     @Composable
     override fun present(): SessionListState {
         val sessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
@@ -78,6 +112,7 @@ class SessionListPresenter(
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
         val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
         val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix)
+        val renameFields = rememberCampaignRenameFields(stringResource(Res.string.session_list_rename_saved_toast))
 
         val liveNote = sessions.firstOrNull { it.isLive }
         val liveEntriesFlow: Flow<List<SessionEntry>> =
@@ -111,12 +146,27 @@ class SessionListPresenter(
                 parties,
             )
 
+        val campaignName = campaignNameOverride ?: defaultCampaignName
         return SessionListState(
-            campaignName = campaignNameOverride ?: defaultCampaignName,
+            campaignName = campaignName,
             liveSession = liveSession,
             sessions = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems,
             selectedEntity = selectedEntity,
-        ) { event -> onEvent(event, scope, newSessionTitle, undoDeletedTitle, sessions, entitySheet, numbering) }
+            renameSheet = renameFields.sheet.value,
+            toast = renameFields.toast.value,
+        ) { event ->
+            onEvent(
+                event,
+                scope,
+                newSessionTitle,
+                undoDeletedTitle,
+                sessions,
+                entitySheet,
+                numbering,
+                renameFields,
+                campaignName,
+            )
+        }
     }
 
     @Composable
@@ -159,6 +209,8 @@ class SessionListPresenter(
         sessions: List<SessionNote>,
         entitySheet: EntitySheetInteractions,
         numbering: SessionNumbering,
+        rename: CampaignRenameFields,
+        campaignName: String,
     ) {
         when (event) {
             SessionListEvent.NewSessionClicked ->
@@ -183,9 +235,22 @@ class SessionListPresenter(
                 entitySheet.onNpcLifeSelected(scope, event.npcId, event.lifeState)
             is SessionListEvent.QuestStatusSelected ->
                 entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
-            is SessionListEvent.RelatedNoteClicked -> entitySheet.onRelatedNoteClicked(event.sessionNoteId)
+            is SessionListEvent.RelatedNoteClicked ->
+                entitySheet.onRelatedNoteClicked(event.sessionNoteId, event.entryId)
             SessionListEvent.SheetDismissed -> entitySheet.onDismissed()
+            SessionListEvent.RenameOpened -> rename.sheet.value = RenameSheetState.Editing(campaignName)
+            is SessionListEvent.RenameDraftChanged -> rename.sheet.value = RenameSheetState.Editing(event.value)
+            SessionListEvent.RenameSaved -> onRenameSaved(rename)
+            SessionListEvent.RenameDismissed -> rename.sheet.value = RenameSheetState.Hidden
         }
+    }
+
+    // a blank name is never saved - the sheet's save button is disabled for it as well
+    private fun onRenameSaved(rename: CampaignRenameFields) {
+        val name = (rename.sheet.value as? RenameSheetState.Editing)?.draft?.let { savableCampaignName(it) } ?: return
+        appPreferencesRepository.setCampaignName(name)
+        rename.sheet.value = RenameSheetState.Hidden
+        rename.toast.value = SessionListToast(rename.savedText)
     }
 
     // deletes immediately and offers undo - restoring re-inserts the note and all its entries with fresh ids

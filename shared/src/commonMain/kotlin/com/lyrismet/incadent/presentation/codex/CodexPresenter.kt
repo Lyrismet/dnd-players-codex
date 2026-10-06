@@ -371,7 +371,8 @@ class CodexPresenter(
                 fields.entitySheet.onPartyPresenceSelected(scope, event.partyId, event.presence)
             is CodexEvent.QuestStatusSelected ->
                 fields.entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
-            is CodexEvent.RelatedNoteClicked -> fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId)
+            is CodexEvent.RelatedNoteClicked ->
+                fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId, event.entryId)
             CodexEvent.SheetDismissed -> {
                 fields.entitySheet.onDismissed()
                 fields.quickEdit.onSheetClosed()

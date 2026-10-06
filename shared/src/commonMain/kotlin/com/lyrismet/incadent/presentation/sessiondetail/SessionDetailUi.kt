@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppPalette
@@ -48,48 +49,7 @@ fun SessionDetailUi(
                     modifier = Modifier.weight(1f),
                 )
             } else {
-                val listState = rememberLazyListState()
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    items(state.feed, key = { it.key }) { feedItem ->
-                        when (feedItem) {
-                            is SessionFeedItem.DaySeparator -> {
-                                DaySeparatorRow(feedItem.label)
-                            }
-
-                            is SessionFeedItem.Note -> {
-                                SessionEntryRow(
-                                    entry = feedItem.entry,
-                                    isSelected = state.selectedEntryId == feedItem.entry.id,
-                                    isEditing = state.editingEntryId == feedItem.entry.id,
-                                    onClick = {
-                                        state.eventSink(SessionDetailEvent.EntryClicked(feedItem.entry.id))
-                                    },
-                                    onEditClick = {
-                                        state.eventSink(SessionDetailEvent.EditEntryClicked(feedItem.entry.id))
-                                    },
-                                    onDeleteClick = {
-                                        state.eventSink(SessionDetailEvent.DeleteEntryClicked(feedItem.entry.id))
-                                    },
-                                    onMentionClick = { ref ->
-                                        state.eventSink(SessionDetailEvent.MentionChipClicked(ref))
-                                    },
-                                    modifier = Modifier.animateItem(),
-                                )
-                            }
-                        }
-                    }
-                }
-                // always jump to the newest entry, chat-app style - no "stay where the user scrolled" tracking
-                LaunchedEffect(state.feed.size) {
-                    if (state.feed.isNotEmpty()) {
-                        listState.animateScrollToItem(state.feed.lastIndex)
-                    }
-                }
+                SessionFeed(state, modifier = Modifier.weight(1f))
             }
 
             if (state.isLive) {
@@ -99,6 +59,61 @@ fun SessionDetailUi(
     }
 
     state.selectedEntity?.let { entity -> SessionDetailEntitySheet(state, entity) }
+}
+
+@Composable
+private fun SessionFeed(
+    state: SessionDetailState,
+    modifier: Modifier = Modifier,
+) {
+    val listState = rememberLazyListState()
+    val focusScrollOffsetPx = with(LocalDensity.current) { -FOCUS_SCROLL_OFFSET_DP.dp.roundToPx() }
+    LazyColumn(
+        state = listState,
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        items(state.feed, key = { it.key }) { feedItem ->
+            when (feedItem) {
+                is SessionFeedItem.DaySeparator -> {
+                    DaySeparatorRow(feedItem.label)
+                }
+
+                is SessionFeedItem.Note -> {
+                    SessionEntryRow(
+                        entry = feedItem.entry,
+                        isSelected = state.selectedEntryId == feedItem.entry.id,
+                        isEditing = state.editingEntryId == feedItem.entry.id,
+                        isHighlighted = state.highlightedEntryId == feedItem.entry.id,
+                        onClick = {
+                            state.eventSink(SessionDetailEvent.EntryClicked(feedItem.entry.id))
+                        },
+                        onEditClick = {
+                            state.eventSink(SessionDetailEvent.EditEntryClicked(feedItem.entry.id))
+                        },
+                        onDeleteClick = {
+                            state.eventSink(SessionDetailEvent.DeleteEntryClicked(feedItem.entry.id))
+                        },
+                        onMentionClick = { ref ->
+                            state.eventSink(SessionDetailEvent.MentionChipClicked(ref))
+                        },
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+            }
+        }
+    }
+    // always jump to the newest entry, chat-app style - no "stay where the user scrolled" tracking
+    LaunchedEffect(state.feed.size) {
+        if (state.feed.isNotEmpty() && state.highlightedEntryId == null) {
+            listState.animateScrollToItem(state.feed.lastIndex)
+        }
+    }
+    // scrolls to the presenter's focus index, which is null until the target entry is in the feed
+    LaunchedEffect(state.focusIndex) {
+        state.focusIndex?.let { index -> listState.animateScrollToItem(index, focusScrollOffsetPx) }
+    }
 }
 
 @Composable
@@ -121,12 +136,16 @@ private fun SessionDetailEntitySheet(
                     onQuestStatusSelected = { id, status ->
                         state.eventSink(SessionDetailEvent.QuestStatusSelected(id, status))
                     },
-                    onRelatedNoteClicked = { id -> state.eventSink(SessionDetailEvent.RelatedNoteClicked(id)) },
+                    onRelatedNoteClicked = { id, entryId ->
+                        state.eventSink(SessionDetailEvent.RelatedNoteClicked(id, entryId))
+                    },
                 ),
             onClose = { state.eventSink(SessionDetailEvent.SheetDismissed) },
         )
     }
 }
+
+private const val FOCUS_SCROLL_OFFSET_DP = 72
 
 @Composable
 private fun DaySeparatorRow(
