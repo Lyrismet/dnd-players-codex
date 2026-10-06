@@ -19,6 +19,9 @@ object AppPalette {
     val BorderHover = Color(0xFF3A3D4B)
     val BorderPopover = Color(0xFF343746)
 
+    // unselected radio ring of the settings option rows - the mockup's #4A4D5C
+    val RadioIdle = Color(0xFF4A4D5C)
+
     // текст
     val TextPrimary = Color(0xFFE2E8F0)
     val TextDescription = Color(0xFFC9D0DC)

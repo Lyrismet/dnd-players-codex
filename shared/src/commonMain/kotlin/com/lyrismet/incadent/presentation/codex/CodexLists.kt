@@ -85,7 +85,7 @@ internal fun CodexPartyList(
         items = state.party,
         itemKey = { it.id },
         modifier = modifier,
-    ) { PartyRow(member = it, eventSink = state.eventSink) }
+    ) { PartyRow(member = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
 }
 
 @Composable
@@ -97,7 +97,7 @@ internal fun CodexNpcList(
         groups = state.npcs,
         itemKey = { it.id },
         modifier = modifier,
-    ) { NpcRow(npc = it, eventSink = state.eventSink) }
+    ) { NpcRow(npc = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
 }
 
 @Composable
@@ -109,7 +109,7 @@ internal fun CodexQuestList(
         groups = state.quests,
         itemKey = { it.id },
         modifier = modifier,
-    ) { QuestRow(quest = it, eventSink = state.eventSink) }
+    ) { QuestRow(quest = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
 }
 
 @Composable
@@ -121,7 +121,7 @@ internal fun CodexLocationList(
         groups = state.locations,
         itemKey = { it.id },
         modifier = modifier,
-    ) { LocationRow(location = it, eventSink = state.eventSink) }
+    ) { LocationRow(location = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
 }
 
 @Composable
@@ -144,23 +144,23 @@ internal fun CodexAllList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         codexSection(partyTitle, state.party, isFirst = true, key = { "party_${it.id}" }) {
-            PartyRow(member = it, eventSink = state.eventSink)
+            PartyRow(member = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled)
         }
         codexSection(npcTitle, npcs, isFirst = state.party.isEmpty(), key = { "npc_${it.id}" }) {
-            NpcRow(npc = it, eventSink = state.eventSink)
+            NpcRow(npc = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled)
         }
         codexSection(
             questTitle,
             quests,
             isFirst = state.party.isEmpty() && npcs.isEmpty(),
             key = { "quest_${it.id}" },
-        ) { QuestRow(quest = it, eventSink = state.eventSink) }
+        ) { QuestRow(quest = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
         codexSection(
             locationTitle,
             locations,
             isFirst = state.party.isEmpty() && npcs.isEmpty() && quests.isEmpty(),
             key = { "location_${it.id}" },
-        ) { LocationRow(location = it, eventSink = state.eventSink) }
+        ) { LocationRow(location = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
     }
 }
 

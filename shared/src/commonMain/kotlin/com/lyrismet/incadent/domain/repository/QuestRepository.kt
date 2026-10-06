@@ -15,10 +15,3 @@ interface QuestRepository {
 
     suspend fun delete(id: Long)
 }
-
-suspend fun QuestRepository.updateStatus(
-    questId: Long,
-    status: QuestStatus,
-) {
-    getById(questId)?.let { quest -> upsert(quest.copy(status = status)) }
-}

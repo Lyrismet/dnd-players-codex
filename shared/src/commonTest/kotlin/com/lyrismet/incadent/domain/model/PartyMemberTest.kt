@@ -31,11 +31,11 @@ class PartyMemberTest {
     fun `out of range stats are pinned to their bounds`() {
         val clamped =
             member
-                .copy(level = 25, hpMax = 500, armorClass = 0, initiativeBonus = 40)
+                .copy(level = 25, hpMax = 1500, armorClass = 0, initiativeBonus = 40)
                 .clampedToRanges()
 
         assertEquals(20, clamped.level)
-        assertEquals(400, clamped.hpMax)
+        assertEquals(999, clamped.hpMax)
         assertEquals(1, clamped.armorClass)
         assertEquals(15, clamped.initiativeBonus)
     }

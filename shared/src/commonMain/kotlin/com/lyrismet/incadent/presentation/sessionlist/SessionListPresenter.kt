@@ -94,8 +94,7 @@ class SessionListPresenter(
         val entitySheet =
             EntitySheetInteractions(
                 selectedEntityRef,
-                mentionRepositories.npcRepository,
-                mentionRepositories.questRepository,
+                mentionRepositories,
                 partyRepository,
                 navigator,
             )

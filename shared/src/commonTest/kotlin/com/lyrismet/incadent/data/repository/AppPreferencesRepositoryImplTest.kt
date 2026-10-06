@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.data.repository
 
+import com.lyrismet.incadent.domain.model.EntityEditMode
+import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.russhwolf.settings.MapSettings
@@ -72,5 +74,39 @@ class AppPreferencesRepositoryImplTest {
             val settings = MapSettings("mention_style" to "bogus")
 
             assertEquals(MentionStyle.FILLED, AppPreferencesRepositoryImpl(settings).observeMentionStyle().first())
+        }
+
+    @Test
+    fun `entity edit mode defaults to quick and round-trips the chosen mode`() =
+        runTest {
+            val repository = AppPreferencesRepositoryImpl(MapSettings())
+
+            assertEquals(EntityEditMode.QUICK, repository.observeEntityEditMode().first())
+
+            repository.setEntityEditMode(EntityEditMode.FORM)
+
+            assertEquals(EntityEditMode.FORM, repository.observeEntityEditMode().first())
+        }
+
+    @Test
+    fun `unknown stored entity edit mode falls back to quick`() =
+        runTest {
+            val settings = MapSettings("entity_edit_mode" to "bogus")
+
+            assertEquals(EntityEditMode.QUICK, AppPreferencesRepositoryImpl(settings).observeEntityEditMode().first())
+        }
+
+    @Test
+    fun `hold hint is pending until it is seen and can be reset to pending`() =
+        runTest {
+            val repository = AppPreferencesRepositoryImpl(MapSettings())
+
+            assertEquals(HoldHintState.PENDING, repository.observeHoldHintState().first())
+
+            repository.setHoldHintState(HoldHintState.SEEN)
+            assertEquals(HoldHintState.SEEN, repository.observeHoldHintState().first())
+
+            repository.setHoldHintState(HoldHintState.PENDING)
+            assertEquals(HoldHintState.PENDING, repository.observeHoldHintState().first())
         }
 }

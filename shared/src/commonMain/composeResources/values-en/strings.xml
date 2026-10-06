@@ -222,4 +222,25 @@
     <string name="entity_sheet_party_level_label">Level</string>
     <string name="entity_sheet_party_ac_label">AC</string>
     <string name="entity_sheet_party_hp_label">Max HP</string>
+    <string name="quick_edit_label_name">Name</string>
+    <string name="quick_edit_label_description">Description</string>
+    <string name="quick_edit_done">Done</string>
+    <string name="quick_edit_changed_suffix"> — changed</string>
+    <string name="quick_edit_link_none">Not set</string>
+    <string name="quick_edit_description_placeholder">No description yet — hold to add one</string>
+    <string name="quick_edit_hold_tip">Hold any field to edit it right here</string>
+    <string name="quick_edit_hold_tip_dismiss">Got it</string>
+    <string name="quick_edit_description_hint">Appearance, personality, what is known…</string>
+    <string name="settings_edit_mode_desc">How codex entries are edited.</string>
+    <string name="quick_edit_hold_too_short">Hold the field to edit it</string>
+    <string name="settings_section_codex">CODEX</string>
+    <string name="settings_edit_mode_title">Edit mode</string>
+    <string name="settings_edit_mode_quick">Quick</string>
+    <string name="settings_edit_mode_quick_desc">Hold a field on the card to edit it right there. Relation, state and portrait change with one tap; after every edit an Undo appears at the bottom.</string>
+    <string name="settings_edit_mode_form">Form</string>
+    <string name="settings_edit_mode_form_desc">Read-only card. Edit with the pen in the header or swipe right in the list; everything is edited in a separate form.</string>
+    <string name="settings_hints_title">Gesture hints</string>
+    <string name="settings_hints_desc">Show again how to delete with a swipe</string>
+    <string name="settings_hints_show">Show</string>
+    <string name="swipe_release_label">Release</string>
 </resources>

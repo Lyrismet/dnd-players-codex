@@ -146,11 +146,12 @@ class EntitySummaryTest {
     }
 
     @Test
-    fun `buildEntitySummary for an npc without a location or given quests omits them`() {
+    fun `buildEntitySummary for an npc without a location keeps the location row as a dash and omits the groups`() {
         val loner = ragnar.copy(id = 5, locationId = null)
         val summary = buildEntitySummary(EntityRef.Npc(5), lookup(npcs = listOf(loner))) as EntitySummaryItem.NpcSummary
 
-        assertEquals(2, summary.facts.size)
+        assertEquals(3, summary.facts.size)
+        assertEquals(FactValue.Text(""), summary.facts.last().value)
         assertTrue(summary.groups.isEmpty())
     }
 
@@ -159,8 +160,9 @@ class EntitySummaryTest {
         val summary = buildEntitySummary(EntityRef.Quest(3), lookup()) as EntitySummaryItem.QuestSummary
 
         assertEquals("Меч", summary.title)
-        // giver + reward, no location fact since swordQuest.locationId is null
-        assertEquals(2, summary.facts.size)
+        // giver, reward and location - swordQuest has no location, so that row is a dash
+        assertEquals(3, summary.facts.size)
+        assertEquals(FactValue.Text(""), summary.facts.last().value)
     }
 
     @Test
@@ -173,7 +175,7 @@ class EntitySummaryTest {
     }
 
     @Test
-    fun `buildEntitySummary for a quest without a giver omits that fact`() {
+    fun `buildEntitySummary for a quest without a giver keeps the giver row as a dash`() {
         val orphanQuest = swordQuest.copy(id = 6, givenByNpcId = null)
         val summary =
             buildEntitySummary(
@@ -181,7 +183,7 @@ class EntitySummaryTest {
                 lookup(quests = listOf(orphanQuest)),
             ) as EntitySummaryItem.QuestSummary
 
-        assertEquals(1, summary.facts.size)
+        assertEquals(FactValue.Text(""), summary.facts.first().value)
     }
 
     @Test

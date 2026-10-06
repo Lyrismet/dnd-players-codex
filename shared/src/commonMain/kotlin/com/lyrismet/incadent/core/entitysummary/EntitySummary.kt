@@ -9,12 +9,10 @@ import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.designsystem.component.toMentionChip
 import com.lyrismet.incadent.core.designsystem.toStatusColor
 import com.lyrismet.incadent.core.format.joinWithDot
-import com.lyrismet.incadent.core.format.sessionNumberLabels
-import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.mention.MentionCandidate
-import com.lyrismet.incadent.core.mention.MentionSegment
-import com.lyrismet.incadent.core.mention.dedupeKey
-import com.lyrismet.incadent.core.mention.parseMentions
+import com.lyrismet.incadent.core.quickedit.InlineEdit
+import com.lyrismet.incadent.core.quickedit.QuickEditField
+import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -27,6 +25,7 @@ import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_entry_label_initiative_bonus
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_npcs
@@ -49,20 +48,22 @@ import org.jetbrains.compose.resources.stringResource
 
 /** the one codex entity a chip, a mention or a codex list row can point at - never more than one kind at a time */
 sealed interface EntityRef {
+    val id: Long
+
     data class Npc(
-        val id: Long,
+        override val id: Long,
     ) : EntityRef
 
     data class Location(
-        val id: Long,
+        override val id: Long,
     ) : EntityRef
 
     data class Quest(
-        val id: Long,
+        override val id: Long,
     ) : EntityRef
 
     data class Party(
-        val id: Long,
+        override val id: Long,
     ) : EntityRef
 }
 
@@ -89,6 +90,10 @@ sealed interface FactValue {
 data class FactRow(
     val label: StringResource,
     val value: FactValue,
+    // null keeps the fact read-only even in quick-edit mode
+    val edit: QuickEditField? = null,
+    // the entities a link fact can be re-pointed at - only read when [edit] is a link field
+    val linkOptions: List<MentionChipItem> = emptyList(),
 )
 
 /** "выдал квесты" / "кто здесь" / "квесты" - a titled row of chips, each reopening the sheet in place */
@@ -219,12 +224,15 @@ private fun buildNpcSummary(
         lifeOptions =
             statusOptions(NpcLifeState.entries, npc.lifeState, lookup.npcLifeLabels) { life -> life.toStatusColor() },
         facts =
-            listOfNotNull(
-                FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(npc.race)),
-                FactRow(Res.string.entity_sheet_npc_faction_label, FactValue.Text(npc.faction)),
-                location?.let {
-                    FactRow(Res.string.entity_sheet_npc_location_label, FactValue.Link(it.toMentionChip()))
-                },
+            listOf(
+                FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(npc.race), QuickEditField.RACE),
+                FactRow(Res.string.entity_sheet_npc_faction_label, FactValue.Text(npc.faction), QuickEditField.FACTION),
+                linkFact(
+                    Res.string.entity_sheet_npc_location_label,
+                    location?.toMentionChip(),
+                    QuickEditField.PLACE,
+                    lookup.locations.map { it.toMentionChip() },
+                ),
             ),
         groups =
             listOfNotNull(
@@ -254,11 +262,37 @@ private fun buildPartySummary(
             },
         facts =
             listOf(
-                FactRow(Res.string.entity_sheet_party_player_label, FactValue.Text(ownerLabel)),
-                FactRow(Res.string.entity_sheet_party_class_label, FactValue.Text(member.characterClass)),
-                FactRow(Res.string.entity_sheet_party_level_label, FactValue.Text(member.level.toString())),
-                FactRow(Res.string.entity_sheet_party_ac_label, FactValue.Text(member.armorClass.toString())),
-                FactRow(Res.string.entity_sheet_party_hp_label, FactValue.Text(member.hpMax.toString())),
+                FactRow(
+                    Res.string.entity_sheet_party_player_label,
+                    FactValue.Text(ownerLabel),
+                    edit = if (member.isPlayerCharacter) null else QuickEditField.PLAYER_NAME,
+                ),
+                FactRow(
+                    Res.string.entity_sheet_party_class_label,
+                    FactValue.Text(member.characterClass),
+                    QuickEditField.CHARACTER_CLASS,
+                ),
+                FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(member.race), QuickEditField.RACE),
+                FactRow(
+                    Res.string.entity_sheet_party_level_label,
+                    FactValue.Text(member.level.toString()),
+                    QuickEditField.LEVEL,
+                ),
+                FactRow(
+                    Res.string.entity_sheet_party_ac_label,
+                    FactValue.Text(member.armorClass.toString()),
+                    QuickEditField.ARMOR_CLASS,
+                ),
+                FactRow(
+                    Res.string.entity_sheet_party_hp_label,
+                    FactValue.Text(member.hpMax.toString()),
+                    QuickEditField.HP_MAX,
+                ),
+                FactRow(
+                    Res.string.codex_entry_label_initiative_bonus,
+                    FactValue.Text(signedNumber(member.initiativeBonus)),
+                    QuickEditField.INITIATIVE_BONUS,
+                ),
             ),
     )
 }
@@ -282,12 +316,20 @@ private fun buildQuestSummary(
                 status.toStatusColor()
             },
         facts =
-            listOfNotNull(
-                giver?.let { FactRow(Res.string.codex_quest_given_by_label, FactValue.Link(it.toMentionChip())) },
-                FactRow(Res.string.codex_quest_reward_label, FactValue.Text(quest.reward)),
-                location?.let {
-                    FactRow(Res.string.entity_sheet_quest_location_label, FactValue.Link(it.toMentionChip()))
-                },
+            listOf(
+                linkFact(
+                    Res.string.codex_quest_given_by_label,
+                    giver?.toMentionChip(),
+                    QuickEditField.GIVER,
+                    lookup.npcs.map { it.toMentionChip() },
+                ),
+                FactRow(Res.string.codex_quest_reward_label, FactValue.Text(quest.reward), QuickEditField.REWARD),
+                linkFact(
+                    Res.string.entity_sheet_quest_location_label,
+                    location?.toMentionChip(),
+                    QuickEditField.PLACE,
+                    lookup.locations.map { it.toMentionChip() },
+                ),
             ),
         groups = emptyList(),
         relatedNotes = buildRelatedNotes(EntityRef.Quest(quest.id), lookup),
@@ -309,8 +351,16 @@ private fun buildLocationSummary(
         subtitle = location.region,
         facts =
             listOf(
-                FactRow(Res.string.entity_sheet_location_type_label, FactValue.Text(location.type)),
-                FactRow(Res.string.entity_sheet_location_region_label, FactValue.Text(location.region)),
+                FactRow(
+                    Res.string.entity_sheet_location_type_label,
+                    FactValue.Text(location.type),
+                    QuickEditField.LOCATION_TYPE,
+                ),
+                FactRow(
+                    Res.string.entity_sheet_location_region_label,
+                    FactValue.Text(location.region),
+                    QuickEditField.LOCATION_REGION,
+                ),
             ),
         groups =
             listOfNotNull(
@@ -325,6 +375,16 @@ private fun buildLocationSummary(
     )
 }
 
+/** a link fact always has its row, so an empty link stays editable - it shows as a dash until something is picked */
+private fun linkFact(
+    label: StringResource,
+    chip: MentionChipItem?,
+    field: QuickEditField,
+    options: List<MentionChipItem>,
+): FactRow = FactRow(label, chip?.let { FactValue.Link(it) } ?: FactValue.Text(""), field, options)
+
+private fun signedNumber(value: Int): String = if (value > 0) "+$value" else value.toString()
+
 private fun <T> statusOptions(
     values: List<T>,
     current: T,
@@ -333,60 +393,33 @@ private fun <T> statusOptions(
 ): List<StatusOption<T>> =
     values.map { value -> StatusOption(value, labels.getValue(value), colorOf(value), value == current) }
 
-private const val SNIPPET_MAX_LENGTH = 110
-
-private fun EntityRef.dedupeKey(): String =
-    when (this) {
-        is EntityRef.Npc -> "npc:$id"
-        is EntityRef.Location -> "location:$id"
-        is EntityRef.Quest -> "quest:$id"
-        is EntityRef.Party -> "party:$id"
-    }
-
-/** every session with at least one note that `@mentions` [ref], newest first, with a snippet and hit count */
-private fun buildRelatedNotes(
-    ref: EntityRef,
-    lookup: EntityLookup,
-): List<RelatedNoteItem> {
-    val entriesBySession = lookup.sessionEntries.groupBy { it.sessionNoteId }
-    val numberLabels = lookup.sessionNotes.sessionNumberLabels(lookup.sessionNumbering)
-    return lookup.sessionNotes
-        .sortedByDescending { it.sessionDate }
-        .mapNotNull { note ->
-            val hits =
-                entriesBySession[note.id].orEmpty().filter { entry ->
-                    parseMentions(entry.body, lookup.mentionCandidates)
-                        .filterIsInstance<MentionSegment.Mention>()
-                        .any { it.entity.dedupeKey() == ref.dedupeKey() }
-                }
-            if (hits.isEmpty()) {
-                null
-            } else {
-                RelatedNoteItem(
-                    sessionNoteId = note.id,
-                    numberLabel = numberLabels.getValue(note.id),
-                    title = note.title,
-                    dateLabel = note.sessionDate.toDisplayDate(),
-                    snippet = plainTextSnippet(hits.first().body, lookup.mentionCandidates),
-                    matchCount = hits.size,
-                )
-            }
-        }
-}
-
-private fun plainTextSnippet(
-    body: String,
-    candidates: List<MentionCandidate>,
-): String {
-    val plain =
-        parseMentions(body, candidates).joinToString("") { segment ->
-            when (segment) {
-                is MentionSegment.Text -> segment.text
-                is MentionSegment.Mention -> segment.entity.name
-            }
-        }
-    return if (plain.length > SNIPPET_MAX_LENGTH) plain.take(SNIPPET_MAX_LENGTH - 1) + "…" else plain
-}
+/** the records plus resolved labels a summary is built from - composable only because the labels come from resources */
+@Composable
+fun entityLookupOf(
+    npcs: List<Npc>,
+    locations: List<Location>,
+    quests: List<Quest>,
+    sessionNotes: List<SessionNote>,
+    sessionEntries: List<SessionEntry>,
+    mentionCandidates: List<MentionCandidate>,
+    sessionNumbering: SessionNumbering,
+    parties: List<PartyMember>,
+): EntityLookup =
+    EntityLookup(
+        npcs = npcs,
+        locations = locations,
+        quests = quests,
+        npcStatusLabels = npcStatusLabels(),
+        npcLifeLabels = npcLifeLabels(),
+        questStatusLabels = questStatusLabels(),
+        parties = parties,
+        partyPresenceLabels = partyPresenceLabels(),
+        partyYouLabel = stringResource(Res.string.entity_sheet_party_you_label),
+        sessionNotes = sessionNotes,
+        sessionEntries = sessionEntries,
+        mentionCandidates = mentionCandidates,
+        sessionNumbering = sessionNumbering,
+    )
 
 /** the shared "resolve whatever's tapped" used by every screen that owns a nullable [EntityRef] selection */
 @Composable
@@ -402,24 +435,18 @@ fun selectedEntitySummary(
     parties: List<PartyMember>,
 ): EntitySummaryItem? {
     if (ref == null) return null
-    return buildEntitySummary(
-        ref,
-        EntityLookup(
-            npcs = npcs,
-            locations = locations,
-            quests = quests,
-            npcStatusLabels = npcStatusLabels(),
-            npcLifeLabels = npcLifeLabels(),
-            questStatusLabels = questStatusLabels(),
-            parties = parties,
-            partyPresenceLabels = partyPresenceLabels(),
-            partyYouLabel = stringResource(Res.string.entity_sheet_party_you_label),
-            sessionNotes = sessionNotes,
-            sessionEntries = sessionEntries,
-            mentionCandidates = mentionCandidates,
-            sessionNumbering = sessionNumbering,
-        ),
-    )
+    val lookup =
+        entityLookupOf(
+            npcs,
+            locations,
+            quests,
+            sessionNotes,
+            sessionEntries,
+            mentionCandidates,
+            sessionNumbering,
+            parties,
+        )
+    return buildEntitySummary(ref, lookup)
 }
 
 /** actions the sheet's interactive pieces dispatch - one bundle instead of one lambda param per feature */
@@ -432,4 +459,15 @@ data class EntitySummarySheetActions(
     val onEditClicked: ((EntityRef) -> Unit)? = null,
     // null hides the presence picker - only the codex manages party membership
     val onPartyPresenceSelected: ((partyId: Long, presence: PartyPresence) -> Unit)? = null,
+    // true shows the status pickers as plain badges - the form-mode card is read-only
+    val statusesReadOnly: Boolean = false,
+    // null keeps the card read-only - in-place editing only exists in the codex
+    val quickEdit: QuickEditSheet? = null,
+)
+
+/** the in-place editing state a card renders - the presenter owns it, the card only shows it and forwards events */
+data class QuickEditSheet(
+    val inlineEdit: InlineEdit?,
+    val holdTipVisible: Boolean,
+    val onEvent: (QuickEditUiEvent) -> Unit,
 )

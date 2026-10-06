@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.data.repository
 
+import com.lyrismet.incadent.domain.model.EntityEditMode
+import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
@@ -13,6 +15,8 @@ import kotlinx.coroutines.flow.map
 private const val KEY_CAMPAIGN_NAME = "campaign_name"
 private const val KEY_SESSION_NUMBERING = "session_numbering"
 private const val KEY_MENTION_STYLE = "mention_style"
+private const val KEY_ENTITY_EDIT_MODE = "entity_edit_mode"
+private const val KEY_HOLD_HINT_STATE = "hold_hint_state"
 
 class AppPreferencesRepositoryImpl(
     private val settings: ObservableSettings,
@@ -43,5 +47,25 @@ class AppPreferencesRepositoryImpl(
 
     override fun setMentionStyle(style: MentionStyle) {
         settings.putString(KEY_MENTION_STYLE, style.tag)
+    }
+
+    @OptIn(ExperimentalSettingsApi::class)
+    override fun observeEntityEditMode(): Flow<EntityEditMode> =
+        settings.getStringFlow(KEY_ENTITY_EDIT_MODE, EntityEditMode.QUICK.tag).map { tag ->
+            EntityEditMode.entries.find { it.tag == tag } ?: EntityEditMode.QUICK
+        }
+
+    override fun setEntityEditMode(mode: EntityEditMode) {
+        settings.putString(KEY_ENTITY_EDIT_MODE, mode.tag)
+    }
+
+    @OptIn(ExperimentalSettingsApi::class)
+    override fun observeHoldHintState(): Flow<HoldHintState> =
+        settings.getStringFlow(KEY_HOLD_HINT_STATE, HoldHintState.PENDING.tag).map { tag ->
+            HoldHintState.entries.find { it.tag == tag } ?: HoldHintState.PENDING
+        }
+
+    override fun setHoldHintState(state: HoldHintState) {
+        settings.putString(KEY_HOLD_HINT_STATE, state.tag)
     }
 }

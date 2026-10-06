@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.lyrismet.incadent.core.codexgroup.CodexGroupLabels
 import com.lyrismet.incadent.core.codexgroup.CodexGroupingSelection
@@ -15,14 +16,22 @@ import com.lyrismet.incadent.core.codexgroup.QuestGroupBy
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
+import com.lyrismet.incadent.core.entitysummary.buildEntitySummary
+import com.lyrismet.incadent.core.entitysummary.entityLookupOf
 import com.lyrismet.incadent.core.entitysummary.npcLifeLabels
 import com.lyrismet.incadent.core.entitysummary.npcStatusLabels
 import com.lyrismet.incadent.core.entitysummary.partyPresenceLabels
 import com.lyrismet.incadent.core.entitysummary.questStatusLabels
-import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
 import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
+import com.lyrismet.incadent.core.quickedit.InlineEdit
+import com.lyrismet.incadent.core.quickedit.QuickEditField
+import com.lyrismet.incadent.core.quickedit.QuickEditInteractions
+import com.lyrismet.incadent.core.quickedit.rememberQuickEditFieldTitles
+import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.model.EntityEditMode
+import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcStatus
@@ -32,6 +41,7 @@ import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
+import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.NpcRepository
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
@@ -63,6 +73,7 @@ import dndplayerscodex.shared.generated.resources.codex_party_card_hp
 import dndplayerscodex.shared.generated.resources.codex_party_card_player_prefix
 import dndplayerscodex.shared.generated.resources.codex_party_card_you
 import dndplayerscodex.shared.generated.resources.codex_undo_deleted_title
+import dndplayerscodex.shared.generated.resources.quick_edit_changed_suffix
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -76,6 +87,8 @@ private class CodexFields(
     val grouping: MutableState<CodexGroupingSelection>,
     val selectedEntityRef: MutableState<EntityRef?>,
     val entitySheet: EntitySheetInteractions,
+    val inlineEdit: MutableState<InlineEdit?>,
+    val quickEdit: QuickEditInteractions,
 )
 
 /** result of applying the text search query to every list */
@@ -94,6 +107,8 @@ private class CodexLabels(
     val entityType: Map<CodexEntryType, String>,
     val undoDeletedTitle: String,
     val grouped: CodexGroupedLabels,
+    val fieldTitles: Map<QuickEditField, String>,
+    val changedSuffix: String,
 )
 
 @Suppress("LongParameterList")
@@ -122,15 +137,12 @@ class CodexPresenter(
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
+        val editMode by appPreferencesRepository.observeEntityEditMode().collectAsState(initial = EntityEditMode.QUICK)
+        val holdHint by appPreferencesRepository.observeHoldHintState().collectAsState(initial = HoldHintState.SEEN)
+        val undoAction by undoController.current.collectAsState()
         val scope = rememberCoroutineScope()
+        val labels = codexLabels()
 
-        // rememberRetained not remember - state must survive push/pop navigation, not just recomposition
-        val activeTab = rememberRetained { mutableStateOf(CodexTab.ALL) }
-        val searchQuery = rememberRetained { mutableStateOf("") }
-        val grouping = rememberRetained { mutableStateOf(CodexGroupingSelection()) }
-        val selectedEntityRef = rememberRetained { mutableStateOf<EntityRef?>(null) }
-        val entitySheet =
-            EntitySheetInteractions(selectedEntityRef, npcRepository, questRepository, partyRepository, navigator)
         val formController =
             CodexEntryFormController.rememberController(
                 npcRepository,
@@ -138,36 +150,62 @@ class CodexPresenter(
                 questRepository,
                 locationRepository,
             )
-        val fields =
-            CodexFields(
-                activeTab,
-                searchQuery,
-                grouping,
-                selectedEntityRef,
-                entitySheet,
-            )
+        val fields = rememberFields(labels)
 
-        val labels = codexLabels()
-        val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix())
+        val prefix = questPrefix()
+        val candidates =
+            remember(npcs, locations, quests, prefix) {
+                mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), prefix)
+            }
         val records = CodexRecords(parties, npcs, quests, locations)
         val search = buildSearchResults(records, fields)
         val grouped =
-            codexGroupedLists(search, records, activeTab.value, grouping.value, labels.grouped)
+            codexGroupedLists(search, records, fields.activeTab.value, fields.grouping.value, labels.grouped)
 
-        val selectedEntity =
-            selectedEntitySummary(
-                selectedEntityRef.value,
-                npcs,
-                locations,
-                quests,
-                sessionNotes,
-                sessionEntries,
-                candidates,
-                numbering,
-                parties,
+        val lookup =
+            entityLookupOf(npcs, locations, quests, sessionNotes, sessionEntries, candidates, numbering, parties)
+        // keyed on the lookup data, so typing in the open editor doesn't re-parse every session entry
+        val selectedRef = fields.selectedEntityRef.value
+        val selectedEntity = remember(selectedRef, lookup) { selectedRef?.let { buildEntitySummary(it, lookup) } }
+
+        return buildCodexState(
+            fields,
+            formController,
+            records,
+            search,
+            grouped,
+            selectedEntity,
+            labels,
+            scope,
+            CodexEditContext(editMode, holdHint, undoAction),
+        )
+    }
+
+    // the sheet and the in-place editor share one selection - every committed change is offered to the undo toast
+    @Composable
+    private fun rememberFields(labels: CodexLabels): CodexFields {
+        // rememberRetained not remember - state must survive push/pop navigation, not just recomposition
+        val activeTab = rememberRetained { mutableStateOf(CodexTab.ALL) }
+        val searchQuery = rememberRetained { mutableStateOf("") }
+        val grouping = rememberRetained { mutableStateOf(CodexGroupingSelection()) }
+        val selectedEntityRef = rememberRetained { mutableStateOf<EntityRef?>(null) }
+        val inlineEdit = rememberRetained { mutableStateOf<InlineEdit?>(null) }
+        val entitySheet =
+            EntitySheetInteractions(
+                selectedEntityRef,
+                MentionRepositories(npcRepository, locationRepository, questRepository),
+                partyRepository,
+                navigator,
+                onChanged = { change ->
+                    val title = labels.fieldTitles.getValue(change.field) + labels.changedSuffix
+                    undoController.show(title, change.entityName, change.restore)
+                },
             )
-
-        return buildCodexState(fields, formController, records, search, grouped, selectedEntity, labels, scope)
+        val quickEdit =
+            QuickEditInteractions(inlineEdit, selectedEntityRef, entitySheet) {
+                appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
+            }
+        return CodexFields(activeTab, searchQuery, grouping, selectedEntityRef, entitySheet, inlineEdit, quickEdit)
     }
 
     @Composable
@@ -191,6 +229,8 @@ class CodexPresenter(
                 ),
             undoDeletedTitle = stringResource(Res.string.codex_undo_deleted_title),
             grouped = groupedLabels(npcStatusLabels(), questStatusLabels()),
+            fieldTitles = rememberQuickEditFieldTitles(),
+            changedSuffix = stringResource(Res.string.quick_edit_changed_suffix),
         )
     }
 
@@ -252,7 +292,9 @@ class CodexPresenter(
         selectedEntity: EntitySummaryItem?,
         labels: CodexLabels,
         scope: CoroutineScope,
+        context: CodexEditContext,
     ): CodexState {
+        val inlineEdit = fields.inlineEdit.value
         val party = search.searchedParties.toPartyCodexItems(labels.partyCard)
         val activeTab = fields.activeTab.value
         return CodexState(
@@ -276,6 +318,13 @@ class CodexPresenter(
                     codexEmptyKind(activeTab, fields.searchQuery.value, grouped.hasEntriesFor(activeTab, party)),
                 ),
             activeSheet = codexActiveSheet(formController.buildState(records.npcs, records.locations), selectedEntity),
+            editMode = context.editMode,
+            inlineEdit = inlineEdit,
+            holdTipVisible =
+                context.editMode == EntityEditMode.QUICK &&
+                    context.holdHint == HoldHintState.PENDING &&
+                    inlineEdit == null,
+            undoAction = context.undoAction,
         ) { event ->
             onEvent(event, fields, formController, records, labels, scope)
         }
@@ -312,7 +361,10 @@ class CodexPresenter(
             is CodexEvent.TabSelected -> fields.activeTab.value = event.tab
             is CodexEvent.SearchQueryChanged -> fields.searchQuery.value = event.query
             is CodexEvent.GroupBySelected -> fields.grouping.value = fields.grouping.value.select(event.choice)
-            is CodexEvent.EntityClicked -> fields.entitySheet.onEntityClicked(event.ref)
+            is CodexEvent.EntityClicked -> {
+                fields.quickEdit.onSheetClosed()
+                fields.entitySheet.onEntityClicked(event.ref)
+            }
             is CodexEvent.NpcStatusSelected -> fields.entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
             is CodexEvent.NpcLifeSelected -> fields.entitySheet.onNpcLifeSelected(scope, event.npcId, event.lifeState)
             is CodexEvent.PartyPresenceSelected ->
@@ -320,7 +372,12 @@ class CodexPresenter(
             is CodexEvent.QuestStatusSelected ->
                 fields.entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
             is CodexEvent.RelatedNoteClicked -> fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId)
-            CodexEvent.SheetDismissed -> fields.entitySheet.onDismissed()
+            CodexEvent.SheetDismissed -> {
+                fields.entitySheet.onDismissed()
+                fields.quickEdit.onSheetClosed()
+            }
+            is CodexEvent.QuickEdit -> fields.quickEdit.onEvent(scope, event.event)
+            CodexEvent.UndoClicked -> undoController.undo()
             CodexEvent.AddEntryClicked -> formController.onAddEntryClicked(fields.activeTab.value.toEntryType())
             is CodexEvent.EmptyActionClicked -> formController.onAddEntryClicked(event.entryType, event.name)
             is CodexEvent.EditEntryRequested -> formController.onEditEntryRequested(event.ref, scope)
@@ -354,6 +411,13 @@ class CodexPresenter(
         }
     }
 }
+
+/** the edit preferences and the undo toast the screen state is assembled from */
+private data class CodexEditContext(
+    val editMode: EntityEditMode,
+    val holdHint: HoldHintState,
+    val undoAction: UndoAction?,
+)
 
 // the form always wins so editing never leaves the entity-view sheet stacked underneath it
 private fun codexActiveSheet(

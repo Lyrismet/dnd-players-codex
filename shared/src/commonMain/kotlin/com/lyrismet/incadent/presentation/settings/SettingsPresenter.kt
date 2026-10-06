@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.domain.model.AppLanguage
+import com.lyrismet.incadent.domain.model.EntityEditMode
+import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
@@ -26,6 +28,9 @@ class SettingsPresenter(
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
         val mentionStyle by appPreferencesRepository.observeMentionStyle().collectAsState(initial = MentionStyle.FILLED)
+        val editMode by appPreferencesRepository
+            .observeEntityEditMode()
+            .collectAsState(initial = EntityEditMode.QUICK)
         val campaignNameOverride by appPreferencesRepository.observeCampaignName().collectAsState(initial = null)
         val defaultCampaignName = stringResource(Res.string.default_campaign_name)
         val campaignName = campaignNameOverride ?: defaultCampaignName
@@ -35,6 +40,7 @@ class SettingsPresenter(
             language = language,
             numbering = numbering,
             mentionStyle = mentionStyle,
+            editMode = editMode,
             campaignName = campaignName,
             renameSheet = renameSheet.value,
         ) { event ->
@@ -42,6 +48,8 @@ class SettingsPresenter(
                 is SettingsEvent.LanguageSelected -> languageRepository.setLanguage(event.language)
                 is SettingsEvent.NumberingSelected -> appPreferencesRepository.setSessionNumbering(event.numbering)
                 is SettingsEvent.MentionStyleSelected -> appPreferencesRepository.setMentionStyle(event.style)
+                is SettingsEvent.EditModeSelected -> appPreferencesRepository.setEntityEditMode(event.mode)
+                SettingsEvent.HoldHintShowRequested -> appPreferencesRepository.setHoldHintState(HoldHintState.PENDING)
                 SettingsEvent.RenameOpened -> renameSheet.value = RenameSheetState.Editing(campaignName)
                 is SettingsEvent.RenameDraftChanged -> renameSheet.value = RenameSheetState.Editing(event.value)
                 SettingsEvent.RenameSaved -> {

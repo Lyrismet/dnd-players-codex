@@ -338,7 +338,7 @@
 
 - [x] Полный CRUD-стек (domain/data/presentation) для сессий и их заметок
 - [x] Circuit-навигация, единый паттерн Screen+Presenter+Ui+Circuit на фичу
-- [x] Тёмная системная тема (без вспышки при переходах)
+- [x] Тёмная системная тема
 - [x] `PRAGMA foreign_keys=ON` — каскадное удаление реально работает во всей схеме
 - [x] `QuestRepositoryImpl`/`LocationRepositoryImpl` — были только интерфейсы и схема, реализации отсутствовали
 - [x] Независимые backstack'и на вкладку (`presentation/codex` подключён как второй пример 4-файловой фичи наравне

@@ -68,7 +68,7 @@ No more than 1 line, concise, and only where the code actually needs explaining 
 
 ## Mandatory Post-Edit Verification Workflow
 After making any code changes or writing new files, you must automatically and sequentially execute these validation commands in the terminal:
-1. Compile: `./gradlew build` (use a narrower task like `./gradlew :shared:compileKotlinMetadata` for a quick check while iterating on `commonMain`-only changes, but run the full `./gradlew build` before considering the task done — it's the only command that also compiles `androidMain`/`iosMain`).
+1. Compile: `./gradlew build -x :shared:linkReleaseFrameworkIosArm64 -x :shared:linkReleaseFrameworkIosSimulatorArm64` for everyday feature work (the two release iOS framework links take ~8.5 min each and dominate build time; the iOS store upload is the only thing that needs them). Run the plain `./gradlew build` with those links only when preparing an iOS App Store / release build. Use a narrower task like `./gradlew :shared:compileCommonMainKotlinMetadata` for a quick check while iterating on `commonMain`-only changes.
 2. Auto-format: `./gradlew ktlintFormat`
 3. Static analysis: `./gradlew detekt`
 - If any compile errors, ktlint violations, or detekt findings are reported, fix them immediately before marking the task as complete.

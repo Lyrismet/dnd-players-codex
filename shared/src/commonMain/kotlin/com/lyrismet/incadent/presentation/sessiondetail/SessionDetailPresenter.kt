@@ -182,8 +182,7 @@ class SessionDetailPresenter(
     private fun entitySheetInteractions(selectedEntityRef: MutableState<EntityRef?>) =
         EntitySheetInteractions(
             selectedEntityRef,
-            mentionRepositories.npcRepository,
-            mentionRepositories.questRepository,
+            mentionRepositories,
             partyRepository,
             navigator,
         )

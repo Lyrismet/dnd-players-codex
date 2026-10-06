@@ -1,6 +1,10 @@
 package com.lyrismet.incadent.core.entitysummary
 
 import androidx.compose.runtime.mutableStateOf
+import com.lyrismet.incadent.core.quickedit.EntityChange
+import com.lyrismet.incadent.core.quickedit.QuickEditField
+import com.lyrismet.incadent.core.quickedit.QuickEditValue
+import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
@@ -8,22 +12,15 @@ import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
-import com.lyrismet.incadent.domain.repository.NpcRepository
-import com.lyrismet.incadent.domain.repository.PartyRepository
-import com.lyrismet.incadent.domain.repository.QuestRepository
+import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
-import com.slack.circuit.runtime.Navigator
-import com.slack.circuit.runtime.Navigator.StateOptions
-import com.slack.circuit.runtime.navigation.NavStackList
-import com.slack.circuit.runtime.screen.PopResult
 import com.slack.circuit.runtime.screen.Screen
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class EntitySheetInteractionsTest {
     @Test
@@ -48,6 +45,83 @@ class EntitySheetInteractionsTest {
             advanceUntilIdle()
 
             assertEquals(NpcStatus.ENEMY, npcs.stored(1)?.status)
+        }
+
+    @Test
+    fun `a status change reports its field and restoring the change puts the old record back`() =
+        runTest {
+            val npcs = FakeNpcRepository(npc(id = 1, status = NpcStatus.NEUTRAL))
+            val changes = mutableListOf<EntityChange>()
+            val interactions = interactions(npcs = npcs, onChanged = { changes += it })
+
+            interactions.onNpcStatusSelected(this, npcId = 1, status = NpcStatus.FRIEND)
+            advanceUntilIdle()
+
+            assertEquals(QuickEditField.RELATION, changes.single().field)
+            changes.single().restore()
+            assertEquals(NpcStatus.NEUTRAL, npcs.stored(1)?.status)
+        }
+
+    @Test
+    fun `a quick edit writes the new text and reports the old name for the undo toast`() =
+        runTest {
+            val npcs = FakeNpcRepository(npc(id = 1, status = NpcStatus.NEUTRAL))
+            val changes = mutableListOf<EntityChange>()
+            val interactions = interactions(npcs = npcs, onChanged = { changes += it })
+
+            interactions.onQuickEdit(this, EntityRef.Npc(1), QuickEditField.NAME, QuickEditValue.Text("Ворон"))
+            advanceUntilIdle()
+
+            assertEquals("Ворон", npcs.stored(1)?.name)
+            assertEquals("Кассиан", changes.single().entityName)
+            changes.single().restore()
+            assertEquals("Кассиан", npcs.stored(1)?.name)
+        }
+
+    @Test
+    fun `a quick edit with the same value writes nothing and offers no undo`() =
+        runTest {
+            val npcs = FakeNpcRepository(npc(id = 1, status = NpcStatus.NEUTRAL))
+            val changes = mutableListOf<EntityChange>()
+            val interactions = interactions(npcs = npcs, onChanged = { changes += it })
+
+            interactions.onQuickEdit(this, EntityRef.Npc(1), QuickEditField.NAME, QuickEditValue.Text("Кассиан"))
+            advanceUntilIdle()
+
+            assertTrue(changes.isEmpty())
+        }
+
+    @Test
+    fun `a field the entity does not have is ignored`() =
+        runTest {
+            val npcs = FakeNpcRepository(npc(id = 1, status = NpcStatus.NEUTRAL))
+            val changes = mutableListOf<EntityChange>()
+            val interactions = interactions(npcs = npcs, onChanged = { changes += it })
+
+            interactions.onQuickEdit(this, EntityRef.Npc(1), QuickEditField.REWARD, QuickEditValue.Text("200 зм"))
+            advanceUntilIdle()
+
+            assertTrue(changes.isEmpty())
+        }
+
+    @Test
+    fun `a location edit is written through the location repository`() =
+        runTest {
+            val locations =
+                FakeLocationRepository(
+                    Location(id = 4, name = "Башня", type = "Руины", description = "", region = "Север"),
+                )
+            val interactions = interactions(locations = locations)
+
+            interactions.onQuickEdit(
+                this,
+                EntityRef.Location(4),
+                QuickEditField.LOCATION_REGION,
+                QuickEditValue.Text("Юг"),
+            )
+            advanceUntilIdle()
+
+            assertEquals("Юг", locations.stored(4)?.region)
         }
 
     @Test
@@ -104,8 +178,10 @@ class EntitySheetInteractionsTest {
         npcs: FakeNpcRepository = FakeNpcRepository(),
         quests: FakeQuestRepository = FakeQuestRepository(),
         party: FakePartyRepository = FakePartyRepository(),
+        locations: FakeLocationRepository = FakeLocationRepository(),
         navigator: RecordingNavigator = RecordingNavigator(),
-    ) = EntitySheetInteractions(selected, npcs, quests, party, navigator)
+        onChanged: (EntityChange) -> Unit = {},
+    ) = EntitySheetInteractions(selected, MentionRepositories(npcs, locations, quests), party, navigator, onChanged)
 
     private fun member(
         id: Long,
@@ -152,97 +228,4 @@ class EntitySheetInteractionsTest {
         givenByNpcId = null,
         locationId = null,
     )
-}
-
-private class FakeNpcRepository(
-    vararg initial: Npc,
-) : NpcRepository {
-    private val store = initial.associateBy { it.id }.toMutableMap()
-
-    fun stored(id: Long): Npc? = store[id]
-
-    override fun observeAll(): Flow<List<Npc>> = flowOf(store.values.toList())
-
-    override fun observeByLocation(locationId: Long): Flow<List<Npc>> = flowOf(emptyList())
-
-    override suspend fun getById(id: Long): Npc? = store[id]
-
-    override suspend fun upsert(npc: Npc): Long {
-        store[npc.id] = npc
-        return npc.id
-    }
-
-    override suspend fun delete(id: Long) {
-        store.remove(id)
-    }
-}
-
-private class FakePartyRepository(
-    vararg initial: PartyMember,
-) : PartyRepository {
-    private val store = initial.associateBy { it.id }.toMutableMap()
-
-    fun stored(id: Long): PartyMember? = store[id]
-
-    override fun observeAll(): Flow<List<PartyMember>> = flowOf(store.values.toList())
-
-    override suspend fun getById(id: Long): PartyMember? = store[id]
-
-    override suspend fun upsert(member: PartyMember): Long {
-        store[member.id] = member
-        return member.id
-    }
-
-    override suspend fun delete(id: Long) {
-        store.remove(id)
-    }
-}
-
-private class FakeQuestRepository(
-    vararg initial: Quest,
-) : QuestRepository {
-    private val store = initial.associateBy { it.id }.toMutableMap()
-
-    fun stored(id: Long): Quest? = store[id]
-
-    override fun observeAll(): Flow<List<Quest>> = flowOf(store.values.toList())
-
-    override fun observeByStatus(status: QuestStatus): Flow<List<Quest>> = flowOf(emptyList())
-
-    override suspend fun getById(id: Long): Quest? = store[id]
-
-    override suspend fun upsert(quest: Quest): Long {
-        store[quest.id] = quest
-        return quest.id
-    }
-
-    override suspend fun delete(id: Long) {
-        store.remove(id)
-    }
-}
-
-private class RecordingNavigator : Navigator {
-    val goneTo = mutableListOf<Screen>()
-
-    override fun goTo(screen: Screen): Boolean {
-        goneTo += screen
-        return true
-    }
-
-    override fun forward(): Boolean = false
-
-    override fun backward(): Boolean = false
-
-    override fun pop(result: PopResult?): Screen? = null
-
-    override fun peek(): Screen? = null
-
-    override fun peekBackStack(): List<Screen> = emptyList()
-
-    override fun peekNavStack(): NavStackList<Screen>? = null
-
-    override fun resetRoot(
-        newRoot: Screen,
-        options: StateOptions,
-    ): List<Screen> = emptyList()
 }
