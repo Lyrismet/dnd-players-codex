@@ -1,12 +1,19 @@
 package com.lyrismet.incadent.presentation.codex
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
+import com.lyrismet.incadent.core.designsystem.component.SwipeEditAction
 import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.action_edit
 import dndplayerscodex.shared.generated.resources.codex_delete_content_description
+import dndplayerscodex.shared.generated.resources.swipe_release_label
 import org.jetbrains.compose.resources.stringResource
+
+/** true only in form mode - a right swipe opens the form, while quick mode keeps rows delete-only */
+internal val LocalSwipeEditEnabled = compositionLocalOf { false }
 
 @Composable
 internal fun CodexDeletableRow(
@@ -15,10 +22,12 @@ internal fun CodexDeletableRow(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val editEnabled = LocalSwipeEditEnabled.current
     SwipeToDeleteRow(
         onDeleteRequested = { eventSink(CodexEvent.EntityDeleteRequested(ref)) },
         modifier = modifier,
         deleteContentDescription = stringResource(Res.string.codex_delete_content_description),
+        editAction = if (editEnabled) swipeEditAction(ref, eventSink) else null,
         content = content,
     )
 }
@@ -70,3 +79,15 @@ internal fun LocationRow(
         )
     }
 }
+
+// the swipe-right "Изменить" of a row - only offered in form mode, see [LocalSwipeEditEnabled]
+@Composable
+private fun swipeEditAction(
+    ref: EntityRef,
+    eventSink: (CodexEvent) -> Unit,
+): SwipeEditAction =
+    SwipeEditAction(
+        label = stringResource(Res.string.action_edit),
+        releaseLabel = stringResource(Res.string.swipe_release_label),
+        onEdit = { eventSink(CodexEvent.EditEntryRequested(ref)) },
+    )

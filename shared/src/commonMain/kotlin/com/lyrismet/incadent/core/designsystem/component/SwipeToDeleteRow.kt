@@ -12,12 +12,17 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,19 +34,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
+import com.lyrismet.incadent.core.designsystem.component.icons.QuillIcon
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.roundToInt
 
 private val RevealWidth = 96.dp
+private val EditIconSize = 20.dp
+private val EditLabelGap = 5.dp
 private val FullSwipeWidth = 190.dp
 private val MaxDragWidth = 300.dp
 private val RowCornerRadius = 14.dp
@@ -61,6 +72,8 @@ private val SwipeEasing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
 private class SwipeState(
     val fullWidthPx: Float,
     val maxDragPx: Float,
+    // a right swipe only exists when the row has an edit action - otherwise the row can't travel right at all
+    val canSwipeRight: Boolean,
 ) {
     var isDragging by mutableStateOf(false)
     var dragPx by mutableFloatStateOf(0f)
@@ -74,15 +87,25 @@ private class SwipeState(
     }
 
     fun onDrag(delta: Float) {
-        dragPx = (dragPx + delta).coerceIn(-maxDragPx, 0f)
+        dragPx = (dragPx + delta).coerceIn(-maxDragPx, if (canSwipeRight) maxDragPx else 0f)
     }
 
-    suspend fun onDragEnd(onDeleteRequested: () -> Unit) {
+    suspend fun onDragEnd(
+        onDeleteRequested: () -> Unit,
+        onEditRequested: (() -> Unit)?,
+    ) {
         val releasedAt = dragPx
         isDragging = false
         settledOffset.snapTo(releasedAt)
-        // a full swipe commits the delete from where the finger left the row, no snap back
-        if (-releasedAt > fullWidthPx) onDeleteRequested() else settle()
+        // a full swipe commits from where the finger left the row - a right swipe opens the editor and settles
+        when {
+            -releasedAt > fullWidthPx -> onDeleteRequested()
+            releasedAt > fullWidthPx && onEditRequested != null -> {
+                onEditRequested()
+                settle()
+            }
+            else -> settle()
+        }
     }
 
     // a cancelled gesture is not a release, so it returns to rest and never commits a delete
@@ -104,20 +127,30 @@ private class SwipeState(
     }
 }
 
-// swipe-left-to-delete row chrome - caller owns the real delete, usually immediate with an undo toast
+/** the swipe-right action of a row - its labels are the resting and the fully-pulled captions */
+data class SwipeEditAction(
+    val label: String,
+    val releaseLabel: String,
+    val onEdit: () -> Unit,
+)
+
+// swipe-left-to-delete row chrome - caller owns the real delete, usually immediate with an undo toast.
+// a swipe-right edit action is optional, so a row that passes null for it stays delete-only
 @Composable
 fun SwipeToDeleteRow(
     onDeleteRequested: () -> Unit,
     modifier: Modifier = Modifier,
     deleteContentDescription: String? = null,
+    editAction: SwipeEditAction? = null,
     content: @Composable () -> Unit,
 ) {
+    val onEditRequested = editAction?.onEdit
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
     val state =
-        remember {
+        remember(onEditRequested != null) {
             with(density) {
-                SwipeState(FullSwipeWidth.toPx(), MaxDragWidth.toPx())
+                SwipeState(FullSwipeWidth.toPx(), MaxDragWidth.toPx(), canSwipeRight = onEditRequested != null)
             }
         }
     // collapses in place first, Gmail-style, instead of just vanishing once the row is actually deleted
@@ -140,7 +173,9 @@ fun SwipeToDeleteRow(
         modifier = modifier,
     ) {
         Box {
-            SwipeDeleteBackground(state, density, deleteContentDescription)
+            // each side paints only while the row travels towards it - at rest neither background is visible
+            if (editAction != null && state.offsetPx > 0f) SwipeEditBackground(state, density, editAction)
+            if (state.offsetPx < 0f) SwipeDeleteBackground(state, density, deleteContentDescription)
             Box(
                 modifier =
                     Modifier
@@ -148,7 +183,9 @@ fun SwipeToDeleteRow(
                         .pointerInput(Unit) {
                             detectHorizontalDragGestures(
                                 onDragStart = { state.onDragStart() },
-                                onDragEnd = { scope.launch { state.onDragEnd { isRemoving = true } } },
+                                onDragEnd = {
+                                    scope.launch { state.onDragEnd({ isRemoving = true }, onEditRequested) }
+                                },
                                 onDragCancel = { scope.launch { state.onDragCancel() } },
                             ) { change, dragAmount ->
                                 change.consume()
@@ -162,6 +199,31 @@ fun SwipeToDeleteRow(
     }
 }
 
+// the revealed left side of a right swipe - dim gold, brighter past the full-swipe point, quill over the label
+@Composable
+private fun BoxScope.SwipeEditBackground(
+    state: SwipeState,
+    density: Density,
+    action: SwipeEditAction,
+) {
+    val isPastFull = state.offsetPx > state.fullWidthPx
+    SwipeBackground(
+        density = density,
+        anchor = Alignment.CenterStart,
+        color = if (isPastFull) AppPalette.GoldBright else AppPalette.GoldDim,
+        revealPx = state.offsetPx,
+    ) {
+        QuillIcon(size = EditIconSize, tint = AppPalette.Background)
+        Spacer(Modifier.height(EditLabelGap))
+        Text(
+            if (isPastFull) action.releaseLabel else action.label,
+            style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp, fontWeight = FontWeight.Bold),
+            color = AppPalette.Background,
+        )
+    }
+}
+
+// the revealed right side of a left swipe - maroon, a deeper maroon past the full-swipe point
 @Composable
 private fun BoxScope.SwipeDeleteBackground(
     state: SwipeState,
@@ -169,22 +231,42 @@ private fun BoxScope.SwipeDeleteBackground(
     deleteContentDescription: String?,
 ) {
     val isPastFull = -state.offsetPx > state.fullWidthPx
-    Row(
+    SwipeBackground(
+        density = density,
+        anchor = Alignment.CenterEnd,
+        color = if (isPastFull) AppPalette.MaroonHover else AppPalette.Maroon,
+        revealPx = -state.offsetPx,
+    ) {
+        Icon(AppIcons.Delete, contentDescription = deleteContentDescription, tint = AppPalette.MaroonBright)
+    }
+}
+
+// the row-sized background of one swipe direction - the row slides over it, so only the side it opens shows.
+// the action content keeps its own width (at least RevealWidth), hugs the row edge and is never clipped
+@Composable
+private fun BoxScope.SwipeBackground(
+    density: Density,
+    anchor: Alignment,
+    color: Color,
+    revealPx: Float,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Box(
         modifier =
             Modifier
                 .matchParentSize()
                 .clip(RoundedCornerShape(RowCornerRadius))
-                .background(if (isPastFull) AppPalette.MaroonHover else AppPalette.Maroon),
-        horizontalArrangement = Arrangement.End,
+                .background(color),
     ) {
-        Box(
+        Column(
             modifier =
                 Modifier
-                    .width(with(density) { max(RevealWidth.toPx(), -state.offsetPx).toDp() })
+                    .align(anchor)
+                    .width(with(density) { max(RevealWidth.toPx(), revealPx).toDp() })
                     .fillMaxHeight(),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(AppIcons.Delete, contentDescription = deleteContentDescription, tint = AppPalette.MaroonBright)
-        }
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            content = content,
+        )
     }
 }

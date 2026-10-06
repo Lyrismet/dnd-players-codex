@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.domain.repository
 
+import com.lyrismet.incadent.domain.model.EntityEditMode
+import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import kotlinx.coroutines.flow.Flow
@@ -17,4 +19,12 @@ interface AppPreferencesRepository {
     fun observeMentionStyle(): Flow<MentionStyle>
 
     fun setMentionStyle(style: MentionStyle)
+
+    fun observeEntityEditMode(): Flow<EntityEditMode>
+
+    fun setEntityEditMode(mode: EntityEditMode)
+
+    fun observeHoldHintState(): Flow<HoldHintState>
+
+    fun setHoldHintState(state: HoldHintState)
 }

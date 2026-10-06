@@ -6,6 +6,10 @@ import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
+import com.lyrismet.incadent.core.quickedit.InlineEdit
+import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
+import com.lyrismet.incadent.core.undo.UndoAction
+import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.PartyPresence
@@ -197,6 +201,11 @@ data class CodexState(
     val groupOptions: List<CodexFilterOption<CodexGroupBy>> = emptyList(),
     val emptyState: CodexEmptyState = CodexEmptyState.Hidden,
     val activeSheet: CodexSheet? = null,
+    val editMode: EntityEditMode = EntityEditMode.QUICK,
+    // the field editor open inside the entity card, if any - quick mode only
+    val inlineEdit: InlineEdit? = null,
+    val holdTipVisible: Boolean = false,
+    val undoAction: UndoAction? = null,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
 
@@ -300,4 +309,10 @@ sealed interface CodexEvent : CircuitUiEvent {
     data object EntryFormSaveClicked : CodexEvent
 
     data object EntryFormClosed : CodexEvent
+
+    data class QuickEdit(
+        val event: QuickEditUiEvent,
+    ) : CodexEvent
+
+    data object UndoClicked : CodexEvent
 }

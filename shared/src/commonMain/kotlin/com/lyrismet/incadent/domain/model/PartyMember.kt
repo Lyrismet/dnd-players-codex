@@ -25,7 +25,7 @@ enum class PartyPresence {
 /** the bounds the party form's steppers enforce - also what [clampedToRanges] pins values to */
 object PartyStatRanges {
     val level = 1..20
-    val hpMax = 1..400
+    val hpMax = 1..999
     val armorClass = 1..30
     val initiativeBonus = -5..15
 }

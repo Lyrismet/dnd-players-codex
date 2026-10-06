@@ -6,14 +6,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
+import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
+import com.lyrismet.incadent.core.entitysummary.QuickEditSheet
+import com.lyrismet.incadent.domain.model.EntityEditMode
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_add_entry_button
 import dndplayerscodex.shared.generated.resources.codex_filter_all
@@ -61,10 +66,12 @@ fun CodexUi(
                 CodexGroupRow(state, modifier = Modifier.padding(top = 10.dp))
             }
             Box(modifier = Modifier.weight(1f)) {
-                if (state.emptyState == CodexEmptyState.Hidden) {
-                    CodexActiveList(state)
-                } else {
-                    CodexEmptyView(state)
+                CompositionLocalProvider(LocalSwipeEditEnabled provides (state.editMode == EntityEditMode.FORM)) {
+                    if (state.emptyState == CodexEmptyState.Hidden) {
+                        CodexActiveList(state)
+                    } else {
+                        CodexEmptyView(state)
+                    }
                 }
             }
         }
@@ -123,26 +130,44 @@ private fun CodexEntitySheet(
     entity: EntitySummaryItem,
 ) {
     AppBottomSheet(onDismissRequest = { state.eventSink(CodexEvent.SheetDismissed) }) {
-        EntitySummarySheetContent(
-            item = entity,
-            actions =
-                EntitySummarySheetActions(
-                    onEntityRefClicked = { ref -> state.eventSink(CodexEvent.EntityClicked(ref)) },
-                    onNpcStatusSelected = { id, status -> state.eventSink(CodexEvent.NpcStatusSelected(id, status)) },
-                    onNpcLifeSelected = { id, life -> state.eventSink(CodexEvent.NpcLifeSelected(id, life)) },
-                    onPartyPresenceSelected = { id, presence ->
-                        state.eventSink(CodexEvent.PartyPresenceSelected(id, presence))
-                    },
-                    onQuestStatusSelected = { id, status ->
-                        state.eventSink(CodexEvent.QuestStatusSelected(id, status))
-                    },
-                    onRelatedNoteClicked = { id -> state.eventSink(CodexEvent.RelatedNoteClicked(id)) },
-                    onEditClicked = { ref -> state.eventSink(CodexEvent.EditEntryRequested(ref)) },
-                ),
-            onClose = { state.eventSink(CodexEvent.SheetDismissed) },
-        )
+        Box {
+            EntitySummarySheetContent(
+                item = entity,
+                actions = entitySheetActions(state),
+                onClose = { state.eventSink(CodexEvent.SheetDismissed) },
+            )
+            // the sheet covers the app-level undo toast, so the card carries its own copy above the bottom edge
+            UndoToast(
+                action = state.undoAction,
+                onUndo = { state.eventSink(CodexEvent.UndoClicked) },
+                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+            )
+        }
     }
 }
+
+// quick mode edits in place and keeps the pen out of the header, form mode is read-only and offers the pen instead
+private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
+    val isQuick = state.editMode == EntityEditMode.QUICK
+    return EntitySummarySheetActions(
+        onEntityRefClicked = { ref -> state.eventSink(CodexEvent.EntityClicked(ref)) },
+        onNpcStatusSelected = { id, status -> state.eventSink(CodexEvent.NpcStatusSelected(id, status)) },
+        onNpcLifeSelected = { id, life -> state.eventSink(CodexEvent.NpcLifeSelected(id, life)) },
+        onPartyPresenceSelected = { id, presence -> state.eventSink(CodexEvent.PartyPresenceSelected(id, presence)) },
+        onQuestStatusSelected = { id, status -> state.eventSink(CodexEvent.QuestStatusSelected(id, status)) },
+        onRelatedNoteClicked = { id -> state.eventSink(CodexEvent.RelatedNoteClicked(id)) },
+        onEditClicked = if (isQuick) null else { ref -> state.eventSink(CodexEvent.EditEntryRequested(ref)) },
+        statusesReadOnly = !isQuick,
+        quickEdit = if (isQuick) quickEditSheet(state) else null,
+    )
+}
+
+private fun quickEditSheet(state: CodexState): QuickEditSheet =
+    QuickEditSheet(
+        inlineEdit = state.inlineEdit,
+        holdTipVisible = state.holdTipVisible,
+        onEvent = { event -> state.eventSink(CodexEvent.QuickEdit(event)) },
+    )
 
 @Composable
 private fun codexTabItems(state: CodexState): List<CodexTabRowItem> =

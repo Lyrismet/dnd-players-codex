@@ -63,11 +63,14 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 | `EmptyStatePlaceholder` | `component/EmptyStatePlaceholder.kt` | centered secondary-text message for an empty list/search/loading state. | `text` |
 | `EmptyStateActions` | `component/EmptyStateActions.kt` | the empty state of a list the user is meant to fill: serif title, hint and up to two buttons (`primaryAction` gold, `secondaryAction` outlined; each an `EmptyStateAction(label, onClick)`). Use it when there is something to do about the emptiness, `EmptyStatePlaceholder` when there isn't. | `title`, `text`, `primaryAction`, `secondaryAction` |
 | `OrnamentedEmptyState` | `component/OrnamentedEmptyState.kt` | the "blank page" state of a screen meant to be filled: gold diamond, serif title and a hint (empty session feed). | `title`, `hint` |
-| `LabelValueGrid` | `component/LabelValueGrid.kt` | two-column grid (`auto 1fr`): children alternate label, value, the label column is as wide as the longest label and rows are top-aligned (entity sheet facts). | `rowSpacing`, `columnSpacing`, `content` |
-| `SwipeToDeleteRow` | `component/SwipeToDeleteRow.kt` | swipe-left-to-reveal-delete row chrome. Never deletes anything itself - caller drives the real delete, which is usually immediate (see `UndoToast`) rather than a confirm dialog. | `onDeleteRequested`, `deleteContentDescription`, `content` |
-| `UndoToast` | `component/UndoToast.kt` | the "X deleted · Отменить" bar that floats above the bottom tab bar for 5s after an optimistic delete (sessions, entries, codex entities) - driven by `core/undo/UndoController`, not local screen state. | `action: UndoAction?`, `onUndo` |
+| `SwipeToDeleteRow` | `component/SwipeToDeleteRow.kt` | swipe-left-to-reveal-delete row chrome, plus an optional swipe-right edit (dim gold, bright gold past the full-swipe point, quill and "Изменить" / "Отпустите"; only when `editAction` is passed - codex form mode). Never deletes anything itself - caller drives the real delete, which is usually immediate (see `UndoToast`) rather than a confirm dialog. | `onDeleteRequested`, `deleteContentDescription`, `editAction: SwipeEditAction?`, `content` |
+| `UndoToast` | `component/UndoToast.kt` | the "X deleted · Отменить" bar that floats above the bottom tab bar for 5s after an optimistic delete or quick edit (sessions, entries, codex entities) - driven by `core/undo/UndoController`, not local screen state. The codex card hosts its own copy, since the sheet covers the app-level one. | `action: UndoAction?`, `onUndo` |
 | `ConfirmationDialog` | `component/ConfirmationDialog.kt` | "are you sure?" dialog for a destructive action that has no undo (session/entry/codex deletes use `UndoToast` instead), built on `AppDialog` + `IconBadge`. | `title`, `text`, `onConfirm`, `onDismiss` |
 | `Modifier.dismissKeyboardOnTap()` | `component/DismissKeyboardOnTap.kt` | clears focus/hides keyboard on an unconsumed tap - applied once at the app root. | - |
+| `HoldToEditField` | `component/HoldToEditField.kt` | press-and-hold wrapper for in-place editing: a translucent gold (16%) fill covers the full height and grows over 450 ms, released early it falls back in 150 ms ease. `onHeld` fires on completion, a drag past 8dp cancels, an early release reports through `LocalHoldTooShort`. `HoldFrame` presets (`Title`, `Description`, `FactLine`) carry the mockup's negative margins, paddings and radius. Scroll and swipe are not consumed. | `onHeld`, `frame: HoldFrame`, `content` |
+| `RadioOptionRow` | `component/RadioOptionRow.kt` | the settings option row - 18px ring with a gold dot when selected, title and description; a selected row is gold-tinted. | `title`, `description`, `selected`, `onClick` |
+| `HoldHintCard` | `component/HoldHint.kt` | the one-time gold hint row under a card header - pin glyph, text and a "Понятно" button. | `text`, `dismissLabel`, `onDismiss` |
+| `HoldTooShortToast` | `component/HoldHint.kt` | the 2 s "hold to edit" nudge in the UndoToast style - the host bumps `trigger` on every too-short press. | `trigger`, `text` |
 
 ## Forms
 
@@ -87,14 +90,25 @@ add it here rather than reaching for a raw Material `TextField` in feature code.
 | Component | File | Use for |
 |---|---|---|
 | `BottomTabBar` / `BottomTabBarItem` | `component/BottomTabBar.kt` / `BottomTabBarItem.kt` | the persistent 4-column bottom nav bar. |
+| `QuillIcon` | `component/icons/QuillIcon.kt` | the mockup's quill (the ✎ action of notes, the hold hint's pin, the swipe-right edit) - a square glyph in one tint. | `size`, `tint` |
 | `AppIcons` | `component/icons/AppIcons.kt` | glyphs reused across 2+ features: `Edit` is the design's quill, `Delete` the stock Material bin. A single-use icon doesn't need an entry here - only add one once a second feature wants the same glyph. |
 | `TabIconSlot` + `CodexTabIcon`/`CombatTabIcon`/`SessionsTabIcon`/`SettingsTabIcon` | `component/icons/` | the 4 hand-drawn bottom-nav glyphs, all sharing one fixed-height alignment slot. |
+
+## Quick edit (codex card, `core/quickedit/` and `core/designsystem/component/EntitySummaryQuickEdit.kt`)
+
+| Component | File | Use for | Key params |
+|---|---|---|---|
+| `EditorShield` | `core/quickedit/EditorShield.kt` | the transparent layer over the whole sheet while an editor is open - takes every touch except inside the open editor (`EditorHoleTracker` reports its rectangle), a tap on it cancels the edit. Scrolling inside the editor still scrolls the sheet. | `hole`, `onOutsideTap` (as `BoxScope` extension) |
+| `InlineFieldEditor` | `core/quickedit/QuickEditEditors.kt` | the open editor that replaces a field's value - gold-ringed frame, label row with Отмена (ghost) / Готово (gold) buttons, then a bare input with the caret at the end of the text (`editorCaretAtEnd`) (serif title, Inter fields, 5-line description with hint). Enter / done saves a one-line input, Ctrl/Cmd+Enter a description, Esc cancels. | `label`, `draft`, `kind: InlineInputKind`, `onEvent`, `modifier` |
+| `LinkOptionEditor` | `core/quickedit/QuickEditEditors.kt` | the editor of a link fact ("Кто дал", "Где") - Отмена header, then 38px pill buttons: "Не указано" and one per candidate, the linked one ✓ and in its entity's colours. | `label`, `options`, `selectedId`, `onEvent`, `modifier` |
+| `FactLine` | `component/EntitySummaryQuickEdit.kt` | one fact row of a card - 104px label column, value; a held line turns into a full-width `InlineFieldEditor` or `LinkOptionEditor`. `QuickEditableValue` wraps the title and description the same way. | `fact`, `style`, `onEntityRefClicked`, `quick` |
 
 ## Entity sheet (built on the above, not a primitive itself)
 
 `component/EntitySummarySheetBody.kt`'s `EntitySummarySheetContent` is the one entity-detail sheet shared by
 `codex`, `sessionlist` and `sessiondetail` - it's composed entirely from `IconBadge`, `AppCard`, `SegmentedControl`,
-`NumberLabel`, `MentionChip` and `SectionOverline` above. If you need a new fact/relation/status block inside an
+`NumberLabel`, `MentionChip` and `SectionOverline` above. Quick edit is opt-in through `EntitySummarySheetActions.quickEdit`
+(codex only): without it the card is read-only and status pickers stay interactive, with `statusesReadOnly` they collapse to a `StatusBadge`. If you need a new fact/relation/status block inside an
 entity sheet, it almost certainly belongs as a case inside this file, not a new top-level component.
 
 ## Not a visual component - don't look here for UI shapes

@@ -49,6 +49,9 @@ import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.settings_campaign_name_title
+import dndplayerscodex.shared.generated.resources.settings_hints_desc
+import dndplayerscodex.shared.generated.resources.settings_hints_show
+import dndplayerscodex.shared.generated.resources.settings_hints_title
 import dndplayerscodex.shared.generated.resources.settings_language_desc
 import dndplayerscodex.shared.generated.resources.settings_language_en
 import dndplayerscodex.shared.generated.resources.settings_language_ru
@@ -73,13 +76,8 @@ import dndplayerscodex.shared.generated.resources.settings_storage_value
 import dndplayerscodex.shared.generated.resources.settings_title
 import org.jetbrains.compose.resources.stringResource
 
-private data class SettingsChoice<T>(
-    val value: T,
-    val label: String,
-)
-
 private val ChoiceLabelSerif = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-private val ChoiceLabelSans = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+internal val ChoiceLabelSans = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
 
 /** renders the settings screen - every tap goes out through the state's eventSink */
 @Composable
@@ -111,6 +109,11 @@ fun SettingsUi(
                     mentionStyle = state.mentionStyle,
                     onNumberingSelected = { sink(SettingsEvent.NumberingSelected(it)) },
                     onMentionStyleSelected = { sink(SettingsEvent.MentionStyleSelected(it)) },
+                    onShowHintsClick = { sink(SettingsEvent.HoldHintShowRequested) },
+                )
+                CodexSection(
+                    editMode = state.editMode,
+                    onEditModeSelected = { sink(SettingsEvent.EditModeSelected(it)) },
                 )
                 CampaignSection(name = state.campaignName, onRenameClick = { sink(SettingsEvent.RenameOpened) })
             }
@@ -152,6 +155,7 @@ private fun DiarySection(
     mentionStyle: MentionStyle,
     onNumberingSelected: (SessionNumbering) -> Unit,
     onMentionStyleSelected: (MentionStyle) -> Unit,
+    onShowHintsClick: () -> Unit,
 ) {
     SettingsGroup(overline = stringResource(Res.string.settings_section_diary), topSpacing = 12.dp) {
         ChoiceRow(
@@ -180,6 +184,13 @@ private fun DiarySection(
             labelStyle = ChoiceLabelSans,
             width = 150.dp,
         )
+        AppDivider()
+        HintsRow(
+            title = stringResource(Res.string.settings_hints_title),
+            description = stringResource(Res.string.settings_hints_desc),
+            actionLabel = stringResource(Res.string.settings_hints_show),
+            onAction = onShowHintsClick,
+        )
     }
 }
 
@@ -206,7 +217,7 @@ private fun AppLanguage.label(): String =
     }
 
 @Composable
-private fun SettingsGroup(
+internal fun SettingsGroup(
     overline: String,
     topSpacing: Dp = 0.dp,
     content: @Composable () -> Unit,
@@ -235,7 +246,7 @@ private fun SettingsGroup(
 }
 
 @Composable
-private fun <T> ChoiceRow(
+internal fun <T> ChoiceRow(
     title: String,
     description: String,
     choices: List<SettingsChoice<T>>,

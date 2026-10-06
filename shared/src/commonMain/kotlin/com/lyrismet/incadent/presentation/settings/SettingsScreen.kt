@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.presentation.settings
 
 import com.lyrismet.incadent.domain.model.AppLanguage
+import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.slack.circuit.runtime.CircuitUiEvent
@@ -15,6 +16,7 @@ data class SettingsState(
     val language: AppLanguage,
     val numbering: SessionNumbering,
     val mentionStyle: MentionStyle,
+    val editMode: EntityEditMode,
     val campaignName: String,
     val renameSheet: RenameSheetState,
     val eventSink: (SettingsEvent) -> Unit = {},
@@ -40,6 +42,12 @@ sealed interface SettingsEvent : CircuitUiEvent {
     data class MentionStyleSelected(
         val style: MentionStyle,
     ) : SettingsEvent
+
+    data class EditModeSelected(
+        val mode: EntityEditMode,
+    ) : SettingsEvent
+
+    data object HoldHintShowRequested : SettingsEvent
 
     data object RenameOpened : SettingsEvent
 

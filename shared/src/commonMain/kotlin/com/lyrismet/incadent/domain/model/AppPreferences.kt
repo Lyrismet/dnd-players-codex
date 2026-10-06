@@ -13,3 +13,19 @@ enum class MentionStyle(
     FILLED("filled"),
     UNDERLINE("underline"),
 }
+
+/** how a codex card is edited - in place with holds ([QUICK]) or read-only with the form ([FORM]) */
+enum class EntityEditMode(
+    val tag: String,
+) {
+    QUICK("quick"),
+    FORM("form"),
+}
+
+/** whether the "hold a field to edit it" hint still has to be shown in a codex card */
+enum class HoldHintState(
+    val tag: String,
+) {
+    PENDING("pending"),
+    SEEN("seen"),
+}

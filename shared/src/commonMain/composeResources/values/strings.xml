@@ -223,4 +223,25 @@
     <string name="entity_sheet_party_level_label">Уровень</string>
     <string name="entity_sheet_party_ac_label">КД</string>
     <string name="entity_sheet_party_hp_label">Макс. хиты</string>
+    <string name="quick_edit_label_name">Имя</string>
+    <string name="quick_edit_label_description">Описание</string>
+    <string name="quick_edit_done">Готово</string>
+    <string name="quick_edit_changed_suffix"> — изменено</string>
+    <string name="quick_edit_link_none">Не указано</string>
+    <string name="quick_edit_description_placeholder">Описания пока нет — удерживайте, чтобы добавить</string>
+    <string name="quick_edit_hold_tip">Удерживайте любое поле, чтобы изменить его прямо здесь</string>
+    <string name="quick_edit_hold_tip_dismiss">Понятно</string>
+    <string name="quick_edit_description_hint">Внешность, характер, что известно…</string>
+    <string name="settings_edit_mode_desc">Как изменять записи кодекса.</string>
+    <string name="quick_edit_hold_too_short">Удерживайте поле, чтобы изменить</string>
+    <string name="settings_section_codex">КОДЕКС</string>
+    <string name="settings_edit_mode_title">Режим правки</string>
+    <string name="settings_edit_mode_quick">Быстрый</string>
+    <string name="settings_edit_mode_quick_desc">Удерживайте поле в карточке — оно правится прямо там. Отношение, состояние и портрет меняются одним касанием; после каждой правки внизу есть «Отменить».</string>
+    <string name="settings_edit_mode_form">Через форму</string>
+    <string name="settings_edit_mode_form_desc">Карточка только для чтения. Изменить — кнопкой в шапке или свайпом вправо в списке; всё правится в отдельной форме.</string>
+    <string name="settings_hints_title">Подсказки жестов</string>
+    <string name="settings_hints_desc">Ещё раз показать, как удалять свайпом</string>
+    <string name="settings_hints_show">Показать</string>
+    <string name="swipe_release_label">Отпустите</string>
 </resources>
