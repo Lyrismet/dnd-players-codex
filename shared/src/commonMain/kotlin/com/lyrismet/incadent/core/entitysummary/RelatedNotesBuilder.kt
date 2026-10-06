@@ -3,18 +3,19 @@ package com.lyrismet.incadent.core.entitysummary
 import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.mention.MentionCandidate
+import com.lyrismet.incadent.core.mention.MentionEntity
 import com.lyrismet.incadent.core.mention.MentionSegment
-import com.lyrismet.incadent.core.mention.dedupeKey
 import com.lyrismet.incadent.core.mention.parseMentions
 
 private const val SNIPPET_MAX_LENGTH = 110
 
-private fun EntityRef.dedupeKey(): String =
+// party members are never @mentioned in notes, so a party ref can't match any parsed mention
+private fun EntityRef.matches(entity: MentionEntity): Boolean =
     when (this) {
-        is EntityRef.Npc -> "npc:$id"
-        is EntityRef.Location -> "location:$id"
-        is EntityRef.Quest -> "quest:$id"
-        is EntityRef.Party -> "party:$id"
+        is EntityRef.Npc -> entity is MentionEntity.NpcMention && entity.id == id
+        is EntityRef.Location -> entity is MentionEntity.LocationMention && entity.id == id
+        is EntityRef.Quest -> entity is MentionEntity.QuestMention && entity.id == id
+        is EntityRef.Party -> false
     }
 
 /** every session with at least one note that `@mentions` [ref], newest first, with a snippet and hit count */
@@ -31,7 +32,7 @@ internal fun buildRelatedNotes(
                 entriesBySession[note.id].orEmpty().filter { entry ->
                     parseMentions(entry.body, lookup.mentionCandidates)
                         .filterIsInstance<MentionSegment.Mention>()
-                        .any { it.entity.dedupeKey() == ref.dedupeKey() }
+                        .any { ref.matches(it.entity) }
                 }
             if (hits.isEmpty()) {
                 null

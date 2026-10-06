@@ -30,6 +30,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,7 +66,7 @@ private const val REMOVAL_GRACE_MS = 1000L
 private fun collapseExit(durationMs: Int = COLLAPSE_ANIMATION_DURATION_MS) =
     shrinkVertically(tween(durationMs), shrinkTowards = Alignment.CenterVertically) + fadeOut(tween(durationMs))
 
-// matches the mockup's swipe/snap transition: cubic-bezier(.2,.8,.2,1)
+// matches the mockup swipe/snap transition cubic-bezier(.2,.8,.2,1)
 private val SwipeEasing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
 
 // live drag writes a plain float synchronously and the animatable only takes over after release
@@ -134,8 +135,7 @@ data class SwipeEditAction(
     val onEdit: () -> Unit,
 )
 
-// swipe-left-to-delete row chrome - caller owns the real delete, usually immediate with an undo toast.
-// a swipe-right edit action is optional, so a row that passes null for it stays delete-only
+// swipe-left-to-delete row chrome, the caller owns the real delete - a row without editAction stays delete-only
 @Composable
 fun SwipeToDeleteRow(
     onDeleteRequested: () -> Unit,
@@ -145,6 +145,8 @@ fun SwipeToDeleteRow(
     content: @Composable () -> Unit,
 ) {
     val onEditRequested = editAction?.onEdit
+    // the gesture outlives recompositions, so it reads the latest edit callback instead of the first one
+    val currentOnEdit by rememberUpdatedState(onEditRequested)
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
     val state =
@@ -180,11 +182,11 @@ fun SwipeToDeleteRow(
                 modifier =
                     Modifier
                         .offset { IntOffset(state.offsetPx.roundToInt(), 0) }
-                        .pointerInput(Unit) {
+                        .pointerInput(state) {
                             detectHorizontalDragGestures(
                                 onDragStart = { state.onDragStart() },
                                 onDragEnd = {
-                                    scope.launch { state.onDragEnd({ isRemoving = true }, onEditRequested) }
+                                    scope.launch { state.onDragEnd({ isRemoving = true }, currentOnEdit) }
                                 },
                                 onDragCancel = { scope.launch { state.onDragCancel() } },
                             ) { change, dragAmount ->

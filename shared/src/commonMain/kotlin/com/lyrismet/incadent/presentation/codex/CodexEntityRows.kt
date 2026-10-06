@@ -1,33 +1,34 @@
 package com.lyrismet.incadent.presentation.codex
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import com.lyrismet.incadent.core.designsystem.component.SwipeEditAction
 import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.incadent.core.entitysummary.EntityRef
+import com.lyrismet.incadent.domain.model.EntityEditMode
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_edit
 import dndplayerscodex.shared.generated.resources.codex_delete_content_description
 import dndplayerscodex.shared.generated.resources.swipe_release_label
 import org.jetbrains.compose.resources.stringResource
 
-/** true only in form mode - a right swipe opens the form, while quick mode keeps rows delete-only */
-internal val LocalSwipeEditEnabled = compositionLocalOf { false }
+// a right swipe opens the form, so it is only offered in form mode - quick mode keeps rows delete-only
+internal val CodexState.swipeEditEnabled: Boolean
+    get() = editMode == EntityEditMode.FORM
 
 @Composable
 internal fun CodexDeletableRow(
     ref: EntityRef,
     eventSink: (CodexEvent) -> Unit,
+    swipeEditEnabled: Boolean,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val editEnabled = LocalSwipeEditEnabled.current
     SwipeToDeleteRow(
         onDeleteRequested = { eventSink(CodexEvent.EntityDeleteRequested(ref)) },
         modifier = modifier,
         deleteContentDescription = stringResource(Res.string.codex_delete_content_description),
-        editAction = if (editEnabled) swipeEditAction(ref, eventSink) else null,
+        editAction = if (swipeEditEnabled) swipeEditAction(ref, eventSink) else null,
         content = content,
     )
 }
@@ -37,8 +38,9 @@ internal fun CodexDeletableRow(
 internal fun PartyRow(
     member: PartyCodexItem,
     eventSink: (CodexEvent) -> Unit,
+    swipeEditEnabled: Boolean,
 ) {
-    CodexDeletableRow(ref = EntityRef.Party(member.id), eventSink = eventSink) {
+    CodexDeletableRow(ref = EntityRef.Party(member.id), eventSink = eventSink, swipeEditEnabled = swipeEditEnabled) {
         PartyCodexCard(item = member, onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Party(member.id))) })
     }
 }
@@ -47,8 +49,9 @@ internal fun PartyRow(
 internal fun NpcRow(
     npc: NpcCodexItem,
     eventSink: (CodexEvent) -> Unit,
+    swipeEditEnabled: Boolean,
 ) {
-    CodexDeletableRow(ref = EntityRef.Npc(npc.id), eventSink = eventSink) {
+    CodexDeletableRow(ref = EntityRef.Npc(npc.id), eventSink = eventSink, swipeEditEnabled = swipeEditEnabled) {
         NpcCodexCard(item = npc, onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Npc(npc.id))) })
     }
 }
@@ -57,8 +60,9 @@ internal fun NpcRow(
 internal fun QuestRow(
     quest: QuestCodexItem,
     eventSink: (CodexEvent) -> Unit,
+    swipeEditEnabled: Boolean,
 ) {
-    CodexDeletableRow(ref = EntityRef.Quest(quest.id), eventSink = eventSink) {
+    CodexDeletableRow(ref = EntityRef.Quest(quest.id), eventSink = eventSink, swipeEditEnabled = swipeEditEnabled) {
         QuestCodexCard(
             item = quest,
             onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Quest(quest.id))) },
@@ -71,8 +75,13 @@ internal fun QuestRow(
 internal fun LocationRow(
     location: LocationCodexItem,
     eventSink: (CodexEvent) -> Unit,
+    swipeEditEnabled: Boolean,
 ) {
-    CodexDeletableRow(ref = EntityRef.Location(location.id), eventSink = eventSink) {
+    CodexDeletableRow(
+        ref = EntityRef.Location(location.id),
+        eventSink = eventSink,
+        swipeEditEnabled = swipeEditEnabled,
+    ) {
         LocationCodexCard(
             item = location,
             onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Location(location.id))) },
@@ -80,7 +89,7 @@ internal fun LocationRow(
     }
 }
 
-// the swipe-right "Изменить" of a row - only offered in form mode, see [LocalSwipeEditEnabled]
+// the swipe-right "Изменить" of a row - only offered in form mode, see [swipeEditEnabled]
 @Composable
 private fun swipeEditAction(
     ref: EntityRef,

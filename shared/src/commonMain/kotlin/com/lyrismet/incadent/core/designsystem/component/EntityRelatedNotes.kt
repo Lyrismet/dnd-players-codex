@@ -78,7 +78,7 @@ private fun EntityRelatedNoteRow(
         NumberLabel(text = item.numberLabel, sizeLadder = NumberSizeLadder.RELATED_NOTE, lineHeightFactor = 1.3f)
         Column(modifier = Modifier.weight(1f)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                // mockup: title font-size:14px in the plain Inter face, not the 18sp serif titleMedium
+                // mockup - title font-size 14px in the plain Inter face, not the 18sp serif titleMedium
                 Text(item.title, style = MaterialTheme.typography.titleSmall, color = AppPalette.TextHeading)
                 Text(
                     item.dateLabel,
@@ -89,7 +89,7 @@ private fun EntityRelatedNoteRow(
             }
             Text(
                 "«${item.snippet}»",
-                // mockup: font-size:13px - one step up from bodySmall's 12sp
+                // mockup - font-size 13px - one step up from bodySmall's 12sp
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
                 color = AppPalette.TextMuted,
                 modifier = Modifier.padding(top = 4.dp),

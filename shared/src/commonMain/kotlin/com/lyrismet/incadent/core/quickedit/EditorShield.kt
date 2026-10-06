@@ -15,10 +15,7 @@ import kotlin.math.roundToInt
 
 private const val SHIELD_REGIONS = 4
 
-/**
- * the four rectangles that cover the sheet except [hole] - top, bottom, left and right of it.
- * Without a hole the first rectangle covers everything and the others are empty.
- */
+/** four rectangles covering the sheet around [hole], where a missing hole leaves the first one covering everything */
 fun editorShieldRegions(
     hole: Rect?,
     width: Float,
@@ -38,10 +35,7 @@ fun editorShieldRegions(
     )
 }
 
-/**
- * the transparent layer over the whole sheet while an editor is open - it takes every touch except the ones inside
- * the open editor, and a tap on it reports [onOutsideTap] (the same path as "Отмена").
- */
+/** the transparent layer over the sheet while an editor is open - a touch outside the editor reports [onOutsideTap] */
 @Composable
 fun BoxScope.EditorShield(
     hole: Rect?,

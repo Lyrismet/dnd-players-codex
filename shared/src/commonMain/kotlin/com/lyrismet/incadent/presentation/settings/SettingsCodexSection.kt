@@ -28,7 +28,7 @@ import dndplayerscodex.shared.generated.resources.settings_edit_mode_title
 import dndplayerscodex.shared.generated.resources.settings_section_codex
 import org.jetbrains.compose.resources.stringResource
 
-/** the Codex group - mockup: overline, then a Surface card with a title block and one radio row per mode */
+/** the Codex group - mockup - overline, then a Surface card with a title block and one radio row per mode */
 @Composable
 internal fun CodexSection(
     editMode: EntityEditMode,
@@ -73,7 +73,7 @@ internal fun CodexSection(
     }
 }
 
-// mockup: title 15px/600 #E2E8F0, description 13px #8A93A6 with a 2px gap
+// mockup - title 15px/600 #E2E8F0, description 13px #8A93A6 with a 2px gap
 @Composable
 private fun ModeTitleBlock(
     title: String,

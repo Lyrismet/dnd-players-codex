@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.lyrismet.incadent.core.codexgroup.CodexGroupLabels
 import com.lyrismet.incadent.core.codexgroup.CodexGroupingSelection
@@ -15,11 +16,12 @@ import com.lyrismet.incadent.core.codexgroup.QuestGroupBy
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
+import com.lyrismet.incadent.core.entitysummary.buildEntitySummary
+import com.lyrismet.incadent.core.entitysummary.entityLookupOf
 import com.lyrismet.incadent.core.entitysummary.npcLifeLabels
 import com.lyrismet.incadent.core.entitysummary.npcStatusLabels
 import com.lyrismet.incadent.core.entitysummary.partyPresenceLabels
 import com.lyrismet.incadent.core.entitysummary.questStatusLabels
-import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
 import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.core.quickedit.InlineEdit
@@ -150,24 +152,21 @@ class CodexPresenter(
             )
         val fields = rememberFields(labels)
 
-        val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix())
+        val prefix = questPrefix()
+        val candidates =
+            remember(npcs, locations, quests, prefix) {
+                mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), prefix)
+            }
         val records = CodexRecords(parties, npcs, quests, locations)
         val search = buildSearchResults(records, fields)
         val grouped =
             codexGroupedLists(search, records, fields.activeTab.value, fields.grouping.value, labels.grouped)
 
-        val selectedEntity =
-            selectedEntitySummary(
-                fields.selectedEntityRef.value,
-                npcs,
-                locations,
-                quests,
-                sessionNotes,
-                sessionEntries,
-                candidates,
-                numbering,
-                parties,
-            )
+        val lookup =
+            entityLookupOf(npcs, locations, quests, sessionNotes, sessionEntries, candidates, numbering, parties)
+        // keyed on the lookup data, so typing in the open editor doesn't re-parse every session entry
+        val selectedRef = fields.selectedEntityRef.value
+        val selectedEntity = remember(selectedRef, lookup) { selectedRef?.let { buildEntitySummary(it, lookup) } }
 
         return buildCodexState(
             fields,

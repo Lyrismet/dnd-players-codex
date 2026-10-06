@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import dndplayerscodex.shared.generated.resources.Res
@@ -80,10 +81,7 @@ private fun EditorFrame(
     }
 }
 
-/**
- * the editor that replaces a field's value - a label row with Отмена / Готово above a bare input.
- * Enter or the keyboard's done key saves a one-line input, Ctrl/Cmd+Enter saves a description, Esc cancels.
- */
+/** the editor that replaces a field's value - a label row with Отмена / Готово above a bare input */
 @Composable
 fun InlineFieldEditor(
     label: String,
@@ -97,9 +95,13 @@ fun InlineFieldEditor(
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
     EditorFrame(modifier) {
         EditorHeader(label) {
-            EditorDoneButton(text = stringResource(Res.string.quick_edit_done)) {
-                onEvent(QuickEditUiEvent.EditSaved)
-            }
+            HeaderActionButton(
+                text = stringResource(Res.string.quick_edit_done),
+                onClick = { onEvent(QuickEditUiEvent.EditSaved) },
+                foreground = AppPalette.Background,
+                background = AppPalette.Gold,
+                border = AppPalette.Gold,
+            )
         }
         BasicTextField(
             value = value,
@@ -138,10 +140,7 @@ fun InlineFieldEditor(
     }
 }
 
-/**
- * re-points a link fact - the header carries Отмена only, then "Не указано" plus one button per candidate.
- * Picking a button reports its id straight away, the caller decides what it writes.
- */
+/** re-points a link fact - a header with Отмена only, then "Не указано" plus one button per candidate */
 @Composable
 fun LinkOptionEditor(
     label: String,
@@ -195,34 +194,7 @@ private fun EditorHeader(
     }
 }
 
-// the only button an editor carries - a solid gold "Готово", h32, radius 8
-@Composable
-private fun EditorDoneButton(
-    text: String,
-    onClick: () -> Unit,
-) {
-    Box(
-        modifier =
-            Modifier
-                .appCard(
-                    shape = RoundedCornerShape(8.dp),
-                    background = AppPalette.Gold,
-                    border = AppPalette.Gold,
-                    onClick = onClick,
-                ).height(32.dp)
-                .padding(horizontal = 14.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text,
-            style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.5.sp),
-            color = AppPalette.Background,
-            fontWeight = FontWeight.Bold,
-        )
-    }
-}
-
-// mockup: min-height 38, radius 19, 13px/600 - the selected one takes the entity's colours, "Не указано" a neutral set
+// mockup - min-height 38, radius 19, 13px/600 - the selected one takes the entity's colours, "Не указано" a neutral set
 @Composable
 private fun LinkOptionButton(
     text: String,
@@ -272,7 +244,7 @@ private fun inputHeight(kind: InlineInputKind): Modifier =
         InlineInputKind.MULTILINE -> Modifier
     }
 
-// mockup: title is serif 24/600, fields are Inter 15px, description is Inter 15px with a 1.6 line-height
+// mockup - title is serif 24/600, fields are Inter 15px, description is Inter 15px with a 1.6 line-height
 @Composable
 private fun inputTextStyle(kind: InlineInputKind) =
     when (kind) {

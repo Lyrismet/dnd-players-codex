@@ -37,16 +37,13 @@ private const val HOLD_DURATION_MS = 450
 private const val RELEASE_DURATION_MS = 150
 private val HoldSlop = 8.dp
 
-// the mockup's "transition: width .15s ease" on release
+// the mockup transition width .15s ease on release
 private val ReleaseEasing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
 
 /** shown when a press on a [HoldToEditField] ends before the hold completes - the card wires it to a toast */
 val LocalHoldTooShort = compositionLocalOf<() -> Unit> { {} }
 
-/**
- * the geometry of a held area - negative margins let the highlight overhang its text, as in the mockup.
- * Each preset is one mockup wrapper: a name, a description or a fact line.
- */
+/** the geometry of a held area - negative margins let the highlight overhang its text, as in the mockup */
 data class HoldFrame(
     val marginHorizontal: Dp,
     val marginVertical: Dp,
@@ -63,10 +60,7 @@ data class HoldFrame(
 
 private enum class HoldOutcome { HELD, RELEASED_EARLY, MOVED }
 
-/**
- * a press-and-hold area with a translucent gold fill across its full height that grows over 450 ms.
- * [onHeld] fires on completion - a drag cancels silently, an early release also reports too-short.
- */
+/** a press-and-hold area with a gold fill that grows over 450 ms, reporting an early release as too-short */
 @Composable
 fun HoldToEditField(
     onHeld: () -> Unit,

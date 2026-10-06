@@ -393,6 +393,34 @@ private fun <T> statusOptions(
 ): List<StatusOption<T>> =
     values.map { value -> StatusOption(value, labels.getValue(value), colorOf(value), value == current) }
 
+/** the records plus resolved labels a summary is built from - composable only because the labels come from resources */
+@Composable
+fun entityLookupOf(
+    npcs: List<Npc>,
+    locations: List<Location>,
+    quests: List<Quest>,
+    sessionNotes: List<SessionNote>,
+    sessionEntries: List<SessionEntry>,
+    mentionCandidates: List<MentionCandidate>,
+    sessionNumbering: SessionNumbering,
+    parties: List<PartyMember>,
+): EntityLookup =
+    EntityLookup(
+        npcs = npcs,
+        locations = locations,
+        quests = quests,
+        npcStatusLabels = npcStatusLabels(),
+        npcLifeLabels = npcLifeLabels(),
+        questStatusLabels = questStatusLabels(),
+        parties = parties,
+        partyPresenceLabels = partyPresenceLabels(),
+        partyYouLabel = stringResource(Res.string.entity_sheet_party_you_label),
+        sessionNotes = sessionNotes,
+        sessionEntries = sessionEntries,
+        mentionCandidates = mentionCandidates,
+        sessionNumbering = sessionNumbering,
+    )
+
 /** the shared "resolve whatever's tapped" used by every screen that owns a nullable [EntityRef] selection */
 @Composable
 fun selectedEntitySummary(
@@ -407,24 +435,18 @@ fun selectedEntitySummary(
     parties: List<PartyMember>,
 ): EntitySummaryItem? {
     if (ref == null) return null
-    return buildEntitySummary(
-        ref,
-        EntityLookup(
-            npcs = npcs,
-            locations = locations,
-            quests = quests,
-            npcStatusLabels = npcStatusLabels(),
-            npcLifeLabels = npcLifeLabels(),
-            questStatusLabels = questStatusLabels(),
-            parties = parties,
-            partyPresenceLabels = partyPresenceLabels(),
-            partyYouLabel = stringResource(Res.string.entity_sheet_party_you_label),
-            sessionNotes = sessionNotes,
-            sessionEntries = sessionEntries,
-            mentionCandidates = mentionCandidates,
-            sessionNumbering = sessionNumbering,
-        ),
-    )
+    val lookup =
+        entityLookupOf(
+            npcs,
+            locations,
+            quests,
+            sessionNotes,
+            sessionEntries,
+            mentionCandidates,
+            sessionNumbering,
+            parties,
+        )
+    return buildEntitySummary(ref, lookup)
 }
 
 /** actions the sheet's interactive pieces dispatch - one bundle instead of one lambda param per feature */

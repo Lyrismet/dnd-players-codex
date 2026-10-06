@@ -80,7 +80,7 @@ fun EntitySummarySheetContent(
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 20.dp)
-                        // mockup: 6px top / 44px bottom padding, the header sits under the drag handle
+                        // mockup - 6px top / 44px bottom padding, the header sits under the drag handle
                         .padding(top = 6.dp, bottom = 44.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
@@ -227,7 +227,7 @@ internal fun EntityHeaderRow(
             quick = quick,
             modifier = Modifier.weight(1f),
         )
-        // mockup: "align-self:flex-start;display:flex;gap:6px" - pinned to the top, not centered with the text block
+        // mockup - align-self flex-start, display flex, gap 6px - pinned to the top, not centered with the text block
         Row(
             modifier = Modifier.align(Alignment.Top),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -280,7 +280,7 @@ private fun EntityTitleBlock(
         if (subtitle.isNotBlank()) {
             Text(
                 subtitle,
-                // mockup: font-size:13px - one step up from bodySmall's 12sp
+                // mockup - font-size 13px - one step up from bodySmall's 12sp
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
                 color = AppPalette.TextSecondary,
                 modifier = Modifier.padding(top = 2.dp),
@@ -346,7 +346,7 @@ internal fun <T> EntityStatusSection(
             ) { option ->
                 Text(
                     option.label,
-                    // mockup: font-size:12px - one step up from labelMedium's 11sp
+                    // mockup - font-size 12px - one step up from labelMedium's 11sp
                     style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
                     color = if (option.isSelected) option.color.foreground else AppPalette.TextSecondary,
                 )
@@ -363,7 +363,7 @@ internal fun EntityFactsGrid(
     modifier: Modifier = Modifier,
 ) {
     if (facts.isEmpty()) return
-    // mockup: font-size 14px on the facts card, 6px vertical padding, 1px BorderSubtle, 14px radius
+    // mockup - font-size 14px on the facts card, 6px vertical padding, 1px BorderSubtle, 14px radius
     val factTextStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp)
     Column(
         modifier =

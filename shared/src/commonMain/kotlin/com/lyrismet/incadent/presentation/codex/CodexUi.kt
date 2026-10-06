@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -66,12 +65,10 @@ fun CodexUi(
                 CodexGroupRow(state, modifier = Modifier.padding(top = 10.dp))
             }
             Box(modifier = Modifier.weight(1f)) {
-                CompositionLocalProvider(LocalSwipeEditEnabled provides (state.editMode == EntityEditMode.FORM)) {
-                    if (state.emptyState == CodexEmptyState.Hidden) {
-                        CodexActiveList(state)
-                    } else {
-                        CodexEmptyView(state)
-                    }
+                if (state.emptyState == CodexEmptyState.Hidden) {
+                    CodexActiveList(state)
+                } else {
+                    CodexEmptyView(state)
                 }
             }
         }
