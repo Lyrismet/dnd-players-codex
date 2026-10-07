@@ -17,6 +17,7 @@
     <string name="session_list_empty_button">+ Начать сессию</string>
     <string name="session_list_empty">Начните первую сессию — заметки, бои и упоминания NPC будут собираться здесь.</string>
     <string name="session_list_archive_section">Архив</string>
+    <string name="session_list_mention_count_format">@ %1$d</string>
     <string name="session_list_live_label">ТЕКУЩАЯ СЕССИЯ</string>
     <string name="session_list_live_notes_summary_format">Заметок: %1$d · последняя в %2$s</string>
     <string name="session_list_live_no_notes">Пока без заметок</string>
@@ -48,6 +49,18 @@
     <string name="session_detail_mention_type_npc">NPC</string>
     <string name="session_detail_mention_type_location">Локация</string>
     <string name="session_detail_mention_type_quest">Квест</string>
+    <string name="session_detail_tag_button_label_empty">+ Добавить тег</string>
+    <string name="session_detail_tag_button_label_has_tags">+ Тег</string>
+    <string name="session_detail_tag_suggestion_badge_format">✦ %1$d</string>
+    <string name="session_detail_tag_sheet_overline_format">СЕССИЯ %1$s · ТЕГИ</string>
+    <string name="session_detail_tag_sheet_title">Теги сессии</string>
+    <string name="session_detail_tag_suggested_header">✦ Предложено по записям</string>
+    <string name="session_detail_tag_add_all_button">Добавить все</string>
+    <string name="session_detail_tag_add_suggestion_button">+ Добавить</string>
+    <string name="session_detail_tag_catalog_header">Все теги</string>
+    <string name="session_detail_tag_custom_header">Свой тег</string>
+    <string name="session_detail_tag_draft_placeholder">Например, Подземелье</string>
+    <string name="session_detail_tag_disclaimer">Тег ставится только после вашего касания.</string>
 
     <string name="codex_overline">База знаний</string>
     <string name="codex_title">Кодекс</string>

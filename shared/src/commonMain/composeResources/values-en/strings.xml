@@ -17,6 +17,7 @@
     <string name="session_list_empty_button">+ Start session</string>
     <string name="session_list_empty">Start the first session — notes, fights and NPC mentions will gather here.</string>
     <string name="session_list_archive_section">Archive</string>
+    <string name="session_list_mention_count_format">@ %1$d</string>
     <string name="session_list_live_label">CURRENT SESSION</string>
     <string name="session_list_live_notes_summary_format">Notes: %1$d · last at %2$s</string>
     <string name="session_list_live_no_notes">No notes yet</string>
@@ -48,6 +49,18 @@
     <string name="session_detail_mention_type_npc">NPC</string>
     <string name="session_detail_mention_type_location">Location</string>
     <string name="session_detail_mention_type_quest">Quest</string>
+    <string name="session_detail_tag_button_label_empty">+ Add tag</string>
+    <string name="session_detail_tag_button_label_has_tags">+ Tag</string>
+    <string name="session_detail_tag_suggestion_badge_format">✦ %1$d</string>
+    <string name="session_detail_tag_sheet_overline_format">SESSION %1$s · TAGS</string>
+    <string name="session_detail_tag_sheet_title">Session tags</string>
+    <string name="session_detail_tag_suggested_header">✦ Suggested from notes</string>
+    <string name="session_detail_tag_add_all_button">Add all</string>
+    <string name="session_detail_tag_add_suggestion_button">+ Add</string>
+    <string name="session_detail_tag_catalog_header">All tags</string>
+    <string name="session_detail_tag_custom_header">Custom tag</string>
+    <string name="session_detail_tag_draft_placeholder">E.g. Dungeon</string>
+    <string name="session_detail_tag_disclaimer">A tag is only set once you tap it.</string>
 
     <string name="codex_overline">Knowledge Base</string>
     <string name="codex_title">Codex</string>

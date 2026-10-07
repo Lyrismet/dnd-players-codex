@@ -33,6 +33,8 @@ import com.lyrismet.incadent.core.mention.mentionKey
 import com.lyrismet.incadent.core.mention.mentionsIn
 import com.lyrismet.incadent.core.mention.parseMentions
 import com.lyrismet.incadent.core.mention.trailingMentionQuery
+import com.lyrismet.incadent.core.tags.normalizeCustomTagName
+import com.lyrismet.incadent.core.tags.suggestSessionTags
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
@@ -45,6 +47,7 @@ import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
+import com.lyrismet.incadent.domain.repository.TagRepository
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
@@ -53,6 +56,9 @@ import dndplayerscodex.shared.generated.resources.session_detail_mention_type_lo
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
+import dndplayerscodex.shared.generated.resources.session_detail_tag_button_label_empty
+import dndplayerscodex.shared.generated.resources.session_detail_tag_button_label_has_tags
+import dndplayerscodex.shared.generated.resources.session_detail_tag_sheet_overline_format
 import dndplayerscodex.shared.generated.resources.session_detail_undo_deleted_entry_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
 import kotlinx.coroutines.CoroutineScope
@@ -69,6 +75,7 @@ private const val ENTRY_PREVIEW_LENGTH = 60
 private const val HIGHLIGHT_DURATION_MS = 2800L
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
+@Suppress("LongParameterList")
 private class SessionDetailFields(
     val titleField: MutableState<String?>,
     val draft: MutableState<TextFieldValue>,
@@ -76,6 +83,8 @@ private class SessionDetailFields(
     val selectedEntryId: MutableState<Long?>,
     val selectedEntityRef: MutableState<EntityRef?>,
     val entitySheet: EntitySheetInteractions,
+    val tagSheetOpen: MutableState<Boolean>,
+    val tagDraft: MutableState<String>,
 )
 
 @Suppress("LongParameterList")
@@ -86,6 +95,7 @@ class SessionDetailPresenter(
     private val sessionEntryRepository: SessionEntryRepository,
     private val partyRepository: PartyRepository,
     private val mentionRepositories: MentionRepositories,
+    private val tagRepository: TagRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
 ) : Presenter<SessionDetailState> {
@@ -155,6 +165,41 @@ class SessionDetailPresenter(
         val editingEntryTimeLabel =
             editingEntryId.value?.let { id -> entries.find { it.id == id }?.createdAt?.toDisplayTime() }
         val undoDeletedEntryTitle = stringResource(Res.string.session_detail_undo_deleted_entry_title)
+        val titleText = titleField.value ?: currentNote?.title.orEmpty()
+
+        val assignedTags by tagRepository.observeTagsFor(screen.sessionNoteId).collectAsState(initial = emptyList())
+        val tagCatalog by tagRepository.observeCatalog().collectAsState(initial = emptyList())
+        val mentionedQuestNames =
+            mentionsIn(entries.map { it.body }, mention.candidates)
+                .filterIsInstance<MentionEntity.QuestMention>()
+                .map { it.name }
+        val tagSuggestions =
+            suggestSessionTags(entries.map { it.body }, mentionedQuestNames, assignedTags)
+                .map { SessionTagSuggestionItem(it.tag, it.reason) }
+        val tagButtonLabel =
+            if (assignedTags.isEmpty()) {
+                stringResource(Res.string.session_detail_tag_button_label_empty)
+            } else {
+                stringResource(Res.string.session_detail_tag_button_label_has_tags)
+            }
+        val tagSheet =
+            if (fields.tagSheetOpen.value) {
+                SessionTagSheetState(
+                    overline =
+                        numberLabel
+                            ?.let { stringResource(Res.string.session_detail_tag_sheet_overline_format, it) }
+                            .orEmpty(),
+                    sessionTitle = titleText,
+                    suggestions = tagSuggestions,
+                    catalog =
+                        tagCatalog.map { name ->
+                            SessionTagCatalogItem(name, assignedTags.any { it.equals(name, ignoreCase = true) })
+                        },
+                    draft = fields.tagDraft.value,
+                )
+            } else {
+                null
+            }
 
         // deliberately renders the same header/feed/composer shape whether or not currentNote
         // has arrived yet from the Flow's cold start - swapping to a distinct "loading" screen
@@ -162,7 +207,7 @@ class SessionDetailPresenter(
         return SessionDetailState(
             isLoading = currentNote == null,
             overline = numberLabel?.let { stringResource(Res.string.session_overline_format, it) }.orEmpty(),
-            title = titleField.value ?: currentNote?.title.orEmpty(),
+            title = titleText,
             dateLabel = currentNote?.sessionDate?.toDisplayDate().orEmpty(),
             isLive = currentNote?.isLive ?: true,
             headerMentions = headerMentions,
@@ -176,7 +221,13 @@ class SessionDetailPresenter(
             editingEntryId = editingEntryId.value,
             highlightedEntryId = highlightedEntryId.value,
             focusIndex = focusIndex,
-        ) { event -> onEvent(event, currentNote, entries, undoDeletedEntryTitle, scope, fields) }
+            tags = assignedTags,
+            tagButtonLabel = tagButtonLabel,
+            tagSuggestionCount = tagSuggestions.size,
+            tagSheet = tagSheet,
+        ) { event ->
+            onEvent(event, currentNote, entries, undoDeletedEntryTitle, scope, fields, assignedTags, tagSuggestions)
+        }
     }
 
     // edited locally so live Flow re-emissions from other screens don't clobber in-progress typing
@@ -191,6 +242,8 @@ class SessionDetailPresenter(
             selectedEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
             selectedEntityRef = selectedEntityRef,
             entitySheet = entitySheetInteractions(selectedEntityRef),
+            tagSheetOpen = remember(noteId) { mutableStateOf(false) },
+            tagDraft = remember(noteId) { mutableStateOf("") },
         )
     }
 
@@ -211,6 +264,8 @@ class SessionDetailPresenter(
         undoDeletedEntryTitle: String,
         scope: CoroutineScope,
         fields: SessionDetailFields,
+        assignedTags: List<String>,
+        tagSuggestions: List<SessionTagSuggestionItem>,
     ) {
         when (event) {
             SessionDetailEvent.BackClicked -> navigator.pop()
@@ -249,7 +304,46 @@ class SessionDetailPresenter(
                 )
             SessionDetailEvent.EndSessionClicked -> onEndSession(currentNote, scope)
             SessionDetailEvent.ResumeSessionClicked -> onResumeSession(currentNote, scope)
+            SessionDetailEvent.TagButtonClicked -> fields.tagSheetOpen.value = true
+            SessionDetailEvent.TagSheetDismissed -> fields.tagSheetOpen.value = false
+            is SessionDetailEvent.TagToggled -> onTagToggled(event.name, assignedTags, scope)
+            is SessionDetailEvent.TagSuggestionAdded ->
+                scope.launch { tagRepository.addTag(screen.sessionNoteId, event.tag) }
+            SessionDetailEvent.TagAddAllSuggestionsClicked -> onTagAddAllSuggestions(tagSuggestions, scope)
+            is SessionDetailEvent.TagDraftChanged -> fields.tagDraft.value = event.value
+            SessionDetailEvent.TagDraftSubmitted -> onTagDraftSubmitted(fields.tagDraft, scope)
         }
+    }
+
+    private fun onTagToggled(
+        name: String,
+        assignedTags: List<String>,
+        scope: CoroutineScope,
+    ) {
+        val isAssigned = assignedTags.any { it.equals(name, ignoreCase = true) }
+        scope.launch {
+            if (isAssigned) {
+                tagRepository.removeTag(screen.sessionNoteId, name)
+            } else {
+                tagRepository.addTag(screen.sessionNoteId, name)
+            }
+        }
+    }
+
+    private fun onTagAddAllSuggestions(
+        tagSuggestions: List<SessionTagSuggestionItem>,
+        scope: CoroutineScope,
+    ) {
+        scope.launch { tagSuggestions.forEach { tagRepository.addTag(screen.sessionNoteId, it.tag) } }
+    }
+
+    private fun onTagDraftSubmitted(
+        tagDraft: MutableState<String>,
+        scope: CoroutineScope,
+    ) {
+        val name = normalizeCustomTagName(tagDraft.value) ?: return
+        tagDraft.value = ""
+        scope.launch { tagRepository.addTag(screen.sessionNoteId, name) }
     }
 
     private fun onTitleChanged(

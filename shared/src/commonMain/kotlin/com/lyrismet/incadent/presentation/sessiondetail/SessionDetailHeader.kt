@@ -5,6 +5,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +31,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,6 +46,7 @@ import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.MentionChip
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
+import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import dndplayerscodex.shared.generated.resources.Res
@@ -52,6 +55,7 @@ import dndplayerscodex.shared.generated.resources.session_detail_end_button
 import dndplayerscodex.shared.generated.resources.session_detail_ended_badge
 import dndplayerscodex.shared.generated.resources.session_detail_live_badge
 import dndplayerscodex.shared.generated.resources.session_detail_resume_button
+import dndplayerscodex.shared.generated.resources.session_detail_tag_suggestion_badge_format
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -90,6 +94,7 @@ private fun SessionDetailHeaderContent(
                 color = AppPalette.TextSecondary,
                 modifier = Modifier.padding(top = 2.dp),
             )
+            SessionTagsRow(state, modifier = Modifier.padding(top = 10.dp))
         }
         if (state.headerMentions.isNotEmpty()) {
             HeaderMentionsRow(state.headerMentions, state.eventSink, modifier = Modifier.padding(top = 10.dp))
@@ -247,6 +252,73 @@ private fun HeaderMentionsRow(
                 onClick = chip.entityRef?.let { ref -> { eventSink(SessionDetailEvent.MentionChipClicked(ref)) } },
                 fontSize = 12.sp,
                 lineHeightFactor = 1.7f,
+            )
+        }
+    }
+}
+
+// the session's own tag pills plus the dashed "+ Тег"/"+ Добавить тег" button that opens the tags bottom sheet
+@Composable
+private fun SessionTagsRow(
+    state: SessionDetailState,
+    modifier: Modifier = Modifier,
+) {
+    FlowRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        state.tags.forEach { tag ->
+            TagChip(
+                text = tag,
+                foreground = AppPalette.TextDescription,
+                background = AppPalette.SurfacePopover,
+                border = AppPalette.Border,
+                height = 32.dp,
+            )
+        }
+        TagButton(
+            label = state.tagButtonLabel,
+            suggestionCount = state.tagSuggestionCount,
+            onClick = { state.eventSink(SessionDetailEvent.TagButtonClicked) },
+        )
+    }
+}
+
+@Composable
+private fun TagButton(
+    label: String,
+    suggestionCount: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val hasSuggestions = suggestionCount > 0
+    // the mockup's button border is dashed - approximated here with a plain solid border, the one visual
+    // simplification this feature makes, since compose has no built-in dashed-stroke border primitive
+    val border = if (hasSuggestions) AppPalette.Gold.copy(alpha = 0.6f) else AppPalette.BorderHover
+    Row(
+        modifier =
+            modifier
+                .height(32.dp)
+                .appCard(
+                    shape = RoundedCornerShape(8.dp),
+                    background = Color.Transparent,
+                    border = border,
+                    onClick = onClick,
+                ).padding(horizontal = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(label, style = MaterialTheme.typography.labelLarge, color = AppPalette.GoldBright)
+        if (hasSuggestions) {
+            Text(
+                stringResource(Res.string.session_detail_tag_suggestion_badge_format, suggestionCount),
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = AppPalette.Background,
+                modifier =
+                    Modifier
+                        .appCard(shape = RoundedCornerShape(6.dp), background = AppPalette.Gold, border = null)
+                        .padding(horizontal = 6.dp, vertical = 1.dp),
             )
         }
     }

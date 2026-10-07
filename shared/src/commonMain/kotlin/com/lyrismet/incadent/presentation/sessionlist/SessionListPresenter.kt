@@ -16,6 +16,8 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
 import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
 import com.lyrismet.incadent.core.format.chronologicalIndex
+import com.lyrismet.incadent.core.format.joinWithDot
+import com.lyrismet.incadent.core.format.russianPluralForm
 import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
@@ -34,6 +36,7 @@ import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
+import com.lyrismet.incadent.domain.repository.TagRepository
 import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
@@ -91,6 +94,7 @@ class SessionListPresenter(
     private val sessionEntryRepository: SessionEntryRepository,
     private val partyRepository: PartyRepository,
     private val mentionRepositories: MentionRepositories,
+    private val tagRepository: TagRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
 ) : Presenter<SessionListState> {
@@ -104,6 +108,7 @@ class SessionListPresenter(
         val locations by mentionRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
         val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
+        val tagsBySession by tagRepository.observeAllSessionTags().collectAsState(initial = emptyMap())
         val scope = rememberCoroutineScope()
         val campaignNameOverride by appPreferencesRepository.observeCampaignName().collectAsState(initial = null)
         val numbering by appPreferencesRepository
@@ -116,6 +121,7 @@ class SessionListPresenter(
         val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
         val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix)
         val renameFields = rememberCampaignRenameFields(stringResource(Res.string.session_list_rename_saved_toast))
+        val entriesBySession = allEntries.groupBy { it.sessionNoteId }
 
         val liveNote = sessions.firstOrNull { it.isLive }
         val liveEntriesFlow: Flow<List<SessionEntry>> =
@@ -124,7 +130,7 @@ class SessionListPresenter(
             }
         val liveEntries by liveEntriesFlow.collectAsState(initial = emptyList())
 
-        val allItems = sessions.toListItems(numbering)
+        val allItems = sessions.toListItems(numbering, tagsBySession, entriesBySession, candidates)
         val liveItem = liveNote?.let { note -> allItems.first { it.id == note.id } }
         val liveSession = liveItem?.let { item -> buildLiveSession(item, liveEntries, candidates, noNotesLabel) }
 
@@ -305,16 +311,29 @@ class SessionListPresenter(
     }
 
     // numbered by chronological order (oldest = I) even though [this] arrives newest-first from the repo
-    private fun List<SessionNote>.toListItems(numbering: SessionNumbering): List<SessionListItem> {
+    @Suppress("LongParameterList")
+    private fun List<SessionNote>.toListItems(
+        numbering: SessionNumbering,
+        tagsBySession: Map<Long, List<String>>,
+        entriesBySession: Map<Long, List<SessionEntry>>,
+        candidates: List<MentionCandidate>,
+    ): List<SessionListItem> {
         val numberLabels = sessionNumberLabels(numbering)
         val arabicNumbers = chronologicalIndex()
         return map { note ->
+            val entries = entriesBySession[note.id].orEmpty()
+            val bodies = entries.map { it.body }
+            val dateLabel = note.sessionDate.toDisplayDate()
+            val noteCountLabel = "${entries.size} ${russianPluralForm(entries.size, "заметка", "заметки", "заметок")}"
             SessionListItem(
                 id = note.id,
                 numberLabel = numberLabels.getValue(note.id),
                 arabicNumber = arabicNumbers.getValue(note.id),
                 title = note.title,
-                dateLabel = note.sessionDate.toDisplayDate(),
+                dateLabel = dateLabel,
+                archiveMeta = joinWithDot(dateLabel, noteCountLabel),
+                tags = tagsBySession[note.id].orEmpty(),
+                mentionCount = mentionsIn(bodies, candidates).size,
             )
         }
     }
