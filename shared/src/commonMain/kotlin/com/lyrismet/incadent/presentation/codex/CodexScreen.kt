@@ -137,6 +137,8 @@ data class CodexEntryFormState(
     val partyPresenceOptions: List<FormChipOption<PartyPresence>> = emptyList(),
     val canSave: Boolean = false,
     val saveLabel: String = "",
+    // null when no stepper's calculator is open - the Ui overlays NumberPadSheet on the form when non-null
+    val calculator: CalculatorPadState? = null,
 )
 
 enum class CodexEntryField {
@@ -152,6 +154,21 @@ enum class CodexEntryField {
 }
 
 enum class CodexEntryNumberField { PARTY_LEVEL, PARTY_HP_MAX, PARTY_ARMOR_CLASS, PARTY_INITIATIVE_BONUS }
+
+/**
+ * the quick number-pad shown over a stepper (P2.9) - pre-formatted for [NumberPadSheet], see
+ * Players Codex v6.dc.html's `pad` for the `purpose === 'form'` branch this mirrors
+ */
+data class CalculatorPadState(
+    val field: CodexEntryNumberField,
+    val overline: String,
+    val title: String,
+    val expr: String,
+    val result: String,
+    val rangeHint: String,
+    val applyLabel: String,
+    val applyEnabled: Boolean,
+)
 
 enum class CodexEntryChipField { NPC_LOCATION, QUEST_GIVER, QUEST_LOCATION }
 
@@ -315,6 +332,22 @@ sealed interface CodexEvent : CircuitUiEvent {
     data object EntryFormSaveClicked : CodexEvent
 
     data object EntryFormClosed : CodexEvent
+
+    data class CalculatorOpened(
+        val field: CodexEntryNumberField,
+    ) : CodexEvent
+
+    data class CalculatorDigitPressed(
+        val digit: Int,
+    ) : CodexEvent
+
+    data object CalculatorBackspacePressed : CodexEvent
+
+    data object CalculatorClearPressed : CodexEvent
+
+    data object CalculatorApplyClicked : CodexEvent
+
+    data object CalculatorClosed : CodexEvent
 
     data class QuickEdit(
         val event: QuickEditUiEvent,

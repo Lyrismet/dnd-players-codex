@@ -26,6 +26,7 @@ that's the signal to add it here, not to copy-paste it a third time (see CLAUDE.
 | `AppDialog` | `component/AppDialog.kt` | the generic centered-dialog shell (rounded, bordered, padded `Column`). `ConfirmationDialog` is built on this. | `borderColor`, `content` |
 | `AppBottomSheet` | `component/AppBottomSheet.kt` | the modal bottom sheet shell (26dp top corners, gold edge, drag handle) used by every entity sheet and the entry form. Also hosts `SheetCloseButton` (built on `IconBadge`). | `onDismissRequest`, `content` |
 | `CampaignRenameSheet` | `component/CampaignRenameSheet.kt` | the campaign rename sheet (Settings and the session list header) - an `AppBottomSheet` with the overline, serif title, 56dp input, hint and 52dp save. Save is disabled and refused while the name is blank (`core/campaign`'s `savableCampaignName`). The caller owns the draft state. | `draft`, `onDraftChanged`, `onSave`, `onDismiss` |
+| `NumberPadSheet` | `component/NumberPadSheet.kt` | the quick numeric keypad that overlays a stepper's form sheet when tapped (P2.9 "КОДЕКС" calculator, Players Codex v6.dc.html `pad` with `purpose === 'form'`) - calculator icon header, expr/result/range-hint block, a 4×3 digit/⌫/C grid, and a `FormPrimaryButton` apply. No mode/target/source rows - those only exist for the future combat calculator (P3), which isn't wired yet. The caller (e.g. `CodexEntryFormController`) owns which field is open and its typed expression via `core/calc`'s `CalcExpression`; this component takes only pre-formatted strings and key callbacks. | `overline`, `title`, `expr`, `result`, `rangeHint`, `applyLabel`, `applyEnabled`, `onDigit`, `onBackspace`, `onClear`, `onApply`, `onClose` |
 
 ## Buttons, badges, chips
 
@@ -82,7 +83,7 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 | `FormTextField` | `component/FormFields.kt` | single-line labeled text input matching the create/edit form style. |
 | `FormTextArea` | `component/FormFields.kt` | multi-line variant of `FormTextField`, 3-line minimum height. |
 | `FormChipPicker` | `component/FormFields.kt` | see "Buttons, badges, chips" above. |
-| `FormStepper` | `component/FormFields.kt` | labeled integer field with −/+ buttons clamped to an `IntRange` - level, max hp, armor class, initiative bonus. |
+| `FormStepper` | `component/FormFields.kt` | labeled integer field with −/+ buttons clamped to an `IntRange` - level, max hp, armor class, initiative bonus. Pass `onOpenCalculator` to make the centered value tappable and open `NumberPadSheet` above (only for ranges with a non-negative minimum - initiative bonus leaves it `null`). |
 | `FormPrimaryButton` | `component/FormFields.kt` | see "Buttons, badges, chips" above. |
 
 Every field in `CodexEntryFormUi.kt` is built from these five - if a new form needs a field type that doesn't fit,
@@ -123,7 +124,9 @@ tap/dismiss/status-update event-handling every presenter delegates to; it has no
 `core/swipehint` holds the swipe-hint **decision** logic shared by the session list and codex presenters -
 `shouldStartSwipeHint` (pending + a first row + nothing covering the screen) and `codexSwipeHintDirection`
 (codex only grows the edit leg in form edit mode). The animation and the banner it decides to play live in
-`SwipeHintBanner` above, not here.
+`SwipeHintBanner` above, not here. `core/calc`'s `CalcExpression` is the sum-of-terms keypad logic behind
+`NumberPadSheet` (digit/plus/backspace/clear/value/display) - pure, no Compose, reused by the future combat
+calculator (P3) once it's wired.
 
 ## When nothing here fits
 

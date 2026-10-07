@@ -3,6 +3,7 @@ package com.lyrismet.incadent.presentation.codex
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.lyrismet.incadent.core.calc.CalcExpression
 import com.lyrismet.incadent.core.designsystem.LocationMentionColor
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.designsystem.toStatusColor
@@ -28,10 +29,17 @@ import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
 import com.slack.circuit.retained.rememberRetained
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_calculator_apply
+import dndplayerscodex.shared.generated.resources.codex_calculator_overline
+import dndplayerscodex.shared.generated.resources.codex_calculator_range_format
 import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_location
 import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_party
 import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_quest
+import dndplayerscodex.shared.generated.resources.codex_entry_label_armor_class
+import dndplayerscodex.shared.generated.resources.codex_entry_label_hp_max
+import dndplayerscodex.shared.generated.resources.codex_entry_label_initiative_bonus
+import dndplayerscodex.shared.generated.resources.codex_entry_label_level
 import dndplayerscodex.shared.generated.resources.codex_entry_overline_create
 import dndplayerscodex.shared.generated.resources.codex_entry_overline_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_owner_me
@@ -82,6 +90,9 @@ private data class CodexEntryFormFields(
     val locationType: String = "",
     val locationRegion: String = "",
     val party: PartyFormFields = PartyFormFields(),
+    // null means no stepper's calculator is open - see onCalculatorOpened
+    val calculatorField: CodexEntryNumberField? = null,
+    val calculatorExpr: CalcExpression = CalcExpression(),
 )
 
 // one entry point per form action - splitting them across classes would only forward the same calls
@@ -160,16 +171,53 @@ class CodexEntryFormController private constructor(
     ) {
         val current = fields.value ?: return
         val party = current.party
+        val clamped = value.coerceIn(field.range())
         val updated =
             when (field) {
-                CodexEntryNumberField.PARTY_LEVEL -> party.copy(level = value.coerceIn(PartyStatRanges.level))
-                CodexEntryNumberField.PARTY_HP_MAX -> party.copy(hpMax = value.coerceIn(PartyStatRanges.hpMax))
-                CodexEntryNumberField.PARTY_ARMOR_CLASS ->
-                    party.copy(armorClass = value.coerceIn(PartyStatRanges.armorClass))
-                CodexEntryNumberField.PARTY_INITIATIVE_BONUS ->
-                    party.copy(initiativeBonus = value.coerceIn(PartyStatRanges.initiativeBonus))
+                CodexEntryNumberField.PARTY_LEVEL -> party.copy(level = clamped)
+                CodexEntryNumberField.PARTY_HP_MAX -> party.copy(hpMax = clamped)
+                CodexEntryNumberField.PARTY_ARMOR_CLASS -> party.copy(armorClass = clamped)
+                CodexEntryNumberField.PARTY_INITIATIVE_BONUS -> party.copy(initiativeBonus = clamped)
             }
         fields.value = current.copy(party = updated)
+    }
+
+    // only wired from fields whose range has no negative minimum - see FormStepper's onOpenCalculator
+    fun onCalculatorOpened(field: CodexEntryNumberField) {
+        val current = fields.value ?: return
+        fields.value = current.copy(calculatorField = field, calculatorExpr = CalcExpression())
+    }
+
+    fun onCalculatorDigitPressed(digit: Int) {
+        val current = fields.value ?: return
+        if (current.calculatorField == null) return
+        fields.value = current.copy(calculatorExpr = current.calculatorExpr.digit(digit))
+    }
+
+    fun onCalculatorBackspacePressed() {
+        val current = fields.value ?: return
+        if (current.calculatorField == null) return
+        fields.value = current.copy(calculatorExpr = current.calculatorExpr.backspace())
+    }
+
+    fun onCalculatorClearPressed() {
+        val current = fields.value ?: return
+        if (current.calculatorField == null) return
+        fields.value = current.copy(calculatorExpr = current.calculatorExpr.clear())
+    }
+
+    // reuses onNumberChanged's own clamping instead of duplicating the Math.max(min, Math.min(max, v)) here
+    fun onCalculatorApplyClicked() {
+        val current = fields.value ?: return
+        val field = current.calculatorField
+        if (field == null || current.calculatorExpr.raw.isBlank()) return
+        onNumberChanged(field, current.calculatorExpr.value())
+        fields.value = fields.value?.copy(calculatorField = null, calculatorExpr = CalcExpression())
+    }
+
+    fun onCalculatorClosed() {
+        val current = fields.value ?: return
+        fields.value = current.copy(calculatorField = null, calculatorExpr = CalcExpression())
     }
 
     fun onNpcStatusChanged(status: NpcStatus) {
@@ -352,9 +400,47 @@ class CodexEntryFormController private constructor(
                 },
             canSave = current.name.isNotBlank(),
             saveLabel = saveLabel(current.name.isNotBlank(), isEditing),
+            calculator = current.calculatorField?.let { field -> calculatorPadState(field, current.calculatorExpr) },
         )
     }
 }
+
+@Composable
+private fun calculatorPadState(
+    field: CodexEntryNumberField,
+    expr: CalcExpression,
+): CalculatorPadState {
+    val range = field.range()
+    return CalculatorPadState(
+        field = field,
+        overline = stringResource(Res.string.codex_calculator_overline),
+        title = field.label(),
+        expr = expr.display(),
+        result = if (expr.raw.isBlank()) "0" else expr.value().toString(),
+        rangeHint = stringResource(Res.string.codex_calculator_range_format, range.first, range.last),
+        applyLabel = stringResource(Res.string.codex_calculator_apply),
+        applyEnabled = expr.raw.isNotBlank(),
+    )
+}
+
+private fun CodexEntryNumberField.range(): IntRange =
+    when (this) {
+        CodexEntryNumberField.PARTY_LEVEL -> PartyStatRanges.level
+        CodexEntryNumberField.PARTY_HP_MAX -> PartyStatRanges.hpMax
+        CodexEntryNumberField.PARTY_ARMOR_CLASS -> PartyStatRanges.armorClass
+        CodexEntryNumberField.PARTY_INITIATIVE_BONUS -> PartyStatRanges.initiativeBonus
+    }
+
+@Composable
+private fun CodexEntryNumberField.label(): String =
+    stringResource(
+        when (this) {
+            CodexEntryNumberField.PARTY_LEVEL -> Res.string.codex_entry_label_level
+            CodexEntryNumberField.PARTY_HP_MAX -> Res.string.codex_entry_label_hp_max
+            CodexEntryNumberField.PARTY_ARMOR_CLASS -> Res.string.codex_entry_label_armor_class
+            CodexEntryNumberField.PARTY_INITIATIVE_BONUS -> Res.string.codex_entry_label_initiative_bonus
+        },
+    )
 
 @Composable
 private fun newEntryHeading(type: CodexEntryType): String =
