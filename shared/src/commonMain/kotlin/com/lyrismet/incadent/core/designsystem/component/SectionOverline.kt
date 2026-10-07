@@ -29,7 +29,7 @@ fun SectionOverline(
     trailingContent: @Composable RowScope.() -> Unit = {},
 ) {
     val baseStyle = MaterialTheme.typography.labelSmall
-    Row(modifier = modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         val tappable = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
         Row(modifier = Modifier.weight(1f).then(tappable), verticalAlignment = Alignment.CenterVertically) {
             Text(

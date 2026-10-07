@@ -37,11 +37,14 @@ import org.jetbrains.compose.resources.stringResource
 private val FactLabelWidth = 104.dp
 private val FactLabelGap = 12.dp
 
+/** the single source of truth for whether the hold-tip hint should take up space and render */
+internal fun QuickEditSheet?.hasVisibleHoldTip(): Boolean = this?.holdTipVisible == true
+
 /** the one-time hint under the card header - shown only while [QuickEditSheet.holdTipVisible] */
 @Composable
 internal fun HoldTipSlot(quick: QuickEditSheet?) {
+    if (!quick.hasVisibleHoldTip()) return
     val sheet = quick ?: return
-    if (!sheet.holdTipVisible) return
     HoldHintCard(
         text = stringResource(Res.string.quick_edit_hold_tip),
         dismissLabel = stringResource(Res.string.quick_edit_hold_tip_dismiss),

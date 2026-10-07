@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -221,7 +221,7 @@ internal fun EntityHeader(
             onClose = onClose,
         )
         // mockup - the overline's -6dp and the tip's -4dp margins leave 8dp above the tip and 18dp below it
-        if (quick?.holdTipVisible == true) {
+        if (quick.hasVisibleHoldTip()) {
             Spacer(Modifier.height(8.dp))
             HoldTipSlot(quick)
             Spacer(Modifier.height(18.dp))
@@ -252,35 +252,33 @@ private fun EntityOverlineRow(
     onEditClicked: (() -> Unit)?,
     onClose: () -> Unit,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            overline,
-            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.16.em),
-            color = color,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
-        onEditClicked?.let { onClick ->
-            IconBadge(
-                size = HeaderButtonSize,
-                background = AppPalette.Gold.copy(alpha = 0.12f),
-                border = AppPalette.Gold.copy(alpha = 0.45f),
-                onClick = onClick,
-            ) {
-                Icon(
-                    AppIcons.Edit,
-                    contentDescription = null,
-                    tint = AppPalette.GoldBright,
-                    modifier = Modifier.size(18.dp),
-                )
+    // already uppercased by the caller's string resource, so SectionOverline's own uppercase is a no-op here
+    SectionOverline(
+        text = overline,
+        color = color,
+        letterSpacing = 0.16.em,
+        trailingContent = {
+            // matches the original Row's spacedBy(8.dp), now that the overline and the buttons are split apart
+            Spacer(Modifier.width(8.dp))
+            onEditClicked?.let { onClick ->
+                IconBadge(
+                    size = HeaderButtonSize,
+                    background = AppPalette.Gold.copy(alpha = 0.12f),
+                    border = AppPalette.Gold.copy(alpha = 0.45f),
+                    onClick = onClick,
+                ) {
+                    Icon(
+                        AppIcons.Edit,
+                        contentDescription = null,
+                        tint = AppPalette.GoldBright,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
             }
-        }
-        SheetCloseButton(onClick = onClose, size = HeaderButtonSize)
-    }
+            SheetCloseButton(onClick = onClose, size = HeaderButtonSize)
+        },
+    )
 }
 
 @Composable

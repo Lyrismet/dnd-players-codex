@@ -230,7 +230,7 @@ class SessionDetailPresenter(
             is SessionDetailEvent.RelatedNoteClicked ->
                 fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId, event.entryId)
             SessionDetailEvent.SheetDismissed -> fields.entitySheet.onDismissed()
-            SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, fields)
+            SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, entries, fields)
             is SessionDetailEvent.EntryClicked -> onEntryClicked(event.id, fields.selectedEntryId)
             is SessionDetailEvent.EditEntryClicked -> onEditEntry(event.id, entries, fields)
             SessionDetailEvent.CancelEditEntryClicked -> {
@@ -279,6 +279,7 @@ class SessionDetailPresenter(
 
     private fun onSubmitEntry(
         scope: CoroutineScope,
+        entries: List<SessionEntry>,
         fields: SessionDetailFields,
     ) {
         val body =
@@ -288,6 +289,8 @@ class SessionDetailPresenter(
         val editingId = fields.editingEntryId.value
         fields.draft.value = TextFieldValue("")
         fields.editingEntryId.value = null
+        // an unchanged save must not flip the "изм." mark, so it only writes when the body actually differs
+        if (editingId != null && entries.find { it.id == editingId }?.body == body) return
         scope.launch {
             if (editingId != null) {
                 sessionEntryRepository.update(editingId, body)

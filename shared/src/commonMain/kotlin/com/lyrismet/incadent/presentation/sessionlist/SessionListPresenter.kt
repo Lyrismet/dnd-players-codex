@@ -8,7 +8,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import com.lyrismet.incadent.core.campaign.savableCampaignName
+import com.lyrismet.incadent.core.campaign.RenameSheetState
+import com.lyrismet.incadent.core.campaign.savedCampaignNameOrNull
 import com.lyrismet.incadent.core.designsystem.component.toChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
@@ -31,7 +32,6 @@ import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
-import com.lyrismet.incadent.presentation.settings.RenameSheetState
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
@@ -247,7 +247,7 @@ class SessionListPresenter(
 
     // a blank name is never saved - the sheet's save button is disabled for it as well
     private fun onRenameSaved(rename: CampaignRenameFields) {
-        val name = (rename.sheet.value as? RenameSheetState.Editing)?.draft?.let { savableCampaignName(it) } ?: return
+        val name = rename.sheet.value.savedCampaignNameOrNull() ?: return
         appPreferencesRepository.setCampaignName(name)
         rename.sheet.value = RenameSheetState.Hidden
         rename.toast.value = SessionListToast(rename.savedText)

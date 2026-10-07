@@ -5,7 +5,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import com.lyrismet.incadent.core.campaign.savableCampaignName
+import com.lyrismet.incadent.core.campaign.RenameSheetState
+import com.lyrismet.incadent.core.campaign.savedCampaignNameOrNull
 import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.HoldHintState
@@ -55,8 +56,7 @@ class SettingsPresenter(
                 is SettingsEvent.RenameDraftChanged -> renameSheet.value = RenameSheetState.Editing(event.value)
                 SettingsEvent.RenameSaved -> {
                     // a blank name is refused and the sheet stays open, matching the disabled save button
-                    val name = (renameSheet.value as? RenameSheetState.Editing)?.draft?.let { savableCampaignName(it) }
-                    if (name != null) {
+                    renameSheet.value.savedCampaignNameOrNull()?.let { name ->
                         appPreferencesRepository.setCampaignName(name)
                         renameSheet.value = RenameSheetState.Hidden
                     }
