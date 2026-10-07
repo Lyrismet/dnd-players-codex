@@ -26,6 +26,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -52,16 +55,22 @@ private const val BANNER_TOTAL_MS = 9000L
 
 /** the live peek offset and banner visibility of one in-flight swipe hint - see [rememberSwipeHintPlayback] */
 @Stable
-class SwipeHintPlayback internal constructor() {
+class SwipeHintPlayback internal constructor(
+    private val scope: CoroutineScope,
+) {
     // an Animatable, not a raw float - the peek rolls with the same easing/duration as a real swipe settle
     internal val offsetAnimatable = Animatable(0f)
     val peekOffsetPx: Float get() = offsetAnimatable.value
     var bannerVisible by mutableStateOf(false)
         internal set
+    internal var sequenceJob: Job? = null
 
-    /** hides the banner immediately on "Понятно" - the one-time flag was already persisted when the hint started */
+    /** hides the banner and stops the peek immediately on "Понятно" - the one-time flag was already persisted */
     fun dismiss() {
         bannerVisible = false
+        sequenceJob?.cancel()
+        sequenceJob = null
+        scope.launch { offsetAnimatable.snapTo(0f) }
     }
 }
 
@@ -77,33 +86,39 @@ fun rememberSwipeHintPlayback(
     targetKey: Any?,
     direction: SwipeHintDirection,
 ): SwipeHintPlayback {
-    val playback = remember { SwipeHintPlayback() }
+    val scope = rememberCoroutineScope()
+    val playback = remember { SwipeHintPlayback(scope) }
     val density = LocalDensity.current
     LaunchedEffect(targetKey) {
         if (targetKey == null) return@LaunchedEffect
-        val peekDistancePx = with(density) { RevealWidth.toPx() }
-        val peekSpec = tween<Float>(SWIPE_ANIMATION_DURATION_MS, easing = SwipeEasing)
+        // the whole sequence runs as one child job so playback.dismiss() can cancel every leg at once
+        playback.sequenceJob =
+            launch {
+                val peekDistancePx = with(density) { RevealWidth.toPx() }
+                val peekSpec = tween<Float>(SWIPE_ANIMATION_DURATION_MS, easing = SwipeEasing)
 
-        fun animateTo(target: Float) = launch { playback.offsetAnimatable.animateTo(target, peekSpec) }
+                fun animateTo(target: Float) = launch { playback.offsetAnimatable.animateTo(target, peekSpec) }
 
-        delay(PEEK_SHOW_DELAY_MS)
-        playback.bannerVisible = true
-        val firstTarget = if (direction == SwipeHintDirection.EDIT_AND_DELETE) peekDistancePx else -peekDistancePx
-        animateTo(firstTarget)
-        if (direction == SwipeHintDirection.EDIT_AND_DELETE) {
-            delay(BOTH_FIRST_LEG_MS)
-            animateTo(0f)
-            delay(BOTH_GAP_MS)
-            animateTo(-peekDistancePx)
-            delay(BOTH_SECOND_LEG_MS)
-            animateTo(0f)
-            delay(BANNER_TOTAL_MS - PEEK_SHOW_DELAY_MS - BOTH_FIRST_LEG_MS - BOTH_GAP_MS - BOTH_SECOND_LEG_MS)
-        } else {
-            delay(ONE_LEG_MS)
-            animateTo(0f)
-            delay(BANNER_TOTAL_MS - PEEK_SHOW_DELAY_MS - ONE_LEG_MS)
-        }
-        playback.bannerVisible = false
+                delay(PEEK_SHOW_DELAY_MS)
+                playback.bannerVisible = true
+                val firstTarget =
+                    if (direction == SwipeHintDirection.EDIT_AND_DELETE) peekDistancePx else -peekDistancePx
+                animateTo(firstTarget)
+                if (direction == SwipeHintDirection.EDIT_AND_DELETE) {
+                    delay(BOTH_FIRST_LEG_MS)
+                    animateTo(0f)
+                    delay(BOTH_GAP_MS)
+                    animateTo(-peekDistancePx)
+                    delay(BOTH_SECOND_LEG_MS)
+                    animateTo(0f)
+                    delay(BANNER_TOTAL_MS - PEEK_SHOW_DELAY_MS - BOTH_FIRST_LEG_MS - BOTH_GAP_MS - BOTH_SECOND_LEG_MS)
+                } else {
+                    delay(ONE_LEG_MS)
+                    animateTo(0f)
+                    delay(BANNER_TOTAL_MS - PEEK_SHOW_DELAY_MS - ONE_LEG_MS)
+                }
+                playback.bannerVisible = false
+            }
     }
     return playback
 }

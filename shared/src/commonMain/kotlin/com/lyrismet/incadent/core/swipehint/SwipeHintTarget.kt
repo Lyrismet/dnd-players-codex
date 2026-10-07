@@ -16,10 +16,7 @@ data class SwipeHintTarget<T>(
     val nonce: Int,
 )
 
-/**
- * the shared presenter-side half of the one-time swipe hint - sessions and codex both call this once their list
- * and undo state are known, instead of each copy-pasting the same "pending + first row + nothing blocking" check
- */
+/** the shared presenter-side half of the one-time swipe hint - sessions and codex both call this */
 @Composable
 fun <T> rememberSwipeHintTarget(
     hintState: SwipeHintState,
@@ -30,10 +27,16 @@ fun <T> rememberSwipeHintTarget(
 ): SwipeHintTarget<T>? {
     val undoAction by undoController.current.collectAsState()
     val target = remember { mutableStateOf<SwipeHintTarget<T>?>(null) }
-    // a bumped nonce is the only thing that forces rememberSwipeHintPlayback's key to change when the same
-    // row is the target again (e.g. "Показать" replayed with nothing else in the list having changed)
+    // a bumped nonce forces rememberSwipeHintPlayback's key to change when the same row is targeted again
     val nonce = remember { mutableIntStateOf(0) }
+    // guards against markSeen()'s write lagging a recomposition and re-firing while hintState is still PENDING
+    val hasStartedForPending = remember { mutableStateOf(false) }
     LaunchedEffect(hintState, firstItemId, isBlocked, undoAction) {
+        if (hintState != SwipeHintState.PENDING) {
+            hasStartedForPending.value = false
+            return@LaunchedEffect
+        }
+        if (hasStartedForPending.value) return@LaunchedEffect
         val eligible =
             shouldStartSwipeHint(
                 hintState,
@@ -41,6 +44,7 @@ fun <T> rememberSwipeHintTarget(
                 isBlocked = isBlocked || undoAction != null,
             )
         if (eligible && firstItemId != null) {
+            hasStartedForPending.value = true
             markSeen()
             nonce.intValue += 1
             target.value = SwipeHintTarget(firstItemId, nonce.intValue)

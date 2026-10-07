@@ -197,7 +197,7 @@ private fun HandleSwipeHintReplay(
     LaunchedEffect(sessionsReplayRequested) {
         if (sessionsReplayRequested) {
             tabs.selectedTabIndex.value = AppTab.SESSIONS.ordinal
-            repeat(tabs.sessions.backStack.size - 1) { tabs.sessions.navigator.pop() }
+            popToRoot(tabs.sessions)
             controller.onSessionsReplayHandled()
         }
     }
@@ -227,6 +227,10 @@ private fun onTabTapped(
         return
     }
     val stack = tabs.stackOf(AppTab.entries[index]) ?: return
+    popToRoot(stack)
+}
+
+private fun popToRoot(stack: TabStack) {
     repeat(stack.backStack.size - 1) { stack.navigator.pop() }
 }
 

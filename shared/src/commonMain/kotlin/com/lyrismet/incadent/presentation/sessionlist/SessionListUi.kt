@@ -74,7 +74,8 @@ fun SessionListUi(
                 modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
             )
             SwipeHintBanner(
-                visible = swipeHint.bannerVisible,
+                // the campaign-rename toast shares this anchor, so the hint yields to it instead of stacking
+                visible = swipeHint.bannerVisible && state.toast == null,
                 direction = SwipeHintDirection.DELETE_ONLY,
                 title = stringResource(Res.string.swipe_hint_delete_only_title),
                 subtitle = stringResource(Res.string.swipe_hint_sessions_subtitle),
