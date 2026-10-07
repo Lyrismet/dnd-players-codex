@@ -40,6 +40,12 @@ data class SessionListItem(
     val arabicNumber: Int,
     val title: String,
     val dateLabel: String,
+    // "{date} · {N} заметок" - the archive row's meta line, kept apart from [dateLabel] since the live
+    // card shows its own separate "N заметок · последняя в HH:MM" line and must stay just the date
+    val archiveMeta: String,
+    val tags: List<String> = emptyList(),
+    // distinct @-mentioned entities (any type) across every note of the session, 0 hides the "@ N" badge
+    val mentionCount: Int = 0,
 )
 
 /** the "currently running" session card shown above the archive - tapping it resumes note-taking */

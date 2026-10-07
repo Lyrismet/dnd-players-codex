@@ -39,10 +39,33 @@ data class SessionDetailState(
     val highlightedEntryId: Long? = null,
     // feed position the list scrolls to while the highlight is active - null once the entry is not in the feed yet
     val focusIndex: Int? = null,
+    val tags: List<String> = emptyList(),
+    val tagButtonLabel: String = "",
+    val tagSuggestionCount: Int = 0,
+    val tagSheet: SessionTagSheetState? = null,
     val eventSink: (SessionDetailEvent) -> Unit = {},
 ) : CircuitUiState {
     val isEditingEntry: Boolean get() = editingEntryTimeLabel != null
 }
+
+/** the "Теги сессии" bottom sheet's content - absent (null on [SessionDetailState]) while the sheet is closed */
+data class SessionTagSheetState(
+    val overline: String,
+    val sessionTitle: String,
+    val suggestions: List<SessionTagSuggestionItem>,
+    val catalog: List<SessionTagCatalogItem>,
+    val draft: String,
+)
+
+data class SessionTagSuggestionItem(
+    val tag: String,
+    val reason: String,
+)
+
+data class SessionTagCatalogItem(
+    val name: String,
+    val assigned: Boolean,
+)
 
 /** one row in the note feed - either a meeting-day separator (multi-day sessions only) or a timestamped note */
 sealed interface SessionFeedItem {
@@ -149,4 +172,24 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     data object EndSessionClicked : SessionDetailEvent
 
     data object ResumeSessionClicked : SessionDetailEvent
+
+    data object TagButtonClicked : SessionDetailEvent
+
+    data object TagSheetDismissed : SessionDetailEvent
+
+    data class TagToggled(
+        val name: String,
+    ) : SessionDetailEvent
+
+    data class TagSuggestionAdded(
+        val tag: String,
+    ) : SessionDetailEvent
+
+    data object TagAddAllSuggestionsClicked : SessionDetailEvent
+
+    data class TagDraftChanged(
+        val value: String,
+    ) : SessionDetailEvent
+
+    data object TagDraftSubmitted : SessionDetailEvent
 }

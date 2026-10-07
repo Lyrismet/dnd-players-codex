@@ -1,0 +1,13 @@
+CREATE TABLE tag (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
+);
+
+selectAll:
+SELECT * FROM tag ORDER BY id ASC;
+
+insert:
+INSERT OR IGNORE INTO tag(name) VALUES (?);
+
+lastInsertRowId:
+SELECT last_insert_rowid();

@@ -63,6 +63,7 @@ fun SessionDetailUi(
     }
 
     state.selectedEntity?.let { entity -> SessionDetailEntitySheet(state, entity) }
+    state.tagSheet?.let { sheet -> SessionDetailTagsSheet(sheet, state.eventSink) }
 }
 
 @Composable

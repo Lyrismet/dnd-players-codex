@@ -1,0 +1,24 @@
+CREATE TABLE session_tag (
+    session_note_id INTEGER NOT NULL REFERENCES session_note(id) ON DELETE CASCADE,
+    tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE CASCADE,
+    PRIMARY KEY (session_note_id, tag_id)
+);
+
+CREATE INDEX session_tag_tag_id ON session_tag(tag_id);
+
+selectTagNamesForSession:
+SELECT tag.name AS name FROM session_tag
+INNER JOIN tag ON tag.id = session_tag.tag_id
+WHERE session_tag.session_note_id = ?
+ORDER BY tag.name ASC;
+
+selectAllSessionTagNames:
+SELECT session_tag.session_note_id AS session_note_id, tag.name AS name FROM session_tag
+INNER JOIN tag ON tag.id = session_tag.tag_id
+ORDER BY session_tag.session_note_id DESC, tag.name ASC;
+
+insert:
+INSERT OR IGNORE INTO session_tag(session_note_id, tag_id) VALUES (?, ?);
+
+delete:
+DELETE FROM session_tag WHERE session_note_id = ? AND tag_id = ?;

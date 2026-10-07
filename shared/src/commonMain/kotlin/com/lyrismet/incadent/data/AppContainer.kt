@@ -12,6 +12,7 @@ import com.lyrismet.incadent.data.repository.PartyRepositoryImpl
 import com.lyrismet.incadent.data.repository.QuestRepositoryImpl
 import com.lyrismet.incadent.data.repository.SessionEntryRepositoryImpl
 import com.lyrismet.incadent.data.repository.SessionNoteRepositoryImpl
+import com.lyrismet.incadent.data.repository.TagRepositoryImpl
 import com.lyrismet.incadent.data.settings.SettingsFactory
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.LanguageRepository
@@ -22,6 +23,7 @@ import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
+import com.lyrismet.incadent.domain.repository.TagRepository
 import com.lyrismet.incadent.presentation.codex.addCodexUi
 import com.lyrismet.incadent.presentation.codex.codexScreenRegistration
 import com.lyrismet.incadent.presentation.sessiondetail.addSessionDetailUi
@@ -45,6 +47,7 @@ class AppContainer(
     // сессии
     val sessionNoteRepository: SessionNoteRepository = SessionNoteRepositoryImpl(database)
     val sessionEntryRepository: SessionEntryRepository = SessionEntryRepositoryImpl(database)
+    val tagRepository: TagRepository = TagRepositoryImpl(database)
 
     // кодекс
     val npcRepository: NpcRepository = NpcRepositoryImpl(database)
@@ -70,6 +73,7 @@ class AppContainer(
                 sessionEntryRepository,
                 partyRepository,
                 mentionRepositories,
+                tagRepository,
                 undoController,
                 appPreferencesRepository,
             ).addSessionDetailUi(
@@ -77,6 +81,7 @@ class AppContainer(
                 sessionEntryRepository,
                 partyRepository,
                 mentionRepositories,
+                tagRepository,
                 undoController,
                 appPreferencesRepository,
             )

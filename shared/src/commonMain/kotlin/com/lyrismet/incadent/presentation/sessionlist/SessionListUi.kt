@@ -39,6 +39,7 @@ import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
+import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.entitysummary.EntityRef
@@ -53,12 +54,17 @@ import dndplayerscodex.shared.generated.resources.session_list_empty_button
 import dndplayerscodex.shared.generated.resources.session_list_empty_title
 import dndplayerscodex.shared.generated.resources.session_list_live_continue
 import dndplayerscodex.shared.generated.resources.session_list_live_label
+import dndplayerscodex.shared.generated.resources.session_list_mention_count_format
 import dndplayerscodex.shared.generated.resources.session_list_new_session_button
 import dndplayerscodex.shared.generated.resources.session_list_title
 import dndplayerscodex.shared.generated.resources.swipe_hint_delete_only_title
 import dndplayerscodex.shared.generated.resources.swipe_hint_dismiss
 import dndplayerscodex.shared.generated.resources.swipe_hint_sessions_subtitle
 import org.jetbrains.compose.resources.stringResource
+
+// matches the bordered tag chip's own rendered height (16sp text + 3dp top/bottom padding) so an unbordered
+// chip in the same row - the "@N" mention badge - lines up with it instead of sizing a touch shorter
+private val SessionCardTagChipHeight = 22.dp
 
 @Composable
 fun SessionListUi(
@@ -357,7 +363,34 @@ private fun SessionArchiveRow(
             NumberLabel(text = session.numberLabel, width = 52.dp, color = AppPalette.GoldDim)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(session.title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
-                Text(session.dateLabel, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
+                Text(session.archiveMeta, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
+                if (session.tags.isNotEmpty() || session.mentionCount > 0) {
+                    FlowRow(
+                        modifier = Modifier.padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalArrangement = Arrangement.spacedBy(5.dp),
+                    ) {
+                        session.tags.forEach { tag ->
+                            TagChip(
+                                text = tag,
+                                foreground = AppPalette.TextDescription,
+                                background = AppPalette.SurfacePopover,
+                                border = AppPalette.Border,
+                                height = SessionCardTagChipHeight,
+                            )
+                        }
+                        if (session.mentionCount > 0) {
+                            val mentionLabel =
+                                stringResource(Res.string.session_list_mention_count_format, session.mentionCount)
+                            TagChip(
+                                text = mentionLabel,
+                                foreground = AppPalette.Gold,
+                                background = AppPalette.Gold.copy(alpha = 0.08f),
+                                height = SessionCardTagChipHeight,
+                            )
+                        }
+                    }
+                }
             }
         }
     }
