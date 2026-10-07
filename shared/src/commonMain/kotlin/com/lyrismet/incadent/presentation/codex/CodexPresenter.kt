@@ -7,6 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import com.lyrismet.incadent.LocalTabSelected
+import com.lyrismet.incadent.core.codexgroup.CodexGroup
 import com.lyrismet.incadent.core.codexgroup.CodexGroupLabels
 import com.lyrismet.incadent.core.codexgroup.CodexGroupingSelection
 import com.lyrismet.incadent.core.codexgroup.CodexRegions
@@ -28,6 +30,9 @@ import com.lyrismet.incadent.core.quickedit.InlineEdit
 import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.core.quickedit.QuickEditInteractions
 import com.lyrismet.incadent.core.quickedit.rememberQuickEditFieldTitles
+import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
+import com.lyrismet.incadent.core.swipehint.codexSwipeHintDirection
+import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.EntityEditMode
@@ -39,6 +44,7 @@ import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.SessionNumbering
+import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
@@ -161,6 +167,8 @@ class CodexPresenter(
         val search = buildSearchResults(records, fields)
         val grouped =
             codexGroupedLists(search, records, fields.activeTab.value, fields.grouping.value, labels.grouped)
+        val party = search.searchedParties.toPartyCodexItems(labels.partyCard)
+        val formState = formController.buildState(records.npcs, records.locations)
 
         val lookup =
             entityLookupOf(npcs, locations, quests, sessionNotes, sessionEntries, candidates, numbering, parties)
@@ -168,16 +176,47 @@ class CodexPresenter(
         val selectedRef = fields.selectedEntityRef.value
         val selectedEntity = remember(selectedRef, lookup) { selectedRef?.let { buildEntitySummary(it, lookup) } }
 
+        val isTabSelected = LocalTabSelected.current
+        val swipeHintTarget =
+            rememberCodexSwipeHintTarget(
+                activeTab = fields.activeTab.value,
+                party = party,
+                grouped = grouped,
+                // a hidden tab stays composed in the background, so it must not burn its one-time hint unseen
+                isBlocked = formState != null || selectedEntity != null || !isTabSelected,
+            )
+
         return buildCodexState(
             fields,
             formController,
+            formState,
+            party,
             records,
-            search,
             grouped,
             selectedEntity,
             labels,
             scope,
-            CodexEditContext(editMode, holdHint, undoAction),
+            CodexEditContext(editMode, holdHint, undoAction, swipeHintTarget),
+        )
+    }
+
+    // bundles the pending-state read and the shared trigger so present() doesn't inline both
+    @Composable
+    private fun rememberCodexSwipeHintTarget(
+        activeTab: CodexTab,
+        party: List<PartyCodexItem>,
+        grouped: CodexGroupedLists,
+        isBlocked: Boolean,
+    ): SwipeHintTarget<EntityRef>? {
+        val swipeHintState by appPreferencesRepository
+            .observeCodexSwipeHintState()
+            .collectAsState(initial = SwipeHintState.PENDING)
+        return rememberSwipeHintTarget(
+            hintState = swipeHintState,
+            markSeen = { appPreferencesRepository.setCodexSwipeHintState(SwipeHintState.SEEN) },
+            undoController = undoController,
+            firstItemId = firstCodexEntityRef(activeTab, party, grouped.npcs, grouped.quests, grouped.locations),
+            isBlocked = isBlocked,
         )
     }
 
@@ -286,8 +325,9 @@ class CodexPresenter(
     private fun buildCodexState(
         fields: CodexFields,
         formController: CodexEntryFormController,
+        formState: CodexEntryFormState?,
+        party: List<PartyCodexItem>,
         records: CodexRecords,
-        search: CodexSearchResults,
         grouped: CodexGroupedLists,
         selectedEntity: EntitySummaryItem?,
         labels: CodexLabels,
@@ -295,7 +335,6 @@ class CodexPresenter(
         context: CodexEditContext,
     ): CodexState {
         val inlineEdit = fields.inlineEdit.value
-        val party = search.searchedParties.toPartyCodexItems(labels.partyCard)
         val activeTab = fields.activeTab.value
         return CodexState(
             activeTab = activeTab,
@@ -317,7 +356,7 @@ class CodexPresenter(
                 codexEmptyState(
                     codexEmptyKind(activeTab, fields.searchQuery.value, grouped.hasEntriesFor(activeTab, party)),
                 ),
-            activeSheet = codexActiveSheet(formController.buildState(records.npcs, records.locations), selectedEntity),
+            activeSheet = codexActiveSheet(formState, selectedEntity),
             editMode = context.editMode,
             inlineEdit = inlineEdit,
             holdTipVisible =
@@ -325,6 +364,8 @@ class CodexPresenter(
                     context.holdHint == HoldHintState.PENDING &&
                     inlineEdit == null,
             undoAction = context.undoAction,
+            swipeHintTarget = context.swipeHintTarget,
+            swipeHintDirection = codexSwipeHintDirection(context.editMode),
         ) { event ->
             onEvent(event, fields, formController, records, labels, scope)
         }
@@ -418,7 +459,44 @@ private data class CodexEditContext(
     val editMode: EntityEditMode,
     val holdHint: HoldHintState,
     val undoAction: UndoAction?,
+    val swipeHintTarget: SwipeHintTarget<EntityRef>?,
 )
+
+// priority mirrors the mockup's firstC - and CodexAllList's own party/npc/quest/location render order
+private fun firstCodexEntityRef(
+    activeTab: CodexTab,
+    party: List<PartyCodexItem>,
+    npcs: List<CodexGroup<NpcCodexItem>>,
+    quests: List<CodexGroup<QuestCodexItem>>,
+    locations: List<CodexGroup<LocationCodexItem>>,
+): EntityRef? {
+    val firstParty = party.firstOrNull()?.let { EntityRef.Party(it.id) }
+    val firstNpc =
+        npcs
+            .firstOrNull()
+            ?.items
+            ?.firstOrNull()
+            ?.let { EntityRef.Npc(it.id) }
+    val firstQuest =
+        quests
+            .firstOrNull()
+            ?.items
+            ?.firstOrNull()
+            ?.let { EntityRef.Quest(it.id) }
+    val firstLocation =
+        locations
+            .firstOrNull()
+            ?.items
+            ?.firstOrNull()
+            ?.let { EntityRef.Location(it.id) }
+    return when (activeTab) {
+        CodexTab.ALL -> firstParty ?: firstNpc ?: firstQuest ?: firstLocation
+        CodexTab.PARTY -> firstParty
+        CodexTab.NPC -> firstNpc
+        CodexTab.QUEST -> firstQuest
+        CodexTab.LOCATION -> firstLocation
+    }
+}
 
 // the form always wins so editing never leaves the entity-view sheet stacked underneath it
 private fun codexActiveSheet(

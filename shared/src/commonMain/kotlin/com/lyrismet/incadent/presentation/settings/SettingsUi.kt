@@ -103,7 +103,7 @@ fun SettingsUi(
                     mentionStyle = state.mentionStyle,
                     onNumberingSelected = { sink(SettingsEvent.NumberingSelected(it)) },
                     onMentionStyleSelected = { sink(SettingsEvent.MentionStyleSelected(it)) },
-                    onShowHintsClick = { sink(SettingsEvent.HoldHintShowRequested) },
+                    onShowHintsClick = { sink(SettingsEvent.SwipeHintsShowRequested) },
                 )
                 CodexSection(
                     editMode = state.editMode,

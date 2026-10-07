@@ -13,10 +13,13 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
+import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
+import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
 import com.lyrismet.incadent.core.entitysummary.QuickEditSheet
+import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_add_entry_button
@@ -28,6 +31,11 @@ import dndplayerscodex.shared.generated.resources.codex_tab_npc
 import dndplayerscodex.shared.generated.resources.codex_tab_party
 import dndplayerscodex.shared.generated.resources.codex_tab_quest
 import dndplayerscodex.shared.generated.resources.codex_title
+import dndplayerscodex.shared.generated.resources.swipe_hint_codex_both_subtitle
+import dndplayerscodex.shared.generated.resources.swipe_hint_codex_both_title
+import dndplayerscodex.shared.generated.resources.swipe_hint_codex_quick_subtitle
+import dndplayerscodex.shared.generated.resources.swipe_hint_delete_only_title
+import dndplayerscodex.shared.generated.resources.swipe_hint_dismiss
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -36,41 +44,53 @@ fun CodexUi(
     modifier: Modifier = Modifier,
 ) {
     val tabItems = codexTabItems(state)
+    val swipeHint = rememberSwipeHintPlayback(state.swipeHintTarget, state.swipeHintDirection)
 
     Scaffold(modifier = modifier) { contentPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
-            ScreenHeader(
-                overline = stringResource(Res.string.codex_overline),
-                title = stringResource(Res.string.codex_title),
-                overlineTrailingContent = {
-                    HeaderActionButton(
-                        text = stringResource(Res.string.codex_add_entry_button),
-                        onClick = { state.eventSink(CodexEvent.AddEntryClicked) },
+        Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                ScreenHeader(
+                    overline = stringResource(Res.string.codex_overline),
+                    title = stringResource(Res.string.codex_title),
+                    overlineTrailingContent = {
+                        HeaderActionButton(
+                            text = stringResource(Res.string.codex_add_entry_button),
+                            onClick = { state.eventSink(CodexEvent.AddEntryClicked) },
+                        )
+                    },
+                )
+                Column(modifier = Modifier.padding(bottom = 12.dp)) {
+                    CodexSearchField(
+                        query = state.searchQuery,
+                        onQueryChange = { state.eventSink(CodexEvent.SearchQueryChanged(it)) },
+                        placeholder = stringResource(Res.string.codex_search_placeholder),
+                        modifier = Modifier.padding(horizontal = 20.dp),
                     )
-                },
-            )
-            Column(modifier = Modifier.padding(bottom = 12.dp)) {
-                CodexSearchField(
-                    query = state.searchQuery,
-                    onQueryChange = { state.eventSink(CodexEvent.SearchQueryChanged(it)) },
-                    placeholder = stringResource(Res.string.codex_search_placeholder),
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                )
-                CodexTabRow(
-                    items = tabItems,
-                    selected = state.activeTab,
-                    onSelected = { state.eventSink(CodexEvent.TabSelected(it)) },
-                    modifier = Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp),
-                )
-                CodexGroupRow(state, modifier = Modifier.padding(top = 10.dp))
-            }
-            Box(modifier = Modifier.weight(1f)) {
-                if (state.emptyState == CodexEmptyState.Hidden) {
-                    CodexActiveList(state)
-                } else {
-                    CodexEmptyView(state)
+                    CodexTabRow(
+                        items = tabItems,
+                        selected = state.activeTab,
+                        onSelected = { state.eventSink(CodexEvent.TabSelected(it)) },
+                        modifier = Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp),
+                    )
+                    CodexGroupRow(state, modifier = Modifier.padding(top = 10.dp))
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    if (state.emptyState == CodexEmptyState.Hidden) {
+                        CodexActiveList(state, swipeHint.peekOffsetPx)
+                    } else {
+                        CodexEmptyView(state)
+                    }
                 }
             }
+            SwipeHintBanner(
+                visible = swipeHint.bannerVisible,
+                direction = state.swipeHintDirection,
+                title = codexSwipeHintTitle(state.swipeHintDirection),
+                subtitle = codexSwipeHintSubtitle(state.swipeHintDirection),
+                dismissLabel = stringResource(Res.string.swipe_hint_dismiss),
+                onDismiss = swipeHint::dismiss,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+            )
         }
     }
 
@@ -82,13 +102,30 @@ fun CodexUi(
 }
 
 @Composable
-private fun CodexActiveList(state: CodexState) {
+private fun codexSwipeHintTitle(direction: SwipeHintDirection): String =
+    when (direction) {
+        SwipeHintDirection.EDIT_AND_DELETE -> stringResource(Res.string.swipe_hint_codex_both_title)
+        SwipeHintDirection.DELETE_ONLY -> stringResource(Res.string.swipe_hint_delete_only_title)
+    }
+
+@Composable
+private fun codexSwipeHintSubtitle(direction: SwipeHintDirection): String =
+    when (direction) {
+        SwipeHintDirection.EDIT_AND_DELETE -> stringResource(Res.string.swipe_hint_codex_both_subtitle)
+        SwipeHintDirection.DELETE_ONLY -> stringResource(Res.string.swipe_hint_codex_quick_subtitle)
+    }
+
+@Composable
+private fun CodexActiveList(
+    state: CodexState,
+    hintPeekOffsetPx: Float,
+) {
     when (state.activeTab) {
-        CodexTab.ALL -> CodexAllList(state = state)
-        CodexTab.PARTY -> CodexPartyList(state = state)
-        CodexTab.NPC -> CodexNpcList(state = state)
-        CodexTab.QUEST -> CodexQuestList(state = state)
-        CodexTab.LOCATION -> CodexLocationList(state = state)
+        CodexTab.ALL -> CodexAllList(state = state, hintPeekOffsetPx = hintPeekOffsetPx)
+        CodexTab.PARTY -> CodexPartyList(state = state, hintPeekOffsetPx = hintPeekOffsetPx)
+        CodexTab.NPC -> CodexNpcList(state = state, hintPeekOffsetPx = hintPeekOffsetPx)
+        CodexTab.QUEST -> CodexQuestList(state = state, hintPeekOffsetPx = hintPeekOffsetPx)
+        CodexTab.LOCATION -> CodexLocationList(state = state, hintPeekOffsetPx = hintPeekOffsetPx)
     }
 }
 

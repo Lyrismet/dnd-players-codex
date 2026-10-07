@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.campaign.RenameSheetState
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
+import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.QuestStatus
@@ -22,6 +23,8 @@ data class SessionListState(
     val selectedEntity: EntitySummaryItem? = null,
     val renameSheet: RenameSheetState = RenameSheetState.Hidden,
     val toast: SessionListToast? = null,
+    // the archive row the one-time swipe-to-delete hint peeks on - always delete-only, sessions have no swipe-edit
+    val swipeHintTarget: SwipeHintTarget<Long>? = null,
     val eventSink: (SessionListEvent) -> Unit = {},
 ) : CircuitUiState
 

@@ -37,11 +37,14 @@ import com.lyrismet.incadent.core.designsystem.component.MentionChip
 import com.lyrismet.incadent.core.designsystem.component.NumberLabel
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
+import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
 import com.lyrismet.incadent.core.format.NumberSizeLadder
+import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_list_archive_section
 import dndplayerscodex.shared.generated.resources.session_list_delete_content_description
@@ -52,6 +55,9 @@ import dndplayerscodex.shared.generated.resources.session_list_live_continue
 import dndplayerscodex.shared.generated.resources.session_list_live_label
 import dndplayerscodex.shared.generated.resources.session_list_new_session_button
 import dndplayerscodex.shared.generated.resources.session_list_title
+import dndplayerscodex.shared.generated.resources.swipe_hint_delete_only_title
+import dndplayerscodex.shared.generated.resources.swipe_hint_dismiss
+import dndplayerscodex.shared.generated.resources.swipe_hint_sessions_subtitle
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -59,11 +65,21 @@ fun SessionListUi(
     state: SessionListState,
     modifier: Modifier = Modifier,
 ) {
+    val swipeHint = rememberSwipeHintPlayback(state.swipeHintTarget, SwipeHintDirection.DELETE_ONLY)
     Scaffold(modifier = modifier) { contentPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
-            SessionListBody(state)
+            SessionListBody(state, swipeHint.peekOffsetPx)
             AppToast(
                 text = state.toast?.text,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+            )
+            SwipeHintBanner(
+                visible = swipeHint.bannerVisible,
+                direction = SwipeHintDirection.DELETE_ONLY,
+                title = stringResource(Res.string.swipe_hint_delete_only_title),
+                subtitle = stringResource(Res.string.swipe_hint_sessions_subtitle),
+                dismissLabel = stringResource(Res.string.swipe_hint_dismiss),
+                onDismiss = swipeHint::dismiss,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
             )
         }
@@ -98,7 +114,10 @@ fun SessionListUi(
 }
 
 @Composable
-private fun SessionListBody(state: SessionListState) {
+private fun SessionListBody(
+    state: SessionListState,
+    swipeHintPeekOffsetPx: Float,
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         ScreenHeader(
             overline = state.campaignName,
@@ -121,7 +140,7 @@ private fun SessionListBody(state: SessionListState) {
                     },
             )
         } else {
-            SessionListContent(state)
+            SessionListContent(state, swipeHintPeekOffsetPx)
         }
     }
 }
@@ -143,6 +162,7 @@ private fun RenameSheetHost(state: SessionListState) {
 @Composable
 private fun SessionListContent(
     state: SessionListState,
+    swipeHintPeekOffsetPx: Float,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -188,6 +208,8 @@ private fun SessionListContent(
                 session = session,
                 onClick = { state.eventSink(SessionListEvent.SessionClicked(session.id)) },
                 onDeleteClick = { state.eventSink(SessionListEvent.DeleteSessionClicked(session.id)) },
+                // only the row the swipe hint targets actually peeks - every other row stays at rest
+                peekOffsetPx = if (session.id == state.swipeHintTarget?.itemId) swipeHintPeekOffsetPx else 0f,
                 modifier = Modifier.animateItem(),
             )
         }
@@ -309,12 +331,14 @@ private fun SessionArchiveRow(
     session: SessionListItem,
     onClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    peekOffsetPx: Float,
     modifier: Modifier = Modifier,
 ) {
     SwipeToDeleteRow(
         onDeleteRequested = onDeleteClick,
         modifier = modifier,
         deleteContentDescription = stringResource(Res.string.session_list_delete_content_description),
+        peekOffsetPx = peekOffsetPx,
     ) {
         Row(
             modifier =

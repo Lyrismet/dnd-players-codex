@@ -29,3 +29,11 @@ enum class HoldHintState(
     PENDING("pending"),
     SEEN("seen"),
 }
+
+/** whether a list's one-time swipe-gesture peek still has to be shown - sessions and codex each track their own */
+enum class SwipeHintState(
+    val tag: String,
+) {
+    PENDING("pending"),
+    SEEN("seen"),
+}

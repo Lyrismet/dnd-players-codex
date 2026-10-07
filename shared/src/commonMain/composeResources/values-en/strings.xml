@@ -245,4 +245,10 @@
     <string name="settings_hints_desc">Show again how to delete with a swipe</string>
     <string name="settings_hints_show">Show</string>
     <string name="swipe_release_label">Release</string>
+    <string name="swipe_hint_delete_only_title">Swipe the card left to delete</string>
+    <string name="swipe_hint_sessions_subtitle">The session will disappear, with Undo at the bottom</string>
+    <string name="swipe_hint_codex_quick_subtitle">To edit, open the entry and hold a field instead</string>
+    <string name="swipe_hint_codex_both_title">Right to edit, left to delete</string>
+    <string name="swipe_hint_codex_both_subtitle">After deleting, Undo will appear at the bottom</string>
+    <string name="swipe_hint_dismiss">Got it</string>
 </resources>

@@ -51,13 +51,16 @@ import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-private val RevealWidth = 96.dp
+// shared with the peek in SwipeHintBanner.kt - the teaching nudge reveals exactly what a real partial swipe does
+internal val RevealWidth = 96.dp
 private val EditIconSize = 20.dp
 private val EditLabelGap = 5.dp
 private val FullSwipeWidth = 190.dp
 private val MaxDragWidth = 300.dp
 private val RowCornerRadius = 14.dp
-private const val SWIPE_ANIMATION_DURATION_MS = 300
+
+// shared with the peek in SwipeHintBanner.kt - the teaching nudge rolls at the same speed as a real settle
+internal const val SWIPE_ANIMATION_DURATION_MS = 300
 
 private const val COLLAPSE_ANIMATION_DURATION_MS = 220
 private const val REMOVAL_GRACE_MS = 1000L
@@ -66,8 +69,8 @@ private const val REMOVAL_GRACE_MS = 1000L
 private fun collapseExit(durationMs: Int = COLLAPSE_ANIMATION_DURATION_MS) =
     shrinkVertically(tween(durationMs), shrinkTowards = Alignment.CenterVertically) + fadeOut(tween(durationMs))
 
-// matches the mockup swipe/snap transition cubic-bezier(.2,.8,.2,1)
-private val SwipeEasing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
+// matches the mockup swipe/snap transition cubic-bezier(.2,.8,.2,1) - shared with SwipeHintBanner.kt's peek
+internal val SwipeEasing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
 
 // live drag writes a plain float synchronously and the animatable only takes over after release
 private class SwipeState(
@@ -142,6 +145,8 @@ fun SwipeToDeleteRow(
     modifier: Modifier = Modifier,
     deleteContentDescription: String? = null,
     editAction: SwipeEditAction? = null,
+    // the one-shot teaching nudge from rememberSwipeHintPlayback (SwipeHintBanner.kt), 0 once not demoing
+    peekOffsetPx: Float = 0f,
     content: @Composable () -> Unit,
 ) {
     val onEditRequested = editAction?.onEdit
@@ -174,14 +179,20 @@ fun SwipeToDeleteRow(
         exit = collapseExit(),
         modifier = modifier,
     ) {
+        // a real drag always wins, the peek only nudges the row while it is otherwise at rest
+        val totalOffsetPx = if (state.isDragging) state.offsetPx else state.offsetPx + peekOffsetPx
         Box {
             // each side paints only while the row travels towards it - at rest neither background is visible
-            if (editAction != null && state.offsetPx > 0f) SwipeEditBackground(state, density, editAction)
-            if (state.offsetPx < 0f) SwipeDeleteBackground(state, density, deleteContentDescription)
+            if (totalOffsetPx > 0f) {
+                editAction?.let { action -> SwipeEditBackground(totalOffsetPx, state.fullWidthPx, density, action) }
+            }
+            if (totalOffsetPx < 0f) {
+                SwipeDeleteBackground(totalOffsetPx, state.fullWidthPx, density, deleteContentDescription)
+            }
             Box(
                 modifier =
                     Modifier
-                        .offset { IntOffset(state.offsetPx.roundToInt(), 0) }
+                        .offset { IntOffset(totalOffsetPx.roundToInt(), 0) }
                         .pointerInput(state) {
                             detectHorizontalDragGestures(
                                 onDragStart = { state.onDragStart() },
@@ -204,16 +215,17 @@ fun SwipeToDeleteRow(
 // the revealed left side of a right swipe - dim gold, brighter past the full-swipe point, quill over the label
 @Composable
 private fun BoxScope.SwipeEditBackground(
-    state: SwipeState,
+    offsetPx: Float,
+    fullWidthPx: Float,
     density: Density,
     action: SwipeEditAction,
 ) {
-    val isPastFull = state.offsetPx > state.fullWidthPx
+    val isPastFull = offsetPx > fullWidthPx
     SwipeBackground(
         density = density,
         anchor = Alignment.CenterStart,
         color = if (isPastFull) AppPalette.GoldBright else AppPalette.GoldDim,
-        revealPx = state.offsetPx,
+        revealPx = offsetPx,
     ) {
         QuillIcon(size = EditIconSize, tint = AppPalette.Background)
         Spacer(Modifier.height(EditLabelGap))
@@ -228,16 +240,17 @@ private fun BoxScope.SwipeEditBackground(
 // the revealed right side of a left swipe - maroon, a deeper maroon past the full-swipe point
 @Composable
 private fun BoxScope.SwipeDeleteBackground(
-    state: SwipeState,
+    offsetPx: Float,
+    fullWidthPx: Float,
     density: Density,
     deleteContentDescription: String?,
 ) {
-    val isPastFull = -state.offsetPx > state.fullWidthPx
+    val isPastFull = -offsetPx > fullWidthPx
     SwipeBackground(
         density = density,
         anchor = Alignment.CenterEnd,
         color = if (isPastFull) AppPalette.MaroonHover else AppPalette.Maroon,
-        revealPx = -state.offsetPx,
+        revealPx = -offsetPx,
     ) {
         Icon(AppIcons.Delete, contentDescription = deleteContentDescription, tint = AppPalette.MaroonBright)
     }

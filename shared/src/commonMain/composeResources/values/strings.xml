@@ -246,4 +246,10 @@
     <string name="settings_hints_desc">Ещё раз показать, как удалять свайпом</string>
     <string name="settings_hints_show">Показать</string>
     <string name="swipe_release_label">Отпустите</string>
+    <string name="swipe_hint_delete_only_title">Смахните карточку влево, чтобы удалить</string>
+    <string name="swipe_hint_sessions_subtitle">Сессия исчезнет, а внизу появится «Отменить»</string>
+    <string name="swipe_hint_codex_quick_subtitle">А чтобы изменить — откройте запись и удерживайте поле</string>
+    <string name="swipe_hint_codex_both_title">Вправо — изменить, влево — удалить</string>
+    <string name="swipe_hint_codex_both_subtitle">После удаления внизу появится «Отменить»</string>
+    <string name="swipe_hint_dismiss">Понятно</string>
 </resources>
