@@ -150,10 +150,17 @@ private fun CodexEntryFormSheet(
     state: CodexState,
     form: CodexEntryFormState,
 ) {
-    AppBottomSheet(onDismissRequest = { state.eventSink(CodexEvent.EntryFormClosed) }) {
-        // mutually exclusive, like the mockup's isPadSheet/isNewSheet sc-if branches - never both, so the
-        // sheet's height always tracks whichever one is actually shown instead of the taller form underneath
-        val calculator = form.calculator
+    val calculator = form.calculator
+    AppBottomSheet(
+        onDismissRequest = {
+            if (calculator != null) {
+                state.eventSink(CodexEvent.CalculatorClosed)
+            } else {
+                state.eventSink(CodexEvent.EntryFormClosed)
+            }
+        },
+    ) {
+        // mutually exclusive so the sheet's height tracks whichever one is actually shown
         if (calculator != null) {
             NumberPadSheet(
                 overline = calculator.overline,

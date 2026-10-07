@@ -416,7 +416,7 @@ private fun calculatorPadState(
         overline = stringResource(Res.string.codex_calculator_overline),
         title = field.label(),
         expr = expr.display(),
-        result = if (expr.raw.isBlank()) "0" else expr.value().toString(),
+        result = if (expr.raw.isBlank()) "0" else expr.value().coerceIn(range).toString(),
         rangeHint = stringResource(Res.string.codex_calculator_range_format, range.first, range.last),
         applyLabel = stringResource(Res.string.codex_calculator_apply),
         applyEnabled = expr.raw.isNotBlank(),
