@@ -93,7 +93,11 @@ fun FormTextArea(
     }
 }
 
-/** labeled integer stepper with −/+ buttons that stop at the ends of [range] - for bounded numeric fields */
+/**
+ * labeled integer stepper with −/+ buttons that stop at the ends of [range] - for bounded numeric fields.
+ * [onOpenCalculator], when non-null, makes the centered value tappable to open the quick-entry number pad
+ * (Players Codex v6.dc.html's `onPad` - only wired for fields whose range has no negative minimum).
+ */
 @Composable
 fun FormStepper(
     label: String,
@@ -101,6 +105,7 @@ fun FormStepper(
     range: IntRange,
     onChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenCalculator: (() -> Unit)? = null,
 ) {
     FormFieldColumn(label, modifier) {
         Row(
@@ -113,11 +118,12 @@ fun FormStepper(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             StepperButton(symbol = "−", enabled = value > range.first) { onChange(value - 1) }
+            val tappable = if (onOpenCalculator != null) Modifier.clickable(onClick = onOpenCalculator) else Modifier
             Text(
                 value.toString(),
                 style = MaterialTheme.typography.bodyLarge.copy(color = AppPalette.TextPrimary),
                 textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).then(tappable),
             )
             StepperButton(symbol = "+", enabled = value < range.last) { onChange(value + 1) }
         }

@@ -214,6 +214,9 @@
     <string name="codex_entry_label_initiative_bonus">Initiative bonus</string>
     <string name="codex_entry_label_presence">Roster</string>
     <string name="codex_entry_placeholder_party_notes">Backstory, traits…</string>
+    <string name="codex_calculator_overline">CODEX</string>
+    <string name="codex_calculator_apply">Done</string>
+    <string name="codex_calculator_range_format">%1$d to %2$d</string>
     <string name="entity_sheet_relation_label">Relation</string>
     <string name="entity_sheet_life_label">Condition</string>
     <string name="entity_sheet_party_presence_label">Roster</string>

@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
+import com.lyrismet.incadent.core.designsystem.component.NumberPadSheet
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
@@ -149,12 +150,39 @@ private fun CodexEntryFormSheet(
     state: CodexState,
     form: CodexEntryFormState,
 ) {
-    AppBottomSheet(onDismissRequest = { state.eventSink(CodexEvent.EntryFormClosed) }) {
-        CodexEntryFormUi(
-            form = form,
-            eventSink = state.eventSink,
-            onClose = { state.eventSink(CodexEvent.EntryFormClosed) },
-        )
+    val calculator = form.calculator
+    AppBottomSheet(
+        onDismissRequest = {
+            if (calculator != null) {
+                state.eventSink(CodexEvent.CalculatorClosed)
+            } else {
+                state.eventSink(CodexEvent.EntryFormClosed)
+            }
+        },
+    ) {
+        // mutually exclusive so the sheet's height tracks whichever one is actually shown
+        if (calculator != null) {
+            NumberPadSheet(
+                overline = calculator.overline,
+                title = calculator.title,
+                expr = calculator.expr,
+                result = calculator.result,
+                rangeHint = calculator.rangeHint,
+                applyLabel = calculator.applyLabel,
+                applyEnabled = calculator.applyEnabled,
+                onDigit = { state.eventSink(CodexEvent.CalculatorDigitPressed(it)) },
+                onBackspace = { state.eventSink(CodexEvent.CalculatorBackspacePressed) },
+                onClear = { state.eventSink(CodexEvent.CalculatorClearPressed) },
+                onApply = { state.eventSink(CodexEvent.CalculatorApplyClicked) },
+                onClose = { state.eventSink(CodexEvent.CalculatorClosed) },
+            )
+        } else {
+            CodexEntryFormUi(
+                form = form,
+                eventSink = state.eventSink,
+                onClose = { state.eventSink(CodexEvent.EntryFormClosed) },
+            )
+        }
     }
 }
 

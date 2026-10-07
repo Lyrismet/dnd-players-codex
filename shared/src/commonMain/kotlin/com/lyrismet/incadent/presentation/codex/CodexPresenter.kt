@@ -434,6 +434,12 @@ class CodexPresenter(
             is CodexEvent.EntryChipToggled -> formController.onChipToggled(event.field, event.id)
             CodexEvent.EntryFormSaveClicked -> formController.onSaveClicked(scope)
             CodexEvent.EntryFormClosed -> formController.onClosed()
+            is CodexEvent.CalculatorOpened -> formController.onCalculatorOpened(event.field)
+            is CodexEvent.CalculatorDigitPressed -> formController.onCalculatorDigitPressed(event.digit)
+            CodexEvent.CalculatorBackspacePressed -> formController.onCalculatorBackspacePressed()
+            CodexEvent.CalculatorClearPressed -> formController.onCalculatorClearPressed()
+            CodexEvent.CalculatorApplyClicked -> formController.onCalculatorApplyClicked()
+            CodexEvent.CalculatorClosed -> formController.onCalculatorClosed()
             is CodexEvent.EntityDeleteRequested ->
                 onEntityDeleteRequested(event.ref, records, labels, scope)
         }

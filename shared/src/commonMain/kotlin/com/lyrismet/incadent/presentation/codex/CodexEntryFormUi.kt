@@ -220,19 +220,23 @@ private fun PartyStatFields(
         value = form.partyLevel,
         range = PartyStatRanges.level,
         onChange = { eventSink(CodexEvent.EntryNumberChanged(CodexEntryNumberField.PARTY_LEVEL, it)) },
+        onOpenCalculator = { eventSink(CodexEvent.CalculatorOpened(CodexEntryNumberField.PARTY_LEVEL)) },
     )
     FormStepper(
         label = stringResource(Res.string.codex_entry_label_hp_max),
         value = form.partyHpMax,
         range = PartyStatRanges.hpMax,
         onChange = { eventSink(CodexEvent.EntryNumberChanged(CodexEntryNumberField.PARTY_HP_MAX, it)) },
+        onOpenCalculator = { eventSink(CodexEvent.CalculatorOpened(CodexEntryNumberField.PARTY_HP_MAX)) },
     )
     FormStepper(
         label = stringResource(Res.string.codex_entry_label_armor_class),
         value = form.partyArmorClass,
         range = PartyStatRanges.armorClass,
         onChange = { eventSink(CodexEvent.EntryNumberChanged(CodexEntryNumberField.PARTY_ARMOR_CLASS, it)) },
+        onOpenCalculator = { eventSink(CodexEvent.CalculatorOpened(CodexEntryNumberField.PARTY_ARMOR_CLASS)) },
     )
+    // no calculator - its range starts below zero, matching the mockup's onPad `if (min < 0) return`
     FormStepper(
         label = stringResource(Res.string.codex_entry_label_initiative_bonus),
         value = form.partyInitiativeBonus,

@@ -215,6 +215,9 @@
     <string name="codex_entry_label_initiative_bonus">Бонус инициативы</string>
     <string name="codex_entry_label_presence">Состав</string>
     <string name="codex_entry_placeholder_party_notes">Предыстория, особенности…</string>
+    <string name="codex_calculator_overline">КОДЕКС</string>
+    <string name="codex_calculator_apply">Готово</string>
+    <string name="codex_calculator_range_format">От %1$d до %2$d</string>
     <string name="entity_sheet_relation_label">Отношение</string>
     <string name="entity_sheet_life_label">Состояние</string>
     <string name="entity_sheet_party_presence_label">Состав</string>
