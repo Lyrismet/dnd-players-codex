@@ -11,7 +11,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.incadent.core.designsystem.LocationMentionColor
-import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.designsystem.component.toChipItem
 import com.lyrismet.incadent.core.designsystem.toStatusColor
@@ -147,7 +146,8 @@ class SessionDetailPresenter(
             highlightedEntryId.value?.let { id ->
                 feed.indexOfFirst { it is SessionFeedItem.Note && it.entry.id == id }.takeIf { it >= 0 }
             }
-        val headerMentions = headerMentions(entries, mention.candidates)
+        val entryMentions = mentionsIn(entries.map { it.body }, mention.candidates)
+        val headerMentions = entryMentions.map { it.toChipItem() }
 
         val selectedEntity =
             selectedEntitySummary(
@@ -169,10 +169,7 @@ class SessionDetailPresenter(
 
         val assignedTags by tagRepository.observeTagsFor(screen.sessionNoteId).collectAsState(initial = emptyList())
         val tagCatalog by tagRepository.observeCatalog().collectAsState(initial = emptyList())
-        val mentionedQuestNames =
-            mentionsIn(entries.map { it.body }, mention.candidates)
-                .filterIsInstance<MentionEntity.QuestMention>()
-                .map { it.name }
+        val mentionedQuestNames = entryMentions.filterIsInstance<MentionEntity.QuestMention>().map { it.name }
         val tagSuggestions =
             suggestSessionTags(entries.map { it.body }, mentionedQuestNames, assignedTags)
                 .map { SessionTagSuggestionItem(it.tag, it.reason) }
@@ -542,12 +539,6 @@ private fun MentionSegment.toSegment(): SessionEntrySegment =
         is MentionSegment.Text -> SessionEntrySegment.Text(text)
         is MentionSegment.Mention -> SessionEntrySegment.Mention(entity.toChipItem())
     }
-
-/** every distinct entity mentioned anywhere in the session, in first-seen order - no cap, unlike the list card */
-private fun headerMentions(
-    entries: List<SessionEntry>,
-    candidates: List<MentionCandidate>,
-): List<MentionChipItem> = mentionsIn(entries.map { it.body }, candidates).map { it.toChipItem() }
 
 private fun MentionEntity.toSuggestion(
     questPrefix: String,

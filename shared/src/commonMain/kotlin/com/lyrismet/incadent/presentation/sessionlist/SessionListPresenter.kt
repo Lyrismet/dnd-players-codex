@@ -130,7 +130,10 @@ class SessionListPresenter(
             }
         val liveEntries by liveEntriesFlow.collectAsState(initial = emptyList())
 
-        val allItems = sessions.toListItems(numbering, tagsBySession, entriesBySession, candidates)
+        val allItems =
+            remember(sessions, numbering, tagsBySession, entriesBySession, candidates) {
+                sessions.toListItems(numbering, tagsBySession, entriesBySession, candidates)
+            }
         val liveItem = liveNote?.let { note -> allItems.first { it.id == note.id } }
         val liveSession = liveItem?.let { item -> buildLiveSession(item, liveEntries, candidates, noNotesLabel) }
 

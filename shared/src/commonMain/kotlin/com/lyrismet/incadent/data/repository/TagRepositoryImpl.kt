@@ -64,11 +64,12 @@ class TagRepositoryImpl(
             .firstOrNull { it.name.equals(name, ignoreCase = true) }
             ?.id
 
-    private fun ensureTagId(name: String): Long =
-        findTagId(name) ?: run {
-            tagQueries.insert(name)
-            tagQueries.lastInsertRowId().executeAsOne()
-        }
+    // insert is OR IGNORE so a race is swallowed, id is re-read by name since lastInsertRowId would be stale then
+    private fun ensureTagId(name: String): Long {
+        findTagId(name)?.let { return it }
+        tagQueries.insert(name)
+        return findTagId(name) ?: error("tag '$name' missing immediately after insert")
+    }
 
     private fun String.isBuiltIn(): Boolean = BUILT_IN_SESSION_TAGS.any { it.equals(this, ignoreCase = true) }
 }
