@@ -58,7 +58,7 @@ fun App(
             CompositionLocalProvider(LocalMentionStyle provides mentionStyle) {
                 AppTheme {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        AppTabHost(appContainer.undoController, tabs, onExit)
+                        AppTabHost(appContainer.undoController, appContainer.swipeHintReplayController, tabs, onExit)
                         if (splashPhase != SplashPhase.GONE) {
                             val splashAlpha by animateFloatAsState(
                                 targetValue = if (splashPhase == SplashPhase.VISIBLE) 1f else 0f,

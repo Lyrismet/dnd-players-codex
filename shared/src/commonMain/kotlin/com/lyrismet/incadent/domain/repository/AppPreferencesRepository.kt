@@ -4,6 +4,7 @@ import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
+import com.lyrismet.incadent.domain.model.SwipeHintState
 import kotlinx.coroutines.flow.Flow
 
 interface AppPreferencesRepository {
@@ -27,4 +28,12 @@ interface AppPreferencesRepository {
     fun observeHoldHintState(): Flow<HoldHintState>
 
     fun setHoldHintState(state: HoldHintState)
+
+    fun observeSessionListSwipeHintState(): Flow<SwipeHintState>
+
+    fun setSessionListSwipeHintState(state: SwipeHintState)
+
+    fun observeCodexSwipeHintState(): Flow<SwipeHintState>
+
+    fun setCodexSwipeHintState(state: SwipeHintState)
 }

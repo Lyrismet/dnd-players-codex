@@ -10,6 +10,12 @@ complexity:
     # Composable UI builders idiomatically take many optional, defaulted styling params
     # (see Material3's own Button/TextField) - this is standard Compose shape, not a smell
     ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    # AppPreferencesRepository is a flat bag of independent preference get/set pairs that grows one
+    # pair at a time (numbering, mention style, edit mode, hold hint, two swipe hints, ...) - splitting
+    # it would scatter the same simple pattern across several interfaces for no cohesion benefit
+    allowedFunctionsPerInterface: 20
+    allowedFunctionsPerClass: 20
 
 coroutines:
   InjectDispatcher:

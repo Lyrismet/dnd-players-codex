@@ -7,11 +7,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.campaign.RenameSheetState
 import com.lyrismet.incadent.core.campaign.savedCampaignNameOrNull
+import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.model.EntityEditMode
-import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
+import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.LanguageRepository
 import com.slack.circuit.runtime.presenter.Presenter
@@ -22,6 +23,7 @@ import org.jetbrains.compose.resources.stringResource
 class SettingsPresenter(
     private val languageRepository: LanguageRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val swipeHintReplayController: SwipeHintReplayController,
 ) : Presenter<SettingsState> {
     @Composable
     override fun present(): SettingsState {
@@ -51,7 +53,13 @@ class SettingsPresenter(
                 is SettingsEvent.NumberingSelected -> appPreferencesRepository.setSessionNumbering(event.numbering)
                 is SettingsEvent.MentionStyleSelected -> appPreferencesRepository.setMentionStyle(event.style)
                 is SettingsEvent.EditModeSelected -> appPreferencesRepository.setEntityEditMode(event.mode)
-                SettingsEvent.HoldHintShowRequested -> appPreferencesRepository.setHoldHintState(HoldHintState.PENDING)
+                SettingsEvent.SwipeHintsShowRequested -> {
+                    // the row teaches the swipe-to-delete/edit peek, not the unrelated hold-to-edit pin card
+                    appPreferencesRepository.setSessionListSwipeHintState(SwipeHintState.PENDING)
+                    appPreferencesRepository.setCodexSwipeHintState(SwipeHintState.PENDING)
+                    // mirrors the mockup's replayHints - jump to the sessions tab so the hint actually plays
+                    swipeHintReplayController.requestSessionsReplay()
+                }
                 SettingsEvent.RenameOpened -> renameSheet.value = RenameSheetState.Editing(campaignName)
                 is SettingsEvent.RenameDraftChanged -> renameSheet.value = RenameSheetState.Editing(event.value)
                 SettingsEvent.RenameSaved -> {

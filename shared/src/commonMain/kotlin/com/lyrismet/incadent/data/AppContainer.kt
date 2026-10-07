@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.data
 
+import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.data.db.DatabaseDriverFactory
 import com.lyrismet.incadent.data.db.createAppDatabase
@@ -58,6 +59,7 @@ class AppContainer(
     val appPreferencesRepository: AppPreferencesRepository = AppPreferencesRepositoryImpl(settings)
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val undoController = UndoController(appScope)
+    val swipeHintReplayController = SwipeHintReplayController()
 
     val circuit: Circuit =
         Circuit
@@ -90,7 +92,7 @@ class AppContainer(
                 appPreferencesRepository,
             )
             // настройки
-            .addSettingsUi(languageRepository, appPreferencesRepository)
+            .addSettingsUi(languageRepository, appPreferencesRepository, swipeHintReplayController)
             .setCircuitSaver(
                 SerializableCircuitSaver(
                     listOf(

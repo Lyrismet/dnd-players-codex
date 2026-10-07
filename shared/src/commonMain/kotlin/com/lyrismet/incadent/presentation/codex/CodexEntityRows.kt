@@ -22,6 +22,7 @@ internal fun CodexDeletableRow(
     eventSink: (CodexEvent) -> Unit,
     swipeEditEnabled: Boolean,
     modifier: Modifier = Modifier,
+    peekOffsetPx: Float = 0f,
     content: @Composable () -> Unit,
 ) {
     SwipeToDeleteRow(
@@ -29,6 +30,7 @@ internal fun CodexDeletableRow(
         modifier = modifier,
         deleteContentDescription = stringResource(Res.string.codex_delete_content_description),
         editAction = if (swipeEditEnabled) swipeEditAction(ref, eventSink) else null,
+        peekOffsetPx = peekOffsetPx,
         content = content,
     )
 }
@@ -39,8 +41,14 @@ internal fun PartyRow(
     member: PartyCodexItem,
     eventSink: (CodexEvent) -> Unit,
     swipeEditEnabled: Boolean,
+    peekOffsetPx: Float = 0f,
 ) {
-    CodexDeletableRow(ref = EntityRef.Party(member.id), eventSink = eventSink, swipeEditEnabled = swipeEditEnabled) {
+    CodexDeletableRow(
+        ref = EntityRef.Party(member.id),
+        eventSink = eventSink,
+        swipeEditEnabled = swipeEditEnabled,
+        peekOffsetPx = peekOffsetPx,
+    ) {
         PartyCodexCard(item = member, onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Party(member.id))) })
     }
 }
@@ -50,8 +58,14 @@ internal fun NpcRow(
     npc: NpcCodexItem,
     eventSink: (CodexEvent) -> Unit,
     swipeEditEnabled: Boolean,
+    peekOffsetPx: Float = 0f,
 ) {
-    CodexDeletableRow(ref = EntityRef.Npc(npc.id), eventSink = eventSink, swipeEditEnabled = swipeEditEnabled) {
+    CodexDeletableRow(
+        ref = EntityRef.Npc(npc.id),
+        eventSink = eventSink,
+        swipeEditEnabled = swipeEditEnabled,
+        peekOffsetPx = peekOffsetPx,
+    ) {
         NpcCodexCard(item = npc, onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Npc(npc.id))) })
     }
 }
@@ -61,8 +75,14 @@ internal fun QuestRow(
     quest: QuestCodexItem,
     eventSink: (CodexEvent) -> Unit,
     swipeEditEnabled: Boolean,
+    peekOffsetPx: Float = 0f,
 ) {
-    CodexDeletableRow(ref = EntityRef.Quest(quest.id), eventSink = eventSink, swipeEditEnabled = swipeEditEnabled) {
+    CodexDeletableRow(
+        ref = EntityRef.Quest(quest.id),
+        eventSink = eventSink,
+        swipeEditEnabled = swipeEditEnabled,
+        peekOffsetPx = peekOffsetPx,
+    ) {
         QuestCodexCard(
             item = quest,
             onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Quest(quest.id))) },
@@ -76,11 +96,13 @@ internal fun LocationRow(
     location: LocationCodexItem,
     eventSink: (CodexEvent) -> Unit,
     swipeEditEnabled: Boolean,
+    peekOffsetPx: Float = 0f,
 ) {
     CodexDeletableRow(
         ref = EntityRef.Location(location.id),
         eventSink = eventSink,
         swipeEditEnabled = swipeEditEnabled,
+        peekOffsetPx = peekOffsetPx,
     ) {
         LocationCodexCard(
             item = location,

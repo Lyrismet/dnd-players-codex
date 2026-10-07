@@ -4,6 +4,7 @@ import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
+import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ObservableSettings
@@ -17,6 +18,8 @@ private const val KEY_SESSION_NUMBERING = "session_numbering"
 private const val KEY_MENTION_STYLE = "mention_style"
 private const val KEY_ENTITY_EDIT_MODE = "entity_edit_mode"
 private const val KEY_HOLD_HINT_STATE = "hold_hint_state"
+private const val KEY_SESSION_LIST_SWIPE_HINT_STATE = "session_list_swipe_hint_state"
+private const val KEY_CODEX_SWIPE_HINT_STATE = "codex_swipe_hint_state"
 
 class AppPreferencesRepositoryImpl(
     private val settings: ObservableSettings,
@@ -67,5 +70,25 @@ class AppPreferencesRepositoryImpl(
 
     override fun setHoldHintState(state: HoldHintState) {
         settings.putString(KEY_HOLD_HINT_STATE, state.tag)
+    }
+
+    @OptIn(ExperimentalSettingsApi::class)
+    override fun observeSessionListSwipeHintState(): Flow<SwipeHintState> =
+        settings.getStringFlow(KEY_SESSION_LIST_SWIPE_HINT_STATE, SwipeHintState.PENDING.tag).map { tag ->
+            SwipeHintState.entries.find { it.tag == tag } ?: SwipeHintState.PENDING
+        }
+
+    override fun setSessionListSwipeHintState(state: SwipeHintState) {
+        settings.putString(KEY_SESSION_LIST_SWIPE_HINT_STATE, state.tag)
+    }
+
+    @OptIn(ExperimentalSettingsApi::class)
+    override fun observeCodexSwipeHintState(): Flow<SwipeHintState> =
+        settings.getStringFlow(KEY_CODEX_SWIPE_HINT_STATE, SwipeHintState.PENDING.tag).map { tag ->
+            SwipeHintState.entries.find { it.tag == tag } ?: SwipeHintState.PENDING
+        }
+
+    override fun setCodexSwipeHintState(state: SwipeHintState) {
+        settings.putString(KEY_CODEX_SWIPE_HINT_STATE, state.tag)
     }
 }

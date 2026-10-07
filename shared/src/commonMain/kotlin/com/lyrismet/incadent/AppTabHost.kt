@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +43,7 @@ import com.lyrismet.incadent.core.designsystem.component.icons.SessionsTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.SettingsTabIcon
 import com.lyrismet.incadent.core.navigation.BackAction
 import com.lyrismet.incadent.core.navigation.resolveBackAction
+import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.presentation.codex.CodexScreen
 import com.lyrismet.incadent.presentation.sessionlist.SessionListScreen
@@ -116,11 +119,13 @@ private fun rememberTabStack(root: Screen): TabStack {
 @Composable
 internal fun AppTabHost(
     undoController: UndoController,
+    swipeHintReplayController: SwipeHintReplayController,
     tabs: AppTabsState,
     onExit: () -> Unit,
 ) {
     val pendingUndo by undoController.current.collectAsState()
     val selectedTab = tabs.selectedTab
+    HandleSwipeHintReplay(swipeHintReplayController, tabs)
     var isExitConfirmVisible by remember { mutableStateOf(false) }
     // the tab bar stays put under the keyboard, so the content only lifts by the keyboard height beyond it
     val density = LocalDensity.current
@@ -182,6 +187,22 @@ internal fun AppTabHost(
     }
 }
 
+// settings asked to replay the sessions swipe hint - jump there and pop its stack to root, like onTabTapped does
+@Composable
+private fun HandleSwipeHintReplay(
+    controller: SwipeHintReplayController,
+    tabs: AppTabsState,
+) {
+    val sessionsReplayRequested by controller.sessionsReplayRequested.collectAsState()
+    LaunchedEffect(sessionsReplayRequested) {
+        if (sessionsReplayRequested) {
+            tabs.selectedTabIndex.value = AppTab.SESSIONS.ordinal
+            popToRoot(tabs.sessions)
+            controller.onSessionsReplayHandled()
+        }
+    }
+}
+
 private fun handleTabRootBack(
     tabs: AppTabsState,
     onExitRequested: () -> Unit,
@@ -206,11 +227,20 @@ private fun onTabTapped(
         return
     }
     val stack = tabs.stackOf(AppTab.entries[index]) ?: return
+    popToRoot(stack)
+}
+
+private fun popToRoot(stack: TabStack) {
     repeat(stack.backStack.size - 1) { stack.navigator.pop() }
 }
 
 private fun tabContentModifier(visible: Boolean): Modifier =
     if (visible) Modifier.fillMaxSize() else Modifier.size(0.dp)
+
+// a hidden tab stays fully composed (zero-sized) so its nav stack and ui state survive switching away - this
+// tells its presenters whether their tab is actually on screen right now, e.g. so a one-time hint doesn't
+// burn itself in the background while the user is looking at a different tab
+internal val LocalTabSelected = compositionLocalOf { true }
 
 // each tab gets its own dispatcher, enabled only while selected, so hidden tabs never swallow a back press
 @Composable
@@ -219,7 +249,10 @@ private fun TabBackstackHost(
     isSelected: Boolean,
 ) {
     val owner = rememberNavigationEventDispatcherOwner(enabled = isSelected)
-    CompositionLocalProvider(LocalNavigationEventDispatcherOwner provides owner) {
+    CompositionLocalProvider(
+        LocalNavigationEventDispatcherOwner provides owner,
+        LocalTabSelected provides isSelected,
+    ) {
         val navigator = rememberCircuitNavigator(stack.backStack, onRootPop = {})
         NavigableCircuitContent(navigator = navigator, backStack = stack.backStack)
     }

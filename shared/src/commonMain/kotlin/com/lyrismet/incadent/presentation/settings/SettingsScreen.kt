@@ -40,7 +40,7 @@ sealed interface SettingsEvent : CircuitUiEvent {
         val mode: EntityEditMode,
     ) : SettingsEvent
 
-    data object HoldHintShowRequested : SettingsEvent
+    data object SwipeHintsShowRequested : SettingsEvent
 
     data object RenameOpened : SettingsEvent
 

@@ -8,6 +8,8 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.quickedit.InlineEdit
 import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
+import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
+import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -206,6 +208,9 @@ data class CodexState(
     val inlineEdit: InlineEdit? = null,
     val holdTipVisible: Boolean = false,
     val undoAction: UndoAction? = null,
+    // the row the one-time swipe hint peeks on, and the direction captured when it started - see core/swipehint
+    val swipeHintTarget: SwipeHintTarget<EntityRef>? = null,
+    val swipeHintDirection: SwipeHintDirection = SwipeHintDirection.DELETE_ONLY,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
 

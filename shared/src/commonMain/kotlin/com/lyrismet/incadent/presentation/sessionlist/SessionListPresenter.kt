@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import com.lyrismet.incadent.LocalTabSelected
 import com.lyrismet.incadent.core.campaign.RenameSheetState
 import com.lyrismet.incadent.core.campaign.savedCampaignNameOrNull
 import com.lyrismet.incadent.core.designsystem.component.toChipItem
@@ -22,10 +23,12 @@ import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.core.mention.mentionsIn
+import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
+import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.PartyRepository
@@ -146,14 +149,33 @@ class SessionListPresenter(
                 parties,
             )
 
+        val archiveItems = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems
+        val swipeHintState by appPreferencesRepository
+            .observeSessionListSwipeHintState()
+            .collectAsState(initial = SwipeHintState.PENDING)
+        val isTabSelected = LocalTabSelected.current
+        val swipeHintTarget =
+            rememberSwipeHintTarget(
+                hintState = swipeHintState,
+                markSeen = { appPreferencesRepository.setSessionListSwipeHintState(SwipeHintState.SEEN) },
+                undoController = undoController,
+                firstItemId = archiveItems.firstOrNull()?.id,
+                // a hidden tab stays composed in the background, so it must not burn its one-time hint unseen
+                isBlocked =
+                    selectedEntity != null ||
+                        renameFields.sheet.value is RenameSheetState.Editing ||
+                        !isTabSelected,
+            )
+
         val campaignName = campaignNameOverride ?: defaultCampaignName
         return SessionListState(
             campaignName = campaignName,
             liveSession = liveSession,
-            sessions = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems,
+            sessions = archiveItems,
             selectedEntity = selectedEntity,
             renameSheet = renameFields.sheet.value,
             toast = renameFields.toast.value,
+            swipeHintTarget = swipeHintTarget,
         ) { event ->
             onEvent(
                 event,

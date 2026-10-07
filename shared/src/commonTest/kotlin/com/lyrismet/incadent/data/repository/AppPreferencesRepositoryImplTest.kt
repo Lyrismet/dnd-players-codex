@@ -4,6 +4,7 @@ import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
+import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -108,5 +109,35 @@ class AppPreferencesRepositoryImplTest {
 
             repository.setHoldHintState(HoldHintState.PENDING)
             assertEquals(HoldHintState.PENDING, repository.observeHoldHintState().first())
+        }
+
+    @Test
+    fun `session list swipe hint is pending until it is seen and can be reset to pending`() =
+        runTest {
+            val repository = AppPreferencesRepositoryImpl(MapSettings())
+
+            assertEquals(SwipeHintState.PENDING, repository.observeSessionListSwipeHintState().first())
+
+            repository.setSessionListSwipeHintState(SwipeHintState.SEEN)
+            assertEquals(SwipeHintState.SEEN, repository.observeSessionListSwipeHintState().first())
+
+            repository.setSessionListSwipeHintState(SwipeHintState.PENDING)
+            assertEquals(SwipeHintState.PENDING, repository.observeSessionListSwipeHintState().first())
+        }
+
+    @Test
+    fun `codex swipe hint is pending until it is seen and can be reset to pending independently of sessions`() =
+        runTest {
+            val repository = AppPreferencesRepositoryImpl(MapSettings())
+
+            assertEquals(SwipeHintState.PENDING, repository.observeCodexSwipeHintState().first())
+
+            repository.setCodexSwipeHintState(SwipeHintState.SEEN)
+            repository.setSessionListSwipeHintState(SwipeHintState.SEEN)
+            assertEquals(SwipeHintState.SEEN, repository.observeCodexSwipeHintState().first())
+
+            repository.setCodexSwipeHintState(SwipeHintState.PENDING)
+            assertEquals(SwipeHintState.PENDING, repository.observeCodexSwipeHintState().first())
+            assertEquals(SwipeHintState.SEEN, repository.observeSessionListSwipeHintState().first())
         }
 }

@@ -13,6 +13,7 @@ import com.lyrismet.incadent.core.codexgroup.CodexGroup
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
+import com.lyrismet.incadent.core.entitysummary.EntityRef
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_tab_location
 import dndplayerscodex.shared.generated.resources.codex_tab_npc
@@ -79,54 +80,87 @@ private fun <T> LazyListScope.codexSection(
 @Composable
 internal fun CodexPartyList(
     state: CodexState,
+    hintPeekOffsetPx: Float,
     modifier: Modifier = Modifier,
 ) {
     CodexEntityList(
         items = state.party,
         itemKey = { it.id },
         modifier = modifier,
-    ) { PartyRow(member = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
+    ) {
+        PartyRow(
+            member = it,
+            eventSink = state.eventSink,
+            swipeEditEnabled = state.swipeEditEnabled,
+            peekOffsetPx = state.peekOffsetPxFor(EntityRef.Party(it.id), hintPeekOffsetPx),
+        )
+    }
 }
 
 @Composable
 internal fun CodexNpcList(
     state: CodexState,
+    hintPeekOffsetPx: Float,
     modifier: Modifier = Modifier,
 ) {
     CodexGroupedList(
         groups = state.npcs,
         itemKey = { it.id },
         modifier = modifier,
-    ) { NpcRow(npc = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
+    ) {
+        NpcRow(
+            npc = it,
+            eventSink = state.eventSink,
+            swipeEditEnabled = state.swipeEditEnabled,
+            peekOffsetPx = state.peekOffsetPxFor(EntityRef.Npc(it.id), hintPeekOffsetPx),
+        )
+    }
 }
 
 @Composable
 internal fun CodexQuestList(
     state: CodexState,
+    hintPeekOffsetPx: Float,
     modifier: Modifier = Modifier,
 ) {
     CodexGroupedList(
         groups = state.quests,
         itemKey = { it.id },
         modifier = modifier,
-    ) { QuestRow(quest = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
+    ) {
+        QuestRow(
+            quest = it,
+            eventSink = state.eventSink,
+            swipeEditEnabled = state.swipeEditEnabled,
+            peekOffsetPx = state.peekOffsetPxFor(EntityRef.Quest(it.id), hintPeekOffsetPx),
+        )
+    }
 }
 
 @Composable
 internal fun CodexLocationList(
     state: CodexState,
+    hintPeekOffsetPx: Float,
     modifier: Modifier = Modifier,
 ) {
     CodexGroupedList(
         groups = state.locations,
         itemKey = { it.id },
         modifier = modifier,
-    ) { LocationRow(location = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
+    ) {
+        LocationRow(
+            location = it,
+            eventSink = state.eventSink,
+            swipeEditEnabled = state.swipeEditEnabled,
+            peekOffsetPx = state.peekOffsetPxFor(EntityRef.Location(it.id), hintPeekOffsetPx),
+        )
+    }
 }
 
 @Composable
 internal fun CodexAllList(
     state: CodexState,
+    hintPeekOffsetPx: Float,
     modifier: Modifier = Modifier,
 ) {
     // the ALL tab never groups, so every group holds the one ungrouped list and flattening it is lossless
@@ -144,25 +178,55 @@ internal fun CodexAllList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         codexSection(partyTitle, state.party, isFirst = true, key = { "party_${it.id}" }) {
-            PartyRow(member = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled)
+            PartyRow(
+                member = it,
+                eventSink = state.eventSink,
+                swipeEditEnabled = state.swipeEditEnabled,
+                peekOffsetPx = state.peekOffsetPxFor(EntityRef.Party(it.id), hintPeekOffsetPx),
+            )
         }
         codexSection(npcTitle, npcs, isFirst = state.party.isEmpty(), key = { "npc_${it.id}" }) {
-            NpcRow(npc = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled)
+            NpcRow(
+                npc = it,
+                eventSink = state.eventSink,
+                swipeEditEnabled = state.swipeEditEnabled,
+                peekOffsetPx = state.peekOffsetPxFor(EntityRef.Npc(it.id), hintPeekOffsetPx),
+            )
         }
         codexSection(
             questTitle,
             quests,
             isFirst = state.party.isEmpty() && npcs.isEmpty(),
             key = { "quest_${it.id}" },
-        ) { QuestRow(quest = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
+        ) {
+            QuestRow(
+                quest = it,
+                eventSink = state.eventSink,
+                swipeEditEnabled = state.swipeEditEnabled,
+                peekOffsetPx = state.peekOffsetPxFor(EntityRef.Quest(it.id), hintPeekOffsetPx),
+            )
+        }
         codexSection(
             locationTitle,
             locations,
             isFirst = state.party.isEmpty() && npcs.isEmpty() && quests.isEmpty(),
             key = { "location_${it.id}" },
-        ) { LocationRow(location = it, eventSink = state.eventSink, swipeEditEnabled = state.swipeEditEnabled) }
+        ) {
+            LocationRow(
+                location = it,
+                eventSink = state.eventSink,
+                swipeEditEnabled = state.swipeEditEnabled,
+                peekOffsetPx = state.peekOffsetPxFor(EntityRef.Location(it.id), hintPeekOffsetPx),
+            )
+        }
     }
 }
+
+// only the row the swipe hint targets actually peeks - every other row stays at rest
+private fun CodexState.peekOffsetPxFor(
+    ref: EntityRef,
+    hintPeekOffsetPx: Float,
+): Float = if (swipeHintTarget?.itemId == ref) hintPeekOffsetPx else 0f
 
 // a blank tab offers its create button, a search with no hits offers a clear and a create when the query is long enough
 @Composable
