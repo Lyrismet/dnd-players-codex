@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.presentation.settings
 
+import com.lyrismet.incadent.core.campaign.RenameSheetState
 import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.MentionStyle
@@ -21,14 +22,6 @@ data class SettingsState(
     val renameSheet: RenameSheetState,
     val eventSink: (SettingsEvent) -> Unit = {},
 ) : CircuitUiState
-
-sealed interface RenameSheetState {
-    data object Hidden : RenameSheetState
-
-    data class Editing(
-        val draft: String,
-    ) : RenameSheetState
-}
 
 sealed interface SettingsEvent : CircuitUiEvent {
     data class LanguageSelected(

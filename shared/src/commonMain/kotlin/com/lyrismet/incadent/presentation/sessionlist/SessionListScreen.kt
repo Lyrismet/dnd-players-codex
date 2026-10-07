@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.presentation.sessionlist
 
+import com.lyrismet.incadent.core.campaign.RenameSheetState
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
@@ -19,8 +20,15 @@ data class SessionListState(
     val liveSession: LiveSessionItem? = null,
     val sessions: List<SessionListItem> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
+    val renameSheet: RenameSheetState = RenameSheetState.Hidden,
+    val toast: SessionListToast? = null,
     val eventSink: (SessionListEvent) -> Unit = {},
 ) : CircuitUiState
+
+/** compared by identity, so repeating the same message restarts its timer */
+class SessionListToast(
+    val text: String,
+)
 
 /** pre-formatted for direct rendering - the Ui never touches a domain model or does formatting itself */
 data class SessionListItem(
@@ -74,7 +82,18 @@ sealed interface SessionListEvent : CircuitUiEvent {
 
     data class RelatedNoteClicked(
         val sessionNoteId: Long,
+        val entryId: Long,
     ) : SessionListEvent
 
     data object SheetDismissed : SessionListEvent
+
+    data object RenameOpened : SessionListEvent
+
+    data class RenameDraftChanged(
+        val value: String,
+    ) : SessionListEvent
+
+    data object RenameSaved : SessionListEvent
+
+    data object RenameDismissed : SessionListEvent
 }

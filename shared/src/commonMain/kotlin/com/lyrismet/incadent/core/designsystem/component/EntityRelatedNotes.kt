@@ -28,7 +28,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun EntityRelatedNotesSection(
     entityTitle: String,
     relatedNotes: List<RelatedNoteItem>,
-    onRelatedNoteClicked: (Long) -> Unit,
+    onRelatedNoteClicked: (sessionNoteId: Long, entryId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -54,7 +54,7 @@ internal fun EntityRelatedNotesSection(
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 relatedNotes.forEach { item ->
-                    EntityRelatedNoteRow(item, onClick = { onRelatedNoteClicked(item.sessionNoteId) })
+                    EntityRelatedNoteRow(item, onClick = { onRelatedNoteClicked(item.sessionNoteId, item.entryId) })
                 }
             }
         }

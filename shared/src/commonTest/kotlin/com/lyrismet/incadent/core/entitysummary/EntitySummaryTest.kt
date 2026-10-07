@@ -217,6 +217,7 @@ class EntitySummaryTest {
         assertEquals(1, summary.relatedNotes.size)
         val related = summary.relatedNotes.single()
         assertEquals(100L, related.sessionNoteId)
+        assertEquals(1000L, related.entryId)
         assertEquals(1, related.matchCount)
     }
 

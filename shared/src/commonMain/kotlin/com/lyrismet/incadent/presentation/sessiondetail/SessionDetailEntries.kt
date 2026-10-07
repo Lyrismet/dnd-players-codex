@@ -2,17 +2,20 @@ package com.lyrismet.incadent.presentation.sessiondetail
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,6 +37,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
@@ -44,11 +50,13 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_delete
 import dndplayerscodex.shared.generated.resources.action_edit
+import dndplayerscodex.shared.generated.resources.session_entry_edited_label
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
 private const val ENTRY_COLLAPSE_ANIMATION_DURATION_MS = 220
 private const val ENTRY_REMOVAL_GRACE_MS = 1000L
+private const val FOCUS_FADE_DURATION_MS = 600
 
 // top and bottom edges converge on the center as the row collapses, Gmail-delete-style, not a one-sided slide
 private fun entryCollapseExit() =
@@ -63,6 +71,7 @@ internal fun SessionEntryRow(
     entry: SessionEntryItem,
     isSelected: Boolean,
     isEditing: Boolean,
+    isHighlighted: Boolean,
     onClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -87,13 +96,11 @@ internal fun SessionEntryRow(
         exit = entryCollapseExit(),
         modifier = modifier,
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                entry.timeLabel,
-                style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
-                color = AppPalette.TextTertiary,
-                modifier = Modifier.width(38.dp).padding(top = 4.dp),
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth().focusFlash(isHighlighted),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            EntryTimeColumn(timeLabel = entry.timeLabel, edited = entry.edited)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SessionEntryBody(
                     segments = entry.segments,
@@ -125,6 +132,30 @@ internal fun SessionEntryRow(
                 }
             }
         }
+    }
+}
+
+// the related-note jump flashes a gold plate that reaches 6dp past the note, then fades out over 600 ms
+// fill and border are the same gold at two fixed alphas, so one progress value drives both instead of
+// animating two independent Color states for what is visually a single fade
+@Composable
+private fun Modifier.focusFlash(isHighlighted: Boolean): Modifier {
+    val progress by animateFloatAsState(
+        targetValue = if (isHighlighted) 1f else 0f,
+        animationSpec = tween(FOCUS_FADE_DURATION_MS),
+    )
+    return drawBehind {
+        val topLeft = Offset(-6.dp.toPx(), -6.dp.toPx())
+        val plateSize = Size(size.width + 12.dp.toPx(), size.height + 12.dp.toPx())
+        val radius = CornerRadius(12.dp.toPx())
+        drawRoundRect(AppPalette.Gold.copy(alpha = 0.13f * progress), topLeft, plateSize, radius)
+        drawRoundRect(
+            AppPalette.Gold.copy(alpha = 0.55f * progress),
+            topLeft,
+            plateSize,
+            radius,
+            style = Stroke(width = 1.dp.toPx()),
+        )
     }
 }
 
@@ -167,6 +198,36 @@ private fun EntryActionButton(
             Text(glyph, fontSize = 12.sp, color = foreground)
         }
         Text(label, style = MaterialTheme.typography.labelLarge, color = foreground)
+    }
+}
+
+private const val EDITED_LABEL_GAP_DP = 2
+
+// the "изм." mark is placed below the time with Modifier.offset, which shifts drawing only and isn't
+// counted in this Box's measured height - so the mark never changes this column's height or the row's,
+// and the gap to the next message in the feed stays the same whether a note is edited or not
+@Composable
+private fun EntryTimeColumn(
+    timeLabel: String,
+    edited: Boolean,
+) {
+    var timeHeightPx by remember { mutableStateOf(0) }
+    val gapPx = with(LocalDensity.current) { EDITED_LABEL_GAP_DP.dp.roundToPx() }
+    Box(modifier = Modifier.width(38.dp).padding(top = 4.dp)) {
+        Text(
+            timeLabel,
+            style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
+            color = AppPalette.TextTertiary,
+            modifier = Modifier.onSizeChanged { timeHeightPx = it.height },
+        )
+        if (edited) {
+            Text(
+                stringResource(Res.string.session_entry_edited_label),
+                fontSize = 10.sp,
+                color = AppPalette.TextSecondary,
+                modifier = Modifier.offset { IntOffset(0, timeHeightPx + gapPx) },
+            )
+        }
     }
 }
 

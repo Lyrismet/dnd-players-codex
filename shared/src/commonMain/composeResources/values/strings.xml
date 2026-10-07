@@ -23,6 +23,7 @@
     <string name="session_list_live_continue">Продолжить →</string>
     <string name="session_list_delete_content_description">Удалить сессию</string>
     <string name="session_list_undo_deleted_title">Сессия удалена</string>
+    <string name="session_list_rename_saved_toast">Кампания переименована</string>
     <string name="new_session_default_title">Новая сессия</string>
     <string name="default_campaign_name">Моя кампания</string>
     <string name="session_overline_format">Сессия %1$s</string>
@@ -41,6 +42,7 @@
     <string name="session_detail_empty_feed_hint">Записывайте, что происходит. Введите @, чтобы связать заметку с NPC, локацией или квестом.</string>
     <string name="session_detail_composer_hint">@ — тег записи</string>
     <string name="session_detail_undo_deleted_entry_title">Запись удалена</string>
+    <string name="session_entry_edited_label">изм.</string>
     <string name="session_detail_quest_mention_prefix">Квест: </string>
     <string name="session_detail_meeting_separator_format">ВСТРЕЧА %1$d · %2$s</string>
     <string name="session_detail_mention_type_npc">NPC</string>

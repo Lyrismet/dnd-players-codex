@@ -14,7 +14,7 @@ internal fun PartySummaryBody(
     actions: EntitySummarySheetActions,
     onClose: () -> Unit,
 ) {
-    EntityHeaderRow(
+    EntityHeader(
         emblem = party.emblem,
         overlineTypeLabel = stringResource(Res.string.entity_sheet_party_type_label),
         overlineValue = party.overlineValue,
@@ -24,7 +24,6 @@ internal fun PartySummaryBody(
         onClose = onClose,
         quick = actions.quickEdit,
     )
-    HoldTipSlot(actions.quickEdit)
     actions.onPartyPresenceSelected?.let { onSelected ->
         EntityStatusSection(
             title = stringResource(Res.string.entity_sheet_party_presence_label),

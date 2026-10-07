@@ -152,7 +152,7 @@ private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
         onNpcLifeSelected = { id, life -> state.eventSink(CodexEvent.NpcLifeSelected(id, life)) },
         onPartyPresenceSelected = { id, presence -> state.eventSink(CodexEvent.PartyPresenceSelected(id, presence)) },
         onQuestStatusSelected = { id, status -> state.eventSink(CodexEvent.QuestStatusSelected(id, status)) },
-        onRelatedNoteClicked = { id -> state.eventSink(CodexEvent.RelatedNoteClicked(id)) },
+        onRelatedNoteClicked = { id, entryId -> state.eventSink(CodexEvent.RelatedNoteClicked(id, entryId)) },
         onEditClicked = if (isQuick) null else { ref -> state.eventSink(CodexEvent.EditEntryRequested(ref)) },
         statusesReadOnly = !isQuick,
         quickEdit = if (isQuick) quickEditSheet(state) else null,

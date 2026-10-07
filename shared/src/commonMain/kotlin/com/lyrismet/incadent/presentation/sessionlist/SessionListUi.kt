@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.presentation.sessionlist
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,9 +22,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.campaign.RenameSheetState
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.CampaignRenameSheet
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
@@ -56,31 +60,16 @@ fun SessionListUi(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(modifier = modifier) { contentPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
-            ScreenHeader(
-                overline = state.campaignName,
-                title = stringResource(Res.string.session_list_title),
-                overlineTrailingContent = {
-                    HeaderActionButton(
-                        text = stringResource(Res.string.session_list_new_session_button),
-                        onClick = { state.eventSink(SessionListEvent.NewSessionClicked) },
-                    )
-                },
+        Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+            SessionListBody(state)
+            AppToast(
+                text = state.toast?.text,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
             )
-            if (state.liveSession == null && state.sessions.isEmpty()) {
-                EmptyStateActions(
-                    title = stringResource(Res.string.session_list_empty_title),
-                    text = stringResource(Res.string.session_list_empty),
-                    primaryAction =
-                        EmptyStateAction(label = stringResource(Res.string.session_list_empty_button)) {
-                            state.eventSink(SessionListEvent.NewSessionClicked)
-                        },
-                )
-            } else {
-                SessionListContent(state)
-            }
         }
     }
+
+    RenameSheetHost(state)
 
     state.selectedEntity?.let { entity ->
         AppBottomSheet(onDismissRequest = { state.eventSink(SessionListEvent.SheetDismissed) }) {
@@ -98,11 +87,56 @@ fun SessionListUi(
                         onQuestStatusSelected = { id, status ->
                             state.eventSink(SessionListEvent.QuestStatusSelected(id, status))
                         },
-                        onRelatedNoteClicked = { id -> state.eventSink(SessionListEvent.RelatedNoteClicked(id)) },
+                        onRelatedNoteClicked = { id, entryId ->
+                            state.eventSink(SessionListEvent.RelatedNoteClicked(id, entryId))
+                        },
                     ),
                 onClose = { state.eventSink(SessionListEvent.SheetDismissed) },
             )
         }
+    }
+}
+
+@Composable
+private fun SessionListBody(state: SessionListState) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        ScreenHeader(
+            overline = state.campaignName,
+            title = stringResource(Res.string.session_list_title),
+            onOverlineClick = { state.eventSink(SessionListEvent.RenameOpened) },
+            overlineTrailingContent = {
+                HeaderActionButton(
+                    text = stringResource(Res.string.session_list_new_session_button),
+                    onClick = { state.eventSink(SessionListEvent.NewSessionClicked) },
+                )
+            },
+        )
+        if (state.liveSession == null && state.sessions.isEmpty()) {
+            EmptyStateActions(
+                title = stringResource(Res.string.session_list_empty_title),
+                text = stringResource(Res.string.session_list_empty),
+                primaryAction =
+                    EmptyStateAction(label = stringResource(Res.string.session_list_empty_button)) {
+                        state.eventSink(SessionListEvent.NewSessionClicked)
+                    },
+            )
+        } else {
+            SessionListContent(state)
+        }
+    }
+}
+
+@Composable
+private fun RenameSheetHost(state: SessionListState) {
+    when (val sheet = state.renameSheet) {
+        RenameSheetState.Hidden -> Unit
+        is RenameSheetState.Editing ->
+            CampaignRenameSheet(
+                draft = sheet.draft,
+                onDraftChanged = { value -> state.eventSink(SessionListEvent.RenameDraftChanged(value)) },
+                onSave = { state.eventSink(SessionListEvent.RenameSaved) },
+                onDismiss = { state.eventSink(SessionListEvent.RenameDismissed) },
+            )
     }
 }
 

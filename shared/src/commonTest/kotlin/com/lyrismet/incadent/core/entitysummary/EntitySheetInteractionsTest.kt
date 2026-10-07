@@ -167,10 +167,10 @@ class EntitySheetInteractionsTest {
         val navigator = RecordingNavigator()
         val interactions = interactions(selected = selected, navigator = navigator)
 
-        interactions.onRelatedNoteClicked(sessionNoteId = 7)
+        interactions.onRelatedNoteClicked(sessionNoteId = 7, entryId = 70)
 
         assertNull(selected.value)
-        assertEquals(listOf<Screen>(SessionDetailScreen(7)), navigator.goneTo)
+        assertEquals(listOf<Screen>(SessionDetailScreen(7, focusEntryId = 70)), navigator.goneTo)
     }
 
     private fun interactions(
