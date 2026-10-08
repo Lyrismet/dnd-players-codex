@@ -47,8 +47,11 @@ import dndplayerscodex.shared.generated.resources.codex_entry_owner_other
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_create
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
+import dndplayerscodex.shared.generated.resources.codex_entry_type_location
+import dndplayerscodex.shared.generated.resources.codex_group_no_faction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 // defaults for a freshly added party member - the steppers start here, not at the range's floor
@@ -100,8 +103,6 @@ private data class CodexEntryFormFields(
 
 // the quick-create stub's placeholder value for a free-text field left blank, per the mockup's quickCreate
 private const val QUICK_ADD_PLACEHOLDER = "—"
-private const val QUICK_ADD_NO_FACTION = "Без фракции"
-private const val QUICK_ADD_LOCATION_TYPE = "Место"
 
 // one entry point per form action - splitting them across classes would only forward the same calls
 @Suppress("TooManyFunctions")
@@ -265,7 +266,7 @@ class CodexEntryFormController private constructor(
             }
     }
 
-    private fun quickNpc(name: String) =
+    private suspend fun quickNpc(name: String) =
         Npc(
             id = 0,
             name = name,
@@ -274,14 +275,14 @@ class CodexEntryFormController private constructor(
             description = QUICK_ADD_PLACEHOLDER,
             locationId = null,
             race = QUICK_ADD_PLACEHOLDER,
-            faction = QUICK_ADD_NO_FACTION,
+            faction = getString(Res.string.codex_group_no_faction),
         )
 
-    private fun quickLocation(name: String) =
+    private suspend fun quickLocation(name: String) =
         Location(
             id = 0,
             name = name,
-            type = QUICK_ADD_LOCATION_TYPE,
+            type = getString(Res.string.codex_entry_type_location),
             description = QUICK_ADD_PLACEHOLDER,
             region = QUICK_ADD_PLACEHOLDER,
         )
@@ -311,6 +312,8 @@ class CodexEntryFormController private constructor(
         val field = current.quickAddField
         val name = current.quickAddDraft.trim().capitalizeFirst()
         if (field == null || name.isBlank()) return
+        // cleared synchronously, same as onSaveClicked - otherwise a second tap re-reads this still-open state
+        fields.value = current.copy(quickAddField = null, quickAddDraft = "")
         scope.launch {
             when (field) {
                 CodexEntryChipField.NPC_LOCATION -> {
@@ -326,7 +329,6 @@ class CodexEntryFormController private constructor(
                     fields.value = fields.value?.copy(questLocationId = id)
                 }
             }
-            fields.value = fields.value?.copy(quickAddField = null, quickAddDraft = "")
             onCreated(name)
         }
     }
@@ -472,7 +474,8 @@ class CodexEntryFormController private constructor(
                         presence.toStatusColor(),
                     )
                 },
-            canSave = current.name.isNotBlank(),
+            // blocked while a quick-add panel is open - otherwise Save can race its still-pending repository write
+            canSave = current.name.isNotBlank() && current.quickAddField == null,
             saveLabel = saveLabel(current.name.isNotBlank(), isEditing),
             calculator = current.calculatorField?.let { field -> calculatorPadState(field, current.calculatorExpr) },
             quickAddField = current.quickAddField,

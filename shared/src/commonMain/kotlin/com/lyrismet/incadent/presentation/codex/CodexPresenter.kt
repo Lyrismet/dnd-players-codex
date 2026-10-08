@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.presentation.codex
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,6 +33,7 @@ import com.lyrismet.incadent.core.quickedit.rememberQuickEditFieldTitles
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.core.swipehint.codexSwipeHintDirection
 import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
+import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.EntityEditMode
@@ -84,13 +84,9 @@ import dndplayerscodex.shared.generated.resources.codex_undo_deleted_title
 import dndplayerscodex.shared.generated.resources.quick_edit_changed_suffix
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
-
-// matches SessionListPresenter's campaign-rename toast timing
-private const val TOAST_DURATION_MS = 3200L
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
 @Suppress("LongParameterList")
@@ -253,12 +249,7 @@ class CodexPresenter(
                 appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
             }
         val toast = rememberRetained { mutableStateOf<CodexToast?>(null) }
-        LaunchedEffect(toast.value) {
-            if (toast.value != null) {
-                delay(TOAST_DURATION_MS)
-                toast.value = null
-            }
-        }
+        toast.autoDismiss()
         return CodexFields(
             activeTab,
             searchQuery,
@@ -458,7 +449,10 @@ class CodexPresenter(
             is CodexEvent.EntryQuestStatusChanged -> formController.onQuestStatusChanged(event.status)
             is CodexEvent.EntryChipToggled -> formController.onChipToggled(event.field, event.id)
             CodexEvent.EntryFormSaveClicked -> formController.onSaveClicked(scope)
-            CodexEvent.EntryFormClosed -> formController.onClosed()
+            CodexEvent.EntryFormClosed -> {
+                formController.onClosed()
+                fields.toast.value = null
+            }
             is CodexEvent.CalculatorOpened -> formController.onCalculatorOpened(event.field)
             is CodexEvent.CalculatorDigitPressed -> formController.onCalculatorDigitPressed(event.digit)
             CodexEvent.CalculatorBackspacePressed -> formController.onCalculatorBackspacePressed()
