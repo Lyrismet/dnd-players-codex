@@ -93,7 +93,15 @@ private data class CodexEntryFormFields(
     // null means no stepper's calculator is open - see onCalculatorOpened
     val calculatorField: CodexEntryNumberField? = null,
     val calculatorExpr: CalcExpression = CalcExpression(),
+    // null means no "+ New X" quick-add input is open - see onQuickAddOpened
+    val quickAddField: CodexEntryChipField? = null,
+    val quickAddDraft: String = "",
 )
+
+// the quick-create stub's placeholder value for a free-text field left blank, per the mockup's quickCreate
+private const val QUICK_ADD_PLACEHOLDER = "—"
+private const val QUICK_ADD_NO_FACTION = "Без фракции"
+private const val QUICK_ADD_LOCATION_TYPE = "Место"
 
 // one entry point per form action - splitting them across classes would only forward the same calls
 @Suppress("TooManyFunctions")
@@ -257,6 +265,72 @@ class CodexEntryFormController private constructor(
             }
     }
 
+    private fun quickNpc(name: String) =
+        Npc(
+            id = 0,
+            name = name,
+            status = NpcStatus.NEUTRAL,
+            lifeState = NpcLifeState.ALIVE,
+            description = QUICK_ADD_PLACEHOLDER,
+            locationId = null,
+            race = QUICK_ADD_PLACEHOLDER,
+            faction = QUICK_ADD_NO_FACTION,
+        )
+
+    private fun quickLocation(name: String) =
+        Location(
+            id = 0,
+            name = name,
+            type = QUICK_ADD_LOCATION_TYPE,
+            description = QUICK_ADD_PLACEHOLDER,
+            region = QUICK_ADD_PLACEHOLDER,
+        )
+
+    fun onQuickAddOpened(field: CodexEntryChipField) {
+        val current = fields.value ?: return
+        fields.value = current.copy(quickAddField = field, quickAddDraft = "")
+    }
+
+    fun onQuickAddDraftChanged(text: String) {
+        val current = fields.value ?: return
+        if (current.quickAddField == null) return
+        fields.value = current.copy(quickAddDraft = text)
+    }
+
+    fun onQuickAddCancelled() {
+        val current = fields.value ?: return
+        fields.value = current.copy(quickAddField = null, quickAddDraft = "")
+    }
+
+    // creates the minimal stub entity directly through the repository and selects it where the quick-add opened
+    fun onQuickAddSaveClicked(
+        scope: CoroutineScope,
+        onCreated: suspend (String) -> Unit,
+    ) {
+        val current = fields.value ?: return
+        val field = current.quickAddField
+        val name = current.quickAddDraft.trim().capitalizeFirst()
+        if (field == null || name.isBlank()) return
+        scope.launch {
+            when (field) {
+                CodexEntryChipField.NPC_LOCATION -> {
+                    val id = locationRepository.upsert(quickLocation(name))
+                    fields.value = fields.value?.copy(npcLocationId = id)
+                }
+                CodexEntryChipField.QUEST_GIVER -> {
+                    val id = npcRepository.upsert(quickNpc(name))
+                    fields.value = fields.value?.copy(questGiverId = id)
+                }
+                CodexEntryChipField.QUEST_LOCATION -> {
+                    val id = locationRepository.upsert(quickLocation(name))
+                    fields.value = fields.value?.copy(questLocationId = id)
+                }
+            }
+            fields.value = fields.value?.copy(quickAddField = null, quickAddDraft = "")
+            onCreated(name)
+        }
+    }
+
     fun onClosed() {
         fields.value = null
     }
@@ -401,6 +475,8 @@ class CodexEntryFormController private constructor(
             canSave = current.name.isNotBlank(),
             saveLabel = saveLabel(current.name.isNotBlank(), isEditing),
             calculator = current.calculatorField?.let { field -> calculatorPadState(field, current.calculatorExpr) },
+            quickAddField = current.quickAddField,
+            quickAddDraft = current.quickAddDraft,
         )
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.NumberPadSheet
@@ -177,11 +178,18 @@ private fun CodexEntryFormSheet(
                 onClose = { state.eventSink(CodexEvent.CalculatorClosed) },
             )
         } else {
-            CodexEntryFormUi(
-                form = form,
-                eventSink = state.eventSink,
-                onClose = { state.eventSink(CodexEvent.EntryFormClosed) },
-            )
+            Box {
+                CodexEntryFormUi(
+                    form = form,
+                    eventSink = state.eventSink,
+                    onClose = { state.eventSink(CodexEvent.EntryFormClosed) },
+                )
+                // the sheet covers the app-level toast, so the quick-add confirmation gets its own copy here
+                AppToast(
+                    text = state.toast?.text,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+                )
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.presentation.codex
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -57,6 +58,7 @@ import com.slack.circuit.retained.rememberRetained
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_toast_format
 import dndplayerscodex.shared.generated.resources.codex_entry_type_location
 import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_type_party
@@ -82,8 +84,13 @@ import dndplayerscodex.shared.generated.resources.codex_undo_deleted_title
 import dndplayerscodex.shared.generated.resources.quick_edit_changed_suffix
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+
+// matches SessionListPresenter's campaign-rename toast timing
+private const val TOAST_DURATION_MS = 3200L
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
 @Suppress("LongParameterList")
@@ -95,6 +102,7 @@ private class CodexFields(
     val entitySheet: EntitySheetInteractions,
     val inlineEdit: MutableState<InlineEdit?>,
     val quickEdit: QuickEditInteractions,
+    val toast: MutableState<CodexToast?>,
 )
 
 /** result of applying the text search query to every list */
@@ -244,7 +252,23 @@ class CodexPresenter(
             QuickEditInteractions(inlineEdit, selectedEntityRef, entitySheet) {
                 appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
             }
-        return CodexFields(activeTab, searchQuery, grouping, selectedEntityRef, entitySheet, inlineEdit, quickEdit)
+        val toast = rememberRetained { mutableStateOf<CodexToast?>(null) }
+        LaunchedEffect(toast.value) {
+            if (toast.value != null) {
+                delay(TOAST_DURATION_MS)
+                toast.value = null
+            }
+        }
+        return CodexFields(
+            activeTab,
+            searchQuery,
+            grouping,
+            selectedEntityRef,
+            entitySheet,
+            inlineEdit,
+            quickEdit,
+            toast,
+        )
     }
 
     @Composable
@@ -366,6 +390,7 @@ class CodexPresenter(
             undoAction = context.undoAction,
             swipeHintTarget = context.swipeHintTarget,
             swipeHintDirection = codexSwipeHintDirection(context.editMode),
+            toast = fields.toast.value,
         ) { event ->
             onEvent(event, fields, formController, records, labels, scope)
         }
@@ -440,6 +465,13 @@ class CodexPresenter(
             CodexEvent.CalculatorClearPressed -> formController.onCalculatorClearPressed()
             CodexEvent.CalculatorApplyClicked -> formController.onCalculatorApplyClicked()
             CodexEvent.CalculatorClosed -> formController.onCalculatorClosed()
+            is CodexEvent.EntryQuickAddOpened -> formController.onQuickAddOpened(event.field)
+            is CodexEvent.EntryQuickAddDraftChanged -> formController.onQuickAddDraftChanged(event.text)
+            CodexEvent.EntryQuickAddSaveClicked ->
+                formController.onQuickAddSaveClicked(scope) { name ->
+                    fields.toast.value = CodexToast(getString(Res.string.codex_entry_quick_add_toast_format, name))
+                }
+            CodexEvent.EntryQuickAddCancelled -> formController.onQuickAddCancelled()
             is CodexEvent.EntityDeleteRequested ->
                 onEntityDeleteRequested(event.ref, records, labels, scope)
         }

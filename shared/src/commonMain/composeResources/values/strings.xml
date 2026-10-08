@@ -155,6 +155,12 @@
     <string name="codex_entry_save_label_invalid">Введите название</string>
     <string name="codex_entry_save_label_create">Добавить в кодекс</string>
     <string name="codex_entry_save_label_edit">Сохранить изменения</string>
+    <string name="codex_entry_quick_add_npc">+ Новый NPC</string>
+    <string name="codex_entry_quick_add_location">+ Новое место</string>
+    <string name="codex_entry_quick_add_placeholder_npc">Имя NPC</string>
+    <string name="codex_entry_quick_add_placeholder_location">Название места</string>
+    <string name="codex_entry_quick_add_helper">Запись появится в кодексе и сразу выберется здесь. Детали допишете позже.</string>
+    <string name="codex_entry_quick_add_toast_format">«%1$s» добавлен в кодекс</string>
 
     <string name="entity_sheet_overline_format">%1$s · %2$s</string>
     <string name="entity_sheet_status_label">Статус</string>

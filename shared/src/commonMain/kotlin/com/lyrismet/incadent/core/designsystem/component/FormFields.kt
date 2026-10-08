@@ -40,6 +40,7 @@ private val PrimaryButtonHeight = 52.dp
 private val FieldHeight = 48.dp
 private val AreaMinHeight = 92.dp
 private const val AREA_MIN_LINES = 3
+private const val SELECTED_CHIP_FILL_ALPHA = 0.14f
 
 /** one chip option for [FormChipPicker] - a single pill, selected state driven by the caller */
 data class FormChipOption<T>(
@@ -205,7 +206,9 @@ private fun FormInput(
 
 /**
  * the pill-chip picker used for every chip-type form field (status, relationship, "given by", "where") - the
- * mockup draws all of these with the identical rounded-pill style, never a segmented tab row.
+ * mockup draws all of these with the identical rounded-pill style, never a segmented tab row. [quickAdd], when
+ * non-null, appends a "+ New X" pill after the options that opens an inline name input (see [FormChipQuickAdd]) -
+ * every existing caller leaves it null and keeps today's exact rendering.
  */
 @Composable
 fun <T> FormChipPicker(
@@ -213,37 +216,50 @@ fun <T> FormChipPicker(
     options: List<FormChipOption<T>>,
     onClick: (T) -> Unit,
     modifier: Modifier = Modifier,
+    quickAdd: FormChipQuickAdd? = null,
 ) {
-    if (options.isEmpty()) return
+    if (options.isEmpty() && quickAdd == null) return
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         SectionOverline(text = label, color = AppPalette.TextTertiary)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            options.forEach { option ->
-                val tint = option.selectedColor.takeIf { option.selected }
-                val background =
-                    when {
-                        tint != null -> tint.background
-                        option.selected -> AppPalette.Gold.copy(alpha = 0.14f)
-                        else -> Color.Transparent
-                    }
-                val foreground =
-                    tint?.foreground ?: if (option.selected) AppPalette.GoldBright else AppPalette.TextMuted
-                val border = tint?.border ?: if (option.selected) AppPalette.Gold else AppPalette.Border
-                Text(
-                    option.label,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
-                    color = foreground,
-                    modifier =
-                        Modifier
-                            .clip(ChipShape)
-                            .background(background)
-                            .border(1.dp, border, ChipShape)
-                            .clickable { onClick(option.value) }
-                            .padding(horizontal = 14.dp, vertical = 11.dp),
-                )
+            options.forEach { option -> ChipOptionPill(option, onClick) }
+            if (quickAdd != null && !quickAdd.isOpen) {
+                QuickAddPill(quickAdd)
             }
         }
+        if (quickAdd != null && quickAdd.isOpen) {
+            FormChipQuickAddPanel(quickAdd)
+        }
     }
+}
+
+/** one selectable pill of [FormChipPicker]'s row - gold or status-tinted fill when selected, plain border otherwise */
+@Composable
+private fun <T> ChipOptionPill(
+    option: FormChipOption<T>,
+    onClick: (T) -> Unit,
+) {
+    val tint = option.selectedColor.takeIf { option.selected }
+    val background =
+        when {
+            tint != null -> tint.background
+            option.selected -> AppPalette.Gold.copy(alpha = SELECTED_CHIP_FILL_ALPHA)
+            else -> Color.Transparent
+        }
+    val foreground = tint?.foreground ?: if (option.selected) AppPalette.GoldBright else AppPalette.TextMuted
+    val border = tint?.border ?: if (option.selected) AppPalette.Gold else AppPalette.Border
+    Text(
+        option.label,
+        style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
+        color = foreground,
+        modifier =
+            Modifier
+                .clip(ChipShape)
+                .background(background)
+                .border(1.dp, border, ChipShape)
+                .clickable { onClick(option.value) }
+                .padding(horizontal = 14.dp, vertical = 11.dp),
+    )
 }
 
 /**
