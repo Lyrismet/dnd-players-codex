@@ -47,8 +47,11 @@ import dndplayerscodex.shared.generated.resources.codex_entry_owner_other
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_create
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
+import dndplayerscodex.shared.generated.resources.codex_entry_type_location
+import dndplayerscodex.shared.generated.resources.codex_group_no_faction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 // defaults for a freshly added party member - the steppers start here, not at the range's floor
@@ -93,7 +96,13 @@ private data class CodexEntryFormFields(
     // null means no stepper's calculator is open - see onCalculatorOpened
     val calculatorField: CodexEntryNumberField? = null,
     val calculatorExpr: CalcExpression = CalcExpression(),
+    // null means no "+ New X" quick-add input is open - see onQuickAddOpened
+    val quickAddField: CodexEntryChipField? = null,
+    val quickAddDraft: String = "",
 )
+
+// the quick-create stub's placeholder value for a free-text field left blank, per the mockup's quickCreate
+private const val QUICK_ADD_PLACEHOLDER = "—"
 
 // one entry point per form action - splitting them across classes would only forward the same calls
 @Suppress("TooManyFunctions")
@@ -257,6 +266,73 @@ class CodexEntryFormController private constructor(
             }
     }
 
+    private suspend fun quickNpc(name: String) =
+        Npc(
+            id = 0,
+            name = name,
+            status = NpcStatus.NEUTRAL,
+            lifeState = NpcLifeState.ALIVE,
+            description = QUICK_ADD_PLACEHOLDER,
+            locationId = null,
+            race = QUICK_ADD_PLACEHOLDER,
+            faction = getString(Res.string.codex_group_no_faction),
+        )
+
+    private suspend fun quickLocation(name: String) =
+        Location(
+            id = 0,
+            name = name,
+            type = getString(Res.string.codex_entry_type_location),
+            description = QUICK_ADD_PLACEHOLDER,
+            region = QUICK_ADD_PLACEHOLDER,
+        )
+
+    fun onQuickAddOpened(field: CodexEntryChipField) {
+        val current = fields.value ?: return
+        fields.value = current.copy(quickAddField = field, quickAddDraft = "")
+    }
+
+    fun onQuickAddDraftChanged(text: String) {
+        val current = fields.value ?: return
+        if (current.quickAddField == null) return
+        fields.value = current.copy(quickAddDraft = text)
+    }
+
+    fun onQuickAddCancelled() {
+        val current = fields.value ?: return
+        fields.value = current.copy(quickAddField = null, quickAddDraft = "")
+    }
+
+    // creates the minimal stub entity directly through the repository and selects it where the quick-add opened
+    fun onQuickAddSaveClicked(
+        scope: CoroutineScope,
+        onCreated: suspend (String) -> Unit,
+    ) {
+        val current = fields.value ?: return
+        val field = current.quickAddField
+        val name = current.quickAddDraft.trim().capitalizeFirst()
+        if (field == null || name.isBlank()) return
+        // cleared synchronously, same as onSaveClicked - otherwise a second tap re-reads this still-open state
+        fields.value = current.copy(quickAddField = null, quickAddDraft = "")
+        scope.launch {
+            when (field) {
+                CodexEntryChipField.NPC_LOCATION -> {
+                    val id = locationRepository.upsert(quickLocation(name))
+                    fields.value = fields.value?.copy(npcLocationId = id)
+                }
+                CodexEntryChipField.QUEST_GIVER -> {
+                    val id = npcRepository.upsert(quickNpc(name))
+                    fields.value = fields.value?.copy(questGiverId = id)
+                }
+                CodexEntryChipField.QUEST_LOCATION -> {
+                    val id = locationRepository.upsert(quickLocation(name))
+                    fields.value = fields.value?.copy(questLocationId = id)
+                }
+            }
+            onCreated(name)
+        }
+    }
+
     fun onClosed() {
         fields.value = null
     }
@@ -398,9 +474,12 @@ class CodexEntryFormController private constructor(
                         presence.toStatusColor(),
                     )
                 },
-            canSave = current.name.isNotBlank(),
+            // blocked while a quick-add panel is open - otherwise Save can race its still-pending repository write
+            canSave = current.name.isNotBlank() && current.quickAddField == null,
             saveLabel = saveLabel(current.name.isNotBlank(), isEditing),
             calculator = current.calculatorField?.let { field -> calculatorPadState(field, current.calculatorExpr) },
+            quickAddField = current.quickAddField,
+            quickAddDraft = current.quickAddDraft,
         )
     }
 }

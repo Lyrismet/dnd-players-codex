@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.presentation.sessionlist
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,6 +25,7 @@ import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.core.mention.mentionsIn
 import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
+import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
@@ -50,7 +50,6 @@ import dndplayerscodex.shared.generated.resources.session_list_rename_saved_toas
 import dndplayerscodex.shared.generated.resources.session_list_undo_deleted_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -60,8 +59,6 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-
-private const val TOAST_DURATION_MS = 3200L
 
 /** the rename sheet and its toast - written by the event handlers, read into the state */
 private class CampaignRenameFields(
@@ -78,12 +75,7 @@ private fun rememberCampaignRenameFields(savedText: String): CampaignRenameField
             toast = remember { mutableStateOf<SessionListToast?>(null) },
             savedText = savedText,
         )
-    LaunchedEffect(fields.toast.value) {
-        if (fields.toast.value != null) {
-            delay(TOAST_DURATION_MS)
-            fields.toast.value = null
-        }
-    }
+    fields.toast.autoDismiss()
     return fields
 }
 

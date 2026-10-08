@@ -33,6 +33,7 @@ import com.lyrismet.incadent.core.quickedit.rememberQuickEditFieldTitles
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.core.swipehint.codexSwipeHintDirection
 import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
+import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.EntityEditMode
@@ -57,6 +58,7 @@ import com.slack.circuit.retained.rememberRetained
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_toast_format
 import dndplayerscodex.shared.generated.resources.codex_entry_type_location
 import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_type_party
@@ -83,6 +85,7 @@ import dndplayerscodex.shared.generated.resources.quick_edit_changed_suffix
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
@@ -95,6 +98,7 @@ private class CodexFields(
     val entitySheet: EntitySheetInteractions,
     val inlineEdit: MutableState<InlineEdit?>,
     val quickEdit: QuickEditInteractions,
+    val toast: MutableState<CodexToast?>,
 )
 
 /** result of applying the text search query to every list */
@@ -244,7 +248,18 @@ class CodexPresenter(
             QuickEditInteractions(inlineEdit, selectedEntityRef, entitySheet) {
                 appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
             }
-        return CodexFields(activeTab, searchQuery, grouping, selectedEntityRef, entitySheet, inlineEdit, quickEdit)
+        val toast = rememberRetained { mutableStateOf<CodexToast?>(null) }
+        toast.autoDismiss()
+        return CodexFields(
+            activeTab,
+            searchQuery,
+            grouping,
+            selectedEntityRef,
+            entitySheet,
+            inlineEdit,
+            quickEdit,
+            toast,
+        )
     }
 
     @Composable
@@ -366,6 +381,7 @@ class CodexPresenter(
             undoAction = context.undoAction,
             swipeHintTarget = context.swipeHintTarget,
             swipeHintDirection = codexSwipeHintDirection(context.editMode),
+            toast = fields.toast.value,
         ) { event ->
             onEvent(event, fields, formController, records, labels, scope)
         }
@@ -433,13 +449,23 @@ class CodexPresenter(
             is CodexEvent.EntryQuestStatusChanged -> formController.onQuestStatusChanged(event.status)
             is CodexEvent.EntryChipToggled -> formController.onChipToggled(event.field, event.id)
             CodexEvent.EntryFormSaveClicked -> formController.onSaveClicked(scope)
-            CodexEvent.EntryFormClosed -> formController.onClosed()
+            CodexEvent.EntryFormClosed -> {
+                formController.onClosed()
+                fields.toast.value = null
+            }
             is CodexEvent.CalculatorOpened -> formController.onCalculatorOpened(event.field)
             is CodexEvent.CalculatorDigitPressed -> formController.onCalculatorDigitPressed(event.digit)
             CodexEvent.CalculatorBackspacePressed -> formController.onCalculatorBackspacePressed()
             CodexEvent.CalculatorClearPressed -> formController.onCalculatorClearPressed()
             CodexEvent.CalculatorApplyClicked -> formController.onCalculatorApplyClicked()
             CodexEvent.CalculatorClosed -> formController.onCalculatorClosed()
+            is CodexEvent.EntryQuickAddOpened -> formController.onQuickAddOpened(event.field)
+            is CodexEvent.EntryQuickAddDraftChanged -> formController.onQuickAddDraftChanged(event.text)
+            CodexEvent.EntryQuickAddSaveClicked ->
+                formController.onQuickAddSaveClicked(scope) { name ->
+                    fields.toast.value = CodexToast(getString(Res.string.codex_entry_quick_add_toast_format, name))
+                }
+            CodexEvent.EntryQuickAddCancelled -> formController.onQuickAddCancelled()
             is CodexEvent.EntityDeleteRequested ->
                 onEntityDeleteRequested(event.ref, records, labels, scope)
         }

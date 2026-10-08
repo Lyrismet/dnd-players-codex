@@ -139,6 +139,9 @@ data class CodexEntryFormState(
     val saveLabel: String = "",
     // null when no stepper's calculator is open - the Ui overlays NumberPadSheet on the form when non-null
     val calculator: CalculatorPadState? = null,
+    // the chip field whose "+ New X" quick-add input is open, if any - at most one at a time, see FormChipQuickAdd
+    val quickAddField: CodexEntryChipField? = null,
+    val quickAddDraft: String = "",
 )
 
 enum class CodexEntryField {
@@ -228,8 +231,14 @@ data class CodexState(
     // the row the one-time swipe hint peeks on, and the direction captured when it started - see core/swipehint
     val swipeHintTarget: SwipeHintTarget<EntityRef>? = null,
     val swipeHintDirection: SwipeHintDirection = SwipeHintDirection.DELETE_ONLY,
+    val toast: CodexToast? = null,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
+
+/** compared by identity, so repeating the same message restarts its timer - the quick-add "added" confirmation */
+class CodexToast(
+    val text: String,
+)
 
 sealed interface CodexEvent : CircuitUiEvent {
     data class TabSelected(
@@ -348,6 +357,18 @@ sealed interface CodexEvent : CircuitUiEvent {
     data object CalculatorApplyClicked : CodexEvent
 
     data object CalculatorClosed : CodexEvent
+
+    data class EntryQuickAddOpened(
+        val field: CodexEntryChipField,
+    ) : CodexEvent
+
+    data class EntryQuickAddDraftChanged(
+        val text: String,
+    ) : CodexEvent
+
+    data object EntryQuickAddSaveClicked : CodexEvent
+
+    data object EntryQuickAddCancelled : CodexEvent
 
     data class QuickEdit(
         val event: QuickEditUiEvent,
