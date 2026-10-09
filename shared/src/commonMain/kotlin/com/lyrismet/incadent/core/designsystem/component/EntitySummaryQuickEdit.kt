@@ -10,12 +10,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.entitysummary.EntityEmblem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.FactRow
 import com.lyrismet.incadent.core.entitysummary.FactValue
@@ -25,6 +30,7 @@ import com.lyrismet.incadent.core.quickedit.LinkOptionEditor
 import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.core.quickedit.QuickEditKind
 import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
+import com.lyrismet.incadent.core.portrait.rememberImagePickerLauncher
 import com.lyrismet.incadent.core.quickedit.inputKind
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.quick_edit_description_placeholder
@@ -192,4 +198,33 @@ internal fun FactReadOnlyValue(
                 onClick = onEntityRefClicked?.let { onClick -> value.chip.entityRef?.let { ref -> { onClick(ref) } } },
             )
     }
+}
+
+/** the header's portrait arch - tapping it in quick mode opens the camera/gallery chooser and saves the pick at once */
+@Composable
+internal fun EntityPortraitSlot(
+    emblem: EntityEmblem,
+    quick: QuickEditSheet?,
+) {
+    var menuOpen by remember { mutableStateOf(false) }
+    val launcher = rememberImagePickerLauncher(onPicked = { quick?.onEvent(QuickEditUiEvent.PortraitPicked(it)) })
+    PortraitArch(
+        portraitBase64 = emblem.portraitBase64,
+        emblemText = emblem.text,
+        color = emblem.color,
+        monochrome = emblem.isMonochrome,
+        onClick = quick?.let { { menuOpen = true } },
+    )
+    PortraitSourceMenu(
+        expanded = menuOpen,
+        onCamera = {
+            menuOpen = false
+            launcher.launchCamera()
+        },
+        onGallery = {
+            menuOpen = false
+            launcher.launchGallery()
+        },
+        onDismiss = { menuOpen = false },
+    )
 }

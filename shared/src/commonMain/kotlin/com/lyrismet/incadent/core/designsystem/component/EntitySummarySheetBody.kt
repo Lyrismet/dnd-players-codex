@@ -51,6 +51,7 @@ import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_life_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_overline_format
+import dndplayerscodex.shared.generated.resources.entity_sheet_portrait_hint
 import dndplayerscodex.shared.generated.resources.entity_sheet_relation_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_status_label
 import dndplayerscodex.shared.generated.resources.quick_edit_hold_too_short
@@ -233,12 +234,13 @@ internal fun EntityHeader(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            EntityEmblemBox(emblem)
+            if (emblem.hasPortraitSlot) EntityPortraitSlot(emblem, quick) else EntityEmblemBox(emblem)
             EntityTitleBlock(
                 title = title,
                 subtitle = subtitle,
                 strikeThrough = strikeThrough,
                 quick = quick,
+                showPortraitHint = emblem.hasPortraitSlot && emblem.portraitBase64 == null && quick != null,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -287,6 +289,7 @@ private fun EntityTitleBlock(
     subtitle: String,
     strikeThrough: Boolean,
     quick: QuickEditSheet?,
+    showPortraitHint: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -310,6 +313,14 @@ private fun EntityTitleBlock(
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
                 color = AppPalette.TextSecondary,
                 modifier = Modifier.padding(top = 2.dp),
+            )
+        }
+        if (showPortraitHint) {
+            Text(
+                stringResource(Res.string.entity_sheet_portrait_hint),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 17.sp),
+                color = AppPalette.TextTertiary,
+                modifier = Modifier.padding(top = 8.dp),
             )
         }
     }

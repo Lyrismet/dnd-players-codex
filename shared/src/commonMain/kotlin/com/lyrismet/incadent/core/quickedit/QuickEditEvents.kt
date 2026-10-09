@@ -27,6 +27,11 @@ sealed interface QuickEditUiEvent {
     ) : QuickEditUiEvent
 
     data object HoldHintDismissed : QuickEditUiEvent
+
+    /** the raw picked image - the presenter compresses it before it is stored */
+    data class PortraitPicked(
+        val bytes: ByteArray,
+    ) : QuickEditUiEvent
 }
 
 /** a committed change and the way back - the codex turns it into an undo toast */

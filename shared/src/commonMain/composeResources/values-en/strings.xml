@@ -258,6 +258,7 @@
     <string name="quick_edit_changed_suffix"> — changed</string>
     <string name="quick_edit_link_none">Not set</string>
     <string name="quick_edit_description_placeholder">No description yet — hold to add one</string>
+    <string name="entity_sheet_portrait_hint">Tap the frame to add a portrait - for example, a photo of a handout from the GM</string>
     <string name="quick_edit_hold_tip">Hold any field to edit it right here</string>
     <string name="quick_edit_hold_tip_dismiss">Got it</string>
     <string name="quick_edit_description_hint">Appearance, personality, what is known…</string>

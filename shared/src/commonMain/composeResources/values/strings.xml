@@ -259,6 +259,7 @@
     <string name="quick_edit_changed_suffix"> — изменено</string>
     <string name="quick_edit_link_none">Не указано</string>
     <string name="quick_edit_description_placeholder">Описания пока нет — удерживайте, чтобы добавить</string>
+    <string name="entity_sheet_portrait_hint">Нажмите на рамку, чтобы добавить портрет — например, снимок распечатки от мастера</string>
     <string name="quick_edit_hold_tip">Удерживайте любое поле, чтобы изменить его прямо здесь</string>
     <string name="quick_edit_hold_tip_dismiss">Понятно</string>
     <string name="quick_edit_description_hint">Внешность, характер, что известно…</string>

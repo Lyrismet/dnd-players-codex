@@ -10,6 +10,8 @@ private fun QuickEditValue.text(): String? = (this as? QuickEditValue.Text)?.tex
 
 private fun QuickEditValue.number(): Int? = (this as? QuickEditValue.Number)?.number
 
+private fun QuickEditValue.portrait(): String? = (this as? QuickEditValue.Portrait)?.base64
+
 private fun QuickEditValue.link(): QuickEditValue.Link? = this as? QuickEditValue.Link
 
 // the functions below return null for a field this entity does not have, so a wrong field never writes anything
@@ -24,6 +26,7 @@ fun Npc.withQuickEdit(
         QuickEditField.RACE -> value.text()?.let { copy(race = it) }
         QuickEditField.FACTION -> value.text()?.let { copy(faction = it) }
         QuickEditField.PLACE -> value.link()?.let { copy(locationId = it.id) }
+        QuickEditField.PORTRAIT -> value.portrait()?.let { copy(portraitBase64 = it) }
         else -> null
     }
 
@@ -68,6 +71,7 @@ private fun PartyMember.withTextQuickEdit(
         QuickEditField.RACE -> value.text()?.let { copy(race = it) }
         QuickEditField.CHARACTER_CLASS -> value.text()?.let { copy(characterClass = it) }
         QuickEditField.PLAYER_NAME -> value.text()?.let { copy(playerName = it) }
+        QuickEditField.PORTRAIT -> value.portrait()?.let { copy(portraitBase64 = it) }
         else -> null
     }
 

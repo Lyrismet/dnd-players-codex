@@ -247,7 +247,7 @@ class CodexPresenter(
                 },
             )
         val quickEdit =
-            QuickEditInteractions(inlineEdit, selectedEntityRef, entitySheet) {
+            QuickEditInteractions(inlineEdit, selectedEntityRef, entitySheet, imageCompressor) {
                 appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
             }
         val toast = rememberRetained { mutableStateOf<CodexToast?>(null) }

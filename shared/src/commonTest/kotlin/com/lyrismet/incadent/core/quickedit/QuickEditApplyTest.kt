@@ -51,6 +51,15 @@ class QuickEditApplyTest {
     }
 
     @Test
+    fun `a picked portrait is written for npc and party and rejected elsewhere`() {
+        val portrait = QuickEditValue.Portrait("abc")
+
+        assertEquals("abc", npc.withQuickEdit(QuickEditField.PORTRAIT, portrait)?.portraitBase64)
+        assertEquals("abc", member.withQuickEdit(QuickEditField.PORTRAIT, portrait)?.portraitBase64)
+        assertNull(npc.withQuickEdit(QuickEditField.NAME, portrait))
+    }
+
+    @Test
     fun `a field the entity does not own is rejected instead of written`() {
         assertNull(npc.withQuickEdit(QuickEditField.REWARD, QuickEditValue.Text("200")))
         assertNull(member.withQuickEdit(QuickEditField.PLACE, QuickEditValue.Link(3)))

@@ -8,6 +8,7 @@ import com.lyrismet.incadent.core.entitysummary.FakeNpcRepository
 import com.lyrismet.incadent.core.entitysummary.FakePartyRepository
 import com.lyrismet.incadent.core.entitysummary.FakeQuestRepository
 import com.lyrismet.incadent.core.entitysummary.RecordingNavigator
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
@@ -109,7 +110,8 @@ class QuickEditInteractionsTest {
                 FakePartyRepository(),
                 RecordingNavigator(),
             )
-        val interactions = QuickEditInteractions(inlineEdit, selected, entitySheet) { hintSeen = true }
+        val interactions =
+            QuickEditInteractions(inlineEdit, selected, entitySheet, ImageCompressor()) { hintSeen = true }
 
         fun open(
             field: QuickEditField,
