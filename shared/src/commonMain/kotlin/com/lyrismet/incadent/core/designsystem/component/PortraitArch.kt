@@ -84,10 +84,19 @@ fun PortraitArch(
                         .border(1.dp, AppPalette.Gold.copy(alpha = 0.4f), PortraitArchInsetShape),
             )
         }
+        ArchDiamond(Modifier.align(Alignment.TopCenter))
+        if (onClick != null && portraitBase64 == null) {
+            AddPortraitBadge(Modifier.align(Alignment.BottomEnd))
+        }
+    }
+}
+
+@Composable
+private fun ArchDiamond(modifier: Modifier = Modifier) {
+    Box(modifier = modifier) {
         Box(
             modifier =
                 Modifier
-                    .align(Alignment.TopCenter)
                     .offset(y = -(DiamondHaloSize / 2))
                     .size(DiamondHaloSize)
                     .rotate(DIAMOND_ROTATION_DEGREES)
@@ -102,16 +111,18 @@ fun PortraitArch(
                     .rotate(DIAMOND_ROTATION_DEGREES)
                     .background(AppPalette.Gold),
         )
-        if (onClick != null && portraitBase64 == null) {
-            IconBadge(
-                modifier = Modifier.align(Alignment.BottomEnd).offset(x = 6.dp, y = 6.dp),
-                size = 30.dp,
-                background = AppPalette.Gold,
-                border = AppPalette.Surface,
-                borderWidth = 3.dp,
-            ) {
-                Text("+", color = AppPalette.Background, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            }
-        }
+    }
+}
+
+@Composable
+private fun AddPortraitBadge(modifier: Modifier = Modifier) {
+    IconBadge(
+        modifier = modifier.offset(x = 6.dp, y = 6.dp),
+        size = 30.dp,
+        background = AppPalette.Gold,
+        border = AppPalette.Surface,
+        borderWidth = 3.dp,
+    ) {
+        Text("+", color = AppPalette.Background, fontWeight = FontWeight.Bold, fontSize = 18.sp)
     }
 }
