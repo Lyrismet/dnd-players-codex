@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.metro)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
 }
@@ -143,4 +144,11 @@ tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask>().config
     // a glob like "**/build/**" can't match here - generated KMP source dirs are themselves rooted
     // inside build/, so paths relative to them never contain a "build" segment to match against
     exclude { it.file.path.contains("/generated/") }
+}
+
+metro {
+    // opt-in graph viewer, run with -PmetroReports - reports are slow to generate so they stay off by default
+    if (providers.gradleProperty("metroReports").isPresent) {
+        reportsDestination.set(layout.buildDirectory.dir("reports/metro"))
+    }
 }

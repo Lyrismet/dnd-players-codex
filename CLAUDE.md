@@ -10,15 +10,58 @@ Kotlin Multiplatform (KMP) app targeting Android and iOS, sharing UI (Compose Mu
 - `iosApp` — Xcode project, the iOS entry point. `ContentView.swift` calls `MainViewControllerKt.MainViewController()` from `shared`'s compiled `.framework` to get the root `UIViewController`. SwiftUI code (if any) lives here, not in `shared`.
 - `shared/src/commonMain` — almost everything, layered:
   - `domain/model`, `domain/repository` — plain models and repository interfaces, no platform/framework dependencies.
-  - `data/repository` — repository implementations (SQLDelight-backed), `data/db` — SQLDelight driver/database wiring, `data/AppContainer.kt` — manual DI container (no DI framework; wire new dependencies here, including registering each feature's UI on the `Circuit.Builder`).
-  - `presentation/<feature>/` — one Circuit screen per feature: `Screen` + `CircuitUiState` + `CircuitUiEvent`, a `Presenter`, a `@Composable` UI, and a `Circuit.Builder` wiring extension (see boundary rule below).
+  - `data/repository` — repository implementations (SQLDelight-backed), `data/db` — SQLDelight driver/database wiring, `di/` — the Metro dependency graph (`AppGraph`, `DataBindings`, `CircuitBindings`), see "Dependency injection" below; there is no manual DI container.
+  - `presentation/<feature>/` — one Circuit screen per feature: `Screen` + `CircuitUiState` + `CircuitUiEvent`, a `Presenter`, a `@Composable` UI, and a Circuit factory file that registers them in the Metro graph (see boundary rule below).
   - `core/designsystem/` — pure visual building blocks (palette, type, reusable `@Composable`s) with no domain-model or repository awareness. Logic that maps, filters, or cross-references domain models for reuse across 3+ features (not one feature's own view state) gets its own `core/<name>` package instead — see `core/mention`, `core/format`, `core/entitysummary`. **Before writing any new visual block (a card, a pill, a segmented switch, an icon slot, a divider...) check [`CORE_COMPONENTS.md`](CORE_COMPONENTS.md)** — it catalogs everything already built here with params and file paths. Reuse with different parameters instead of re-deriving `clip`/`background`/`border` by hand; add a new entry there in the same PR if you add a genuinely new primitive.
 - `shared/src/androidMain`, `shared/src/iosMain` — `actual` implementations of `commonMain`'s `expect` declarations (e.g. `Platform`, `DatabaseDriverFactory`). Put platform-only code here, not in `commonMain`.
 
-Stack: Compose Multiplatform (UI), Circuit (navigation/presentation), SQLDelight (local DB), Ktor (networking), Multiplatform Settings (prefs), kotlinx.serialization/coroutines/datetime.
+Stack: Compose Multiplatform (UI), Circuit (navigation/presentation), Metro (DI), SQLDelight (local DB), Ktor (networking), Multiplatform Settings (prefs), kotlinx.serialization/coroutines/datetime. Firebase (online sharing) is planned, see "Planned: Firebase sharing".
+
+### Architecture
+Clean-architecture layering with unidirectional data flow (MVI-style via Circuit), single `shared` module, package-by-layer at the top and package-by-feature inside `presentation`:
+- `presentation/<feature>` (Presenter + Ui, Circuit) -> `domain` (models + repository interfaces) <- `data` (SQLDelight-backed implementations). Dependencies point inward: `domain` knows nothing about `data`, `presentation` or any framework, `presentation` depends on `domain` interfaces only, never on `data`.
+- `core/*` is shared cross-feature logic and the design system; it may depend on `domain`, never on `presentation` or `data`.
+- State flows down as immutable `CircuitUiState`, user intent flows up as `CircuitUiEvent` through `eventSink`. Repositories expose `Flow` for reads and `suspend` functions for writes.
+- The database is the single source of truth for the UI: Presenters observe repository flows, they never hold their own copy of persisted data.
+
+### Dependency injection (Metro, no codegen)
+Decision: **Metro** (`dev.zacsweers.metro`), a compile-time, KMP-native DI framework implemented as a Kotlin compiler plugin. Circuit's `circuit-codegen` is deliberately **not** used: it is a separate KSP processor, which would add a third build tool (Metro + KSP + codegen) with unverified compatibility with Kotlin 2.4.20 and the `com.android.kotlin.multiplatform.library` AGP plugin. Revisit only if hand-written factories become a real burden.
+
+Why Metro:
+- Compile-time graph validation (a missing binding is a build error naming the missing type, not a launch crash), works on Android and iOS/Kotlin Native from `commonMain`. The project is maintained by one developer with Claude and iOS cannot be smoke-tested in the cloud, so build-time errors matter more than brevity.
+- Scoping and graph extensions (`@DependencyGraph`, `@GraphExtension`, `@SingleIn`) model the future signed-in-user and active-campaign scopes needed for Firebase (see below).
+- Compatibility checked against the Metro compatibility table: Kotlin 2.4.20 is supported from Metro 1.2.0 (latest seen: 1.4.5). Metro is tied to the Kotlin compiler version, so **check https://github.com/ZacSweers/metro/blob/main/docs/compatibility.md before bumping Kotlin** and bump Metro together with it.
+- Fallback if Metro cannot be made to build on both platforms: Koin (runtime resolution, errors only at launch). Alternative considered and not chosen: kotlin-inject-anvil (KSP-based, smaller ecosystem).
+
+Rules for code (the migration from the old manual `AppContainer` is finished, all four features run on Metro):
+- One `@DependencyGraph` (`di/AppGraph.kt`) per app process, built by `createAppGraph(...)` in `di/AppGraphFactory.kt`. Platform entry points (`MainActivity`, `MainViewController`) call `createAppGraph` with the platform-only inputs (`DatabaseDriverFactory`, plus `SettingsFactory` which becomes an `ObservableSettings`) and hand the graph to `App()`. Only `App()`, the composition root, reads from the graph; the accessors on `AppGraph` are exactly what it needs. Nothing below `App()` receives the graph or does service-locator style lookups.
+- Constructor injection with `@Inject`. Repository implementations are bound to their `domain/repository` interface with `@Inject @SingleIn(AppScope::class) @ContributesBinding(AppScope::class)`. Never inject a concrete `*Impl` into a Presenter.
+- Things that cannot carry `@Inject` (the database, `expect` classes like `ImageCompressor`, plain wrappers like `MentionRepositories`, the app `CoroutineScope`) are provided in `di/DataBindings.kt`. Standalone `@Provides`/`@IntoSet` functions go in a `@BindingContainer @ContributesTo(AppScope::class) object` - Metro warns on a plain `@ContributesTo` interface.
+- Circuit wiring is hand-written per feature, no `circuit-codegen`: each feature's `<Feature>Circuit.kt` holds an `@Inject @ContributesIntoSet(AppScope::class)` `Presenter.Factory` and `Ui.Factory`, plus a binding container that contributes the screen's `CircuitSerializerRegistration` with `@Provides @IntoSet`. `di/CircuitBindings.kt` builds the single `Circuit` from those sets. Presenters stay plain classes with their own constructor; the factory receives the injected repositories and passes them in together with the `Navigator` (and the `Screen` when it carries arguments). Reference files: `presentation/settings/SettingsCircuit.kt` (simple) and `presentation/sessiondetail/SessionDetailCircuit.kt` (uses the `Screen` argument). A factory with 7 or more constructor parameters needs `@Suppress("LongParameterList")`, as detekt flags it.
+- Platform-specific wiring (`DatabaseDriverFactory`, `SettingsFactory`, `ImageCompressor`) stays behind `expect`/`actual` and enters the graph through the factory inputs or `DataBindings`.
+- `domain` stays framework-free: no Metro annotations in `domain/model` or `domain/repository`. Annotations go on `data`, `presentation` and `core` classes.
+
+Viewing the graph: run `./gradlew :shared:generateAndroidMainMetroGraphHtml -PmetroReports --rerun-tasks` and open `shared/build/reports/metro/android/main/html/com-lyrismet-incadent-di-AppGraph.html` in a browser (interactive viewer). A plain-text tree of every binding is in `shared/build/reports/metro/android/main/graph-dump/com/lyrismet/incadent/di/AppGraph.txt`. Reports are off by default (opt-in `-PmetroReports` in `shared/build.gradle.kts`) because they slow compilation, and `--rerun-tasks` is needed because Gradle does not treat the reports folder as an input. Generated per compilation, so the iOS graph is the same one but has to be generated on a Mac.
+
+Adding a feature (checklist):
+1. Screen, State, Event, Presenter, Ui as described in the Circuit boundary section.
+2. A repository: interface in `domain/repository`, implementation in `data/repository` annotated `@Inject @SingleIn(AppScope::class) @ContributesBinding(AppScope::class)`.
+3. `<Feature>Circuit.kt` with the presenter factory, ui factory and screen registration, copied from a reference file above.
+4. Nothing else to register: contributions are collected by the graph. A missing binding is a compile error naming the missing type.
+
+Verification status: `:shared:compileAndroidMain`, `:androidApp:compileDebugKotlin`, `detekt`, `ktlintFormat` and `:shared:testAndroidHostTest` pass in the Linux cloud environment. iOS cannot be built there (Kotlin/Native iOS needs macOS), so every Metro change must be built and smoke-tested on a Mac before it is considered done. The owner confirmed the settings pilot builds; the session screens, the codex migration and the removal of `AppContainer` have not been explicitly confirmed on iOS.
+
+### Planned: Firebase sharing (online sync of the local data)
+Everything stored locally today (sessions, notes, NPCs, quests, locations, party, tags) will later be shared online through Firebase. Rules so today's code does not block that:
+- Keep **local-first**: SQLDelight stays the source of truth and the only thing Presenters read. Remote sync is a separate layer that writes into the same database, so the UI and Presenters do not change when sync is added.
+- Repository interfaces in `domain/repository` stay storage-agnostic. Add remote access behind separate interfaces (for example `RemoteDataSource<T>`, `AuthRepository`, `SyncRepository`) implemented in `data/remote`, not by adding Firebase calls to the existing `*RepositoryImpl`.
+- Firebase is reached through a KMP SDK (candidate: GitLive `firebase-kotlin-sdk`, or native SDKs behind `expect`/`actual`) - not decided yet. Whichever is chosen, it lives in `data/remote` only; no Firebase types in `domain` or `presentation`.
+- Prepare for sync metadata when adding or changing tables: stable globally unique ids (not local autoincrement ids), `updatedAt`, soft-delete flag instead of hard delete for shared entities, and an owning campaign id. Do not invent these columns ahead of the sync feature, just do not make choices that rule them out (for example id types tied to rowid).
+- Sharing implies a campaign/user scope: signed-in user and active campaign are the natural Metro graph extension scopes, so campaign-scoped repositories get the campaign id by injection instead of every Presenter passing it around.
+- Open decisions (not made yet, ask the user): conflict resolution strategy (last-write-wins vs per-field merge), auth providers, Firestore vs Realtime Database, offline behavior for shared campaigns.
 
 ### Scaffolding ahead of a feature
-Laying down a `domain/model`, a repository interface, and a SQLDelight schema for a large feature that's tracked in `FEATURES.md` but not started yet (e.g. `CombatScratchpad`/`Combatant` ahead of Бой) is intentional groundwork, not a half-finished implementation — it's fine for it to have no repository `Impl` and no `AppContainer` wiring yet. "No half-finished implementations" means don't leave a feature you're actively building partially wired; it doesn't mean every interface needs a caller the moment it's typed.
+Laying down a `domain/model`, a repository interface, and a SQLDelight schema for a large feature that's tracked in `FEATURES.md` but not started yet (e.g. `CombatScratchpad`/`Combatant` ahead of Бой) is intentional groundwork, not a half-finished implementation — it's fine for it to have no repository `Impl` and no Metro binding yet. "No half-finished implementations" means don't leave a feature you're actively building partially wired; it doesn't mean every interface needs a caller the moment it's typed.
 
 ### Engineering & Architecture Principles
 - **OOP & Clean Code**: Design modular, maintainable, and loosely coupled components. Encapsulate business logic cleanly.
@@ -32,7 +75,7 @@ Each feature under `presentation/<feature>/` is four files — see `presentation
 - **`<Feature>Screen.kt`** — the `@Serializable` `Screen` (navigation key), the `CircuitUiState` data class (always ends with an `eventSink: (XEvent) -> Unit = {}` field), and the `sealed interface XEvent : CircuitUiEvent`.
 - **`<Feature>Presenter.kt`** — a `Presenter<XState>` with `@Composable override fun present(): XState`. Owns all data loading (repository flows via `collectAsState`/`produceState`), async orchestration (`rememberCoroutineScope().launch { ... }`), and navigation (`Navigator.goTo`/`pop`). Builds and returns the `eventSink` `when`-block that reacts to `XEvent`.
 - **`<Feature>Ui.kt`** — `@Composable fun XUi(state: XState, modifier: Modifier = Modifier)`. Pure render: reads `state`, dispatches user actions through `state.eventSink(XEvent...)`. Never touches a repository, `Navigator`, or a coroutine scope directly.
-- **`<Feature>Circuit.kt`** — a `Circuit.Builder` extension (`fun Circuit.Builder.addXUi(...): Circuit.Builder`) wiring the Presenter and Ui to the Screen. Registered in `AppContainer`'s `Circuit.Builder` chain.
+- **`<Feature>Circuit.kt`** — the `@Inject @ContributesIntoSet` `Presenter.Factory` and `Ui.Factory` that wire the Presenter and Ui to the Screen, plus the screen's serializer registration. Contributed to the Metro graph, no manual registration (see "Dependency injection").
 - A `XUi` composable may own at most one trivial piece of purely visual local state (e.g. `remember { mutableStateOf(false) }` for a transient animation/scroll flag) — anything more (loading, merging, async) belongs in the Presenter, not the Ui.
 - Before finishing a new/changed Ui or Presenter, state its responsibility in one sentence without "and" (e.g. "renders the NPC list" / "loads and mutates the NPC list"). If a Ui's sentence needs "and manages X state" — move that into the Presenter.
 - Compare footprint to sibling `presentation/<feature>` folders. If a new Presenter is doing meaningfully more than its siblings, that's a signal to split the screen.
@@ -59,7 +102,7 @@ No more than 1 line, concise, and only where the code actually needs explaining 
 - Before adding a new card/pill/segmented-switch/icon-slot/divider, check [`CORE_COMPONENTS.md`](CORE_COMPONENTS.md) for an existing one to reuse with different parameters.
 - Don't copy-paste the same `when`-block across presenters for shared interactive state (e.g. the entity-sheet tap/dismiss/status-update/related-note flow) — extract it once into the relevant `core/<name>` package and have each presenter delegate to it.
 - Logic that maps/queries domain models for reuse across 3+ features doesn't belong inside `designsystem/component`, even if a design-system component renders its output — give it its own `core/<name>`.
-- Pre-built scaffolding (domain model + repository interface + SQLDelight schema) for a large feature tracked in FEATURES.md but not started is fine to merge without an `Impl` or `AppContainer` wiring.
+- Pre-built scaffolding (domain model + repository interface + SQLDelight schema) for a large feature tracked in FEATURES.md but not started is fine to merge without an `Impl` or a Metro binding.
 - Pure logic added under `core/*` (parsing, formatting, mapping) needs a `commonTest` unit test alongside it — this repo went 5 PRs with only the generated placeholder tests before anyone noticed.
 
 ## Git commits
