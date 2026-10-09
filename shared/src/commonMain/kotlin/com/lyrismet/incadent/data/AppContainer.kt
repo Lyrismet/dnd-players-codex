@@ -31,10 +31,10 @@ import com.lyrismet.incadent.presentation.sessionlist.addSessionListUi
 import com.lyrismet.incadent.presentation.sessionlist.sessionListScreenRegistration
 import com.slack.circuit.foundation.Circuit
 import com.slack.circuit.serialization.SerializableCircuitSaver
+import dev.zacsweers.metro.createGraphFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import dev.zacsweers.metro.createGraphFactory
 
 class AppContainer(
     databaseDriverFactory: DatabaseDriverFactory,

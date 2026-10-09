@@ -30,7 +30,12 @@ class SettingsPresenterFactory(
         context: CircuitContext,
     ): Presenter<*>? =
         when (screen) {
-            is SettingsScreen -> SettingsPresenter(languageRepository, appPreferencesRepository, swipeHintReplayController)
+            is SettingsScreen ->
+                SettingsPresenter(
+                    languageRepository,
+                    appPreferencesRepository,
+                    swipeHintReplayController,
+                )
             else -> null
         }
 }
