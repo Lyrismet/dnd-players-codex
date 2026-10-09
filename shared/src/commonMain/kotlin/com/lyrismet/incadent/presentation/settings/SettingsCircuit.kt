@@ -11,6 +11,7 @@ import com.slack.circuit.runtime.ui.Ui
 import com.slack.circuit.runtime.ui.ui
 import com.slack.circuit.serialization.CircuitSerializerRegistration
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesIntoSet
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Inject
@@ -53,8 +54,9 @@ class SettingsUiFactory : Ui.Factory {
         }
 }
 
+@BindingContainer
 @ContributesTo(AppScope::class)
-interface SettingsScreenBindings {
+object SettingsScreenBindings {
     @Provides
     @IntoSet
     fun provideSettingsScreenRegistration(): CircuitSerializerRegistration =
