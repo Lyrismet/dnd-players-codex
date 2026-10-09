@@ -18,7 +18,7 @@ import com.lyrismet.incadent.core.designsystem.AppTheme
 import com.lyrismet.incadent.core.designsystem.component.LocalMentionStyle
 import com.lyrismet.incadent.core.localization.AppEnvironment
 import com.lyrismet.incadent.core.localization.customAppLocale
-import com.lyrismet.incadent.data.AppContainer
+import com.lyrismet.incadent.di.AppGraph
 import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.slack.circuit.foundation.CircuitCompositionLocals
@@ -33,12 +33,12 @@ private enum class SplashPhase { VISIBLE, FADING, GONE }
 /** composition root - wires locale, theme and the Circuit instance, then hands off to the navigation shell */
 @Composable
 fun App(
-    appContainer: AppContainer,
+    graph: AppGraph,
     onExit: () -> Unit = {},
 ) {
-    val language by appContainer.languageRepository.observeLanguage().collectAsState(initial = AppLanguage.RUSSIAN)
+    val language by graph.languageRepository.observeLanguage().collectAsState(initial = AppLanguage.RUSSIAN)
     LaunchedEffect(language) { customAppLocale = language.tag }
-    val mentionStyle by appContainer.appPreferencesRepository
+    val mentionStyle by graph.appPreferencesRepository
         .observeMentionStyle()
         .collectAsState(initial = MentionStyle.FILLED)
 
@@ -51,14 +51,14 @@ fun App(
     }
 
     // circuit and tab state sit above AppEnvironment - its key() recomposes everything below on a language change
-    CircuitCompositionLocals(appContainer.circuit) {
+    CircuitCompositionLocals(graph.circuit) {
         val tabs = rememberAppTabsState()
 
         AppEnvironment {
             CompositionLocalProvider(LocalMentionStyle provides mentionStyle) {
                 AppTheme {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        AppTabHost(appContainer.undoController, appContainer.swipeHintReplayController, tabs, onExit)
+                        AppTabHost(graph.undoController, graph.swipeHintReplayController, tabs, onExit)
                         if (splashPhase != SplashPhase.GONE) {
                             val splashAlpha by animateFloatAsState(
                                 targetValue = if (splashPhase == SplashPhase.VISIBLE) 1f else 0f,

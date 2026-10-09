@@ -9,37 +9,76 @@ import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
-import com.slack.circuit.foundation.Circuit
+import com.slack.circuit.runtime.CircuitContext
+import com.slack.circuit.runtime.Navigator
+import com.slack.circuit.runtime.presenter.Presenter
+import com.slack.circuit.runtime.screen.Screen
+import com.slack.circuit.runtime.ui.Ui
+import com.slack.circuit.runtime.ui.ui
 import com.slack.circuit.serialization.CircuitSerializerRegistration
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.BindingContainer
+import dev.zacsweers.metro.ContributesIntoSet
+import dev.zacsweers.metro.ContributesTo
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.IntoSet
+import dev.zacsweers.metro.Provides
 
+@Inject
+@ContributesIntoSet(AppScope::class)
 @Suppress("LongParameterList")
-fun Circuit.Builder.addCodexUi(
-    npcRepository: NpcRepository,
-    partyRepository: PartyRepository,
-    questRepository: QuestRepository,
-    locationRepository: LocationRepository,
-    sessionNoteRepository: SessionNoteRepository,
-    sessionEntryRepository: SessionEntryRepository,
-    undoController: UndoController,
-    appPreferencesRepository: AppPreferencesRepository,
-    imageCompressor: ImageCompressor,
-): Circuit.Builder =
-    addPresenter<CodexScreen, CodexState> { _, navigator, _ ->
-        CodexPresenter(
-            navigator,
-            npcRepository,
-            partyRepository,
-            questRepository,
-            locationRepository,
-            sessionNoteRepository,
-            sessionEntryRepository,
-            undoController,
-            appPreferencesRepository,
-            imageCompressor,
-        )
-    }.addUi<CodexScreen, CodexState> { state, modifier ->
-        CodexUi(state, modifier)
-    }
+class CodexPresenterFactory(
+    private val npcRepository: NpcRepository,
+    private val partyRepository: PartyRepository,
+    private val questRepository: QuestRepository,
+    private val locationRepository: LocationRepository,
+    private val sessionNoteRepository: SessionNoteRepository,
+    private val sessionEntryRepository: SessionEntryRepository,
+    private val undoController: UndoController,
+    private val appPreferencesRepository: AppPreferencesRepository,
+    private val imageCompressor: ImageCompressor,
+) : Presenter.Factory {
+    override fun create(
+        screen: Screen,
+        navigator: Navigator,
+        context: CircuitContext,
+    ): Presenter<*>? =
+        when (screen) {
+            is CodexScreen ->
+                CodexPresenter(
+                    navigator,
+                    npcRepository,
+                    partyRepository,
+                    questRepository,
+                    locationRepository,
+                    sessionNoteRepository,
+                    sessionEntryRepository,
+                    undoController,
+                    appPreferencesRepository,
+                    imageCompressor,
+                )
+            else -> null
+        }
+}
 
-val codexScreenRegistration =
-    CircuitSerializerRegistration { it.subclass(CodexScreen::class, CodexScreen.serializer()) }
+@Inject
+@ContributesIntoSet(AppScope::class)
+class CodexUiFactory : Ui.Factory {
+    override fun create(
+        screen: Screen,
+        context: CircuitContext,
+    ): Ui<*>? =
+        when (screen) {
+            is CodexScreen -> ui<CodexState> { state, modifier -> CodexUi(state, modifier) }
+            else -> null
+        }
+}
+
+@BindingContainer
+@ContributesTo(AppScope::class)
+object CodexScreenBindings {
+    @Provides
+    @IntoSet
+    fun provideCodexScreenRegistration(): CircuitSerializerRegistration =
+        CircuitSerializerRegistration { it.subclass(CodexScreen::class, CodexScreen.serializer()) }
+}
