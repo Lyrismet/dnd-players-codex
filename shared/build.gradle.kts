@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.metro)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
 }
