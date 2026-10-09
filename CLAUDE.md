@@ -41,6 +41,8 @@ Rules for code (the migration from the old manual `AppContainer` is finished, al
 - Platform-specific wiring (`DatabaseDriverFactory`, `SettingsFactory`, `ImageCompressor`) stays behind `expect`/`actual` and enters the graph through the factory inputs or `DataBindings`.
 - `domain` stays framework-free: no Metro annotations in `domain/model` or `domain/repository`. Annotations go on `data`, `presentation` and `core` classes.
 
+Viewing the graph: run `./gradlew :shared:generateAndroidMainMetroGraphHtml -PmetroReports --rerun-tasks` and open `shared/build/reports/metro/android/main/html/com-lyrismet-incadent-di-AppGraph.html` in a browser (interactive viewer). A plain-text tree of every binding is in `shared/build/reports/metro/android/main/graph-dump/com/lyrismet/incadent/di/AppGraph.txt`. Reports are off by default (opt-in `-PmetroReports` in `shared/build.gradle.kts`) because they slow compilation, and `--rerun-tasks` is needed because Gradle does not treat the reports folder as an input. Generated per compilation, so the iOS graph is the same one but has to be generated on a Mac.
+
 Adding a feature (checklist):
 1. Screen, State, Event, Presenter, Ui as described in the Circuit boundary section.
 2. A repository: interface in `domain/repository`, implementation in `data/repository` annotated `@Inject @SingleIn(AppScope::class) @ContributesBinding(AppScope::class)`.

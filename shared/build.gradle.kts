@@ -145,3 +145,10 @@ tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask>().config
     // inside build/, so paths relative to them never contain a "build" segment to match against
     exclude { it.file.path.contains("/generated/") }
 }
+
+metro {
+    // opt-in graph viewer, run with -PmetroReports - reports are slow to generate so they stay off by default
+    if (providers.gradleProperty("metroReports").isPresent) {
+        reportsDestination.set(layout.buildDirectory.dir("reports/metro"))
+    }
+}
