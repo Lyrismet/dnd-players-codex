@@ -25,12 +25,12 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.FactRow
 import com.lyrismet.incadent.core.entitysummary.FactValue
 import com.lyrismet.incadent.core.entitysummary.QuickEditSheet
+import com.lyrismet.incadent.core.portrait.rememberImagePickerLauncher
 import com.lyrismet.incadent.core.quickedit.InlineFieldEditor
 import com.lyrismet.incadent.core.quickedit.LinkOptionEditor
 import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.core.quickedit.QuickEditKind
 import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
-import com.lyrismet.incadent.core.portrait.rememberImagePickerLauncher
 import com.lyrismet.incadent.core.quickedit.inputKind
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.quick_edit_description_placeholder
