@@ -5,6 +5,10 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -14,6 +18,9 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
+@Inject
+@SingleIn(AppScope::class)
+@ContributesBinding(AppScope::class)
 class SessionEntryRepositoryImpl(
     database: AppDatabase,
 ) : SessionEntryRepository {
