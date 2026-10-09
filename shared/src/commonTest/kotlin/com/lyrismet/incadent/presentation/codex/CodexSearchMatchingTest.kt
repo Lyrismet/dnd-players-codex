@@ -60,7 +60,7 @@ private val bard =
         armorClass = 13,
         initiativeBonus = 2,
         description = "Ловкий карманник",
-        portraitUri = null,
+        portraitBase64 = null,
     )
 
 private val regions = CodexRegions(npcs, listOf(errand), locations)

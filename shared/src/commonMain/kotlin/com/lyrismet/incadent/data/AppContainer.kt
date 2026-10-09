@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.data
 
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.data.db.DatabaseDriverFactory
@@ -55,6 +56,7 @@ class AppContainer(
     val partyRepository: PartyRepository = PartyRepositoryImpl(database)
     val locationRepository: LocationRepository = LocationRepositoryImpl(database)
     private val mentionRepositories = MentionRepositories(npcRepository, locationRepository, questRepository)
+    private val imageCompressor = ImageCompressor()
 
     // инфраструктура
     private val settings = settingsFactory.createSettings()
@@ -95,6 +97,7 @@ class AppContainer(
                 sessionEntryRepository,
                 undoController,
                 appPreferencesRepository,
+                imageCompressor,
             )
             // настройки
             .addSettingsUi(languageRepository, appPreferencesRepository, swipeHintReplayController)

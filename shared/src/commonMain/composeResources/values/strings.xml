@@ -161,6 +161,12 @@
     <string name="codex_entry_quick_add_placeholder_location">Название места</string>
     <string name="codex_entry_quick_add_helper">Запись появится в кодексе и сразу выберется здесь. Детали допишете позже.</string>
     <string name="codex_entry_quick_add_toast_format">«%1$s» добавлен в кодекс</string>
+    <string name="codex_entry_label_portrait">Портрет</string>
+    <string name="codex_entry_portrait_hint_empty">Нажмите на рамку: сфотографируйте распечатку от мастера или выберите из галереи. Снимок сожмётся до ~60 КБ.</string>
+    <string name="codex_entry_portrait_hint_filled">Портрет · %1$d КБ — хранится только на устройстве. Нажмите на рамку, чтобы переснять</string>
+    <string name="codex_entry_portrait_remove">Убрать</string>
+    <string name="codex_entry_portrait_source_camera">Камера</string>
+    <string name="codex_entry_portrait_source_gallery">Галерея</string>
 
     <string name="entity_sheet_overline_format">%1$s · %2$s</string>
     <string name="entity_sheet_status_label">Статус</string>
@@ -253,6 +259,7 @@
     <string name="quick_edit_changed_suffix"> — изменено</string>
     <string name="quick_edit_link_none">Не указано</string>
     <string name="quick_edit_description_placeholder">Описания пока нет — удерживайте, чтобы добавить</string>
+    <string name="entity_sheet_portrait_hint">Нажмите на рамку, чтобы добавить портрет — например, снимок распечатки от мастера</string>
     <string name="quick_edit_hold_tip">Удерживайте любое поле, чтобы изменить его прямо здесь</string>
     <string name="quick_edit_hold_tip_dismiss">Понятно</string>
     <string name="quick_edit_description_hint">Внешность, характер, что известно…</string>

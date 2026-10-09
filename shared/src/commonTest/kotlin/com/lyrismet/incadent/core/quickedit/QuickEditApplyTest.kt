@@ -39,7 +39,7 @@ class QuickEditApplyTest {
             armorClass = 16,
             initiativeBonus = 2,
             description = "",
-            portraitUri = null,
+            portraitBase64 = null,
         )
 
     @Test
@@ -48,6 +48,15 @@ class QuickEditApplyTest {
 
         assertEquals("Гильдия", edited?.faction)
         assertEquals(npc.name, edited?.name)
+    }
+
+    @Test
+    fun `a picked portrait is written for npc and party and rejected elsewhere`() {
+        val portrait = QuickEditValue.Portrait("abc")
+
+        assertEquals("abc", npc.withQuickEdit(QuickEditField.PORTRAIT, portrait)?.portraitBase64)
+        assertEquals("abc", member.withQuickEdit(QuickEditField.PORTRAIT, portrait)?.portraitBase64)
+        assertNull(npc.withQuickEdit(QuickEditField.NAME, portrait))
     }
 
     @Test

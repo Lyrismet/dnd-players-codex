@@ -127,6 +127,7 @@ private fun NpcEntryFields(
     form: CodexEntryFormState,
     eventSink: (CodexEvent) -> Unit,
 ) {
+    PortraitField(form, eventSink)
     FormTextField(
         label = stringResource(Res.string.codex_entry_label_name_npc),
         value = form.name,
@@ -188,6 +189,7 @@ private fun PartyIdentityFields(
         options = form.partyOwnerOptions,
         onClick = { eventSink(CodexEvent.EntryPartyOwnerChanged(it)) },
     )
+    PortraitField(form, eventSink)
     FormTextField(
         label = stringResource(Res.string.codex_entry_label_name_party),
         value = form.name,

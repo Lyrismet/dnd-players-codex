@@ -13,6 +13,9 @@ sealed interface QuickEditKind {
     data object Link : QuickEditKind
 
     data object Choice : QuickEditKind
+
+    /** a picked photo - it has no typed draft, the picker hands over the finished value */
+    data object Portrait : QuickEditKind
 }
 
 /** every card field a quick edit can change - each entity type only uses its own subset */
@@ -39,6 +42,7 @@ enum class QuickEditField(
     LIFE(QuickEditKind.Choice),
     QUEST_STATUS(QuickEditKind.Choice),
     PRESENCE(QuickEditKind.Choice),
+    PORTRAIT(QuickEditKind.Portrait),
 }
 
 /** the typed-in or tapped value of one [QuickEditField], always matching that field's [QuickEditKind] */
@@ -55,6 +59,10 @@ sealed interface QuickEditValue {
     data class Link(
         val id: Long?,
     ) : QuickEditValue
+
+    data class Portrait(
+        val base64: String,
+    ) : QuickEditValue
 }
 
 /** the value a typed draft would commit, or null when it must not be saved - a number is clamped into range */
@@ -66,6 +74,6 @@ fun quickEditValueFromDraft(
     return when (val kind = field.kind) {
         QuickEditKind.Text -> if (trimmed.isEmpty() && field.isRequired) null else QuickEditValue.Text(trimmed)
         is QuickEditKind.Number -> trimmed.toIntOrNull()?.let { QuickEditValue.Number(it.coerceIn(kind.range)) }
-        QuickEditKind.Link, QuickEditKind.Choice -> null
+        QuickEditKind.Link, QuickEditKind.Choice, QuickEditKind.Portrait -> null
     }
 }

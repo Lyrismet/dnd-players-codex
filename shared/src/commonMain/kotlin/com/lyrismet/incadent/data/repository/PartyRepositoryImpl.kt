@@ -42,7 +42,7 @@ class PartyRepositoryImpl(
                             armor_class = member.armorClass.toLong(),
                             initiative_bonus = member.initiativeBonus.toLong(),
                             description = member.description,
-                            portrait_uri = member.portraitUri,
+                            portrait_uri = member.portraitBase64,
                         )
                         queries.lastInsertRowId().executeAsOne()
                     } else {
@@ -61,7 +61,7 @@ class PartyRepositoryImpl(
                                     armor_class = member.armorClass.toLong(),
                                     initiative_bonus = member.initiativeBonus.toLong(),
                                     description = member.description,
-                                    portrait_uri = member.portraitUri,
+                                    portrait_uri = member.portraitBase64,
                                     id = member.id,
                                 ).value
                         check(updatedRows > 0L) { "party member ${member.id} no longer exists" }
@@ -94,7 +94,7 @@ class PartyRepositoryImpl(
         armorClass: Long,
         initiativeBonus: Long,
         description: String,
-        portraitUri: String?,
+        portraitBase64: String?,
     ) = PartyMember(
         id = id,
         name = name,
@@ -109,6 +109,6 @@ class PartyRepositoryImpl(
         armorClass = armorClass.toInt(),
         initiativeBonus = initiativeBonus.toInt(),
         description = description,
-        portraitUri = portraitUri,
+        portraitBase64 = portraitBase64,
     )
 }

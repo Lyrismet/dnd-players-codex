@@ -13,6 +13,8 @@ import com.lyrismet.incadent.core.entitysummary.npcStatusLabels
 import com.lyrismet.incadent.core.entitysummary.partyPresenceLabels
 import com.lyrismet.incadent.core.entitysummary.questStatusLabels
 import com.lyrismet.incadent.core.format.capitalizeFirst
+import com.lyrismet.incadent.core.portrait.ImageCompressor
+import com.lyrismet.incadent.core.portrait.encodePortraitBase64
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -50,7 +52,9 @@ import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
 import dndplayerscodex.shared.generated.resources.codex_entry_type_location
 import dndplayerscodex.shared.generated.resources.codex_group_no_faction
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
@@ -71,7 +75,6 @@ private data class PartyFormFields(
     val hpCurrent: Int? = null,
     val armorClass: Int = NEW_PARTY_ARMOR_CLASS,
     val initiativeBonus: Int = NEW_PARTY_INITIATIVE_BONUS,
-    val portraitUri: String? = null,
 )
 
 /** the form's own editable-in-place fields - kept separate from [CodexEntryFormState] so typing survives rebuilds */
@@ -81,6 +84,8 @@ private data class CodexEntryFormFields(
     val type: CodexEntryType,
     val name: String = "",
     val description: String = "",
+    // shared between npc and party - the only two types the mockup gives a portrait frame to
+    val portraitBase64: String? = null,
     val race: String = "",
     val faction: String = "",
     val npcStatus: NpcStatus = NpcStatus.NEUTRAL,
@@ -333,6 +338,23 @@ class CodexEntryFormController private constructor(
         }
     }
 
+    // compression runs off the main thread - a second pick while one is still compressing simply wins the race
+    fun onPortraitPicked(
+        scope: CoroutineScope,
+        compressor: ImageCompressor,
+        rawBytes: ByteArray,
+    ) {
+        if (fields.value == null) return
+        scope.launch {
+            val base64 = withContext(Dispatchers.Default) { encodePortraitBase64(rawBytes, compressor) }
+            fields.value = fields.value?.copy(portraitBase64 = base64)
+        }
+    }
+
+    fun onPortraitRemoved() {
+        fields.value = fields.value?.copy(portraitBase64 = null)
+    }
+
     fun onClosed() {
         fields.value = null
     }
@@ -357,6 +379,7 @@ class CodexEntryFormController private constructor(
                             locationId = current.npcLocationId,
                             race = current.race.trim().capitalizeFirst(),
                             faction = current.faction.trim().capitalizeFirst(),
+                            portraitBase64 = current.portraitBase64,
                         ),
                     )
 
@@ -413,6 +436,7 @@ class CodexEntryFormController private constructor(
             type = current.type,
             name = current.name,
             description = current.description,
+            portraitBase64 = current.portraitBase64,
             race = current.race,
             faction = current.faction,
             reward = current.reward,
@@ -564,7 +588,7 @@ private fun CodexEntryFormFields.toPartyMember(): PartyMember {
         armorClass = party.armorClass,
         initiativeBonus = party.initiativeBonus,
         description = description.trim(),
-        portraitUri = party.portraitUri,
+        portraitBase64 = portraitBase64,
     )
 }
 
@@ -575,6 +599,7 @@ private fun Npc.toFields(ref: EntityRef.Npc) =
         type = CodexEntryType.NPC,
         name = name,
         description = description,
+        portraitBase64 = portraitBase64,
         race = race,
         faction = faction,
         npcStatus = status,
@@ -589,6 +614,7 @@ private fun PartyMember.toFields(ref: EntityRef.Party) =
         type = CodexEntryType.PARTY,
         name = name,
         description = description,
+        portraitBase64 = portraitBase64,
         race = race,
         party =
             PartyFormFields(
@@ -601,7 +627,6 @@ private fun PartyMember.toFields(ref: EntityRef.Party) =
                 hpCurrent = hpCurrent,
                 armorClass = armorClass,
                 initiativeBonus = initiativeBonus,
-                portraitUri = portraitUri,
             ),
     )
 

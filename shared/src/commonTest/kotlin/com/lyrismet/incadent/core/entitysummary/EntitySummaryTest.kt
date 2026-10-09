@@ -73,7 +73,7 @@ private val lira =
         armorClass = 12,
         initiativeBonus = 3,
         description = "Школа Воплощения",
-        portraitUri = null,
+        portraitBase64 = null,
     )
 private val forge = Location(id = 2, name = "Кузница", type = "Мастерская", description = "", region = "Север")
 private val swordQuest =

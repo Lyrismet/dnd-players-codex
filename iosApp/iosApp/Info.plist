@@ -4,5 +4,9 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Нужно для добавления портрета NPC или персонажа отряда</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Нужно для добавления портрета NPC или персонажа отряда</string>
 </dict>
 </plist>

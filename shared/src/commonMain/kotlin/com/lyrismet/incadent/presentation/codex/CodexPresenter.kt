@@ -26,6 +26,7 @@ import com.lyrismet.incadent.core.entitysummary.partyPresenceLabels
 import com.lyrismet.incadent.core.entitysummary.questStatusLabels
 import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.quickedit.InlineEdit
 import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.core.quickedit.QuickEditInteractions
@@ -132,6 +133,7 @@ class CodexPresenter(
     private val sessionEntryRepository: SessionEntryRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val imageCompressor: ImageCompressor,
 ) : Presenter<CodexState> {
     private val deletionPlanner =
         CodexDeletionPlanner(npcRepository, partyRepository, questRepository, locationRepository)
@@ -245,7 +247,7 @@ class CodexPresenter(
                 },
             )
         val quickEdit =
-            QuickEditInteractions(inlineEdit, selectedEntityRef, entitySheet) {
+            QuickEditInteractions(inlineEdit, selectedEntityRef, entitySheet, imageCompressor) {
                 appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
             }
         val toast = rememberRetained { mutableStateOf<CodexToast?>(null) }
@@ -441,6 +443,8 @@ class CodexPresenter(
             is CodexEvent.EditEntryRequested -> formController.onEditEntryRequested(event.ref, scope)
             is CodexEvent.EntryTypeChanged -> formController.onTypeChanged(event.type)
             is CodexEvent.EntryFieldChanged -> formController.onFieldChanged(event.field, event.text)
+            is CodexEvent.EntryPortraitPicked -> formController.onPortraitPicked(scope, imageCompressor, event.bytes)
+            CodexEvent.EntryPortraitRemoved -> formController.onPortraitRemoved()
             is CodexEvent.EntryNumberChanged -> formController.onNumberChanged(event.field, event.value)
             is CodexEvent.EntryNpcStatusChanged -> formController.onNpcStatusChanged(event.status)
             is CodexEvent.EntryNpcLifeChanged -> formController.onNpcLifeChanged(event.lifeState)

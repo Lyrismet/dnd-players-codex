@@ -3,13 +3,19 @@ package com.lyrismet.incadent.core.quickedit
 import androidx.compose.runtime.MutableState
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
+import com.lyrismet.incadent.core.portrait.ImageCompressor
+import com.lyrismet.incadent.core.portrait.encodePortraitBase64
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** the open-editor flow every card that supports quick edits delegates to - the presenter owns the state */
 class QuickEditInteractions(
     private val inlineEdit: MutableState<InlineEdit?>,
     private val selectedRef: MutableState<EntityRef?>,
     private val entitySheet: EntitySheetInteractions,
+    private val imageCompressor: ImageCompressor,
     private val onHoldHintSeen: () -> Unit,
 ) {
     fun onEvent(
@@ -30,12 +36,25 @@ class QuickEditInteractions(
                     commit(scope, edit.field, QuickEditValue.Link(event.id))
                 }
             QuickEditUiEvent.HoldHintDismissed -> onHoldHintSeen()
+            is QuickEditUiEvent.PortraitPicked -> savePortrait(scope, event.bytes)
         }
     }
 
     /** drops any open editor - called when the card closes or switches to another entity */
     fun onSheetClosed() {
         inlineEdit.value = null
+    }
+
+    // compression runs off the main thread, the sheet may close meanwhile so the ref is read once up front
+    private fun savePortrait(
+        scope: CoroutineScope,
+        rawBytes: ByteArray,
+    ) {
+        val ref = selectedRef.value ?: return
+        scope.launch {
+            val base64 = withContext(Dispatchers.Default) { encodePortraitBase64(rawBytes, imageCompressor) }
+            entitySheet.onQuickEdit(scope, ref, QuickEditField.PORTRAIT, QuickEditValue.Portrait(base64))
+        }
     }
 
     private fun saveDraft(scope: CoroutineScope) {

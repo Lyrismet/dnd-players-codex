@@ -45,6 +45,7 @@ data class NpcCodexItem(
     val id: Long,
     val name: String,
     val initial: String,
+    val portraitBase64: String?,
     val isDead: Boolean,
     val lifeBadge: NpcLifeBadge?,
     val statusLabel: String,
@@ -71,6 +72,7 @@ data class PartyCodexItem(
     val id: Long,
     val name: String,
     val initial: String,
+    val portraitBase64: String?,
     val color: StatusColor,
     val presenceLabel: String,
     val presenceColor: StatusColor,
@@ -116,6 +118,8 @@ data class CodexEntryFormState(
     val type: CodexEntryType,
     val name: String = "",
     val description: String = "",
+    // only rendered for party/npc types - see PortraitField in CodexEntryFormUi
+    val portraitBase64: String? = null,
     val race: String = "",
     val faction: String = "",
     val reward: String = "",
@@ -307,6 +311,12 @@ sealed interface CodexEvent : CircuitUiEvent {
         val field: CodexEntryField,
         val text: String,
     ) : CodexEvent
+
+    data class EntryPortraitPicked(
+        val bytes: ByteArray,
+    ) : CodexEvent
+
+    data object EntryPortraitRemoved : CodexEvent
 
     data class EntryNpcStatusChanged(
         val status: NpcStatus,

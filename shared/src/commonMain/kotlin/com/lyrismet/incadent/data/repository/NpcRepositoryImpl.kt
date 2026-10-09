@@ -37,6 +37,7 @@ class NpcRepositoryImpl(
                     npc.race,
                     npc.faction,
                     npc.lifeState,
+                    npc.portraitBase64,
                 )
                 queries.lastInsertRowId().executeAsOne()
             } else {
@@ -48,6 +49,7 @@ class NpcRepositoryImpl(
                     npc.race,
                     npc.faction,
                     npc.lifeState,
+                    npc.portraitBase64,
                     npc.id,
                 )
                 npc.id
@@ -71,5 +73,6 @@ class NpcRepositoryImpl(
         race: String,
         faction: String,
         lifeState: NpcLifeState,
-    ) = Npc(id, name, status, lifeState, description, locationId, race, faction)
+        portraitBase64: String?,
+    ) = Npc(id, name, status, lifeState, description, locationId, race, faction, portraitBase64)
 }
