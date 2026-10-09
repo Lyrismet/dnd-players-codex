@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 @ContributesBinding(AppScope::class)
 class NpcRepositoryImpl(
     database: AppDatabase,
+    private val mentionRenamer: MentionRenamer,
 ) : NpcRepository {
     private val queries = database.npcQueries
 
@@ -48,6 +49,7 @@ class NpcRepositoryImpl(
                 )
                 queries.lastInsertRowId().executeAsOne()
             } else {
+                val oldName = queries.selectById(npc.id, ::toDomain).executeAsOneOrNull()?.name
                 queries.update(
                     npc.name,
                     npc.status,
@@ -59,6 +61,7 @@ class NpcRepositoryImpl(
                     npc.portraitBase64,
                     npc.id,
                 )
+                if (oldName != null) mentionRenamer.npcRenamed(npc.id, oldName, npc.name)
                 npc.id
             }
         }

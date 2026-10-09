@@ -457,6 +457,8 @@ class CodexPresenter(
                 formController.onClosed()
                 fields.toast.value = null
             }
+            CodexEvent.EntryFormCloseRequested -> if (formController.onCloseRequested()) fields.toast.value = null
+            CodexEvent.EntryFormDiscardPromptDismissed -> formController.onDiscardPromptDismissed()
             is CodexEvent.CalculatorOpened -> formController.onCalculatorOpened(event.field)
             is CodexEvent.CalculatorDigitPressed -> formController.onCalculatorDigitPressed(event.digit)
             CodexEvent.CalculatorBackspacePressed -> formController.onCalculatorBackspacePressed()

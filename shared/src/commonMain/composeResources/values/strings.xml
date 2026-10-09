@@ -61,6 +61,16 @@
     <string name="session_detail_tag_custom_header">Свой тег</string>
     <string name="session_detail_tag_draft_placeholder">Например, Подземелье</string>
     <string name="session_detail_tag_disclaimer">Тег ставится только после вашего касания.</string>
+    <string name="session_tag_builtin_combat">Бой</string>
+    <string name="session_tag_builtin_plot">Сюжет</string>
+    <string name="session_tag_builtin_investigation">Расследование</string>
+    <string name="session_tag_builtin_intrigue">Интрига</string>
+    <string name="session_tag_builtin_trade">Торговля</string>
+    <string name="session_tag_builtin_travel">Путешествие</string>
+    <string name="session_tag_builtin_rest">Отдых</string>
+    <string name="session_tag_reason_quest">Квест: </string>
+    <string name="session_tag_reason_quests">Квесты: </string>
+    <string name="session_tag_reason_words">Слова в записях: </string>
 
     <string name="codex_overline">База знаний</string>
     <string name="codex_title">Кодекс</string>
@@ -155,6 +165,10 @@
     <string name="codex_entry_save_label_invalid">Введите название</string>
     <string name="codex_entry_save_label_create">Добавить в кодекс</string>
     <string name="codex_entry_save_label_edit">Сохранить изменения</string>
+    <string name="codex_entry_discard_title">Сохранить изменения?</string>
+    <string name="codex_entry_discard_text">Вы закрываете форму, а изменения ещё не сохранены.</string>
+    <string name="codex_entry_discard_save">Сохранить</string>
+    <string name="codex_entry_discard_leave">Не сохранять</string>
     <string name="codex_entry_quick_add_npc">+ Новый NPC</string>
     <string name="codex_entry_quick_add_location">+ Новое место</string>
     <string name="codex_entry_quick_add_placeholder_npc">Имя NPC</string>

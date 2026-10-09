@@ -146,6 +146,8 @@ data class CodexEntryFormState(
     // the chip field whose "+ New X" quick-add input is open, if any - at most one at a time, see FormChipQuickAdd
     val quickAddField: CodexEntryChipField? = null,
     val quickAddDraft: String = "",
+    // set while the "save changes?" prompt asks what to do with an unsaved form being closed
+    val isDiscardPromptVisible: Boolean = false,
 )
 
 enum class CodexEntryField {
@@ -351,6 +353,10 @@ sealed interface CodexEvent : CircuitUiEvent {
     data object EntryFormSaveClicked : CodexEvent
 
     data object EntryFormClosed : CodexEvent
+
+    data object EntryFormCloseRequested : CodexEvent
+
+    data object EntryFormDiscardPromptDismissed : CodexEvent
 
     data class CalculatorOpened(
         val field: CodexEntryNumberField,

@@ -32,8 +32,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -49,6 +51,7 @@ import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
+import com.lyrismet.incadent.core.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_back
 import dndplayerscodex.shared.generated.resources.session_detail_end_button
@@ -191,6 +194,8 @@ private fun SessionTitleEditor(
 ) {
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    // a plain String value would start the caret at 0, so the selection is kept here and begins at the end
+    var field by remember { mutableStateOf(TextFieldValue(title, TextRange(title.length))) }
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -198,8 +203,11 @@ private fun SessionTitleEditor(
     ) {
         // BasicTextField, not Material3's TextField, whose built-in padding and minimum height don't match
         BasicTextField(
-            value = title,
-            onValueChange = onTitleChanged,
+            value = field,
+            onValueChange = {
+                field = it
+                onTitleChanged(it.text)
+            },
             textStyle = titleStyle,
             singleLine = true,
             cursorBrush = GoldCursorBrush,
@@ -270,7 +278,7 @@ private fun SessionTagsRow(
     ) {
         state.tags.forEach { tag ->
             TagChip(
-                text = tag,
+                text = sessionTagLabel(tag),
                 foreground = AppPalette.TextDescription,
                 background = AppPalette.SurfacePopover,
                 border = AppPalette.Border,

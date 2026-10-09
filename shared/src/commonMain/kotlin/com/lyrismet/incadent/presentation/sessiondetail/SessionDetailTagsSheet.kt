@@ -29,6 +29,7 @@ import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_tag_add_all_button
 import dndplayerscodex.shared.generated.resources.session_detail_tag_add_suggestion_button
@@ -140,7 +141,11 @@ private fun TagSuggestionRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(suggestion.tag, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
+            Text(
+                sessionTagLabel(suggestion.tag),
+                style = MaterialTheme.typography.titleMedium,
+                color = AppPalette.TextHeading,
+            )
             Text(
                 suggestion.reason,
                 style = MaterialTheme.typography.bodySmall,
@@ -195,7 +200,7 @@ private fun TagCatalogChip(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = if (item.assigned) "✓ ${item.name}" else item.name,
+            text = sessionTagLabel(item.name).let { if (item.assigned) "✓ $it" else it },
             style = MaterialTheme.typography.bodyMedium,
             color = foreground,
         )

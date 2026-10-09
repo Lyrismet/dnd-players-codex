@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -40,6 +41,7 @@ private val ChipShape = RoundedCornerShape(20.dp)
 private val QuickAddPanelShape = RoundedCornerShape(12.dp)
 private val QuickAddFieldShape = RoundedCornerShape(10.dp)
 private val QuickAddFieldSize = 44.dp
+private val QuickAddKeyboardClearance = 24.dp
 private const val QUICK_ADD_BORDER_ALPHA = 0.6f
 private const val QUICK_ADD_PANEL_FILL_ALPHA = 0.06f
 private const val QUICK_ADD_PANEL_BORDER_ALPHA = 0.35f
@@ -90,11 +92,19 @@ internal fun QuickAddPill(quickAdd: FormChipQuickAdd) {
 internal fun FormChipQuickAddPanel(quickAdd: FormChipQuickAdd) {
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     LaunchedEffect(Unit) { bringIntoViewRequester.bringIntoView() }
+    // the spacer is part of the requested region, so the helper text ends up clear of the keyboard edge
+    Column(modifier = Modifier.fillMaxWidth().bringIntoViewRequester(bringIntoViewRequester)) {
+        QuickAddPanelBody(quickAdd)
+        Spacer(Modifier.height(QuickAddKeyboardClearance))
+    }
+}
+
+@Composable
+private fun QuickAddPanelBody(quickAdd: FormChipQuickAdd) {
     Column(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .bringIntoViewRequester(bringIntoViewRequester)
                 .appCard(
                     shape = QuickAddPanelShape,
                     background = AppPalette.Gold.copy(alpha = QUICK_ADD_PANEL_FILL_ALPHA),
