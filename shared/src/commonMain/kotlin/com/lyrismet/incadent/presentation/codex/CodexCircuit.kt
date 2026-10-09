@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.presentation.codex
 
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
@@ -21,6 +22,7 @@ fun Circuit.Builder.addCodexUi(
     sessionEntryRepository: SessionEntryRepository,
     undoController: UndoController,
     appPreferencesRepository: AppPreferencesRepository,
+    imageCompressor: ImageCompressor,
 ): Circuit.Builder =
     addPresenter<CodexScreen, CodexState> { _, navigator, _ ->
         CodexPresenter(
@@ -33,6 +35,7 @@ fun Circuit.Builder.addCodexUi(
             sessionEntryRepository,
             undoController,
             appPreferencesRepository,
+            imageCompressor,
         )
     }.addUi<CodexScreen, CodexState> { state, modifier ->
         CodexUi(state, modifier)

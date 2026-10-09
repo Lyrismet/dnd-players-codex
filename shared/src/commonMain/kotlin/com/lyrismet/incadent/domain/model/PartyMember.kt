@@ -14,7 +14,7 @@ data class PartyMember(
     val armorClass: Int,
     val initiativeBonus: Int,
     val description: String,
-    val portraitUri: String?,
+    val portraitBase64: String? = null,
 )
 
 enum class PartyPresence {

@@ -321,12 +321,13 @@ private fun EntityEmblemBox(
     modifier: Modifier = Modifier,
 ) {
     val shape = if (emblem.shape == EntityEmblemShape.CIRCLE) CircleShape else RoundedCornerShape(14.dp)
-    IconBadge(
-        modifier = modifier,
+    PortraitBadge(
+        portraitBase64 = emblem.portraitBase64,
+        color = emblem.color,
         size = 58.dp,
         shape = shape,
-        border = emblem.color.border,
-        borderWidth = 1.5.dp,
+        monochrome = emblem.isMonochrome,
+        modifier = modifier,
     ) {
         // the design sizes the NPC initial at 26, the quest diamond at 18 and the location triangle at 16
         val textSize =

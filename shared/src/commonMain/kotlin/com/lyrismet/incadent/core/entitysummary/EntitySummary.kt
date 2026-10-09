@@ -74,6 +74,9 @@ data class EntityEmblem(
     val text: String,
     val shape: EntityEmblemShape,
     val color: StatusColor,
+    // only an npc or a party member can carry a portrait - see Players Codex v6.dc.html's `por` flag
+    val portraitBase64: String? = null,
+    val isMonochrome: Boolean = false,
 )
 
 /** one row's value in the facts grid - plain text or a chip that reopens the sheet on another entity */
@@ -219,7 +222,14 @@ private fun buildNpcSummary(
             if (isDead) joinWithDot(relationLabel, lookup.npcLifeLabels.getValue(npc.lifeState)) else relationLabel,
         isDead = isDead,
         description = npc.description,
-        emblem = EntityEmblem(npc.name.take(1).uppercase(), EntityEmblemShape.CIRCLE, npc.status.toStatusColor()),
+        emblem =
+            EntityEmblem(
+                text = npc.name.take(1).uppercase(),
+                shape = EntityEmblemShape.CIRCLE,
+                color = npc.status.toStatusColor(),
+                portraitBase64 = npc.portraitBase64,
+                isMonochrome = isDead,
+            ),
         subtitle = "${npc.race} · ${npc.faction}",
         statusOptions =
             statusOptions(NpcStatus.entries, npc.status, lookup.npcStatusLabels) { status -> status.toStatusColor() },
@@ -257,7 +267,13 @@ private fun buildPartySummary(
         overlineValue = joinWithDot(member.characterClass, if (member.isPlayerCharacter) lookup.partyYouLabel else ""),
         subtitle = member.race,
         description = member.description,
-        emblem = EntityEmblem(member.name.take(1).uppercase(), EntityEmblemShape.CIRCLE, PartyMemberColor),
+        emblem =
+            EntityEmblem(
+                text = member.name.take(1).uppercase(),
+                shape = EntityEmblemShape.CIRCLE,
+                color = PartyMemberColor,
+                portraitBase64 = member.portraitBase64,
+            ),
         presenceOptions =
             statusOptions(PartyPresence.entries, member.presence, lookup.partyPresenceLabels) { presence ->
                 presence.toStatusColor()

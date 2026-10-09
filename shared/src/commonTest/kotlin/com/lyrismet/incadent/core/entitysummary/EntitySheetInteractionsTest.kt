@@ -200,7 +200,7 @@ class EntitySheetInteractionsTest {
         armorClass = 18,
         initiativeBonus = 0,
         description = "",
-        portraitUri = null,
+        portraitBase64 = null,
     )
 
     private fun npc(

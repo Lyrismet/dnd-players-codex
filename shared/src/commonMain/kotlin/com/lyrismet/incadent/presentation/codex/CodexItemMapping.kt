@@ -23,6 +23,7 @@ internal fun Npc.toCodexItem(
         id = npc.id,
         name = npc.name,
         initial = npc.name.take(1).uppercase(),
+        portraitBase64 = npc.portraitBase64,
         isDead = isDead,
         lifeBadge =
             if (isDead) {
@@ -42,6 +43,7 @@ internal fun List<PartyMember>.toPartyCodexItems(labels: PartyCardLabels): List<
             id = member.id,
             name = member.name,
             initial = member.name.take(1).uppercase(),
+            portraitBase64 = member.portraitBase64,
             color = PartyMemberColor,
             presenceLabel = labels.presence.getValue(member.presence),
             presenceColor = member.presence.toStatusColor(),

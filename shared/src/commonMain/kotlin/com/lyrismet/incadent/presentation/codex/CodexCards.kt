@@ -25,6 +25,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
+import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
 import com.lyrismet.incadent.core.designsystem.component.StatusBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import dndplayerscodex.shared.generated.resources.Res
@@ -58,13 +59,15 @@ private fun CodexCardRow(
 private fun CodexInitialBadge(
     initial: String,
     color: StatusColor,
+    portraitBase64: String? = null,
+    monochrome: Boolean = false,
 ) {
-    IconBadge(
+    PortraitBadge(
+        portraitBase64 = portraitBase64,
+        color = color,
         size = 44.dp,
         shape = CircleShape,
-        background = AppPalette.Background,
-        border = color.border,
-        borderWidth = 1.5.dp,
+        monochrome = monochrome,
     ) {
         Text(initial, style = MaterialTheme.typography.titleLarge, color = color.foreground)
     }
@@ -79,7 +82,9 @@ internal fun NpcCodexCard(
     CodexCardRow(
         onClick = onClick,
         modifier = modifier,
-        badge = { CodexInitialBadge(item.initial, item.statusColor) },
+        badge = {
+            CodexInitialBadge(item.initial, item.statusColor, item.portraitBase64, monochrome = item.isDead)
+        },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
@@ -114,7 +119,7 @@ internal fun PartyCodexCard(
     CodexCardRow(
         onClick = onClick,
         modifier = modifier,
-        badge = { CodexInitialBadge(item.initial, item.color) },
+        badge = { CodexInitialBadge(item.initial, item.color, item.portraitBase64) },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(

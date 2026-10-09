@@ -39,7 +39,7 @@ class QuickEditApplyTest {
             armorClass = 16,
             initiativeBonus = 2,
             description = "",
-            portraitUri = null,
+            portraitBase64 = null,
         )
 
     @Test

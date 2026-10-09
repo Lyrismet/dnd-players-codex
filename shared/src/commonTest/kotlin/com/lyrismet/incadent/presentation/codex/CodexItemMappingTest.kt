@@ -43,7 +43,7 @@ private val lira =
         armorClass = 12,
         initiativeBonus = 3,
         description = "",
-        portraitUri = null,
+        portraitBase64 = null,
     )
 
 private val bran =

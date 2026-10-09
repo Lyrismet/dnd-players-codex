@@ -160,6 +160,12 @@
     <string name="codex_entry_quick_add_placeholder_location">Place name</string>
     <string name="codex_entry_quick_add_helper">The entry appears in the codex and is selected here right away. Fill in details later.</string>
     <string name="codex_entry_quick_add_toast_format">“%1$s” added to the codex</string>
+    <string name="codex_entry_label_portrait">Portrait</string>
+    <string name="codex_entry_portrait_hint_empty">Tap the frame: take a photo of a handout from the GM or pick one from the gallery. The photo is compressed to ~60 KB.</string>
+    <string name="codex_entry_portrait_hint_filled">The portrait is stored on this device only. Tap the frame to retake it.</string>
+    <string name="codex_entry_portrait_remove">Remove</string>
+    <string name="codex_entry_portrait_source_camera">Camera</string>
+    <string name="codex_entry_portrait_source_gallery">Gallery</string>
 
     <string name="entity_sheet_overline_format">%1$s · %2$s</string>
     <string name="entity_sheet_status_label">Status</string>
