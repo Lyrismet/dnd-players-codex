@@ -163,7 +163,7 @@
     <string name="codex_entry_quick_add_toast_format">«%1$s» добавлен в кодекс</string>
     <string name="codex_entry_label_portrait">Портрет</string>
     <string name="codex_entry_portrait_hint_empty">Нажмите на рамку: сфотографируйте распечатку от мастера или выберите из галереи. Снимок сожмётся до ~60 КБ.</string>
-    <string name="codex_entry_portrait_hint_filled">Портрет хранится только на устройстве. Нажмите на рамку, чтобы переснять.</string>
+    <string name="codex_entry_portrait_hint_filled">Портрет · %1$d КБ — хранится только на устройстве. Нажмите на рамку, чтобы переснять</string>
     <string name="codex_entry_portrait_remove">Убрать</string>
     <string name="codex_entry_portrait_source_camera">Камера</string>
     <string name="codex_entry_portrait_source_gallery">Галерея</string>

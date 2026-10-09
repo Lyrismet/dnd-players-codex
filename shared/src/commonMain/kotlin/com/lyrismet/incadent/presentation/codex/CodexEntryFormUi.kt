@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.PartyMemberColor
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
 import com.lyrismet.incadent.core.designsystem.component.FormChipQuickAdd
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
@@ -128,16 +127,7 @@ private fun NpcEntryFields(
     form: CodexEntryFormState,
     eventSink: (CodexEvent) -> Unit,
 ) {
-    val npcColor = form.npcStatusOptions.find { it.selected }?.selectedColor ?: NeutralPortraitColor
-    PortraitField(
-        form,
-        form.name
-            .take(1)
-            .uppercase()
-            .ifBlank { "?" },
-        npcColor,
-        eventSink,
-    )
+    PortraitField(form, eventSink)
     FormTextField(
         label = stringResource(Res.string.codex_entry_label_name_npc),
         value = form.name,
@@ -199,15 +189,7 @@ private fun PartyIdentityFields(
         options = form.partyOwnerOptions,
         onClick = { eventSink(CodexEvent.EntryPartyOwnerChanged(it)) },
     )
-    PortraitField(
-        form,
-        form.name
-            .take(1)
-            .uppercase()
-            .ifBlank { "?" },
-        PartyMemberColor,
-        eventSink,
-    )
+    PortraitField(form, eventSink)
     FormTextField(
         label = stringResource(Res.string.codex_entry_label_name_party),
         value = form.name,

@@ -16,3 +16,12 @@ fun encodePortraitBase64(
 }
 
 fun decodePortraitBitmap(base64: String): ImageBitmap = decodeImageBitmap(Base64.Default.decode(base64))
+
+private const val BYTES_PER_KB = 1024
+
+/** stored size of a base64 portrait in whole kilobytes, rounded, shown in the form hint */
+fun portraitSizeKb(base64: String): Int {
+    val padding = base64.takeLastWhile { it == '=' }.length
+    val bytes = base64.length * 3L / 4 - padding
+    return ((bytes + BYTES_PER_KB / 2) / BYTES_PER_KB).toInt()
+}

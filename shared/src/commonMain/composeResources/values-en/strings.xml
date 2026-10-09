@@ -162,7 +162,7 @@
     <string name="codex_entry_quick_add_toast_format">“%1$s” added to the codex</string>
     <string name="codex_entry_label_portrait">Portrait</string>
     <string name="codex_entry_portrait_hint_empty">Tap the frame: take a photo of a handout from the GM or pick one from the gallery. The photo is compressed to ~60 KB.</string>
-    <string name="codex_entry_portrait_hint_filled">The portrait is stored on this device only. Tap the frame to retake it.</string>
+    <string name="codex_entry_portrait_hint_filled">Portrait · %1$d KB — stored on this device only. Tap the frame to retake it</string>
     <string name="codex_entry_portrait_remove">Remove</string>
     <string name="codex_entry_portrait_source_camera">Camera</string>
     <string name="codex_entry_portrait_source_gallery">Gallery</string>
