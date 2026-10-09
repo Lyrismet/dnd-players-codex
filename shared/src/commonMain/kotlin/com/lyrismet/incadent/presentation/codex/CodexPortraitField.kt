@@ -35,6 +35,9 @@ import dndplayerscodex.shared.generated.resources.codex_entry_portrait_hint_fill
 import dndplayerscodex.shared.generated.resources.codex_entry_portrait_remove
 import org.jetbrains.compose.resources.stringResource
 
+private val PortraitCardModifier =
+    Modifier.fillMaxWidth().appCard(RoundedCornerShape(14.dp), AppPalette.Background, AppPalette.Border).padding(12.dp)
+
 /** the arch portrait slot shared by npc and party forms, see Players Codex v6.dc.html's form `photo()` */
 @Composable
 internal fun PortraitField(
@@ -51,15 +54,7 @@ internal fun PortraitField(
             letterSpacing = 0.14.em,
         )
         Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .appCard(
-                        shape = RoundedCornerShape(14.dp),
-                        background = AppPalette.Background,
-                        border = AppPalette.Border,
-                    )
-                    .padding(12.dp),
+            modifier = PortraitCardModifier,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
