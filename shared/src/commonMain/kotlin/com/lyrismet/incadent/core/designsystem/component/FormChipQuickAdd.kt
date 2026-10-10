@@ -54,10 +54,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.flow.collectLatest
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
+import kotlinx.coroutines.flow.collectLatest
 
 private val ChipShape = RoundedCornerShape(20.dp)
 private val QuickAddPanelShape = RoundedCornerShape(12.dp)
