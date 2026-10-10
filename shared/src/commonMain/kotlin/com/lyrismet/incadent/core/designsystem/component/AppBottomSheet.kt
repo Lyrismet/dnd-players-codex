@@ -52,7 +52,8 @@ fun AppBottomSheet(
         containerColor = AppPalette.Surface,
         scrimColor = SheetScrimColor,
         dragHandle = { AppBottomSheetDragHandle() },
-        content = { content() },
+        // the sheet is its own window, so the app-root dismiss-on-tap never sees taps inside it
+        content = { Box(Modifier.dismissKeyboardOnTap()) { content() } },
     )
 }
 
