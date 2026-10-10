@@ -121,30 +121,38 @@ internal fun SessionEntryRow(
                         ),
                 )
                 if (isSelected) {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        EntryActionButton(
-                            glyph = null,
-                            label = stringResource(Res.string.action_edit),
-                            foreground = AppPalette.GoldBright,
-                            background = AppPalette.Gold.copy(alpha = 0.1f),
-                            border = AppPalette.Gold.copy(alpha = 0.4f),
-                            onClick = onEditClick,
-                        )
-                        EntryActionButton(
-                            glyph = "✕",
-                            label = stringResource(Res.string.action_delete),
-                            foreground = AppPalette.MaroonBright,
-                            background = AppPalette.Maroon.copy(alpha = 0.14f),
-                            border = AppPalette.Maroon.copy(alpha = 0.6f),
-                            onClick = { isRemoving = true },
-                        )
-                    }
+                    EntryActions(onEditClick = onEditClick, onDeleteClick = { isRemoving = true })
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun EntryActions(
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        EntryActionButton(
+            glyph = null,
+            label = stringResource(Res.string.action_edit),
+            foreground = AppPalette.GoldBright,
+            background = AppPalette.Gold.copy(alpha = 0.1f),
+            border = AppPalette.Gold.copy(alpha = 0.4f),
+            onClick = onEditClick,
+        )
+        EntryActionButton(
+            glyph = "✕",
+            label = stringResource(Res.string.action_delete),
+            foreground = AppPalette.MaroonBright,
+            background = AppPalette.Maroon.copy(alpha = 0.14f),
+            border = AppPalette.Maroon.copy(alpha = 0.6f),
+            onClick = onDeleteClick,
+        )
     }
 }
 

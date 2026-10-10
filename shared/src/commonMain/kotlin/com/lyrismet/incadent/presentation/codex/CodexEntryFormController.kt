@@ -104,17 +104,17 @@ private data class CodexEntryFormFields(
     // null means no "+ New X" quick-add input is open - see onQuickAddOpened
     val quickAddField: CodexEntryChipField? = null,
     val quickAddDraft: String = "",
-)
-
-// calculator and quick-add are transient panels, only the values the user typed or picked count as a change
-private fun CodexEntryFormFields.hasUnsavedChanges(baseline: CodexEntryFormFields?): Boolean =
-    baseline != null &&
-        copy(
-            calculatorField = baseline.calculatorField,
-            calculatorExpr = baseline.calculatorExpr,
-            quickAddField = baseline.quickAddField,
-            quickAddDraft = baseline.quickAddDraft,
-        ) != baseline
+) {
+    // calculator and quick-add are transient panels, only the values the user typed or picked count as a change
+    fun hasUnsavedChanges(baseline: CodexEntryFormFields?): Boolean =
+        baseline != null &&
+            copy(
+                calculatorField = baseline.calculatorField,
+                calculatorExpr = baseline.calculatorExpr,
+                quickAddField = baseline.quickAddField,
+                quickAddDraft = baseline.quickAddDraft,
+            ) != baseline
+}
 
 // the quick-create stub's placeholder value for a free-text field left blank, per the mockup's quickCreate
 private const val QUICK_ADD_PLACEHOLDER = "—"
@@ -391,13 +391,10 @@ class CodexEntryFormController private constructor(
 
     /** closes right away when nothing changed, otherwise asks first - returns true when the form is gone */
     fun onCloseRequested(): Boolean {
-        val current = fields.value ?: return true
-        if (!current.hasUnsavedChanges(baseline.value)) {
-            onClosed()
-            return true
-        }
-        discardPrompt.value = true
-        return false
+        val current = fields.value
+        val canClose = current == null || !current.hasUnsavedChanges(baseline.value)
+        if (canClose) onClosed() else discardPrompt.value = true
+        return canClose
     }
 
     fun onDiscardPromptDismissed() {
