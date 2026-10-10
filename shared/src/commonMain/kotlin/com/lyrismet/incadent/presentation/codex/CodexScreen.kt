@@ -146,6 +146,7 @@ data class CodexEntryFormState(
     // the chip field whose "+ New X" quick-add input is open, if any - at most one at a time, see FormChipQuickAdd
     val quickAddField: CodexEntryChipField? = null,
     val quickAddDraft: String = "",
+    val isNameFilled: Boolean = false,
     // set while the "save changes?" prompt asks what to do with an unsaved form being closed
     val isDiscardPromptVisible: Boolean = false,
 )

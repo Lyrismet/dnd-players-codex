@@ -12,16 +12,18 @@ import kotlinx.coroutines.withTimeoutOrNull
 // well below the platform long press (about 400 ms) but above a normal tap, so the action shows up mid-hold
 const val QUICK_HOLD_DELAY_MS = 200L
 
-/**
- * a tap fires [onTap] on release, while a hold fires [onHold] after [holdDelayMs] with the finger still down -
- * the release that ends a hold does nothing, so one gesture never triggers both. A scroll or drag cancels either.
- */
+/** a tap fires [onTap] on release, a hold fires [onHold] after [holdDelayMs] with the finger down, never both */
 fun Modifier.tapOrQuickHold(
     onTap: () -> Unit,
     onHold: () -> Unit,
     holdDelayMs: Long = QUICK_HOLD_DELAY_MS,
 ): Modifier =
-    semantics { onClick(action = { onTap().let { true } }) }.pointerInput(onTap, onHold, holdDelayMs) {
+    semantics {
+        onClick(action = {
+            onTap()
+            true
+        })
+    }.pointerInput(onTap, onHold, holdDelayMs) {
         awaitEachGesture {
             awaitFirstDown()
             var released = false

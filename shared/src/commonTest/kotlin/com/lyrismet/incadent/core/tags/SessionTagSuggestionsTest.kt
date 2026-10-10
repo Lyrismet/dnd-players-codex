@@ -78,4 +78,13 @@ class SessionTagSuggestionsTest {
         val result = suggestSessionTags(listOf("ОТРЯД УШЁЛ НА ОТДЫХ В ЛАГЕРЕ"), emptyList(), emptyList())
         assertTrue(result.any { it.tag == "Отдых" })
     }
+
+    @Test
+    fun `reason lines use the labels the caller passes`() {
+        val labels = TagReasonLabels(quest = "Quest: ", quests = "Quests: ", words = "Words in notes: ")
+        val words = suggestSessionTags(listOf("Отряд попал в засаду"), emptyList(), emptyList(), labels)
+        assertTrue(words.single { it.tag == "Бой" }.reason.startsWith("Words in notes: "))
+        val quests = suggestSessionTags(emptyList(), listOf("Меч", "Щит"), emptyList(), labels)
+        assertTrue(quests.single { it.tag == "Сюжет" }.reason.startsWith("Quests: "))
+    }
 }

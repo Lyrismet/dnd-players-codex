@@ -47,16 +47,18 @@ class QuestRepositoryImpl(
                 queries.lastInsertRowId().executeAsOne()
             } else {
                 val oldTitle = queries.selectById(quest.id, ::toDomain).executeAsOneOrNull()?.title
-                queries.update(
-                    quest.title,
-                    quest.status,
-                    quest.reward,
-                    quest.givenByNpcId,
-                    quest.locationId,
-                    quest.description,
-                    quest.id,
-                )
-                if (oldTitle != null) mentionRenamer.questRenamed(quest.id, oldTitle, quest.title)
+                val update = {
+                    queries.update(
+                        quest.title,
+                        quest.status,
+                        quest.reward,
+                        quest.givenByNpcId,
+                        quest.locationId,
+                        quest.description,
+                        quest.id,
+                    )
+                }
+                if (oldTitle != null) mentionRenamer.questRenamed(quest.id, oldTitle, quest.title, update) else update()
                 quest.id
             }
         }

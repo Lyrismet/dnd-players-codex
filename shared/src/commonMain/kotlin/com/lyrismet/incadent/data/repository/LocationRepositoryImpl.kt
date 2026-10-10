@@ -37,8 +37,14 @@ class LocationRepositoryImpl(
                 queries.lastInsertRowId().executeAsOne()
             } else {
                 val oldName = queries.selectById(location.id, ::toDomain).executeAsOneOrNull()?.name
-                queries.update(location.name, location.type, location.description, location.region, location.id)
-                if (oldName != null) mentionRenamer.locationRenamed(location.id, oldName, location.name)
+                val update = {
+                    queries.update(location.name, location.type, location.description, location.region, location.id)
+                }
+                if (oldName != null) {
+                    mentionRenamer.locationRenamed(location.id, oldName, location.name, update)
+                } else {
+                    update()
+                }
                 location.id
             }
         }

@@ -50,18 +50,20 @@ class NpcRepositoryImpl(
                 queries.lastInsertRowId().executeAsOne()
             } else {
                 val oldName = queries.selectById(npc.id, ::toDomain).executeAsOneOrNull()?.name
-                queries.update(
-                    npc.name,
-                    npc.status,
-                    npc.description,
-                    npc.locationId,
-                    npc.race,
-                    npc.faction,
-                    npc.lifeState,
-                    npc.portraitBase64,
-                    npc.id,
-                )
-                if (oldName != null) mentionRenamer.npcRenamed(npc.id, oldName, npc.name)
+                val update = {
+                    queries.update(
+                        npc.name,
+                        npc.status,
+                        npc.description,
+                        npc.locationId,
+                        npc.race,
+                        npc.faction,
+                        npc.lifeState,
+                        npc.portraitBase64,
+                        npc.id,
+                    )
+                }
+                if (oldName != null) mentionRenamer.npcRenamed(npc.id, oldName, npc.name, update) else update()
                 npc.id
             }
         }

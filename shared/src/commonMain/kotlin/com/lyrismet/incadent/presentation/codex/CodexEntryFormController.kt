@@ -78,7 +78,7 @@ private data class PartyFormFields(
 )
 
 /** the form's own editable-in-place fields - kept separate from [CodexEntryFormState] so typing survives rebuilds */
-private data class CodexEntryFormFields(
+internal data class CodexEntryFormFields(
     val editingRef: EntityRef?,
     val originalName: String = "",
     val type: CodexEntryType,
@@ -543,6 +543,7 @@ class CodexEntryFormController private constructor(
                 },
             // blocked while a quick-add panel is open - otherwise Save can race its still-pending repository write
             canSave = current.name.isNotBlank() && current.quickAddField == null,
+            isNameFilled = current.name.isNotBlank(),
             saveLabel = saveLabel(current.name.isNotBlank(), isEditing),
             calculator = current.calculatorField?.let { field -> calculatorPadState(field, current.calculatorExpr) },
             quickAddField = current.quickAddField,

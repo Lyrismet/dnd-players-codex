@@ -26,4 +26,22 @@ class MentionRenameTest {
         val result = renameMentionIn("взяли @Квест: Меч", "Квест: Меч", "Квест: Щит", emptyList())
         assertEquals("взяли @Квест: Щит", result)
     }
+
+    @Test
+    fun `an empty old key changes nothing`() {
+        assertEquals("@Рагнар", renameMentionIn("@Рагнар", "", "Ларс", emptyList()))
+    }
+
+    @Test
+    fun `a shorter other key does not block the rename`() {
+        val result = renameMentionIn("@Рагнар Каменный", "Рагнар Каменный", "Ларс", listOf("Рагнар"))
+        assertEquals("@Ларс", result)
+    }
+
+    @Test
+    fun `the first of several longer keys is enough to skip`() {
+        val body = "@Рагнар Каменный, @Рагнар Тень, @Рагнар"
+        val result = renameMentionIn(body, "Рагнар", "Ларс", listOf("Рагнар Каменный", "Рагнар Тень"))
+        assertEquals("@Рагнар Каменный, @Рагнар Тень, @Ларс", result)
+    }
 }

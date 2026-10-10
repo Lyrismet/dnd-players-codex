@@ -9,7 +9,10 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import org.jetbrains.compose.resources.getString
 
-/** keeps "@mention" text in session entries in step with the codex when an npc, location or quest is renamed */
+/**
+ * runs a rename of an npc, location or quest and rewrites the "@mention" text in session entries in one transaction.
+ * The quest prefix follows the current app language, same as the mention parser.
+ */
 @Inject
 @SingleIn(AppScope::class)
 class MentionRenamer(
@@ -19,46 +22,65 @@ class MentionRenamer(
         id: Long,
         oldName: String,
         newName: String,
-    ) = rename(oldName, newName) { keysExcluding(npcId = id) }
+        update: () -> Unit,
+    ) {
+        val prefix = questPrefix()
+        rename(oldName, newName, update) { keysExcluding(prefix, npcId = id) }
+    }
 
     suspend fun locationRenamed(
         id: Long,
         oldName: String,
         newName: String,
-    ) = rename(oldName, newName) { keysExcluding(locationId = id) }
+        update: () -> Unit,
+    ) {
+        val prefix = questPrefix()
+        rename(oldName, newName, update) { keysExcluding(prefix, locationId = id) }
+    }
 
     suspend fun questRenamed(
         id: Long,
         oldTitle: String,
         newTitle: String,
+        update: () -> Unit,
     ) {
-        val prefix = getString(Res.string.session_detail_quest_mention_prefix)
-        rename(prefix + oldTitle, prefix + newTitle) { keysExcluding(questId = id) }
+        val prefix = questPrefix()
+        rename(prefix + oldTitle, prefix + newTitle, update) { keysExcluding(prefix, questId = id) }
     }
 
-    private suspend fun rename(
+    private suspend fun questPrefix(): String = getString(Res.string.session_detail_quest_mention_prefix)
+
+    private fun rename(
         oldKey: String,
         newKey: String,
-        otherKeys: suspend () -> List<String>,
+        update: () -> Unit,
+        otherKeys: () -> List<String>,
     ) {
-        if (oldKey == newKey) return
-        val others = otherKeys()
-        val queries = database.sessionEntryQueries
-        queries.transaction {
-            queries.selectAll().executeAsList().forEach { entry ->
-                val renamed = renameMentionIn(entry.body, oldKey, newKey, others)
-                if (renamed != entry.body) queries.renameBody(renamed, entry.id)
-            }
+        database.transaction {
+            update()
+            if (oldKey != newKey) rewriteEntries(oldKey, newKey, otherKeys())
         }
     }
 
-    private suspend fun keysExcluding(
+    private fun rewriteEntries(
+        oldKey: String,
+        newKey: String,
+        otherKeys: List<String>,
+    ) {
+        val queries = database.sessionEntryQueries
+        queries.selectAll().executeAsList().forEach { entry ->
+            val renamed = renameMentionIn(entry.body, oldKey, newKey, otherKeys)
+            if (renamed != entry.body) queries.renameBody(renamed, entry.id)
+        }
+    }
+
+    private fun keysExcluding(
+        questPrefix: String,
         npcId: Long? = null,
         locationId: Long? = null,
         questId: Long? = null,
-    ): List<String> {
-        val prefix = getString(Res.string.session_detail_quest_mention_prefix)
-        return database.npcQueries
+    ): List<String> =
+        database.npcQueries
             .selectAll()
             .executeAsList()
             .filter { it.id != npcId }
@@ -72,6 +94,5 @@ class MentionRenamer(
                 .selectAll()
                 .executeAsList()
                 .filter { it.id != questId }
-                .map { prefix + it.title }
-    }
+                .map { questPrefix + it.title }
 }

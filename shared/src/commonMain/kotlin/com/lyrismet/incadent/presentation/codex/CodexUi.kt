@@ -203,9 +203,19 @@ private fun CodexEntryFormSheet(
         ConfirmationDialog(
             title = stringResource(Res.string.codex_entry_discard_title),
             text = stringResource(Res.string.codex_entry_discard_text),
-            onConfirm = { state.eventSink(CodexEvent.EntryFormSaveClicked) },
+            // a blank name cannot be saved, so the button then shows the form's own hint and just returns to the form
+            onConfirm = {
+                val event: CodexEvent =
+                    if (form.isNameFilled) {
+                        CodexEvent.EntryFormSaveClicked
+                    } else {
+                        CodexEvent.EntryFormDiscardPromptDismissed
+                    }
+                state.eventSink(event)
+            },
             onDismiss = { state.eventSink(CodexEvent.EntryFormClosed) },
-            confirmLabel = stringResource(Res.string.codex_entry_discard_save),
+            confirmLabel =
+                if (form.isNameFilled) stringResource(Res.string.codex_entry_discard_save) else form.saveLabel,
             dismissLabel = stringResource(Res.string.codex_entry_discard_leave),
             confirmColor = AppPalette.Gold,
             confirmContentColor = AppPalette.Background,

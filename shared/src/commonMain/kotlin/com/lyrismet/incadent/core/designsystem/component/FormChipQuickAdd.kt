@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.collectLatest
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
@@ -88,10 +90,7 @@ data class FormChipQuickAdd(
 
 private val LocalQuickAddPanelBounds = compositionLocalOf<MutableState<Rect?>?> { null }
 
-/**
- * wraps a form that may hold an open [FormChipQuickAddPanel] - a touch that lands outside the panel calls
- * [onOutsideTap] (without consuming it, so the tapped chip or button still works). Does nothing unless [enabled].
- */
+/** calls [onOutsideTap] for a touch outside the open quick-add panel without consuming it, only when [enabled] */
 @Composable
 fun QuickAddOutsideTapHost(
     enabled: Boolean,
@@ -146,8 +145,10 @@ internal fun FormChipQuickAddPanel(quickAdd: FormChipQuickAdd) {
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val panelBounds = LocalQuickAddPanelBounds.current
     // the keyboard arrives after the panel opens and shrinks the scroll area, so scroll again each time it resizes
-    val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)
-    LaunchedEffect(imeBottom) { bringIntoViewRequester.bringIntoView() }
+    val density = LocalDensity.current
+    LaunchedEffect(density) {
+        snapshotFlow { WindowInsets.ime.getBottom(density) }.collectLatest { bringIntoViewRequester.bringIntoView() }
+    }
     DisposableEffect(Unit) { onDispose { panelBounds?.value = null } }
     // the spacer is part of the requested region, so the helper text ends up clear of the keyboard edge
     Column(modifier = Modifier.fillMaxWidth().bringIntoViewRequester(bringIntoViewRequester)) {
