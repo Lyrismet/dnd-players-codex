@@ -18,6 +18,7 @@ import kotlinx.coroutines.withContext
 @ContributesBinding(AppScope::class)
 class LocationRepositoryImpl(
     database: AppDatabase,
+    private val mentionRenamer: MentionRenamer,
 ) : LocationRepository {
     private val queries = database.locationQueries
 
@@ -35,7 +36,9 @@ class LocationRepositoryImpl(
                 queries.insert(location.name, location.type, location.description, location.region)
                 queries.lastInsertRowId().executeAsOne()
             } else {
+                val oldName = queries.selectById(location.id, ::toDomain).executeAsOneOrNull()?.name
                 queries.update(location.name, location.type, location.description, location.region, location.id)
+                if (oldName != null) mentionRenamer.locationRenamed(location.id, oldName, location.name)
                 location.id
             }
         }

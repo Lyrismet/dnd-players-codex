@@ -61,6 +61,16 @@
     <string name="session_detail_tag_custom_header">Custom tag</string>
     <string name="session_detail_tag_draft_placeholder">E.g. Dungeon</string>
     <string name="session_detail_tag_disclaimer">A tag is only set once you tap it.</string>
+    <string name="session_tag_builtin_combat">Combat</string>
+    <string name="session_tag_builtin_plot">Plot</string>
+    <string name="session_tag_builtin_investigation">Investigation</string>
+    <string name="session_tag_builtin_intrigue">Intrigue</string>
+    <string name="session_tag_builtin_trade">Trade</string>
+    <string name="session_tag_builtin_travel">Travel</string>
+    <string name="session_tag_builtin_rest">Rest</string>
+    <string name="session_tag_reason_quest">Quest: </string>
+    <string name="session_tag_reason_quests">Quests: </string>
+    <string name="session_tag_reason_words">Words in notes: </string>
 
     <string name="codex_overline">Knowledge Base</string>
     <string name="codex_title">Codex</string>
@@ -154,6 +164,10 @@
     <string name="codex_entry_save_label_invalid">Enter a name</string>
     <string name="codex_entry_save_label_create">Add to codex</string>
     <string name="codex_entry_save_label_edit">Save changes</string>
+    <string name="codex_entry_discard_title">Save changes?</string>
+    <string name="codex_entry_discard_text">You are closing the form with unsaved changes.</string>
+    <string name="codex_entry_discard_save">Save</string>
+    <string name="codex_entry_discard_leave">Discard</string>
     <string name="codex_entry_quick_add_npc">+ New NPC</string>
     <string name="codex_entry_quick_add_location">+ New place</string>
     <string name="codex_entry_quick_add_placeholder_npc">NPC name</string>

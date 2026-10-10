@@ -32,6 +32,7 @@ import com.lyrismet.incadent.core.mention.mentionKey
 import com.lyrismet.incadent.core.mention.mentionsIn
 import com.lyrismet.incadent.core.mention.parseMentions
 import com.lyrismet.incadent.core.mention.trailingMentionQuery
+import com.lyrismet.incadent.core.tags.TagReasonLabels
 import com.lyrismet.incadent.core.tags.normalizeCustomTagName
 import com.lyrismet.incadent.core.tags.suggestSessionTags
 import com.lyrismet.incadent.core.undo.UndoController
@@ -60,6 +61,9 @@ import dndplayerscodex.shared.generated.resources.session_detail_tag_button_labe
 import dndplayerscodex.shared.generated.resources.session_detail_tag_sheet_overline_format
 import dndplayerscodex.shared.generated.resources.session_detail_undo_deleted_entry_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
+import dndplayerscodex.shared.generated.resources.session_tag_reason_quest
+import dndplayerscodex.shared.generated.resources.session_tag_reason_quests
+import dndplayerscodex.shared.generated.resources.session_tag_reason_words
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -171,7 +175,7 @@ class SessionDetailPresenter(
         val tagCatalog by tagRepository.observeCatalog().collectAsState(initial = emptyList())
         val mentionedQuestNames = entryMentions.filterIsInstance<MentionEntity.QuestMention>().map { it.name }
         val tagSuggestions =
-            suggestSessionTags(entries.map { it.body }, mentionedQuestNames, assignedTags)
+            suggestSessionTags(entries.map { it.body }, mentionedQuestNames, assignedTags, tagReasonLabels())
                 .map { SessionTagSuggestionItem(it.tag, it.reason) }
         val tagButtonLabel =
             if (assignedTags.isEmpty()) {
@@ -562,3 +566,11 @@ private fun MentionEntity.toSuggestion(
         typeLabel = typeLabel,
     )
 }
+
+@Composable
+private fun tagReasonLabels() =
+    TagReasonLabels(
+        quest = stringResource(Res.string.session_tag_reason_quest),
+        quests = stringResource(Res.string.session_tag_reason_quests),
+        words = stringResource(Res.string.session_tag_reason_words),
+    )

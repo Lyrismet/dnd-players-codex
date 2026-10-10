@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.presentation.sessiondetail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,7 @@ import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_tag_add_all_button
 import dndplayerscodex.shared.generated.resources.session_detail_tag_add_suggestion_button
@@ -140,7 +142,11 @@ private fun TagSuggestionRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(suggestion.tag, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
+            Text(
+                sessionTagLabel(suggestion.tag),
+                style = MaterialTheme.typography.titleMedium,
+                color = AppPalette.TextHeading,
+            )
             Text(
                 suggestion.reason,
                 style = MaterialTheme.typography.bodySmall,
@@ -190,12 +196,17 @@ private fun TagCatalogChip(
         modifier =
             Modifier
                 .height(40.dp)
-                .appCard(shape = RoundedCornerShape(20.dp), background = background, border = border, onClick = onClick)
-                .padding(horizontal = 14.dp),
+                .appCard(
+                    shape = RoundedCornerShape(20.dp),
+                    background = background,
+                    border = border,
+                    borderWidth = 0.5.dp,
+                    onClick = onClick,
+                ).padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = if (item.assigned) "✓ ${item.name}" else item.name,
+            text = sessionTagLabel(item.name).let { if (item.assigned) "✓ $it" else it },
             style = MaterialTheme.typography.bodyMedium,
             color = foreground,
         )
@@ -236,9 +247,10 @@ private fun TagCustomInputSection(
                             border = AppPalette.Border,
                         ),
                 decorationBox = { innerTextField ->
-                    Row(
+                    // stacked, not side by side, so the caret sits at the start of the placeholder
+                    Box(
                         modifier = Modifier.padding(horizontal = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        contentAlignment = Alignment.CenterStart,
                     ) {
                         if (draft.isEmpty()) {
                             Text(

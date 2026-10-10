@@ -125,18 +125,22 @@ private fun NpcSummaryBody(
         onClose = onClose,
         quick = actions.quickEdit,
     )
-    EntityStatusSection(
-        title = stringResource(Res.string.entity_sheet_relation_label),
-        options = npc.statusOptions,
-        onSelected = { status -> actions.onNpcStatusSelected(npc.ref.id, status) },
-        readOnly = actions.statusesReadOnly,
-    )
-    EntityStatusSection(
-        title = stringResource(Res.string.entity_sheet_life_label),
-        options = npc.lifeOptions,
-        onSelected = { life -> actions.onNpcLifeSelected(npc.ref.id, life) },
-        readOnly = actions.statusesReadOnly,
-    )
+    val relationTitle = stringResource(Res.string.entity_sheet_relation_label)
+    val lifeTitle = stringResource(Res.string.entity_sheet_life_label)
+    if (actions.statusesReadOnly) {
+        EntityStatusSeals(npc.sealsWith(relationTitle, lifeTitle))
+    } else {
+        EntityStatusSection(
+            title = relationTitle,
+            options = npc.statusOptions,
+            onSelected = { status -> actions.onNpcStatusSelected(npc.ref.id, status) },
+        )
+        EntityStatusSection(
+            title = lifeTitle,
+            options = npc.lifeOptions,
+            onSelected = { life -> actions.onNpcLifeSelected(npc.ref.id, life) },
+        )
+    }
     EntityDescription(npc.description, actions.quickEdit)
     EntityFactsGrid(npc.facts, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelationGroups(npc.groups, actions.onEntityRefClicked)
@@ -181,12 +185,20 @@ private fun QuestSummaryBody(
         onClose = onClose,
         quick = actions.quickEdit,
     )
-    EntityStatusSection(
-        title = stringResource(Res.string.entity_sheet_status_label),
-        options = quest.statusOptions,
-        onSelected = { status -> actions.onQuestStatusSelected(quest.ref.id, status) },
-        readOnly = actions.statusesReadOnly,
-    )
+    val statusTitle = stringResource(Res.string.entity_sheet_status_label)
+    if (actions.statusesReadOnly) {
+        quest.statusOptions.firstOrNull { it.isSelected }?.let {
+            EntityStatusSeals(
+                listOf(StatusSeal(statusTitle, it)),
+            )
+        }
+    } else {
+        EntityStatusSection(
+            title = statusTitle,
+            options = quest.statusOptions,
+            onSelected = { status -> actions.onQuestStatusSelected(quest.ref.id, status) },
+        )
+    }
     EntityDescription(quest.description, actions.quickEdit)
     EntityFactsGrid(quest.facts, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelationGroups(quest.groups, actions.onEntityRefClicked)
@@ -355,14 +367,13 @@ private fun EntityEmblemBox(
     }
 }
 
-/** the picker of a status family - in a read-only card it collapses to a badge of the current value */
+/** the picker of a status family - a read-only card shows [EntityStatusSeals] instead */
 @Composable
 internal fun <T> EntityStatusSection(
     title: String,
     options: List<StatusOption<T>>,
     onSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
-    readOnly: Boolean = false,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionOverline(
@@ -370,25 +381,21 @@ internal fun <T> EntityStatusSection(
             color = AppPalette.TextTertiary,
             letterSpacing = 0.14.em,
         )
-        if (readOnly) {
-            options.firstOrNull { it.isSelected }?.let { current -> StatusBadge(current.label, current.color) }
-        } else {
-            SegmentedControl(
-                items = options,
-                onSelected = { onSelected(it.value) },
-                itemBackground = { option -> if (option.isSelected) option.color.background else Color.Transparent },
-                itemBorder = { option -> if (option.isSelected) option.color.border else Color.Transparent },
-                containerBackground = AppPalette.Background,
-                itemHeight = 32.dp,
-                itemSpacing = 4.dp,
-            ) { option ->
-                Text(
-                    option.label,
-                    // mockup - font-size 12px - one step up from labelMedium's 11sp
-                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
-                    color = if (option.isSelected) option.color.foreground else AppPalette.TextSecondary,
-                )
-            }
+        SegmentedControl(
+            items = options,
+            onSelected = { onSelected(it.value) },
+            itemBackground = { option -> if (option.isSelected) option.color.background else Color.Transparent },
+            itemBorder = { option -> if (option.isSelected) option.color.border else Color.Transparent },
+            containerBackground = AppPalette.Background,
+            itemHeight = 32.dp,
+            itemSpacing = 4.dp,
+        ) { option ->
+            Text(
+                option.label,
+                // mockup - font-size 12px - one step up from labelMedium's 11sp
+                style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
+                color = if (option.isSelected) option.color.foreground else AppPalette.TextSecondary,
+            )
         }
     }
 }

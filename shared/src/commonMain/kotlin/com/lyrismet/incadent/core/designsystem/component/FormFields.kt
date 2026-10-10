@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -35,6 +36,7 @@ import com.lyrismet.incadent.core.designsystem.StatusColor
 
 private val FieldShape = RoundedCornerShape(12.dp)
 private val ChipShape = RoundedCornerShape(20.dp)
+private val ChipMinHeight = 40.dp
 private val PrimaryButtonShape = RoundedCornerShape(14.dp)
 private val PrimaryButtonHeight = 52.dp
 private val FieldHeight = 48.dp
@@ -248,18 +250,24 @@ private fun <T> ChipOptionPill(
         }
     val foreground = tint?.foreground ?: if (option.selected) AppPalette.GoldBright else AppPalette.TextMuted
     val border = tint?.border ?: if (option.selected) AppPalette.Gold else AppPalette.Border
-    Text(
-        option.label,
-        style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
-        color = foreground,
+    // mockup chip - min-height 40px, 14px side padding, 13px semibold label
+    Box(
         modifier =
             Modifier
                 .clip(ChipShape)
                 .background(background)
                 .border(1.dp, border, ChipShape)
                 .clickable { onClick(option.value) }
-                .padding(horizontal = 14.dp, vertical = 11.dp),
-    )
+                .defaultMinSize(minHeight = ChipMinHeight)
+                .padding(horizontal = 14.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            option.label,
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
+            color = foreground,
+        )
+    }
 }
 
 /**

@@ -104,15 +104,27 @@ private data class CodexEntryFormFields(
     // null means no "+ New X" quick-add input is open - see onQuickAddOpened
     val quickAddField: CodexEntryChipField? = null,
     val quickAddDraft: String = "",
-)
+) {
+    // calculator and quick-add are transient panels, only the values the user typed or picked count as a change
+    fun hasUnsavedChanges(baseline: CodexEntryFormFields?): Boolean =
+        baseline != null &&
+            copy(
+                calculatorField = baseline.calculatorField,
+                calculatorExpr = baseline.calculatorExpr,
+                quickAddField = baseline.quickAddField,
+                quickAddDraft = baseline.quickAddDraft,
+            ) != baseline
+}
 
 // the quick-create stub's placeholder value for a free-text field left blank, per the mockup's quickCreate
 private const val QUICK_ADD_PLACEHOLDER = "—"
 
 // one entry point per form action - splitting them across classes would only forward the same calls
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 class CodexEntryFormController private constructor(
     private val fields: MutableState<CodexEntryFormFields?>,
+    private val baseline: MutableState<CodexEntryFormFields?>,
+    private val discardPrompt: MutableState<Boolean>,
     private val npcRepository: NpcRepository,
     private val partyRepository: PartyRepository,
     private val questRepository: QuestRepository,
@@ -127,7 +139,17 @@ class CodexEntryFormController private constructor(
             locationRepository: LocationRepository,
         ): CodexEntryFormController {
             val fields = rememberRetained { mutableStateOf<CodexEntryFormFields?>(null) }
-            return CodexEntryFormController(fields, npcRepository, partyRepository, questRepository, locationRepository)
+            val baseline = rememberRetained { mutableStateOf<CodexEntryFormFields?>(null) }
+            val discardPrompt = rememberRetained { mutableStateOf(false) }
+            return CodexEntryFormController(
+                fields,
+                baseline,
+                discardPrompt,
+                npcRepository,
+                partyRepository,
+                questRepository,
+                locationRepository,
+            )
         }
     }
 
@@ -136,7 +158,13 @@ class CodexEntryFormController private constructor(
         defaultType: CodexEntryType,
         initialName: String = "",
     ) {
-        fields.value = CodexEntryFormFields(editingRef = null, type = defaultType, name = initialName)
+        open(CodexEntryFormFields(editingRef = null, type = defaultType, name = initialName))
+    }
+
+    private fun open(opened: CodexEntryFormFields) {
+        fields.value = opened
+        baseline.value = opened
+        discardPrompt.value = false
     }
 
     fun onEditEntryRequested(
@@ -151,7 +179,7 @@ class CodexEntryFormController private constructor(
                     is EntityRef.Quest -> questRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Location -> locationRepository.getById(ref.id)?.let { it.toFields(ref) }
                 }
-            if (loaded != null) fields.value = loaded
+            if (loaded != null) open(loaded)
         }
     }
 
@@ -357,12 +385,27 @@ class CodexEntryFormController private constructor(
 
     fun onClosed() {
         fields.value = null
+        baseline.value = null
+        discardPrompt.value = false
+    }
+
+    /** closes right away when nothing changed, otherwise asks first - returns true when the form is gone */
+    fun onCloseRequested(): Boolean {
+        val current = fields.value
+        val canClose = current == null || !current.hasUnsavedChanges(baseline.value)
+        if (canClose) onClosed() else discardPrompt.value = true
+        return canClose
+    }
+
+    fun onDiscardPromptDismissed() {
+        discardPrompt.value = false
     }
 
     fun onSaveClicked(scope: CoroutineScope) {
+        discardPrompt.value = false
         val current = fields.value ?: return
         if (current.name.isBlank()) return
-        fields.value = null
+        onClosed()
         scope.launch {
             when (current.type) {
                 CodexEntryType.PARTY ->
@@ -504,6 +547,7 @@ class CodexEntryFormController private constructor(
             calculator = current.calculatorField?.let { field -> calculatorPadState(field, current.calculatorExpr) },
             quickAddField = current.quickAddField,
             quickAddDraft = current.quickAddDraft,
+            isDiscardPromptVisible = discardPrompt.value,
         )
     }
 }
