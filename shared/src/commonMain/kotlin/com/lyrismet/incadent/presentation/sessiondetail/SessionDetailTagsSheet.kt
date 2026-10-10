@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.presentation.sessiondetail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -241,9 +242,10 @@ private fun TagCustomInputSection(
                             border = AppPalette.Border,
                         ),
                 decorationBox = { innerTextField ->
-                    Row(
+                    // stacked, not side by side, so the caret sits at the start of the placeholder
+                    Box(
                         modifier = Modifier.padding(horizontal = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        contentAlignment = Alignment.CenterStart,
                     ) {
                         if (draft.isEmpty()) {
                             Text(

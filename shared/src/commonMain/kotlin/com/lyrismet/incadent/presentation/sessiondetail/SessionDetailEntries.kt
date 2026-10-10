@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,8 +36,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,6 +47,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.MentionChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
+import com.lyrismet.incadent.core.designsystem.component.tapOrQuickHold
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_delete
@@ -65,7 +67,7 @@ private fun entryCollapseExit() =
         shrinkTowards = Alignment.CenterVertically,
     ) + fadeOut(animationSpec = tween(ENTRY_COLLAPSE_ANIMATION_DURATION_MS))
 
-// tapping a note selects it and reveals its actions underneath
+// tapping or holding a note selects it and reveals its actions underneath
 @Composable
 internal fun SessionEntryRow(
     entry: SessionEntryItem,
@@ -78,6 +80,7 @@ internal fun SessionEntryRow(
     onMentionClick: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptics = LocalHapticFeedback.current
     // collapses in place first, Gmail-style, instead of just vanishing once the entry is actually deleted
     var isRemoving by remember { mutableStateOf(false) }
     LaunchedEffect(isRemoving) {
@@ -105,7 +108,17 @@ internal fun SessionEntryRow(
                 SessionEntryBody(
                     segments = entry.segments,
                     onMentionClick = onMentionClick,
-                    modifier = Modifier.selectionHighlight(isSelected, isEditing).clickable(onClick = onClick),
+                    modifier =
+                        Modifier.selectionHighlight(isSelected, isEditing).tapOrQuickHold(
+                            onTap = onClick,
+                            // a hold only reveals the actions, a second hold on an open note must not close it again
+                            onHold = {
+                                if (!isSelected) {
+                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onClick()
+                                }
+                            },
+                        ),
                 )
                 if (isSelected) {
                     FlowRow(
