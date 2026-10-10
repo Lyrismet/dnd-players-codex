@@ -170,6 +170,11 @@ private fun QuickAddPanelBody(
                 ).padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        Text(
+            quickAdd.helperText,
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp, lineHeight = 16.sp),
+            color = AppPalette.TextSecondary,
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
             QuickAddInput(quickAdd, modifier = Modifier.weight(1f))
             IconBadge(
@@ -190,11 +195,6 @@ private fun QuickAddPanelBody(
                 Text("✕", style = MaterialTheme.typography.bodySmall, color = AppPalette.TextMuted)
             }
         }
-        Text(
-            quickAdd.helperText,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp, lineHeight = 16.sp),
-            color = AppPalette.TextSecondary,
-        )
     }
 }
 
