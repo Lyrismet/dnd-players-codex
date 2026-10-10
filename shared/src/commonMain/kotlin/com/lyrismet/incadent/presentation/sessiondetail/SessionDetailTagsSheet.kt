@@ -196,8 +196,13 @@ private fun TagCatalogChip(
         modifier =
             Modifier
                 .height(40.dp)
-                .appCard(shape = RoundedCornerShape(20.dp), background = background, border = border, onClick = onClick)
-                .padding(horizontal = 14.dp),
+                .appCard(
+                    shape = RoundedCornerShape(20.dp),
+                    background = background,
+                    border = border,
+                    borderWidth = 0.5.dp,
+                    onClick = onClick,
+                ).padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(

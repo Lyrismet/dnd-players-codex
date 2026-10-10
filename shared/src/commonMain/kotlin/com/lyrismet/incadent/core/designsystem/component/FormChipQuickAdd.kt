@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.core.designsystem.component
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,8 +19,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,9 +36,16 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -66,6 +83,39 @@ data class FormChipQuickAdd(
     val onCancel: () -> Unit,
 )
 
+private val LocalQuickAddPanelBounds = compositionLocalOf<MutableState<Rect?>?> { null }
+
+/**
+ * wraps a form that may hold an open [FormChipQuickAddPanel] - a touch that lands outside the panel calls
+ * [onOutsideTap] (without consuming it, so the tapped chip or button still works). Does nothing unless [enabled].
+ */
+@Composable
+fun QuickAddOutsideTapHost(
+    enabled: Boolean,
+    onOutsideTap: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val panelBounds = remember { mutableStateOf<Rect?>(null) }
+    var origin by remember { mutableStateOf(Offset.Zero) }
+    val currentOnOutsideTap by rememberUpdatedState(onOutsideTap)
+    Box(
+        modifier =
+            modifier
+                .onGloballyPositioned { origin = it.positionInWindow() }
+                .pointerInput(enabled) {
+                    if (!enabled) return@pointerInput
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        val bounds = panelBounds.value
+                        if (bounds != null && !bounds.contains(origin + down.position)) currentOnOutsideTap()
+                    }
+                },
+    ) {
+        CompositionLocalProvider(LocalQuickAddPanelBounds provides panelBounds) { content() }
+    }
+}
+
 /** the dashed-gold "+ New X" pill, styled like a chip but never filled and never selected */
 @Composable
 internal fun QuickAddPill(quickAdd: FormChipQuickAdd) {
@@ -91,19 +141,27 @@ internal fun QuickAddPill(quickAdd: FormChipQuickAdd) {
 @Composable
 internal fun FormChipQuickAddPanel(quickAdd: FormChipQuickAdd) {
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val panelBounds = LocalQuickAddPanelBounds.current
     LaunchedEffect(Unit) { bringIntoViewRequester.bringIntoView() }
+    DisposableEffect(Unit) { onDispose { panelBounds?.value = null } }
     // the spacer is part of the requested region, so the helper text ends up clear of the keyboard edge
     Column(modifier = Modifier.fillMaxWidth().bringIntoViewRequester(bringIntoViewRequester)) {
-        QuickAddPanelBody(quickAdd)
+        QuickAddPanelBody(
+            quickAdd,
+            modifier = Modifier.onGloballyPositioned { panelBounds?.value = it.boundsInWindow() },
+        )
         Spacer(Modifier.height(QuickAddKeyboardClearance))
     }
 }
 
 @Composable
-private fun QuickAddPanelBody(quickAdd: FormChipQuickAdd) {
+private fun QuickAddPanelBody(
+    quickAdd: FormChipQuickAdd,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .appCard(
                     shape = QuickAddPanelShape,
