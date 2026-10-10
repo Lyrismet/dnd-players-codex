@@ -50,7 +50,7 @@ class NpcRepositoryImpl(
                 queries.lastInsertRowId().executeAsOne()
             } else {
                 val oldName = queries.selectById(npc.id, ::toDomain).executeAsOneOrNull()?.name
-                val update = {
+                val update: () -> Unit = {
                     queries.update(
                         npc.name,
                         npc.status,

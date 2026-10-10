@@ -65,7 +65,7 @@ private const val NEW_PARTY_ARMOR_CLASS = 10
 private const val NEW_PARTY_INITIATIVE_BONUS = 0
 
 /** the party-only part of the form, nested so the other entry types never see these fields */
-private data class PartyFormFields(
+internal data class PartyFormFields(
     val isPlayerCharacter: Boolean = false,
     val player: String = "",
     val characterClass: String = "",

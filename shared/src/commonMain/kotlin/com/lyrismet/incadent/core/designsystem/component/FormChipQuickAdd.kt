@@ -146,8 +146,9 @@ internal fun FormChipQuickAddPanel(quickAdd: FormChipQuickAdd) {
     val panelBounds = LocalQuickAddPanelBounds.current
     // the keyboard arrives after the panel opens and shrinks the scroll area, so scroll again each time it resizes
     val density = LocalDensity.current
-    LaunchedEffect(density) {
-        snapshotFlow { WindowInsets.ime.getBottom(density) }.collectLatest { bringIntoViewRequester.bringIntoView() }
+    val ime = WindowInsets.ime
+    LaunchedEffect(ime, density) {
+        snapshotFlow { ime.getBottom(density) }.collectLatest { bringIntoViewRequester.bringIntoView() }
     }
     DisposableEffect(Unit) { onDispose { panelBounds?.value = null } }
     // the spacer is part of the requested region, so the helper text ends up clear of the keyboard edge

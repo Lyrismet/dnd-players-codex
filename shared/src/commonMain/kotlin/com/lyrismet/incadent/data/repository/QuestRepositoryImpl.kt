@@ -47,7 +47,7 @@ class QuestRepositoryImpl(
                 queries.lastInsertRowId().executeAsOne()
             } else {
                 val oldTitle = queries.selectById(quest.id, ::toDomain).executeAsOneOrNull()?.title
-                val update = {
+                val update: () -> Unit = {
                     queries.update(
                         quest.title,
                         quest.status,
