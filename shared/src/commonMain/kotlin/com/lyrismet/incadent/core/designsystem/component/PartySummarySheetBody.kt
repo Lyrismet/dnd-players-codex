@@ -25,12 +25,20 @@ internal fun PartySummaryBody(
         quick = actions.quickEdit,
     )
     actions.onPartyPresenceSelected?.let { onSelected ->
-        EntityStatusSection(
-            title = stringResource(Res.string.entity_sheet_party_presence_label),
-            options = party.presenceOptions,
-            onSelected = { presence -> onSelected(party.ref.id, presence) },
-            readOnly = actions.statusesReadOnly,
-        )
+        val title = stringResource(Res.string.entity_sheet_party_presence_label)
+        if (actions.statusesReadOnly) {
+            party.presenceOptions.firstOrNull { it.isSelected }?.let {
+                EntityStatusSeals(
+                    listOf(StatusSeal(title, it)),
+                )
+            }
+        } else {
+            EntityStatusSection(
+                title = title,
+                options = party.presenceOptions,
+                onSelected = { presence -> onSelected(party.ref.id, presence) },
+            )
+        }
     }
     EntityDescription(party.description, actions.quickEdit)
     EntityFactsGrid(party.facts, actions.onEntityRefClicked, actions.quickEdit)

@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.core.entitysummary
 
 import androidx.compose.runtime.Composable
+import com.lyrismet.incadent.core.designsystem.DEFAULT_STATUS_GLYPH
 import com.lyrismet.incadent.core.designsystem.LocationMentionColor
 import com.lyrismet.incadent.core.designsystem.PartyMemberColor
 import com.lyrismet.incadent.core.designsystem.StatusColor
@@ -8,6 +9,7 @@ import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.designsystem.component.toMentionChip
 import com.lyrismet.incadent.core.designsystem.toStatusColor
+import com.lyrismet.incadent.core.designsystem.toStatusGlyph
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.quickedit.InlineEdit
@@ -123,6 +125,7 @@ data class StatusOption<T>(
     val label: String,
     val color: StatusColor,
     val isSelected: Boolean,
+    val glyph: String = DEFAULT_STATUS_GLYPH,
 )
 
 /** pre-formatted for direct rendering - shown inside an [AppBottomSheet], one shape per codex entity kind */
@@ -235,9 +238,18 @@ private fun buildNpcSummary(
             ),
         subtitle = "${npc.race} · ${npc.faction}",
         statusOptions =
-            statusOptions(NpcStatus.entries, npc.status, lookup.npcStatusLabels) { status -> status.toStatusColor() },
+            statusOptions(NpcStatus.entries, npc.status, lookup.npcStatusLabels, NpcStatus::toStatusGlyph) { status ->
+                status.toStatusColor()
+            },
         lifeOptions =
-            statusOptions(NpcLifeState.entries, npc.lifeState, lookup.npcLifeLabels) { life -> life.toStatusColor() },
+            statusOptions(
+                NpcLifeState.entries,
+                npc.lifeState,
+                lookup.npcLifeLabels,
+                NpcLifeState::toStatusGlyph,
+            ) { life ->
+                life.toStatusColor()
+            },
         facts =
             listOf(
                 FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(npc.race), QuickEditField.RACE),
@@ -334,7 +346,12 @@ private fun buildQuestSummary(
         emblem = EntityEmblem(MentionGlyph.QUEST.symbol, EntityEmblemShape.ROUNDED, quest.status.toStatusColor()),
         subtitle = location?.name.orEmpty(),
         statusOptions =
-            statusOptions(QuestStatus.entries, quest.status, lookup.questStatusLabels) { status ->
+            statusOptions(
+                QuestStatus.entries,
+                quest.status,
+                lookup.questStatusLabels,
+                QuestStatus::toStatusGlyph,
+            ) { status ->
                 status.toStatusColor()
             },
         facts =
@@ -411,9 +428,12 @@ private fun <T> statusOptions(
     values: List<T>,
     current: T,
     labels: Map<T, String>,
+    glyphOf: (T) -> String = { DEFAULT_STATUS_GLYPH },
     colorOf: (T) -> StatusColor,
 ): List<StatusOption<T>> =
-    values.map { value -> StatusOption(value, labels.getValue(value), colorOf(value), value == current) }
+    values.map { value ->
+        StatusOption(value, labels.getValue(value), colorOf(value), value == current, glyphOf(value))
+    }
 
 /** the records plus resolved labels a summary is built from - composable only because the labels come from resources */
 @Composable
