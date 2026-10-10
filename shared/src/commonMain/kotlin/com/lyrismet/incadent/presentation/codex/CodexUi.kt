@@ -9,14 +9,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.NumberPadSheet
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
+import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
@@ -25,6 +28,10 @@ import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_add_entry_button
+import dndplayerscodex.shared.generated.resources.codex_entry_discard_leave
+import dndplayerscodex.shared.generated.resources.codex_entry_discard_save
+import dndplayerscodex.shared.generated.resources.codex_entry_discard_text
+import dndplayerscodex.shared.generated.resources.codex_entry_discard_title
 import dndplayerscodex.shared.generated.resources.codex_filter_all
 import dndplayerscodex.shared.generated.resources.codex_overline
 import dndplayerscodex.shared.generated.resources.codex_search_placeholder
@@ -157,7 +164,7 @@ private fun CodexEntryFormSheet(
             if (calculator != null) {
                 state.eventSink(CodexEvent.CalculatorClosed)
             } else {
-                state.eventSink(CodexEvent.EntryFormClosed)
+                state.eventSink(CodexEvent.EntryFormCloseRequested)
             }
         },
     ) {
@@ -182,7 +189,7 @@ private fun CodexEntryFormSheet(
                 CodexEntryFormUi(
                     form = form,
                     eventSink = state.eventSink,
-                    onClose = { state.eventSink(CodexEvent.EntryFormClosed) },
+                    onClose = { state.eventSink(CodexEvent.EntryFormCloseRequested) },
                 )
                 // the sheet covers the app-level toast, so the quick-add confirmation gets its own copy here
                 AppToast(
@@ -192,6 +199,37 @@ private fun CodexEntryFormSheet(
             }
         }
     }
+    if (form.isDiscardPromptVisible) CodexEntryDiscardDialog(state, form)
+}
+
+@Composable
+private fun CodexEntryDiscardDialog(
+    state: CodexState,
+    form: CodexEntryFormState,
+) {
+    ConfirmationDialog(
+        title = stringResource(Res.string.codex_entry_discard_title),
+        text = stringResource(Res.string.codex_entry_discard_text),
+        // a blank name cannot be saved, so the button then shows the form's own hint and just returns to the form
+        onConfirm = {
+            val event: CodexEvent =
+                if (form.isNameFilled) {
+                    CodexEvent.EntryFormSaveClicked
+                } else {
+                    CodexEvent.EntryFormDiscardPromptDismissed
+                }
+            state.eventSink(event)
+        },
+        onDismiss = { state.eventSink(CodexEvent.EntryFormClosed) },
+        confirmLabel = if (form.isNameFilled) stringResource(Res.string.codex_entry_discard_save) else form.saveLabel,
+        dismissLabel = stringResource(Res.string.codex_entry_discard_leave),
+        confirmColor = AppPalette.Gold,
+        confirmContentColor = AppPalette.Background,
+        icon = AppIcons.Edit,
+        accent = AppPalette.Gold,
+        accentBright = AppPalette.GoldBright,
+        onDismissRequest = { state.eventSink(CodexEvent.EntryFormDiscardPromptDismissed) },
+    )
 }
 
 @Composable

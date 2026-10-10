@@ -46,6 +46,7 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
 import com.lyrismet.incadent.core.format.NumberSizeLadder
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
+import com.lyrismet.incadent.core.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_list_archive_section
 import dndplayerscodex.shared.generated.resources.session_list_delete_content_description
@@ -372,7 +373,7 @@ private fun SessionArchiveRow(
                     ) {
                         session.tags.forEach { tag ->
                             TagChip(
-                                text = tag,
+                                text = sessionTagLabel(tag),
                                 foreground = AppPalette.TextDescription,
                                 background = AppPalette.SurfacePopover,
                                 border = AppPalette.Border,

@@ -18,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -77,6 +78,10 @@ internal fun SessionComposer(
     var isDraftFocused by remember { mutableStateOf(false) }
     var composerWidthPx by remember { mutableIntStateOf(0) }
     val draftFocusRequester = remember { FocusRequester() }
+    // an ended session mounts the composer only for the edit, so focus it right away
+    LaunchedEffect(state.editingEntryId) {
+        if (state.editingEntryId != null) draftFocusRequester.requestFocus()
+    }
 
     Column(modifier = modifier.fillMaxWidth().background(AppPalette.SurfaceFooter)) {
         // the design's footer sits below a divider that separates it from the feed above

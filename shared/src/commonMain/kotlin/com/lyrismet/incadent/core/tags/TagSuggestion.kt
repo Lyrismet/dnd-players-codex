@@ -50,6 +50,13 @@ private val TAG_RULES =
 
 private const val MAX_REASON_WORDS = 2
 
+/** the fixed phrases a suggestion's reason line is built from - russian unless the caller passes the app language */
+data class TagReasonLabels(
+    val quest: String = "Квест: ",
+    val quests: String = "Квесты: ",
+    val words: String = "Слова в записях: ",
+)
+
 /**
  * on-device tag suggestions for a session, from its entry texts and its mentioned quests - never from an AI or
  * the network. A tag already in [assignedTags] is never suggested again. Pure and Compose-free, so a presenter
@@ -59,11 +66,12 @@ fun suggestSessionTags(
     entryTexts: List<String>,
     mentionedQuestNames: List<String>,
     assignedTags: List<String>,
+    labels: TagReasonLabels = TagReasonLabels(),
 ): List<TagSuggestion> {
     val combinedText = entryTexts.joinToString("\n")
     return TAG_RULES.mapNotNull { rule ->
         if (assignedTags.any { it.equals(rule.tag, ignoreCase = true) }) return@mapNotNull null
-        reasonFor(rule, combinedText, mentionedQuestNames)?.let { TagSuggestion(rule.tag, it) }
+        reasonFor(rule, combinedText, mentionedQuestNames, labels)?.let { TagSuggestion(rule.tag, it) }
     }
 }
 
@@ -71,27 +79,32 @@ private fun reasonFor(
     rule: TagRule,
     combinedText: String,
     mentionedQuestNames: List<String>,
+    labels: TagReasonLabels,
 ): String? =
     if (rule.signals.contains(TagSignal.QuestMentioned)) {
-        questReason(mentionedQuestNames)
+        questReason(mentionedQuestNames, labels)
     } else {
-        stemReason(combinedText, rule.signals)
+        stemReason(combinedText, rule.signals, labels)
     }
 
-private fun questReason(mentionedQuestNames: List<String>): String? {
+private fun questReason(
+    mentionedQuestNames: List<String>,
+    labels: TagReasonLabels,
+): String? {
     if (mentionedQuestNames.isEmpty()) return null
-    val prefix = if (mentionedQuestNames.size > 1) "Квесты: " else "Квест: "
+    val prefix = if (mentionedQuestNames.size > 1) labels.quests else labels.quest
     return prefix + mentionedQuestNames.take(MAX_REASON_WORDS).joinToString(", ")
 }
 
 private fun stemReason(
     text: String,
     signals: List<TagSignal>,
+    labels: TagReasonLabels,
 ): String? {
     if (text.isBlank()) return null
     val words = signals.mapNotNull { firstMatch(text, it)?.lowercase() }.distinct().take(MAX_REASON_WORDS)
     return words.takeIf { it.isNotEmpty() }?.let { matched ->
-        "Слова в записях: " + matched.joinToString(", ") { "«$it»" }
+        labels.words + matched.joinToString(", ") { "«$it»" }
     }
 }
 

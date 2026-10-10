@@ -62,7 +62,8 @@ fun SessionDetailUi(
                 SessionFeed(state, modifier = Modifier.weight(1f))
             }
 
-            if (state.isLive) {
+            // an ended session only shows the input while one of its notes is being edited
+            if (state.isLive || state.isEditingEntry) {
                 SessionComposer(state)
             }
         }

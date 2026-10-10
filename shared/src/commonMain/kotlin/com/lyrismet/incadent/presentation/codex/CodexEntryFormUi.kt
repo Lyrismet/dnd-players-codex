@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,14 +13,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
-import com.lyrismet.incadent.core.designsystem.component.FormChipQuickAdd
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.FormStepper
 import com.lyrismet.incadent.core.designsystem.component.FormTextArea
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
+import com.lyrismet.incadent.core.designsystem.component.QuickAddOutsideTapHost
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
@@ -66,11 +68,6 @@ import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_description
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_reward
-import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_helper
-import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_location
-import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_npc
-import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_placeholder_location
-import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_placeholder_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_type_location
 import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_type_party
@@ -87,10 +84,31 @@ internal fun CodexEntryFormUi(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val focusManager = LocalFocusManager.current
+    QuickAddOutsideTapHost(
+        enabled = form.quickAddField != null,
+        onOutsideTap = {
+            focusManager.clearFocus()
+            eventSink(CodexEvent.EntryQuickAddCancelled)
+        },
+        modifier = modifier,
+    ) {
+        CodexEntryFormContent(form, eventSink, onClose)
+    }
+}
+
+@Composable
+private fun CodexEntryFormContent(
+    form: CodexEntryFormState,
+    eventSink: (CodexEvent) -> Unit,
+    onClose: () -> Unit,
+) {
     Column(
         modifier =
-            modifier
+            Modifier
                 .fillMaxWidth()
+                // shrinks the scroll viewport above the keyboard, so the open quick-add panel can scroll clear of it
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
                 // matches every bottom-sheet body's content inset, see Players Codex v5.dc.html sheetRef 6px 20px 44px
@@ -335,58 +353,6 @@ private fun LocationEntryFields(
         value = form.description,
         onChange = { eventSink(CodexEvent.EntryFieldChanged(CodexEntryField.DESCRIPTION, it)) },
         placeholder = stringResource(Res.string.codex_entry_placeholder_location_description),
-    )
-}
-
-/** the "+ New place" quick-add for a location-type chip field - [field] is which of the two owns the open input */
-@Composable
-private fun locationQuickAdd(
-    form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
-    field: CodexEntryChipField,
-): FormChipQuickAdd =
-    quickAddFor(
-        form = form,
-        eventSink = eventSink,
-        field = field,
-        addLabel = stringResource(Res.string.codex_entry_quick_add_location),
-        placeholder = stringResource(Res.string.codex_entry_quick_add_placeholder_location),
-    )
-
-/** the "+ New NPC" quick-add for the quest "given by" chip field */
-@Composable
-private fun npcQuickAdd(
-    form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
-    field: CodexEntryChipField,
-): FormChipQuickAdd =
-    quickAddFor(
-        form = form,
-        eventSink = eventSink,
-        field = field,
-        addLabel = stringResource(Res.string.codex_entry_quick_add_npc),
-        placeholder = stringResource(Res.string.codex_entry_quick_add_placeholder_npc),
-    )
-
-@Composable
-private fun quickAddFor(
-    form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
-    field: CodexEntryChipField,
-    addLabel: String,
-    placeholder: String,
-): FormChipQuickAdd {
-    val isOpen = form.quickAddField == field
-    return FormChipQuickAdd(
-        addLabel = addLabel,
-        isOpen = isOpen,
-        draft = if (isOpen) form.quickAddDraft else "",
-        placeholder = placeholder,
-        helperText = stringResource(Res.string.codex_entry_quick_add_helper),
-        onOpen = { eventSink(CodexEvent.EntryQuickAddOpened(field)) },
-        onDraftChanged = { eventSink(CodexEvent.EntryQuickAddDraftChanged(it)) },
-        onSave = { eventSink(CodexEvent.EntryQuickAddSaveClicked) },
-        onCancel = { eventSink(CodexEvent.EntryQuickAddCancelled) },
     )
 }
 

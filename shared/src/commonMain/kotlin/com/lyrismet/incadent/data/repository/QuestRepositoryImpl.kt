@@ -19,6 +19,7 @@ import kotlinx.coroutines.withContext
 @ContributesBinding(AppScope::class)
 class QuestRepositoryImpl(
     database: AppDatabase,
+    private val mentionRenamer: MentionRenamer,
 ) : QuestRepository {
     private val queries = database.questQueries
 
@@ -45,15 +46,19 @@ class QuestRepositoryImpl(
                 )
                 queries.lastInsertRowId().executeAsOne()
             } else {
-                queries.update(
-                    quest.title,
-                    quest.status,
-                    quest.reward,
-                    quest.givenByNpcId,
-                    quest.locationId,
-                    quest.description,
-                    quest.id,
-                )
+                val oldTitle = queries.selectById(quest.id, ::toDomain).executeAsOneOrNull()?.title
+                val update: () -> Unit = {
+                    queries.update(
+                        quest.title,
+                        quest.status,
+                        quest.reward,
+                        quest.givenByNpcId,
+                        quest.locationId,
+                        quest.description,
+                        quest.id,
+                    )
+                }
+                if (oldTitle != null) mentionRenamer.questRenamed(quest.id, oldTitle, quest.title, update) else update()
                 quest.id
             }
         }

@@ -1,0 +1,47 @@
+package com.lyrismet.incadent.core.mention
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class MentionRenameTest {
+    @Test
+    fun `renames every mention of the old key`() {
+        val result = renameMentionIn("@Рагнар пришёл, потом @Рагнар ушёл", "Рагнар", "Ларс", emptyList())
+        assertEquals("@Ларс пришёл, потом @Ларс ушёл", result)
+    }
+
+    @Test
+    fun `leaves a longer mention that merely starts with the old key`() {
+        val result = renameMentionIn("@Рагнар Каменный и @Рагнар", "Рагнар", "Ларс", listOf("Рагнар Каменный"))
+        assertEquals("@Рагнар Каменный и @Ларс", result)
+    }
+
+    @Test
+    fun `leaves text without an at sign alone`() {
+        assertEquals("Рагнар пришёл", renameMentionIn("Рагнар пришёл", "Рагнар", "Ларс", emptyList()))
+    }
+
+    @Test
+    fun `renames a quest mention with its prefix`() {
+        val result = renameMentionIn("взяли @Квест: Меч", "Квест: Меч", "Квест: Щит", emptyList())
+        assertEquals("взяли @Квест: Щит", result)
+    }
+
+    @Test
+    fun `an empty old key changes nothing`() {
+        assertEquals("@Рагнар", renameMentionIn("@Рагнар", "", "Ларс", emptyList()))
+    }
+
+    @Test
+    fun `a shorter other key does not block the rename`() {
+        val result = renameMentionIn("@Рагнар Каменный", "Рагнар Каменный", "Ларс", listOf("Рагнар"))
+        assertEquals("@Ларс", result)
+    }
+
+    @Test
+    fun `the first of several longer keys is enough to skip`() {
+        val body = "@Рагнар Каменный, @Рагнар Тень, @Рагнар"
+        val result = renameMentionIn(body, "Рагнар", "Ларс", listOf("Рагнар Каменный", "Рагнар Тень"))
+        assertEquals("@Рагнар Каменный, @Рагнар Тень, @Ларс", result)
+    }
+}

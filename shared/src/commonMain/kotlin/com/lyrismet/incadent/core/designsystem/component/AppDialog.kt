@@ -29,6 +29,7 @@ fun AppDialog(
         Column(
             modifier =
                 modifier
+                    .dismissKeyboardOnTap()
                     .fillMaxWidth()
                     .padding(horizontal = 28.dp)
                     .clip(DialogShape)

@@ -23,6 +23,9 @@ VALUES (?, ?, ?, ?);
 updateBody:
 UPDATE session_entry SET body = ?, edited = 1 WHERE id = ?;
 
+renameBody:
+UPDATE session_entry SET body = ? WHERE id = ?;
+
 deleteById:
 DELETE FROM session_entry WHERE id = ?;
 

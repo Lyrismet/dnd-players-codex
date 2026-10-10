@@ -153,3 +153,27 @@ fun MentionEntity.dedupeKey(): String =
         is MentionEntity.LocationMention -> "location:$id"
         is MentionEntity.QuestMention -> "quest:$id"
     }
+
+/** rewrites "@oldKey" to "@newKey" in [body], skipping mentions of a longer key in [otherKeys] that starts with it */
+fun renameMentionIn(
+    body: String,
+    oldKey: String,
+    newKey: String,
+    otherKeys: List<String>,
+): String {
+    if (oldKey.isEmpty() || '@' !in body) return body
+    val longestOther = otherKeys.filter { it.length > oldKey.length }
+    val out = StringBuilder()
+    var i = 0
+    while (i < body.length) {
+        val isOld = body[i] == '@' && body.startsWith(oldKey, i + 1) && longestOther.none { body.startsWith(it, i + 1) }
+        if (isOld) {
+            out.append('@').append(newKey)
+            i += 1 + oldKey.length
+        } else {
+            out.append(body[i])
+            i++
+        }
+    }
+    return out.toString()
+}
