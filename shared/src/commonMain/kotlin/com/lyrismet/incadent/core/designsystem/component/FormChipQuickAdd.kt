@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
@@ -46,6 +48,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -142,7 +145,9 @@ internal fun QuickAddPill(quickAdd: FormChipQuickAdd) {
 internal fun FormChipQuickAddPanel(quickAdd: FormChipQuickAdd) {
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val panelBounds = LocalQuickAddPanelBounds.current
-    LaunchedEffect(Unit) { bringIntoViewRequester.bringIntoView() }
+    // the keyboard arrives after the panel opens and shrinks the scroll area, so scroll again each time it resizes
+    val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)
+    LaunchedEffect(imeBottom) { bringIntoViewRequester.bringIntoView() }
     DisposableEffect(Unit) { onDispose { panelBounds?.value = null } }
     // the spacer is part of the requested region, so the helper text ends up clear of the keyboard edge
     Column(modifier = Modifier.fillMaxWidth().bringIntoViewRequester(bringIntoViewRequester)) {
