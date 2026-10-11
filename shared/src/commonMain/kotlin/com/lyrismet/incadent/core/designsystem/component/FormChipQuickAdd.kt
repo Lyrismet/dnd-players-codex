@@ -245,8 +245,8 @@ private fun QuickAddInput(
     )
 }
 
-/** dashed rounded-rect border - [Modifier.border] has no dash support, the quick-add pill is this file's only user */
-private fun Modifier.dashedBorder(
+/** dashed rounded-rect border - [Modifier.border] has no dash support, used by the quick-add and phrase pills */
+internal fun Modifier.dashedBorder(
     color: Color,
     width: Dp = 1.dp,
     cornerRadius: Dp = 20.dp,

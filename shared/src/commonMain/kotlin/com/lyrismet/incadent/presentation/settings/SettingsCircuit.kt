@@ -3,6 +3,8 @@ package com.lyrismet.incadent.presentation.settings
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.LanguageRepository
+import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
+import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.slack.circuit.runtime.CircuitContext
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
@@ -24,6 +26,8 @@ class SettingsPresenterFactory(
     private val languageRepository: LanguageRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val swipeHintReplayController: SwipeHintReplayController,
+    private val phraseSnippetRepository: PhraseSnippetRepository,
+    private val sessionEntryRepository: SessionEntryRepository,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -36,6 +40,8 @@ class SettingsPresenterFactory(
                     languageRepository,
                     appPreferencesRepository,
                     swipeHintReplayController,
+                    phraseSnippetRepository,
+                    sessionEntryRepository,
                 )
             else -> null
         }

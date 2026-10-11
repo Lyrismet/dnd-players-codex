@@ -294,4 +294,32 @@
     <string name="swipe_hint_codex_both_title">Right to edit, left to delete</string>
     <string name="swipe_hint_codex_both_subtitle">After deleting, Undo will appear at the bottom</string>
     <string name="swipe_hint_dismiss">Got it</string>
+    <string name="phrase_strip_open_button">Snippets…</string>
+    <string name="phrase_completion_header">CONTINUE THE PHRASE</string>
+    <string name="phrase_completion_tab">TAB</string>
+    <string name="phrase_completion_pinned_meta">mine</string>
+    <string name="phrase_completion_frequent_meta_format">×%1$d</string>
+    <string name="phrase_sheet_overline">JOURNAL</string>
+    <string name="phrase_sheet_title">Snippets</string>
+    <string name="phrase_sheet_intro">Phrases you keep writing. Tap one in the row above the input to insert it; start typing and the app suggests a continuation.</string>
+    <string name="phrase_sheet_pinned_header">★ MINE</string>
+    <string name="phrase_sheet_pinned_empty">Nothing yet. Add your own or pin a frequent phrase below.</string>
+    <string name="phrase_sheet_draft_placeholder">New snippet…</string>
+    <string name="phrase_sheet_frequent_header">↻ FREQUENT PHRASES · FOUND AUTOMATICALLY</string>
+    <string name="phrase_sheet_frequent_empty">No repeats yet — they show up once the same phrase appears in different notes.</string>
+    <string name="phrase_sheet_pin_button">★ Pin</string>
+    <string name="phrase_sheet_disclaimer">The search covers every session on the device: chains of 4+ words repeated across notes. No AI, no network.</string>
+    <string name="phrase_meta_format">found %1$s · %2$s</string>
+    <plurals name="phrase_meta_times">
+        <item quantity="one">%1$d time</item>
+        <item quantity="other">%1$d times</item>
+    </plurals>
+    <plurals name="phrase_meta_sessions">
+        <item quantity="one">%1$d session</item>
+        <item quantity="other">%1$d sessions</item>
+    </plurals>
+    <string name="session_detail_entry_save_phrase">Save as snippet</string>
+    <string name="session_detail_phrase_saved_toast">Added to snippets</string>
+    <string name="settings_phrases_title">Phrase snippets</string>
+    <string name="settings_phrases_summary_format">Mine: %1$d · frequent found: %2$d</string>
 </resources>

@@ -6,6 +6,8 @@ import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
+import com.lyrismet.incadent.core.phrases.PhraseSheetEvent
+import com.lyrismet.incadent.core.phrases.PhraseSheetState
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.QuestStatus
@@ -43,6 +45,12 @@ data class SessionDetailState(
     val tagButtonLabel: String = "",
     val tagSuggestionCount: Int = 0,
     val tagSheet: SessionTagSheetState? = null,
+    // pinned and frequent phrases offered in the row above the composer
+    val phraseStrip: List<SessionPhraseItem> = emptyList(),
+    // phrases continuing the sentence being typed - empty while a mention is being typed or nothing matches
+    val phraseCompletions: List<SessionPhraseItem> = emptyList(),
+    val phraseSheet: PhraseSheetState? = null,
+    val toast: String? = null,
     val eventSink: (SessionDetailEvent) -> Unit = {},
 ) : CircuitUiState {
     val isEditingEntry: Boolean get() = editingEntryTimeLabel != null
@@ -65,6 +73,14 @@ data class SessionTagSuggestionItem(
 data class SessionTagCatalogItem(
     val name: String,
     val assigned: Boolean,
+)
+
+/** a phrase chip or completion row - [countLabel] ("×N") is empty for a pinned snippet */
+data class SessionPhraseItem(
+    val text: String,
+    val label: String,
+    val isPinned: Boolean,
+    val countLabel: String,
 )
 
 /** one row in the note feed - either a meeting-day separator (multi-day sessions only) or a timestamped note */
@@ -192,4 +208,22 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     ) : SessionDetailEvent
 
     data object TagDraftSubmitted : SessionDetailEvent
+
+    data class PhraseStripPicked(
+        val text: String,
+    ) : SessionDetailEvent
+
+    data class PhraseCompletionPicked(
+        val text: String,
+    ) : SessionDetailEvent
+
+    data object PhraseSheetOpened : SessionDetailEvent
+
+    data class PhraseSheet(
+        val event: PhraseSheetEvent,
+    ) : SessionDetailEvent
+
+    data class SaveEntryAsPhraseClicked(
+        val id: Long,
+    ) : SessionDetailEvent
 }

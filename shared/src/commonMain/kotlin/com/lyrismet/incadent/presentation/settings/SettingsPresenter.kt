@@ -5,8 +5,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import com.lyrismet.incadent.core.campaign.RenameSheetState
 import com.lyrismet.incadent.core.campaign.savedCampaignNameOrNull
+import com.lyrismet.incadent.core.phrases.PhraseSheetController
+import com.lyrismet.incadent.core.phrases.phrasePool
+import com.lyrismet.incadent.core.phrases.rememberFrequentPhrases
+import com.lyrismet.incadent.core.phrases.sheetState
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.model.EntityEditMode
@@ -15,6 +20,8 @@ import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.LanguageRepository
+import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
+import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.default_campaign_name
@@ -24,6 +31,8 @@ class SettingsPresenter(
     private val languageRepository: LanguageRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val swipeHintReplayController: SwipeHintReplayController,
+    private val phraseSnippetRepository: PhraseSnippetRepository,
+    private val sessionEntryRepository: SessionEntryRepository,
 ) : Presenter<SettingsState> {
     @Composable
     override fun present(): SettingsState {
@@ -39,6 +48,11 @@ class SettingsPresenter(
         val defaultCampaignName = stringResource(Res.string.default_campaign_name)
         val campaignName = campaignNameOverride ?: defaultCampaignName
         val renameSheet = remember { mutableStateOf<RenameSheetState>(RenameSheetState.Hidden) }
+        val pinnedPhrases by phraseSnippetRepository.observeAll().collectAsState(initial = emptyList())
+        val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
+        val frequentPhrases = rememberFrequentPhrases(allEntries)
+        val phrases = remember { PhraseSheetController(phraseSnippetRepository) }
+        val scope = rememberCoroutineScope()
 
         return SettingsState(
             language = language,
@@ -47,6 +61,9 @@ class SettingsPresenter(
             editMode = editMode,
             campaignName = campaignName,
             renameSheet = renameSheet.value,
+            pinnedPhraseCount = pinnedPhrases.size,
+            frequentPhraseCount = phrasePool(pinnedPhrases, frequentPhrases).count { !it.isPinned },
+            phraseSheet = phrases.sheetState(pinnedPhrases, frequentPhrases),
         ) { event ->
             when (event) {
                 is SettingsEvent.LanguageSelected -> languageRepository.setLanguage(event.language)
@@ -60,6 +77,8 @@ class SettingsPresenter(
                     // mirrors the mockup's replayHints - jump to the sessions tab so the hint actually plays
                     swipeHintReplayController.requestSessionsReplay()
                 }
+                SettingsEvent.PhrasesOpened -> phrases.open()
+                is SettingsEvent.PhraseSheet -> phrases.onEvent(event.event, scope)
                 SettingsEvent.RenameOpened -> renameSheet.value = RenameSheetState.Editing(campaignName)
                 is SettingsEvent.RenameDraftChanged -> renameSheet.value = RenameSheetState.Editing(event.value)
                 SettingsEvent.RenameSaved -> {

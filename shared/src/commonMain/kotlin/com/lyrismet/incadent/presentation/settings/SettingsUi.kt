@@ -37,6 +37,7 @@ import com.lyrismet.incadent.core.campaign.RenameSheetState
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.CampaignRenameSheet
+import com.lyrismet.incadent.core.designsystem.component.PhraseSnippetsSheet
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
@@ -62,6 +63,8 @@ import dndplayerscodex.shared.generated.resources.settings_numbering_arabic
 import dndplayerscodex.shared.generated.resources.settings_numbering_desc
 import dndplayerscodex.shared.generated.resources.settings_numbering_roman
 import dndplayerscodex.shared.generated.resources.settings_numbering_title
+import dndplayerscodex.shared.generated.resources.settings_phrases_summary_format
+import dndplayerscodex.shared.generated.resources.settings_phrases_title
 import dndplayerscodex.shared.generated.resources.settings_section_app
 import dndplayerscodex.shared.generated.resources.settings_section_campaign
 import dndplayerscodex.shared.generated.resources.settings_section_diary
@@ -103,6 +106,13 @@ fun SettingsUi(
                     mentionStyle = state.mentionStyle,
                     onNumberingSelected = { sink(SettingsEvent.NumberingSelected(it)) },
                     onMentionStyleSelected = { sink(SettingsEvent.MentionStyleSelected(it)) },
+                    phrasesSummary =
+                        stringResource(
+                            Res.string.settings_phrases_summary_format,
+                            state.pinnedPhraseCount,
+                            state.frequentPhraseCount,
+                        ),
+                    onPhrasesClick = { sink(SettingsEvent.PhrasesOpened) },
                     onShowHintsClick = { sink(SettingsEvent.SwipeHintsShowRequested) },
                 )
                 CodexSection(
@@ -112,6 +122,10 @@ fun SettingsUi(
                 CampaignSection(name = state.campaignName, onRenameClick = { sink(SettingsEvent.RenameOpened) })
             }
         }
+    }
+
+    state.phraseSheet?.let { sheet ->
+        PhraseSnippetsSheet(sheet) { event -> sink(SettingsEvent.PhraseSheet(event)) }
     }
 
     val renameSheet = state.renameSheet
@@ -147,8 +161,10 @@ private fun AppSection(
 private fun DiarySection(
     numbering: SessionNumbering,
     mentionStyle: MentionStyle,
+    phrasesSummary: String,
     onNumberingSelected: (SessionNumbering) -> Unit,
     onMentionStyleSelected: (MentionStyle) -> Unit,
+    onPhrasesClick: () -> Unit,
     onShowHintsClick: () -> Unit,
 ) {
     SettingsGroup(overline = stringResource(Res.string.settings_section_diary), topSpacing = 12.dp) {
@@ -177,6 +193,12 @@ private fun DiarySection(
             onSelected = onMentionStyleSelected,
             labelStyle = ChoiceLabelSans,
             width = 150.dp,
+        )
+        AppDivider()
+        PhrasesRow(
+            title = stringResource(Res.string.settings_phrases_title),
+            summary = phrasesSummary,
+            onClick = onPhrasesClick,
         )
         AppDivider()
         HintsRow(
