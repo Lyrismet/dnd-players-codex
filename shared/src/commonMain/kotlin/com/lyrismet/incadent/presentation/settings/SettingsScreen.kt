@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.presentation.settings
 
 import com.lyrismet.incadent.core.campaign.RenameSheetState
+import com.lyrismet.incadent.core.phrases.PhraseSheetEvent
+import com.lyrismet.incadent.core.phrases.PhraseSheetState
 import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.MentionStyle
@@ -20,6 +22,9 @@ data class SettingsState(
     val editMode: EntityEditMode,
     val campaignName: String,
     val renameSheet: RenameSheetState,
+    val pinnedPhraseCount: Int,
+    val frequentPhraseCount: Int,
+    val phraseSheet: PhraseSheetState?,
     val eventSink: (SettingsEvent) -> Unit = {},
 ) : CircuitUiState
 
@@ -41,6 +46,12 @@ sealed interface SettingsEvent : CircuitUiEvent {
     ) : SettingsEvent
 
     data object SwipeHintsShowRequested : SettingsEvent
+
+    data object PhrasesOpened : SettingsEvent
+
+    data class PhraseSheet(
+        val event: PhraseSheetEvent,
+    ) : SettingsEvent
 
     data object RenameOpened : SettingsEvent
 

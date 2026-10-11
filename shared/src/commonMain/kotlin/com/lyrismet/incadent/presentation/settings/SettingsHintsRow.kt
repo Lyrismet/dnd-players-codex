@@ -1,9 +1,11 @@
 package com.lyrismet.incadent.presentation.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,5 +40,35 @@ internal fun HintsRow(
             )
         }
         HeaderActionButton(text = actionLabel, onClick = onAction)
+    }
+}
+
+// the "Заготовки фраз" row of the diary group - the summary counts pinned and found phrases, a tap opens the sheet
+@Composable
+internal fun PhrasesRow(
+    title: String,
+    summary: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = 52.dp)
+                .clickable(onClick = onClick)
+                .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = AppPalette.TextPrimary)
+            Text(
+                text = summary,
+                modifier = Modifier.padding(top = 2.dp),
+                fontSize = 12.sp,
+                color = AppPalette.TextSecondary,
+            )
+        }
+        Text(text = "›", fontSize = 20.sp, color = AppPalette.TextTertiary)
     }
 }

@@ -1,7 +1,9 @@
 package com.lyrismet.incadent.presentation.sessiondetail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -32,8 +34,10 @@ import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.OrnamentedEmptyState
+import com.lyrismet.incadent.core.designsystem.component.PhraseSnippetsSheet
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
 import dndplayerscodex.shared.generated.resources.Res
@@ -50,27 +54,41 @@ fun SessionDetailUi(
     val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     Scaffold(modifier = modifier, contentWindowInsets = contentWindowInsets) { contentPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
-            SessionDetailHeader(state)
-
-            if (state.feed.isEmpty()) {
-                OrnamentedEmptyState(
-                    title = stringResource(Res.string.session_detail_empty_feed),
-                    hint = stringResource(Res.string.session_detail_empty_feed_hint),
-                    modifier = Modifier.weight(1f),
-                )
-            } else {
-                SessionFeed(state, modifier = Modifier.weight(1f))
-            }
-
-            // an ended session only shows the input while one of its notes is being edited
-            if (state.isLive || state.isEditingEntry) {
-                SessionComposer(state)
-            }
+            SessionDetailBody(state)
         }
     }
 
     state.selectedEntity?.let { entity -> SessionDetailEntitySheet(state, entity) }
     state.tagSheet?.let { sheet -> SessionDetailTagsSheet(sheet, state.eventSink) }
+    state.phraseSheet?.let { sheet ->
+        PhraseSnippetsSheet(sheet) { event -> state.eventSink(SessionDetailEvent.PhraseSheet(event)) }
+    }
+}
+
+@Composable
+private fun ColumnScope.SessionDetailBody(state: SessionDetailState) {
+    SessionDetailHeader(state)
+
+    // the toast floats at the feed's bottom edge, so it never covers the composer
+    Box(modifier = Modifier.weight(1f)) {
+        if (state.feed.isEmpty()) {
+            OrnamentedEmptyState(
+                title = stringResource(Res.string.session_detail_empty_feed),
+                hint = stringResource(Res.string.session_detail_empty_feed_hint),
+            )
+        } else {
+            SessionFeed(state)
+        }
+        AppToast(
+            text = state.toast,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+        )
+    }
+
+    // an ended session only shows the input while one of its notes is being edited
+    if (state.isLive || state.isEditingEntry) {
+        SessionComposer(state)
+    }
 }
 
 @Composable
@@ -103,6 +121,9 @@ private fun SessionFeed(
                         },
                         onEditClick = {
                             state.eventSink(SessionDetailEvent.EditEntryClicked(feedItem.entry.id))
+                        },
+                        onSavePhraseClick = {
+                            state.eventSink(SessionDetailEvent.SaveEntryAsPhraseClicked(feedItem.entry.id))
                         },
                         onDeleteClick = {
                             state.eventSink(SessionDetailEvent.DeleteEntryClicked(feedItem.entry.id))

@@ -1,0 +1,13 @@
+CREATE TABLE phrase_snippet (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL UNIQUE
+);
+
+selectAll:
+SELECT * FROM phrase_snippet ORDER BY id ASC;
+
+insert:
+INSERT OR IGNORE INTO phrase_snippet(text) VALUES (?);
+
+deleteByText:
+DELETE FROM phrase_snippet WHERE text = ?;

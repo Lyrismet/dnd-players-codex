@@ -295,4 +295,36 @@
     <string name="swipe_hint_codex_both_title">Вправо — изменить, влево — удалить</string>
     <string name="swipe_hint_codex_both_subtitle">После удаления внизу появится «Отменить»</string>
     <string name="swipe_hint_dismiss">Понятно</string>
+    <string name="phrase_strip_open_button">Заготовки…</string>
+    <string name="phrase_completion_header">ПРОДОЛЖИТЬ ФРАЗУ</string>
+    <string name="phrase_completion_tab">TAB</string>
+    <string name="phrase_completion_pinned_meta">моя</string>
+    <string name="phrase_completion_frequent_meta_format">×%1$d</string>
+    <string name="phrase_sheet_overline">ДНЕВНИК</string>
+    <string name="phrase_sheet_title">Заготовки</string>
+    <string name="phrase_sheet_intro">Фразы, которые вы пишете снова и снова. Касание в строке над полем ввода вставит текст; начните печатать — приложение предложит продолжение.</string>
+    <string name="phrase_sheet_pinned_header">★ МОИ</string>
+    <string name="phrase_sheet_pinned_empty">Пока пусто. Добавьте свою или закрепите частую фразу ниже.</string>
+    <string name="phrase_sheet_draft_placeholder">Новая заготовка…</string>
+    <string name="phrase_sheet_frequent_header">↻ ЧАСТЫЕ ФРАЗЫ · НАЙДЕНО АВТОМАТИЧЕСКИ</string>
+    <string name="phrase_sheet_frequent_empty">Повторов пока нет — они появятся, когда одна и та же фраза встретится в разных записях.</string>
+    <string name="phrase_sheet_pin_button">★ Закрепить</string>
+    <string name="phrase_sheet_disclaimer">Поиск идёт по всем сессиям на устройстве: повторяющиеся цепочки из 4+ слов в разных записях. Без ИИ и сети.</string>
+    <string name="phrase_meta_format">встречается %1$s · %2$s</string>
+    <plurals name="phrase_meta_times">
+        <item quantity="one">%1$d раз</item>
+        <item quantity="few">%1$d раза</item>
+        <item quantity="many">%1$d раз</item>
+        <item quantity="other">%1$d раза</item>
+    </plurals>
+    <plurals name="phrase_meta_sessions">
+        <item quantity="one">%1$d сессия</item>
+        <item quantity="few">%1$d сессии</item>
+        <item quantity="many">%1$d сессий</item>
+        <item quantity="other">%1$d сессии</item>
+    </plurals>
+    <string name="session_detail_entry_save_phrase">В заготовки</string>
+    <string name="session_detail_phrase_saved_toast">Добавлено в заготовки</string>
+    <string name="settings_phrases_title">Заготовки фраз</string>
+    <string name="settings_phrases_summary_format">Мои: %1$d · частых найдено: %2$d</string>
 </resources>

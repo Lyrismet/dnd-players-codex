@@ -32,9 +32,20 @@ import com.lyrismet.incadent.core.mention.mentionKey
 import com.lyrismet.incadent.core.mention.mentionsIn
 import com.lyrismet.incadent.core.mention.parseMentions
 import com.lyrismet.incadent.core.mention.trailingMentionQuery
+import com.lyrismet.incadent.core.phrases.PhraseOption
+import com.lyrismet.incadent.core.phrases.PhraseSheetController
+import com.lyrismet.incadent.core.phrases.insertPhrase
+import com.lyrismet.incadent.core.phrases.phraseCompletions
+import com.lyrismet.incadent.core.phrases.phraseFragment
+import com.lyrismet.incadent.core.phrases.phraseLabel
+import com.lyrismet.incadent.core.phrases.phrasePool
+import com.lyrismet.incadent.core.phrases.rememberFrequentPhrases
+import com.lyrismet.incadent.core.phrases.sheetState
+import com.lyrismet.incadent.core.phrases.snippetFromEntry
 import com.lyrismet.incadent.core.tags.TagReasonLabels
 import com.lyrismet.incadent.core.tags.normalizeCustomTagName
 import com.lyrismet.incadent.core.tags.suggestSessionTags
+import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
@@ -45,6 +56,7 @@ import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.PartyRepository
+import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.domain.repository.TagRepository
@@ -55,6 +67,7 @@ import dndplayerscodex.shared.generated.resources.session_detail_meeting_separat
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
+import dndplayerscodex.shared.generated.resources.session_detail_phrase_saved_toast
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import dndplayerscodex.shared.generated.resources.session_detail_tag_button_label_empty
 import dndplayerscodex.shared.generated.resources.session_detail_tag_button_label_has_tags
@@ -76,6 +89,7 @@ import kotlin.time.ExperimentalTime
 
 private const val ENTRY_PREVIEW_LENGTH = 60
 private const val HIGHLIGHT_DURATION_MS = 2800L
+private const val PHRASE_STRIP_SIZE = 8
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
 @Suppress("LongParameterList")
@@ -88,6 +102,8 @@ private class SessionDetailFields(
     val entitySheet: EntitySheetInteractions,
     val tagSheetOpen: MutableState<Boolean>,
     val tagDraft: MutableState<String>,
+    val phrases: PhraseSheetController,
+    val toast: MutableState<String?>,
 )
 
 @Suppress("LongParameterList")
@@ -101,6 +117,7 @@ class SessionDetailPresenter(
     private val tagRepository: TagRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val phraseSnippetRepository: PhraseSnippetRepository,
 ) : Presenter<SessionDetailState> {
     // one collection per source the screen reads - a flat merge, not real complexity
     @Suppress("LongMethod")
@@ -119,6 +136,8 @@ class SessionDetailPresenter(
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
+        val pinnedPhrases by phraseSnippetRepository.observeAll().collectAsState(initial = emptyList())
+        val frequentPhrases = rememberFrequentPhrases(allEntries)
         val scope = rememberCoroutineScope()
 
         val currentNote = allSessions.find { it.id == screen.sessionNoteId }
@@ -132,6 +151,7 @@ class SessionDetailPresenter(
                 highlightedEntryId.value = null
             }
         }
+        fields.toast.autoDismiss()
         val titleField = fields.titleField
         val draft = fields.draft
         val editingEntryId = fields.editingEntryId
@@ -202,6 +222,12 @@ class SessionDetailPresenter(
                 null
             }
 
+        val phraseSavedToast = stringResource(Res.string.session_detail_phrase_saved_toast)
+        val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
+        val phrasePool = remember(pinnedPhrases, frequentPhrases) { phrasePool(pinnedPhrases, frequentPhrases) }
+        val completions =
+            if (mention.suggestions.isEmpty()) phraseCompletions(draft.value.text, phrasePool)?.options else null
+
         // deliberately renders the same header/feed/composer shape whether or not currentNote
         // has arrived yet from the Flow's cold start - swapping to a distinct "loading" screen
         // for that one frame was the cause of a visible flash on every navigation into this screen
@@ -226,8 +252,13 @@ class SessionDetailPresenter(
             tagButtonLabel = tagButtonLabel,
             tagSuggestionCount = tagSuggestions.size,
             tagSheet = tagSheet,
+            phraseStrip = phrasePool.take(PHRASE_STRIP_SIZE).map { it.toItem(questPrefix) },
+            phraseCompletions = completions.orEmpty().map { it.toItem(questPrefix) },
+            phraseSheet = fields.phrases.sheetState(pinnedPhrases, frequentPhrases),
+            toast = fields.toast.value,
         ) { event ->
-            onEvent(event, currentNote, entries, undoDeletedEntryTitle, scope, fields, assignedTags, tagSuggestions)
+            val context = EventContext(currentNote, entries, undoDeletedEntryTitle, phraseSavedToast, scope)
+            onEvent(event, context, fields, assignedTags, tagSuggestions)
         }
     }
 
@@ -245,6 +276,8 @@ class SessionDetailPresenter(
             entitySheet = entitySheetInteractions(selectedEntityRef),
             tagSheetOpen = remember(noteId) { mutableStateOf(false) },
             tagDraft = remember(noteId) { mutableStateOf("") },
+            phrases = remember { PhraseSheetController(phraseSnippetRepository) },
+            toast = remember(noteId) { mutableStateOf<String?>(null) },
         )
     }
 
@@ -257,17 +290,19 @@ class SessionDetailPresenter(
         )
 
     // flat circuit event-dispatch table, grows one branch per event variant - not real branching complexity
-    @Suppress("CyclomaticComplexMethod", "LongParameterList")
+    @Suppress("CyclomaticComplexMethod", "LongMethod")
     private fun onEvent(
         event: SessionDetailEvent,
-        currentNote: SessionNote?,
-        entries: List<SessionEntry>,
-        undoDeletedEntryTitle: String,
-        scope: CoroutineScope,
+        context: EventContext,
         fields: SessionDetailFields,
         assignedTags: List<String>,
         tagSuggestions: List<SessionTagSuggestionItem>,
     ) {
+        val currentNote = context.currentNote
+        val entries = context.entries
+        val undoDeletedEntryTitle = context.undoDeletedEntryTitle
+        val phraseSavedToast = context.phraseSavedToast
+        val scope = context.scope
         when (event) {
             SessionDetailEvent.BackClicked -> navigator.pop()
             is SessionDetailEvent.TitleChanged -> onTitleChanged(event.title, currentNote, scope, fields.titleField)
@@ -313,7 +348,27 @@ class SessionDetailPresenter(
             SessionDetailEvent.TagAddAllSuggestionsClicked -> onTagAddAllSuggestions(tagSuggestions, scope)
             is SessionDetailEvent.TagDraftChanged -> fields.tagDraft.value = event.value
             SessionDetailEvent.TagDraftSubmitted -> onTagDraftSubmitted(fields.tagDraft, scope)
+            is SessionDetailEvent.PhraseStripPicked -> insertPhraseIntoDraft(fields.draft, event.text, replacing = null)
+            is SessionDetailEvent.PhraseCompletionPicked ->
+                insertPhraseIntoDraft(fields.draft, event.text, replacing = phraseFragment(fields.draft.value.text))
+            SessionDetailEvent.PhraseSheetOpened -> fields.phrases.open()
+            is SessionDetailEvent.PhraseSheet -> fields.phrases.onEvent(event.event, scope)
+            is SessionDetailEvent.SaveEntryAsPhraseClicked ->
+                onSaveEntryAsPhrase(event.id, entries, phraseSavedToast, scope, fields)
         }
+    }
+
+    private fun onSaveEntryAsPhrase(
+        id: Long,
+        entries: List<SessionEntry>,
+        savedToast: String,
+        scope: CoroutineScope,
+        fields: SessionDetailFields,
+    ) {
+        val entry = entries.find { it.id == id } ?: return
+        fields.selectedEntryId.value = null
+        scope.launch { phraseSnippetRepository.add(snippetFromEntry(entry.body)) }
+        fields.toast.value = savedToast
     }
 
     private fun onTagToggled(
@@ -442,6 +497,33 @@ private fun onEntryClicked(
 ) {
     selectedEntryId.value = if (selectedEntryId.value == id) null else id
 }
+
+/** everything an event handler reads besides the editable fields - one value instead of five parameters */
+private data class EventContext(
+    val currentNote: SessionNote?,
+    val entries: List<SessionEntry>,
+    val undoDeletedEntryTitle: String,
+    val phraseSavedToast: String,
+    val scope: CoroutineScope,
+)
+
+// the cursor lands after the inserted phrase, same as a picked mention
+private fun insertPhraseIntoDraft(
+    draft: MutableState<TextFieldValue>,
+    phrase: String,
+    replacing: String?,
+) {
+    val next = insertPhrase(draft.value.text, phrase, replacing)
+    draft.value = TextFieldValue(next, TextRange(next.length))
+}
+
+private fun PhraseOption.toItem(questPrefix: String) =
+    SessionPhraseItem(
+        text = text,
+        label = phraseLabel(text, questPrefix),
+        isPinned = isPinned,
+        entryCount = entryCount,
+    )
 
 private data class MentionContext(
     val candidates: List<MentionCandidate>,

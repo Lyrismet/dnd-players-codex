@@ -52,6 +52,7 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_delete
 import dndplayerscodex.shared.generated.resources.action_edit
+import dndplayerscodex.shared.generated.resources.session_detail_entry_save_phrase
 import dndplayerscodex.shared.generated.resources.session_entry_edited_label
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -76,6 +77,7 @@ internal fun SessionEntryRow(
     isHighlighted: Boolean,
     onClick: () -> Unit,
     onEditClick: () -> Unit,
+    onSavePhraseClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onMentionClick: (EntityRef) -> Unit,
     modifier: Modifier = Modifier,
@@ -121,7 +123,11 @@ internal fun SessionEntryRow(
                         ),
                 )
                 if (isSelected) {
-                    EntryActions(onEditClick = onEditClick, onDeleteClick = { isRemoving = true })
+                    EntryActions(
+                        onEditClick = onEditClick,
+                        onSavePhraseClick = onSavePhraseClick,
+                        onDeleteClick = { isRemoving = true },
+                    )
                 }
             }
         }
@@ -131,6 +137,7 @@ internal fun SessionEntryRow(
 @Composable
 private fun EntryActions(
     onEditClick: () -> Unit,
+    onSavePhraseClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
     FlowRow(
@@ -144,6 +151,14 @@ private fun EntryActions(
             background = AppPalette.Gold.copy(alpha = 0.1f),
             border = AppPalette.Gold.copy(alpha = 0.4f),
             onClick = onEditClick,
+        )
+        EntryActionButton(
+            glyph = "★",
+            label = stringResource(Res.string.session_detail_entry_save_phrase),
+            foreground = AppPalette.TextMuted,
+            background = AppPalette.SurfaceInput,
+            border = AppPalette.BorderHover,
+            onClick = onSavePhraseClick,
         )
         EntryActionButton(
             glyph = "✕",

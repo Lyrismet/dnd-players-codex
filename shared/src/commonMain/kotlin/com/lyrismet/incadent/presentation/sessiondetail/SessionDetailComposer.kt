@@ -32,6 +32,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -63,7 +69,7 @@ import dndplayerscodex.shared.generated.resources.session_detail_save_button
 import dndplayerscodex.shared.generated.resources.session_detail_submit_button
 import org.jetbrains.compose.resources.stringResource
 
-private val COMPOSER_SIDE_PADDING = 12.dp
+internal val COMPOSER_SIDE_PADDING = 12.dp
 private val COMPOSER_TOP_PADDING = 10.dp
 
 // the popup is anchored to the padded content, so the 1dp divider and top padding sit between it and the footer edge
@@ -96,10 +102,23 @@ internal fun SessionComposer(
                         bottom = 12.dp,
                     ).onSizeChanged { composerWidthPx = it.width },
         ) {
-            if (isDraftFocused && state.mentionSuggestions.isNotEmpty()) {
-                MentionSuggestionsPopover(state, composerWidthPx)
-            }
+            // the popovers float over the strip's spot, so the strip only shows while neither is open
+            val mentionsOpen = isDraftFocused && state.mentionSuggestions.isNotEmpty()
+            val completionsOpen = isDraftFocused && !mentionsOpen && state.phraseCompletions.isNotEmpty()
+            if (mentionsOpen) MentionSuggestionsPopover(state, composerWidthPx)
+            if (completionsOpen) PhraseCompletionsPopover(state, composerWidthPx)
             state.editingEntryTimeLabel?.let { EditingEntryBanner(it, state.eventSink) }
+            if (!mentionsOpen && !completionsOpen) {
+                PhraseStrip(
+                    items = state.phraseStrip,
+                    onPick = {
+                        draftFocusRequester.requestFocus()
+                        state.eventSink(SessionDetailEvent.PhraseStripPicked(it))
+                    },
+                    onOpenSheet = { state.eventSink(SessionDetailEvent.PhraseSheetOpened) },
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
             ComposerInputCard(
                 state = state,
                 onDraftFocusChanged = { isDraftFocused = it },
@@ -151,7 +170,8 @@ private fun ComposerDraftField(
             modifier
                 .fillMaxWidth()
                 .focusRequester(draftFocusRequester)
-                .onFocusChanged { onDraftFocusChanged(it.isFocused) },
+                .onFocusChanged { onDraftFocusChanged(it.isFocused) }
+                .onPreviewKeyEvent { event -> acceptFirstCompletionOnTab(event, state) },
         decorationBox = { innerTextField ->
             Box {
                 if (state.draft.isEmpty()) {
@@ -165,6 +185,19 @@ private fun ComposerDraftField(
             }
         },
     )
+}
+
+// a hardware keyboard's Tab takes the first suggested continuation, like the design's TAB hint
+private fun acceptFirstCompletionOnTab(
+    event: KeyEvent,
+    state: SessionDetailState,
+): Boolean {
+    val first = state.phraseCompletions.firstOrNull()
+    val isTab = event.key == Key.Tab
+    if (first != null && isTab && event.type == KeyEventType.KeyDown) {
+        state.eventSink(SessionDetailEvent.PhraseCompletionPicked(first.text))
+    }
+    return first != null && isTab
 }
 
 @Composable
@@ -303,11 +336,12 @@ private class AbovePopupPositionProvider(
     ): IntOffset = IntOffset(anchorBounds.left, anchorBounds.top - popupContentSize.height - gapPx)
 }
 
+/** the shared popup chrome of the mention and phrase-completion popovers, as wide as the composer */
 @Composable
-private fun MentionSuggestionsPopover(
-    state: SessionDetailState,
+private fun ComposerPopover(
     composerWidthPx: Int,
     modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
 ) {
     val density = LocalDensity.current
     val popupWidth = with(density) { composerWidthPx.toDp() }
@@ -323,35 +357,58 @@ private fun MentionSuggestionsPopover(
                     .padding(6.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            Text(
-                stringResource(Res.string.session_detail_mention_suggestions_header),
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, letterSpacing = 0.14.em),
-                color = AppPalette.TextTertiary,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            )
-            state.mentionSuggestions.forEach { suggestion ->
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(9.dp))
-                            .clickable {
-                                state.eventSink(SessionDetailEvent.MentionSuggestionPicked(suggestion.candidateKey))
-                            }.padding(horizontal = 8.dp, vertical = 9.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(modifier = Modifier.width(14.dp), contentAlignment = Alignment.Center) {
-                        Text(suggestion.glyph.symbol, fontSize = 9.sp, color = suggestion.tint)
-                    }
-                    Text(
-                        suggestion.name,
-                        fontSize = 14.sp,
-                        color = AppPalette.TextPrimary,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(suggestion.typeLabel, fontSize = 11.sp, color = AppPalette.TextSecondary)
+            content()
+        }
+    }
+}
+
+@Composable
+private fun PhraseCompletionsPopover(
+    state: SessionDetailState,
+    composerWidthPx: Int,
+) {
+    ComposerPopover(composerWidthPx) {
+        PhraseCompletionsContent(
+            items = state.phraseCompletions,
+            onPick = { state.eventSink(SessionDetailEvent.PhraseCompletionPicked(it)) },
+        )
+    }
+}
+
+@Composable
+private fun MentionSuggestionsPopover(
+    state: SessionDetailState,
+    composerWidthPx: Int,
+) {
+    ComposerPopover(composerWidthPx) {
+        Text(
+            stringResource(Res.string.session_detail_mention_suggestions_header),
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, letterSpacing = 0.14.em),
+            color = AppPalette.TextTertiary,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        )
+        state.mentionSuggestions.forEach { suggestion ->
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(9.dp))
+                        .clickable {
+                            state.eventSink(SessionDetailEvent.MentionSuggestionPicked(suggestion.candidateKey))
+                        }.padding(horizontal = 8.dp, vertical = 9.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(modifier = Modifier.width(14.dp), contentAlignment = Alignment.Center) {
+                    Text(suggestion.glyph.symbol, fontSize = 9.sp, color = suggestion.tint)
                 }
+                Text(
+                    suggestion.name,
+                    fontSize = 14.sp,
+                    color = AppPalette.TextPrimary,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(suggestion.typeLabel, fontSize = 11.sp, color = AppPalette.TextSecondary)
             }
         }
     }
