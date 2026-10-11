@@ -9,6 +9,8 @@ import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.phrase_meta_format
+import dndplayerscodex.shared.generated.resources.phrase_meta_sessions
+import dndplayerscodex.shared.generated.resources.phrase_meta_times
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
