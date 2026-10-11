@@ -22,7 +22,11 @@ class PhraseSnippetRepositoryImpl(
     private val queries = database.phraseSnippetQueries
 
     override fun observeAll(): Flow<List<String>> =
-        queries.selectAll().asFlow().mapToList(Dispatchers.Default).map { rows -> rows.map { it.text } }
+        queries
+            .selectAll()
+            .asFlow()
+            .mapToList(Dispatchers.Default)
+            .map { rows -> rows.map { it.text } }
 
     override suspend fun add(text: String) {
         val trimmed = text.trim()

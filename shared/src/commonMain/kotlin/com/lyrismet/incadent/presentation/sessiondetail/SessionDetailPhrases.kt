@@ -90,7 +90,14 @@ private fun PhraseChip(
                 .appCard(
                     shape = StripChipShape,
                     background = AppPalette.SurfaceInput,
-                    border = if (item.isPinned) AppPalette.Gold.copy(alpha = PINNED_BORDER_ALPHA) else AppPalette.Border,
+                    border =
+                        if (item.isPinned) {
+                            AppPalette.Gold.copy(
+                                alpha = PINNED_BORDER_ALPHA,
+                            )
+                        } else {
+                            AppPalette.Border
+                        },
                     onClick = onClick,
                 ).padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -172,4 +179,3 @@ private fun Modifier.bleedHorizontally(amount: Dp): Modifier =
         val placeable = measurable.measure(constraints.copy(maxWidth = constraints.maxWidth + bleedPx * 2))
         layout(constraints.maxWidth, placeable.height) { placeable.place(-bleedPx, 0) }
     }
-

@@ -31,13 +31,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -192,10 +192,12 @@ private fun acceptFirstCompletionOnTab(
     event: KeyEvent,
     state: SessionDetailState,
 ): Boolean {
-    val first = state.phraseCompletions.firstOrNull() ?: return false
-    if (event.key != Key.Tab) return false
-    if (event.type == KeyEventType.KeyDown) state.eventSink(SessionDetailEvent.PhraseCompletionPicked(first.text))
-    return true
+    val first = state.phraseCompletions.firstOrNull()
+    val isTab = event.key == Key.Tab
+    if (first != null && isTab && event.type == KeyEventType.KeyDown) {
+        state.eventSink(SessionDetailEvent.PhraseCompletionPicked(first.text))
+    }
+    return first != null && isTab
 }
 
 @Composable

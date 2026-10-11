@@ -35,9 +35,9 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
-import com.lyrismet.incadent.core.designsystem.component.PhraseSnippetsSheet
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.OrnamentedEmptyState
+import com.lyrismet.incadent.core.designsystem.component.PhraseSnippetsSheet
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
 import dndplayerscodex.shared.generated.resources.Res

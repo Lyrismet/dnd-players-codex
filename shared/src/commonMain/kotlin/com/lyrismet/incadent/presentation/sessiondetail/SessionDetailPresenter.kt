@@ -63,10 +63,10 @@ import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_meeting_separator_format
-import dndplayerscodex.shared.generated.resources.session_detail_phrase_saved_toast
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
+import dndplayerscodex.shared.generated.resources.session_detail_phrase_saved_toast
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import dndplayerscodex.shared.generated.resources.session_detail_tag_button_label_empty
 import dndplayerscodex.shared.generated.resources.session_detail_tag_button_label_has_tags
@@ -297,7 +297,11 @@ class SessionDetailPresenter(
         assignedTags: List<String>,
         tagSuggestions: List<SessionTagSuggestionItem>,
     ) {
-        val (currentNote, entries, undoDeletedEntryTitle, phraseSavedToast, scope) = context
+        val currentNote = context.currentNote
+        val entries = context.entries
+        val undoDeletedEntryTitle = context.undoDeletedEntryTitle
+        val phraseSavedToast = context.phraseSavedToast
+        val scope = context.scope
         when (event) {
             SessionDetailEvent.BackClicked -> navigator.pop()
             is SessionDetailEvent.TitleChanged -> onTitleChanged(event.title, currentNote, scope, fields.titleField)
