@@ -57,14 +57,14 @@ private fun collectChains(
     stats: MutableMap<String, PhraseStat>,
 ) {
     sentencesOf(entry.body).forEach { words ->
-        val normalized = words.map { it.lowercase().trimEnd(*KEY_TRAILING_PUNCTUATION) }
+        val normalized = words.map { it.lowercase().trimEnd { it in KEY_TRAILING_PUNCTUATION } }
         for (size in minOf(MAX_PHRASE_WORDS, words.size) downTo MIN_PHRASE_WORDS) {
             for (start in 0..words.size - size) {
                 val key = normalized.subList(start, start + size).joinToString(" ")
                 val stat =
                     stats.getOrPut(key) {
                         val text = words.subList(start, start + size).joinToString(" ")
-                        PhraseStat(key, text.trimEnd(*TEXT_TRAILING_PUNCTUATION), size)
+                        PhraseStat(key, text.trimEnd { it in TEXT_TRAILING_PUNCTUATION }, size)
                     }
                 stat.entryIds += entry.id
                 stat.sessionIds += entry.sessionNoteId
@@ -77,14 +77,14 @@ private fun collectChains(
 private fun sentencesOf(text: String): List<List<String>> =
     text.lines().flatMap { line ->
         val sentences = mutableListOf<List<String>>()
-        var current = mutableListOf<String>()
+        val current = mutableListOf<String>()
         line.split(WHITESPACE).filter { it.isNotEmpty() }.forEach { word ->
             current += word
             if (word.last() in SENTENCE_ENDS) {
-                sentences += current
-                current = mutableListOf()
+                sentences += current.toList()
+                current.clear()
             }
         }
-        if (current.isNotEmpty()) sentences += current
+        if (current.isNotEmpty()) sentences += current.toList()
         sentences
     }
