@@ -40,8 +40,8 @@ import com.lyrismet.incadent.core.phrases.phraseFragment
 import com.lyrismet.incadent.core.phrases.phraseLabel
 import com.lyrismet.incadent.core.phrases.phrasePool
 import com.lyrismet.incadent.core.phrases.rememberFrequentPhrases
-import com.lyrismet.incadent.core.phrases.snippetFromEntry
 import com.lyrismet.incadent.core.phrases.sheetState
+import com.lyrismet.incadent.core.phrases.snippetFromEntry
 import com.lyrismet.incadent.core.tags.TagReasonLabels
 import com.lyrismet.incadent.core.tags.normalizeCustomTagName
 import com.lyrismet.incadent.core.tags.suggestSessionTags
