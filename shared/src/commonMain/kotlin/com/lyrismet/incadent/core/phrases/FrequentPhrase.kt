@@ -15,9 +15,9 @@ private const val MIN_ENTRY_COUNT = 2
 const val FREQUENT_PHRASE_LIMIT = 6
 
 private val WHITESPACE = Regex("\\s+")
-private val SENTENCE_ENDS = charArrayOf('.', '!', '?')
-private val KEY_TRAILING_PUNCTUATION = charArrayOf('.', ',', ':', ';', '!', '?', '«', '»', '(', ')')
-private val TEXT_TRAILING_PUNCTUATION = charArrayOf('.', ',', ':', ';', '!', '?')
+private val SENTENCE_ENDS = setOf('.', '!', '?')
+private val KEY_TRAILING_PUNCTUATION = setOf('.', ',', ':', ';', '!', '?', '«', '»', '(', ')')
+private val TEXT_TRAILING_PUNCTUATION = setOf('.', ',', ':', ';', '!', '?')
 
 private class PhraseStat(
     val key: String,
@@ -28,23 +28,38 @@ private class PhraseStat(
     val sessionIds = mutableSetOf<Long>()
 }
 
+private class Sentence(
+    val entry: SessionEntry,
+    val words: List<String>,
+) {
+    val normalized: List<String> = words.map { it.lowercase().trimEnd { char -> char in KEY_TRAILING_PUNCTUATION } }
+
+    fun key(
+        start: Int,
+        size: Int,
+    ): String = normalized.subList(start, start + size).joinToString(" ")
+}
+
 /**
  * on-device search for repeating chains of 4+ words (Players Codex v6.dc.html `minePhrases`) - notes are cut into
- * sentences, a chain counts once per note, and a chain wholly inside a longer found one is dropped. No AI, no network.
+ * sentences, a chain counts once per note, and a chain wholly inside a longer found one is dropped unless it is
+ * found in more notes than that one. No AI, no network.
  */
 fun findFrequentPhrases(
     entries: List<SessionEntry>,
     limit: Int = FREQUENT_PHRASE_LIMIT,
 ): List<FrequentPhrase> {
+    val sentences = entries.flatMap { entry -> sentencesOf(entry.body).map { Sentence(entry, it) } }
+    val repeatedStarts = repeatedChainStarts(sentences)
     val stats = mutableMapOf<String, PhraseStat>()
-    entries.forEach { entry -> collectChains(entry, stats) }
+    sentences.forEach { collectChains(it, repeatedStarts, stats) }
 
     val longestFirst =
         stats.values
             .filter { it.entryIds.size >= MIN_ENTRY_COUNT }
             .sortedWith(compareByDescending<PhraseStat> { it.wordCount }.thenByDescending { it.entryIds.size })
     val kept = mutableListOf<PhraseStat>()
-    longestFirst.forEach { stat -> if (kept.none { it.key.contains(stat.key) }) kept += stat }
+    longestFirst.forEach { stat -> if (kept.none { it.swallows(stat) }) kept += stat }
 
     return kept
         .sortedWith(compareByDescending<PhraseStat> { it.entryIds.size }.thenByDescending { it.wordCount })
@@ -52,23 +67,36 @@ fun findFrequentPhrases(
         .map { FrequentPhrase(it.text, it.entryIds.size, it.sessionIds.size) }
 }
 
+/** a longer chain hides a shorter one made of whole words of it, unless the shorter is found in more notes */
+private fun PhraseStat.swallows(other: PhraseStat): Boolean =
+    " $key ".contains(" ${other.key} ") && entryIds.size >= other.entryIds.size
+
+/** a repeating chain starts with a repeating minimum-length chain, so only those starts are worth expanding */
+private fun repeatedChainStarts(sentences: List<Sentence>): Set<String> {
+    val entryIdsByKey = mutableMapOf<String, MutableSet<Long>>()
+    sentences.forEach { sentence ->
+        for (start in 0..sentence.words.size - MIN_PHRASE_WORDS) {
+            entryIdsByKey.getOrPut(sentence.key(start, MIN_PHRASE_WORDS)) { mutableSetOf() } += sentence.entry.id
+        }
+    }
+    return entryIdsByKey.filterValues { it.size >= MIN_ENTRY_COUNT }.keys
+}
+
 private fun collectChains(
-    entry: SessionEntry,
+    sentence: Sentence,
+    repeatedStarts: Set<String>,
     stats: MutableMap<String, PhraseStat>,
 ) {
-    sentencesOf(entry.body).forEach { words ->
-        val normalized = words.map { it.lowercase().trimEnd(*KEY_TRAILING_PUNCTUATION) }
-        for (size in minOf(MAX_PHRASE_WORDS, words.size) downTo MIN_PHRASE_WORDS) {
-            for (start in 0..words.size - size) {
-                val key = normalized.subList(start, start + size).joinToString(" ")
-                val stat =
-                    stats.getOrPut(key) {
-                        val text = words.subList(start, start + size).joinToString(" ")
-                        PhraseStat(key, text.trimEnd(*TEXT_TRAILING_PUNCTUATION), size)
-                    }
-                stat.entryIds += entry.id
-                stat.sessionIds += entry.sessionNoteId
-            }
+    for (start in 0..sentence.words.size - MIN_PHRASE_WORDS) {
+        if (sentence.key(start, MIN_PHRASE_WORDS) !in repeatedStarts) continue
+        for (size in MIN_PHRASE_WORDS..minOf(MAX_PHRASE_WORDS, sentence.words.size - start)) {
+            val stat =
+                stats.getOrPut(sentence.key(start, size)) {
+                    val text = sentence.words.subList(start, start + size).joinToString(" ")
+                    PhraseStat(sentence.key(start, size), text.trimEnd { it in TEXT_TRAILING_PUNCTUATION }, size)
+                }
+            stat.entryIds += sentence.entry.id
+            stat.sessionIds += sentence.entry.sessionNoteId
         }
     }
 }
@@ -76,15 +104,15 @@ private fun collectChains(
 /** a sentence ends at a word closed with . ! or ? and at every line break */
 private fun sentencesOf(text: String): List<List<String>> =
     text.lines().flatMap { line ->
-        val sentences = mutableListOf<List<String>>()
-        var current = mutableListOf<String>()
-        line.split(WHITESPACE).filter { it.isNotEmpty() }.forEach { word ->
-            current += word
-            if (word.last() in SENTENCE_ENDS) {
-                sentences += current
-                current = mutableListOf()
+        buildList {
+            val current = mutableListOf<String>()
+            line.split(WHITESPACE).filter { it.isNotEmpty() }.forEach { word ->
+                current += word
+                if (word.last() in SENTENCE_ENDS) {
+                    add(current.toList())
+                    current.clear()
+                }
             }
+            if (current.isNotEmpty()) add(current.toList())
         }
-        if (current.isNotEmpty()) sentences += current
-        sentences
     }

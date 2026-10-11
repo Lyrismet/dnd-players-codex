@@ -40,6 +40,7 @@ import com.lyrismet.incadent.core.phrases.phraseFragment
 import com.lyrismet.incadent.core.phrases.phraseLabel
 import com.lyrismet.incadent.core.phrases.phrasePool
 import com.lyrismet.incadent.core.phrases.rememberFrequentPhrases
+import com.lyrismet.incadent.core.phrases.snippetFromEntry
 import com.lyrismet.incadent.core.phrases.sheetState
 import com.lyrismet.incadent.core.tags.TagReasonLabels
 import com.lyrismet.incadent.core.tags.normalizeCustomTagName
@@ -366,7 +367,7 @@ class SessionDetailPresenter(
     ) {
         val entry = entries.find { it.id == id } ?: return
         fields.selectedEntryId.value = null
-        scope.launch { phraseSnippetRepository.add(entry.body) }
+        scope.launch { phraseSnippetRepository.add(snippetFromEntry(entry.body)) }
         fields.toast.value = savedToast
     }
 
@@ -521,7 +522,7 @@ private fun PhraseOption.toItem(questPrefix: String) =
         text = text,
         label = phraseLabel(text, questPrefix),
         isPinned = isPinned,
-        countLabel = if (isPinned) "" else "×$entryCount",
+        entryCount = entryCount,
     )
 
 private data class MentionContext(

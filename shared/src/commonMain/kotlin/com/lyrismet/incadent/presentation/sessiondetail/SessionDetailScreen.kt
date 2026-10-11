@@ -75,12 +75,12 @@ data class SessionTagCatalogItem(
     val assigned: Boolean,
 )
 
-/** a phrase chip or completion row - [countLabel] ("×N") is empty for a pinned snippet */
+/** a phrase chip or completion row - [entryCount] is the number of notes a frequent phrase was found in, 0 if pinned */
 data class SessionPhraseItem(
     val text: String,
     val label: String,
     val isPinned: Boolean,
-    val countLabel: String,
+    val entryCount: Int,
 )
 
 /** one row in the note feed - either a meeting-day separator (multi-day sessions only) or a timestamped note */

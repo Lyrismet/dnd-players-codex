@@ -28,6 +28,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.phrase_completion_frequent_meta_format
 import dndplayerscodex.shared.generated.resources.phrase_completion_header
 import dndplayerscodex.shared.generated.resources.phrase_completion_pinned_meta
 import dndplayerscodex.shared.generated.resources.phrase_completion_tab
@@ -113,10 +114,14 @@ private fun PhraseChip(
             modifier = Modifier.weight(1f, fill = false),
         )
         if (!item.isPinned) {
-            Text(item.countLabel, fontSize = 11.sp, color = AppPalette.TextSecondary, maxLines = 1)
+            Text(frequentMeta(item), fontSize = 11.sp, color = AppPalette.TextSecondary, maxLines = 1)
         }
     }
 }
+
+@Composable
+private fun frequentMeta(item: SessionPhraseItem): String =
+    stringResource(Res.string.phrase_completion_frequent_meta_format, item.entryCount)
 
 @Composable
 private fun PhraseGlyph(isPinned: Boolean) {
@@ -164,7 +169,7 @@ internal fun PhraseCompletionsContent(
                 modifier = Modifier.weight(1f),
             )
             Text(
-                if (item.isPinned) stringResource(Res.string.phrase_completion_pinned_meta) else item.countLabel,
+                if (item.isPinned) stringResource(Res.string.phrase_completion_pinned_meta) else frequentMeta(item),
                 fontSize = 11.sp,
                 color = AppPalette.TextSecondary,
             )

@@ -15,7 +15,9 @@ data class PhraseCompletions(
 
 private const val MIN_FRAGMENT_LENGTH = 3
 private const val MAX_COMPLETIONS = 4
+private const val MAX_SNIPPET_LENGTH = 200
 private val COMPLETION_BREAKS = charArrayOf('.', '!', '?', '\n')
+private val WHITESPACE_RUN = Regex("\\s+")
 
 /** pinned snippets first, then the frequent phrases that are not pinned yet */
 fun phrasePool(
@@ -71,4 +73,12 @@ fun phraseLabel(
 ): String {
     val plain = text.replace("@$questPrefix", "").replace("@", "")
     return if (maxLength != null && plain.length > maxLength) plain.take(maxLength - 1) + "…" else plain
+}
+
+/** a note as a one-line snippet - whitespace collapsed, cut at a word boundary when longer than the limit */
+fun snippetFromEntry(body: String): String {
+    val flat = body.trim().replace(WHITESPACE_RUN, " ")
+    if (flat.length <= MAX_SNIPPET_LENGTH) return flat
+    val cut = flat.take(MAX_SNIPPET_LENGTH)
+    return cut.substringBeforeLast(' ', missingDelimiterValue = cut)
 }

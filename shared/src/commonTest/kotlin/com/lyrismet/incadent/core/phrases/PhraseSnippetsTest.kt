@@ -52,4 +52,13 @@ class PhraseSnippetsTest {
         assertEquals("Взять Ключ", phraseLabel("Взять @Квест: Ключ", "Квест: "))
         assertEquals("Длинная…", phraseLabel("Длинная фраза", "Квест: ", maxLength = 8))
     }
+
+    @Test
+    fun `snippet from a note is one line and cut at a word boundary`() {
+        assertEquals("Первая строка вторая строка", snippetFromEntry("  Первая строка\n\nвторая   строка "))
+
+        val long = "слово ".repeat(60)
+        val result = snippetFromEntry(long)
+        assertEquals(true, result.length <= 200 && result.endsWith("слово"))
+    }
 }

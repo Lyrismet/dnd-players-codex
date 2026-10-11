@@ -63,4 +63,34 @@ class FrequentPhrasesTest {
 
         assertTrue(result.isEmpty())
     }
+
+    @Test
+    fun `a chain is dropped as part of a longer one only along whole words`() {
+        val result =
+            findFrequentPhrases(
+                listOf(
+                    entry(1, 1, "навошёл в город рано утром"),
+                    entry(2, 1, "навошёл в город рано утром"),
+                    entry(3, 1, "вошёл в город рано"),
+                    entry(4, 1, "вошёл в город рано"),
+                ),
+            )
+
+        assertTrue("вошёл в город рано" in result.map { it.text })
+    }
+
+    @Test
+    fun `a shorter chain found in more notes stays next to the longer one`() {
+        val result =
+            findFrequentPhrases(
+                listOf(
+                    entry(1, 1, "мы шли по тропе к реке"),
+                    entry(2, 1, "мы шли по тропе к реке"),
+                    entry(3, 1, "мы шли по тропе"),
+                    entry(4, 1, "мы шли по тропе"),
+                ),
+            )
+
+        assertEquals(listOf("мы шли по тропе", "мы шли по тропе к реке"), result.map { it.text })
+    }
 }
