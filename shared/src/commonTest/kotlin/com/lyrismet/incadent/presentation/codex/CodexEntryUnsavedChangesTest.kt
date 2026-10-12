@@ -23,11 +23,11 @@ class CodexEntryUnsavedChangesTest {
     }
 
     @Test
-    fun `an open calculator or quick-add panel is not a change`() {
+    fun `an open select sheet or quick-add panel is not a change`() {
         val transient =
             baseline.copy(
-                calculatorField = CodexEntryNumberField.PARTY_LEVEL,
-                quickAddField = CodexEntryChipField.NPC_LOCATION,
+                placeSelectField = CodexEntryPlaceField.NPC_PLACES,
+                quickAddField = CodexEntryChipField.QUEST_GIVER,
                 quickAddDraft = "Таверна",
             )
         assertFalse(transient.hasUnsavedChanges(baseline))

@@ -17,7 +17,7 @@ class CodexGroupingTest {
             noFaction = "Без фракции",
             noGiver = "Неизвестно от кого",
             giverPrefix = "От:",
-            noType = "Без типа",
+            topLevel = "Верхний уровень",
             npcStatus =
                 mapOf(
                     NpcStatus.FRIEND to "Друг",
@@ -32,22 +32,24 @@ class CodexGroupingTest {
                 ),
         )
 
-    // north (no region) holds castle, which holds tavern; south (no region) holds mill
-    private val north = location(1, "Север", region = "", type = "Регион")
-    private val castle = location(2, "Замок", region = "Север", type = "Крепость")
-    private val tavern = location(3, "Таверна", region = "Замок", type = "Таверна")
-    private val south = location(4, "Юг", region = "", type = "Регион")
-    private val mill = location(5, "Мельница", region = "Юг")
-    private val places = listOf(north, castle, tavern, south, mill)
+    // north holds castle (which holds tavern) and hall; south holds mill and barn
+    private val north = location(1, "Север")
+    private val castle = location(2, "Замок", parentId = 1)
+    private val tavern = location(3, "Таверна", parentId = 2)
+    private val hall = location(6, "Холл", parentId = 1)
+    private val south = location(4, "Юг")
+    private val mill = location(5, "Мельница", parentId = 4)
+    private val barn = location(7, "Амбар", parentId = 4)
+    private val places = listOf(north, castle, tavern, hall, south, mill, barn)
 
     @Test
     fun `npcs group by the region of their place with the no-place group last`() {
         val npcs =
             listOf(
-                npc(1, "Анна", NpcStatus.FRIEND, locationId = castle.id, faction = "Гильдия"),
-                npc(2, "Борис", NpcStatus.ENEMY, locationId = mill.id, race = "Человек"),
+                npc(1, "Анна", NpcStatus.FRIEND, locationIds = listOf(castle.id), faction = "Гильдия"),
+                npc(2, "Борис", NpcStatus.ENEMY, locationIds = listOf(mill.id), race = "Человек"),
                 npc(3, "Вера", NpcStatus.NEUTRAL),
-                npc(4, "Глеб", NpcStatus.FRIEND, NpcLifeState.DEAD, locationId = castle.id),
+                npc(4, "Глеб", NpcStatus.FRIEND, NpcLifeState.DEAD, locationIds = listOf(castle.id)),
             )
 
         val groups = groupNpcs(npcs, places, NpcGroupBy.REGION, labels)
@@ -62,8 +64,8 @@ class CodexGroupingTest {
     fun `a region npc subtitle names the place and the faction or race`() {
         val npcs =
             listOf(
-                npc(1, "Анна", locationId = castle.id, faction = "Гильдия", race = "Эльф"),
-                npc(2, "Борис", locationId = mill.id, race = "Человек"),
+                npc(1, "Анна", locationIds = listOf(castle.id), faction = "Гильдия", race = "Эльф"),
+                npc(2, "Борис", locationIds = listOf(mill.id), race = "Человек"),
                 npc(3, "Вера"),
             )
 
@@ -131,7 +133,7 @@ class CodexGroupingTest {
 
     @Test
     fun `quests group by the region of their where place with the no-region group last`() {
-        val giver = npc(10, "Гром", locationId = mill.id)
+        val giver = npc(10, "Гром", locationIds = listOf(mill.id))
         val quests =
             listOf(
                 quest(1, "Ключ", QuestStatus.ACTIVE, locationId = castle.id),
@@ -206,29 +208,98 @@ class CodexGroupingTest {
     }
 
     @Test
-    fun `places group by their resolved region and name the own region only when it differs`() {
-        val groups = groupLocations(places, LocationGroupBy.REGION, places, labels)
+    fun `npcs of one shared world group by country and not by the world`() {
+        val world = location(1, "Материальный план")
+        val sanChitlan = location(2, "Сан-Читлан", parentId = 1)
+        val tkhalopl = location(3, "Ткхалопль", parentId = 1)
+        val village = location(4, "Деревня Ибиотса", parentId = 2)
+        val all = listOf(world, sanChitlan, tkhalopl, village)
+        val npcs =
+            listOf(
+                npc(1, "Анна", locationIds = listOf(village.id)),
+                npc(2, "Борис", locationIds = listOf(tkhalopl.id)),
+                npc(3, "Вера", locationIds = listOf(sanChitlan.id)),
+            )
 
-        assertEquals(listOf("СЕВЕР", "ЮГ", "МЕСТО НЕ УКАЗАНО"), groups.map { it.title })
-        assertEquals(listOf("Замок", "Таверна"), groups[0].items.map { it.entity.name })
-        assertEquals("Крепость", groups[0].items[0].subtitle)
-        assertEquals("Таверна · в Замок", groups[0].items[1].subtitle)
-        assertEquals("Город", groups[1].items.single().subtitle)
-        assertEquals(listOf("Север", "Юг"), groups[2].items.map { it.entity.name })
+        val groups = groupNpcs(npcs, all, NpcGroupBy.REGION, labels)
+
+        assertEquals(listOf("САН-ЧИТЛАН", "ТКХАЛОПЛЬ"), groups.map { it.title })
+        assertEquals(listOf("Анна", "Вера"), groups[0].items.map { it.entity.name })
     }
 
     @Test
-    fun `places group by type with the no-type group last and no default subtitle`() {
-        val cave = location(6, "Пещера", region = "", type = "")
-        val all = places + cave
+    fun `an npc met in two regions shows up under both`() {
+        val roamer = npc(1, "Анна", locationIds = listOf(castle.id, mill.id))
 
-        val groups = groupLocations(all, LocationGroupBy.TYPE, all, labels)
+        val groups = groupNpcs(listOf(roamer), places, NpcGroupBy.REGION, labels)
 
-        val titles = listOf("ГОРОД", "КРЕПОСТЬ", "РЕГИОН", "ТАВЕРНА", "БЕЗ ТИПА")
-        assertEquals(titles, groups.map { it.title })
-        assertEquals(listOf("Север", "Юг"), groups[2].items.map { it.entity.name })
-        assertEquals(listOf("Пещера"), groups.last().items.map { it.entity.name })
-        assertTrue(groups.flatMap { it.items }.all { it.subtitle == null })
+        assertEquals(listOf("СЕВЕР", "ЮГ"), groups.map { it.title })
+        assertEquals("▲ Замок, Мельница", groups[0].items.single().subtitle)
+    }
+
+    @Test
+    fun `places list the top level ones as plain rows and give every place that holds places its own section`() {
+        val groups = groupLocations(places, LocationGroupBy.REGION, places, labels)
+
+        assertEquals(listOf(null, "СЕВЕР", "ЗАМОК", "ЮГ"), groups.map { it.title })
+        assertEquals(listOf("Север", "Юг"), groups[0].items.map { it.entity.name })
+        // a section holds only what lies directly in it, by name
+        assertEquals(listOf("Замок", "Холл"), groups[1].items.map { it.entity.name })
+        assertEquals(listOf("Таверна"), groups[2].items.map { it.entity.name })
+        assertEquals(listOf("Амбар", "Мельница"), groups[3].items.map { it.entity.name })
+        assertEquals(listOf(2, 1, 2), groups.drop(1).map { it.count })
+    }
+
+    @Test
+    fun `a section header carries the path above its place cut to the last two places`() {
+        val deep = location(10, "Склеп", parentId = 3)
+        val crypt = location(11, "Ниша", parentId = 10)
+        val all = places + deep + crypt
+
+        val groups = groupLocations(all, LocationGroupBy.REGION, all, labels)
+
+        assertEquals(null, groups.first { it.title == "СЕВЕР" }.path)
+        assertEquals("Север", groups.first { it.title == "ЗАМОК" }.path)
+        assertEquals("… › Замок › Таверна", groups.first { it.title == "СКЛЕП" }.path)
+    }
+
+    @Test
+    fun `place rows in the tree carry no subtitle`() {
+        val items = groupLocations(places, LocationGroupBy.REGION, places, labels).flatMap { it.items }
+
+        assertTrue(items.all { it.subtitle == null })
+    }
+
+    @Test
+    fun `a folded section keeps its count and shows no rows`() {
+        val groups = groupLocations(places, LocationGroupBy.REGION, places, labels, collapsedIds = setOf(north.id))
+
+        val section = groups.first { it.title == "СЕВЕР" }
+        assertTrue(section.collapsed)
+        assertTrue(section.items.isEmpty())
+        assertEquals(2, section.count)
+        assertEquals(north.id, section.toggleId)
+    }
+
+    @Test
+    fun `a search that hides a parent still shows the section of its matching child`() {
+        val shown = listOf(tavern)
+
+        val groups = groupLocations(shown, LocationGroupBy.REGION, places, labels)
+
+        assertEquals(listOf("ЗАМОК"), groups.map { it.title })
+        assertEquals(listOf("Таверна"), groups.single().items.map { it.entity.name })
+    }
+
+    @Test
+    fun `places on a parent loop are still listed`() {
+        val a = location(20, "А", parentId = 21)
+        val b = location(21, "Б", parentId = 20)
+        val loop = listOf(a, b)
+
+        val groups = groupLocations(loop, LocationGroupBy.REGION, loop, labels)
+
+        assertEquals(setOf("А", "Б"), groups.flatMap { it.items }.map { it.entity.name }.toSet())
     }
 
     @Test
@@ -236,8 +307,16 @@ class CodexGroupingTest {
         val groups = groupLocations(places, LocationGroupBy.NONE, places, labels)
 
         assertEquals(listOf(null), groups.map { it.title })
-        val names = listOf("Замок", "Мельница", "Север", "Таверна", "Юг")
+        val names = listOf("Амбар", "Замок", "Мельница", "Север", "Таверна", "Холл", "Юг")
         assertEquals(names, groups.single().items.map { it.entity.name })
+    }
+
+    @Test
+    fun `places as a list show their whole path and mark a top level place`() {
+        val items = groupLocations(places, LocationGroupBy.NONE, places, labels).single().items
+
+        assertEquals("Север › Замок", items.first { it.entity.name == "Таверна" }.subtitle)
+        assertEquals("Верхний уровень", items.first { it.entity.name == "Север" }.subtitle)
     }
 
     @Test

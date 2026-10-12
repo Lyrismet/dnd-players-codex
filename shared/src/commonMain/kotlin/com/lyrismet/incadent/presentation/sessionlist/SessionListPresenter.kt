@@ -130,12 +130,14 @@ class SessionListPresenter(
         val liveSession = liveItem?.let { item -> buildLiveSession(item, liveEntries, candidates, noNotesLabel) }
 
         val selectedEntityRef = remember { mutableStateOf<EntityRef?>(null) }
+        val entityHistory = remember { mutableStateOf(emptyList<EntityRef>()) }
         val entitySheet =
             EntitySheetInteractions(
                 selectedEntityRef,
                 mentionRepositories,
                 partyRepository,
                 navigator,
+                entityHistory,
             )
         val selectedEntity =
             selectedEntitySummary(

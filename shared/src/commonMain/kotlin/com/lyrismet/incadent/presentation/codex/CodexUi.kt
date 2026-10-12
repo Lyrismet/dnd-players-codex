@@ -15,7 +15,6 @@ import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
-import com.lyrismet.incadent.core.designsystem.component.NumberPadSheet
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
@@ -24,12 +23,13 @@ import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayba
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
 import com.lyrismet.incadent.core.entitysummary.QuickEditSheet
+import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_add_entry_button
+import dndplayerscodex.shared.generated.resources.codex_entry_discard_back
 import dndplayerscodex.shared.generated.resources.codex_entry_discard_leave
-import dndplayerscodex.shared.generated.resources.codex_entry_discard_save
 import dndplayerscodex.shared.generated.resources.codex_entry_discard_text
 import dndplayerscodex.shared.generated.resources.codex_entry_discard_title
 import dndplayerscodex.shared.generated.resources.codex_filter_all
@@ -158,70 +158,50 @@ private fun CodexEntryFormSheet(
     state: CodexState,
     form: CodexEntryFormState,
 ) {
-    val calculator = form.calculator
     AppBottomSheet(
-        onDismissRequest = {
-            if (calculator != null) {
-                state.eventSink(CodexEvent.CalculatorClosed)
+        onDismissRequest = { state.eventSink(CodexEvent.EntryFormCloseRequested) },
+        // the sheet stays up under the "save changes?" prompt instead of hiding first
+        onDismissBlocked =
+            if (form.hasUnsavedChanges) {
+                { state.eventSink(CodexEvent.EntryFormCloseRequested) }
             } else {
-                state.eventSink(CodexEvent.EntryFormCloseRequested)
-            }
-        },
+                null
+            },
     ) {
-        // mutually exclusive so the sheet's height tracks whichever one is actually shown
-        if (calculator != null) {
-            NumberPadSheet(
-                overline = calculator.overline,
-                title = calculator.title,
-                expr = calculator.expr,
-                result = calculator.result,
-                rangeHint = calculator.rangeHint,
-                applyLabel = calculator.applyLabel,
-                applyEnabled = calculator.applyEnabled,
-                onDigit = { state.eventSink(CodexEvent.CalculatorDigitPressed(it)) },
-                onBackspace = { state.eventSink(CodexEvent.CalculatorBackspacePressed) },
-                onClear = { state.eventSink(CodexEvent.CalculatorClearPressed) },
-                onApply = { state.eventSink(CodexEvent.CalculatorApplyClicked) },
-                onClose = { state.eventSink(CodexEvent.CalculatorClosed) },
+        Box {
+            CodexEntryFormUi(
+                form = form,
+                eventSink = state.eventSink,
+                onClose = { state.eventSink(CodexEvent.EntryFormCloseRequested) },
             )
-        } else {
-            Box {
-                CodexEntryFormUi(
-                    form = form,
-                    eventSink = state.eventSink,
-                    onClose = { state.eventSink(CodexEvent.EntryFormCloseRequested) },
-                )
-                // the sheet covers the app-level toast, so the quick-add confirmation gets its own copy here
-                AppToast(
-                    text = state.toast?.text,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
-                )
-            }
+            // the sheet covers the app-level toast, so the quick-add confirmation gets its own copy here
+            AppToast(
+                text = state.toast?.text,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+            )
         }
     }
-    if (form.isDiscardPromptVisible) CodexEntryDiscardDialog(state, form)
+    // a sheet of its own over the form, so dismissing it leaves the form where it was
+    form.placeSelect?.let { select ->
+        PlaceSelectSheet(
+            select = select,
+            onChosen = { state.eventSink(CodexEvent.EntryPlacesChosen(it)) },
+            onCreated = { name, checked -> state.eventSink(CodexEvent.EntryPlaceCreated(name, checked)) },
+            onDismiss = { state.eventSink(CodexEvent.EntryPlaceSelectClosed) },
+        )
+    }
+    if (form.isDiscardPromptVisible) CodexEntryDiscardDialog(state)
 }
 
 @Composable
-private fun CodexEntryDiscardDialog(
-    state: CodexState,
-    form: CodexEntryFormState,
-) {
+private fun CodexEntryDiscardDialog(state: CodexState) {
+    // only two ways out - leave without saving or go back to the form, saving stays the form button's job
     ConfirmationDialog(
         title = stringResource(Res.string.codex_entry_discard_title),
         text = stringResource(Res.string.codex_entry_discard_text),
-        // a blank name cannot be saved, so the button then shows the form's own hint and just returns to the form
-        onConfirm = {
-            val event: CodexEvent =
-                if (form.isNameFilled) {
-                    CodexEvent.EntryFormSaveClicked
-                } else {
-                    CodexEvent.EntryFormDiscardPromptDismissed
-                }
-            state.eventSink(event)
-        },
+        onConfirm = { state.eventSink(CodexEvent.EntryFormDiscardPromptDismissed) },
         onDismiss = { state.eventSink(CodexEvent.EntryFormClosed) },
-        confirmLabel = if (form.isNameFilled) stringResource(Res.string.codex_entry_discard_save) else form.saveLabel,
+        confirmLabel = stringResource(Res.string.codex_entry_discard_back),
         dismissLabel = stringResource(Res.string.codex_entry_discard_leave),
         confirmColor = AppPalette.Gold,
         confirmContentColor = AppPalette.Background,
@@ -251,6 +231,15 @@ private fun CodexEntitySheet(
                 modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
             )
         }
+    }
+    // a sheet of its own over the card, so dismissing it leaves the card open
+    state.quickPlaceSelect?.let { select ->
+        PlaceSelectSheet(
+            select = select,
+            onChosen = { state.eventSink(CodexEvent.QuickEdit(QuickEditUiEvent.PlacesChosen(it))) },
+            onCreated = { name, checked -> state.eventSink(CodexEvent.QuickPlaceCreated(name, checked)) },
+            onDismiss = { state.eventSink(CodexEvent.QuickEdit(QuickEditUiEvent.EditCancelled)) },
+        )
     }
 }
 

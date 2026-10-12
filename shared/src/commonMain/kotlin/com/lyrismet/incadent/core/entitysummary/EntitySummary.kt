@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.core.entitysummary
 
 import androidx.compose.runtime.Composable
+import com.lyrismet.incadent.core.codexgroup.PlaceTree
 import com.lyrismet.incadent.core.designsystem.DEFAULT_STATUS_GLYPH
 import com.lyrismet.incadent.core.designsystem.LocationMentionColor
 import com.lyrismet.incadent.core.designsystem.PartyMemberColor
@@ -11,6 +12,7 @@ import com.lyrismet.incadent.core.designsystem.component.toMentionChip
 import com.lyrismet.incadent.core.designsystem.toStatusColor
 import com.lyrismet.incadent.core.designsystem.toStatusGlyph
 import com.lyrismet.incadent.core.format.joinWithDot
+import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.quickedit.InlineEdit
 import com.lyrismet.incadent.core.quickedit.QuickEditField
@@ -27,18 +29,16 @@ import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_label_initiative_bonus
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_inside
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_npcs
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_quests
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_npc_quests_given
-import dndplayerscodex.shared.generated.resources.entity_sheet_location_region_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_location_type_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_location_parent_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_faction_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_location_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_race_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_party_ac_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_class_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_hp_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_level_label
@@ -91,6 +91,11 @@ sealed interface FactValue {
 
     data class Link(
         val chip: MentionChipItem,
+    ) : FactValue
+
+    /** several chips in one row - an npc met at more than one place */
+    data class Links(
+        val chips: List<MentionChipItem>,
     ) : FactValue
 }
 
@@ -148,7 +153,6 @@ sealed interface EntitySummaryItem {
     data class LocationSummary(
         val ref: EntityRef.Location,
         val name: String,
-        val typeLabel: String,
         val description: String,
         val emblem: EntityEmblem,
         val subtitle: String,
@@ -216,7 +220,7 @@ private fun buildNpcSummary(
     npc: Npc,
     lookup: EntityLookup,
 ): EntitySummaryItem.NpcSummary {
-    val location = npc.locationId?.let { id -> lookup.locations.find { it.id == id } }
+    val places = npc.locationIds.mapNotNull { id -> lookup.locations.find { it.id == id } }
     val givenQuests = lookup.quests.filter { it.givenByNpcId == npc.id }
     val isDead = npc.lifeState == NpcLifeState.DEAD
     val relationLabel = lookup.npcStatusLabels.getValue(npc.status)
@@ -254,11 +258,10 @@ private fun buildNpcSummary(
             listOf(
                 FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(npc.race), QuickEditField.RACE),
                 FactRow(Res.string.entity_sheet_npc_faction_label, FactValue.Text(npc.faction), QuickEditField.FACTION),
-                linkFact(
+                FactRow(
                     Res.string.entity_sheet_npc_location_label,
-                    location?.toMentionChip(),
+                    FactValue.Links(places.map { it.toMentionChip() }),
                     QuickEditField.PLACE,
-                    lookup.locations.map { it.toMentionChip() },
                 ),
             ),
         groups =
@@ -309,23 +312,13 @@ private fun buildPartySummary(
                 FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(member.race), QuickEditField.RACE),
                 FactRow(
                     Res.string.entity_sheet_party_level_label,
-                    FactValue.Text(member.level.toString()),
+                    FactValue.Text(member.level.orDash()),
                     QuickEditField.LEVEL,
                 ),
                 FactRow(
-                    Res.string.entity_sheet_party_ac_label,
-                    FactValue.Text(member.armorClass.toString()),
-                    QuickEditField.ARMOR_CLASS,
-                ),
-                FactRow(
                     Res.string.entity_sheet_party_hp_label,
-                    FactValue.Text(member.hpMax.toString()),
+                    FactValue.Text(member.hpMax.orDash()),
                     QuickEditField.HP_MAX,
-                ),
-                FactRow(
-                    Res.string.codex_entry_label_initiative_bonus,
-                    FactValue.Text(signedNumber(member.initiativeBonus)),
-                    QuickEditField.INITIATIVE_BONUS,
                 ),
             ),
     )
@@ -367,7 +360,6 @@ private fun buildQuestSummary(
                     Res.string.entity_sheet_quest_location_label,
                     location?.toMentionChip(),
                     QuickEditField.PLACE,
-                    lookup.locations.map { it.toMentionChip() },
                 ),
             ),
         groups = emptyList(),
@@ -379,30 +371,32 @@ private fun buildLocationSummary(
     location: Location,
     lookup: EntityLookup,
 ): EntitySummaryItem.LocationSummary {
-    val npcsHere = lookup.npcs.filter { it.locationId == location.id }
+    val tree = PlaceTree(lookup.locations)
+    // an npc met in a place inside this one counts as met here too
+    val insideIds = tree.descendantIds(location.id) + location.id
+    val npcsHere = lookup.npcs.filter { npc -> npc.locationIds.any { it in insideIds } }
     val questsHere = lookup.quests.filter { it.locationId == location.id }
+    val placesInside = lookup.locations.filter { it.parentId == location.id }
+    val parent = tree.find(location.parentId)
     return EntitySummaryItem.LocationSummary(
         ref = EntityRef.Location(location.id),
         name = location.name,
-        typeLabel = location.type,
         description = location.description,
         emblem = EntityEmblem(MentionGlyph.LOCATION.symbol, EntityEmblemShape.ROUNDED, LocationMentionColor),
-        subtitle = location.region,
+        subtitle = tree.ancestorsLabel(location),
         facts =
             listOf(
-                FactRow(
-                    Res.string.entity_sheet_location_type_label,
-                    FactValue.Text(location.type),
-                    QuickEditField.LOCATION_TYPE,
-                ),
-                FactRow(
-                    Res.string.entity_sheet_location_region_label,
-                    FactValue.Text(location.region),
-                    QuickEditField.LOCATION_REGION,
+                linkFact(
+                    Res.string.entity_sheet_location_parent_label,
+                    parent?.toMentionChip(),
+                    QuickEditField.PARENT,
                 ),
             ),
         groups =
             listOfNotNull(
+                placesInside.takeIf { it.isNotEmpty() }?.let {
+                    RelationGroup(Res.string.entity_sheet_group_location_inside, it.map { p -> p.toMentionChip() })
+                },
                 npcsHere.takeIf { it.isNotEmpty() }?.let {
                     RelationGroup(Res.string.entity_sheet_group_location_npcs, it.map { n -> n.toMentionChip() })
                 },
@@ -419,10 +413,8 @@ private fun linkFact(
     label: StringResource,
     chip: MentionChipItem?,
     field: QuickEditField,
-    options: List<MentionChipItem>,
+    options: List<MentionChipItem> = emptyList(),
 ): FactRow = FactRow(label, chip?.let { FactValue.Link(it) } ?: FactValue.Text(""), field, options)
-
-private fun signedNumber(value: Int): String = if (value > 0) "+$value" else value.toString()
 
 private fun <T> statusOptions(
     values: List<T>,

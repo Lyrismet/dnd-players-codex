@@ -17,23 +17,24 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
+import com.lyrismet.incadent.core.designsystem.component.FormFieldAction
+import com.lyrismet.incadent.core.designsystem.component.FormNumberField
+import com.lyrismet.incadent.core.designsystem.component.FormPickField
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
-import com.lyrismet.incadent.core.designsystem.component.FormStepper
 import com.lyrismet.incadent.core.designsystem.component.FormTextArea
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
+import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.designsystem.component.QuickAddOutsideTapHost
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.domain.model.PartyStatRanges
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_label_armor_class
 import dndplayerscodex.shared.generated.resources.codex_entry_label_class
 import dndplayerscodex.shared.generated.resources.codex_entry_label_description
 import dndplayerscodex.shared.generated.resources.codex_entry_label_faction
 import dndplayerscodex.shared.generated.resources.codex_entry_label_giver
 import dndplayerscodex.shared.generated.resources.codex_entry_label_hp_max
-import dndplayerscodex.shared.generated.resources.codex_entry_label_initiative_bonus
 import dndplayerscodex.shared.generated.resources.codex_entry_label_level
 import dndplayerscodex.shared.generated.resources.codex_entry_label_life
 import dndplayerscodex.shared.generated.resources.codex_entry_label_name_location
@@ -42,20 +43,20 @@ import dndplayerscodex.shared.generated.resources.codex_entry_label_name_party
 import dndplayerscodex.shared.generated.resources.codex_entry_label_name_quest
 import dndplayerscodex.shared.generated.resources.codex_entry_label_notes
 import dndplayerscodex.shared.generated.resources.codex_entry_label_owner
+import dndplayerscodex.shared.generated.resources.codex_entry_label_parent
 import dndplayerscodex.shared.generated.resources.codex_entry_label_player
 import dndplayerscodex.shared.generated.resources.codex_entry_label_presence
 import dndplayerscodex.shared.generated.resources.codex_entry_label_race
-import dndplayerscodex.shared.generated.resources.codex_entry_label_region
 import dndplayerscodex.shared.generated.resources.codex_entry_label_relationship
 import dndplayerscodex.shared.generated.resources.codex_entry_label_reward
 import dndplayerscodex.shared.generated.resources.codex_entry_label_status
-import dndplayerscodex.shared.generated.resources.codex_entry_label_type
 import dndplayerscodex.shared.generated.resources.codex_entry_label_where
 import dndplayerscodex.shared.generated.resources.codex_entry_label_where_to_meet
+import dndplayerscodex.shared.generated.resources.codex_entry_party_level_from_player
+import dndplayerscodex.shared.generated.resources.codex_entry_pick_place_hint
+import dndplayerscodex.shared.generated.resources.codex_entry_pick_places_hint
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_location_description
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_location_name
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_location_region
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_location_type
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_faction
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_notes
@@ -68,6 +69,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_description
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_reward
+import dndplayerscodex.shared.generated.resources.codex_entry_required_note
 import dndplayerscodex.shared.generated.resources.codex_entry_type_location
 import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_type_party
@@ -132,6 +134,11 @@ private fun CodexEntryFormContent(
             CodexEntryType.QUEST -> QuestEntryFields(form, eventSink)
             CodexEntryType.LOCATION -> LocationEntryFields(form, eventSink)
         }
+        Text(
+            stringResource(Res.string.codex_entry_required_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = AppPalette.TextSecondary,
+        )
         FormPrimaryButton(
             text = form.saveLabel,
             onClick = { eventSink(CodexEvent.EntryFormSaveClicked) },
@@ -151,6 +158,7 @@ private fun NpcEntryFields(
         value = form.name,
         onChange = { eventSink(CodexEvent.EntryFieldChanged(CodexEntryField.NAME, it)) },
         placeholder = stringResource(Res.string.codex_entry_placeholder_npc_name),
+        required = true,
     )
     FormTextField(
         label = stringResource(Res.string.codex_entry_label_race),
@@ -174,11 +182,11 @@ private fun NpcEntryFields(
         options = form.npcLifeOptions,
         onClick = { eventSink(CodexEvent.EntryNpcLifeChanged(it)) },
     )
-    FormChipPicker(
+    FormPickField(
         label = stringResource(Res.string.codex_entry_label_where_to_meet),
-        options = form.locationOptions,
-        onClick = { eventSink(CodexEvent.EntryChipToggled(CodexEntryChipField.NPC_LOCATION, it)) },
-        quickAdd = locationQuickAdd(form, eventSink, CodexEntryChipField.NPC_LOCATION),
+        placeholder = stringResource(Res.string.codex_entry_pick_places_hint),
+        onClick = { eventSink(CodexEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.NPC_PLACES)) },
+        chips = form.npcPlaces,
     )
     FormTextArea(
         label = stringResource(Res.string.codex_entry_label_notes),
@@ -213,6 +221,7 @@ private fun PartyIdentityFields(
         value = form.name,
         onChange = { eventSink(CodexEvent.EntryFieldChanged(CodexEntryField.NAME, it)) },
         placeholder = stringResource(Res.string.codex_entry_placeholder_party_name),
+        required = true,
     )
     // a player character's "вы" flag stands in for the player's name, so the field only shows for everyone else
     if (!form.partyIsPlayerCharacter) {
@@ -242,33 +251,24 @@ private fun PartyStatFields(
     form: CodexEntryFormState,
     eventSink: (CodexEvent) -> Unit,
 ) {
-    FormStepper(
+    FormNumberField(
         label = stringResource(Res.string.codex_entry_label_level),
         value = form.partyLevel,
         range = PartyStatRanges.level,
         onChange = { eventSink(CodexEvent.EntryNumberChanged(CodexEntryNumberField.PARTY_LEVEL, it)) },
-        onOpenCalculator = { eventSink(CodexEvent.CalculatorOpened(CodexEntryNumberField.PARTY_LEVEL)) },
+        action =
+            form.partyLevelFromPlayer?.let {
+                FormFieldAction(
+                    label = stringResource(Res.string.codex_entry_party_level_from_player),
+                    onClick = { eventSink(CodexEvent.EntryPartyLevelFromPlayerClicked) },
+                )
+            },
     )
-    FormStepper(
+    FormNumberField(
         label = stringResource(Res.string.codex_entry_label_hp_max),
         value = form.partyHpMax,
         range = PartyStatRanges.hpMax,
         onChange = { eventSink(CodexEvent.EntryNumberChanged(CodexEntryNumberField.PARTY_HP_MAX, it)) },
-        onOpenCalculator = { eventSink(CodexEvent.CalculatorOpened(CodexEntryNumberField.PARTY_HP_MAX)) },
-    )
-    FormStepper(
-        label = stringResource(Res.string.codex_entry_label_armor_class),
-        value = form.partyArmorClass,
-        range = PartyStatRanges.armorClass,
-        onChange = { eventSink(CodexEvent.EntryNumberChanged(CodexEntryNumberField.PARTY_ARMOR_CLASS, it)) },
-        onOpenCalculator = { eventSink(CodexEvent.CalculatorOpened(CodexEntryNumberField.PARTY_ARMOR_CLASS)) },
-    )
-    // no calculator - its range starts below zero, matching the mockup's onPad `if (min < 0) return`
-    FormStepper(
-        label = stringResource(Res.string.codex_entry_label_initiative_bonus),
-        value = form.partyInitiativeBonus,
-        range = PartyStatRanges.initiativeBonus,
-        onChange = { eventSink(CodexEvent.EntryNumberChanged(CodexEntryNumberField.PARTY_INITIATIVE_BONUS, it)) },
     )
     FormChipPicker(
         label = stringResource(Res.string.codex_entry_label_presence),
@@ -293,6 +293,7 @@ private fun QuestEntryFields(
         value = form.name,
         onChange = { eventSink(CodexEvent.EntryFieldChanged(CodexEntryField.NAME, it)) },
         placeholder = stringResource(Res.string.codex_entry_placeholder_quest_name),
+        required = true,
     )
     FormChipPicker(
         label = stringResource(Res.string.codex_entry_label_giver),
@@ -306,11 +307,13 @@ private fun QuestEntryFields(
         onChange = { eventSink(CodexEvent.EntryFieldChanged(CodexEntryField.REWARD, it)) },
         placeholder = stringResource(Res.string.codex_entry_placeholder_quest_reward),
     )
-    FormChipPicker(
+    FormPickField(
         label = stringResource(Res.string.codex_entry_label_where),
-        options = form.locationOptions,
-        onClick = { eventSink(CodexEvent.EntryChipToggled(CodexEntryChipField.QUEST_LOCATION, it)) },
-        quickAdd = locationQuickAdd(form, eventSink, CodexEntryChipField.QUEST_LOCATION),
+        placeholder = stringResource(Res.string.codex_entry_pick_place_hint),
+        onClick = { eventSink(CodexEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.QUEST_PLACE)) },
+        title = form.questPlace?.name,
+        subtitle = form.questPlace?.path,
+        leadingGlyph = MentionGlyph.LOCATION.symbol,
     )
     FormChipPicker(
         label = stringResource(Res.string.codex_entry_label_status),
@@ -335,18 +338,15 @@ private fun LocationEntryFields(
         value = form.name,
         onChange = { eventSink(CodexEvent.EntryFieldChanged(CodexEntryField.NAME, it)) },
         placeholder = stringResource(Res.string.codex_entry_placeholder_location_name),
+        required = true,
     )
-    FormTextField(
-        label = stringResource(Res.string.codex_entry_label_type),
-        value = form.locationType,
-        onChange = { eventSink(CodexEvent.EntryFieldChanged(CodexEntryField.LOCATION_TYPE, it)) },
-        placeholder = stringResource(Res.string.codex_entry_placeholder_location_type),
-    )
-    FormTextField(
-        label = stringResource(Res.string.codex_entry_label_region),
-        value = form.locationRegion,
-        onChange = { eventSink(CodexEvent.EntryFieldChanged(CodexEntryField.LOCATION_REGION, it)) },
-        placeholder = stringResource(Res.string.codex_entry_placeholder_location_region),
+    FormPickField(
+        label = stringResource(Res.string.codex_entry_label_parent),
+        placeholder = stringResource(Res.string.codex_entry_pick_place_hint),
+        onClick = { eventSink(CodexEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.LOCATION_PARENT)) },
+        title = form.locationParent?.name,
+        subtitle = form.locationParent?.path,
+        leadingGlyph = MentionGlyph.LOCATION.symbol,
     )
     FormTextArea(
         label = stringResource(Res.string.codex_entry_label_description),

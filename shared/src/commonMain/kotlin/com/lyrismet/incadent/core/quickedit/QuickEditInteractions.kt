@@ -35,6 +35,11 @@ class QuickEditInteractions(
                     inlineEdit.value = null
                     commit(scope, edit.field, QuickEditValue.Link(event.id))
                 }
+            is QuickEditUiEvent.PlacesChosen ->
+                inlineEdit.value?.let { edit ->
+                    inlineEdit.value = null
+                    commit(scope, edit.field, QuickEditValue.Places(event.ids))
+                }
             QuickEditUiEvent.HoldHintDismissed -> onHoldHintSeen()
             is QuickEditUiEvent.PortraitPicked -> savePortrait(scope, event.bytes)
         }

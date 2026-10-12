@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.core.designsystem.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +27,8 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.FactRow
 import com.lyrismet.incadent.core.entitysummary.FactValue
 import com.lyrismet.incadent.core.entitysummary.QuickEditSheet
+import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
+import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.core.portrait.rememberImagePickerLauncher
 import com.lyrismet.incadent.core.quickedit.InlineFieldEditor
 import com.lyrismet.incadent.core.quickedit.LinkOptionEditor
@@ -112,7 +116,9 @@ internal fun FactLine(
     quick: QuickEditSheet?,
 ) {
     val field = fact.edit
-    val editing = quick?.inlineEdit?.takeIf { field != null && it.field == field }
+    // a place field is edited in the select sheet, so the line itself stays as it is while that sheet is open
+    val editing =
+        quick?.inlineEdit?.takeIf { field != null && it.field == field && field.kind !is QuickEditKind.Places }
     when {
         quick == null || field == null ->
             Box(Modifier.padding(horizontal = 14.dp, vertical = 4.dp)) {
@@ -124,8 +130,8 @@ internal fun FactLine(
                 onHeld = { quick.onEvent(QuickEditUiEvent.FieldHeld(field, currentText(fact))) },
                 frame = HoldFrame.FactLine,
             ) {
-                // quick mode turns link chips into plain text - a hold opens the picker instead of navigating
-                FactRowContent(fact, style, onEntityRefClicked = null)
+                // a tap on a chip opens that entity, a hold anywhere on the line opens its editor
+                FactRowContent(fact, style, onEntityRefClicked)
             }
     }
 }
@@ -190,7 +196,27 @@ internal fun FactReadOnlyValue(
 ) {
     when (value) {
         is FactValue.Text ->
-            Text(value.text.ifBlank { "—" }, style = style, color = AppPalette.TextPrimary)
+            Text(value.text.orDash(), style = style, color = AppPalette.TextPrimary)
+
+        is FactValue.Links ->
+            if (value.chips.isEmpty()) {
+                Text(EMPTY_VALUE_DASH, style = style, color = AppPalette.TextPrimary)
+            } else {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    value.chips.forEach { chip ->
+                        MentionChip(
+                            item = chip,
+                            onClick =
+                                onEntityRefClicked?.let { click ->
+                                    chip.entityRef?.let { ref -> { click(ref) } }
+                                },
+                        )
+                    }
+                }
+            }
 
         is FactValue.Link ->
             MentionChip(

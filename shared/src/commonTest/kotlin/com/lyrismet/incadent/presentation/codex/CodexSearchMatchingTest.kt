@@ -13,11 +13,10 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-// "Таверна" sits in "Север", which is itself a place whose region is "Королевство" - the chain must reach it
-private val kingdom = Location(id = 1, name = "Королевство", type = "Регион", description = "", region = "")
-private val north = Location(id = 2, name = "Север", type = "Регион", description = "", region = "Королевство")
-private val tavern =
-    Location(id = 3, name = "Таверна", type = "Постоялый двор", description = "Шумная", region = "Север")
+// "Таверна" sits in "Север", which sits in "Королевство" - a search has to reach every place above
+private val kingdom = Location(id = 1, name = "Королевство", description = "")
+private val north = Location(id = 2, name = "Север", description = "", parentId = 1)
+private val tavern = Location(id = 3, name = "Таверна", description = "Шумная", parentId = 2)
 private val locations = listOf(kingdom, north, tavern)
 
 private val monk =
@@ -27,7 +26,7 @@ private val monk =
         status = NpcStatus.NEUTRAL,
         lifeState = NpcLifeState.ALIVE,
         description = "Монах",
-        locationId = tavern.id,
+        locationIds = listOf(tavern.id),
         race = "Человек",
         faction = "Орден",
     )
@@ -57,13 +56,11 @@ private val bard =
         presence = PartyPresence.IN,
         hpMax = 20,
         hpCurrent = 20,
-        armorClass = 13,
-        initiativeBonus = 2,
         description = "Ловкий карманник",
         portraitBase64 = null,
     )
 
-private val regions = CodexRegions(npcs, listOf(errand), locations)
+private val regions = CodexRegions(npcs, locations)
 private val npcsById = npcs.associateBy { it.id }
 
 class CodexSearchMatchingTest {
@@ -75,7 +72,7 @@ class CodexSearchMatchingTest {
     }
 
     @Test
-    fun `Npc search matches the region of its place through the region chain`() {
+    fun `Npc search matches the places above its place`() {
         assertTrue(monk.matchesQuery("королевство", regions))
     }
 
@@ -97,15 +94,15 @@ class CodexSearchMatchingTest {
     }
 
     @Test
-    fun `Quest search matches its region through the giver place when it has no where`() {
+    fun `Quest search matches the places above the giver place when it has no where`() {
         assertTrue(errand.matchesQuery("королевство", npcsById, regions))
     }
 
     @Test
-    fun `Location search matches its raw and resolved region`() {
+    fun `Location search matches the places above it`() {
         assertTrue(tavern.matchesQuery("север", regions))
         assertTrue(tavern.matchesQuery("королевство", regions))
-        assertTrue(tavern.matchesQuery("постоялый", regions))
+        assertFalse(kingdom.matchesQuery("север", regions))
     }
 
     @Test

@@ -16,7 +16,6 @@ enum class QuestGroupBy {
 
 enum class LocationGroupBy {
     REGION,
-    TYPE,
     NONE,
 }
 

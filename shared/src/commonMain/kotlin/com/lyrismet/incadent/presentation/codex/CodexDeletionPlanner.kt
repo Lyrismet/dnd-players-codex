@@ -97,7 +97,8 @@ internal class CodexDeletionPlanner(
         labels: Map<CodexEntryType, String>,
     ): CodexDeletionPlan? =
         records.locations.find { it.id == id }?.let { location ->
-            val npcIdsHere = records.npcs.filter { it.locationId == id }.map { it.id }
+            val npcIdsHere = records.npcs.filter { id in it.locationIds }.map { it.id }
+            val childIds = records.locations.filter { it.parentId == id }.map { it.id }
             val questIdsHere = records.quests.filter { it.locationId == id }.map { it.id }
             CodexDeletionPlan(
                 subtitle = "${labels.getValue(CodexEntryType.LOCATION)} · ${location.name}",
@@ -105,11 +106,18 @@ internal class CodexDeletionPlanner(
                 restore = {
                     val newId = locationRepository.upsert(location.copy(id = 0))
                     npcIdsHere.forEach { npcId ->
-                        npcRepository.getById(npcId)?.let { npcRepository.upsert(it.copy(locationId = newId)) }
+                        npcRepository.getById(npcId)?.let {
+                            npcRepository.upsert(it.copy(locationIds = (it.locationIds + newId).distinct()))
+                        }
                     }
                     questIdsHere.forEach { questId ->
                         questRepository.getById(questId)?.let {
                             questRepository.upsert(it.copy(locationId = newId))
+                        }
+                    }
+                    childIds.forEach { childId ->
+                        locationRepository.getById(childId)?.let {
+                            locationRepository.upsert(it.copy(parentId = newId))
                         }
                     }
                 },

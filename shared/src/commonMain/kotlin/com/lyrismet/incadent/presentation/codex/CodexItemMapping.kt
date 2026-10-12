@@ -2,6 +2,7 @@ package com.lyrismet.incadent.presentation.codex
 
 import com.lyrismet.incadent.core.designsystem.PartyMemberColor
 import com.lyrismet.incadent.core.designsystem.toStatusColor
+import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
@@ -48,12 +49,15 @@ internal fun List<PartyMember>.toPartyCodexItems(labels: PartyCardLabels): List<
             presenceLabel = labels.presence.getValue(member.presence),
             presenceColor = member.presence.toStatusColor(),
             subtitle = member.ownerLine(labels),
-            meta =
-                joinWithDot(
-                    "${labels.armorClassShort} ${member.armorClass}",
-                    "${labels.hpShort} ${member.hpCurrent}/${member.hpMax}",
-                ),
+            meta = "${labels.hpShort} ${member.hpLine()}",
         )
+    }
+
+// an unset max shows a dash alone, an unset current falls back to the max
+private fun PartyMember.hpLine(): String =
+    when {
+        hpMax == null -> EMPTY_VALUE_DASH
+        else -> "${hpCurrent ?: hpMax}/$hpMax"
     }
 
 private fun PartyMember.ownerLine(labels: PartyCardLabels): String =
@@ -86,10 +90,5 @@ internal fun Quest.toCodexItem(
     )
 }
 
-// the grouping's subtitle wins over the default type and region line when it is set
 internal fun Location.toCodexItem(subtitle: String? = null): LocationCodexItem =
-    LocationCodexItem(
-        id = id,
-        name = name,
-        subtitle = subtitle ?: joinWithDot(type, region),
-    )
+    LocationCodexItem(id = id, name = name, subtitle = subtitle)

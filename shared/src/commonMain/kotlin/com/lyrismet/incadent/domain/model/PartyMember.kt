@@ -5,14 +5,12 @@ data class PartyMember(
     val name: String,
     val characterClass: String,
     val race: String,
-    val level: Int,
+    val level: Int?,
     val playerName: String,
     val isPlayerCharacter: Boolean,
     val presence: PartyPresence,
-    val hpMax: Int,
-    val hpCurrent: Int,
-    val armorClass: Int,
-    val initiativeBonus: Int,
+    val hpMax: Int?,
+    val hpCurrent: Int?,
     val description: String,
     val portraitBase64: String? = null,
 )
@@ -22,22 +20,18 @@ enum class PartyPresence {
     AWAY,
 }
 
-/** the bounds the party form's steppers enforce - also what [clampedToRanges] pins values to */
+/** the bounds the party form's number fields enforce - also what [clampedToRanges] pins values to */
 object PartyStatRanges {
     val level = 1..20
     val hpMax = 1..999
-    val armorClass = 1..30
-    val initiativeBonus = -5..15
 }
 
-/** pins every numeric stat to its range and keeps current hp between zero and the max */
+/** pins every set stat to its range and keeps current hp between zero and the max, an unset stat stays unset */
 fun PartyMember.clampedToRanges(): PartyMember {
-    val hpMaxClamped = hpMax.coerceIn(PartyStatRanges.hpMax)
+    val hpMaxClamped = hpMax?.coerceIn(PartyStatRanges.hpMax)
     return copy(
-        level = level.coerceIn(PartyStatRanges.level),
+        level = level?.coerceIn(PartyStatRanges.level),
         hpMax = hpMaxClamped,
-        hpCurrent = hpCurrent.coerceIn(0, hpMaxClamped),
-        armorClass = armorClass.coerceIn(PartyStatRanges.armorClass),
-        initiativeBonus = initiativeBonus.coerceIn(PartyStatRanges.initiativeBonus),
+        hpCurrent = if (hpMaxClamped != null) hpCurrent?.coerceIn(0, hpMaxClamped) else hpCurrent?.coerceAtLeast(0),
     )
 }

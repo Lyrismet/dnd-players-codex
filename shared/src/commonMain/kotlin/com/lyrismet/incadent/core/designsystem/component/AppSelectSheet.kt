@@ -1,0 +1,336 @@
+package com.lyrismet.incadent.core.designsystem.component
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.selectlist.SelectOption
+import com.lyrismet.incadent.core.selectlist.SelectRow
+import com.lyrismet.incadent.core.selectlist.canCreateFromQuery
+import com.lyrismet.incadent.core.selectlist.selectRows
+
+private val ListMaxHeight = 380.dp
+private val SearchHeight = 46.dp
+private val RowMinHeight = 58.dp
+private val RowContentGap = 16.dp
+private val CheckboxSize = 20.dp
+private val ListShape = RoundedCornerShape(14.dp)
+
+/** the words a host gives [AppSelectSheet] - everything the sheet shows besides the options themselves */
+@Suppress("LongParameterList")
+class AppSelectTexts(
+    val title: String,
+    val searchPlaceholder: String,
+    val emptyText: String,
+    /** the quiet "can pick several" note next to the title, multi mode */
+    val multiHint: String,
+    /** single mode only - the row that clears the value, null hides it */
+    val clearLabel: String?,
+    val doneLabel: @Composable (count: Int) -> String,
+    /** null hides the "create «query»" row */
+    val createLabel: (@Composable (query: String) -> String)?,
+)
+
+/**
+ * a search field over a list to pick from, in a bottom sheet - one value (a tap answers) or several (checks and a
+ * "done" button). Generic on purpose: any list of [SelectOption]s fits, the host owns what the ids mean.
+ * [onConfirm] gets the final ids, empty when the value is cleared. [onCreate] gets the typed query and the ids
+ * checked so far, and is expected to close the sheet.
+ */
+@Composable
+fun AppSelectSheet(
+    texts: AppSelectTexts,
+    options: List<SelectOption>,
+    selectedIds: Set<Long>,
+    multi: Boolean,
+    onConfirm: (Set<Long>) -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    recentIds: List<Long> = emptyList(),
+    excludedIds: Set<Long> = emptySet(),
+    leadingGlyph: String? = null,
+    onCreate: ((query: String, checked: Set<Long>) -> Unit)? = null,
+) {
+    AppBottomSheet(onDismissRequest = onDismiss) {
+        AppSelectSheetContent(
+            texts = texts,
+            options = options,
+            selectedIds = selectedIds,
+            multi = multi,
+            onConfirm = onConfirm,
+            modifier = modifier,
+            recentIds = recentIds,
+            excludedIds = excludedIds,
+            leadingGlyph = leadingGlyph,
+            onCreate = onCreate,
+        )
+    }
+}
+
+/** the body of [AppSelectSheet] without its own sheet, for a host that swaps it into a sheet it already shows */
+@Composable
+@Suppress("LongParameterList")
+fun AppSelectSheetContent(
+    texts: AppSelectTexts,
+    options: List<SelectOption>,
+    selectedIds: Set<Long>,
+    multi: Boolean,
+    onConfirm: (Set<Long>) -> Unit,
+    modifier: Modifier = Modifier,
+    recentIds: List<Long> = emptyList(),
+    excludedIds: Set<Long> = emptySet(),
+    leadingGlyph: String? = null,
+    onCreate: ((query: String, checked: Set<Long>) -> Unit)? = null,
+) {
+    var query by remember { mutableStateOf("") }
+    var checked by remember { mutableStateOf(selectedIds) }
+    val rows = selectRows(options, query, checked, recentIds, excludedIds, floatSelected = multi)
+    val canCreate = onCreate != null && texts.createLabel != null && canCreateFromQuery(options, query)
+    val canClear = !multi && texts.clearLabel != null && selectedIds.isNotEmpty() && query.isBlank()
+    Column(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SelectHeader(texts, multi)
+            AppSearchField(
+                query = query,
+                onQueryChange = { query = it },
+                placeholder = texts.searchPlaceholder,
+                height = SearchHeight,
+                textSize = 15.sp,
+                background = AppPalette.Background,
+                clearEndInset = 6.dp,
+            )
+        }
+        Column(
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            if (canClear && texts.clearLabel != null) SelectOutlinedButton(texts.clearLabel) { onConfirm(emptySet()) }
+            if (rows.isEmpty()) {
+                Text(
+                    texts.emptyText,
+                    fontSize = 13.sp,
+                    color = AppPalette.TextTertiary,
+                    modifier = Modifier.padding(4.dp),
+                )
+            } else {
+                SelectRows(
+                    rows = rows,
+                    multi = multi,
+                    leadingGlyph = leadingGlyph,
+                    onRowClick = { id ->
+                        if (multi) checked = if (id in checked) checked - id else checked + id else onConfirm(setOf(id))
+                    },
+                )
+            }
+            if (canCreate) {
+                SelectCreateRow(texts.createLabel.invoke(query.trim())) { onCreate.invoke(query.trim(), checked) }
+            }
+        }
+        SelectFooter(multi, texts.doneLabel(checked.size)) { onConfirm(checked) }
+    }
+}
+
+// the done button of a multi pick sits under a rule, a single pick just leaves some air below the list
+@Composable
+private fun SelectFooter(
+    multi: Boolean,
+    doneLabel: String,
+    onDone: () -> Unit,
+) {
+    if (multi) {
+        AppDivider(color = AppPalette.BorderSubtle)
+        Box(Modifier.padding(start = 16.dp, top = 10.dp, end = 16.dp, bottom = 28.dp)) {
+            FormPrimaryButton(text = doneLabel, onClick = onDone, height = 50.dp)
+        }
+    } else {
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun SelectHeader(
+    texts: AppSelectTexts,
+    multi: Boolean,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            texts.title,
+            style = MaterialTheme.typography.headlineMedium.copy(fontSize = 22.sp),
+            color = AppPalette.TextHeading,
+            modifier = Modifier.weight(1f),
+        )
+        if (multi) Text(texts.multiHint, fontSize = 12.sp, color = AppPalette.TextSecondary)
+    }
+}
+
+@Composable
+private fun SelectRows(
+    rows: List<SelectRow>,
+    multi: Boolean,
+    leadingGlyph: String?,
+    onRowClick: (Long) -> Unit,
+) {
+    LazyColumn(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(max = ListMaxHeight)
+                .clip(ListShape)
+                .background(AppPalette.Background)
+                .border(1.dp, AppPalette.BorderSubtle, ListShape),
+        contentPadding = PaddingValues(horizontal = RowContentGap),
+    ) {
+        itemsIndexed(rows, key = { _, row -> row.option.id }) { index, row ->
+            if (index > 0) AppDivider(color = AppPalette.SurfacePopover)
+            SelectListRow(row, multi, leadingGlyph) { onRowClick(row.option.id) }
+        }
+    }
+}
+
+@Composable
+private fun SelectListRow(
+    row: SelectRow,
+    multi: Boolean,
+    leadingGlyph: String?,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .heightIn(min = RowMinHeight)
+                .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RowContentGap),
+    ) {
+        if (multi) SelectCheckbox(row.selected)
+        if (!multi && leadingGlyph != null) Text(leadingGlyph, fontSize = 9.sp, color = AppPalette.Parchment)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                highlighted(row),
+                fontSize = 15.sp,
+                color = AppPalette.TextPrimary,
+            )
+            row.option.subtitle?.let { subtitle ->
+                Text(
+                    subtitle,
+                    fontSize = 11.5.sp,
+                    color = AppPalette.TextSecondary,
+                    modifier = Modifier.padding(top = 1.dp),
+                )
+            }
+        }
+        if (!multi && row.selected) Text("✓", color = AppPalette.GoldBright, fontWeight = FontWeight.Bold)
+    }
+}
+
+private fun highlighted(row: SelectRow) =
+    buildAnnotatedString {
+        val title = row.option.title
+        val match = row.match
+        if (match == null) {
+            append(title)
+        } else {
+            append(title.substring(0, match.first))
+            withStyle(SpanStyle(color = AppPalette.GoldBright, fontWeight = FontWeight.SemiBold)) {
+                append(title.substring(match.first, match.last + 1))
+            }
+            append(title.substring(match.last + 1))
+        }
+    }
+
+@Composable
+private fun SelectCheckbox(checked: Boolean) {
+    val shape = RoundedCornerShape(6.dp)
+    Box(
+        modifier =
+            Modifier
+                .size(CheckboxSize)
+                .clip(shape)
+                .background(if (checked) AppPalette.Gold else Color.Transparent)
+                .border(1.5.dp, if (checked) AppPalette.Gold else AppPalette.RadioIdle, shape),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (checked) Text("✓", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = AppPalette.Background)
+    }
+}
+
+@Composable
+private fun SelectOutlinedButton(
+    text: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(44.dp)
+                .appCard(
+                    shape = RoundedCornerShape(12.dp),
+                    background = Color.Transparent,
+                    border = AppPalette.Border,
+                    onClick = onClick,
+                ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, fontSize = 13.5.sp, color = AppPalette.TextMuted)
+    }
+}
+
+@Composable
+private fun SelectCreateRow(
+    text: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = 50.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .dashedBorder(AppPalette.Gold.copy(alpha = 0.6f), cornerRadius = 14.dp)
+                .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = AppPalette.GoldBright)
+    }
+}

@@ -26,14 +26,13 @@ class QuickEditValueTest {
     }
 
     @Test
-    fun `a zero armor class is clamped up to the minimum`() {
-        assertEquals(QuickEditValue.Number(1), quickEditValueFromDraft(QuickEditField.ARMOR_CLASS, "0"))
+    fun `a zero level is clamped up to the minimum`() {
+        assertEquals(QuickEditValue.Number(1), quickEditValueFromDraft(QuickEditField.LEVEL, "0"))
     }
 
     @Test
-    fun `initiative bonus keeps its negative sign and is clamped to its range`() {
-        assertEquals(QuickEditValue.Number(-3), quickEditValueFromDraft(QuickEditField.INITIATIVE_BONUS, "-3"))
-        assertEquals(QuickEditValue.Number(-5), quickEditValueFromDraft(QuickEditField.INITIATIVE_BONUS, "-9"))
+    fun `an emptied number field clears the value`() {
+        assertEquals(QuickEditValue.Number(null), quickEditValueFromDraft(QuickEditField.HP_MAX, "  "))
     }
 
     @Test
@@ -43,7 +42,6 @@ class QuickEditValueTest {
 
     @Test
     fun `a number that is not a number is not saved`() {
-        assertNull(quickEditValueFromDraft(QuickEditField.LEVEL, ""))
         assertNull(quickEditValueFromDraft(QuickEditField.LEVEL, "пять"))
     }
 

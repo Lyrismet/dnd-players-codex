@@ -6,6 +6,7 @@ CREATE TABLE npc (
     name TEXT NOT NULL,
     status TEXT AS NpcStatus NOT NULL,
     description TEXT NOT NULL,
+    -- legacy single place, superseded by npc_location and no longer written
     location_id INTEGER REFERENCES location(id) ON DELETE SET NULL,
     race TEXT NOT NULL DEFAULT '',
     faction TEXT NOT NULL DEFAULT '',
@@ -18,20 +19,24 @@ CREATE INDEX npc_location_id ON npc(location_id);
 selectAll:
 SELECT * FROM npc ORDER BY name;
 
+-- places come along in the same query so a write to either table re-emits one consistent list
+selectAllWithLocations:
+SELECT
+    npc.*,
+    COALESCE((SELECT group_concat(location_id) FROM npc_location WHERE npc_id = npc.id), '') AS location_ids
+FROM npc
+ORDER BY name;
+
 selectById:
 SELECT * FROM npc WHERE id = ?;
 
-selectByLocation:
-SELECT * FROM npc WHERE location_id = ?;
-
 insert:
-INSERT INTO npc(name, status, description, location_id, race, faction, life_state, portrait_base64)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO npc(name, status, description, race, faction, life_state, portrait_base64)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE npc
-SET name = ?, status = ?, description = ?, location_id = ?, race = ?, faction = ?, life_state = ?,
-    portrait_base64 = ?
+SET name = ?, status = ?, description = ?, race = ?, faction = ?, life_state = ?, portrait_base64 = ?
 WHERE id = ?;
 
 deleteById:

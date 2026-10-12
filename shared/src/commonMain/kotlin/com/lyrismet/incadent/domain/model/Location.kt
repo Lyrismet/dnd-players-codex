@@ -3,7 +3,7 @@ package com.lyrismet.incadent.domain.model
 data class Location(
     val id: Long,
     val name: String,
-    val type: String,
     val description: String,
-    val region: String,
+    // the place this one is inside, null for a top level place
+    val parentId: Long? = null,
 )

@@ -19,7 +19,7 @@ class QuickEditApplyTest {
             status = NpcStatus.NEUTRAL,
             lifeState = NpcLifeState.ALIVE,
             description = "",
-            locationId = null,
+            locationIds = emptyList(),
             race = "Человек",
             faction = "Орден",
         )
@@ -36,8 +36,6 @@ class QuickEditApplyTest {
             presence = PartyPresence.IN,
             hpMax = 40,
             hpCurrent = 38,
-            armorClass = 16,
-            initiativeBonus = 2,
             description = "",
             portraitBase64 = null,
         )
@@ -48,6 +46,22 @@ class QuickEditApplyTest {
 
         assertEquals("Гильдия", edited?.faction)
         assertEquals(npc.name, edited?.name)
+    }
+
+    @Test
+    fun `names and short labels are trimmed and capitalized but the description is kept as typed`() {
+        val edited = npc.withQuickEdit(QuickEditField.RACE, QuickEditValue.Text("  эльф "))
+
+        assertEquals("Эльф", edited?.race)
+        assertEquals("Гильдия", npc.withQuickEdit(QuickEditField.FACTION, QuickEditValue.Text("гильдия"))?.faction)
+        assertEquals(
+            "Воин",
+            member.withQuickEdit(QuickEditField.CHARACTER_CLASS, QuickEditValue.Text("воин"))?.characterClass,
+        )
+        assertEquals(
+            "  заметка ",
+            npc.withQuickEdit(QuickEditField.DESCRIPTION, QuickEditValue.Text("  заметка "))?.description,
+        )
     }
 
     @Test
@@ -62,14 +76,39 @@ class QuickEditApplyTest {
     @Test
     fun `a field the entity does not own is rejected instead of written`() {
         assertNull(npc.withQuickEdit(QuickEditField.REWARD, QuickEditValue.Text("200")))
-        assertNull(member.withQuickEdit(QuickEditField.PLACE, QuickEditValue.Link(3)))
+        assertNull(member.withQuickEdit(QuickEditField.PLACE, QuickEditValue.Places(listOf(3))))
     }
 
     @Test
-    fun `an unlinked place clears the npc location`() {
-        val placed = npc.copy(locationId = 7)
+    fun `an emptied place choice clears the npc locations`() {
+        val placed = npc.copy(locationIds = listOf(7, 8))
 
-        assertNull(placed.withQuickEdit(QuickEditField.PLACE, QuickEditValue.Link(null))?.locationId)
+        assertEquals(
+            emptyList(),
+            placed.withQuickEdit(QuickEditField.PLACE, QuickEditValue.Places(emptyList()))?.locationIds,
+        )
+    }
+
+    @Test
+    fun `an npc keeps every chosen place while a quest keeps the first one`() {
+        val quest =
+            Quest(
+                id = 3,
+                title = "Ключ",
+                status = QuestStatus.ACTIVE,
+                reward = "",
+                givenByNpcId = null,
+                locationId = null,
+            )
+        val places = QuickEditValue.Places(listOf(4, 5))
+
+        assertEquals(listOf(4L, 5L), npc.withQuickEdit(QuickEditField.PLACE, places)?.locationIds)
+        assertEquals(4L, quest.withQuickEdit(QuickEditField.PLACE, places)?.locationId)
+    }
+
+    @Test
+    fun `a cleared number empties the stat`() {
+        assertNull(member.withQuickEdit(QuickEditField.HP_MAX, QuickEditValue.Number(null))?.hpMax)
     }
 
     @Test

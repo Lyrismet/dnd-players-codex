@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -23,9 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -33,6 +36,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 
 private val FieldShape = RoundedCornerShape(12.dp)
 private val ChipShape = RoundedCornerShape(20.dp)
@@ -64,8 +68,9 @@ fun FormTextField(
     onChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String? = null,
+    required: Boolean = false,
 ) {
-    FormFieldColumn(label, modifier) {
+    FormFieldColumn(label, modifier, required) {
         FormInput(
             value = value,
             onChange = onChange,
@@ -84,8 +89,9 @@ fun FormTextArea(
     onChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String? = null,
+    required: Boolean = false,
 ) {
-    FormFieldColumn(label, modifier) {
+    FormFieldColumn(label, modifier, required) {
         FormInput(
             value = value,
             onChange = onChange,
@@ -96,67 +102,132 @@ fun FormTextArea(
     }
 }
 
+/** a small gold link-button under a field - [FormNumberField]'s "same as your character" shortcut */
+data class FormFieldAction(
+    val label: String,
+    val onClick: () -> Unit,
+)
+
 /**
- * labeled integer stepper with −/+ buttons that stop at the ends of [range] - for bounded numeric fields.
- * [onOpenCalculator], when non-null, makes the centered value tappable to open the quick-entry number pad
- * (Players Codex v6.dc.html's `onPad` - only wired for fields whose range has no negative minimum).
+ * labeled integer input on the system number keyboard (Players Codex v7.dc.html `isNum`) - digits only, up to three,
+ * a value above the range's end is pulled down at once and one below its start when the field loses focus. An empty
+ * field is `null` and shows "—". [action] is an optional link-button under the field.
  */
 @Composable
-fun FormStepper(
+fun FormNumberField(
     label: String,
-    value: Int,
+    value: Int?,
     range: IntRange,
-    onChange: (Int) -> Unit,
+    onChange: (Int?) -> Unit,
     modifier: Modifier = Modifier,
-    onOpenCalculator: (() -> Unit)? = null,
+    action: FormFieldAction? = null,
+) {
+    FormFieldColumn(label, modifier) {
+        val textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp, color = AppPalette.TextPrimary)
+        BasicTextField(
+            value = value?.toString().orEmpty(),
+            onValueChange = { typed ->
+                val digits = typed.filter { it.isDigit() }.take(NUMBER_FIELD_MAX_DIGITS)
+                onChange(digits.toIntOrNull()?.coerceAtMost(range.last))
+            },
+            singleLine = true,
+            textStyle = textStyle,
+            cursorBrush = GoldCursorBrush,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(FieldHeight)
+                    .appCard(shape = FieldShape, background = AppPalette.Background, border = AppPalette.Border)
+                    .onFocusChanged { focus ->
+                        if (!focus.isFocused && value != null && value < range.first) onChange(range.first)
+                    },
+            decorationBox = { innerTextField ->
+                Box(modifier = Modifier.padding(horizontal = 14.dp), contentAlignment = Alignment.CenterStart) {
+                    if (value == null) Text(EMPTY_VALUE_DASH, style = textStyle, color = AppPalette.TextTertiary)
+                    innerTextField()
+                }
+            },
+        )
+        if (action != null) {
+            Text(
+                action.label,
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold),
+                color = AppPalette.GoldBright,
+                modifier = Modifier.clickable(onClick = action.onClick).padding(vertical = 4.dp),
+            )
+        }
+    }
+}
+
+private const val NUMBER_FIELD_MAX_DIGITS = 3
+
+/**
+ * a tappable field that opens a select sheet instead of taking text - the picked value shows as a [title] with its
+ * [subtitle] under it, as [chips] when several are picked, or as the [placeholder] hint when nothing is.
+ */
+@Composable
+fun FormPickField(
+    label: String,
+    placeholder: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    subtitle: String? = null,
+    chips: List<MentionChipItem> = emptyList(),
+    leadingGlyph: String? = null,
 ) {
     FormFieldColumn(label, modifier) {
         Row(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .height(FieldHeight)
-                    .appCard(shape = FieldShape, background = AppPalette.Background, border = AppPalette.Border)
-                    .padding(horizontal = 4.dp),
+                    .appCard(
+                        shape = FieldShape,
+                        background = AppPalette.Background,
+                        border = AppPalette.Border,
+                        onClick = onClick,
+                    ).heightIn(min = PickFieldMinHeight)
+                    .padding(start = 14.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            StepperButton(symbol = "−", enabled = value > range.first) { onChange(value - 1) }
-            val tappable = if (onOpenCalculator != null) Modifier.clickable(onClick = onOpenCalculator) else Modifier
-            Text(
-                value.toString(),
-                style = MaterialTheme.typography.bodyLarge.copy(color = AppPalette.TextPrimary),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1f).then(tappable),
-            )
-            StepperButton(symbol = "+", enabled = value < range.last) { onChange(value + 1) }
+            if (leadingGlyph != null && title != null && chips.isEmpty()) {
+                Text(leadingGlyph, fontSize = 9.sp, color = AppPalette.Parchment)
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                when {
+                    chips.isNotEmpty() ->
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) { chips.forEach { MentionChip(item = it, onClick = null) } }
+                    title != null -> {
+                        Text(title, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
+                        if (!subtitle.isNullOrBlank()) {
+                            Text(subtitle, fontSize = 11.5.sp, color = AppPalette.TextSecondary)
+                        }
+                    }
+                    else ->
+                        Text(
+                            placeholder,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = AppPalette.TextTertiary,
+                        )
+                }
+            }
+            Text("›", fontSize = 18.sp, color = AppPalette.TextTertiary)
         }
     }
 }
 
-@Composable
-private fun StepperButton(
-    symbol: String,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    IconBadge(
-        size = FieldHeight - 8.dp,
-        shape = RoundedCornerShape(10.dp),
-        background = AppPalette.SurfaceElevated,
-        onClick = if (enabled) onClick else null,
-    ) {
-        Text(
-            symbol,
-            style = MaterialTheme.typography.titleLarge,
-            color = if (enabled) AppPalette.GoldBright else AppPalette.TextTertiary,
-        )
-    }
-}
+private val PickFieldMinHeight = 52.dp
 
 @Composable
 private fun FormFieldColumn(
     label: String,
     modifier: Modifier = Modifier,
+    required: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -165,6 +236,12 @@ private fun FormFieldColumn(
             color = AppPalette.TextTertiary,
             fontSize = 10.sp,
             letterSpacing = 0.14.em,
+            inlineContent =
+                if (required) {
+                    { Text(" *", fontSize = 10.sp, color = AppPalette.GoldBright) }
+                } else {
+                    null
+                },
         )
         content()
     }
@@ -281,6 +358,7 @@ fun FormPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    height: Dp = PrimaryButtonHeight,
 ) {
     Button(
         onClick = onClick,
@@ -293,7 +371,7 @@ fun FormPrimaryButton(
                 disabledContainerColor = AppPalette.SurfaceElevated,
                 disabledContentColor = AppPalette.TextTertiary,
             ),
-        modifier = modifier.fillMaxWidth().height(PrimaryButtonHeight),
+        modifier = modifier.fillMaxWidth().height(height),
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold))
     }

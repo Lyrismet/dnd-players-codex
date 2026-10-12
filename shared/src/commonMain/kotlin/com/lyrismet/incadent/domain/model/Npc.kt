@@ -6,7 +6,8 @@ data class Npc(
     val status: NpcStatus,
     val lifeState: NpcLifeState,
     val description: String,
-    val locationId: Long?,
+    // every place the npc can be met at, in no particular order
+    val locationIds: List<Long>,
     val race: String,
     val faction: String,
     val portraitBase64: String? = null,
