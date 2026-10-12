@@ -24,12 +24,15 @@ import com.lyrismet.incadent.core.entitysummary.npcLifeLabels
 import com.lyrismet.incadent.core.entitysummary.npcStatusLabels
 import com.lyrismet.incadent.core.entitysummary.partyPresenceLabels
 import com.lyrismet.incadent.core.entitysummary.questStatusLabels
+import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.quickedit.InlineEdit
 import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.core.quickedit.QuickEditInteractions
+import com.lyrismet.incadent.core.quickedit.QuickEditKind
+import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.core.quickedit.rememberQuickEditFieldTitles
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.core.swipehint.codexSwipeHintDirection
@@ -71,13 +74,12 @@ import dndplayerscodex.shared.generated.resources.codex_group_no_faction
 import dndplayerscodex.shared.generated.resources.codex_group_no_giver
 import dndplayerscodex.shared.generated.resources.codex_group_no_place
 import dndplayerscodex.shared.generated.resources.codex_group_no_region_quest
-import dndplayerscodex.shared.generated.resources.codex_group_no_type
 import dndplayerscodex.shared.generated.resources.codex_group_none
 import dndplayerscodex.shared.generated.resources.codex_group_region
 import dndplayerscodex.shared.generated.resources.codex_group_relation
 import dndplayerscodex.shared.generated.resources.codex_group_status
-import dndplayerscodex.shared.generated.resources.codex_group_type
-import dndplayerscodex.shared.generated.resources.codex_party_card_ac
+import dndplayerscodex.shared.generated.resources.codex_group_top_level
+import dndplayerscodex.shared.generated.resources.codex_group_tree
 import dndplayerscodex.shared.generated.resources.codex_party_card_hp
 import dndplayerscodex.shared.generated.resources.codex_party_card_player_prefix
 import dndplayerscodex.shared.generated.resources.codex_party_card_you
@@ -100,6 +102,10 @@ private class CodexFields(
     val inlineEdit: MutableState<InlineEdit?>,
     val quickEdit: QuickEditInteractions,
     val toast: MutableState<CodexToast?>,
+    // the places picked or created last, newest first - the select sheet lists them above the rest
+    val recentPlaceIds: MutableState<List<Long>>,
+    // the places whose tree section is folded on the places tab
+    val collapsedPlaceIds: MutableState<Set<Long>>,
 )
 
 /** result of applying the text search query to every list */
@@ -155,14 +161,8 @@ class CodexPresenter(
         val scope = rememberCoroutineScope()
         val labels = codexLabels()
 
-        val formController =
-            CodexEntryFormController.rememberController(
-                npcRepository,
-                partyRepository,
-                questRepository,
-                locationRepository,
-            )
         val fields = rememberFields(labels)
+        val formController = rememberFormController(fields, parties)
 
         val prefix = questPrefix()
         val candidates =
@@ -172,7 +172,14 @@ class CodexPresenter(
         val records = CodexRecords(parties, npcs, quests, locations)
         val search = buildSearchResults(records, fields)
         val grouped =
-            codexGroupedLists(search, records, fields.activeTab.value, fields.grouping.value, labels.grouped)
+            codexGroupedLists(
+                search,
+                records,
+                fields.activeTab.value,
+                fields.grouping.value,
+                labels.grouped,
+                fields.collapsedPlaceIds.value,
+            )
         val party = search.searchedParties.toPartyCodexItems(labels.partyCard)
         val formState = formController.buildState(records.npcs, records.locations)
 
@@ -206,6 +213,20 @@ class CodexPresenter(
         )
     }
 
+    @Composable
+    private fun rememberFormController(
+        fields: CodexFields,
+        parties: List<PartyMember>,
+    ): CodexEntryFormController =
+        CodexEntryFormController.rememberController(
+            npcRepository,
+            partyRepository,
+            questRepository,
+            locationRepository,
+            fields.recentPlaceIds,
+            parties.firstOrNull { it.isPlayerCharacter }?.level,
+        )
+
     // bundles the pending-state read and the shared trigger so present() doesn't inline both
     @Composable
     private fun rememberCodexSwipeHintTarget(
@@ -234,6 +255,7 @@ class CodexPresenter(
         val searchQuery = rememberRetained { mutableStateOf("") }
         val grouping = rememberRetained { mutableStateOf(CodexGroupingSelection()) }
         val selectedEntityRef = rememberRetained { mutableStateOf<EntityRef?>(null) }
+        val entityHistory = rememberRetained { mutableStateOf(emptyList<EntityRef>()) }
         val inlineEdit = rememberRetained { mutableStateOf<InlineEdit?>(null) }
         val entitySheet =
             EntitySheetInteractions(
@@ -241,6 +263,7 @@ class CodexPresenter(
                 MentionRepositories(npcRepository, locationRepository, questRepository),
                 partyRepository,
                 navigator,
+                entityHistory,
                 onChanged = { change ->
                     val title = labels.fieldTitles.getValue(change.field) + labels.changedSuffix
                     undoController.show(title, change.entityName, change.restore)
@@ -251,6 +274,8 @@ class CodexPresenter(
                 appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
             }
         val toast = rememberRetained { mutableStateOf<CodexToast?>(null) }
+        val recentPlaceIds = rememberRetained { mutableStateOf(emptyList<Long>()) }
+        val collapsedPlaceIds = rememberRetained { mutableStateOf(emptySet<Long>()) }
         toast.autoDismiss()
         return CodexFields(
             activeTab,
@@ -261,6 +286,8 @@ class CodexPresenter(
             inlineEdit,
             quickEdit,
             toast,
+            recentPlaceIds,
+            collapsedPlaceIds,
         )
     }
 
@@ -273,7 +300,6 @@ class CodexPresenter(
                     presence = partyPresence,
                     you = stringResource(Res.string.codex_party_card_you),
                     playerPrefix = stringResource(Res.string.codex_party_card_player_prefix),
-                    armorClassShort = stringResource(Res.string.codex_party_card_ac),
                     hpShort = stringResource(Res.string.codex_party_card_hp),
                 ),
             entityType =
@@ -303,7 +329,7 @@ class CodexPresenter(
                     noFaction = stringResource(Res.string.codex_group_no_faction),
                     noGiver = stringResource(Res.string.codex_group_no_giver),
                     giverPrefix = stringResource(Res.string.codex_group_giver_prefix),
-                    noType = stringResource(Res.string.codex_group_no_type),
+                    topLevel = stringResource(Res.string.codex_group_top_level),
                     npcStatus = npcStatus,
                     questStatus = questStatus,
                 ),
@@ -325,8 +351,7 @@ class CodexPresenter(
                         ),
                     place =
                         mapOf(
-                            LocationGroupBy.REGION to stringResource(Res.string.codex_group_region),
-                            LocationGroupBy.TYPE to stringResource(Res.string.codex_group_type),
+                            LocationGroupBy.REGION to stringResource(Res.string.codex_group_tree),
                             LocationGroupBy.NONE to stringResource(Res.string.codex_group_none),
                         ),
                 ),
@@ -376,6 +401,7 @@ class CodexPresenter(
             activeSheet = codexActiveSheet(formState, selectedEntity),
             editMode = context.editMode,
             inlineEdit = inlineEdit,
+            quickPlaceSelect = quickPlaceSelectState(inlineEdit, fields, records),
             holdTipVisible =
                 context.editMode == EntityEditMode.QUICK &&
                     context.holdHint == HoldHintState.PENDING &&
@@ -389,13 +415,35 @@ class CodexPresenter(
         }
     }
 
+    // the select sheet of a place field held on the card - null when no place field is being edited
+    @Composable
+    private fun quickPlaceSelectState(
+        inlineEdit: InlineEdit?,
+        fields: CodexFields,
+        records: CodexRecords,
+    ): PlaceSelectState? {
+        val isPlaceEdit = inlineEdit != null && inlineEdit.field.kind is QuickEditKind.Places
+        val ref = fields.selectedEntityRef.value
+        val target = if (isPlaceEdit) quickPlaceTarget(ref, records) else null
+        return target?.let { (field, selectedIds) ->
+            placeSelectState(
+                field = field,
+                title = placeFieldTitle(field),
+                locations = records.locations,
+                selectedIds = selectedIds,
+                editingLocationId = (ref as? EntityRef.Location)?.id,
+                recentIds = fields.recentPlaceIds.value,
+            )
+        }
+    }
+
     private fun buildSearchResults(
         records: CodexRecords,
         fields: CodexFields,
     ): CodexSearchResults {
         val query = fields.searchQuery.value.trim()
         val npcsById = records.npcs.associateBy { it.id }
-        val regions = CodexRegions(records.npcs, records.quests, records.locations)
+        val regions = CodexRegions(records.npcs, records.locations)
         return CodexSearchResults(
             npcsById = npcsById,
             regions = regions,
@@ -436,7 +484,12 @@ class CodexPresenter(
                 fields.entitySheet.onDismissed()
                 fields.quickEdit.onSheetClosed()
             }
-            is CodexEvent.QuickEdit -> fields.quickEdit.onEvent(scope, event.event)
+            is CodexEvent.QuickEdit -> {
+                val answer = event.event
+                if (answer is QuickEditUiEvent.PlacesChosen) fields.rememberRecentPlaces(answer.ids)
+                fields.quickEdit.onEvent(scope, answer)
+            }
+            is CodexEvent.QuickPlaceCreated -> onQuickPlaceCreated(event, fields, scope)
             CodexEvent.UndoClicked -> undoController.undo()
             CodexEvent.AddEntryClicked -> formController.onAddEntryClicked(fields.activeTab.value.toEntryType())
             is CodexEvent.EmptyActionClicked -> formController.onAddEntryClicked(event.entryType, event.name)
@@ -453,18 +506,22 @@ class CodexPresenter(
             is CodexEvent.EntryQuestStatusChanged -> formController.onQuestStatusChanged(event.status)
             is CodexEvent.EntryChipToggled -> formController.onChipToggled(event.field, event.id)
             CodexEvent.EntryFormSaveClicked -> formController.onSaveClicked(scope)
+            is CodexEvent.PlaceSectionToggled -> {
+                val folded = fields.collapsedPlaceIds.value
+                fields.collapsedPlaceIds.value =
+                    if (event.placeId in folded) folded - event.placeId else folded + event.placeId
+            }
             CodexEvent.EntryFormClosed -> {
                 formController.onClosed()
                 fields.toast.value = null
             }
             CodexEvent.EntryFormCloseRequested -> if (formController.onCloseRequested()) fields.toast.value = null
             CodexEvent.EntryFormDiscardPromptDismissed -> formController.onDiscardPromptDismissed()
-            is CodexEvent.CalculatorOpened -> formController.onCalculatorOpened(event.field)
-            is CodexEvent.CalculatorDigitPressed -> formController.onCalculatorDigitPressed(event.digit)
-            CodexEvent.CalculatorBackspacePressed -> formController.onCalculatorBackspacePressed()
-            CodexEvent.CalculatorClearPressed -> formController.onCalculatorClearPressed()
-            CodexEvent.CalculatorApplyClicked -> formController.onCalculatorApplyClicked()
-            CodexEvent.CalculatorClosed -> formController.onCalculatorClosed()
+            CodexEvent.EntryPartyLevelFromPlayerClicked -> formController.onPartyLevelFromPlayerClicked()
+            is CodexEvent.EntryPlaceFieldOpened -> formController.onPlaceFieldOpened(event.field)
+            is CodexEvent.EntryPlacesChosen -> formController.onPlacesChosen(event.ids)
+            is CodexEvent.EntryPlaceCreated -> formController.onPlaceCreated(scope, event.name, event.checked)
+            CodexEvent.EntryPlaceSelectClosed -> formController.onPlaceSelectClosed()
             is CodexEvent.EntryQuickAddOpened -> formController.onQuickAddOpened(event.field)
             is CodexEvent.EntryQuickAddDraftChanged -> formController.onQuickAddDraftChanged(event.text)
             CodexEvent.EntryQuickAddSaveClicked ->
@@ -474,6 +531,23 @@ class CodexPresenter(
             CodexEvent.EntryQuickAddCancelled -> formController.onQuickAddCancelled()
             is CodexEvent.EntityDeleteRequested ->
                 onEntityDeleteRequested(event.ref, records, labels, scope)
+        }
+    }
+
+    // the new place joins what was ticked in the card's select sheet, a single field takes just the new place
+    private fun onQuickPlaceCreated(
+        event: CodexEvent.QuickPlaceCreated,
+        fields: CodexFields,
+        scope: CoroutineScope,
+    ) {
+        val name = event.name.trim().capitalizeFirst()
+        if (name.isBlank()) return
+        val isMulti = fields.selectedEntityRef.value is EntityRef.Npc
+        scope.launch {
+            val id = locationRepository.upsert(Location(id = 0, name = name, description = ""))
+            val ids = if (isMulti) event.checked + id else listOf(id)
+            fields.rememberRecentPlaces(listOf(id))
+            fields.quickEdit.onEvent(scope, QuickEditUiEvent.PlacesChosen(ids))
         }
     }
 
@@ -490,6 +564,12 @@ class CodexPresenter(
             undoController.show(labels.undoDeletedTitle, plan.subtitle, plan.restore)
         }
     }
+}
+
+private const val MAX_RECENT_PLACES = 12
+
+private fun CodexFields.rememberRecentPlaces(ids: List<Long>) {
+    recentPlaceIds.value = (ids + recentPlaceIds.value).distinct().take(MAX_RECENT_PLACES)
 }
 
 /** the edit preferences and the undo toast the screen state is assembled from */

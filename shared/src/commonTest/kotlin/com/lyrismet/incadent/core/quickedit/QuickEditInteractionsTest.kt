@@ -80,11 +80,11 @@ class QuickEditInteractionsTest {
             val harness = Harness()
             harness.open(QuickEditField.PLACE, "")
 
-            harness.interactions.onEvent(this, QuickEditUiEvent.LinkChosen(9))
+            harness.interactions.onEvent(this, QuickEditUiEvent.PlacesChosen(listOf(9)))
             advanceUntilIdle()
 
             assertNull(harness.inlineEdit.value)
-            assertEquals(9L, harness.npcs.stored(1)?.locationId)
+            assertEquals(listOf(9L), harness.npcs.stored(1)?.locationIds)
         }
 
     @Test
@@ -99,7 +99,7 @@ class QuickEditInteractionsTest {
         }
 
     private class Harness {
-        val npcs = FakeNpcRepository(Npc(1, "Кассиан", NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", null, "", ""))
+        val npcs = FakeNpcRepository(Npc(1, "Кассиан", NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), "", ""))
         val inlineEdit = mutableStateOf<InlineEdit?>(null)
         val selected = mutableStateOf<EntityRef?>(EntityRef.Npc(1))
         var hintSeen = false

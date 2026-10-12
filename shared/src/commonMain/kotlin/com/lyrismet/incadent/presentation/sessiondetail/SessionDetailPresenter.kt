@@ -267,13 +267,14 @@ class SessionDetailPresenter(
     private fun rememberFields(): SessionDetailFields {
         val noteId = screen.sessionNoteId
         val selectedEntityRef = remember(noteId) { mutableStateOf<EntityRef?>(null) }
+        val entityHistory = remember(noteId) { mutableStateOf(emptyList<EntityRef>()) }
         return SessionDetailFields(
             titleField = remember(noteId) { mutableStateOf<String?>(null) },
             draft = remember(noteId) { mutableStateOf(TextFieldValue("")) },
             editingEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
             selectedEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
             selectedEntityRef = selectedEntityRef,
-            entitySheet = entitySheetInteractions(selectedEntityRef),
+            entitySheet = entitySheetInteractions(selectedEntityRef, entityHistory),
             tagSheetOpen = remember(noteId) { mutableStateOf(false) },
             tagDraft = remember(noteId) { mutableStateOf("") },
             phrases = remember { PhraseSheetController(phraseSnippetRepository) },
@@ -281,13 +282,16 @@ class SessionDetailPresenter(
         )
     }
 
-    private fun entitySheetInteractions(selectedEntityRef: MutableState<EntityRef?>) =
-        EntitySheetInteractions(
-            selectedEntityRef,
-            mentionRepositories,
-            partyRepository,
-            navigator,
-        )
+    private fun entitySheetInteractions(
+        selectedEntityRef: MutableState<EntityRef?>,
+        entityHistory: MutableState<List<EntityRef>>,
+    ) = EntitySheetInteractions(
+        selectedEntityRef,
+        mentionRepositories,
+        partyRepository,
+        navigator,
+        entityHistory,
+    )
 
     // flat circuit event-dispatch table, grows one branch per event variant - not real branching complexity
     @Suppress("CyclomaticComplexMethod", "LongMethod")

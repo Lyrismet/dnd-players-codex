@@ -1,10 +1,11 @@
 CREATE TABLE location (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    type TEXT NOT NULL,
     description TEXT NOT NULL,
-    region TEXT NOT NULL DEFAULT ''
+    parent_id INTEGER REFERENCES location(id) ON DELETE SET NULL
 );
+
+CREATE INDEX location_parent_id ON location(parent_id);
 
 selectAll:
 SELECT * FROM location ORDER BY name;
@@ -13,12 +14,12 @@ selectById:
 SELECT * FROM location WHERE id = ?;
 
 insert:
-INSERT INTO location(name, type, description, region)
-VALUES (?, ?, ?, ?);
+INSERT INTO location(name, description, parent_id)
+VALUES (?, ?, ?);
 
 update:
 UPDATE location
-SET name = ?, type = ?, description = ?, region = ?
+SET name = ?, description = ?, parent_id = ?
 WHERE id = ?;
 
 deleteById:

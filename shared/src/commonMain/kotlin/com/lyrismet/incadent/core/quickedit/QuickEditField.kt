@@ -12,6 +12,9 @@ sealed interface QuickEditKind {
 
     data object Link : QuickEditKind
 
+    /** one or several places picked in the select sheet - whether it is several depends on the entity */
+    data object Places : QuickEditKind
+
     data object Choice : QuickEditKind
 
     /** a picked photo - it has no typed draft, the picker hands over the finished value */
@@ -29,15 +32,12 @@ enum class QuickEditField(
     FACTION(QuickEditKind.Text),
     CHARACTER_CLASS(QuickEditKind.Text),
     PLAYER_NAME(QuickEditKind.Text),
-    LOCATION_TYPE(QuickEditKind.Text),
-    LOCATION_REGION(QuickEditKind.Text),
     REWARD(QuickEditKind.Text),
     LEVEL(QuickEditKind.Number(PartyStatRanges.level)),
-    ARMOR_CLASS(QuickEditKind.Number(PartyStatRanges.armorClass)),
     HP_MAX(QuickEditKind.Number(PartyStatRanges.hpMax)),
-    INITIATIVE_BONUS(QuickEditKind.Number(PartyStatRanges.initiativeBonus)),
     GIVER(QuickEditKind.Link),
-    PLACE(QuickEditKind.Link),
+    PLACE(QuickEditKind.Places),
+    PARENT(QuickEditKind.Places),
     RELATION(QuickEditKind.Choice),
     LIFE(QuickEditKind.Choice),
     QUEST_STATUS(QuickEditKind.Choice),
@@ -51,8 +51,14 @@ sealed interface QuickEditValue {
         val text: String,
     ) : QuickEditValue
 
+    /** null clears the number, the card shows a dash again */
     data class Number(
-        val number: Int,
+        val number: Int?,
+    ) : QuickEditValue
+
+    /** the chosen places, empty clears the field */
+    data class Places(
+        val ids: List<Long>,
     ) : QuickEditValue
 
     /** null unlinks the field - "Не указано" */
@@ -73,7 +79,12 @@ fun quickEditValueFromDraft(
     val trimmed = draft.trim()
     return when (val kind = field.kind) {
         QuickEditKind.Text -> if (trimmed.isEmpty() && field.isRequired) null else QuickEditValue.Text(trimmed)
-        is QuickEditKind.Number -> trimmed.toIntOrNull()?.let { QuickEditValue.Number(it.coerceIn(kind.range)) }
-        QuickEditKind.Link, QuickEditKind.Choice, QuickEditKind.Portrait -> null
+        is QuickEditKind.Number ->
+            if (trimmed.isEmpty()) {
+                QuickEditValue.Number(null)
+            } else {
+                trimmed.toIntOrNull()?.let { QuickEditValue.Number(it.coerceIn(kind.range)) }
+            }
+        QuickEditKind.Link, QuickEditKind.Places, QuickEditKind.Choice, QuickEditKind.Portrait -> null
     }
 }

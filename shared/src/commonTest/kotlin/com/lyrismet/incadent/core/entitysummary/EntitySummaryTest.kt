@@ -54,7 +54,7 @@ private val ragnar =
         status = NpcStatus.FRIEND,
         lifeState = NpcLifeState.ALIVE,
         description = "Кузнец",
-        locationId = 2,
+        locationIds = listOf(2),
         race = "Дварф",
         faction = "Гильдия",
     )
@@ -70,12 +70,10 @@ private val lira =
         presence = PartyPresence.IN,
         hpMax = 28,
         hpCurrent = 22,
-        armorClass = 12,
-        initiativeBonus = 3,
         description = "Школа Воплощения",
         portraitBase64 = null,
     )
-private val forge = Location(id = 2, name = "Кузница", type = "Мастерская", description = "", region = "Север")
+private val forge = Location(id = 2, name = "Кузница", description = "")
 private val swordQuest =
     Quest(id = 3, title = "Меч", status = QuestStatus.ACTIVE, reward = "50 золота", givenByNpcId = 1, locationId = null)
 
@@ -147,11 +145,11 @@ class EntitySummaryTest {
 
     @Test
     fun `buildEntitySummary for an npc without a location keeps the location row as a dash and omits the groups`() {
-        val loner = ragnar.copy(id = 5, locationId = null)
+        val loner = ragnar.copy(id = 5, locationIds = emptyList())
         val summary = buildEntitySummary(EntityRef.Npc(5), lookup(npcs = listOf(loner))) as EntitySummaryItem.NpcSummary
 
         assertEquals(3, summary.facts.size)
-        assertEquals(FactValue.Text(""), summary.facts.last().value)
+        assertEquals(FactValue.Links(emptyList()), summary.facts.last().value)
         assertTrue(summary.groups.isEmpty())
     }
 
@@ -200,7 +198,7 @@ class EntitySummaryTest {
 
     @Test
     fun `buildEntitySummary for a location with nothing there has no groups`() {
-        val emptyLocation = Location(id = 9, name = "Пустошь", type = "Дикая земля", description = "", region = "Юг")
+        val emptyLocation = Location(id = 9, name = "Пустошь", description = "")
         val summary =
             buildEntitySummary(
                 EntityRef.Location(9),

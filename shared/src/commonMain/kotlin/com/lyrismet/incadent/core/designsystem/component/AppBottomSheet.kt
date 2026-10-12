@@ -13,6 +13,8 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,14 +32,20 @@ private val SheetScrimColor = AppPalette.Scrim.copy(alpha = 0.66f)
 private val SheetEdgeColor = AppPalette.Gold.copy(alpha = 0.4f)
 private val SheetCornerRadius = 26.dp
 
-/** modal bottom sheet matching the design's entity/action sheets - 26dp top corners, dark surface, thin gold edge */
+/**
+ * modal bottom sheet matching the design's entity/action sheets - 26dp top corners, dark surface, thin gold edge.
+ * A non-null [onDismissBlocked] keeps the sheet open on a scrim tap or a swipe down and calls it instead - a sheet
+ * with unsaved input asks first, it must not disappear and only then ask.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    onDismissBlocked: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
+    val blocked by rememberUpdatedState(onDismissBlocked)
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         modifier = modifier,
@@ -47,6 +55,15 @@ fun AppBottomSheet(
             rememberBottomSheetState(
                 initialValue = SheetValue.Hidden,
                 enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+                confirmValueChange = { target ->
+                    val block = blocked
+                    if (target == SheetValue.Hidden && block != null) {
+                        block()
+                        false
+                    } else {
+                        true
+                    }
+                },
             ),
         shape = SheetShape,
         containerColor = AppPalette.Surface,

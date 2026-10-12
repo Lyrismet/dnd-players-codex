@@ -46,6 +46,7 @@ private fun <T> CodexGroupedList(
     groups: List<CodexGroup<T>>,
     itemKey: (T) -> Any,
     modifier: Modifier = Modifier,
+    onSectionToggled: (Long) -> Unit = {},
     itemContent: @Composable (T) -> Unit,
 ) {
     LazyColumn(
@@ -54,12 +55,30 @@ private fun <T> CodexGroupedList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         groups.forEachIndexed { index, group ->
-            group.title?.let { title ->
-                item {
-                    CodexSectionHeader("${MentionGlyph.LOCATION.symbol} $title", group.items.size, isFirst = index == 0)
+            val toggleId = group.toggleId
+            if (toggleId != null && group.title != null) {
+                item(key = "section-$toggleId") {
+                    CodexPlaceSectionHeader(
+                        title = group.title,
+                        path = group.path,
+                        count = group.count,
+                        collapsed = group.collapsed,
+                        onToggle = { onSectionToggled(toggleId) },
+                    )
+                }
+            } else {
+                group.title?.let { title ->
+                    item {
+                        CodexSectionHeader(
+                            "${MentionGlyph.LOCATION.symbol} $title",
+                            group.items.size,
+                            isFirst = index == 0,
+                        )
+                    }
                 }
             }
-            items(group.items, key = itemKey) { itemContent(it) }
+            // an entity met in several places repeats across sections, so the section is part of the key
+            items(group.items, key = { "$index-${itemKey(it)}" }) { itemContent(it) }
         }
     }
 }
@@ -147,6 +166,7 @@ internal fun CodexLocationList(
         groups = state.locations,
         itemKey = { it.id },
         modifier = modifier,
+        onSectionToggled = { state.eventSink(CodexEvent.PlaceSectionToggled(it)) },
     ) {
         LocationRow(
             location = it,

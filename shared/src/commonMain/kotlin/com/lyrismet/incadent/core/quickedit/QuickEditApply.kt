@@ -8,7 +8,9 @@ import com.lyrismet.incadent.domain.model.clampedToRanges
 
 private fun QuickEditValue.text(): String? = (this as? QuickEditValue.Text)?.text
 
-private fun QuickEditValue.number(): Int? = (this as? QuickEditValue.Number)?.number
+private fun QuickEditValue.number(): QuickEditValue.Number? = this as? QuickEditValue.Number
+
+private fun QuickEditValue.places(): QuickEditValue.Places? = this as? QuickEditValue.Places
 
 private fun QuickEditValue.portrait(): String? = (this as? QuickEditValue.Portrait)?.base64
 
@@ -25,7 +27,7 @@ fun Npc.withQuickEdit(
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
         QuickEditField.RACE -> value.text()?.let { copy(race = it) }
         QuickEditField.FACTION -> value.text()?.let { copy(faction = it) }
-        QuickEditField.PLACE -> value.link()?.let { copy(locationId = it.id) }
+        QuickEditField.PLACE -> value.places()?.let { copy(locationIds = it.ids) }
         QuickEditField.PORTRAIT -> value.portrait()?.let { copy(portraitBase64 = it) }
         else -> null
     }
@@ -39,7 +41,7 @@ fun Quest.withQuickEdit(
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
         QuickEditField.REWARD -> value.text()?.let { copy(reward = it) }
         QuickEditField.GIVER -> value.link()?.let { copy(givenByNpcId = it.id) }
-        QuickEditField.PLACE -> value.link()?.let { copy(locationId = it.id) }
+        QuickEditField.PLACE -> value.places()?.let { copy(locationId = it.ids.firstOrNull()) }
         else -> null
     }
 
@@ -50,8 +52,7 @@ fun Location.withQuickEdit(
     when (field) {
         QuickEditField.NAME -> value.text()?.let { copy(name = it) }
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
-        QuickEditField.LOCATION_TYPE -> value.text()?.let { copy(type = it) }
-        QuickEditField.LOCATION_REGION -> value.text()?.let { copy(region = it) }
+        QuickEditField.PARENT -> value.places()?.let { copy(parentId = it.ids.firstOrNull()) }
         else -> null
     }
 
@@ -80,9 +81,7 @@ private fun PartyMember.withNumberQuickEdit(
     value: QuickEditValue,
 ): PartyMember? =
     when (field) {
-        QuickEditField.LEVEL -> value.number()?.let { copy(level = it) }
-        QuickEditField.ARMOR_CLASS -> value.number()?.let { copy(armorClass = it) }
-        QuickEditField.HP_MAX -> value.number()?.let { copy(hpMax = it) }
-        QuickEditField.INITIATIVE_BONUS -> value.number()?.let { copy(initiativeBonus = it) }
+        QuickEditField.LEVEL -> value.number()?.let { copy(level = it.number) }
+        QuickEditField.HP_MAX -> value.number()?.let { copy(hpMax = it.number) }
         else -> null
     }

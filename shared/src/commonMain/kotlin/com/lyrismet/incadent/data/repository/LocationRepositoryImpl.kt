@@ -33,12 +33,12 @@ class LocationRepositoryImpl(
     override suspend fun upsert(location: Location): Long =
         withContext(Dispatchers.Default) {
             if (location.id == 0L) {
-                queries.insert(location.name, location.type, location.description, location.region)
+                queries.insert(location.name, location.description, location.parentId)
                 queries.lastInsertRowId().executeAsOne()
             } else {
                 val oldName = queries.selectById(location.id, ::toDomain).executeAsOneOrNull()?.name
                 val update: () -> Unit = {
-                    queries.update(location.name, location.type, location.description, location.region, location.id)
+                    queries.update(location.name, location.description, location.parentId, location.id)
                 }
                 if (oldName != null) {
                     mentionRenamer.locationRenamed(location.id, oldName, location.name, update)
@@ -58,8 +58,7 @@ class LocationRepositoryImpl(
     private fun toDomain(
         id: Long,
         name: String,
-        type: String,
         description: String,
-        region: String,
-    ) = Location(id, name, type, description, region)
+        parentId: Long?,
+    ) = Location(id, name, description, parentId)
 }

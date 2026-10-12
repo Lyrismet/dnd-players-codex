@@ -26,6 +26,11 @@ sealed interface QuickEditUiEvent {
         val id: Long?,
     ) : QuickEditUiEvent
 
+    /** the select sheet's answer - an empty list clears the field */
+    data class PlacesChosen(
+        val ids: List<Long>,
+    ) : QuickEditUiEvent
+
     data object HoldHintDismissed : QuickEditUiEvent
 
     /** the raw picked image - the presenter compresses it before it is stored */

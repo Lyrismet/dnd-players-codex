@@ -1,0 +1,19 @@
+CREATE TABLE npc_location (
+    npc_id INTEGER NOT NULL REFERENCES npc(id) ON DELETE CASCADE,
+    location_id INTEGER NOT NULL REFERENCES location(id) ON DELETE CASCADE,
+    PRIMARY KEY (npc_id, location_id)
+);
+
+CREATE INDEX npc_location_location_id ON npc_location(location_id);
+
+selectAll:
+SELECT * FROM npc_location;
+
+selectByNpc:
+SELECT location_id FROM npc_location WHERE npc_id = ?;
+
+insert:
+INSERT OR IGNORE INTO npc_location(npc_id, location_id) VALUES (?, ?);
+
+deleteByNpc:
+DELETE FROM npc_location WHERE npc_id = ?;

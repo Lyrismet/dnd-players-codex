@@ -78,12 +78,14 @@ private fun groupOption(
 ): CodexFilterOption<CodexGroupBy> = CodexFilterOption(value = choice, label = label)
 
 /** groups and sorts every list from the search results - a tab only groups while it is the active one */
+@Suppress("LongParameterList")
 internal fun codexGroupedLists(
     search: CodexSearchResults,
     records: CodexRecords,
     tab: CodexTab,
     selection: CodexGroupingSelection,
     labels: CodexGroupedLabels,
+    collapsedPlaceIds: Set<Long> = emptySet(),
 ): CodexGroupedLists {
     val npcBy = if (tab == CodexTab.NPC) selection.npc else NpcGroupBy.NONE
     val questBy = if (tab == CodexTab.QUEST) selection.quest else QuestGroupBy.NONE
@@ -101,7 +103,14 @@ internal fun codexGroupedLists(
                 group.map { quest -> quest.toCodexItem(search.npcsById, labels.titles.questStatus) }
             },
         locations =
-            groupLocations(search.searchedLocations, placeBy, records.locations, labels.titles, regions).map { group ->
+            groupLocations(
+                search.searchedLocations,
+                placeBy,
+                records.locations,
+                labels.titles,
+                regions,
+                collapsedPlaceIds,
+            ).map { group ->
                 group.map { row -> row.entity.toCodexItem(row.subtitle) }
             },
         groupBy = codexGroupBy(tab, selection),

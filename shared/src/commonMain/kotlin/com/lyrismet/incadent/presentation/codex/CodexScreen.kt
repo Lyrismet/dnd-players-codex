@@ -4,10 +4,12 @@ import com.lyrismet.incadent.core.codexgroup.CodexGroup
 import com.lyrismet.incadent.core.codexgroup.CodexGroupBy
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
+import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.quickedit.InlineEdit
 import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
+import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.core.undo.UndoAction
@@ -15,7 +17,6 @@ import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.PartyPresence
-import com.lyrismet.incadent.domain.model.PartyStatRanges
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
@@ -64,7 +65,6 @@ data class PartyCardLabels(
     val presence: Map<PartyPresence, String>,
     val you: String,
     val playerPrefix: String,
-    val armorClassShort: String,
     val hpShort: String,
 )
 
@@ -99,7 +99,8 @@ data class QuestCodexItem(
 data class LocationCodexItem(
     val id: Long,
     val name: String,
-    val subtitle: String,
+    // the path above the place, null when there is nothing to show
+    val subtitle: String?,
 )
 
 /** one chip of the codex group row */
@@ -123,32 +124,34 @@ data class CodexEntryFormState(
     val race: String = "",
     val faction: String = "",
     val reward: String = "",
-    val locationType: String = "",
-    val locationRegion: String = "",
     val npcStatusOptions: List<FormChipOption<NpcStatus>> = emptyList(),
     val npcLifeOptions: List<FormChipOption<NpcLifeState>> = emptyList(),
     val questStatusOptions: List<FormChipOption<QuestStatus>> = emptyList(),
-    val locationOptions: List<FormChipOption<Long>> = emptyList(),
+    // the places picked in the select-sheet fields, each shown on its field row
+    val npcPlaces: List<MentionChipItem> = emptyList(),
+    val questPlace: SelectedPlace? = null,
+    val locationParent: SelectedPlace? = null,
+    // non-null while the select sheet is open over the form
+    val placeSelect: PlaceSelectState? = null,
     val npcOptions: List<FormChipOption<Long>> = emptyList(),
     val partyClass: String = "",
     val partyPlayer: String = "",
     val partyIsPlayerCharacter: Boolean = false,
     val partyOwnerOptions: List<FormChipOption<Boolean>> = emptyList(),
-    val partyLevel: Int = PartyStatRanges.level.first,
-    val partyHpMax: Int = PartyStatRanges.hpMax.first,
-    val partyArmorClass: Int = PartyStatRanges.armorClass.first,
-    val partyInitiativeBonus: Int = 0,
+    val partyLevel: Int? = null,
+    val partyHpMax: Int? = null,
+    // the player character's level when setting it here would change something, null hides the shortcut
+    val partyLevelFromPlayer: Int? = null,
     val partyPresenceOptions: List<FormChipOption<PartyPresence>> = emptyList(),
     val canSave: Boolean = false,
     val saveLabel: String = "",
-    // null when no stepper's calculator is open - the Ui overlays NumberPadSheet on the form when non-null
-    val calculator: CalculatorPadState? = null,
     // the chip field whose "+ New X" quick-add input is open, if any - at most one at a time, see FormChipQuickAdd
     val quickAddField: CodexEntryChipField? = null,
     val quickAddDraft: String = "",
-    val isNameFilled: Boolean = false,
     // set while the "save changes?" prompt asks what to do with an unsaved form being closed
     val isDiscardPromptVisible: Boolean = false,
+    // true once something was typed or picked, closing the sheet then asks before it goes away
+    val hasUnsavedChanges: Boolean = false,
 )
 
 enum class CodexEntryField {
@@ -157,30 +160,33 @@ enum class CodexEntryField {
     RACE,
     FACTION,
     REWARD,
-    LOCATION_TYPE,
-    LOCATION_REGION,
     PARTY_CLASS,
     PARTY_PLAYER,
 }
 
-enum class CodexEntryNumberField { PARTY_LEVEL, PARTY_HP_MAX, PARTY_ARMOR_CLASS, PARTY_INITIATIVE_BONUS }
+enum class CodexEntryNumberField { PARTY_LEVEL, PARTY_HP_MAX }
 
-/**
- * the quick number-pad shown over a stepper (P2.9) - pre-formatted for [NumberPadSheet], see
- * Players Codex v6.dc.html's `pad` for the `purpose === 'form'` branch this mirrors
- */
-data class CalculatorPadState(
-    val field: CodexEntryNumberField,
-    val overline: String,
-    val title: String,
-    val expr: String,
-    val result: String,
-    val rangeHint: String,
-    val applyLabel: String,
-    val applyEnabled: Boolean,
+/** a place picked on a form field, shown with the path above it */
+data class SelectedPlace(
+    val name: String,
+    val path: String,
 )
 
-enum class CodexEntryChipField { NPC_LOCATION, QUEST_GIVER, QUEST_LOCATION }
+/** the form fields that open the place select sheet - the same sheet also serves the card's quick edit */
+enum class CodexEntryPlaceField { NPC_PLACES, QUEST_PLACE, LOCATION_PARENT }
+
+/** the select sheet's content - [multi] is true for the npc's several places, the rest pick exactly one */
+data class PlaceSelectState(
+    val field: CodexEntryPlaceField,
+    val title: String,
+    val options: List<SelectOption>,
+    val selectedIds: Set<Long>,
+    val multi: Boolean,
+    val excludedIds: Set<Long>,
+    val recentIds: List<Long>,
+)
+
+enum class CodexEntryChipField { QUEST_GIVER }
 
 /** the Codex screen shows at most one bottom sheet at a time - the form always wins over the entity view */
 sealed interface CodexSheet {
@@ -233,6 +239,8 @@ data class CodexState(
     val editMode: EntityEditMode = EntityEditMode.QUICK,
     // the field editor open inside the entity card, if any - quick mode only
     val inlineEdit: InlineEdit? = null,
+    // the select sheet of a place field being held on the card, quick mode only
+    val quickPlaceSelect: PlaceSelectState? = null,
     val holdTipVisible: Boolean = false,
     val undoAction: UndoAction? = null,
     // the row the one-time swipe hint peeks on, and the direction captured when it started - see core/swipehint
@@ -339,7 +347,30 @@ sealed interface CodexEvent : CircuitUiEvent {
 
     data class EntryNumberChanged(
         val field: CodexEntryNumberField,
-        val value: Int,
+        val value: Int?,
+    ) : CodexEvent
+
+    data object EntryPartyLevelFromPlayerClicked : CodexEvent
+
+    data class EntryPlaceFieldOpened(
+        val field: CodexEntryPlaceField,
+    ) : CodexEvent
+
+    data class EntryPlacesChosen(
+        val ids: List<Long>,
+    ) : CodexEvent
+
+    data class EntryPlaceCreated(
+        val name: String,
+        val checked: List<Long>,
+    ) : CodexEvent
+
+    data object EntryPlaceSelectClosed : CodexEvent
+
+    /** the card's own place select sheet asked for a new place, [checked] are the ids ticked so far */
+    data class QuickPlaceCreated(
+        val name: String,
+        val checked: List<Long>,
     ) : CodexEvent
 
     data class EntryQuestStatusChanged(
@@ -353,27 +384,16 @@ sealed interface CodexEvent : CircuitUiEvent {
 
     data object EntryFormSaveClicked : CodexEvent
 
+    /** a place section's header was tapped - the section folds or unfolds */
+    data class PlaceSectionToggled(
+        val placeId: Long,
+    ) : CodexEvent
+
     data object EntryFormClosed : CodexEvent
 
     data object EntryFormCloseRequested : CodexEvent
 
     data object EntryFormDiscardPromptDismissed : CodexEvent
-
-    data class CalculatorOpened(
-        val field: CodexEntryNumberField,
-    ) : CodexEvent
-
-    data class CalculatorDigitPressed(
-        val digit: Int,
-    ) : CodexEvent
-
-    data object CalculatorBackspacePressed : CodexEvent
-
-    data object CalculatorClearPressed : CodexEvent
-
-    data object CalculatorApplyClicked : CodexEvent
-
-    data object CalculatorClosed : CodexEvent
 
     data class EntryQuickAddOpened(
         val field: CodexEntryChipField,

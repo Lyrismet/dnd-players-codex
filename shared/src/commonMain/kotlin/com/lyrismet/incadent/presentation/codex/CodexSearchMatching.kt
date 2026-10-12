@@ -15,7 +15,7 @@ private inline fun matchesAny(
 internal fun Npc.matchesQuery(
     query: String,
     regions: CodexRegions,
-): Boolean = matchesAny(query) { listOf(name, race, faction, description, regions.regionOfNpc(this)) }
+): Boolean = matchesAny(query) { listOf(name, race, faction, description) + regions.placeNamesOfNpc(this) }
 
 internal fun Quest.matchesQuery(
     query: String,
@@ -23,13 +23,13 @@ internal fun Quest.matchesQuery(
     regions: CodexRegions,
 ): Boolean =
     matchesAny(query) {
-        listOf(title, reward, description, npcsById[givenByNpcId]?.name, regions.regionOfQuest(this))
+        listOf(title, reward, description, npcsById[givenByNpcId]?.name) + regions.placeNamesOfQuest(this)
     }
 
 internal fun Location.matchesQuery(
     query: String,
     regions: CodexRegions,
-): Boolean = matchesAny(query) { listOf(name, type, description, region, regions.regionOfLocation(this)) }
+): Boolean = matchesAny(query) { listOf(name, description) + regions.placeNamesOfLocation(this) }
 
 internal fun PartyMember.matchesQuery(query: String): Boolean =
     matchesAny(query) { listOf(name, characterClass, race, playerName, description) }

@@ -109,19 +109,19 @@ class EntitySheetInteractionsTest {
         runTest {
             val locations =
                 FakeLocationRepository(
-                    Location(id = 4, name = "Башня", type = "Руины", description = "", region = "Север"),
+                    Location(id = 4, name = "Башня", description = ""),
                 )
             val interactions = interactions(locations = locations)
 
             interactions.onQuickEdit(
                 this,
                 EntityRef.Location(4),
-                QuickEditField.LOCATION_REGION,
+                QuickEditField.NAME,
                 QuickEditValue.Text("Юг"),
             )
             advanceUntilIdle()
 
-            assertEquals("Юг", locations.stored(4)?.region)
+            assertEquals("Юг", locations.stored(4)?.name)
         }
 
     @Test
@@ -173,6 +173,34 @@ class EntitySheetInteractionsTest {
         assertEquals(listOf<Screen>(SessionDetailScreen(7, focusEntryId = 70)), navigator.goneTo)
     }
 
+    @Test
+    fun `an entity opened from another one keeps that one underneath until it is closed`() {
+        val selected = mutableStateOf<EntityRef?>(null)
+        val interactions = interactions(selected = selected)
+
+        interactions.onEntityClicked(EntityRef.Npc(id = 1))
+        interactions.onEntityClicked(EntityRef.Location(id = 2))
+        assertEquals(EntityRef.Location(2), selected.value)
+
+        interactions.onDismissed()
+        assertEquals(EntityRef.Npc(1), selected.value)
+
+        interactions.onDismissed()
+        assertNull(selected.value)
+    }
+
+    @Test
+    fun `clicking the entity that is already open does not stack it on itself`() {
+        val selected = mutableStateOf<EntityRef?>(null)
+        val interactions = interactions(selected = selected)
+
+        interactions.onEntityClicked(EntityRef.Npc(id = 1))
+        interactions.onEntityClicked(EntityRef.Npc(id = 1))
+        interactions.onDismissed()
+
+        assertNull(selected.value)
+    }
+
     private fun interactions(
         selected: androidx.compose.runtime.MutableState<EntityRef?> = mutableStateOf(null),
         npcs: FakeNpcRepository = FakeNpcRepository(),
@@ -180,8 +208,16 @@ class EntitySheetInteractionsTest {
         party: FakePartyRepository = FakePartyRepository(),
         locations: FakeLocationRepository = FakeLocationRepository(),
         navigator: RecordingNavigator = RecordingNavigator(),
+        history: androidx.compose.runtime.MutableState<List<EntityRef>> = mutableStateOf(emptyList()),
         onChanged: (EntityChange) -> Unit = {},
-    ) = EntitySheetInteractions(selected, MentionRepositories(npcs, locations, quests), party, navigator, onChanged)
+    ) = EntitySheetInteractions(
+        selected,
+        MentionRepositories(npcs, locations, quests),
+        party,
+        navigator,
+        history,
+        onChanged,
+    )
 
     private fun member(
         id: Long,
@@ -197,8 +233,6 @@ class EntitySheetInteractionsTest {
         presence = presence,
         hpMax = 52,
         hpCurrent = 43,
-        armorClass = 18,
-        initiativeBonus = 0,
         description = "",
         portraitBase64 = null,
     )
@@ -212,7 +246,7 @@ class EntitySheetInteractionsTest {
         status = status,
         lifeState = NpcLifeState.ALIVE,
         description = "",
-        locationId = null,
+        locationIds = emptyList(),
         race = "",
         faction = "",
     )

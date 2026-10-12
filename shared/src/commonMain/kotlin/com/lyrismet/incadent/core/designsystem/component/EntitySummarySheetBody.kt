@@ -156,7 +156,7 @@ private fun LocationSummaryBody(
     EntityHeader(
         emblem = location.emblem,
         overlineTypeLabel = stringResource(Res.string.session_detail_mention_type_location),
-        overlineValue = location.typeLabel,
+        overlineValue = "",
         title = location.name,
         subtitle = location.subtitle,
         onEditClicked = actions.onEditClicked?.let { edit -> { edit(location.ref) } },
@@ -224,11 +224,15 @@ internal fun EntityHeader(
     Column(modifier = modifier.fillMaxWidth()) {
         EntityOverlineRow(
             overline =
-                stringResource(
-                    Res.string.entity_sheet_overline_format,
-                    overlineTypeLabel.uppercase(),
-                    overlineValue.uppercase(),
-                ),
+                if (overlineValue.isBlank()) {
+                    overlineTypeLabel.uppercase()
+                } else {
+                    stringResource(
+                        Res.string.entity_sheet_overline_format,
+                        overlineTypeLabel.uppercase(),
+                        overlineValue.uppercase(),
+                    )
+                },
             color = emblem.color.foreground,
             onEditClicked = onEditClicked,
             onClose = onClose,

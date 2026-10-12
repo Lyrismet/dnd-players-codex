@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.core.entitysummary
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import com.lyrismet.incadent.core.quickedit.EntityChange
 import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.core.quickedit.QuickEditValue
@@ -34,18 +35,26 @@ class EntitySheetInteractions(
     repositories: MentionRepositories,
     private val partyRepository: PartyRepository,
     private val navigator: Navigator,
+    // the entities left open underneath, newest last - the host keeps it alive across recompositions
+    private val history: MutableState<List<EntityRef>> = mutableStateOf(emptyList()),
     private val onChanged: (EntityChange) -> Unit = {},
 ) {
     private val npcRepository = repositories.npcRepository
     private val questRepository = repositories.questRepository
     private val locationRepository = repositories.locationRepository
 
+    // opening an entity from inside another one's sheet keeps that one underneath
     fun onEntityClicked(ref: EntityRef) {
+        val current = selectedRef.value
+        if (current != null && current != ref) history.value = history.value + current
         selectedRef.value = ref
     }
 
+    // closing goes back to the entity that was open before, the last one closes the sheet
     fun onDismissed() {
-        selectedRef.value = null
+        val previous = history.value.lastOrNull()
+        history.value = history.value.dropLast(1)
+        selectedRef.value = previous
     }
 
     fun onNpcStatusSelected(
@@ -154,6 +163,7 @@ class EntitySheetInteractions(
         entryId: Long,
     ) {
         selectedRef.value = null
+        history.value = emptyList()
         navigator.goTo(SessionDetailScreen(sessionNoteId, focusEntryId = entryId))
     }
 

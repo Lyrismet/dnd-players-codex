@@ -17,14 +17,13 @@ import kotlin.test.assertTrue
 
 private val lifeLabels = mapOf(NpcLifeState.ALIVE to "Жив", NpcLifeState.DEAD to "Мёртв")
 
-private val noRegions = CodexRegions(emptyList(), emptyList(), emptyList())
+private val noRegions = CodexRegions(emptyList(), emptyList())
 
 private val partyCardLabels =
     PartyCardLabels(
         presence = mapOf(PartyPresence.IN to "В составе", PartyPresence.AWAY to "Отсутствует"),
         you = "Ваш персонаж",
         playerPrefix = "Игрок:",
-        armorClassShort = "КД",
         hpShort = "HP",
     )
 
@@ -40,8 +39,6 @@ private val lira =
         presence = PartyPresence.IN,
         hpMax = 28,
         hpCurrent = 22,
-        armorClass = 12,
-        initiativeBonus = 3,
         description = "",
         portraitBase64 = null,
     )
@@ -56,7 +53,6 @@ private val bran =
         presence = PartyPresence.AWAY,
         hpMax = 31,
         hpCurrent = 31,
-        armorClass = 15,
     )
 
 private val ragnar =
@@ -66,7 +62,7 @@ private val ragnar =
         status = NpcStatus.FRIEND,
         lifeState = NpcLifeState.ALIVE,
         description = "Кузнец из Кузницы",
-        locationId = null,
+        locationIds = emptyList(),
         race = "Дварф",
         faction = "Гильдия",
     )
@@ -167,12 +163,15 @@ class CodexItemMappingTest {
     }
 
     @Test
-    fun `Location matchesQuery matches name and type`() {
-        val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "Север")
-        assertTrue(forge.matchesQuery("", noRegions))
-        assertTrue(forge.matchesQuery("кузница", noRegions))
-        assertTrue(forge.matchesQuery("мастерская", noRegions))
-        assertFalse(forge.matchesQuery("таверна", noRegions))
+    fun `Location matchesQuery matches its name and the places above it`() {
+        val town = Location(id = 1, name = "Мирдейл", description = "")
+        val forge = Location(id = 2, name = "Кузница", description = "", parentId = 1)
+        val regions = CodexRegions(emptyList(), listOf(town, forge))
+
+        assertTrue(forge.matchesQuery("", regions))
+        assertTrue(forge.matchesQuery("кузница", regions))
+        assertTrue(forge.matchesQuery("мирдейл", regions))
+        assertFalse(forge.matchesQuery("таверна", regions))
     }
 
     @Test
@@ -182,9 +181,11 @@ class CodexItemMappingTest {
     }
 
     @Test
-    fun `Location toCodexItem subtitle combines type and region`() {
-        val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "Север")
-        assertEquals("Мастерская · Север", forge.toCodexItem().subtitle)
+    fun `Location toCodexItem carries the path it is given`() {
+        val forge = Location(id = 2, name = "Кузница", description = "", parentId = 1)
+
+        assertEquals("Мирдейл", forge.toCodexItem(subtitle = "Мирдейл").subtitle)
+        assertNull(forge.toCodexItem().subtitle)
     }
 
     @Test
@@ -192,12 +193,6 @@ class CodexItemMappingTest {
         val bare = ragnar.copy(race = "", faction = "")
         val item = bare.toCodexItem(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
         assertEquals("", item.subtitle)
-    }
-
-    @Test
-    fun `Location toCodexItem subtitle has no dangling separator when region is blank`() {
-        val forge = Location(id = 1, name = "Кузница", type = "Мастерская", description = "", region = "")
-        assertEquals("Мастерская", forge.toCodexItem().subtitle)
     }
 
     @Test
@@ -221,7 +216,21 @@ class CodexItemMappingTest {
     fun `PartyMember toCodexItems shows the you flag for the player character`() {
         val item = listOf(lira).toPartyCodexItems(partyCardLabels).single()
         assertEquals("Ваш персонаж", item.subtitle)
-        assertEquals("КД 12 · HP 22/28", item.meta)
+        assertEquals("HP 22/28", item.meta)
+    }
+
+    @Test
+    fun `PartyMember toCodexItems shows a dash for hit points that are not set`() {
+        val blank = lira.copy(hpMax = null, hpCurrent = null)
+
+        assertEquals("HP —", listOf(blank).toPartyCodexItems(partyCardLabels).single().meta)
+    }
+
+    @Test
+    fun `PartyMember toCodexItems shows the max for a current hp that is not set`() {
+        val fresh = lira.copy(hpCurrent = null)
+
+        assertEquals("HP 28/28", listOf(fresh).toPartyCodexItems(partyCardLabels).single().meta)
     }
 
     @Test

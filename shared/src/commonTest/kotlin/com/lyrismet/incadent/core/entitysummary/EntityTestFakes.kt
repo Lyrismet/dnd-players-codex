@@ -26,8 +26,6 @@ internal class FakeNpcRepository(
 
     override fun observeAll(): Flow<List<Npc>> = flowOf(store.values.toList())
 
-    override fun observeByLocation(locationId: Long): Flow<List<Npc>> = flowOf(emptyList())
-
     override suspend fun getById(id: Long): Npc? = store[id]
 
     override suspend fun upsert(npc: Npc): Long {

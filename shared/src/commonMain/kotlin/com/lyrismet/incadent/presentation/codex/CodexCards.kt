@@ -28,6 +28,8 @@ import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
 import com.lyrismet.incadent.core.designsystem.component.StatusBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
+import com.lyrismet.incadent.core.format.orDash
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
@@ -180,11 +182,14 @@ internal fun QuestCodexCard(
         }
         Row(modifier = Modifier.padding(start = 20.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                if (item.giver != null) QuestFactLabel(stringResource(Res.string.codex_quest_given_by_label))
+                QuestFactLabel(stringResource(Res.string.codex_quest_given_by_label))
                 QuestFactLabel(stringResource(Res.string.codex_quest_reward_label))
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                item.giver?.let { giver ->
+                val giver = item.giver
+                if (giver == null) {
+                    Text(EMPTY_VALUE_DASH, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextTertiary)
+                } else {
                     Text(
                         text = giver.name,
                         style = MaterialTheme.typography.bodyMedium,
@@ -200,7 +205,11 @@ internal fun QuestCodexCard(
                                 },
                     )
                 }
-                Text(item.reward, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextPrimary)
+                Text(
+                    item.reward.orDash(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (item.reward.isBlank()) AppPalette.TextTertiary else AppPalette.TextPrimary,
+                )
             }
         }
     }
@@ -238,11 +247,14 @@ internal fun LocationCodexCard(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        Text(
-            item.subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = AppPalette.TextSecondary,
-            modifier = Modifier.padding(top = 2.dp),
-        )
+        // the path wraps instead of cutting off, a deep place name is the whole point of the line
+        item.subtitle?.let { path ->
+            Text(
+                path,
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppPalette.TextSecondary,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
     }
 }

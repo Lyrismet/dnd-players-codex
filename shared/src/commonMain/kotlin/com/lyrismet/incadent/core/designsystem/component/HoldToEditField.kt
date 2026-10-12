@@ -30,11 +30,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
 private const val HOLD_DURATION_MS = 450
 private const val RELEASE_DURATION_MS = 150
+private const val FILL_START_DELAY_MS = 120
 private val HoldSlop = 8.dp
 
 // the mockup transition width .15s ease on release
@@ -58,7 +60,8 @@ data class HoldFrame(
     }
 }
 
-private enum class HoldOutcome { HELD, RELEASED_EARLY, MOVED }
+// TAPPED_CHILD - a child (a chip inside the held area) took the tap, so this is neither a hold nor a too-short press
+private enum class HoldOutcome { HELD, RELEASED_EARLY, MOVED, TAPPED_CHILD }
 
 /** a press-and-hold area with a gold fill that grows over 450 ms, reporting an early release as too-short */
 @Composable
@@ -88,11 +91,13 @@ fun HoldToEditField(
                 }.pointerInput(Unit) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false)
+                        // the fill starts a beat late so a plain tap never flashes gold, it still ends at 450 ms
                         val fill =
                             scope.launch {
+                                delay(FILL_START_DELAY_MS.toLong())
                                 progress.animateTo(
                                     1f,
-                                    tween(HOLD_DURATION_MS, easing = LinearEasing),
+                                    tween(HOLD_DURATION_MS - FILL_START_DELAY_MS, easing = LinearEasing),
                                 )
                             }
                         val outcome = awaitHoldOutcome(down.id, down.position, slopPx)
@@ -111,7 +116,7 @@ fun HoldToEditField(
                                 }
                                 currentTooShort()
                             }
-                            HoldOutcome.MOVED ->
+                            HoldOutcome.MOVED, HoldOutcome.TAPPED_CHILD ->
                                 scope.launch {
                                     progress.animateTo(
                                         0f,
@@ -168,6 +173,7 @@ private fun holdOutcomeOf(
     slopPx: Float,
 ): HoldOutcome? =
     when {
+        !change.pressed && change.isConsumed -> HoldOutcome.TAPPED_CHILD
         !change.pressed -> HoldOutcome.RELEASED_EARLY
         (change.position - start).getDistance() > slopPx -> HoldOutcome.MOVED
         else -> null
