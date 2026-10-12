@@ -19,6 +19,14 @@ CREATE INDEX npc_location_id ON npc(location_id);
 selectAll:
 SELECT * FROM npc ORDER BY name;
 
+-- places come along in the same query so a write to either table re-emits one consistent list
+selectAllWithLocations:
+SELECT
+    npc.*,
+    COALESCE((SELECT group_concat(location_id) FROM npc_location WHERE npc_id = npc.id), '') AS location_ids
+FROM npc
+ORDER BY name;
+
 selectById:
 SELECT * FROM npc WHERE id = ?;
 

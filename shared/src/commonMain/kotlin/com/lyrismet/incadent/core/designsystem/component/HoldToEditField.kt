@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
@@ -106,23 +107,16 @@ fun HoldToEditField(
                             HoldOutcome.HELD -> {
                                 scope.launch { progress.snapTo(0f) }
                                 currentOnHeld()
+                                // swallows the release so a chip under the finger does not also take it as a tap
+                                consumeUntilReleased()
+                                return@awaitEachGesture
                             }
-                            HoldOutcome.RELEASED_EARLY -> {
+                            HoldOutcome.RELEASED_EARLY, HoldOutcome.MOVED, HoldOutcome.TAPPED_CHILD -> {
                                 scope.launch {
-                                    progress.animateTo(
-                                        0f,
-                                        tween(RELEASE_DURATION_MS, easing = ReleaseEasing),
-                                    )
+                                    progress.animateTo(0f, tween(RELEASE_DURATION_MS, easing = ReleaseEasing))
                                 }
-                                currentTooShort()
+                                if (outcome == HoldOutcome.RELEASED_EARLY) currentTooShort()
                             }
-                            HoldOutcome.MOVED, HoldOutcome.TAPPED_CHILD ->
-                                scope.launch {
-                                    progress.animateTo(
-                                        0f,
-                                        tween(RELEASE_DURATION_MS, easing = ReleaseEasing),
-                                    )
-                                }
                         }
                         waitForUpOrCancellation()
                     }
@@ -145,6 +139,13 @@ private fun Modifier.negativeMargin(
             placeable.placeRelative(h, v)
         }
     }
+
+private suspend fun AwaitPointerEventScope.consumeUntilReleased() {
+    do {
+        val event = awaitPointerEvent(PointerEventPass.Initial)
+        event.changes.forEach { it.consume() }
+    } while (event.changes.any { it.pressed })
+}
 
 private suspend fun AwaitPointerEventScope.awaitHoldOutcome(
     pointerId: PointerId,

@@ -6,9 +6,6 @@ CREATE TABLE npc_location (
 
 CREATE INDEX npc_location_location_id ON npc_location(location_id);
 
-selectAll:
-SELECT * FROM npc_location;
-
 selectByNpc:
 SELECT location_id FROM npc_location WHERE npc_id = ?;
 

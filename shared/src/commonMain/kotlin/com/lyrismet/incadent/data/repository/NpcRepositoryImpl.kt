@@ -13,7 +13,6 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 
 @Inject
@@ -27,13 +26,7 @@ class NpcRepositoryImpl(
     private val locationQueries = database.npcLocationQueries
 
     override fun observeAll(): Flow<List<Npc>> =
-        combine(
-            queries.selectAll(::toDomain).asFlow().mapToList(Dispatchers.Default),
-            locationQueries.selectAll().asFlow().mapToList(Dispatchers.Default),
-        ) { npcs, links ->
-            val placesByNpc = links.groupBy({ it.npc_id }, { it.location_id })
-            npcs.map { npc -> npc.copy(locationIds = placesByNpc[npc.id].orEmpty()) }
-        }
+        queries.selectAllWithLocations(::toDomainWithLocations).asFlow().mapToList(Dispatchers.Default)
 
     override suspend fun getById(id: Long): Npc? =
         withContext(Dispatchers.Default) {
@@ -94,6 +87,22 @@ class NpcRepositoryImpl(
         locationQueries.deleteByNpc(npcId)
         locationIds.distinct().forEach { locationQueries.insert(npcId, it) }
     }
+
+    // location_ids is the comma separated group_concat of the npc's place ids, empty when it has none
+    @Suppress("LongParameterList")
+    private fun toDomainWithLocations(
+        id: Long,
+        name: String,
+        status: NpcStatus,
+        description: String,
+        legacyLocationId: Long?,
+        race: String,
+        faction: String,
+        lifeState: NpcLifeState,
+        portraitBase64: String?,
+        locationIds: String,
+    ) = toDomain(id, name, status, description, legacyLocationId, race, faction, lifeState, portraitBase64)
+        .copy(locationIds = locationIds.split(',').mapNotNull { it.toLongOrNull() })
 
     // one param per npc table column - dictated by SQLDelight's generated query mapper shape, not real complexity
     @Suppress("LongParameterList", "UnusedParameter")

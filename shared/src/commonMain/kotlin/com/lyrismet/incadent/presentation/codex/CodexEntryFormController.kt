@@ -203,14 +203,14 @@ class CodexEntryFormController private constructor(
             }
     }
 
-    // the number fields send what they hold, null for an emptied field - the range is enforced here too
+    // the number fields send what they hold, null for an emptied field - the lower bound waits for blur and save
     fun onNumberChanged(
         field: CodexEntryNumberField,
         value: Int?,
     ) {
         val current = fields.value ?: return
         val party = current.party
-        val clamped = value?.coerceIn(field.range())
+        val clamped = value?.coerceAtMost(field.range().last)
         val updated =
             when (field) {
                 CodexEntryNumberField.PARTY_LEVEL -> party.copy(level = clamped)

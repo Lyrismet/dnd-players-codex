@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.core.quickedit
 
+import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.PartyMember
@@ -7,6 +8,9 @@ import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.clampedToRanges
 
 private fun QuickEditValue.text(): String? = (this as? QuickEditValue.Text)?.text
+
+// names and short labels are saved trimmed with a capital first letter, same as the entry form does
+private val QuickEditValue.name: String? get() = text()?.trim()?.capitalizeFirst()
 
 private fun QuickEditValue.number(): QuickEditValue.Number? = this as? QuickEditValue.Number
 
@@ -23,10 +27,10 @@ fun Npc.withQuickEdit(
     value: QuickEditValue,
 ): Npc? =
     when (field) {
-        QuickEditField.NAME -> value.text()?.let { copy(name = it) }
+        QuickEditField.NAME -> value.name?.let { copy(name = it) }
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
-        QuickEditField.RACE -> value.text()?.let { copy(race = it) }
-        QuickEditField.FACTION -> value.text()?.let { copy(faction = it) }
+        QuickEditField.RACE -> value.name?.let { copy(race = it) }
+        QuickEditField.FACTION -> value.name?.let { copy(faction = it) }
         QuickEditField.PLACE -> value.places()?.let { copy(locationIds = it.ids) }
         QuickEditField.PORTRAIT -> value.portrait()?.let { copy(portraitBase64 = it) }
         else -> null
@@ -37,7 +41,7 @@ fun Quest.withQuickEdit(
     value: QuickEditValue,
 ): Quest? =
     when (field) {
-        QuickEditField.NAME -> value.text()?.let { copy(title = it) }
+        QuickEditField.NAME -> value.name?.let { copy(title = it) }
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
         QuickEditField.REWARD -> value.text()?.let { copy(reward = it) }
         QuickEditField.GIVER -> value.link()?.let { copy(givenByNpcId = it.id) }
@@ -50,7 +54,7 @@ fun Location.withQuickEdit(
     value: QuickEditValue,
 ): Location? =
     when (field) {
-        QuickEditField.NAME -> value.text()?.let { copy(name = it) }
+        QuickEditField.NAME -> value.name?.let { copy(name = it) }
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
         QuickEditField.PARENT -> value.places()?.let { copy(parentId = it.ids.firstOrNull()) }
         else -> null
@@ -67,11 +71,11 @@ private fun PartyMember.withTextQuickEdit(
     value: QuickEditValue,
 ): PartyMember? =
     when (field) {
-        QuickEditField.NAME -> value.text()?.let { copy(name = it) }
+        QuickEditField.NAME -> value.name?.let { copy(name = it) }
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
-        QuickEditField.RACE -> value.text()?.let { copy(race = it) }
-        QuickEditField.CHARACTER_CLASS -> value.text()?.let { copy(characterClass = it) }
-        QuickEditField.PLAYER_NAME -> value.text()?.let { copy(playerName = it) }
+        QuickEditField.RACE -> value.name?.let { copy(race = it) }
+        QuickEditField.CHARACTER_CLASS -> value.name?.let { copy(characterClass = it) }
+        QuickEditField.PLAYER_NAME -> value.name?.let { copy(playerName = it) }
         QuickEditField.PORTRAIT -> value.portrait()?.let { copy(portraitBase64 = it) }
         else -> null
     }

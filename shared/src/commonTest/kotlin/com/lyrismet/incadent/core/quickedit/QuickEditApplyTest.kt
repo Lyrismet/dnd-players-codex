@@ -49,6 +49,22 @@ class QuickEditApplyTest {
     }
 
     @Test
+    fun `names and short labels are trimmed and capitalized but the description is kept as typed`() {
+        val edited = npc.withQuickEdit(QuickEditField.RACE, QuickEditValue.Text("  эльф "))
+
+        assertEquals("Эльф", edited?.race)
+        assertEquals("Гильдия", npc.withQuickEdit(QuickEditField.FACTION, QuickEditValue.Text("гильдия"))?.faction)
+        assertEquals(
+            "Воин",
+            member.withQuickEdit(QuickEditField.CHARACTER_CLASS, QuickEditValue.Text("воин"))?.characterClass,
+        )
+        assertEquals(
+            "  заметка ",
+            npc.withQuickEdit(QuickEditField.DESCRIPTION, QuickEditValue.Text("  заметка "))?.description,
+        )
+    }
+
+    @Test
     fun `a picked portrait is written for npc and party and rejected elsewhere`() {
         val portrait = QuickEditValue.Portrait("abc")
 
