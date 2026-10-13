@@ -21,5 +21,16 @@ interface SessionEntryRepository {
         body: String,
     )
 
+    /** rewrites the text without marking the note edited or asking to check it again - mention links and unlinks */
+    suspend fun rewriteBody(
+        id: Long,
+        body: String,
+    )
+
+    suspend fun setMentionCheck(
+        id: Long,
+        check: Boolean,
+    )
+
     suspend fun delete(id: Long)
 }

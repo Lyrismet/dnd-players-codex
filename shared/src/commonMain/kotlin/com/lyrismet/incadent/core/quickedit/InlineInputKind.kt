@@ -13,5 +13,10 @@ fun QuickEditField.inputKind(): InlineInputKind =
                 QuickEditField.DESCRIPTION -> InlineInputKind.MULTILINE
                 else -> InlineInputKind.TEXT
             }
-        QuickEditKind.Link, QuickEditKind.Places, QuickEditKind.Choice, QuickEditKind.Portrait -> InlineInputKind.TEXT
+        QuickEditKind.Link,
+        QuickEditKind.Places,
+        QuickEditKind.Choice,
+        QuickEditKind.Portrait,
+        QuickEditKind.Relations,
+        -> InlineInputKind.TEXT
     }

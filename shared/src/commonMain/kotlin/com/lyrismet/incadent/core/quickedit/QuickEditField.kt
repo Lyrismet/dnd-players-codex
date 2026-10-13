@@ -17,6 +17,9 @@ sealed interface QuickEditKind {
 
     data object Choice : QuickEditKind
 
+    /** a group of linked entities on the card - every tap on a candidate toggles its link at once */
+    data object Relations : QuickEditKind
+
     /** a picked photo - it has no typed draft, the picker hands over the finished value */
     data object Portrait : QuickEditKind
 }
@@ -43,6 +46,15 @@ enum class QuickEditField(
     QUEST_STATUS(QuickEditKind.Choice),
     PRESENCE(QuickEditKind.Choice),
     PORTRAIT(QuickEditKind.Portrait),
+
+    /** the quests an npc gave - each one is a quest whose giver is this npc */
+    GIVEN_QUESTS(QuickEditKind.Relations),
+
+    /** the npcs met at a place - each one is an npc that lists this place */
+    RESIDENTS(QuickEditKind.Relations),
+
+    /** the quests set at a place - each one is a quest whose place is this one */
+    PLACE_QUESTS(QuickEditKind.Relations),
 }
 
 /** the typed-in or tapped value of one [QuickEditField], always matching that field's [QuickEditKind] */
@@ -85,6 +97,11 @@ fun quickEditValueFromDraft(
             } else {
                 trimmed.toIntOrNull()?.let { QuickEditValue.Number(it.coerceIn(kind.range)) }
             }
-        QuickEditKind.Link, QuickEditKind.Places, QuickEditKind.Choice, QuickEditKind.Portrait -> null
+        QuickEditKind.Link,
+        QuickEditKind.Places,
+        QuickEditKind.Choice,
+        QuickEditKind.Portrait,
+        QuickEditKind.Relations,
+        -> null
     }
 }

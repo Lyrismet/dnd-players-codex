@@ -2,6 +2,7 @@ package com.lyrismet.incadent.core.entitysummary
 
 import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
+import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -134,13 +135,9 @@ class EntitySummaryTest {
         assertEquals("Рагнар", summary.name)
         assertEquals("Дварф · Гильдия", summary.subtitle)
         assertEquals(3, summary.facts.size)
-        assertEquals(1, summary.groups.size)
-        assertEquals(
-            1,
-            summary.groups
-                .single()
-                .items.size,
-        )
+        val shown = summary.groups.filter { it.items.isNotEmpty() }
+        assertEquals(1, shown.size)
+        assertEquals(1, shown.single().items.size)
     }
 
     @Test
@@ -150,7 +147,9 @@ class EntitySummaryTest {
 
         assertEquals(3, summary.facts.size)
         assertEquals(FactValue.Links(emptyList()), summary.facts.last().value)
-        assertTrue(summary.groups.isEmpty())
+        // the quests group stays so it can be filled by holding it, but it lists nothing
+        assertTrue(summary.groups.none { it.items.isNotEmpty() })
+        assertEquals(QuickEditField.GIVEN_QUESTS, summary.groups.single().edit)
     }
 
     @Test
@@ -193,7 +192,36 @@ class EntitySummaryTest {
                 lookup(quests = listOf(questAtForge)),
             ) as EntitySummaryItem.LocationSummary
 
-        assertEquals(2, summary.groups.size)
+        assertEquals(2, summary.groups.count { it.items.isNotEmpty() })
+    }
+
+    @Test
+    fun `an npc quests group offers every quest and ticks the ones it gave`() {
+        val other = swordQuest.copy(id = 8, title = "Чужой", givenByNpcId = null)
+        val summary =
+            buildEntitySummary(
+                EntityRef.Npc(1),
+                lookup(quests = listOf(swordQuest, other)),
+            ) as EntitySummaryItem.NpcSummary
+
+        val options = summary.groups.single().options
+        assertEquals(listOf(true, false), options.map { it.isSelected })
+    }
+
+    @Test
+    fun `a location only ticks the npcs met right there not the ones of a place inside`() {
+        val inner = Location(id = 10, name = "Подвал", description = "", parentId = 2)
+        val dweller = ragnar.copy(id = 11, name = "Жилец", locationIds = listOf(10))
+        val summary =
+            buildEntitySummary(
+                EntityRef.Location(2),
+                lookup(npcs = listOf(ragnar, dweller), locations = listOf(forge, inner)),
+            ) as EntitySummaryItem.LocationSummary
+
+        val residents = summary.groups.single { it.edit == QuickEditField.RESIDENTS }
+        // both are listed, only the one that names this place is ticked
+        assertEquals(2, residents.items.size)
+        assertEquals(listOf(true, false), residents.options.map { it.isSelected })
     }
 
     @Test
@@ -205,7 +233,7 @@ class EntitySummaryTest {
                 lookup(locations = listOf(emptyLocation)),
             ) as EntitySummaryItem.LocationSummary
 
-        assertTrue(summary.groups.isEmpty())
+        assertTrue(summary.groups.none { it.items.isNotEmpty() })
     }
 
     @Test

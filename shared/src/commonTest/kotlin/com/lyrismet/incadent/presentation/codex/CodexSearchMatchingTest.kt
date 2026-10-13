@@ -61,67 +61,65 @@ private val bard =
     )
 
 private val regions = CodexRegions(npcs, locations)
-private val npcsById = npcs.associateBy { it.id }
 
 class CodexSearchMatchingTest {
     @Test
-    fun `Npc search matches race faction and description`() {
-        assertTrue(monk.matchesQuery("человек", regions))
-        assertTrue(monk.matchesQuery("орден", regions))
-        assertTrue(monk.matchesQuery("монах", regions))
+    fun `Npc search matches the name only`() {
+        assertTrue(monk.matchesQuery("ода", regions))
+        assertFalse(monk.matchesQuery("человек", regions))
+        assertFalse(monk.matchesQuery("орден", regions))
+        assertFalse(monk.matchesQuery("монах", regions))
     }
 
     @Test
-    fun `Npc search matches the places above its place`() {
+    fun `Npc search matches the place it is met at and the places above it`() {
+        assertTrue(monk.matchesQuery("таверна", regions))
         assertTrue(monk.matchesQuery("королевство", regions))
     }
 
     @Test
-    fun `Npc search is case-insensitive across fields`() {
-        assertTrue(monk.matchesQuery("ОРДЕН", regions))
+    fun `search is case-insensitive and treats yo as ye`() {
+        assertTrue(monk.matchesQuery("ОДА", regions))
+        val yo = monk.copy(name = "Артём")
+        assertTrue(yo.matchesQuery("артем", regions))
+        assertTrue(yo.matchesQuery("АРТЁМ", regions))
     }
 
     @Test
-    fun `Npc search rejects text found in no field`() {
+    fun `Npc search rejects text found in no title`() {
         assertFalse(monk.matchesQuery("гоблин", regions))
     }
 
     @Test
-    fun `Quest search matches reward description and giver name`() {
-        assertTrue(errand.matchesQuery("серебро", npcsById, regions))
-        assertTrue(errand.matchesQuery("склепе", npcsById, regions))
-        assertTrue(errand.matchesQuery("ода", npcsById, regions))
+    fun `Quest search matches the title and the places above its giver and not reward description or giver name`() {
+        assertTrue(errand.matchesQuery("ключ", regions))
+        assertTrue(errand.matchesQuery("королевство", regions))
+        assertFalse(errand.matchesQuery("серебро", regions))
+        assertFalse(errand.matchesQuery("склепе", regions))
+        assertFalse(errand.matchesQuery("ода", regions))
     }
 
     @Test
-    fun `Quest search matches the places above the giver place when it has no where`() {
-        assertTrue(errand.matchesQuery("королевство", npcsById, regions))
-    }
-
-    @Test
-    fun `Location search matches the places above it`() {
+    fun `Location search matches its name and the places above it and not its description`() {
+        assertTrue(tavern.matchesQuery("таверна", regions))
         assertTrue(tavern.matchesQuery("север", regions))
         assertTrue(tavern.matchesQuery("королевство", regions))
         assertFalse(kingdom.matchesQuery("север", regions))
+        assertFalse(tavern.matchesQuery("шумная", regions))
     }
 
     @Test
-    fun `Location search matches its description`() {
-        assertTrue(tavern.matchesQuery("шумная", regions))
-    }
-
-    @Test
-    fun `PartyMember search matches race player and description`() {
-        assertTrue(bard.matchesQuery("полурослик"))
-        assertTrue(bard.matchesQuery("даня"))
-        assertTrue(bard.matchesQuery("карманник"))
-        assertFalse(bard.matchesQuery("гоблин"))
+    fun `PartyMember search matches the name only`() {
+        assertTrue(bard.matchesQuery("бран"))
+        assertFalse(bard.matchesQuery("полурослик"))
+        assertFalse(bard.matchesQuery("даня"))
+        assertFalse(bard.matchesQuery("карманник"))
     }
 
     @Test
     fun `every search matches everything for an empty query`() {
         assertTrue(monk.matchesQuery("", regions))
-        assertTrue(errand.matchesQuery("", npcsById, regions))
+        assertTrue(errand.matchesQuery("", regions))
         assertTrue(tavern.matchesQuery("", regions))
         assertTrue(bard.matchesQuery(""))
     }

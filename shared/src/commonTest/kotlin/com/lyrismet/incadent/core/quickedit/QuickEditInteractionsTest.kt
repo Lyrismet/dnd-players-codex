@@ -12,6 +12,8 @@ import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
+import com.lyrismet.incadent.domain.model.Quest
+import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -98,15 +100,34 @@ class QuickEditInteractionsTest {
             assertNull(harness.inlineEdit.value)
         }
 
+    @Test
+    fun `toggling a relation links the quest to the held npc and keeps the editor open`() =
+        runTest {
+            val harness = Harness()
+            harness.open(QuickEditField.GIVEN_QUESTS, "")
+
+            harness.interactions.onEvent(this, QuickEditUiEvent.RelationToggled(5))
+            advanceUntilIdle()
+
+            assertEquals(1L, harness.quests.stored(5)?.givenByNpcId)
+            assertEquals(QuickEditField.GIVEN_QUESTS, harness.inlineEdit.value?.field)
+
+            harness.interactions.onEvent(this, QuickEditUiEvent.RelationToggled(5))
+            advanceUntilIdle()
+
+            assertNull(harness.quests.stored(5)?.givenByNpcId)
+        }
+
     private class Harness {
         val npcs = FakeNpcRepository(Npc(1, "Кассиан", NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), "", ""))
+        val quests = FakeQuestRepository(Quest(5, "Меч", QuestStatus.ACTIVE, "", null, null, ""))
         val inlineEdit = mutableStateOf<InlineEdit?>(null)
         val selected = mutableStateOf<EntityRef?>(EntityRef.Npc(1))
         var hintSeen = false
         private val entitySheet =
             EntitySheetInteractions(
                 selected,
-                MentionRepositories(npcs, FakeLocationRepository(), FakeQuestRepository()),
+                MentionRepositories(npcs, FakeLocationRepository(), quests),
                 FakePartyRepository(),
                 RecordingNavigator(),
             )

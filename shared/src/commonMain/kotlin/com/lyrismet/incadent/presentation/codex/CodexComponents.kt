@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,17 +24,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.ChoiceChip
+import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
+import com.lyrismet.incadent.core.designsystem.component.appCard
 
 @Composable
 internal fun CodexSearchField(
@@ -201,6 +207,61 @@ internal fun <T> CodexFilterChipRow(
                 text = option.label,
                 selected = option.value == selected,
                 onClick = { onSelected(option.value) },
+            )
+        }
+    }
+}
+
+private val OtherSectionsHintShape = RoundedCornerShape(14.dp)
+private const val OTHER_SECTIONS_DIAMOND_TOP_DP = 6
+
+/** the note over the list a tab with no hits falls back to - what was not found here and how many hits lie elsewhere */
+@Composable
+internal fun CodexOtherSectionsHint(
+    hint: CodexEmptyState.OtherSections,
+    eventSink: (CodexEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(top = 2.dp, bottom = 6.dp)
+                .appCard(
+                    shape = OtherSectionsHintShape,
+                    background = AppPalette.Gold.copy(alpha = 0.07f),
+                    border = AppPalette.Gold.copy(alpha = 0.4f),
+                ).padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Box(
+                Modifier
+                    .padding(top = OTHER_SECTIONS_DIAMOND_TOP_DP.dp)
+                    .size(8.dp)
+                    .rotate(DIAMOND_ROTATION_DEGREES)
+                    .border(1.5.dp, AppPalette.Gold),
+            )
+            Text(
+                text =
+                    buildAnnotatedString {
+                        withStyle(SpanStyle(color = AppPalette.TextPrimary)) { append(hint.message) }
+                        append("\n")
+                        withStyle(SpanStyle(color = AppPalette.TextSecondary)) { append(hint.foundLabel + " ") }
+                        withStyle(SpanStyle(color = AppPalette.GoldBright, fontWeight = FontWeight.SemiBold)) {
+                            append(hint.count.toString())
+                        }
+                    },
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp, lineHeight = 20.sp),
+            )
+        }
+        hint.create?.let { create ->
+            HeaderActionButton(
+                text = create.label,
+                onClick = { eventSink(CodexEvent.EmptyActionClicked(create.entryType, create.name)) },
+                foreground = AppPalette.TextPrimary,
+                background = Color.Transparent,
+                border = AppPalette.BorderHover,
             )
         }
     }

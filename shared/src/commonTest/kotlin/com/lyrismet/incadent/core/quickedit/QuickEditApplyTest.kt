@@ -141,4 +141,33 @@ class QuickEditApplyTest {
         assertEquals(NpcLifeState.DEAD, npc.withLifeState(NpcLifeState.DEAD).lifeState)
         assertEquals(PartyPresence.AWAY, member.withPresence(PartyPresence.AWAY).presence)
     }
+
+    private val quest =
+        Quest(7, "Меч", QuestStatus.ACTIVE, "", givenByNpcId = null, locationId = null, description = "")
+
+    @Test
+    fun `toggling a giver sets it and clears it again and takes a quest over from another npc`() {
+        val given = quest.withGiverToggled(1)
+
+        assertEquals(1L, given.givenByNpcId)
+        assertNull(given.withGiverToggled(1).givenByNpcId)
+        assertEquals(2L, given.withGiverToggled(2).givenByNpcId)
+    }
+
+    @Test
+    fun `toggling a quest place sets it and clears it only for the same place`() {
+        val placed = quest.withPlaceToggled(3)
+
+        assertEquals(3L, placed.locationId)
+        assertNull(placed.withPlaceToggled(3).locationId)
+        assertEquals(4L, placed.withPlaceToggled(4).locationId)
+    }
+
+    @Test
+    fun `toggling an npc place adds it once and drops it again`() {
+        val met = npc.withPlaceToggled(3).withPlaceToggled(4)
+
+        assertEquals(listOf(3L, 4L), met.locationIds)
+        assertEquals(listOf(4L), met.withPlaceToggled(3).locationIds)
+    }
 }

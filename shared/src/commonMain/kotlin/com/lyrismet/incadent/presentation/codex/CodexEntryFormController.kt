@@ -143,6 +143,50 @@ class CodexEntryFormController private constructor(
         }
     }
 
+    /**
+     * handles one event of the form sheet. [onQuickAdded] gets the name of a record the quick-add created. Returns
+     * true when the form is gone afterwards, so a host can drop what it showed for it.
+     */
+    @Suppress("CyclomaticComplexMethod")
+    fun onEvent(
+        event: CodexEntryFormEvent,
+        scope: CoroutineScope,
+        imageCompressor: ImageCompressor,
+        onQuickAdded: suspend (String) -> Unit,
+    ): Boolean {
+        var isClosed = false
+        when (event) {
+            is CodexEvent.EntryTypeChanged -> onTypeChanged(event.type)
+            is CodexEvent.EntryFieldChanged -> onFieldChanged(event.field, event.text)
+            is CodexEvent.EntryPortraitPicked -> onPortraitPicked(scope, imageCompressor, event.bytes)
+            CodexEvent.EntryPortraitRemoved -> onPortraitRemoved()
+            is CodexEvent.EntryNumberChanged -> onNumberChanged(event.field, event.value)
+            is CodexEvent.EntryNpcStatusChanged -> onNpcStatusChanged(event.status)
+            is CodexEvent.EntryNpcLifeChanged -> onNpcLifeChanged(event.lifeState)
+            is CodexEvent.EntryPartyOwnerChanged -> onPartyOwnerChanged(event.isPlayerCharacter)
+            is CodexEvent.EntryPartyPresenceChanged -> onPartyPresenceChanged(event.presence)
+            is CodexEvent.EntryQuestStatusChanged -> onQuestStatusChanged(event.status)
+            is CodexEvent.EntryChipToggled -> onChipToggled(event.field, event.id)
+            CodexEvent.EntryFormSaveClicked -> onSaveClicked(scope)
+            CodexEvent.EntryFormClosed -> {
+                onClosed()
+                isClosed = true
+            }
+            CodexEvent.EntryFormCloseRequested -> isClosed = onCloseRequested()
+            CodexEvent.EntryFormDiscardPromptDismissed -> onDiscardPromptDismissed()
+            CodexEvent.EntryPartyLevelFromPlayerClicked -> onPartyLevelFromPlayerClicked()
+            is CodexEvent.EntryPlaceFieldOpened -> onPlaceFieldOpened(event.field)
+            is CodexEvent.EntryPlacesChosen -> onPlacesChosen(event.ids)
+            is CodexEvent.EntryPlaceCreated -> onPlaceCreated(scope, event.name, event.checked)
+            CodexEvent.EntryPlaceSelectClosed -> onPlaceSelectClosed()
+            is CodexEvent.EntryQuickAddOpened -> onQuickAddOpened(event.field)
+            is CodexEvent.EntryQuickAddDraftChanged -> onQuickAddDraftChanged(event.text)
+            CodexEvent.EntryQuickAddSaveClicked -> onQuickAddSaveClicked(scope, onQuickAdded)
+            CodexEvent.EntryQuickAddCancelled -> onQuickAddCancelled()
+        }
+        return isClosed
+    }
+
     // defaultType mirrors the mockup's openNew() - the active codex tab pre-selects the form's type
     fun onAddEntryClicked(
         defaultType: CodexEntryType,

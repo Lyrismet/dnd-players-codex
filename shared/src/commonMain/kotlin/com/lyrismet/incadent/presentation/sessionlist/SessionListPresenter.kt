@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import com.lyrismet.incadent.LocalTabSelected
 import com.lyrismet.incadent.core.campaign.RenameSheetState
 import com.lyrismet.incadent.core.campaign.savedCampaignNameOrNull
 import com.lyrismet.incadent.core.designsystem.component.toChipItem
@@ -24,6 +23,7 @@ import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.core.mention.mentionsIn
+import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
@@ -111,7 +111,7 @@ class SessionListPresenter(
         val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
         val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
-        val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), questPrefix)
+        val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests, parties), questPrefix)
         val renameFields = rememberCampaignRenameFields(stringResource(Res.string.session_list_rename_saved_toast))
         val entriesBySession = allEntries.groupBy { it.sessionNoteId }
 

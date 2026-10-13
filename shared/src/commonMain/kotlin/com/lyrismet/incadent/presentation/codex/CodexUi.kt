@@ -9,16 +9,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
-import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
-import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
@@ -28,10 +25,10 @@ import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_add_entry_button
-import dndplayerscodex.shared.generated.resources.codex_entry_discard_back
-import dndplayerscodex.shared.generated.resources.codex_entry_discard_leave
-import dndplayerscodex.shared.generated.resources.codex_entry_discard_text
-import dndplayerscodex.shared.generated.resources.codex_entry_discard_title
+import dndplayerscodex.shared.generated.resources.codex_delete_warning_cancel
+import dndplayerscodex.shared.generated.resources.codex_delete_warning_confirm
+import dndplayerscodex.shared.generated.resources.codex_delete_warning_text
+import dndplayerscodex.shared.generated.resources.codex_delete_warning_title
 import dndplayerscodex.shared.generated.resources.codex_filter_all
 import dndplayerscodex.shared.generated.resources.codex_overline
 import dndplayerscodex.shared.generated.resources.codex_search_placeholder
@@ -40,11 +37,14 @@ import dndplayerscodex.shared.generated.resources.codex_tab_npc
 import dndplayerscodex.shared.generated.resources.codex_tab_party
 import dndplayerscodex.shared.generated.resources.codex_tab_quest
 import dndplayerscodex.shared.generated.resources.codex_title
+import dndplayerscodex.shared.generated.resources.mention_count_in_sessions
+import dndplayerscodex.shared.generated.resources.mention_count_mentions
 import dndplayerscodex.shared.generated.resources.swipe_hint_codex_both_subtitle
 import dndplayerscodex.shared.generated.resources.swipe_hint_codex_both_title
 import dndplayerscodex.shared.generated.resources.swipe_hint_codex_quick_subtitle
 import dndplayerscodex.shared.generated.resources.swipe_hint_delete_only_title
 import dndplayerscodex.shared.generated.resources.swipe_hint_dismiss
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -84,11 +84,7 @@ fun CodexUi(
                     CodexGroupRow(state, modifier = Modifier.padding(top = 10.dp))
                 }
                 Box(modifier = Modifier.weight(1f)) {
-                    if (state.emptyState == CodexEmptyState.Hidden) {
-                        CodexActiveList(state, swipeHint.peekOffsetPx)
-                    } else {
-                        CodexEmptyView(state)
-                    }
+                    CodexListArea(state, swipeHint.peekOffsetPx)
                 }
             }
             SwipeHintBanner(
@@ -103,8 +99,10 @@ fun CodexUi(
         }
     }
 
+    state.deleteWarning?.let { CodexDeleteWarningDialog(it, state.eventSink) }
+
     when (val sheet = state.activeSheet) {
-        is CodexSheet.EntryForm -> CodexEntryFormSheet(state, sheet.form)
+        is CodexSheet.EntryForm -> CodexEntryFormSheet(sheet.form, state.toast?.text, state.eventSink)
         is CodexSheet.EntityView -> CodexEntitySheet(state, sheet.entity)
         null -> Unit
     }
@@ -138,6 +136,24 @@ private fun CodexActiveList(
     }
 }
 
+// the tab's list, or its empty state - a tab with no hits shows the other tabs' matches under a hint
+@Composable
+private fun CodexListArea(
+    state: CodexState,
+    hintPeekOffsetPx: Float,
+) {
+    when (val empty = state.emptyState) {
+        CodexEmptyState.Hidden -> CodexActiveList(state, hintPeekOffsetPx)
+        is CodexEmptyState.OtherSections ->
+            CodexAllList(
+                state = state,
+                hintPeekOffsetPx = hintPeekOffsetPx,
+                header = { CodexOtherSectionsHint(empty, state.eventSink) },
+            )
+        else -> CodexEmptyView(state)
+    }
+}
+
 // the group row only shows on the tabs that group - the ALL and party tabs have no group choice
 @Composable
 private fun CodexGroupRow(
@@ -150,65 +166,6 @@ private fun CodexGroupRow(
         selected = state.groupBy,
         onSelected = { state.eventSink(CodexEvent.GroupBySelected(it)) },
         modifier = modifier,
-    )
-}
-
-@Composable
-private fun CodexEntryFormSheet(
-    state: CodexState,
-    form: CodexEntryFormState,
-) {
-    AppBottomSheet(
-        onDismissRequest = { state.eventSink(CodexEvent.EntryFormCloseRequested) },
-        // the sheet stays up under the "save changes?" prompt instead of hiding first
-        onDismissBlocked =
-            if (form.hasUnsavedChanges) {
-                { state.eventSink(CodexEvent.EntryFormCloseRequested) }
-            } else {
-                null
-            },
-    ) {
-        Box {
-            CodexEntryFormUi(
-                form = form,
-                eventSink = state.eventSink,
-                onClose = { state.eventSink(CodexEvent.EntryFormCloseRequested) },
-            )
-            // the sheet covers the app-level toast, so the quick-add confirmation gets its own copy here
-            AppToast(
-                text = state.toast?.text,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
-            )
-        }
-    }
-    // a sheet of its own over the form, so dismissing it leaves the form where it was
-    form.placeSelect?.let { select ->
-        PlaceSelectSheet(
-            select = select,
-            onChosen = { state.eventSink(CodexEvent.EntryPlacesChosen(it)) },
-            onCreated = { name, checked -> state.eventSink(CodexEvent.EntryPlaceCreated(name, checked)) },
-            onDismiss = { state.eventSink(CodexEvent.EntryPlaceSelectClosed) },
-        )
-    }
-    if (form.isDiscardPromptVisible) CodexEntryDiscardDialog(state)
-}
-
-@Composable
-private fun CodexEntryDiscardDialog(state: CodexState) {
-    // only two ways out - leave without saving or go back to the form, saving stays the form button's job
-    ConfirmationDialog(
-        title = stringResource(Res.string.codex_entry_discard_title),
-        text = stringResource(Res.string.codex_entry_discard_text),
-        onConfirm = { state.eventSink(CodexEvent.EntryFormDiscardPromptDismissed) },
-        onDismiss = { state.eventSink(CodexEvent.EntryFormClosed) },
-        confirmLabel = stringResource(Res.string.codex_entry_discard_back),
-        dismissLabel = stringResource(Res.string.codex_entry_discard_leave),
-        confirmColor = AppPalette.Gold,
-        confirmContentColor = AppPalette.Background,
-        icon = AppIcons.Edit,
-        accent = AppPalette.Gold,
-        accentBright = AppPalette.GoldBright,
-        onDismissRequest = { state.eventSink(CodexEvent.EntryFormDiscardPromptDismissed) },
     )
 }
 
@@ -279,3 +236,21 @@ private fun codexTabItems(state: CodexState): List<CodexTabRowItem> =
         CodexTabRowItem(CodexTab.QUEST, stringResource(Res.string.codex_tab_quest), state.tabCounts.quest),
         CodexTabRowItem(CodexTab.LOCATION, stringResource(Res.string.codex_tab_location), state.tabCounts.location),
     )
+
+// the record is still mentioned by notes - those mentions stay in the text as "?" tags, and Undo brings the record back
+@Composable
+private fun CodexDeleteWarningDialog(
+    warning: CodexDeleteWarning,
+    eventSink: (CodexEvent) -> Unit,
+) {
+    val mentions = pluralStringResource(Res.plurals.mention_count_mentions, warning.notes, warning.notes)
+    val sessions = pluralStringResource(Res.plurals.mention_count_in_sessions, warning.sessions, warning.sessions)
+    ConfirmationDialog(
+        title = stringResource(Res.string.codex_delete_warning_title, warning.name),
+        text = stringResource(Res.string.codex_delete_warning_text, mentions, sessions),
+        onConfirm = { eventSink(CodexEvent.EntityDeleteConfirmed) },
+        onDismiss = { eventSink(CodexEvent.EntityDeleteCancelled) },
+        confirmLabel = stringResource(Res.string.codex_delete_warning_confirm),
+        dismissLabel = stringResource(Res.string.codex_delete_warning_cancel),
+    )
+}

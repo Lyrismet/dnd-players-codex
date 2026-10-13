@@ -80,8 +80,8 @@ class CodexItemMappingTest {
     }
 
     @Test
-    fun `Npc matchesQuery matches the description`() {
-        assertTrue(ragnar.matchesQuery("кузнец", noRegions))
+    fun `Npc matchesQuery does not look into the description`() {
+        assertFalse(ragnar.matchesQuery("кузнец", noRegions))
     }
 
     @Test
@@ -100,11 +100,11 @@ class CodexItemMappingTest {
                 givenByNpcId = null,
                 locationId = null,
             )
-        assertTrue(quest.matchesQuery("", emptyMap(), noRegions))
+        assertTrue(quest.matchesQuery("", noRegions))
     }
 
     @Test
-    fun `Quest matchesQuery matches title and reward`() {
+    fun `Quest matchesQuery matches the title but not the reward`() {
         val quest =
             Quest(
                 id = 1,
@@ -114,12 +114,12 @@ class CodexItemMappingTest {
                 givenByNpcId = null,
                 locationId = null,
             )
-        assertTrue(quest.matchesQuery("меч", emptyMap(), noRegions))
-        assertTrue(quest.matchesQuery("золота", emptyMap(), noRegions))
+        assertTrue(quest.matchesQuery("меч", noRegions))
+        assertFalse(quest.matchesQuery("золота", noRegions))
     }
 
     @Test
-    fun `Quest matchesQuery matches the description`() {
+    fun `Quest matchesQuery does not look into the description`() {
         val quest =
             Quest(
                 id = 1,
@@ -130,12 +130,12 @@ class CodexItemMappingTest {
                 locationId = null,
                 description = "Найти три фрагмента клинка",
             )
-        assertTrue(quest.matchesQuery("фрагмент", emptyMap(), noRegions))
-        assertFalse(quest.matchesQuery("дракон", emptyMap(), noRegions))
+        assertFalse(quest.matchesQuery("фрагмент", noRegions))
+        assertFalse(quest.matchesQuery("дракон", noRegions))
     }
 
     @Test
-    fun `Quest matchesQuery matches the giver name`() {
+    fun `Quest matchesQuery does not match the giver name`() {
         val quest =
             Quest(
                 id = 1,
@@ -145,7 +145,7 @@ class CodexItemMappingTest {
                 givenByNpcId = 1,
                 locationId = null,
             )
-        assertTrue(quest.matchesQuery("рагнар", mapOf(ragnar.id to ragnar), noRegions))
+        assertFalse(quest.matchesQuery("рагнар", noRegions))
     }
 
     @Test
@@ -159,7 +159,7 @@ class CodexItemMappingTest {
                 givenByNpcId = 99,
                 locationId = null,
             )
-        assertFalse(quest.matchesQuery("рагнар", emptyMap(), noRegions))
+        assertFalse(quest.matchesQuery("рагнар", noRegions))
     }
 
     @Test
@@ -206,9 +206,10 @@ class CodexItemMappingTest {
     }
 
     @Test
-    fun `PartyMember matchesQuery matches class and player name`() {
-        assertTrue(bran.matchesQuery("плут"))
-        assertTrue(bran.matchesQuery("даня"))
+    fun `PartyMember matchesQuery matches the name but not class or player name`() {
+        assertTrue(bran.matchesQuery("бран"))
+        assertFalse(bran.matchesQuery("плут"))
+        assertFalse(bran.matchesQuery("даня"))
         assertFalse(bran.matchesQuery("гоблин"))
     }
 

@@ -1,7 +1,9 @@
 package com.lyrismet.incadent.presentation.sessiondetail
 
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
+import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
@@ -35,6 +37,8 @@ class SessionDetailPresenterFactory(
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val phraseSnippetRepository: PhraseSnippetRepository,
+    private val deletedMentionRepository: DeletedMentionRepository,
+    private val imageCompressor: ImageCompressor,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -54,6 +58,8 @@ class SessionDetailPresenterFactory(
                     undoController,
                     appPreferencesRepository,
                     phraseSnippetRepository,
+                    deletedMentionRepository,
+                    imageCompressor,
                 )
             else -> null
         }

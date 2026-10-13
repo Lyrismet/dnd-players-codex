@@ -11,6 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.incadent.core.designsystem.LocationMentionColor
+import com.lyrismet.incadent.core.designsystem.PartyMemberColor
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.designsystem.component.toChipItem
 import com.lyrismet.incadent.core.designsystem.toStatusColor
@@ -24,6 +25,8 @@ import com.lyrismet.incadent.core.format.toShortDayMonthUpper
 import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.mention.MentionEntity
 import com.lyrismet.incadent.core.mention.MentionSegment
+import com.lyrismet.incadent.core.mention.autoMatchedEntities
+import com.lyrismet.incadent.core.mention.dedupeKey
 import com.lyrismet.incadent.core.mention.insertMention
 import com.lyrismet.incadent.core.mention.matchingMentionEntities
 import com.lyrismet.incadent.core.mention.mentionCandidates
@@ -42,30 +45,37 @@ import com.lyrismet.incadent.core.phrases.phrasePool
 import com.lyrismet.incadent.core.phrases.rememberFrequentPhrases
 import com.lyrismet.incadent.core.phrases.sheetState
 import com.lyrismet.incadent.core.phrases.snippetFromEntry
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.tags.TagReasonLabels
 import com.lyrismet.incadent.core.tags.normalizeCustomTagName
 import com.lyrismet.incadent.core.tags.suggestSessionTags
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.model.DeletedMention
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
+import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
+import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.domain.repository.TagRepository
+import com.lyrismet.incadent.presentation.codex.CodexEntryFormController
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_toast_format
 import dndplayerscodex.shared.generated.resources.session_detail_meeting_separator_format
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
+import dndplayerscodex.shared.generated.resources.session_detail_mention_type_party
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
 import dndplayerscodex.shared.generated.resources.session_detail_phrase_saved_toast
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
@@ -83,6 +93,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -104,6 +115,16 @@ private class SessionDetailFields(
     val tagDraft: MutableState<String>,
     val phrases: PhraseSheetController,
     val toast: MutableState<String?>,
+    // the "?" tag whose sheet is open, and whether its link-to-another-record list is showing
+    val deletedSheet: MutableState<OpenDeletedSheet?>,
+    val formController: CodexEntryFormController,
+)
+
+/** the "?" tag sheet that is open - [isPicking] swaps its actions for the list of records to link to */
+internal data class OpenDeletedSheet(
+    val name: String,
+    val isPicking: Boolean = false,
+    val query: String = "",
 )
 
 @Suppress("LongParameterList")
@@ -118,7 +139,11 @@ class SessionDetailPresenter(
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val phraseSnippetRepository: PhraseSnippetRepository,
+    private val deletedMentionRepository: DeletedMentionRepository,
+    private val imageCompressor: ImageCompressor,
 ) : Presenter<SessionDetailState> {
+    private val mentionActions = SessionMentionActions(sessionEntryRepository, deletedMentionRepository, undoController)
+
     // one collection per source the screen reads - a flat merge, not real complexity
     @Suppress("LongMethod")
     @OptIn(ExperimentalTime::class)
@@ -133,6 +158,7 @@ class SessionDetailPresenter(
         val locations by mentionRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
         val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
+        val deleted by deletedMentionRepository.observeAll().collectAsState(initial = emptyList())
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
@@ -143,7 +169,7 @@ class SessionDetailPresenter(
         val currentNote = allSessions.find { it.id == screen.sessionNoteId }
         val numberLabel = allSessions.sessionNumberLabels(numbering)[screen.sessionNoteId]
 
-        val fields = rememberFields()
+        val fields = rememberFields(parties.firstOrNull { it.isPlayerCharacter }?.level)
         val highlightedEntryId = remember { mutableStateOf(screen.focusEntryId) }
         LaunchedEffect(highlightedEntryId.value) {
             if (highlightedEntryId.value != null) {
@@ -164,7 +190,9 @@ class SessionDetailPresenter(
             }
         }
 
-        val mention = buildMentionContext(npcs, locations, quests, draft.value.text)
+        val mention = buildMentionContext(npcs, locations, quests, parties, deleted, draft.value.text)
+        // a record created again takes its mentions back, so its snapshot has nothing left to stand in for
+        ForgetRevivedMentions(mention.revivedNames, deletedMentionRepository)
         val feed = buildFeed(entries, currentNote?.sessionDate?.date, mention.candidates)
         val focusIndex =
             highlightedEntryId.value?.let { id ->
@@ -224,6 +252,7 @@ class SessionDetailPresenter(
 
         val phraseSavedToast = stringResource(Res.string.session_detail_phrase_saved_toast)
         val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
+        val mentionData = mentionEventData(mention.candidates, mention.entities, allEntries, deleted)
         val phrasePool = remember(pinnedPhrases, frequentPhrases) { phrasePool(pinnedPhrases, frequentPhrases) }
         val completions =
             if (mention.suggestions.isEmpty()) phraseCompletions(draft.value.text, phrasePool)?.options else null
@@ -256,18 +285,30 @@ class SessionDetailPresenter(
             phraseCompletions = completions.orEmpty().map { it.toItem(questPrefix) },
             phraseSheet = fields.phrases.sheetState(pinnedPhrases, frequentPhrases),
             toast = fields.toast.value,
+            deletedMentionSheet = deletedSheet(fields.deletedSheet.value, mentionData),
+            entryForm = fields.formController.buildState(npcs, locations),
         ) { event ->
             val context = EventContext(currentNote, entries, undoDeletedEntryTitle, phraseSavedToast, scope)
-            onEvent(event, context, fields, assignedTags, tagSuggestions)
+            onEvent(event, context, fields, assignedTags, tagSuggestions, mentionData)
         }
     }
 
     // edited locally so live Flow re-emissions from other screens don't clobber in-progress typing
     @Composable
-    private fun rememberFields(): SessionDetailFields {
+    private fun rememberFields(playerCharacterLevel: Int?): SessionDetailFields {
         val noteId = screen.sessionNoteId
         val selectedEntityRef = remember(noteId) { mutableStateOf<EntityRef?>(null) }
         val entityHistory = remember(noteId) { mutableStateOf(emptyList<EntityRef>()) }
+        val recentPlaceIds = remember { mutableStateOf(emptyList<Long>()) }
+        val formController =
+            CodexEntryFormController.rememberController(
+                mentionRepositories.npcRepository,
+                partyRepository,
+                mentionRepositories.questRepository,
+                mentionRepositories.locationRepository,
+                recentPlaceIds,
+                playerCharacterLevel,
+            )
         return SessionDetailFields(
             titleField = remember(noteId) { mutableStateOf<String?>(null) },
             draft = remember(noteId) { mutableStateOf(TextFieldValue("")) },
@@ -279,6 +320,8 @@ class SessionDetailPresenter(
             tagDraft = remember(noteId) { mutableStateOf("") },
             phrases = remember { PhraseSheetController(phraseSnippetRepository) },
             toast = remember(noteId) { mutableStateOf<String?>(null) },
+            deletedSheet = remember(noteId) { mutableStateOf<OpenDeletedSheet?>(null) },
+            formController = formController,
         )
     }
 
@@ -301,6 +344,7 @@ class SessionDetailPresenter(
         fields: SessionDetailFields,
         assignedTags: List<String>,
         tagSuggestions: List<SessionTagSuggestionItem>,
+        mentionData: MentionEventData,
     ) {
         val currentNote = context.currentNote
         val entries = context.entries
@@ -359,7 +403,86 @@ class SessionDetailPresenter(
             is SessionDetailEvent.PhraseSheet -> fields.phrases.onEvent(event.event, scope)
             is SessionDetailEvent.SaveEntryAsPhraseClicked ->
                 onSaveEntryAsPhrase(event.id, entries, phraseSavedToast, scope, fields)
+            is SessionDetailEvent.DeletedMentionClicked -> fields.deletedSheet.value = OpenDeletedSheet(event.name)
+            SessionDetailEvent.DeletedMentionSheetDismissed -> fields.deletedSheet.value = null
+            is SessionDetailEvent.DeletedMentionPickingChanged ->
+                fields.deletedSheet.value = fields.deletedSheet.value?.copy(isPicking = event.isPicking, query = "")
+            is SessionDetailEvent.DeletedMentionQueryChanged ->
+                fields.deletedSheet.value = fields.deletedSheet.value?.copy(query = event.query)
+            SessionDetailEvent.DeletedMentionCreateClicked -> onDeletedMentionCreate(fields, mentionData)
+            is SessionDetailEvent.DeletedMentionLinked ->
+                onDeletedMentionRewrite(
+                    event.index,
+                    fields,
+                    mentionData,
+                    scope,
+                )
+            SessionDetailEvent.DeletedMentionKeptAsText -> onDeletedMentionRewrite(null, fields, mentionData, scope)
+            is SessionDetailEvent.AutoMentionsLinkClicked ->
+                entries.find { it.id == event.entryId }?.let {
+                    mentionActions.linkAutoMatches(scope, it, mentionData, only = null)
+                }
+            is SessionDetailEvent.AutoMentionsDismissed -> mentionActions.dismissAutoMatches(scope, event.entryId)
+            is SessionDetailEvent.AutoMentionWordClicked ->
+                entries.find { it.id == event.entryId }?.let { entry ->
+                    mentionData.candidates
+                        .map { it.entity }
+                        .firstOrNull { it.dedupeKey() == event.entityKey }
+                        ?.let { mentionActions.linkAutoMatches(scope, entry, mentionData, only = it) }
+                }
+            is SessionDetailEvent.EntryForm -> {
+                val closed =
+                    fields.formController.onEvent(event.event, scope, imageCompressor) { name ->
+                        fields.toast.value = getString(Res.string.codex_entry_quick_add_toast_format, name)
+                    }
+                if (closed) fields.toast.value = null
+            }
         }
+    }
+
+    // the sheet closes and the codex form opens over the screen, named and typed like the tag - nothing is created yet
+    private fun onDeletedMentionCreate(
+        fields: SessionDetailFields,
+        data: MentionEventData,
+    ) {
+        val open = fields.deletedSheet.value ?: return
+        val deleted = data.deletedNamed(open.name) ?: return
+        fields.deletedSheet.value = null
+        fields.formController.onAddEntryClicked(deleted.type.toEntryType(), deleted.name)
+    }
+
+    // a null [index] keeps the name as plain words, otherwise the mention points at the picked record
+    private fun onDeletedMentionRewrite(
+        index: Long?,
+        fields: SessionDetailFields,
+        data: MentionEventData,
+        scope: CoroutineScope,
+    ) {
+        val deleted = fields.deletedSheet.value?.let { data.deletedNamed(it.name) } ?: return
+        val target = index?.let { id -> data.linkTargets.firstOrNull { it.id == id }?.entity }
+        // a picked record that is gone by now leaves the tag alone instead of turning it into words
+        if (index == null || target != null) {
+            fields.deletedSheet.value = null
+            mentionActions.rewriteDeleted(scope, deleted, target, data)
+        }
+    }
+
+    // the sheet only exists while its snapshot does, so a tag that was linked or revived closes it by itself
+    private fun deletedSheet(
+        open: OpenDeletedSheet?,
+        data: MentionEventData,
+    ): DeletedMentionSheetState? {
+        val deleted = open?.let { data.deletedNamed(it.name) } ?: return null
+        val hits = data.hitsOf(deleted)
+        return DeletedMentionSheetState(
+            name = deleted.name,
+            type = deleted.type,
+            notes = hits.notes,
+            sessions = hits.sessions,
+            isPicking = open.isPicking,
+            query = open.query,
+            linkOptions = if (open.isPicking) data.linkOptionsFor(open.query) else emptyList(),
+        )
     }
 
     private fun onSaveEntryAsPhrase(
@@ -532,6 +655,10 @@ private fun PhraseOption.toItem(questPrefix: String) =
 private data class MentionContext(
     val candidates: List<MentionCandidate>,
     val suggestions: List<SessionMentionSuggestion>,
+    // the live records, in the order the "link to" list offers them
+    val entities: List<MentionEntity>,
+    // snapshots whose name a live record has taken again
+    val revivedNames: List<String>,
 )
 
 // deletes immediately and offers undo - clears in-progress editing if the edited entry is the one removed
@@ -567,22 +694,33 @@ private fun buildMentionContext(
     npcs: List<Npc>,
     locations: List<Location>,
     quests: List<Quest>,
+    parties: List<PartyMember>,
+    deleted: List<DeletedMention>,
     draftText: String,
 ): MentionContext {
     val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
-    val mentionEntities = mentionEntitiesFrom(npcs, locations, quests)
-    val candidates = mentionCandidates(mentionEntities, questPrefix)
+    val mentionEntities = mentionEntitiesFrom(npcs, locations, quests, parties)
+    val candidates = mentionCandidates(mentionEntities, questPrefix, deleted)
+    val liveKeys = mentionEntities.mapTo(HashSet()) { mentionKey(it, questPrefix) }
+    val revived =
+        deleted
+            .filter { mentionKey(MentionEntity.DeletedMention(it.name, it.type), questPrefix) in liveKeys }
+            .map { it.name }
 
-    val npcTypeLabel = stringResource(Res.string.session_detail_mention_type_npc)
-    val locationTypeLabel = stringResource(Res.string.session_detail_mention_type_location)
-    val questTypeLabel = stringResource(Res.string.session_detail_mention_type_quest)
+    val typeLabels =
+        MentionTypeLabels(
+            npc = stringResource(Res.string.session_detail_mention_type_npc),
+            party = stringResource(Res.string.session_detail_mention_type_party),
+            location = stringResource(Res.string.session_detail_mention_type_location),
+            quest = stringResource(Res.string.session_detail_mention_type_quest),
+        )
     val suggestions =
         trailingMentionQuery(draftText)
             ?.let { matchingMentionEntities(mentionEntities, it, questPrefix) }
             .orEmpty()
-            .map { it.toSuggestion(questPrefix, npcTypeLabel, locationTypeLabel, questTypeLabel) }
+            .map { it.toSuggestion(questPrefix, typeLabels) }
 
-    return MentionContext(candidates, suggestions)
+    return MentionContext(candidates, suggestions, mentionEntities, revived)
 }
 
 /** groups [entries] under a "ВСТРЕЧА N" separator per calendar day, only when the session spans more than one */
@@ -616,33 +754,47 @@ private fun buildFeed(
     return feed
 }
 
-private fun SessionEntry.toItem(candidates: List<MentionCandidate>): SessionEntryItem =
-    SessionEntryItem(
+private fun SessionEntry.toItem(candidates: List<MentionCandidate>): SessionEntryItem {
+    // only a note that was sent or edited and not decided on yet is searched for words without "@"
+    val parsed = parseMentions(body, candidates, autoMatch = mentionCheck)
+    return SessionEntryItem(
         id = id,
         timeLabel = createdAt.toDisplayTime(),
         edited = edited,
-        segments = parseMentions(body, candidates).map { it.toSegment() },
+        segments = parsed.map { it.toSegment() },
+        autoMatchCount = autoMatchedEntities(parsed).size,
     )
+}
 
 private fun MentionSegment.toSegment(): SessionEntrySegment =
     when (this) {
         is MentionSegment.Text -> SessionEntrySegment.Text(text)
         is MentionSegment.Mention -> SessionEntrySegment.Mention(entity.toChipItem())
+        is MentionSegment.AutoMatch -> SessionEntrySegment.AutoMatch(text, entity.dedupeKey())
     }
+
+/** the name of each record kind the autocomplete shows next to a suggestion */
+private class MentionTypeLabels(
+    val npc: String,
+    val party: String,
+    val location: String,
+    val quest: String,
+)
 
 private fun MentionEntity.toSuggestion(
     questPrefix: String,
-    npcTypeLabel: String,
-    locationTypeLabel: String,
-    questTypeLabel: String,
+    labels: MentionTypeLabels,
 ): SessionMentionSuggestion {
     val (glyph, tint, typeLabel) =
         when (this) {
-            is MentionEntity.NpcMention -> Triple(MentionGlyph.NPC, status.toStatusColor().foreground, npcTypeLabel)
+            is MentionEntity.NpcMention -> Triple(MentionGlyph.NPC, status.toStatusColor().foreground, labels.npc)
             is MentionEntity.LocationMention ->
-                Triple(MentionGlyph.LOCATION, LocationMentionColor.foreground, locationTypeLabel)
+                Triple(MentionGlyph.LOCATION, LocationMentionColor.foreground, labels.location)
             is MentionEntity.QuestMention ->
-                Triple(MentionGlyph.QUEST, status.toStatusColor().foreground, questTypeLabel)
+                Triple(MentionGlyph.QUEST, status.toStatusColor().foreground, labels.quest)
+            is MentionEntity.PartyMention -> Triple(MentionGlyph.PARTY, PartyMemberColor.foreground, labels.party)
+            // a deleted record is never offered by the autocomplete, its candidates come from live records only
+            is MentionEntity.DeletedMention -> Triple(MentionGlyph.DELETED, LocationMentionColor.foreground, "")
         }
     return SessionMentionSuggestion(
         candidateKey = mentionKey(this, questPrefix),

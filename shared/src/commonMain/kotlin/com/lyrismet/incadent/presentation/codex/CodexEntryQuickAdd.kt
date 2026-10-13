@@ -12,7 +12,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun npcQuickAdd(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
     field: CodexEntryChipField,
 ): FormChipQuickAdd =
     quickAddFor(
@@ -26,7 +26,7 @@ internal fun npcQuickAdd(
 @Composable
 internal fun quickAddFor(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
     field: CodexEntryChipField,
     addLabel: String,
     placeholder: String,

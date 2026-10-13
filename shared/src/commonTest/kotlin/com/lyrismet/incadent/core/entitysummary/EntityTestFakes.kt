@@ -1,10 +1,12 @@
 package com.lyrismet.incadent.core.entitysummary
 
+import com.lyrismet.incadent.domain.model.DeletedMention
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
+import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.NpcRepository
 import com.lyrismet.incadent.domain.repository.PartyRepository
@@ -127,4 +129,18 @@ internal class RecordingNavigator : Navigator {
         newRoot: Screen,
         options: StateOptions,
     ): List<Screen> = emptyList()
+}
+
+internal class FakeDeletedMentionRepository : DeletedMentionRepository {
+    val stored = mutableMapOf<String, DeletedMention>()
+
+    override fun observeAll(): Flow<List<DeletedMention>> = flowOf(stored.values.toList())
+
+    override suspend fun remember(mention: DeletedMention) {
+        stored[mention.name] = mention
+    }
+
+    override suspend fun forget(name: String) {
+        stored.remove(name)
+    }
 }

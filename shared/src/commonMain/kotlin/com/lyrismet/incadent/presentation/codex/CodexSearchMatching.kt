@@ -1,35 +1,35 @@
 package com.lyrismet.incadent.presentation.codex
 
 import com.lyrismet.incadent.core.codexgroup.CodexRegions
+import com.lyrismet.incadent.core.format.foldForSearch
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.Quest
 
-// the query arrives trimmed from the presenter, and an empty query matches every entry without reading any field
-private inline fun matchesAny(
+// the query arrives trimmed from the presenter, an empty query matches every entry and a search only reads titles
+private inline fun matchesAnyTitle(
     query: String,
-    fields: () -> List<String?>,
-): Boolean = query.isEmpty() || fields().any { field -> field?.contains(query, ignoreCase = true) == true }
+    titles: () -> List<String>,
+): Boolean {
+    if (query.isEmpty()) return true
+    val folded = query.foldForSearch()
+    return titles().any { it.foldForSearch().contains(folded) }
+}
 
 internal fun Npc.matchesQuery(
     query: String,
     regions: CodexRegions,
-): Boolean = matchesAny(query) { listOf(name, race, faction, description) + regions.placeNamesOfNpc(this) }
+): Boolean = matchesAnyTitle(query) { listOf(name) + regions.placeNamesOfNpc(this) }
 
 internal fun Quest.matchesQuery(
     query: String,
-    npcsById: Map<Long, Npc>,
     regions: CodexRegions,
-): Boolean =
-    matchesAny(query) {
-        listOf(title, reward, description, npcsById[givenByNpcId]?.name) + regions.placeNamesOfQuest(this)
-    }
+): Boolean = matchesAnyTitle(query) { listOf(title) + regions.placeNamesOfQuest(this) }
 
 internal fun Location.matchesQuery(
     query: String,
     regions: CodexRegions,
-): Boolean = matchesAny(query) { listOf(name, description) + regions.placeNamesOfLocation(this) }
+): Boolean = matchesAnyTitle(query) { listOf(name) + regions.placeNamesOfLocation(this) }
 
-internal fun PartyMember.matchesQuery(query: String): Boolean =
-    matchesAny(query) { listOf(name, characterClass, race, playerName, description) }
+internal fun PartyMember.matchesQuery(query: String): Boolean = matchesAnyTitle(query) { listOf(name) }

@@ -28,6 +28,16 @@ class MentionRenamer(
         rename(oldName, newName, update) { keysExcluding(prefix, npcId = id) }
     }
 
+    suspend fun partyRenamed(
+        id: Long,
+        oldName: String,
+        newName: String,
+        update: () -> Unit,
+    ) {
+        val prefix = questPrefix()
+        rename(oldName, newName, update) { keysExcluding(prefix, partyId = id) }
+    }
+
     suspend fun locationRenamed(
         id: Long,
         oldName: String,
@@ -79,12 +89,18 @@ class MentionRenamer(
         npcId: Long? = null,
         locationId: Long? = null,
         questId: Long? = null,
+        partyId: Long? = null,
     ): List<String> =
         database.npcQueries
             .selectAll()
             .executeAsList()
             .filter { it.id != npcId }
             .map { it.name } +
+            database.partyMemberQueries
+                .selectAll()
+                .executeAsList()
+                .filter { it.id != partyId }
+                .map { it.name } +
             database.locationQueries
                 .selectAll()
                 .executeAsList()

@@ -40,6 +40,7 @@ class QuickEditInteractions(
                     inlineEdit.value = null
                     commit(scope, edit.field, QuickEditValue.Places(event.ids))
                 }
+            is QuickEditUiEvent.RelationToggled -> toggleRelation(scope, event.id)
             QuickEditUiEvent.HoldHintDismissed -> onHoldHintSeen()
             is QuickEditUiEvent.PortraitPicked -> savePortrait(scope, event.bytes)
         }
@@ -60,6 +61,16 @@ class QuickEditInteractions(
             val base64 = withContext(Dispatchers.Default) { encodePortraitBase64(rawBytes, imageCompressor) }
             entitySheet.onQuickEdit(scope, ref, QuickEditField.PORTRAIT, QuickEditValue.Portrait(base64))
         }
+    }
+
+    // the editor stays open so several candidates can be ticked one after another
+    private fun toggleRelation(
+        scope: CoroutineScope,
+        targetId: Long,
+    ) {
+        val field = inlineEdit.value?.field ?: return
+        val ref = selectedRef.value ?: return
+        entitySheet.onRelationToggled(scope, ref, field, targetId)
     }
 
     private fun saveDraft(scope: CoroutineScope) {

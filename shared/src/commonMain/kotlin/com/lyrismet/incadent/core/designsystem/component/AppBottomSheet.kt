@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.navigation.LocalTabSelected
 
 private val SheetShape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)
 private val SheetScrimColor = AppPalette.Scrim.copy(alpha = 0.66f)
@@ -45,6 +46,8 @@ fun AppBottomSheet(
     onDismissBlocked: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
+    // the sheet is a window above everything, so it must go with its tab instead of hanging over the next one
+    if (!LocalTabSelected.current) return
     val blocked by rememberUpdatedState(onDismissBlocked)
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,

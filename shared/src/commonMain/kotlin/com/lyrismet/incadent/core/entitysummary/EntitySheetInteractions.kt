@@ -5,7 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import com.lyrismet.incadent.core.quickedit.EntityChange
 import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.core.quickedit.QuickEditValue
+import com.lyrismet.incadent.core.quickedit.withGiverToggled
 import com.lyrismet.incadent.core.quickedit.withLifeState
+import com.lyrismet.incadent.core.quickedit.withPlaceToggled
 import com.lyrismet.incadent.core.quickedit.withPresence
 import com.lyrismet.incadent.core.quickedit.withQuickEdit
 import com.lyrismet.incadent.core.quickedit.withStatus
@@ -157,6 +159,36 @@ class EntitySheetInteractions(
             }
         }
     }
+
+    /** ticks or unticks one candidate of a relation group - the change lands on the candidate, not on [owner] */
+    fun onRelationToggled(
+        scope: CoroutineScope,
+        owner: EntityRef,
+        field: QuickEditField,
+        targetId: Long,
+    ) {
+        scope.launch {
+            when {
+                field == QuickEditField.GIVEN_QUESTS && owner is EntityRef.Npc ->
+                    commitQuestChange(field, targetId) { it.withGiverToggled(owner.id) }
+                field == QuickEditField.PLACE_QUESTS && owner is EntityRef.Location ->
+                    commitQuestChange(field, targetId) { it.withPlaceToggled(owner.id) }
+                field == QuickEditField.RESIDENTS && owner is EntityRef.Location ->
+                    commitChange(
+                        field,
+                        { npcRepository.getById(targetId) },
+                        Npc::name,
+                        { it.withPlaceToggled(owner.id) },
+                    ) { npcRepository.upsert(it) }
+            }
+        }
+    }
+
+    private suspend fun commitQuestChange(
+        field: QuickEditField,
+        questId: Long,
+        change: (Quest) -> Quest,
+    ) = commitChange(field, { questRepository.getById(questId) }, Quest::title, change) { questRepository.upsert(it) }
 
     fun onRelatedNoteClicked(
         sessionNoteId: Long,

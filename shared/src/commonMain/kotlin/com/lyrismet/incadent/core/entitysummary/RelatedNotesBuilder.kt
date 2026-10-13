@@ -9,13 +9,12 @@ import com.lyrismet.incadent.core.mention.parseMentions
 
 private const val SNIPPET_MAX_LENGTH = 110
 
-// party members are never @mentioned in notes, so a party ref can't match any parsed mention
 private fun EntityRef.matches(entity: MentionEntity): Boolean =
     when (this) {
         is EntityRef.Npc -> entity is MentionEntity.NpcMention && entity.id == id
         is EntityRef.Location -> entity is MentionEntity.LocationMention && entity.id == id
         is EntityRef.Quest -> entity is MentionEntity.QuestMention && entity.id == id
-        is EntityRef.Party -> false
+        is EntityRef.Party -> entity is MentionEntity.PartyMention && entity.id == id
     }
 
 /** every session with at least one note that `@mentions` [ref], newest first, with a snippet and hit count */
@@ -59,6 +58,7 @@ private fun plainTextSnippet(
             when (segment) {
                 is MentionSegment.Text -> segment.text
                 is MentionSegment.Mention -> segment.entity.name
+                is MentionSegment.AutoMatch -> segment.text
             }
         }
     return if (plain.length > SNIPPET_MAX_LENGTH) plain.take(SNIPPET_MAX_LENGTH - 1) + "…" else plain

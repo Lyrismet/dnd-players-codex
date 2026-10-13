@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.navigation.LocalTabSelected
 
 private val DialogShape = RoundedCornerShape(20.dp)
 
@@ -25,6 +26,8 @@ fun AppDialog(
     borderColor: Color = AppPalette.BorderSubtle,
     content: @Composable () -> Unit,
 ) {
+    // a dialog is a window above everything, so it goes with its tab instead of hanging over the next one
+    if (!LocalTabSelected.current) return
     Dialog(onDismissRequest = onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Column(
             modifier =

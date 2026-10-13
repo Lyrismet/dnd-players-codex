@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,11 +36,16 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,9 +58,13 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_delete
 import dndplayerscodex.shared.generated.resources.action_edit
+import dndplayerscodex.shared.generated.resources.auto_mention_dismiss
+import dndplayerscodex.shared.generated.resources.auto_mention_link
+import dndplayerscodex.shared.generated.resources.auto_mention_matches
 import dndplayerscodex.shared.generated.resources.session_detail_entry_save_phrase
 import dndplayerscodex.shared.generated.resources.session_entry_edited_label
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 private const val ENTRY_COLLAPSE_ANIMATION_DURATION_MS = 220
@@ -80,6 +90,7 @@ internal fun SessionEntryRow(
     onSavePhraseClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onMentionClick: (EntityRef) -> Unit,
+    mentionActions: EntryMentionActions,
     modifier: Modifier = Modifier,
 ) {
     val haptics = LocalHapticFeedback.current
@@ -110,6 +121,7 @@ internal fun SessionEntryRow(
                 SessionEntryBody(
                     segments = entry.segments,
                     onMentionClick = onMentionClick,
+                    mentionActions = mentionActions,
                     modifier =
                         Modifier.selectionHighlight(isSelected, isEditing).tapOrQuickHold(
                             onTap = onClick,
@@ -122,6 +134,13 @@ internal fun SessionEntryRow(
                             },
                         ),
                 )
+                if (entry.autoMatchCount > 0) {
+                    AutoMentionBar(
+                        count = entry.autoMatchCount,
+                        onLink = mentionActions.onAutoLink,
+                        onDismiss = mentionActions.onAutoDismiss,
+                    )
+                }
                 if (isSelected) {
                     EntryActions(
                         onEditClick = onEditClick,
@@ -267,11 +286,81 @@ private fun EntryTimeColumn(
     }
 }
 
+/** what a note's mention parts can ask for - a "?" tag, the "link them" row and a single dotted word */
+internal class EntryMentionActions(
+    val onDeletedClick: (String) -> Unit,
+    val onAutoLink: () -> Unit,
+    val onAutoDismiss: () -> Unit,
+    val onAutoWordClick: (entityKey: String) -> Unit,
+)
+
+// the "N matches with the codex · Link · No" row under a note - nothing changes until one of the two is tapped
+@Composable
+private fun AutoMentionBar(
+    count: Int,
+    onLink: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val label = pluralStringResource(Res.plurals.auto_mention_matches, count, count)
+    // the leading number is the gold one, the rest of the sentence stays quiet
+    val numberEnd = label.indexOf(' ').let { if (it < 0) label.length else it }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text =
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = AppPalette.GoldBright, fontWeight = FontWeight.SemiBold)) {
+                        append(label.substring(0, numberEnd))
+                    }
+                    append(label.substring(numberEnd))
+                },
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+            color = AppPalette.TextSecondary,
+        )
+        Text("·", style = MaterialTheme.typography.bodySmall, color = AppPalette.TextTertiary)
+        AutoMentionTextButton(stringResource(Res.string.auto_mention_link), AppPalette.GoldBright, onLink)
+        Text("·", style = MaterialTheme.typography.bodySmall, color = AppPalette.TextTertiary)
+        AutoMentionTextButton(stringResource(Res.string.auto_mention_dismiss), AppPalette.TextMuted, onDismiss)
+    }
+}
+
+@Composable
+private fun AutoMentionTextButton(
+    text: String,
+    color: Color,
+    onClick: () -> Unit,
+) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.sp, fontWeight = FontWeight.SemiBold),
+        color = color,
+        modifier = Modifier.clickable(onClick = onClick).padding(vertical = 8.dp),
+    )
+}
+
+// a word the codex knows, written without "@" - dotted gold so it reads as a suggestion and not as a tag
+private fun Modifier.dottedUnderline(): Modifier =
+    drawBehind {
+        val strokePx = 1.5.dp.toPx()
+        val y = size.height - strokePx / 2
+        drawLine(
+            color = AppPalette.GoldBright,
+            start = Offset(0f, y),
+            end = Offset(size.width, y),
+            strokeWidth = strokePx,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokePx, strokePx * 2)),
+        )
+    }
+
 // wraps word-by-word so a chip never gets stranded on its own line, with the design's 1.65 paragraph line height
 @Composable
 private fun SessionEntryBody(
     segments: List<SessionEntrySegment>,
     onMentionClick: (EntityRef) -> Unit,
+    mentionActions: EntryMentionActions,
     modifier: Modifier = Modifier,
 ) {
     val textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.75.sp)
@@ -292,10 +381,23 @@ private fun SessionEntryBody(
                     }
                 }
 
+                is SessionEntrySegment.AutoMatch ->
+                    Text(
+                        segment.text,
+                        style = textStyle,
+                        color = AppPalette.TextPrimary,
+                        modifier =
+                            Modifier
+                                .dottedUnderline()
+                                .clickable { mentionActions.onAutoWordClick(segment.entityKey) },
+                    )
+
                 is SessionEntrySegment.Mention -> {
                     MentionChip(
                         item = segment.chip,
-                        onClick = segment.chip.entityRef?.let { ref -> { onMentionClick(ref) } },
+                        onClick =
+                            segment.chip.entityRef?.let { ref -> { onMentionClick(ref) } }
+                                ?: segment.chip.deletedName?.let { name -> { mentionActions.onDeletedClick(name) } },
                         fontSize = 14.sp,
                         glyphSize = 7.sp,
                         glyphGap = 4.dp,
