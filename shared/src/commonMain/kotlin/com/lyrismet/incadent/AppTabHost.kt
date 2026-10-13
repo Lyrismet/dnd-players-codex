@@ -14,7 +14,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +41,7 @@ import com.lyrismet.incadent.core.designsystem.component.icons.CombatTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.SessionsTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.SettingsTabIcon
 import com.lyrismet.incadent.core.navigation.BackAction
+import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.navigation.resolveBackAction
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.undo.UndoController
@@ -236,11 +236,6 @@ private fun popToRoot(stack: TabStack) {
 
 private fun tabContentModifier(visible: Boolean): Modifier =
     if (visible) Modifier.fillMaxSize() else Modifier.size(0.dp)
-
-// a hidden tab stays fully composed (zero-sized) so its nav stack and ui state survive switching away - this
-// tells its presenters whether their tab is actually on screen right now, e.g. so a one-time hint doesn't
-// burn itself in the background while the user is looking at a different tab
-internal val LocalTabSelected = compositionLocalOf { true }
 
 // each tab gets its own dispatcher, enabled only while selected, so hidden tabs never swallow a back press
 @Composable

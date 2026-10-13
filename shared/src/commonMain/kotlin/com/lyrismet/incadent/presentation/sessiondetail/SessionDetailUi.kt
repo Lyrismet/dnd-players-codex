@@ -40,6 +40,7 @@ import com.lyrismet.incadent.core.designsystem.component.OrnamentedEmptyState
 import com.lyrismet.incadent.core.designsystem.component.PhraseSnippetsSheet
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
+import com.lyrismet.incadent.presentation.codex.CodexEntryFormSheet
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_empty_feed
 import dndplayerscodex.shared.generated.resources.session_detail_empty_feed_hint
@@ -60,6 +61,10 @@ fun SessionDetailUi(
 
     state.selectedEntity?.let { entity -> SessionDetailEntitySheet(state, entity) }
     state.tagSheet?.let { sheet -> SessionDetailTagsSheet(sheet, state.eventSink) }
+    state.deletedMentionSheet?.let { sheet -> DeletedMentionSheet(sheet, state.eventSink) }
+    state.entryForm?.let { form ->
+        CodexEntryFormSheet(form, state.toast) { event -> state.eventSink(SessionDetailEvent.EntryForm(event)) }
+    }
     state.phraseSheet?.let { sheet ->
         PhraseSnippetsSheet(sheet) { event -> state.eventSink(SessionDetailEvent.PhraseSheet(event)) }
     }
@@ -131,6 +136,7 @@ private fun SessionFeed(
                         onMentionClick = { ref ->
                             state.eventSink(SessionDetailEvent.MentionChipClicked(ref))
                         },
+                        mentionActions = entryMentionActions(feedItem.entry.id, state.eventSink),
                         modifier = Modifier.animateItem(),
                     )
                 }
@@ -189,6 +195,16 @@ private fun SessionDetailEntitySheet(
 }
 
 private const val FOCUS_SCROLL_OFFSET_DP = 72
+
+private fun entryMentionActions(
+    entryId: Long,
+    eventSink: (SessionDetailEvent) -> Unit,
+) = EntryMentionActions(
+    onDeletedClick = { eventSink(SessionDetailEvent.DeletedMentionClicked(it)) },
+    onAutoLink = { eventSink(SessionDetailEvent.AutoMentionsLinkClicked(entryId)) },
+    onAutoDismiss = { eventSink(SessionDetailEvent.AutoMentionsDismissed(entryId)) },
+    onAutoWordClick = { key -> eventSink(SessionDetailEvent.AutoMentionWordClicked(entryId, key)) },
+)
 
 @Composable
 private fun DaySeparatorRow(

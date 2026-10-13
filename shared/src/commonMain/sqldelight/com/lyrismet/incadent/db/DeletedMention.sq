@@ -1,0 +1,14 @@
+CREATE TABLE deleted_mention (
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    PRIMARY KEY (name, type)
+);
+
+selectAll:
+SELECT * FROM deleted_mention ORDER BY name ASC;
+
+upsert:
+INSERT OR REPLACE INTO deleted_mention(name, type) VALUES (?, ?);
+
+delete:
+DELETE FROM deleted_mention WHERE name = ? AND type = ?;

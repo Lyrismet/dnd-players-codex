@@ -31,6 +31,11 @@ sealed interface QuickEditUiEvent {
         val ids: List<Long>,
     ) : QuickEditUiEvent
 
+    /** a candidate of the open relation editor was tapped - the editor stays open for the next one */
+    data class RelationToggled(
+        val id: Long,
+    ) : QuickEditUiEvent
+
     data object HoldHintDismissed : QuickEditUiEvent
 
     /** the raw picked image - the presenter compresses it before it is stored */

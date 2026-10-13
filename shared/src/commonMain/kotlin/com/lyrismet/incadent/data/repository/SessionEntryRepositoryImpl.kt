@@ -39,13 +39,19 @@ class SessionEntryRepositoryImpl(
     ): Long =
         withContext(Dispatchers.Default) {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-            queries.insert(sessionNoteId, now, body, edited = 0L)
+            queries.insert(sessionNoteId, now, body, edited = 0L, mention_check = 1L)
             queries.lastInsertRowId().executeAsOne()
         }
 
     override suspend fun restore(entry: SessionEntry): Long =
         withContext(Dispatchers.Default) {
-            queries.insert(entry.sessionNoteId, entry.createdAt, entry.body, if (entry.edited) 1L else 0L)
+            queries.insert(
+                entry.sessionNoteId,
+                entry.createdAt,
+                entry.body,
+                if (entry.edited) 1L else 0L,
+                if (entry.mentionCheck) 1L else 0L,
+            )
             queries.lastInsertRowId().executeAsOne()
         }
 
@@ -58,17 +64,41 @@ class SessionEntryRepositoryImpl(
         }
     }
 
+    override suspend fun rewriteBody(
+        id: Long,
+        body: String,
+    ) {
+        withContext(Dispatchers.Default) { queries.renameBody(body, id) }
+    }
+
+    override suspend fun setMentionCheck(
+        id: Long,
+        check: Boolean,
+    ) {
+        withContext(Dispatchers.Default) { queries.setMentionCheck(if (check) 1L else 0L, id) }
+    }
+
     override suspend fun delete(id: Long) {
         withContext(Dispatchers.Default) {
             queries.deleteById(id)
         }
     }
 
+    // one parameter per column of the row, the shape SQLDelight hands a mapper
+    @Suppress("LongParameterList")
     private fun toDomain(
         id: Long,
         sessionNoteId: Long,
         createdAt: LocalDateTime,
         body: String,
         edited: Long,
-    ) = SessionEntry(id = id, sessionNoteId = sessionNoteId, createdAt = createdAt, body = body, edited = edited != 0L)
+        mentionCheck: Long,
+    ) = SessionEntry(
+        id = id,
+        sessionNoteId = sessionNoteId,
+        createdAt = createdAt,
+        body = body,
+        edited = edited != 0L,
+        mentionCheck = mentionCheck != 0L,
+    )
 }

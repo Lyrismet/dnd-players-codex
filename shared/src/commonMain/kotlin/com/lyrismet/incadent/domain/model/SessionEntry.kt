@@ -10,4 +10,6 @@ data class SessionEntry(
     val body: String,
     // set once the note has been edited after it was sent, shown as "изм." in the feed
     val edited: Boolean = false,
+    // set when the note was sent or edited and its codex-name matches were not decided yet
+    val mentionCheck: Boolean = false,
 )

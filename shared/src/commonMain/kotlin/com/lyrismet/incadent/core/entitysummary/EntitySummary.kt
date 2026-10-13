@@ -33,8 +33,11 @@ import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_inside
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_npcs
+import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_npcs_empty
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_quests
+import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_quests_empty
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_npc_quests_given
+import dndplayerscodex.shared.generated.resources.entity_sheet_group_npc_quests_given_empty
 import dndplayerscodex.shared.generated.resources.entity_sheet_location_parent_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_faction_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_location_label
@@ -108,10 +111,22 @@ data class FactRow(
     val linkOptions: List<MentionChipItem> = emptyList(),
 )
 
-/** "выдал квесты" / "кто здесь" / "квесты" - a titled row of chips, each reopening the sheet in place */
+/** one candidate of an editable relation group, ticked when it is linked to the card's entity right now */
+data class RelationOption(
+    val chip: MentionChipItem,
+    val isSelected: Boolean,
+)
+
+/**
+ * "выдал квесты" / "кто здесь" / "квесты" - a titled row of chips, each reopening the sheet in place. A group with an
+ * [edit] field can be held and re-linked from [options], and it stays on the card while empty so it can be filled.
+ */
 data class RelationGroup(
     val title: StringResource,
     val items: List<MentionChipItem>,
+    val edit: QuickEditField? = null,
+    val options: List<RelationOption> = emptyList(),
+    val emptyText: StringResource? = null,
 )
 
 data class RelatedNoteItem(
@@ -184,6 +199,7 @@ sealed interface EntitySummaryItem {
         val emblem: EntityEmblem,
         val presenceOptions: List<StatusOption<PartyPresence>>,
         val facts: List<FactRow>,
+        val relatedNotes: List<RelatedNoteItem>,
     ) : EntitySummaryItem
 }
 
@@ -265,10 +281,14 @@ private fun buildNpcSummary(
                 ),
             ),
         groups =
-            listOfNotNull(
-                givenQuests.takeIf { it.isNotEmpty() }?.let {
-                    RelationGroup(Res.string.entity_sheet_group_npc_quests_given, it.map { q -> q.toMentionChip() })
-                },
+            listOf(
+                RelationGroup(
+                    title = Res.string.entity_sheet_group_npc_quests_given,
+                    items = givenQuests.map { q -> q.toMentionChip() },
+                    edit = QuickEditField.GIVEN_QUESTS,
+                    options = lookup.quests.map { RelationOption(it.toMentionChip(), it.givenByNpcId == npc.id) },
+                    emptyText = Res.string.entity_sheet_group_npc_quests_given_empty,
+                ),
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Npc(npc.id), lookup),
     )
@@ -321,6 +341,7 @@ private fun buildPartySummary(
                     QuickEditField.HP_MAX,
                 ),
             ),
+        relatedNotes = buildRelatedNotes(EntityRef.Party(member.id), lookup),
     )
 }
 
@@ -397,12 +418,21 @@ private fun buildLocationSummary(
                 placesInside.takeIf { it.isNotEmpty() }?.let {
                     RelationGroup(Res.string.entity_sheet_group_location_inside, it.map { p -> p.toMentionChip() })
                 },
-                npcsHere.takeIf { it.isNotEmpty() }?.let {
-                    RelationGroup(Res.string.entity_sheet_group_location_npcs, it.map { n -> n.toMentionChip() })
-                },
-                questsHere.takeIf { it.isNotEmpty() }?.let {
-                    RelationGroup(Res.string.entity_sheet_group_location_quests, it.map { q -> q.toMentionChip() })
-                },
+                RelationGroup(
+                    title = Res.string.entity_sheet_group_location_npcs,
+                    items = npcsHere.map { n -> n.toMentionChip() },
+                    edit = QuickEditField.RESIDENTS,
+                    // only the npcs met right here are ticked, the ones of a place inside are shown but not unticked
+                    options = lookup.npcs.map { RelationOption(it.toMentionChip(), location.id in it.locationIds) },
+                    emptyText = Res.string.entity_sheet_group_location_npcs_empty,
+                ),
+                RelationGroup(
+                    title = Res.string.entity_sheet_group_location_quests,
+                    items = questsHere.map { q -> q.toMentionChip() },
+                    edit = QuickEditField.PLACE_QUESTS,
+                    options = lookup.quests.map { RelationOption(it.toMentionChip(), it.locationId == location.id) },
+                    emptyText = Res.string.entity_sheet_group_location_quests_empty,
+                ),
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Location(location.id), lookup),
     )

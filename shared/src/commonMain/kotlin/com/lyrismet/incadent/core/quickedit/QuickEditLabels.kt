@@ -5,6 +5,9 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_label_portrait
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_npcs
+import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_quests
+import dndplayerscodex.shared.generated.resources.entity_sheet_group_npc_quests_given
 import dndplayerscodex.shared.generated.resources.entity_sheet_life_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_location_parent_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_faction_label
@@ -42,4 +45,7 @@ fun rememberQuickEditFieldTitles(): Map<QuickEditField, String> =
         QuickEditField.QUEST_STATUS to stringResource(Res.string.entity_sheet_status_label),
         QuickEditField.PRESENCE to stringResource(Res.string.entity_sheet_party_presence_label),
         QuickEditField.PORTRAIT to stringResource(Res.string.codex_entry_label_portrait),
+        QuickEditField.GIVEN_QUESTS to stringResource(Res.string.entity_sheet_group_npc_quests_given),
+        QuickEditField.RESIDENTS to stringResource(Res.string.entity_sheet_group_location_npcs),
+        QuickEditField.PLACE_QUESTS to stringResource(Res.string.entity_sheet_group_location_quests),
     )

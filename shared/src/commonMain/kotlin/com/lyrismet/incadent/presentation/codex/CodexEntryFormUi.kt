@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.presentation.codex
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,11 +12,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
 import com.lyrismet.incadent.core.designsystem.component.FormFieldAction
 import com.lyrismet.incadent.core.designsystem.component.FormNumberField
@@ -28,8 +33,13 @@ import com.lyrismet.incadent.core.designsystem.component.QuickAddOutsideTapHost
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
+import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.domain.model.PartyStatRanges
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_entry_discard_back
+import dndplayerscodex.shared.generated.resources.codex_entry_discard_leave
+import dndplayerscodex.shared.generated.resources.codex_entry_discard_text
+import dndplayerscodex.shared.generated.resources.codex_entry_discard_title
 import dndplayerscodex.shared.generated.resources.codex_entry_label_class
 import dndplayerscodex.shared.generated.resources.codex_entry_label_description
 import dndplayerscodex.shared.generated.resources.codex_entry_label_faction
@@ -82,7 +92,7 @@ private val CloseButtonSize = 40.dp
 @Composable
 internal fun CodexEntryFormUi(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -102,7 +112,7 @@ internal fun CodexEntryFormUi(
 @Composable
 private fun CodexEntryFormContent(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
     onClose: () -> Unit,
 ) {
     Column(
@@ -150,7 +160,7 @@ private fun CodexEntryFormContent(
 @Composable
 private fun NpcEntryFields(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     PortraitField(form, eventSink)
     FormTextField(
@@ -199,7 +209,7 @@ private fun NpcEntryFields(
 @Composable
 private fun PartyEntryFields(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     PartyIdentityFields(form, eventSink)
     PartyStatFields(form, eventSink)
@@ -208,7 +218,7 @@ private fun PartyEntryFields(
 @Composable
 private fun PartyIdentityFields(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     FormChipPicker(
         label = stringResource(Res.string.codex_entry_label_owner),
@@ -249,7 +259,7 @@ private fun PartyIdentityFields(
 @Composable
 private fun PartyStatFields(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     FormNumberField(
         label = stringResource(Res.string.codex_entry_label_level),
@@ -286,7 +296,7 @@ private fun PartyStatFields(
 @Composable
 private fun QuestEntryFields(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     FormTextField(
         label = stringResource(Res.string.codex_entry_label_name_quest),
@@ -331,7 +341,7 @@ private fun QuestEntryFields(
 @Composable
 private fun LocationEntryFields(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     FormTextField(
         label = stringResource(Res.string.codex_entry_label_name_location),
@@ -385,4 +395,68 @@ private fun CodexEntryTypeSwitch(
             color = if (type == selected) AppPalette.GoldBright else AppPalette.TextSecondary,
         )
     }
+}
+
+/**
+ * the create/edit sheet with the place select and the "save changes?" prompt over it - shown by the codex and by the
+ * session screen, which opens it prefilled for a mention whose record is gone. [toast] is the quick-add confirmation.
+ */
+@Composable
+internal fun CodexEntryFormSheet(
+    form: CodexEntryFormState,
+    toast: String?,
+    eventSink: (CodexEntryFormEvent) -> Unit,
+) {
+    AppBottomSheet(
+        onDismissRequest = { eventSink(CodexEvent.EntryFormCloseRequested) },
+        // the sheet stays up under the "save changes?" prompt instead of hiding first
+        onDismissBlocked =
+            if (form.hasUnsavedChanges) {
+                { eventSink(CodexEvent.EntryFormCloseRequested) }
+            } else {
+                null
+            },
+    ) {
+        Box {
+            CodexEntryFormUi(
+                form = form,
+                eventSink = eventSink,
+                onClose = { eventSink(CodexEvent.EntryFormCloseRequested) },
+            )
+            // the sheet covers the app-level toast, so the quick-add confirmation gets its own copy here
+            AppToast(
+                text = toast,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+            )
+        }
+    }
+    // a sheet of its own over the form, so dismissing it leaves the form where it was
+    form.placeSelect?.let { select ->
+        PlaceSelectSheet(
+            select = select,
+            onChosen = { eventSink(CodexEvent.EntryPlacesChosen(it)) },
+            onCreated = { name, checked -> eventSink(CodexEvent.EntryPlaceCreated(name, checked)) },
+            onDismiss = { eventSink(CodexEvent.EntryPlaceSelectClosed) },
+        )
+    }
+    if (form.isDiscardPromptVisible) CodexEntryDiscardDialog(eventSink)
+}
+
+@Composable
+private fun CodexEntryDiscardDialog(eventSink: (CodexEntryFormEvent) -> Unit) {
+    // only two ways out - leave without saving or go back to the form, saving stays the form button's job
+    ConfirmationDialog(
+        title = stringResource(Res.string.codex_entry_discard_title),
+        text = stringResource(Res.string.codex_entry_discard_text),
+        onConfirm = { eventSink(CodexEvent.EntryFormDiscardPromptDismissed) },
+        onDismiss = { eventSink(CodexEvent.EntryFormClosed) },
+        confirmLabel = stringResource(Res.string.codex_entry_discard_back),
+        dismissLabel = stringResource(Res.string.codex_entry_discard_leave),
+        confirmColor = AppPalette.Gold,
+        confirmContentColor = AppPalette.Background,
+        icon = AppIcons.Edit,
+        accent = AppPalette.Gold,
+        accentBright = AppPalette.GoldBright,
+        onDismissRequest = { eventSink(CodexEvent.EntryFormDiscardPromptDismissed) },
+    )
 }

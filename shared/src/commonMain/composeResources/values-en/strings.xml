@@ -49,12 +49,13 @@
     <string name="session_detail_mention_type_npc">NPC</string>
     <string name="session_detail_mention_type_location">Location</string>
     <string name="session_detail_mention_type_quest">Quest</string>
+    <string name="session_detail_mention_type_party">Party</string>
+    <string name="deleted_mention_type_party">a party character</string>
     <string name="session_detail_tag_button_label_empty">+ Add tag</string>
     <string name="session_detail_tag_button_label_has_tags">+ Tag</string>
-    <string name="session_detail_tag_suggestion_badge_format">✦ %1$d</string>
     <string name="session_detail_tag_sheet_overline_format">SESSION %1$s · TAGS</string>
     <string name="session_detail_tag_sheet_title">Session tags</string>
-    <string name="session_detail_tag_suggested_header">✦ Suggested from notes</string>
+    <string name="session_detail_tag_suggested_header">Suggested from notes</string>
     <string name="session_detail_tag_add_all_button">Add all</string>
     <string name="session_detail_tag_add_suggestion_button">+ Add</string>
     <string name="session_detail_tag_catalog_header">All tags</string>
@@ -75,7 +76,7 @@
     <string name="codex_overline">Knowledge Base</string>
     <string name="codex_title">Codex</string>
     <string name="codex_add_entry_button">+ Entry</string>
-    <string name="codex_search_placeholder">Name, faction, reward…</string>
+    <string name="codex_search_placeholder">Search by name</string>
     <string name="codex_tab_party">Party</string>
     <string name="codex_tab_npc">NPC</string>
     <string name="codex_tab_quest">Quests</string>
@@ -112,6 +113,8 @@
     <string name="codex_search_create_quest">+ Create quest “%1$s”</string>
     <string name="codex_search_create_location">+ Create place “%1$s”</string>
     <string name="codex_search_create_party">+ Create character “%1$s”</string>
+    <string name="codex_search_other_message">Nothing in “%1$s” matches “%2$s”.</string>
+    <string name="codex_search_other_found">Matches in other sections:</string>
     <string name="codex_delete_content_description">Delete codex entry</string>
     <string name="codex_undo_deleted_title">Removed from codex</string>
     <string name="codex_group_none">As list</string>
@@ -186,6 +189,48 @@
     <string name="entity_sheet_group_npc_quests_given">Quests given</string>
     <string name="entity_sheet_group_location_npcs">Who\'s here</string>
     <string name="entity_sheet_group_location_quests">Quests</string>
+    <string name="entity_sheet_group_npc_quests_given_empty">Gave no quests — hold to add</string>
+    <string name="entity_sheet_group_location_npcs_empty">Nobody marked — hold to add</string>
+    <string name="entity_sheet_group_location_quests_empty">No quests here — hold to add</string>
+    <string name="quick_edit_relations_hint">Pick several · tap outside to close</string>
+    <string name="codex_delete_warning_title">Delete “%1$s”?</string>
+    <string name="codex_delete_warning_text">%1$s in %2$s. After deleting they stay in the text as “?” tags and the record can be created again.</string>
+    <string name="codex_delete_warning_confirm">Delete record</string>
+    <string name="codex_delete_warning_cancel">Keep it</string>
+    <plurals name="mention_count_mentions">
+        <item quantity="one">%1$d mention in notes</item>
+        <item quantity="other">%1$d mentions in notes</item>
+    </plurals>
+    <plurals name="mention_count_notes">
+        <item quantity="one">%1$d note</item>
+        <item quantity="other">%1$d notes</item>
+    </plurals>
+    <plurals name="mention_count_in_sessions">
+        <item quantity="one">%1$d session</item>
+        <item quantity="other">%1$d sessions</item>
+    </plurals>
+    <string name="deleted_mention_overline">NOT IN THE CODEX</string>
+    <string name="deleted_mention_body">This record was deleted from the codex, but %1$s in %2$s still refer to it.</string>
+    <string name="deleted_mention_create_format">+ Create “%1$s” as %2$s</string>
+    <string name="deleted_mention_type_npc">an NPC</string>
+    <string name="deleted_mention_type_quest">a quest</string>
+    <string name="deleted_mention_type_location">a place</string>
+    <string name="deleted_mention_link_title">Link to another record</string>
+    <string name="deleted_mention_link_hint">If the record was renamed or duplicated, its mentions become links to it</string>
+    <string name="deleted_mention_text_title">Keep as text</string>
+    <string name="deleted_mention_text_hint">The “?” goes away, the name stays as a plain word in the notes</string>
+    <string name="deleted_mention_search_placeholder">Find a codex record</string>
+    <string name="deleted_mention_back">‹ Back</string>
+    <string name="deleted_mention_linked_title">Mentions linked</string>
+    <string name="deleted_mention_text_toast_title">Mentions turned into text</string>
+    <string name="deleted_mention_close">Close</string>
+    <plurals name="auto_mention_matches">
+        <item quantity="one">%1$d match with the codex</item>
+        <item quantity="other">%1$d matches with the codex</item>
+    </plurals>
+    <string name="auto_mention_link">Link</string>
+    <string name="auto_mention_dismiss">No</string>
+    <string name="auto_mention_linked_title">Mentions linked</string>
     <string name="entity_sheet_related_title">Related notes</string>
     <string name="entity_sheet_related_count_format">auto · %1$d</string>
     <string name="entity_sheet_related_meta_format">%1$d mentions · open session →</string>

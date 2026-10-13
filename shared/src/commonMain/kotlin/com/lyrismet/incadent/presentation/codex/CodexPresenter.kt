@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import com.lyrismet.incadent.LocalTabSelected
 import com.lyrismet.incadent.core.codexgroup.CodexGroup
 import com.lyrismet.incadent.core.codexgroup.CodexGroupLabels
 import com.lyrismet.incadent.core.codexgroup.CodexGroupingSelection
@@ -27,6 +26,7 @@ import com.lyrismet.incadent.core.entitysummary.questStatusLabels
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
+import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.quickedit.InlineEdit
 import com.lyrismet.incadent.core.quickedit.QuickEditField
@@ -51,6 +51,7 @@ import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
+import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.NpcRepository
@@ -106,6 +107,8 @@ private class CodexFields(
     val recentPlaceIds: MutableState<List<Long>>,
     // the places whose tree section is folded on the places tab
     val collapsedPlaceIds: MutableState<Set<Long>>,
+    // the record a delete is waiting on - set while the "notes still mention it" warning is up
+    val pendingDelete: MutableState<EntityRef?>,
 )
 
 /** result of applying the text search query to every list */
@@ -116,6 +119,12 @@ internal data class CodexSearchResults(
     val searchedNpcs: List<Npc>,
     val searchedQuests: List<Quest>,
     val searchedLocations: List<Location>,
+)
+
+/** the lists the active tab renders and what its empty state says */
+private class CodexListing(
+    val grouped: CodexGroupedLists,
+    val emptyKind: CodexEmptyKind,
 )
 
 /** the labels the codex screen resolves from resources, collected once per composition */
@@ -137,12 +146,19 @@ class CodexPresenter(
     private val locationRepository: LocationRepository,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
+    deletedMentionRepository: DeletedMentionRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
 ) : Presenter<CodexState> {
     private val deletionPlanner =
-        CodexDeletionPlanner(npcRepository, partyRepository, questRepository, locationRepository)
+        CodexDeletionPlanner(
+            npcRepository,
+            partyRepository,
+            questRepository,
+            locationRepository,
+            deletedMentionRepository,
+        )
 
     @Composable
     override fun present(): CodexState {
@@ -166,21 +182,15 @@ class CodexPresenter(
 
         val prefix = questPrefix()
         val candidates =
-            remember(npcs, locations, quests, prefix) {
-                mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), prefix)
+            remember(npcs, locations, quests, parties, prefix) {
+                mentionCandidates(mentionEntitiesFrom(npcs, locations, quests, parties), prefix)
             }
-        val records = CodexRecords(parties, npcs, quests, locations)
+        val records = CodexRecords(parties, npcs, quests, locations, sessionEntries, candidates)
         val search = buildSearchResults(records, fields)
-        val grouped =
-            codexGroupedLists(
-                search,
-                records,
-                fields.activeTab.value,
-                fields.grouping.value,
-                labels.grouped,
-                fields.collapsedPlaceIds.value,
-            )
         val party = search.searchedParties.toPartyCodexItems(labels.partyCard)
+        val listing = codexListing(search, records, party, fields, labels)
+        val grouped = listing.grouped
+        val emptyKind = listing.emptyKind
         val formState = formController.buildState(records.npcs, records.locations)
 
         val lookup =
@@ -206,6 +216,7 @@ class CodexPresenter(
             party,
             records,
             grouped,
+            emptyKind,
             selectedEntity,
             labels,
             scope,
@@ -226,6 +237,48 @@ class CodexPresenter(
             fields.recentPlaceIds,
             parties.firstOrNull { it.isPlayerCharacter }?.level,
         )
+
+    // what the active tab lists and its empty state - a tab with no hits lists the other tabs' matches instead
+    private fun codexListing(
+        search: CodexSearchResults,
+        records: CodexRecords,
+        party: List<PartyCodexItem>,
+        fields: CodexFields,
+        labels: CodexLabels,
+    ): CodexListing {
+        val tab = fields.activeTab.value
+        val own =
+            codexGroupedLists(
+                search,
+                records,
+                tab,
+                fields.grouping.value,
+                labels.grouped,
+                fields.collapsedPlaceIds.value,
+            )
+        val emptyKind =
+            codexEmptyKind(
+                tab,
+                fields.searchQuery.value,
+                own.hasEntriesFor(tab, party),
+                otherSectionMatches(
+                    tab,
+                    search.searchedParties.size,
+                    search.searchedNpcs.size,
+                    search.searchedQuests.size,
+                    search.searchedLocations.size,
+                ),
+            )
+        val showsOtherSections = emptyKind is CodexEmptyKind.NoMatch && emptyKind.otherMatches > 0
+        // ungrouped like the "Все" tab, a grouped tab would repeat an npc met in several places
+        val grouped =
+            if (showsOtherSections) {
+                codexGroupedLists(search, records, CodexTab.ALL, fields.grouping.value, labels.grouped)
+            } else {
+                own
+            }
+        return CodexListing(grouped, emptyKind)
+    }
 
     // bundles the pending-state read and the shared trigger so present() doesn't inline both
     @Composable
@@ -276,6 +329,7 @@ class CodexPresenter(
         val toast = rememberRetained { mutableStateOf<CodexToast?>(null) }
         val recentPlaceIds = rememberRetained { mutableStateOf(emptyList<Long>()) }
         val collapsedPlaceIds = rememberRetained { mutableStateOf(emptySet<Long>()) }
+        val pendingDelete = rememberRetained { mutableStateOf<EntityRef?>(null) }
         toast.autoDismiss()
         return CodexFields(
             activeTab,
@@ -288,6 +342,7 @@ class CodexPresenter(
             toast,
             recentPlaceIds,
             collapsedPlaceIds,
+            pendingDelete,
         )
     }
 
@@ -371,6 +426,7 @@ class CodexPresenter(
         party: List<PartyCodexItem>,
         records: CodexRecords,
         grouped: CodexGroupedLists,
+        emptyKind: CodexEmptyKind,
         selectedEntity: EntitySummaryItem?,
         labels: CodexLabels,
         scope: CoroutineScope,
@@ -394,10 +450,7 @@ class CodexPresenter(
             locations = grouped.locations,
             groupBy = grouped.groupBy,
             groupOptions = grouped.groupOptions,
-            emptyState =
-                codexEmptyState(
-                    codexEmptyKind(activeTab, fields.searchQuery.value, grouped.hasEntriesFor(activeTab, party)),
-                ),
+            emptyState = codexEmptyState(emptyKind, activeTab),
             activeSheet = codexActiveSheet(formState, selectedEntity),
             editMode = context.editMode,
             inlineEdit = inlineEdit,
@@ -410,9 +463,20 @@ class CodexPresenter(
             swipeHintTarget = context.swipeHintTarget,
             swipeHintDirection = codexSwipeHintDirection(context.editMode),
             toast = fields.toast.value,
+            deleteWarning = deleteWarning(fields.pendingDelete.value, records, labels),
         ) { event ->
             onEvent(event, fields, formController, records, labels, scope)
         }
+    }
+
+    // the warning of a delete that notes still mention - null when nothing waits or the record is already gone
+    private fun deleteWarning(
+        ref: EntityRef?,
+        records: CodexRecords,
+        labels: CodexLabels,
+    ): CodexDeleteWarning? {
+        val plan = ref?.let { deletionPlanner.planFor(it, records, labels.entityType) } ?: return null
+        return CodexDeleteWarning(ref, plan.name, plan.mentionHits.notes, plan.mentionHits.sessions)
     }
 
     // the select sheet of a place field held on the card - null when no place field is being edited
@@ -449,7 +513,7 @@ class CodexPresenter(
             regions = regions,
             searchedParties = records.parties.filter { it.matchesQuery(query) },
             searchedNpcs = records.npcs.filter { it.matchesQuery(query, regions) },
-            searchedQuests = records.quests.filter { it.matchesQuery(query, npcsById, regions) },
+            searchedQuests = records.quests.filter { it.matchesQuery(query, regions) },
             searchedLocations = records.locations.filter { it.matchesQuery(query, regions) },
         )
     }
@@ -494,43 +558,25 @@ class CodexPresenter(
             CodexEvent.AddEntryClicked -> formController.onAddEntryClicked(fields.activeTab.value.toEntryType())
             is CodexEvent.EmptyActionClicked -> formController.onAddEntryClicked(event.entryType, event.name)
             is CodexEvent.EditEntryRequested -> formController.onEditEntryRequested(event.ref, scope)
-            is CodexEvent.EntryTypeChanged -> formController.onTypeChanged(event.type)
-            is CodexEvent.EntryFieldChanged -> formController.onFieldChanged(event.field, event.text)
-            is CodexEvent.EntryPortraitPicked -> formController.onPortraitPicked(scope, imageCompressor, event.bytes)
-            CodexEvent.EntryPortraitRemoved -> formController.onPortraitRemoved()
-            is CodexEvent.EntryNumberChanged -> formController.onNumberChanged(event.field, event.value)
-            is CodexEvent.EntryNpcStatusChanged -> formController.onNpcStatusChanged(event.status)
-            is CodexEvent.EntryNpcLifeChanged -> formController.onNpcLifeChanged(event.lifeState)
-            is CodexEvent.EntryPartyOwnerChanged -> formController.onPartyOwnerChanged(event.isPlayerCharacter)
-            is CodexEvent.EntryPartyPresenceChanged -> formController.onPartyPresenceChanged(event.presence)
-            is CodexEvent.EntryQuestStatusChanged -> formController.onQuestStatusChanged(event.status)
-            is CodexEvent.EntryChipToggled -> formController.onChipToggled(event.field, event.id)
-            CodexEvent.EntryFormSaveClicked -> formController.onSaveClicked(scope)
             is CodexEvent.PlaceSectionToggled -> {
                 val folded = fields.collapsedPlaceIds.value
                 fields.collapsedPlaceIds.value =
                     if (event.placeId in folded) folded - event.placeId else folded + event.placeId
             }
-            CodexEvent.EntryFormClosed -> {
-                formController.onClosed()
-                fields.toast.value = null
+            is CodexEntryFormEvent -> {
+                val closed =
+                    formController.onEvent(event, scope, imageCompressor) { name ->
+                        fields.toast.value = CodexToast(getString(Res.string.codex_entry_quick_add_toast_format, name))
+                    }
+                if (closed) fields.toast.value = null
             }
-            CodexEvent.EntryFormCloseRequested -> if (formController.onCloseRequested()) fields.toast.value = null
-            CodexEvent.EntryFormDiscardPromptDismissed -> formController.onDiscardPromptDismissed()
-            CodexEvent.EntryPartyLevelFromPlayerClicked -> formController.onPartyLevelFromPlayerClicked()
-            is CodexEvent.EntryPlaceFieldOpened -> formController.onPlaceFieldOpened(event.field)
-            is CodexEvent.EntryPlacesChosen -> formController.onPlacesChosen(event.ids)
-            is CodexEvent.EntryPlaceCreated -> formController.onPlaceCreated(scope, event.name, event.checked)
-            CodexEvent.EntryPlaceSelectClosed -> formController.onPlaceSelectClosed()
-            is CodexEvent.EntryQuickAddOpened -> formController.onQuickAddOpened(event.field)
-            is CodexEvent.EntryQuickAddDraftChanged -> formController.onQuickAddDraftChanged(event.text)
-            CodexEvent.EntryQuickAddSaveClicked ->
-                formController.onQuickAddSaveClicked(scope) { name ->
-                    fields.toast.value = CodexToast(getString(Res.string.codex_entry_quick_add_toast_format, name))
+            is CodexEvent.EntityDeleteRequested -> onEntityDeleteRequested(event.ref, fields, records, labels, scope)
+            CodexEvent.EntityDeleteConfirmed ->
+                fields.pendingDelete.value?.let { ref ->
+                    fields.pendingDelete.value = null
+                    deleteNow(ref, records, labels, scope)
                 }
-            CodexEvent.EntryQuickAddCancelled -> formController.onQuickAddCancelled()
-            is CodexEvent.EntityDeleteRequested ->
-                onEntityDeleteRequested(event.ref, records, labels, scope)
+            CodexEvent.EntityDeleteCancelled -> fields.pendingDelete.value = null
         }
     }
 
@@ -551,8 +597,20 @@ class CodexPresenter(
         }
     }
 
-    // deletes immediately and offers undo - restoring also re-links whatever else referenced the deleted entity
+    // a record notes still mention asks first, anything else goes straight away
     private fun onEntityDeleteRequested(
+        ref: EntityRef,
+        fields: CodexFields,
+        records: CodexRecords,
+        labels: CodexLabels,
+        scope: CoroutineScope,
+    ) {
+        val plan = deletionPlanner.planFor(ref, records, labels.entityType) ?: return
+        if (plan.mentionHits.notes > 0) fields.pendingDelete.value = ref else deleteNow(ref, records, labels, scope)
+    }
+
+    // deletes immediately and offers undo - restoring also re-links whatever else referenced the deleted entity
+    private fun deleteNow(
         ref: EntityRef,
         records: CodexRecords,
         labels: CodexLabels,

@@ -1,33 +1,47 @@
 package com.lyrismet.incadent.core.mention
 
+import com.lyrismet.incadent.domain.model.DeletedMention
+import com.lyrismet.incadent.domain.model.DeletedMentionType
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
+import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 
 /** an npc/location/quest that session note text can @mention, carrying just enough state to color its chip */
 sealed interface MentionEntity {
-    val id: Long
     val name: String
 
     data class NpcMention(
-        override val id: Long,
+        val id: Long,
         override val name: String,
         val status: NpcStatus,
         val lifeState: NpcLifeState,
     ) : MentionEntity
 
     data class LocationMention(
-        override val id: Long,
+        val id: Long,
         override val name: String,
     ) : MentionEntity
 
     data class QuestMention(
-        override val id: Long,
+        val id: Long,
         override val name: String,
         val status: QuestStatus,
+    ) : MentionEntity
+
+    /** a character of the party - mentioned by name like an npc, but it has no relation or life state to colour it */
+    data class PartyMention(
+        val id: Long,
+        override val name: String,
+    ) : MentionEntity
+
+    /** a record that is gone from the codex but still mentioned by notes - drawn as a "?" tag, never resolves */
+    data class DeletedMention(
+        override val name: String,
+        val type: DeletedMentionType,
     ) : MentionEntity
 }
 
@@ -35,8 +49,10 @@ fun mentionEntitiesFrom(
     npcs: List<Npc>,
     locations: List<Location>,
     quests: List<Quest>,
+    parties: List<PartyMember> = emptyList(),
 ): List<MentionEntity> =
     npcs.map { MentionEntity.NpcMention(it.id, it.name, it.status, it.lifeState) } +
+        parties.map { MentionEntity.PartyMention(it.id, it.name) } +
         locations.map { MentionEntity.LocationMention(it.id, it.name) } +
         quests.map { MentionEntity.QuestMention(it.id, it.title, it.status) }
 
@@ -44,21 +60,35 @@ fun mentionEntitiesFrom(
 fun mentionKey(
     entity: MentionEntity,
     questPrefix: String,
-): String = if (entity is MentionEntity.QuestMention) questPrefix + entity.name else entity.name
+): String =
+    when (entity) {
+        is MentionEntity.QuestMention -> questPrefix + entity.name
+        is MentionEntity.DeletedMention ->
+            if (entity.type == DeletedMentionType.QUEST) questPrefix + entity.name else entity.name
+        is MentionEntity.NpcMention, is MentionEntity.LocationMention, is MentionEntity.PartyMention -> entity.name
+    }
 
 data class MentionCandidate(
     val key: String,
     val entity: MentionEntity,
 )
 
-/** sorted longest key first, so "@Кассиан Вейл" beats "@Кассиан" when both are candidates */
+// longest key first so "@Кассиан Вейл" beats "@Кассиан", a deleted record yields to a live one with its key
 fun mentionCandidates(
     entities: List<MentionEntity>,
     questPrefix: String,
-): List<MentionCandidate> =
-    entities
-        .map { MentionCandidate(mentionKey(it, questPrefix), it) }
-        .sortedByDescending { it.key.length }
+    deleted: List<DeletedMention> = emptyList(),
+): List<MentionCandidate> {
+    val live = entities.map { MentionCandidate(mentionKey(it, questPrefix), it) }
+    val liveKeys = live.mapTo(HashSet()) { it.key }
+    val gone =
+        deleted
+            .map { MentionEntity.DeletedMention(it.name, it.type) }
+            .map { MentionCandidate(mentionKey(it, questPrefix), it) }
+            .filter { it.key !in liveKeys }
+            .distinctBy { it.key }
+    return (live + gone).sortedByDescending { it.key.length }
+}
 
 sealed interface MentionSegment {
     data class Text(
@@ -68,41 +98,63 @@ sealed interface MentionSegment {
     data class Mention(
         val entity: MentionEntity,
     ) : MentionSegment
+
+    /** a codex name written as a whole word without "@" - only produced when auto matching is asked for */
+    data class AutoMatch(
+        val text: String,
+        val entity: MentionEntity,
+    ) : MentionSegment
 }
 
-/** splits [text] on "@" + a known candidate key, the candidates must come longest-key-first from [mentionCandidates] */
+/** splits [text] on "@" + a candidate key (longest first), [autoMatch] also finds bare whole-word names */
 fun parseMentions(
     text: String,
     candidates: List<MentionCandidate>,
+    autoMatch: Boolean = false,
 ): List<MentionSegment> =
     when {
         text.isEmpty() -> emptyList()
-        candidates.isEmpty() || '@' !in text -> listOf(MentionSegment.Text(text))
-        else -> splitOnMentions(text, candidates)
+        candidates.isEmpty() || ('@' !in text && !autoMatch) -> listOf(MentionSegment.Text(text))
+        else -> splitOnMentions(text, candidates, if (autoMatch) autoNamesOf(candidates) else emptyList())
     }
 
 private fun splitOnMentions(
     text: String,
     candidates: List<MentionCandidate>,
+    autoNames: List<AutoName>,
 ): List<MentionSegment> {
     val segments = mutableListOf<MentionSegment>()
     val buffer = StringBuilder()
-    var i = 0
-    while (i < text.length) {
-        val match = if (text[i] == '@') candidates.firstOrNull { text.startsWith(it.key, i + 1) } else null
-        if (match != null) {
-            if (buffer.isNotEmpty()) {
-                segments += MentionSegment.Text(buffer.toString())
-                buffer.clear()
-            }
-            segments += MentionSegment.Mention(match.entity)
-            i += 1 + match.key.length
-        } else {
-            buffer.append(text[i])
-            i++
+    val folded = if (autoNames.isEmpty()) "" else text.foldPerChar()
+
+    fun flush() {
+        if (buffer.isNotEmpty()) {
+            segments += MentionSegment.Text(buffer.toString())
+            buffer.clear()
         }
     }
-    if (buffer.isNotEmpty()) segments += MentionSegment.Text(buffer.toString())
+    var i = 0
+    while (i < text.length) {
+        val mention = if (text[i] == '@') candidates.firstOrNull { text.startsWith(it.key, i + 1) } else null
+        val auto = if (mention == null) autoNames.matchAt(text, folded, i) else null
+        when {
+            mention != null -> {
+                flush()
+                segments += MentionSegment.Mention(mention.entity)
+                i += 1 + mention.key.length
+            }
+            auto != null -> {
+                flush()
+                segments += MentionSegment.AutoMatch(text.substring(i, i + auto.folded.length), auto.entity)
+                i += auto.folded.length
+            }
+            else -> {
+                buffer.append(text[i])
+                i++
+            }
+        }
+    }
+    flush()
     return segments
 }
 
@@ -152,28 +204,6 @@ fun MentionEntity.dedupeKey(): String =
         is MentionEntity.NpcMention -> "npc:$id"
         is MentionEntity.LocationMention -> "location:$id"
         is MentionEntity.QuestMention -> "quest:$id"
+        is MentionEntity.PartyMention -> "party:$id"
+        is MentionEntity.DeletedMention -> "deleted:${type.name}:$name"
     }
-
-/** rewrites "@oldKey" to "@newKey" in [body], skipping mentions of a longer key in [otherKeys] that starts with it */
-fun renameMentionIn(
-    body: String,
-    oldKey: String,
-    newKey: String,
-    otherKeys: List<String>,
-): String {
-    if (oldKey.isEmpty() || '@' !in body) return body
-    val longestOther = otherKeys.filter { it.length > oldKey.length }
-    val out = StringBuilder()
-    var i = 0
-    while (i < body.length) {
-        val isOld = body[i] == '@' && body.startsWith(oldKey, i + 1) && longestOther.none { body.startsWith(it, i + 1) }
-        if (isOld) {
-            out.append('@').append(newKey)
-            i += 1 + oldKey.length
-        } else {
-            out.append(body[i])
-            i++
-        }
-    }
-    return out.toString()
-}

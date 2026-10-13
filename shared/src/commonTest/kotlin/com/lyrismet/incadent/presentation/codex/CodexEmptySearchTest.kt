@@ -49,4 +49,21 @@ class CodexEmptySearchTest {
     fun `a short search that finds nothing is a no-match state without a create`() {
         assertEquals(CodexEmptyKind.NoMatch("ab", null), codexEmptyKind(CodexTab.PARTY, " ab ", hasEntries = false))
     }
+
+    @Test
+    fun `a no-match state carries the matches of the other tabs`() {
+        assertEquals(
+            CodexEmptyKind.NoMatch("Рагнар", CodexSearchCreate(CodexEntryType.QUEST, "Рагнар"), otherMatches = 3),
+            codexEmptyKind(CodexTab.QUEST, "Рагнар", hasEntries = false, otherMatches = 3),
+        )
+    }
+
+    @Test
+    fun `other section matches skip the active tab and the all tab has none`() {
+        assertEquals(0, otherSectionMatches(CodexTab.ALL, party = 1, npcs = 2, quests = 3, locations = 4))
+        assertEquals(9, otherSectionMatches(CodexTab.PARTY, party = 1, npcs = 2, quests = 3, locations = 4))
+        assertEquals(8, otherSectionMatches(CodexTab.NPC, party = 1, npcs = 2, quests = 3, locations = 4))
+        assertEquals(7, otherSectionMatches(CodexTab.QUEST, party = 1, npcs = 2, quests = 3, locations = 4))
+        assertEquals(6, otherSectionMatches(CodexTab.LOCATION, party = 1, npcs = 2, quests = 3, locations = 4))
+    }
 }

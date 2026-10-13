@@ -2,6 +2,7 @@ package com.lyrismet.incadent.data.repository
 
 import com.lyrismet.incadent.core.mention.renameMentionIn
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.domain.model.DeletedMentionType
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -26,6 +27,16 @@ class MentionRenamer(
     ) {
         val prefix = questPrefix()
         rename(oldName, newName, update) { keysExcluding(prefix, npcId = id) }
+    }
+
+    suspend fun partyRenamed(
+        id: Long,
+        oldName: String,
+        newName: String,
+        update: () -> Unit,
+    ) {
+        val prefix = questPrefix()
+        rename(oldName, newName, update) { keysExcluding(prefix, partyId = id) }
     }
 
     suspend fun locationRenamed(
@@ -79,12 +90,18 @@ class MentionRenamer(
         npcId: Long? = null,
         locationId: Long? = null,
         questId: Long? = null,
+        partyId: Long? = null,
     ): List<String> =
         database.npcQueries
             .selectAll()
             .executeAsList()
             .filter { it.id != npcId }
             .map { it.name } +
+            database.partyMemberQueries
+                .selectAll()
+                .executeAsList()
+                .filter { it.id != partyId }
+                .map { it.name } +
             database.locationQueries
                 .selectAll()
                 .executeAsList()
@@ -94,5 +111,10 @@ class MentionRenamer(
                 .selectAll()
                 .executeAsList()
                 .filter { it.id != questId }
-                .map { questPrefix + it.title }
+                .map { questPrefix + it.title } +
+            // a "?" tag keeps its own key, so a rename must not eat the tag of a longer deleted name
+            database.deletedMentionQueries
+                .selectAll()
+                .executeAsList()
+                .map { if (it.type == DeletedMentionType.QUEST.name) questPrefix + it.name else it.name }
 }

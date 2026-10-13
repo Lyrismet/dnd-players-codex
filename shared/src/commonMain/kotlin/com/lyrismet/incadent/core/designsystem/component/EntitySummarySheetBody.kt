@@ -3,7 +3,6 @@ package com.lyrismet.incadent.core.designsystem.component
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,7 +40,6 @@ import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
 import com.lyrismet.incadent.core.entitysummary.FactRow
 import com.lyrismet.incadent.core.entitysummary.QuickEditSheet
-import com.lyrismet.incadent.core.entitysummary.RelationGroup
 import com.lyrismet.incadent.core.entitysummary.StatusOption
 import com.lyrismet.incadent.core.quickedit.EditorHoleTracker
 import com.lyrismet.incadent.core.quickedit.EditorShield
@@ -143,7 +141,7 @@ private fun NpcSummaryBody(
     }
     EntityDescription(npc.description, actions.quickEdit)
     EntityFactsGrid(npc.facts, actions.onEntityRefClicked, actions.quickEdit)
-    EntityRelationGroups(npc.groups, actions.onEntityRefClicked)
+    EntityRelationGroups(npc.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(npc.name, npc.relatedNotes, actions.onRelatedNoteClicked)
 }
 
@@ -165,7 +163,7 @@ private fun LocationSummaryBody(
     )
     EntityDescription(location.description, actions.quickEdit)
     EntityFactsGrid(location.facts, actions.onEntityRefClicked, actions.quickEdit)
-    EntityRelationGroups(location.groups, actions.onEntityRefClicked)
+    EntityRelationGroups(location.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(location.name, location.relatedNotes, actions.onRelatedNoteClicked)
 }
 
@@ -201,7 +199,7 @@ private fun QuestSummaryBody(
     }
     EntityDescription(quest.description, actions.quickEdit)
     EntityFactsGrid(quest.facts, actions.onEntityRefClicked, actions.quickEdit)
-    EntityRelationGroups(quest.groups, actions.onEntityRefClicked)
+    EntityRelationGroups(quest.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(quest.title, quest.relatedNotes, actions.onRelatedNoteClicked)
 }
 
@@ -422,33 +420,5 @@ internal fun EntityFactsGrid(
                 .padding(vertical = 6.dp),
     ) {
         facts.forEach { fact -> FactLine(fact, factTextStyle, onEntityRefClicked, quick) }
-    }
-}
-
-@Composable
-private fun EntityRelationGroups(
-    groups: List<RelationGroup>,
-    onEntityRefClicked: (EntityRef) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    if (groups.isEmpty()) return
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        groups.forEach { group ->
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionOverline(
-                    text = stringResource(group.title),
-                    color = AppPalette.TextTertiary,
-                    letterSpacing = 0.14.em,
-                )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    group.items.forEach { chip ->
-                        MentionChip(item = chip, onClick = chip.entityRef?.let { ref -> { onEntityRefClicked(ref) } })
-                    }
-                }
-            }
-        }
     }
 }

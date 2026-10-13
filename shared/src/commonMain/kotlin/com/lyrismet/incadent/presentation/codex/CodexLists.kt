@@ -182,6 +182,7 @@ internal fun CodexAllList(
     state: CodexState,
     hintPeekOffsetPx: Float,
     modifier: Modifier = Modifier,
+    header: (@Composable () -> Unit)? = null,
 ) {
     // the ALL tab never groups, so every group holds the one ungrouped list and flattening it is lossless
     val npcs = state.npcs.flatMap { it.items }
@@ -197,6 +198,7 @@ internal fun CodexAllList(
         contentPadding = LIST_CONTENT_PADDING,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        header?.let { item(key = "header") { it() } }
         codexSection(partyTitle, state.party, isFirst = true, key = { "party_${it.id}" }) {
             PartyRow(
                 member = it,
@@ -263,6 +265,9 @@ internal fun CodexEmptyView(
                 modifier = modifier,
                 primaryAction = empty.action.toEmptyStateAction(state.eventSink),
             )
+
+        // rendered above the list by the screen, never as an empty view
+        is CodexEmptyState.OtherSections -> Unit
 
         is CodexEmptyState.NoMatch ->
             EmptyStateActions(

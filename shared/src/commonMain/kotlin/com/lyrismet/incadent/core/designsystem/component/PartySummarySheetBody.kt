@@ -42,4 +42,5 @@ internal fun PartySummaryBody(
     }
     EntityDescription(party.description, actions.quickEdit)
     EntityFactsGrid(party.facts, actions.onEntityRefClicked, actions.quickEdit)
+    EntityRelatedNotesSection(party.name, party.relatedNotes, actions.onRelatedNoteClicked)
 }

@@ -8,9 +8,12 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.phrases.PhraseSheetEvent
 import com.lyrismet.incadent.core.phrases.PhraseSheetState
+import com.lyrismet.incadent.domain.model.DeletedMention
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.QuestStatus
+import com.lyrismet.incadent.presentation.codex.CodexEntryFormEvent
+import com.lyrismet.incadent.presentation.codex.CodexEntryFormState
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -51,6 +54,10 @@ data class SessionDetailState(
     val phraseCompletions: List<SessionPhraseItem> = emptyList(),
     val phraseSheet: PhraseSheetState? = null,
     val toast: String? = null,
+    // the "?" tag sheet of a mention whose record is gone from the codex
+    val deletedMentionSheet: DeletedMentionSheetState? = null,
+    // the codex form sheet, opened prefilled from the "?" tag sheet
+    val entryForm: CodexEntryFormState? = null,
     val eventSink: (SessionDetailEvent) -> Unit = {},
 ) : CircuitUiState {
     val isEditingEntry: Boolean get() = editingEntryTimeLabel != null
@@ -105,6 +112,8 @@ data class SessionEntryItem(
     val timeLabel: String,
     val edited: Boolean,
     val segments: List<SessionEntrySegment>,
+    // how many codex records the note names without "@" and has not decided on yet - the row under the note shows it
+    val autoMatchCount: Int = 0,
 )
 
 sealed interface SessionEntrySegment {
@@ -114,6 +123,12 @@ sealed interface SessionEntrySegment {
 
     data class Mention(
         val chip: MentionChipItem,
+    ) : SessionEntrySegment
+
+    /** a codex name written without "@" - drawn with a dotted underline and linked or left alone on request */
+    data class AutoMatch(
+        val text: String,
+        val entityKey: String,
     ) : SessionEntrySegment
 }
 
@@ -225,5 +240,49 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
 
     data class SaveEntryAsPhraseClicked(
         val id: Long,
+    ) : SessionDetailEvent
+
+    /** a "?" tag was tapped */
+    data class DeletedMentionClicked(
+        val deleted: DeletedMention,
+    ) : SessionDetailEvent
+
+    data object DeletedMentionSheetDismissed : SessionDetailEvent
+
+    data object DeletedMentionCreateClicked : SessionDetailEvent
+
+    /** opens or closes the list of records the tag can be linked to */
+    data class DeletedMentionPickingChanged(
+        val isPicking: Boolean,
+    ) : SessionDetailEvent
+
+    data class DeletedMentionQueryChanged(
+        val query: String,
+    ) : SessionDetailEvent
+
+    /** [key] is the option id of the picked record */
+    data class DeletedMentionLinked(
+        val key: String,
+    ) : SessionDetailEvent
+
+    data object DeletedMentionKeptAsText : SessionDetailEvent
+
+    /** "Связать" under a note - every auto matched word of it gets its "@" */
+    data class AutoMentionsLinkClicked(
+        val entryId: Long,
+    ) : SessionDetailEvent
+
+    data class AutoMentionsDismissed(
+        val entryId: Long,
+    ) : SessionDetailEvent
+
+    /** one dotted word was tapped - only that record is linked in the note */
+    data class AutoMentionWordClicked(
+        val entryId: Long,
+        val entityKey: String,
+    ) : SessionDetailEvent
+
+    data class EntryForm(
+        val event: CodexEntryFormEvent,
     ) : SessionDetailEvent
 }

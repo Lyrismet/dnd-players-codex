@@ -50,6 +50,7 @@ import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.entitysummary.RelationOption
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.quick_edit_description_hint
 import dndplayerscodex.shared.generated.resources.quick_edit_done
@@ -172,6 +173,36 @@ fun LinkOptionEditor(
                 )
             }
         }
+    }
+}
+
+/** edits a relation group - one button per candidate, a tap links or unlinks it and the editor stays open */
+@Composable
+fun RelationOptionEditor(
+    label: String,
+    options: List<RelationOption>,
+    hint: String,
+    onEvent: (QuickEditUiEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    EditorFrame(modifier) {
+        EditorHeader(label) {}
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            options.forEach { option ->
+                val id = option.chip.entityRef?.id ?: return@forEach
+                LinkOptionButton(
+                    text = if (option.isSelected) "✓ ${option.chip.label}" else option.chip.label,
+                    selected = option.isSelected,
+                    onClick = { onEvent(QuickEditUiEvent.RelationToggled(id)) },
+                    selectedColor = option.chip.color,
+                )
+            }
+        }
+        Text(hint, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextTertiary)
     }
 }
 

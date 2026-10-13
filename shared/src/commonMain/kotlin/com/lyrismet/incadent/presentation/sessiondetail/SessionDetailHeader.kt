@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -36,6 +38,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -58,7 +61,6 @@ import dndplayerscodex.shared.generated.resources.session_detail_end_button
 import dndplayerscodex.shared.generated.resources.session_detail_ended_badge
 import dndplayerscodex.shared.generated.resources.session_detail_live_badge
 import dndplayerscodex.shared.generated.resources.session_detail_resume_button
-import dndplayerscodex.shared.generated.resources.session_detail_tag_suggestion_badge_format
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -257,7 +259,11 @@ private fun HeaderMentionsRow(
         mentions.forEach { chip ->
             MentionChip(
                 item = chip,
-                onClick = chip.entityRef?.let { ref -> { eventSink(SessionDetailEvent.MentionChipClicked(ref)) } },
+                onClick =
+                    chip.entityRef?.let { ref -> { eventSink(SessionDetailEvent.MentionChipClicked(ref)) } }
+                        ?: chip.deleted?.let { deleted ->
+                            { eventSink(SessionDetailEvent.DeletedMentionClicked(deleted)) }
+                        },
                 fontSize = 12.sp,
                 lineHeightFactor = 1.7f,
             )
@@ -293,6 +299,8 @@ private fun SessionTagsRow(
     }
 }
 
+private val SUGGESTION_BADGE_SIZE = 18.dp
+
 @Composable
 private fun TagButton(
     label: String,
@@ -319,14 +327,21 @@ private fun TagButton(
     ) {
         Text(label, style = MaterialTheme.typography.labelLarge, color = AppPalette.GoldBright)
         if (hasSuggestions) {
+            // the count sits in a gold circle, the same suggestion cue as the sheet's "по записям" header
             Text(
-                stringResource(Res.string.session_detail_tag_suggestion_badge_format, suggestionCount),
-                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                suggestionCount.toString(),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.5.sp, fontWeight = FontWeight.Bold),
                 color = AppPalette.Background,
+                textAlign = TextAlign.Center,
                 modifier =
                     Modifier
-                        .appCard(shape = RoundedCornerShape(6.dp), background = AppPalette.Gold, border = null)
-                        .padding(horizontal = 6.dp, vertical = 1.dp),
+                        .defaultMinSize(minWidth = SUGGESTION_BADGE_SIZE, minHeight = SUGGESTION_BADGE_SIZE)
+                        .appCard(
+                            shape = RoundedCornerShape(SUGGESTION_BADGE_SIZE / 2),
+                            background = AppPalette.Gold,
+                            border = null,
+                        ).padding(horizontal = 5.dp)
+                        .wrapContentHeight(Alignment.CenterVertically),
             )
         }
     }

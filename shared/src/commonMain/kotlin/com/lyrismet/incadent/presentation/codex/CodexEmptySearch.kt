@@ -17,9 +17,11 @@ internal sealed interface CodexEmptyKind {
         val tab: CodexTab,
     ) : CodexEmptyKind
 
+    /** [otherMatches] counts what the same search finds in the other tabs - above zero the list shows those instead */
     data class NoMatch(
         val query: String,
         val create: CodexSearchCreate?,
+        val otherMatches: Int = 0,
     ) : CodexEmptyKind
 }
 
@@ -37,14 +39,31 @@ internal fun codexEmptyKind(
     tab: CodexTab,
     query: String,
     hasEntries: Boolean,
+    otherMatches: Int = 0,
 ): CodexEmptyKind {
     val trimmed = query.trim()
     return when {
         hasEntries -> CodexEmptyKind.None
         trimmed.isEmpty() -> CodexEmptyKind.Blank(tab)
-        else -> CodexEmptyKind.NoMatch(trimmed, codexSearchCreate(tab, query))
+        else -> CodexEmptyKind.NoMatch(trimmed, codexSearchCreate(tab, query), otherMatches)
     }
 }
+
+/** how many entries a search finds in the tabs other than [tab] - the "Все" tab already holds every match */
+internal fun otherSectionMatches(
+    tab: CodexTab,
+    party: Int,
+    npcs: Int,
+    quests: Int,
+    locations: Int,
+): Int =
+    when (tab) {
+        CodexTab.ALL -> 0
+        CodexTab.PARTY -> npcs + quests + locations
+        CodexTab.NPC -> party + quests + locations
+        CodexTab.QUEST -> party + npcs + locations
+        CodexTab.LOCATION -> party + npcs + quests
+    }
 
 // mirrors the mockup's openNew() - "Все" falls back to NPC, every other tab keeps its own type
 internal fun CodexTab.toEntryType(): CodexEntryType =

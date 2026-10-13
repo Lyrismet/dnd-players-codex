@@ -222,6 +222,14 @@ sealed interface CodexEmptyState {
         val resetLabel: String,
         val create: CodexEmptyAction?,
     ) : CodexEmptyState
+
+    /** the tab found nothing but other tabs did - a hint over the list of what they found */
+    data class OtherSections(
+        val message: String,
+        val foundLabel: String,
+        val count: Int,
+        val create: CodexEmptyAction?,
+    ) : CodexEmptyState
 }
 
 data class CodexState(
@@ -247,13 +255,26 @@ data class CodexState(
     val swipeHintTarget: SwipeHintTarget<EntityRef>? = null,
     val swipeHintDirection: SwipeHintDirection = SwipeHintDirection.DELETE_ONLY,
     val toast: CodexToast? = null,
+    // set while a delete waits on the "notes still mention this record" warning
+    val deleteWarning: CodexDeleteWarning? = null,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
+
+/** the record a pending delete is about and how many notes in how many sessions still mention it */
+data class CodexDeleteWarning(
+    val ref: EntityRef,
+    val name: String,
+    val notes: Int,
+    val sessions: Int,
+)
 
 /** compared by identity, so repeating the same message restarts its timer - the quick-add "added" confirmation */
 class CodexToast(
     val text: String,
 )
+
+/** the events of the create/edit form sheet - the codex and the session screen both host that sheet */
+sealed interface CodexEntryFormEvent : CodexEvent
 
 sealed interface CodexEvent : CircuitUiEvent {
     data class TabSelected(
@@ -310,62 +331,66 @@ sealed interface CodexEvent : CircuitUiEvent {
         val ref: EntityRef,
     ) : CodexEvent
 
+    data object EntityDeleteConfirmed : CodexEvent
+
+    data object EntityDeleteCancelled : CodexEvent
+
     data class EntityDeleteRequested(
         val ref: EntityRef,
     ) : CodexEvent
 
     data class EntryTypeChanged(
         val type: CodexEntryType,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
     data class EntryFieldChanged(
         val field: CodexEntryField,
         val text: String,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
     data class EntryPortraitPicked(
         val bytes: ByteArray,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
-    data object EntryPortraitRemoved : CodexEvent
+    data object EntryPortraitRemoved : CodexEntryFormEvent
 
     data class EntryNpcStatusChanged(
         val status: NpcStatus,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
     data class EntryNpcLifeChanged(
         val lifeState: NpcLifeState,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
     data class EntryPartyOwnerChanged(
         val isPlayerCharacter: Boolean,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
     data class EntryPartyPresenceChanged(
         val presence: PartyPresence,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
     data class EntryNumberChanged(
         val field: CodexEntryNumberField,
         val value: Int?,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
-    data object EntryPartyLevelFromPlayerClicked : CodexEvent
+    data object EntryPartyLevelFromPlayerClicked : CodexEntryFormEvent
 
     data class EntryPlaceFieldOpened(
         val field: CodexEntryPlaceField,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
     data class EntryPlacesChosen(
         val ids: List<Long>,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
     data class EntryPlaceCreated(
         val name: String,
         val checked: List<Long>,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
-    data object EntryPlaceSelectClosed : CodexEvent
+    data object EntryPlaceSelectClosed : CodexEntryFormEvent
 
     /** the card's own place select sheet asked for a new place, [checked] are the ids ticked so far */
     data class QuickPlaceCreated(
@@ -375,37 +400,37 @@ sealed interface CodexEvent : CircuitUiEvent {
 
     data class EntryQuestStatusChanged(
         val status: QuestStatus,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
     data class EntryChipToggled(
         val field: CodexEntryChipField,
         val id: Long,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
-    data object EntryFormSaveClicked : CodexEvent
+    data object EntryFormSaveClicked : CodexEntryFormEvent
 
     /** a place section's header was tapped - the section folds or unfolds */
     data class PlaceSectionToggled(
         val placeId: Long,
     ) : CodexEvent
 
-    data object EntryFormClosed : CodexEvent
+    data object EntryFormClosed : CodexEntryFormEvent
 
-    data object EntryFormCloseRequested : CodexEvent
+    data object EntryFormCloseRequested : CodexEntryFormEvent
 
-    data object EntryFormDiscardPromptDismissed : CodexEvent
+    data object EntryFormDiscardPromptDismissed : CodexEntryFormEvent
 
     data class EntryQuickAddOpened(
         val field: CodexEntryChipField,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
     data class EntryQuickAddDraftChanged(
         val text: String,
-    ) : CodexEvent
+    ) : CodexEntryFormEvent
 
-    data object EntryQuickAddSaveClicked : CodexEvent
+    data object EntryQuickAddSaveClicked : CodexEntryFormEvent
 
-    data object EntryQuickAddCancelled : CodexEvent
+    data object EntryQuickAddCancelled : CodexEntryFormEvent
 
     data class QuickEdit(
         val event: QuickEditUiEvent,

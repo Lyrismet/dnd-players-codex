@@ -42,7 +42,7 @@ private val PortraitCardModifier =
 @Composable
 internal fun PortraitField(
     form: CodexEntryFormState,
-    eventSink: (CodexEvent) -> Unit,
+    eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     val launcher = rememberImagePickerLauncher(onPicked = { eventSink(CodexEvent.EntryPortraitPicked(it)) })
