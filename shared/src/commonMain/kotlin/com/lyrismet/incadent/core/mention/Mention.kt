@@ -73,10 +73,7 @@ data class MentionCandidate(
     val entity: MentionEntity,
 )
 
-/**
- * sorted longest key first, so "@Кассиан Вейл" beats "@Кассиан" when both are candidates. A [deleted] record only
- * becomes a candidate while no live record has its key, so a record created again takes its mentions back.
- */
+// longest key first so "@Кассиан Вейл" beats "@Кассиан", a deleted record yields to a live one with its key
 fun mentionCandidates(
     entities: List<MentionEntity>,
     questPrefix: String,
@@ -89,6 +86,7 @@ fun mentionCandidates(
             .map { MentionEntity.DeletedMention(it.name, it.type) }
             .map { MentionCandidate(mentionKey(it, questPrefix), it) }
             .filter { it.key !in liveKeys }
+            .distinctBy { it.key }
     return (live + gone).sortedByDescending { it.key.length }
 }
 
@@ -108,10 +106,7 @@ sealed interface MentionSegment {
     ) : MentionSegment
 }
 
-/**
- * splits [text] on "@" + a known candidate key, the candidates must come longest-key-first from [mentionCandidates].
- * With [autoMatch] the codex names that stand there as whole words without "@" come out as [MentionSegment.AutoMatch].
- */
+/** splits [text] on "@" + a candidate key (longest first), [autoMatch] also finds bare whole-word names */
 fun parseMentions(
     text: String,
     candidates: List<MentionCandidate>,
@@ -210,5 +205,5 @@ fun MentionEntity.dedupeKey(): String =
         is MentionEntity.LocationMention -> "location:$id"
         is MentionEntity.QuestMention -> "quest:$id"
         is MentionEntity.PartyMention -> "party:$id"
-        is MentionEntity.DeletedMention -> "deleted:$name"
+        is MentionEntity.DeletedMention -> "deleted:${type.name}:$name"
     }

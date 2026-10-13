@@ -261,8 +261,8 @@ private fun HeaderMentionsRow(
                 item = chip,
                 onClick =
                     chip.entityRef?.let { ref -> { eventSink(SessionDetailEvent.MentionChipClicked(ref)) } }
-                        ?: chip.deletedName?.let { name ->
-                            { eventSink(SessionDetailEvent.DeletedMentionClicked(name)) }
+                        ?: chip.deleted?.let { deleted ->
+                            { eventSink(SessionDetailEvent.DeletedMentionClicked(deleted)) }
                         },
                 fontSize = 12.sp,
                 lineHeightFactor = 1.7f,

@@ -19,10 +19,7 @@ import com.lyrismet.incadent.domain.repository.NpcRepository
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
 
-/**
- * every record the codex lists, bundled so the planner takes one param instead of four - with the note texts and
- * mention candidates a delete is checked against
- */
+/** every record the codex lists plus the note texts and mention candidates a delete is checked against */
 internal class CodexRecords(
     val parties: List<PartyMember>,
     val npcs: List<Npc>,
@@ -79,7 +76,7 @@ internal class CodexDeletionPlanner(
             restore = {
                 base.restore()
                 // the record is back under its name, so the snapshot has nothing left to stand in for
-                deletedMentionRepository.forget(snapshot.name)
+                deletedMentionRepository.forget(snapshot)
             },
             mentionHits = hits,
             name = snapshot.name,

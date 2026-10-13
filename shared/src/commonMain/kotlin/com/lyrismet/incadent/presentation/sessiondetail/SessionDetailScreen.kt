@@ -8,6 +8,7 @@ import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.phrases.PhraseSheetEvent
 import com.lyrismet.incadent.core.phrases.PhraseSheetState
+import com.lyrismet.incadent.domain.model.DeletedMention
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.QuestStatus
@@ -243,7 +244,7 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
 
     /** a "?" tag was tapped */
     data class DeletedMentionClicked(
-        val name: String,
+        val deleted: DeletedMention,
     ) : SessionDetailEvent
 
     data object DeletedMentionSheetDismissed : SessionDetailEvent
@@ -259,9 +260,9 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
         val query: String,
     ) : SessionDetailEvent
 
-    /** [index] is the option id of the picked record */
+    /** [key] is the option id of the picked record */
     data class DeletedMentionLinked(
-        val index: Long,
+        val key: String,
     ) : SessionDetailEvent
 
     data object DeletedMentionKeptAsText : SessionDetailEvent

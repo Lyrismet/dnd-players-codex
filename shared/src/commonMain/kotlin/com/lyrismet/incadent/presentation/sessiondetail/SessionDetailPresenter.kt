@@ -122,7 +122,7 @@ private class SessionDetailFields(
 
 /** the "?" tag sheet that is open - [isPicking] swaps its actions for the list of records to link to */
 internal data class OpenDeletedSheet(
-    val name: String,
+    val deleted: DeletedMention,
     val isPicking: Boolean = false,
     val query: String = "",
 )
@@ -192,8 +192,16 @@ class SessionDetailPresenter(
 
         val mention = buildMentionContext(npcs, locations, quests, parties, deleted, draft.value.text)
         // a record created again takes its mentions back, so its snapshot has nothing left to stand in for
-        ForgetRevivedMentions(mention.revivedNames, deletedMentionRepository)
-        val feed = buildFeed(entries, currentNote?.sessionDate?.date, mention.candidates)
+        ForgetRevivedMentions(mention.revived, deletedMentionRepository)
+        // parsing every note is the costly part, so it only reruns when a note or a mention candidate changes
+        val noteItems =
+            remember(entries, mention.candidates) {
+                entries.associate {
+                    it.id to
+                        it.toItem(mention.candidates)
+                }
+            }
+        val feed = buildFeed(entries, currentNote?.sessionDate?.date, noteItems)
         val focusIndex =
             highlightedEntryId.value?.let { id ->
                 feed.indexOfFirst { it is SessionFeedItem.Note && it.entry.id == id }.takeIf { it >= 0 }
@@ -403,7 +411,7 @@ class SessionDetailPresenter(
             is SessionDetailEvent.PhraseSheet -> fields.phrases.onEvent(event.event, scope)
             is SessionDetailEvent.SaveEntryAsPhraseClicked ->
                 onSaveEntryAsPhrase(event.id, entries, phraseSavedToast, scope, fields)
-            is SessionDetailEvent.DeletedMentionClicked -> fields.deletedSheet.value = OpenDeletedSheet(event.name)
+            is SessionDetailEvent.DeletedMentionClicked -> fields.deletedSheet.value = OpenDeletedSheet(event.deleted)
             SessionDetailEvent.DeletedMentionSheetDismissed -> fields.deletedSheet.value = null
             is SessionDetailEvent.DeletedMentionPickingChanged ->
                 fields.deletedSheet.value = fields.deletedSheet.value?.copy(isPicking = event.isPicking, query = "")
@@ -411,12 +419,7 @@ class SessionDetailPresenter(
                 fields.deletedSheet.value = fields.deletedSheet.value?.copy(query = event.query)
             SessionDetailEvent.DeletedMentionCreateClicked -> onDeletedMentionCreate(fields, mentionData)
             is SessionDetailEvent.DeletedMentionLinked ->
-                onDeletedMentionRewrite(
-                    event.index,
-                    fields,
-                    mentionData,
-                    scope,
-                )
+                onDeletedMentionRewrite(event.key, fields, mentionData, scope)
             SessionDetailEvent.DeletedMentionKeptAsText -> onDeletedMentionRewrite(null, fields, mentionData, scope)
             is SessionDetailEvent.AutoMentionsLinkClicked ->
                 entries.find { it.id == event.entryId }?.let {
@@ -446,22 +449,22 @@ class SessionDetailPresenter(
         data: MentionEventData,
     ) {
         val open = fields.deletedSheet.value ?: return
-        val deleted = data.deletedNamed(open.name) ?: return
+        val deleted = data.deletedMatching(open.deleted) ?: return
         fields.deletedSheet.value = null
         fields.formController.onAddEntryClicked(deleted.type.toEntryType(), deleted.name)
     }
 
-    // a null [index] keeps the name as plain words, otherwise the mention points at the picked record
+    // a null [key] keeps the name as plain words, otherwise the mention points at the picked record
     private fun onDeletedMentionRewrite(
-        index: Long?,
+        key: String?,
         fields: SessionDetailFields,
         data: MentionEventData,
         scope: CoroutineScope,
     ) {
-        val deleted = fields.deletedSheet.value?.let { data.deletedNamed(it.name) } ?: return
-        val target = index?.let { id -> data.linkTargets.firstOrNull { it.id == id }?.entity }
+        val deleted = fields.deletedSheet.value?.let { data.deletedMatching(it.deleted) } ?: return
+        val target = key?.let { id -> data.linkTargets.firstOrNull { it.id == id }?.entity }
         // a picked record that is gone by now leaves the tag alone instead of turning it into words
-        if (index == null || target != null) {
+        if (key == null || target != null) {
             fields.deletedSheet.value = null
             mentionActions.rewriteDeleted(scope, deleted, target, data)
         }
@@ -472,7 +475,7 @@ class SessionDetailPresenter(
         open: OpenDeletedSheet?,
         data: MentionEventData,
     ): DeletedMentionSheetState? {
-        val deleted = open?.let { data.deletedNamed(it.name) } ?: return null
+        val deleted = open?.let { data.deletedMatching(it.deleted) } ?: return null
         val hits = data.hitsOf(deleted)
         return DeletedMentionSheetState(
             name = deleted.name,
@@ -658,7 +661,7 @@ private data class MentionContext(
     // the live records, in the order the "link to" list offers them
     val entities: List<MentionEntity>,
     // snapshots whose name a live record has taken again
-    val revivedNames: List<String>,
+    val revived: List<DeletedMention>,
 )
 
 // deletes immediately and offers undo - clears in-progress editing if the edited entry is the one removed
@@ -705,7 +708,6 @@ private fun buildMentionContext(
     val revived =
         deleted
             .filter { mentionKey(MentionEntity.DeletedMention(it.name, it.type), questPrefix) in liveKeys }
-            .map { it.name }
 
     val typeLabels =
         MentionTypeLabels(
@@ -728,7 +730,7 @@ private fun buildMentionContext(
 private fun buildFeed(
     entries: List<SessionEntry>,
     sessionStartDay: LocalDate?,
-    candidates: List<MentionCandidate>,
+    noteItems: Map<Long, SessionEntryItem>,
 ): List<SessionFeedItem> {
     if (entries.isEmpty()) return emptyList()
     val distinctDays = (listOfNotNull(sessionStartDay) + entries.map { it.createdAt.date }).distinct().sorted()
@@ -749,7 +751,7 @@ private fun buildFeed(
             feed += SessionFeedItem.DaySeparator(key = "sep-$day", label = label)
             lastDay = day
         }
-        feed += SessionFeedItem.Note(entry.toItem(candidates))
+        noteItems[entry.id]?.let { feed += SessionFeedItem.Note(it) }
     }
     return feed
 }

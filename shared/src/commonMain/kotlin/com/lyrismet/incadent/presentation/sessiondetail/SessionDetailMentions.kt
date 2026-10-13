@@ -10,6 +10,7 @@ import com.lyrismet.incadent.core.mention.MentionBody
 import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.mention.MentionEntity
 import com.lyrismet.incadent.core.mention.countMentionHits
+import com.lyrismet.incadent.core.mention.dedupeKey
 import com.lyrismet.incadent.core.mention.linkAutoMentions
 import com.lyrismet.incadent.core.mention.mentionKey
 import com.lyrismet.incadent.core.mention.renameMentionIn
@@ -43,9 +44,9 @@ data class DeletedMentionSheetState(
     val linkOptions: List<DeletedMentionLinkOption>,
 )
 
-/** one record in the "link to another record" list - [id] is its position in the presenter's target list */
+/** one record in the "link to another record" list - [id] is the record's dedupe key, stable while the list shifts */
 data class DeletedMentionLinkOption(
-    val id: Long,
+    val id: String,
     val name: String,
     val glyph: MentionGlyph,
     val color: StatusColor,
@@ -54,7 +55,7 @@ data class DeletedMentionLinkOption(
 
 /** one record a deleted mention can be linked to - the select option and what picking it writes into the notes */
 internal class MentionLinkTarget(
-    val id: Long,
+    val id: String,
     val entity: MentionEntity,
 )
 
@@ -75,7 +76,8 @@ internal class MentionEventData(
     val titles: MentionTitles,
 )
 
-internal fun MentionEventData.deletedNamed(name: String): DeletedMention? = deleted.firstOrNull { it.name == name }
+internal fun MentionEventData.deletedMatching(snapshot: DeletedMention): DeletedMention? =
+    deleted.firstOrNull { it == snapshot }
 
 /** how many notes in how many sessions still carry the tag of [deleted] - across every session, not just this one */
 internal fun MentionEventData.hitsOf(deleted: DeletedMention) =
@@ -141,7 +143,7 @@ internal class SessionMentionActions(
         val title = if (target == null) data.titles.deletedToText else data.titles.deletedLinked
         scope.launch {
             changes.forEach { (entry, body) -> entryRepository.rewriteBody(entry.id, body) }
-            deletedRepository.forget(deleted.name)
+            deletedRepository.forget(deleted)
             undoController.show(title, deleted.name) {
                 changes.forEach { (entry, _) -> entryRepository.rewriteBody(entry.id, entry.body) }
                 deletedRepository.remember(deleted)
@@ -154,11 +156,9 @@ internal class SessionMentionActions(
     }
 }
 
-/** the live records a "?" tag can be linked to - an option id is the record's place in this list */
+/** the live records a "?" tag can be linked to, each told apart by its dedupe key */
 internal fun mentionLinkTargets(entities: List<MentionEntity>): List<MentionLinkTarget> =
-    entities.mapIndexed { index, entity ->
-        MentionLinkTarget(index.toLong(), entity)
-    }
+    entities.map { MentionLinkTarget(it.dedupeKey(), it) }
 
 internal fun DeletedMentionType.toEntryType(): CodexEntryType =
     when (this) {
@@ -193,10 +193,10 @@ internal fun mentionEventData(
 /** a record created again takes its mentions back, so the snapshot that stood in for it is dropped */
 @Composable
 internal fun ForgetRevivedMentions(
-    names: List<String>,
+    revived: List<DeletedMention>,
     repository: DeletedMentionRepository,
 ) {
-    LaunchedEffect(names) { names.forEach { repository.forget(it) } }
+    LaunchedEffect(revived) { revived.forEach { repository.forget(it) } }
 }
 
 /** the records that match [query] by name, as the list rows - everything when nothing is typed */

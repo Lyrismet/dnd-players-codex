@@ -39,7 +39,7 @@ class DeletedMentionRepositoryImpl(
         withContext(Dispatchers.Default) { queries.upsert(mention.name, mention.type.name) }
     }
 
-    override suspend fun forget(name: String) {
-        withContext(Dispatchers.Default) { queries.deleteByName(name) }
+    override suspend fun forget(mention: DeletedMention) {
+        withContext(Dispatchers.Default) { queries.delete(mention.name, mention.type.name) }
     }
 }

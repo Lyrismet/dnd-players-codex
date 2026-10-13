@@ -18,7 +18,7 @@ internal fun autoNamesOf(candidates: List<MentionCandidate>): List<AutoName> =
 /** names shorter than this are too likely to be an ordinary word to be suggested as a mention */
 const val AUTO_MATCH_MIN_LENGTH = 3
 
-// lowercase and "ё" = "е" one char at a time, so every offset in the folded text is an offset in the original
+// folds case and the yo letter one char at a time so folded offsets match the original
 internal fun String.foldPerChar(): String =
     buildString(length) {
         this@foldPerChar.forEach { char ->
@@ -27,19 +27,19 @@ internal fun String.foldPerChar(): String =
         }
     }
 
-// a whole word - not in the middle of a longer one and not the tail of an "@" token
+// a whole word - not in the middle of a longer one or of a number and not the tail of an "@" token
 internal fun List<AutoName>.matchAt(
     text: String,
     folded: String,
     index: Int,
 ): AutoName? {
-    val startsWord = index == 0 || (!text[index - 1].isLetter() && text[index - 1] != '@')
+    val startsWord = index == 0 || (!text[index - 1].isLetterOrDigit() && text[index - 1] != '@')
     if (!startsWord) return null
     return firstOrNull { name ->
         val end = index + name.folded.length
         end <= folded.length &&
             folded.startsWith(name.folded, index) &&
-            (end == text.length || !text[end].isLetter())
+            (end == text.length || !text[end].isLetterOrDigit())
     }
 }
 
@@ -50,10 +50,7 @@ fun autoMatchedEntities(segments: List<MentionSegment>): List<MentionEntity> =
         .map { it.entity }
         .distinctBy { it.dedupeKey() }
 
-/**
- * puts "@" in front of the auto matched words of [text] - only those of [only] when it is given. The word is
- * rewritten to the record's own spelling, so a case or "ё" difference is fixed on the way.
- */
+/** puts "@" before the auto matched words of [text], only those of [only] when given, in the record's own spelling */
 fun linkAutoMentions(
     text: String,
     candidates: List<MentionCandidate>,

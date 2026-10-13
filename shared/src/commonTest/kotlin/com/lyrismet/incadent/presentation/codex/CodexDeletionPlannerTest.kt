@@ -62,7 +62,13 @@ class CodexDeletionPlannerTest {
             assertEquals(1, plan.mentionHits.sessions)
 
             plan.delete()
-            assertEquals(DeletedMention("Громм", DeletedMentionType.NPC), deleted.stored["Громм"])
+            assertEquals(
+                DeletedMention("Громм", DeletedMentionType.NPC),
+                deleted.stored[
+                    "Громм" to
+                        DeletedMentionType.NPC,
+                ],
+            )
             assertNull(npcs.stored(1))
         }
 
@@ -74,6 +80,19 @@ class CodexDeletionPlannerTest {
             assertEquals(0, plan.mentionHits.notes)
             plan.delete()
             assertTrue(deleted.stored.isEmpty())
+        }
+
+    @Test
+    fun `undo drops only the snapshot of its own kind`() =
+        runTest {
+            val quest = DeletedMention("Громм", DeletedMentionType.QUEST)
+            deleted.remember(quest)
+            val plan = planner.planFor(EntityRef.Npc(1), records(1L to "@Громм"), labels)!!
+
+            plan.delete()
+            plan.restore()
+
+            assertEquals(mapOf("Громм" to DeletedMentionType.QUEST to quest), deleted.stored)
         }
 
     @Test

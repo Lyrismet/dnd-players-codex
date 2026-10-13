@@ -59,6 +59,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
+import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_cancel
 import dndplayerscodex.shared.generated.resources.session_detail_composer_hint
@@ -343,6 +344,8 @@ private fun ComposerPopover(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    // a popup is a window of its own, so it ignores the zero size of a hidden tab and would hang at the screen top
+    if (!LocalTabSelected.current) return
     val density = LocalDensity.current
     val popupWidth = with(density) { composerWidthPx.toDp() }
     val shape = RoundedCornerShape(14.dp)

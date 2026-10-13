@@ -6,5 +6,5 @@ fun String.capitalizeFirst(): String = if (isEmpty()) this else this[0].uppercas
 /** joins the non-blank parts with " · " so an empty field never leaves a dangling separator */
 fun joinWithDot(vararg parts: String): String = parts.filter { it.isNotBlank() }.joinToString(" · ")
 
-/** lowercases and turns "ё" into "е", so a search typed with either letter finds both spellings */
+/** lowercases and folds the yo letter into ye so either spelling is found */
 fun String.foldForSearch(): String = lowercase().replace('ё', 'е')

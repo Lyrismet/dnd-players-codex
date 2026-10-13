@@ -48,6 +48,11 @@ class AutoMentionTest {
     }
 
     @Test
+    fun `a name glued to a digit is not found`() {
+        assertTrue(autoMatches("Громм2 и 7Артём").isEmpty())
+    }
+
+    @Test
     fun `a name shorter than three letters is never suggested`() {
         assertTrue(autoMatches("Ох и тяжко").isEmpty())
     }

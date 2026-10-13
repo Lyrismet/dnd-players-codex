@@ -55,6 +55,7 @@ import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.designsystem.component.tapOrQuickHold
 import com.lyrismet.incadent.core.entitysummary.EntityRef
+import com.lyrismet.incadent.domain.model.DeletedMention
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_delete
 import dndplayerscodex.shared.generated.resources.action_edit
@@ -288,7 +289,7 @@ private fun EntryTimeColumn(
 
 /** what a note's mention parts can ask for - a "?" tag, the "link them" row and a single dotted word */
 internal class EntryMentionActions(
-    val onDeletedClick: (String) -> Unit,
+    val onDeletedClick: (DeletedMention) -> Unit,
     val onAutoLink: () -> Unit,
     val onAutoDismiss: () -> Unit,
     val onAutoWordClick: (entityKey: String) -> Unit,
@@ -397,7 +398,7 @@ private fun SessionEntryBody(
                         item = segment.chip,
                         onClick =
                             segment.chip.entityRef?.let { ref -> { onMentionClick(ref) } }
-                                ?: segment.chip.deletedName?.let { name -> { mentionActions.onDeletedClick(name) } },
+                                ?: segment.chip.deleted?.let { deleted -> { mentionActions.onDeletedClick(deleted) } },
                         fontSize = 14.sp,
                         glyphSize = 7.sp,
                         glyphGap = 4.dp,

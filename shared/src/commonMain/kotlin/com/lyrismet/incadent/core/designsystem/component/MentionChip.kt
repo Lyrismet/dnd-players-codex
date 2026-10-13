@@ -32,6 +32,7 @@ import com.lyrismet.incadent.core.designsystem.toStatusColor
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.mention.MentionEntity
 import com.lyrismet.incadent.core.mention.dedupeKey
+import com.lyrismet.incadent.domain.model.DeletedMention
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.Npc
@@ -69,8 +70,8 @@ data class MentionChipItem(
     val color: StatusColor,
     val strikeThrough: Boolean = false,
     val entityRef: EntityRef? = null,
-    // set only on the "?" tag of a deleted record - the name that tag opens the "not in the codex" sheet with
-    val deletedName: String? = null,
+    // set only on the "?" tag of a deleted record - the snapshot that tag opens the "not in the codex" sheet with
+    val deleted: DeletedMention? = null,
 )
 
 fun MentionEntity.toChipItem(): MentionChipItem =
@@ -118,7 +119,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
                 glyph = MentionGlyph.DELETED,
                 label = name,
                 color = DeletedMentionColor,
-                deletedName = name,
+                deleted = DeletedMention(name, type),
             )
     }
 

@@ -2,6 +2,7 @@ package com.lyrismet.incadent.data.repository
 
 import com.lyrismet.incadent.core.mention.renameMentionIn
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.domain.model.DeletedMentionType
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -110,5 +111,10 @@ class MentionRenamer(
                 .selectAll()
                 .executeAsList()
                 .filter { it.id != questId }
-                .map { questPrefix + it.title }
+                .map { questPrefix + it.title } +
+            // a "?" tag keeps its own key, so a rename must not eat the tag of a longer deleted name
+            database.deletedMentionQueries
+                .selectAll()
+                .executeAsList()
+                .map { if (it.type == DeletedMentionType.QUEST.name) questPrefix + it.name else it.name }
 }

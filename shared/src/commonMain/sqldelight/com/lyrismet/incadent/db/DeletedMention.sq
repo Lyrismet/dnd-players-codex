@@ -1,6 +1,7 @@
 CREATE TABLE deleted_mention (
-    name TEXT NOT NULL PRIMARY KEY,
-    type TEXT NOT NULL
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    PRIMARY KEY (name, type)
 );
 
 selectAll:
@@ -9,5 +10,5 @@ SELECT * FROM deleted_mention ORDER BY name ASC;
 upsert:
 INSERT OR REPLACE INTO deleted_mention(name, type) VALUES (?, ?);
 
-deleteByName:
-DELETE FROM deleted_mention WHERE name = ?;
+delete:
+DELETE FROM deleted_mention WHERE name = ? AND type = ?;
