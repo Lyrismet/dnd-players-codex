@@ -1,9 +1,6 @@
 package com.lyrismet.incadent.domain.model
 
-/**
- * a stored picture - [thumb] is always there for lists and badges, [full] only where the card, the viewer or a crop
- * needs it, so list-level models stay light. A model whose photo has no [full] is "unchanged" when it is saved.
- */
+/** a stored picture, [full] is loaded only where a card or a crop needs it and its absence means "unchanged" on save */
 class Photo(
     val thumb: ByteArray,
     val full: ByteArray? = null,

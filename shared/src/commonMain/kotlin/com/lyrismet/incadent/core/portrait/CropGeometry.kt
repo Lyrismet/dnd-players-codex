@@ -4,7 +4,7 @@ import kotlin.math.max
 
 private const val BYTES_PER_KB = 1024
 
-// the mockup's CROP table: window in dp, stored pixels, and the budget a stored photo has to fit
+// the mockup's CROP table - window in dp, stored pixels, and the budget a stored photo has to fit
 private const val PORTRAIT_VIEW_WIDTH = 240f
 private const val PORTRAIT_VIEW_HEIGHT = 312f
 private const val PORTRAIT_OUT_WIDTH = 480

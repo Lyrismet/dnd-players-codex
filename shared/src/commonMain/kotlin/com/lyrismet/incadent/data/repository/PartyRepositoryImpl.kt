@@ -35,18 +35,22 @@ class PartyRepositoryImpl(
     // a renamed member takes the "@mentions" of its old name along, in the same transaction as the update
     override suspend fun upsert(member: PartyMember): Long =
         withContext(Dispatchers.Default) {
-            val oldName =
-                if (member.id == 0L) null else queries.selectById(member.id, ::toDomainFull).executeAsOneOrNull()?.name
+            val stored =
+                if (member.id == 0L) null else queries.selectById(member.id, ::toDomainFull).executeAsOneOrNull()
+            val oldName = stored?.name
             if (oldName != null && oldName != member.name) {
-                mentionRenamer.partyRenamed(member.id, oldName, member.name) { write(member) }
+                mentionRenamer.partyRenamed(member.id, oldName, member.name) { write(member, stored.portrait) }
                 member.id
             } else {
-                write(member)
+                write(member, stored?.portrait)
             }
         }
 
     // the "вы" flag is unique per campaign - saving a player character clears it from everyone else
-    private fun write(member: PartyMember): Long =
+    private fun write(
+        member: PartyMember,
+        storedPortrait: Photo?,
+    ): Long =
         database.transactionWithResult {
             val id =
                 if (member.id == 0L) {
@@ -82,21 +86,22 @@ class PartyRepositoryImpl(
                                 id = member.id,
                             ).value
                     check(updatedRows > 0L) { "party member ${member.id} no longer exists" }
-                    writePortrait(member.id, member.portrait)
+                    writePortrait(member.id, member.portrait, storedPortrait)
                     member.id
                 }
             if (member.isPlayerCharacter) queries.clearOtherPlayerCharacters(id)
             id
         }
 
-    // a photo without its full jpeg came from a list-level model and means "unchanged", null removes it
+    // null removes the picture, see needsWrite for what leaves it alone
     private fun writePortrait(
         memberId: Long,
         portrait: Photo?,
+        stored: Photo?,
     ) {
         when {
-            portrait == null -> queries.setPortrait(null, null, memberId)
-            portrait.full != null -> queries.setPortrait(portrait.full, portrait.thumb, memberId)
+            portrait == null -> if (stored != null) queries.setPortrait(null, null, memberId)
+            portrait.needsWrite(stored) -> queries.setPortrait(portrait.full, portrait.thumb, memberId)
         }
     }
 

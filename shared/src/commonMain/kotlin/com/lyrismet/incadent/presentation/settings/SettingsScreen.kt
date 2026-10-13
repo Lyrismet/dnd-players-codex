@@ -30,12 +30,8 @@ data class SettingsState(
 ) : CircuitUiState
 
 sealed interface SettingsEvent : CircuitUiEvent {
-    data object LanguageSheetOpened : SettingsEvent
-
-    data object LanguageSheetDismissed : SettingsEvent
-
-    data class LanguageSelected(
-        val language: AppLanguage,
+    data class LanguageSheet(
+        val event: LanguageSheetEvent,
     ) : SettingsEvent
 
     data class NumberingSelected(

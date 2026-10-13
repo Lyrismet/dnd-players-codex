@@ -17,8 +17,8 @@ import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.core.portrait.PhotoSlot
-import com.lyrismet.incadent.core.portrait.encode
-import com.lyrismet.incadent.core.portrait.prepareCropDraft
+import com.lyrismet.incadent.core.portrait.encodeAsync
+import com.lyrismet.incadent.core.portrait.prepareCropDraftAsync
 import com.lyrismet.incadent.core.portrait.recropDraft
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
@@ -51,9 +51,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
 import dndplayerscodex.shared.generated.resources.codex_group_no_faction
 import dndplayerscodex.shared.generated.resources.codex_group_top_level
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
@@ -411,8 +409,11 @@ class CodexEntryFormController private constructor(
         rawBytes: ByteArray,
     ) {
         if (fields.value == null) return
+        val session = baseline.value
         scope.launch {
-            val draft = withContext(Dispatchers.Default) { prepareCropDraft(rawBytes, slot, compressor) }
+            val draft = prepareCropDraftAsync(rawBytes, slot, compressor)
+            // the form this pick came from may be closed or replaced by now
+            if (baseline.value !== session) return@launch
             fields.value = fields.value?.copy(photoCrop = draft)
         }
     }
@@ -430,8 +431,10 @@ class CodexEntryFormController private constructor(
     ) {
         val draft = fields.value?.photoCrop ?: return
         fields.value = fields.value?.copy(photoCrop = null)
+        val session = baseline.value
         scope.launch {
-            val photo = withContext(Dispatchers.Default) { draft.encode(crop, compressor) }
+            val photo = draft.encodeAsync(crop, compressor)
+            if (baseline.value !== session) return@launch
             fields.value =
                 fields.value?.let {
                     if (draft.slot == PhotoSlot.COVER) it.copy(cover = photo) else it.copy(portrait = photo)

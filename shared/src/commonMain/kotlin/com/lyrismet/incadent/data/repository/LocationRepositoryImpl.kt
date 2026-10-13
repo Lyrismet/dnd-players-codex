@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class LocationRepositoryImpl(
-    database: AppDatabase,
+    private val database: AppDatabase,
     private val mentionRenamer: MentionRenamer,
 ) : LocationRepository {
     private val queries = database.locationQueries
@@ -43,15 +43,18 @@ class LocationRepositoryImpl(
                 )
                 queries.lastInsertRowId().executeAsOne()
             } else {
-                val oldName = queries.selectById(location.id, ::toDomainFull).executeAsOneOrNull()?.name
+                val stored = queries.selectById(location.id, ::toDomainFull).executeAsOneOrNull()
+                val oldName = stored?.name
                 val update: () -> Unit = {
-                    queries.update(
-                        location.name,
-                        location.description,
-                        location.parentId,
-                        location.id,
-                    )
-                    writeCover(location.id, location.cover)
+                    database.transaction {
+                        queries.update(
+                            location.name,
+                            location.description,
+                            location.parentId,
+                            location.id,
+                        )
+                        writeCover(location.id, location.cover, stored?.cover)
+                    }
                 }
                 if (oldName != null) {
                     mentionRenamer.locationRenamed(location.id, oldName, location.name, update)
@@ -62,14 +65,15 @@ class LocationRepositoryImpl(
             }
         }
 
-    // a photo without its full jpeg came from a list-level model and means "unchanged", null removes it
+    // null removes the picture, see needsWrite for what leaves it alone
     private fun writeCover(
         locationId: Long,
         cover: Photo?,
+        stored: Photo?,
     ) {
         when {
-            cover == null -> queries.setCover(null, null, locationId)
-            cover.full != null -> queries.setCover(cover.full, cover.thumb, locationId)
+            cover == null -> if (stored != null) queries.setCover(null, null, locationId)
+            cover.needsWrite(stored) -> queries.setCover(cover.full, cover.thumb, locationId)
         }
     }
 

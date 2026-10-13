@@ -1,9 +1,6 @@
 package com.lyrismet.incadent.core.portrait
 
-/**
- * scales a raw image down to [maxDimensionPx] on its longer side and re-encodes it as jpeg under [targetBytes],
- * and cuts a [CropRect] out of an image into an exact output size
- */
+/** shrinks a raw image to a jpeg under a byte budget and cuts a [CropRect] out of one into an exact output size */
 expect class ImageCompressor() {
     fun compressToJpeg(
         bytes: ByteArray,

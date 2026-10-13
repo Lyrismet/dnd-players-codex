@@ -18,7 +18,7 @@ actual class ImageCompressor {
         maxDimensionPx: Int,
         targetBytes: Int,
     ): ByteArray {
-        val original = decodeUpright(bytes, maxDimensionPx)
+        val original = decodeUpright(bytes) { width, height -> max(width, height) >= maxDimensionPx }
         val scale = maxDimensionPx.toFloat() / max(original.width, original.height)
         val scaled = if (scale < 1f) original.scaledTo(original.width * scale, original.height * scale) else original
         return scaled.toJpeg(targetBytes)
@@ -31,9 +31,10 @@ actual class ImageCompressor {
         outHeight: Int,
         targetBytes: Int,
     ): ByteArray {
-        // sampled so the cut-out region itself still has at least the output's pixels
-        val needed = max(outWidth / (crop.right - crop.left), outHeight / (crop.bottom - crop.top))
-        val source = decodeUpright(bytes, needed.toInt())
+        // sampled so the cut-out region itself still has at least the output's pixels on both axes
+        val neededWidth = outWidth / (crop.right - crop.left)
+        val neededHeight = outHeight / (crop.bottom - crop.top)
+        val source = decodeUpright(bytes) { width, height -> width >= neededWidth && height >= neededHeight }
         val left = (crop.left * source.width).toInt().coerceIn(0, source.width - 1)
         val top = (crop.top * source.height).toInt().coerceIn(0, source.height - 1)
         val width = ((crop.right - crop.left) * source.width).toInt().coerceIn(1, source.width - left)
@@ -43,29 +44,41 @@ actual class ImageCompressor {
     }
 }
 
-/** decodes at a sample size that keeps the longer side at least [minLongSide] and applies the exif orientation */
+/** decodes at the coarsest sample size whose upright dimensions still satisfy [isLargeEnough], then applies exif */
 private fun decodeUpright(
     bytes: ByteArray,
-    minLongSide: Int,
+    isLargeEnough: (width: Int, height: Int) -> Boolean,
 ): Bitmap {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+    val swapsAxes = exifOrientation(bytes) in ORIENTATIONS_SWAPPING_AXES
+    val width = if (swapsAxes) bounds.outHeight else bounds.outWidth
+    val height = if (swapsAxes) bounds.outWidth else bounds.outHeight
     var sample = 1
-    while (max(bounds.outWidth, bounds.outHeight) / (sample * 2) >= minLongSide) sample *= 2
+    while (isLargeEnough(width / (sample * 2), height / (sample * 2))) sample *= 2
     val options = BitmapFactory.Options().apply { inSampleSize = sample }
     val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
     val matrix = exifMatrix(bytes) ?: return decoded
     return Bitmap.createBitmap(decoded, 0, 0, decoded.width, decoded.height, matrix, true)
 }
 
+private val ORIENTATIONS_SWAPPING_AXES =
+    setOf(
+        ExifInterface.ORIENTATION_ROTATE_90,
+        ExifInterface.ORIENTATION_ROTATE_270,
+        ExifInterface.ORIENTATION_TRANSPOSE,
+        ExifInterface.ORIENTATION_TRANSVERSE,
+    )
+
+private fun exifOrientation(bytes: ByteArray): Int =
+    runCatching {
+        ExifInterface(ByteArrayInputStream(bytes))
+            .getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+    }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
+
 private fun exifMatrix(bytes: ByteArray): Matrix? {
-    val orientation =
-        runCatching {
-            ExifInterface(ByteArrayInputStream(bytes))
-                .getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-        }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
     val matrix = Matrix()
-    when (orientation) {
+    when (exifOrientation(bytes)) {
         ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(ROTATE_90)
         ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(ROTATE_180)
         ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(ROTATE_270)

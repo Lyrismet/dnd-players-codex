@@ -9,12 +9,7 @@ import com.lyrismet.incadent.core.portrait.rememberImagePickerLauncher
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
 import com.lyrismet.incadent.domain.model.Photo
 
-/**
- * one photo of a record (a portrait or a cover) with everything a tap leads to - the full-screen viewer of a stored
- * photo, or the "Камера / Галерея" chooser while there is none. [actions] null is a read-only card: only the viewer
- * opens. With [viewerOnTap] false a tap always goes to the chooser, the way the create form's frame works.
- * [content] draws the slot and gets the tap handler, or null when a tap would do nothing.
- */
+/** one photo and everything a tap leads to, the viewer or the chooser while empty, null [actions] is read-only */
 @Composable
 fun AppPhotoSlot(
     photo: Photo?,

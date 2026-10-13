@@ -23,16 +23,14 @@ internal fun quickPhotoActions(
         PhotoSlotActions(
             onPicked = { bytes -> it.onEvent(QuickEditUiEvent.PhotoPicked(slot, bytes)) },
             onCrop = {
-                photo?.display?.let { stored -> it.onEvent(QuickEditUiEvent.PhotoRecropRequested(slot, stored)) }
+                // the list thumbnail would be upscaled into the stored photo, so wait for the full picture
+                photo?.full?.let { stored -> it.onEvent(QuickEditUiEvent.PhotoRecropRequested(slot, stored)) }
             },
             onDelete = { it.onEvent(QuickEditUiEvent.PhotoRemoved(slot)) },
         )
     }
 
-/**
- * the header's portrait arch - a tap opens the full-screen viewer of a stored portrait, and in quick mode an empty
- * one opens the camera/gallery chooser. [showEditHint] tells a read-only viewer where the form edit lives.
- */
+/** the header's portrait arch, a tap opens the viewer or, in quick mode, the chooser of an empty one */
 @Composable
 internal fun EntityPortraitSlot(
     emblem: EntityEmblem,

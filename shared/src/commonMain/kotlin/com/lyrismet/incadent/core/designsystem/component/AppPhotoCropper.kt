@@ -76,7 +76,7 @@ private val PortraitWindowShape =
 private val WideWindowShape = RoundedCornerShape(14.dp)
 private val ButtonShape = RoundedCornerShape(12.dp)
 
-// the mockup's crop screen: #0B0C10 ground, the picture outside the frame at 28%, a 35% shade and a thirds grid
+// the mockup's crop screen - #0B0C10 ground, the picture outside the frame at 28%, a 35% shade and a thirds grid
 private val CropBackground = Color(0xFF0B0C10)
 private val OutsideShade = Color(0x590B0C10)
 private val GridLine = Color(0x47F1EBDD)
@@ -88,11 +88,7 @@ private const val SHADE_REACH_PX = 10_000f
 
 private fun CropAspect.windowShape(): Shape = if (this == CropAspect.Portrait) PortraitWindowShape else WideWindowShape
 
-/**
- * the full-screen crop window of a picked photo, see the mockup's crop sheet - drag the picture under a fixed arch
- * (portrait) or 16:9 frame, the part outside the frame stays visible but dimmed, a thirds grid helps to compose.
- * Zoom 1-3x with the slider or the -/+ buttons, "Готово" hands back the chosen [CropRect]. It cuts nothing itself.
- */
+/** the full-screen crop window, "Готово" reports the chosen [CropRect] and nothing is cut here */
 @Composable
 fun AppPhotoCropper(
     source: ImageBitmap,
@@ -213,7 +209,7 @@ private fun CropWindow(
     )
 }
 
-// layers as in the mockup: the whole picture dim, the framed part bright with a grid, a shade around, a gold edge
+// layers as in the mockup - the whole picture dim, the framed part bright with a grid, a shade around, a gold edge
 private fun DrawScope.drawCropLayers(
     source: ImageBitmap,
     shape: Shape,

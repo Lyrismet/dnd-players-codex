@@ -55,7 +55,8 @@ class NpcRepositoryImpl(
                     id
                 }
             } else {
-                val oldName = queries.selectById(npc.id, ::toDomainFull).executeAsOneOrNull()?.name
+                val stored = queries.selectById(npc.id, ::toDomainFull).executeAsOneOrNull()
+                val oldName = stored?.name
                 val update: () -> Unit = {
                     database.transaction {
                         queries.update(
@@ -67,7 +68,7 @@ class NpcRepositoryImpl(
                             npc.lifeState,
                             npc.id,
                         )
-                        writePortrait(npc.id, npc.portrait)
+                        writePortrait(npc.id, npc.portrait, stored?.portrait)
                         writeLocations(npc.id, npc.locationIds)
                     }
                 }
@@ -82,14 +83,15 @@ class NpcRepositoryImpl(
         }
     }
 
-    // a photo without its full jpeg came from a list-level model and means "unchanged", null removes it
+    // null removes the picture, see needsWrite for what leaves it alone
     private fun writePortrait(
         npcId: Long,
         portrait: Photo?,
+        stored: Photo?,
     ) {
         when {
-            portrait == null -> queries.setPortrait(null, null, npcId)
-            portrait.full != null -> queries.setPortrait(portrait.full, portrait.thumb, npcId)
+            portrait == null -> if (stored != null) queries.setPortrait(null, null, npcId)
+            portrait.needsWrite(stored) -> queries.setPortrait(portrait.full, portrait.thumb, npcId)
         }
     }
 

@@ -99,7 +99,9 @@ fun SettingsUi(
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                AppSection(language = state.language, onLanguageClick = { sink(SettingsEvent.LanguageSheetOpened) })
+                AppSection(language = state.language, onLanguageClick = {
+                    sink(SettingsEvent.LanguageSheet(LanguageSheetEvent.Opened))
+                })
                 DiarySection(
                     numbering = state.numbering,
                     mentionStyle = state.mentionStyle,
@@ -135,8 +137,8 @@ private fun SettingsSheets(state: SettingsState) {
     if (state.languageSheetOpen) {
         LanguageSheet(
             selected = state.language,
-            onSelected = { sink(SettingsEvent.LanguageSelected(it)) },
-            onDismiss = { sink(SettingsEvent.LanguageSheetDismissed) },
+            onSelected = { sink(SettingsEvent.LanguageSheet(LanguageSheetEvent.Selected(it))) },
+            onDismiss = { sink(SettingsEvent.LanguageSheet(LanguageSheetEvent.Dismissed)) },
         )
     }
     val renameSheet = state.renameSheet

@@ -5,6 +5,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.domain.model.Photo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 // the working copy a crop window cuts from - big enough to zoom to 3x without going soft
 private const val CROP_SOURCE_MAX_DIMENSION_PX = 1600
@@ -45,6 +47,13 @@ fun prepareCropDraft(
         slot,
     )
 
+/** [prepareCropDraft] off the main thread, for the hosts that launch it from a pick */
+suspend fun prepareCropDraftAsync(
+    rawBytes: ByteArray,
+    slot: PhotoSlot,
+    compressor: ImageCompressor,
+): PhotoCropDraft = withContext(Dispatchers.Default) { prepareCropDraft(rawBytes, slot, compressor) }
+
 /** the stored jpeg opened again in the crop window - it can only be narrowed, the cut-off sides are gone */
 fun recropDraft(
     stored: ByteArray,
@@ -65,6 +74,12 @@ fun PhotoCropDraft.encode(
     return Photo(thumb = makeThumb(full, slot, compressor), full = full)
 }
 
+/** [encode] off the main thread, for the hosts that launch it from "Готово" */
+suspend fun PhotoCropDraft.encodeAsync(
+    crop: CropRect,
+    compressor: ImageCompressor,
+): Photo = withContext(Dispatchers.Default) { encode(crop, compressor) }
+
 /** the list-sized copy of an already stored jpeg */
 fun makeThumb(
     full: ByteArray,
@@ -75,7 +90,8 @@ fun makeThumb(
 /** decodes [bytes] once per distinct picture - the key is the content, so a re-emitted list does not decode again */
 @Composable
 fun rememberPhotoBitmap(bytes: ByteArray): ImageBitmap {
-    val key = PhotoKey(bytes.size, bytes.contentHashCode())
+    // the hash is walked once per array instance, not on every recomposition
+    val key = remember(bytes) { PhotoKey(bytes.size, bytes.contentHashCode()) }
     return remember(key) { decodeImageBitmap(bytes) }
 }
 

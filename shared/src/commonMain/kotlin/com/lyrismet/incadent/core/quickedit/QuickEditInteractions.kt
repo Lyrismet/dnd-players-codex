@@ -7,13 +7,11 @@ import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.core.portrait.PhotoSlot
-import com.lyrismet.incadent.core.portrait.encode
-import com.lyrismet.incadent.core.portrait.prepareCropDraft
+import com.lyrismet.incadent.core.portrait.encodeAsync
+import com.lyrismet.incadent.core.portrait.prepareCropDraftAsync
 import com.lyrismet.incadent.core.portrait.recropDraft
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /** a photo in the crop window and the card it will be saved to - the ref is read once, the sheet may close meanwhile */
 class QuickPhotoCrop(
@@ -91,7 +89,7 @@ class QuickEditInteractions(
     ) {
         val ref = selectedRef.value ?: return
         scope.launch {
-            val draft = withContext(Dispatchers.Default) { prepareCropDraft(rawBytes, slot, imageCompressor) }
+            val draft = prepareCropDraftAsync(rawBytes, slot, imageCompressor)
             photoCrop.value = QuickPhotoCrop(draft, ref)
         }
     }
@@ -111,7 +109,7 @@ class QuickEditInteractions(
         val pending = photoCrop.value ?: return
         photoCrop.value = null
         scope.launch {
-            val photo = withContext(Dispatchers.Default) { pending.draft.encode(crop, imageCompressor) }
+            val photo = pending.draft.encodeAsync(crop, imageCompressor)
             entitySheet.onQuickEdit(scope, pending.ref, pending.draft.slot.field(), QuickEditValue.Picture(photo))
         }
     }

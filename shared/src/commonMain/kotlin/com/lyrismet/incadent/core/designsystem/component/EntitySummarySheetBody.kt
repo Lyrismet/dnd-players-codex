@@ -41,9 +41,6 @@ import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
 import com.lyrismet.incadent.core.entitysummary.FactRow
 import com.lyrismet.incadent.core.entitysummary.QuickEditSheet
 import com.lyrismet.incadent.core.entitysummary.StatusOption
-import com.lyrismet.incadent.core.portrait.PhotoCropDraft
-import com.lyrismet.incadent.core.portrait.PhotoSlot
-import com.lyrismet.incadent.core.portrait.decodeImageBitmap
 import com.lyrismet.incadent.core.quickedit.EditorHoleTracker
 import com.lyrismet.incadent.core.quickedit.EditorShield
 import com.lyrismet.incadent.core.quickedit.LocalEditorHoleTracker
@@ -55,8 +52,6 @@ import dndplayerscodex.shared.generated.resources.entity_sheet_overline_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_portrait_hint
 import dndplayerscodex.shared.generated.resources.entity_sheet_relation_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_status_label
-import dndplayerscodex.shared.generated.resources.photo_kind_cover
-import dndplayerscodex.shared.generated.resources.photo_kind_portrait
 import dndplayerscodex.shared.generated.resources.quick_edit_hold_too_short
 import dndplayerscodex.shared.generated.resources.quick_edit_label_name
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
@@ -103,31 +98,19 @@ fun EntitySummarySheetContent(
         if (quick != null && quick.inlineEdit != null) {
             EditorShield(hole = editorHole.hole, onOutsideTap = { quick.onEvent(QuickEditUiEvent.EditCancelled) })
         }
-        quick?.photoCrop?.let { draft -> PhotoCropWindow(draft, quick) }
+        quick?.photoCrop?.let { draft ->
+            AppPhotoCropDraftWindow(
+                draft = draft,
+                onConfirm = { crop -> quick.onEvent(QuickEditUiEvent.PhotoCropConfirmed(crop)) },
+                onCancel = { quick.onEvent(QuickEditUiEvent.PhotoCropCancelled) },
+            )
+        }
         HoldTooShortToast(
             trigger = holdTooShortTrigger,
             text = stringResource(Res.string.quick_edit_hold_too_short),
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = HOLD_TOAST_BOTTOM_PADDING_DP.dp),
         )
     }
-}
-
-/** the crop window of the photo picked on this card - the presenter cuts and saves what "Готово" reports */
-@Composable
-private fun PhotoCropWindow(
-    draft: PhotoCropDraft,
-    quick: QuickEditSheet,
-) {
-    val source = remember(draft) { decodeImageBitmap(draft.source) }
-    val titleRes =
-        if (draft.slot == PhotoSlot.COVER) Res.string.photo_kind_cover else Res.string.photo_kind_portrait
-    AppPhotoCropper(
-        source = source,
-        aspect = draft.slot.aspect,
-        title = stringResource(titleRes),
-        onConfirm = { crop -> quick.onEvent(QuickEditUiEvent.PhotoCropConfirmed(crop)) },
-        onCancel = { quick.onEvent(QuickEditUiEvent.PhotoCropCancelled) },
-    )
 }
 
 @Composable

@@ -99,7 +99,7 @@ internal fun LanguageRow(
     }
 }
 
-// the mockup's globe: a circle, the equator and a meridian lens, 1.6 strokes on a 24 grid
+// the mockup's globe - a circle, the equator and a meridian lens, 1.6 strokes on a 24 grid
 private val GlobeIcon: ImageVector =
     ImageVector
         .Builder(

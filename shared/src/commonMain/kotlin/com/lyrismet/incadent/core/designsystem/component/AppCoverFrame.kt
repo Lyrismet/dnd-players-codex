@@ -40,10 +40,7 @@ private val ExpandPillShape = RoundedCornerShape(15.dp)
 // mockup - rgba(10,11,14,0.72) behind the "Развернуть" pill
 private val ExpandPillBackground = Color(0xB80A0B0E)
 
-/**
- * the place's cover at the top of its card, see the mockup's `sh.hasCover` - 170dp, 16dp corners, a faint parchment
- * edge and the "⤢ Развернуть" pill in the corner, a tap opens it full screen.
- */
+/** the place's cover on top of its card, a tap opens it full screen */
 @Composable
 fun AppCoverFrame(
     cover: Photo,
@@ -114,10 +111,7 @@ fun AppCoverAddStrip(
     }
 }
 
-/**
- * the cover field of the place form, see the mockup's `f.isCover` - a 150dp box with a 1dp edge, the picture filling
- * it or, while empty, a dashed inner frame with "+", [placeholder] and [hint].
- */
+/** the cover field of the place form, a 150dp box with the picture or a dashed "+" with [placeholder] and [hint] */
 @Composable
 fun AppCoverField(
     cover: Photo?,

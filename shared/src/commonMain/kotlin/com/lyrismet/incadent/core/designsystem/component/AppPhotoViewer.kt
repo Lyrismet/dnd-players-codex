@@ -57,11 +57,7 @@ data class PhotoViewerActions(
     val onDelete: () -> Unit,
 )
 
-/**
- * the photo opened over the whole screen from a portrait or a cover - [kind] is the overline ("ПОРТРЕТ"), [title] the
- * record's name. A null [actions] is the read-only card: no buttons, and with [showEditHint] a line saying where
- * the photo can be changed.
- */
+/** the photo over the whole screen, null [actions] is the read-only card with no buttons and an optional edit hint */
 @Composable
 fun AppPhotoViewer(
     image: ImageBitmap,

@@ -40,10 +40,7 @@ fun EntitySummaryItem.withFullPhoto(full: Photo?): EntitySummaryItem {
     }
 }
 
-/**
- * the card's full-size photo, read from the database while the card is open - the lists only carry thumbnails.
- * Null until it is loaded or when the card has no photo; it reloads when the thumbnail changes (a new pick).
- */
+/** the card's full-size photo read while it is open, null until loaded, reloads when the thumbnail changes */
 @Composable
 fun rememberFullPhoto(
     item: EntitySummaryItem?,

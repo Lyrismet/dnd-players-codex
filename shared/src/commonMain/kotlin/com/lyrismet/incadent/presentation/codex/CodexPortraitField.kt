@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,7 +18,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppCoverField
-import com.lyrismet.incadent.core.designsystem.component.AppPhotoCropper
+import com.lyrismet.incadent.core.designsystem.component.AppPhotoCropDraftWindow
 import com.lyrismet.incadent.core.designsystem.component.AppPhotoSlot
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.PhotoSlotActions
@@ -27,7 +26,6 @@ import com.lyrismet.incadent.core.designsystem.component.PortraitFrame
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.portrait.PhotoSlot
-import com.lyrismet.incadent.core.portrait.decodeImageBitmap
 import com.lyrismet.incadent.core.portrait.photoSizeKb
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_cover_form_hint
@@ -185,12 +183,8 @@ internal fun FormPhotoCropWindow(
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     val draft = form.photoCrop ?: return
-    val source = remember(draft) { decodeImageBitmap(draft.source) }
-    val titleRes = if (draft.slot == PhotoSlot.COVER) Res.string.photo_kind_cover else Res.string.photo_kind_portrait
-    AppPhotoCropper(
-        source = source,
-        aspect = draft.slot.aspect,
-        title = stringResource(titleRes),
+    AppPhotoCropDraftWindow(
+        draft = draft,
         onConfirm = { eventSink(CodexEvent.EntryPhotoCropConfirmed(it)) },
         onCancel = { eventSink(CodexEvent.EntryPhotoCropCancelled) },
     )

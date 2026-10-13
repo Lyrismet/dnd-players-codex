@@ -260,7 +260,7 @@ internal fun LocationCodexCard(
                 border = AppPalette.Parchment.copy(alpha = 0.3f),
             ) {
                 PlaceTriangle()
-                // the mockup's badge: the cover fills the 44dp square above the glyph
+                // the mockup's badge - the cover fills the 44dp square above the glyph
                 item.cover?.let { cover ->
                     // the list draws the thumbnail only
                     val bitmap = rememberPhotoBitmap(cover.thumb)
