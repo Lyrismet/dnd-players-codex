@@ -16,7 +16,7 @@ fun QuickEditField.inputKind(): InlineInputKind =
         QuickEditKind.Link,
         QuickEditKind.Places,
         QuickEditKind.Choice,
-        QuickEditKind.Portrait,
+        QuickEditKind.Photo,
         QuickEditKind.Relations,
         -> InlineInputKind.TEXT
     }

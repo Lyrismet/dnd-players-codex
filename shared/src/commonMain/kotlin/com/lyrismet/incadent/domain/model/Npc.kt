@@ -10,7 +10,7 @@ data class Npc(
     val locationIds: List<Long>,
     val race: String,
     val faction: String,
-    val portraitBase64: String? = null,
+    val portrait: Photo? = null,
 )
 
 /** the party's relation to this npc - independent of whether the npc is still alive */

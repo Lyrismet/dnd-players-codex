@@ -2,25 +2,33 @@ CREATE TABLE location (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
-    parent_id INTEGER REFERENCES location(id) ON DELETE SET NULL
+    parent_id INTEGER REFERENCES location(id) ON DELETE SET NULL,
+    cover BLOB,
+    cover_thumb BLOB
 );
 
 CREATE INDEX location_parent_id ON location(parent_id);
 
+-- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT * FROM location ORDER BY name;
+SELECT id, name, description, parent_id, cover_thumb FROM location ORDER BY name;
 
 selectById:
-SELECT * FROM location WHERE id = ?;
+SELECT id, name, description, parent_id, cover_thumb, cover FROM location WHERE id = ?;
 
 insert:
-INSERT INTO location(name, description, parent_id)
-VALUES (?, ?, ?);
+INSERT INTO location(name, description, parent_id, cover, cover_thumb)
+VALUES (?, ?, ?, ?, ?);
 
+-- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE location
 SET name = ?, description = ?, parent_id = ?
 WHERE id = ?;
+
+setCover:
+UPDATE location SET cover = ?, cover_thumb = ? WHERE id = ?;
+
 
 deleteById:
 DELETE FROM location WHERE id = ?;

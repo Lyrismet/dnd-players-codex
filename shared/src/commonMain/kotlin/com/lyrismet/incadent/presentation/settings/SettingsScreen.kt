@@ -17,6 +17,7 @@ data object SettingsScreen : Screen
 
 data class SettingsState(
     val language: AppLanguage,
+    val languageSheetOpen: Boolean,
     val numbering: SessionNumbering,
     val mentionStyle: MentionStyle,
     val editMode: EntityEditMode,
@@ -29,8 +30,8 @@ data class SettingsState(
 ) : CircuitUiState
 
 sealed interface SettingsEvent : CircuitUiEvent {
-    data class LanguageSelected(
-        val language: AppLanguage,
+    data class LanguageSheet(
+        val event: LanguageSheetEvent,
     ) : SettingsEvent
 
     data class NumberingSelected(

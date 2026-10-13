@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Location
+import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -17,7 +18,7 @@ import kotlinx.coroutines.withContext
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class LocationRepositoryImpl(
-    database: AppDatabase,
+    private val database: AppDatabase,
     private val mentionRenamer: MentionRenamer,
 ) : LocationRepository {
     private val queries = database.locationQueries
@@ -27,18 +28,33 @@ class LocationRepositoryImpl(
 
     override suspend fun getById(id: Long): Location? =
         withContext(Dispatchers.Default) {
-            queries.selectById(id, ::toDomain).executeAsOneOrNull()
+            queries.selectById(id, ::toDomainFull).executeAsOneOrNull()
         }
 
     override suspend fun upsert(location: Location): Long =
         withContext(Dispatchers.Default) {
             if (location.id == 0L) {
-                queries.insert(location.name, location.description, location.parentId)
+                queries.insert(
+                    location.name,
+                    location.description,
+                    location.parentId,
+                    location.cover?.full,
+                    location.cover?.thumb,
+                )
                 queries.lastInsertRowId().executeAsOne()
             } else {
-                val oldName = queries.selectById(location.id, ::toDomain).executeAsOneOrNull()?.name
+                val stored = queries.selectById(location.id, ::toDomainFull).executeAsOneOrNull()
+                val oldName = stored?.name
                 val update: () -> Unit = {
-                    queries.update(location.name, location.description, location.parentId, location.id)
+                    database.transaction {
+                        queries.update(
+                            location.name,
+                            location.description,
+                            location.parentId,
+                            location.id,
+                        )
+                        writeCover(location.id, location.cover, stored?.cover)
+                    }
                 }
                 if (oldName != null) {
                     mentionRenamer.locationRenamed(location.id, oldName, location.name, update)
@@ -48,6 +64,18 @@ class LocationRepositoryImpl(
                 location.id
             }
         }
+
+    // null removes the picture, see needsWrite for what leaves it alone
+    private fun writeCover(
+        locationId: Long,
+        cover: Photo?,
+        stored: Photo?,
+    ) {
+        when {
+            cover == null -> if (stored != null) queries.setCover(null, null, locationId)
+            cover.needsWrite(stored) -> queries.setCover(cover.full, cover.thumb, locationId)
+        }
+    }
 
     override suspend fun delete(id: Long) {
         withContext(Dispatchers.Default) {
@@ -60,5 +88,17 @@ class LocationRepositoryImpl(
         name: String,
         description: String,
         parentId: Long?,
-    ) = Location(id, name, description, parentId)
+        coverThumb: ByteArray?,
+    ) = Location(id, name, description, parentId, coverThumb?.let { Photo(it) })
+
+    // the by-id row also carries the full jpeg - one param per column, dictated by the generated mapper
+    @Suppress("LongParameterList")
+    private fun toDomainFull(
+        id: Long,
+        name: String,
+        description: String,
+        parentId: Long?,
+        coverThumb: ByteArray?,
+        cover: ByteArray?,
+    ) = toDomain(id, name, description, parentId, coverThumb).copy(cover = coverThumb?.let { Photo(it, cover) })
 }

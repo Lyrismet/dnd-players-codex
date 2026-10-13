@@ -40,7 +40,7 @@ private val lira =
         hpMax = 28,
         hpCurrent = 22,
         description = "",
-        portraitBase64 = null,
+        portrait = null,
     )
 
 private val bran =

@@ -245,15 +245,18 @@ private fun SelectListRow(
         if (multi) SelectCheckbox(row.selected)
         if (!multi && leadingGlyph != null) Text(leadingGlyph, fontSize = 9.sp, color = AppPalette.Parchment)
         Column(modifier = Modifier.weight(1f)) {
+            // explicit line heights - without them the theme's tall default spreads the title and the path apart
             Text(
                 highlighted(row),
                 fontSize = 15.sp,
+                lineHeight = 20.sp,
                 color = AppPalette.TextPrimary,
             )
             row.option.subtitle?.let { subtitle ->
                 Text(
                     subtitle,
                     fontSize = 11.5.sp,
+                    lineHeight = 16.sp,
                     color = AppPalette.TextSecondary,
                     modifier = Modifier.padding(top = 1.dp),
                 )

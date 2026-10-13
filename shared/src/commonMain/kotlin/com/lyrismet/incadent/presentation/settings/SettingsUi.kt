@@ -52,8 +52,6 @@ import dndplayerscodex.shared.generated.resources.settings_hints_desc
 import dndplayerscodex.shared.generated.resources.settings_hints_show
 import dndplayerscodex.shared.generated.resources.settings_hints_title
 import dndplayerscodex.shared.generated.resources.settings_language_desc
-import dndplayerscodex.shared.generated.resources.settings_language_en
-import dndplayerscodex.shared.generated.resources.settings_language_ru
 import dndplayerscodex.shared.generated.resources.settings_language_title
 import dndplayerscodex.shared.generated.resources.settings_mention_desc
 import dndplayerscodex.shared.generated.resources.settings_mention_filled
@@ -68,6 +66,7 @@ import dndplayerscodex.shared.generated.resources.settings_phrases_title
 import dndplayerscodex.shared.generated.resources.settings_section_app
 import dndplayerscodex.shared.generated.resources.settings_section_campaign
 import dndplayerscodex.shared.generated.resources.settings_section_diary
+import dndplayerscodex.shared.generated.resources.settings_section_general
 import dndplayerscodex.shared.generated.resources.settings_storage_title
 import dndplayerscodex.shared.generated.resources.settings_storage_value
 import dndplayerscodex.shared.generated.resources.settings_title
@@ -100,7 +99,9 @@ fun SettingsUi(
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                AppSection(language = state.language, onLanguageSelected = { sink(SettingsEvent.LanguageSelected(it)) })
+                AppSection(language = state.language, onLanguageClick = {
+                    sink(SettingsEvent.LanguageSheet(LanguageSheetEvent.Opened))
+                })
                 DiarySection(
                     numbering = state.numbering,
                     mentionStyle = state.mentionStyle,
@@ -124,10 +125,22 @@ fun SettingsUi(
         }
     }
 
+    SettingsSheets(state)
+}
+
+@Composable
+private fun SettingsSheets(state: SettingsState) {
+    val sink = state.eventSink
     state.phraseSheet?.let { sheet ->
         PhraseSnippetsSheet(sheet) { event -> sink(SettingsEvent.PhraseSheet(event)) }
     }
-
+    if (state.languageSheetOpen) {
+        LanguageSheet(
+            selected = state.language,
+            onSelected = { sink(SettingsEvent.LanguageSheet(LanguageSheetEvent.Selected(it))) },
+            onDismiss = { sink(SettingsEvent.LanguageSheet(LanguageSheetEvent.Dismissed)) },
+        )
+    }
     val renameSheet = state.renameSheet
     if (renameSheet is RenameSheetState.Editing) {
         CampaignRenameSheet(
@@ -142,17 +155,14 @@ fun SettingsUi(
 @Composable
 private fun AppSection(
     language: AppLanguage,
-    onLanguageSelected: (AppLanguage) -> Unit,
+    onLanguageClick: () -> Unit,
 ) {
-    SettingsGroup(overline = stringResource(Res.string.settings_section_app)) {
-        ChoiceRow(
+    SettingsGroup(overline = stringResource(Res.string.settings_section_general)) {
+        LanguageRow(
             title = stringResource(Res.string.settings_language_title),
             description = stringResource(Res.string.settings_language_desc),
-            choices = AppLanguage.entries.map { SettingsChoice(it, it.label()) },
-            selected = language,
-            onSelected = onLanguageSelected,
-            labelStyle = ChoiceLabelSans,
-            width = 170.dp,
+            current = language.label(),
+            onClick = onLanguageClick,
         )
     }
 }
@@ -224,13 +234,6 @@ private fun CampaignSection(
         )
     }
 }
-
-@Composable
-private fun AppLanguage.label(): String =
-    when (this) {
-        AppLanguage.RUSSIAN -> stringResource(Res.string.settings_language_ru)
-        AppLanguage.ENGLISH -> stringResource(Res.string.settings_language_en)
-    }
 
 @Composable
 internal fun SettingsGroup(

@@ -12,7 +12,9 @@ import com.lyrismet.incadent.core.campaign.savedCampaignNameOrNull
 import com.lyrismet.incadent.core.designsystem.component.toChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
+import com.lyrismet.incadent.core.entitysummary.rememberFullPhoto
 import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
+import com.lyrismet.incadent.core.entitysummary.withFullPhoto
 import com.lyrismet.incadent.core.format.chronologicalIndex
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.russianPluralForm
@@ -139,7 +141,7 @@ class SessionListPresenter(
                 navigator,
                 entityHistory,
             )
-        val selectedEntity =
+        val selectedSummary =
             selectedEntitySummary(
                 selectedEntityRef.value,
                 npcs,
@@ -151,6 +153,14 @@ class SessionListPresenter(
                 numbering,
                 parties,
             )
+        val fullPhoto =
+            rememberFullPhoto(
+                selectedSummary,
+                mentionRepositories.npcRepository,
+                partyRepository,
+                mentionRepositories.locationRepository,
+            )
+        val selectedEntity = selectedSummary?.withFullPhoto(fullPhoto)
 
         val archiveItems = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems
         val swipeHintState by appPreferencesRepository

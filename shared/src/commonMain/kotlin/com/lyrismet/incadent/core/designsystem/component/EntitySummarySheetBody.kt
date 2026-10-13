@@ -98,6 +98,13 @@ fun EntitySummarySheetContent(
         if (quick != null && quick.inlineEdit != null) {
             EditorShield(hole = editorHole.hole, onOutsideTap = { quick.onEvent(QuickEditUiEvent.EditCancelled) })
         }
+        quick?.photoCrop?.let { draft ->
+            AppPhotoCropDraftWindow(
+                draft = draft,
+                onConfirm = { crop -> quick.onEvent(QuickEditUiEvent.PhotoCropConfirmed(crop)) },
+                onCancel = { quick.onEvent(QuickEditUiEvent.PhotoCropCancelled) },
+            )
+        }
         HoldTooShortToast(
             trigger = holdTooShortTrigger,
             text = stringResource(Res.string.quick_edit_hold_too_short),
@@ -151,6 +158,16 @@ private fun LocationSummaryBody(
     actions: EntitySummarySheetActions,
     onClose: () -> Unit,
 ) {
+    // a read-only card without a cover has nothing to show there, a quick-mode one offers the add strip
+    val hasCover = location.cover != null || actions.quickEdit != null
+    val coverSlot: @Composable () -> Unit = {
+        EntityCoverSlot(
+            cover = location.cover,
+            title = location.name,
+            quick = actions.quickEdit,
+            showEditHint = actions.onEditClicked != null,
+        )
+    }
     EntityHeader(
         emblem = location.emblem,
         overlineTypeLabel = stringResource(Res.string.session_detail_mention_type_location),
@@ -160,6 +177,7 @@ private fun LocationSummaryBody(
         onEditClicked = actions.onEditClicked?.let { edit -> { edit(location.ref) } },
         onClose = onClose,
         quick = actions.quickEdit,
+        cover = if (hasCover) coverSlot else null,
     )
     EntityDescription(location.description, actions.quickEdit)
     EntityFactsGrid(location.facts, actions.onEntityRefClicked, actions.quickEdit)
@@ -218,6 +236,8 @@ internal fun EntityHeader(
     strikeThrough: Boolean = false,
     onEditClicked: (() -> Unit)? = null,
     quick: QuickEditSheet? = null,
+    // a place's cover - sits between the overline row and the emblem, like the mockup's `sh.hasCover`
+    cover: (@Composable () -> Unit)? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         EntityOverlineRow(
@@ -239,22 +259,30 @@ internal fun EntityHeader(
         if (quick.hasVisibleHoldTip()) {
             Spacer(Modifier.height(8.dp))
             HoldTipSlot(quick)
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(if (cover != null) 10.dp else 18.dp))
         } else {
-            // mockup - the overline's -6dp margin leaves 12dp before the header row
-            Spacer(Modifier.height(12.dp))
+            // mockup - the overline's -6dp margin leaves 12dp before the header row, a cover's -4dp margin 8dp
+            Spacer(Modifier.height(if (cover != null) 8.dp else 12.dp))
+        }
+        if (cover != null) {
+            cover()
+            Spacer(Modifier.height(14.dp))
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (emblem.hasPortraitSlot) EntityPortraitSlot(emblem, quick) else EntityEmblemBox(emblem)
+            if (emblem.hasPortraitSlot) {
+                EntityPortraitSlot(emblem, title, quick, showEditHint = onEditClicked != null)
+            } else {
+                EntityEmblemBox(emblem)
+            }
             EntityTitleBlock(
                 title = title,
                 subtitle = subtitle,
                 strikeThrough = strikeThrough,
                 quick = quick,
-                showPortraitHint = emblem.hasPortraitSlot && emblem.portraitBase64 == null && quick != null,
+                showPortraitHint = emblem.hasPortraitSlot && emblem.portrait == null && quick != null,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -347,7 +375,7 @@ private fun EntityEmblemBox(
 ) {
     val shape = if (emblem.shape == EntityEmblemShape.CIRCLE) CircleShape else RoundedCornerShape(14.dp)
     PortraitBadge(
-        portraitBase64 = emblem.portraitBase64,
+        portrait = emblem.portrait,
         color = emblem.color,
         size = 58.dp,
         shape = shape,

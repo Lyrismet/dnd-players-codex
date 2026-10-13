@@ -48,6 +48,7 @@ class SettingsPresenter(
         val defaultCampaignName = stringResource(Res.string.default_campaign_name)
         val campaignName = campaignNameOverride ?: defaultCampaignName
         val renameSheet = remember { mutableStateOf<RenameSheetState>(RenameSheetState.Hidden) }
+        val languageSheet = remember { LanguageSheetController(languageRepository) }
         val pinnedPhrases by phraseSnippetRepository.observeAll().collectAsState(initial = emptyList())
         val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
         val frequentPhrases = rememberFrequentPhrases(allEntries)
@@ -56,6 +57,7 @@ class SettingsPresenter(
 
         return SettingsState(
             language = language,
+            languageSheetOpen = languageSheet.isOpen.value,
             numbering = numbering,
             mentionStyle = mentionStyle,
             editMode = editMode,
@@ -66,7 +68,7 @@ class SettingsPresenter(
             phraseSheet = phrases.sheetState(pinnedPhrases, frequentPhrases),
         ) { event ->
             when (event) {
-                is SettingsEvent.LanguageSelected -> languageRepository.setLanguage(event.language)
+                is SettingsEvent.LanguageSheet -> languageSheet.onEvent(event.event)
                 is SettingsEvent.NumberingSelected -> appPreferencesRepository.setSessionNumbering(event.numbering)
                 is SettingsEvent.MentionStyleSelected -> appPreferencesRepository.setMentionStyle(event.style)
                 is SettingsEvent.EditModeSelected -> appPreferencesRepository.setEntityEditMode(event.mode)

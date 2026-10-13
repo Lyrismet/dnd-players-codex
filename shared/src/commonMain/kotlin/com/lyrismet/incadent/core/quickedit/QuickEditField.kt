@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.core.quickedit
 
 import com.lyrismet.incadent.domain.model.PartyStatRanges
+import com.lyrismet.incadent.domain.model.Photo
 
 /** how a field takes its value - text and numbers are typed in, links and choices are tapped */
 sealed interface QuickEditKind {
@@ -20,8 +21,8 @@ sealed interface QuickEditKind {
     /** a group of linked entities on the card - every tap on a candidate toggles its link at once */
     data object Relations : QuickEditKind
 
-    /** a picked photo - it has no typed draft, the picker hands over the finished value */
-    data object Portrait : QuickEditKind
+    /** a picked and cropped photo - it has no typed draft, the crop window hands over the finished value */
+    data object Photo : QuickEditKind
 }
 
 /** every card field a quick edit can change - each entity type only uses its own subset */
@@ -45,7 +46,10 @@ enum class QuickEditField(
     LIFE(QuickEditKind.Choice),
     QUEST_STATUS(QuickEditKind.Choice),
     PRESENCE(QuickEditKind.Choice),
-    PORTRAIT(QuickEditKind.Portrait),
+    PORTRAIT(QuickEditKind.Photo),
+
+    /** the wide picture at the top of a place's card */
+    COVER(QuickEditKind.Photo),
 
     /** the quests an npc gave - each one is a quest whose giver is this npc */
     GIVEN_QUESTS(QuickEditKind.Relations),
@@ -78,8 +82,9 @@ sealed interface QuickEditValue {
         val id: Long?,
     ) : QuickEditValue
 
-    data class Portrait(
-        val base64: String,
+    /** null removes the photo */
+    data class Picture(
+        val photo: Photo?,
     ) : QuickEditValue
 }
 
@@ -100,7 +105,7 @@ fun quickEditValueFromDraft(
         QuickEditKind.Link,
         QuickEditKind.Places,
         QuickEditKind.Choice,
-        QuickEditKind.Portrait,
+        QuickEditKind.Photo,
         QuickEditKind.Relations,
         -> null
     }

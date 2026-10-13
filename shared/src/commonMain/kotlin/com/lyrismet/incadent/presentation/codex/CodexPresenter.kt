@@ -23,6 +23,8 @@ import com.lyrismet.incadent.core.entitysummary.npcLifeLabels
 import com.lyrismet.incadent.core.entitysummary.npcStatusLabels
 import com.lyrismet.incadent.core.entitysummary.partyPresenceLabels
 import com.lyrismet.incadent.core.entitysummary.questStatusLabels
+import com.lyrismet.incadent.core.entitysummary.rememberFullPhoto
+import com.lyrismet.incadent.core.entitysummary.withFullPhoto
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
@@ -33,6 +35,7 @@ import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.core.quickedit.QuickEditInteractions
 import com.lyrismet.incadent.core.quickedit.QuickEditKind
 import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
+import com.lyrismet.incadent.core.quickedit.QuickPhotoCrop
 import com.lyrismet.incadent.core.quickedit.rememberQuickEditFieldTitles
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.core.swipehint.codexSwipeHintDirection
@@ -101,6 +104,8 @@ private class CodexFields(
     val selectedEntityRef: MutableState<EntityRef?>,
     val entitySheet: EntitySheetInteractions,
     val inlineEdit: MutableState<InlineEdit?>,
+    // the photo waiting in the crop window of the open card, quick mode only
+    val photoCrop: MutableState<QuickPhotoCrop?>,
     val quickEdit: QuickEditInteractions,
     val toast: MutableState<CodexToast?>,
     // the places picked or created last, newest first - the select sheet lists them above the rest
@@ -197,7 +202,9 @@ class CodexPresenter(
             entityLookupOf(npcs, locations, quests, sessionNotes, sessionEntries, candidates, numbering, parties)
         // keyed on the lookup data, so typing in the open editor doesn't re-parse every session entry
         val selectedRef = fields.selectedEntityRef.value
-        val selectedEntity = remember(selectedRef, lookup) { selectedRef?.let { buildEntitySummary(it, lookup) } }
+        val selectedSummary = remember(selectedRef, lookup) { selectedRef?.let { buildEntitySummary(it, lookup) } }
+        val fullPhoto = rememberFullPhoto(selectedSummary, npcRepository, partyRepository, locationRepository)
+        val selectedEntity = selectedSummary?.withFullPhoto(fullPhoto)
 
         val isTabSelected = LocalTabSelected.current
         val swipeHintTarget =
@@ -310,6 +317,7 @@ class CodexPresenter(
         val selectedEntityRef = rememberRetained { mutableStateOf<EntityRef?>(null) }
         val entityHistory = rememberRetained { mutableStateOf(emptyList<EntityRef>()) }
         val inlineEdit = rememberRetained { mutableStateOf<InlineEdit?>(null) }
+        val photoCrop = rememberRetained { mutableStateOf<QuickPhotoCrop?>(null) }
         val entitySheet =
             EntitySheetInteractions(
                 selectedEntityRef,
@@ -323,7 +331,7 @@ class CodexPresenter(
                 },
             )
         val quickEdit =
-            QuickEditInteractions(inlineEdit, selectedEntityRef, entitySheet, imageCompressor) {
+            QuickEditInteractions(inlineEdit, photoCrop, selectedEntityRef, entitySheet, imageCompressor) {
                 appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
             }
         val toast = rememberRetained { mutableStateOf<CodexToast?>(null) }
@@ -338,6 +346,7 @@ class CodexPresenter(
             selectedEntityRef,
             entitySheet,
             inlineEdit,
+            photoCrop,
             quickEdit,
             toast,
             recentPlaceIds,
@@ -454,6 +463,7 @@ class CodexPresenter(
             activeSheet = codexActiveSheet(formState, selectedEntity),
             editMode = context.editMode,
             inlineEdit = inlineEdit,
+            photoCrop = fields.photoCrop.value?.draft,
             quickPlaceSelect = quickPlaceSelectState(inlineEdit, fields, records),
             holdTipVisible =
                 context.editMode == EntityEditMode.QUICK &&

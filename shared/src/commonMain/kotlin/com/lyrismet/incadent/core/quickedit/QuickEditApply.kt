@@ -16,7 +16,7 @@ private fun QuickEditValue.number(): QuickEditValue.Number? = this as? QuickEdit
 
 private fun QuickEditValue.places(): QuickEditValue.Places? = this as? QuickEditValue.Places
 
-private fun QuickEditValue.portrait(): String? = (this as? QuickEditValue.Portrait)?.base64
+private fun QuickEditValue.picture(): QuickEditValue.Picture? = this as? QuickEditValue.Picture
 
 private fun QuickEditValue.link(): QuickEditValue.Link? = this as? QuickEditValue.Link
 
@@ -32,7 +32,7 @@ fun Npc.withQuickEdit(
         QuickEditField.RACE -> value.name?.let { copy(race = it) }
         QuickEditField.FACTION -> value.name?.let { copy(faction = it) }
         QuickEditField.PLACE -> value.places()?.let { copy(locationIds = it.ids) }
-        QuickEditField.PORTRAIT -> value.portrait()?.let { copy(portraitBase64 = it) }
+        QuickEditField.PORTRAIT -> value.picture()?.let { copy(portrait = it.photo) }
         else -> null
     }
 
@@ -57,6 +57,7 @@ fun Location.withQuickEdit(
         QuickEditField.NAME -> value.name?.let { copy(name = it) }
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
         QuickEditField.PARENT -> value.places()?.let { copy(parentId = it.ids.firstOrNull()) }
+        QuickEditField.COVER -> value.picture()?.let { copy(cover = it.photo) }
         else -> null
     }
 
@@ -76,7 +77,7 @@ private fun PartyMember.withTextQuickEdit(
         QuickEditField.RACE -> value.name?.let { copy(race = it) }
         QuickEditField.CHARACTER_CLASS -> value.name?.let { copy(characterClass = it) }
         QuickEditField.PLAYER_NAME -> value.name?.let { copy(playerName = it) }
-        QuickEditField.PORTRAIT -> value.portrait()?.let { copy(portraitBase64 = it) }
+        QuickEditField.PORTRAIT -> value.picture()?.let { copy(portrait = it.photo) }
         else -> null
     }
 

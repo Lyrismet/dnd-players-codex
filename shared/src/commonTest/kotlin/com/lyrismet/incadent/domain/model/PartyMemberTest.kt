@@ -17,7 +17,7 @@ class PartyMemberTest {
             hpMax = 52,
             hpCurrent = 43,
             description = "",
-            portraitBase64 = null,
+            portrait = null,
         )
 
     @Test

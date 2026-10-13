@@ -2,6 +2,7 @@ package com.lyrismet.incadent.core.quickedit
 
 import androidx.compose.runtime.Composable
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_entry_label_cover
 import dndplayerscodex.shared.generated.resources.codex_entry_label_portrait
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
@@ -45,6 +46,7 @@ fun rememberQuickEditFieldTitles(): Map<QuickEditField, String> =
         QuickEditField.QUEST_STATUS to stringResource(Res.string.entity_sheet_status_label),
         QuickEditField.PRESENCE to stringResource(Res.string.entity_sheet_party_presence_label),
         QuickEditField.PORTRAIT to stringResource(Res.string.codex_entry_label_portrait),
+        QuickEditField.COVER to stringResource(Res.string.codex_entry_label_cover),
         QuickEditField.GIVEN_QUESTS to stringResource(Res.string.entity_sheet_group_npc_quests_given),
         QuickEditField.RESIDENTS to stringResource(Res.string.entity_sheet_group_location_npcs),
         QuickEditField.PLACE_QUESTS to stringResource(Res.string.entity_sheet_group_location_quests),

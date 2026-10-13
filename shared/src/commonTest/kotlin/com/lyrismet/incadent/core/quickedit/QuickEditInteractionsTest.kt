@@ -9,6 +9,8 @@ import com.lyrismet.incadent.core.entitysummary.FakePartyRepository
 import com.lyrismet.incadent.core.entitysummary.FakeQuestRepository
 import com.lyrismet.incadent.core.entitysummary.RecordingNavigator
 import com.lyrismet.incadent.core.portrait.ImageCompressor
+import com.lyrismet.incadent.core.portrait.PhotoCropDraft
+import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
@@ -118,10 +120,26 @@ class QuickEditInteractionsTest {
             assertNull(harness.quests.stored(5)?.givenByNpcId)
         }
 
+    @Test
+    fun `removing the portrait writes a null photo and cancelling a crop writes nothing`() =
+        runTest {
+            val harness = Harness()
+            harness.photoCrop.value = QuickPhotoCrop(PhotoCropDraft(ByteArray(0), PhotoSlot.PORTRAIT), EntityRef.Npc(1))
+
+            harness.interactions.onEvent(this, QuickEditUiEvent.PhotoCropCancelled)
+            advanceUntilIdle()
+            assertNull(harness.photoCrop.value)
+
+            harness.interactions.onEvent(this, QuickEditUiEvent.PhotoRemoved(PhotoSlot.PORTRAIT))
+            advanceUntilIdle()
+            assertNull(harness.npcs.stored(1)?.portrait)
+        }
+
     private class Harness {
         val npcs = FakeNpcRepository(Npc(1, "Кассиан", NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), "", ""))
         val quests = FakeQuestRepository(Quest(5, "Меч", QuestStatus.ACTIVE, "", null, null, ""))
         val inlineEdit = mutableStateOf<InlineEdit?>(null)
+        val photoCrop = mutableStateOf<QuickPhotoCrop?>(null)
         val selected = mutableStateOf<EntityRef?>(EntityRef.Npc(1))
         var hintSeen = false
         private val entitySheet =
@@ -132,7 +150,7 @@ class QuickEditInteractionsTest {
                 RecordingNavigator(),
             )
         val interactions =
-            QuickEditInteractions(inlineEdit, selected, entitySheet, ImageCompressor()) { hintSeen = true }
+            QuickEditInteractions(inlineEdit, photoCrop, selected, entitySheet, ImageCompressor()) { hintSeen = true }
 
         fun open(
             field: QuickEditField,

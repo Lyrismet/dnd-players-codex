@@ -106,6 +106,7 @@ internal fun CodexEntryFormUi(
         modifier = modifier,
     ) {
         CodexEntryFormContent(form, eventSink, onClose)
+        FormPhotoCropWindow(form, eventSink)
     }
 }
 
@@ -364,6 +365,7 @@ private fun LocationEntryFields(
         onChange = { eventSink(CodexEvent.EntryFieldChanged(CodexEntryField.DESCRIPTION, it)) },
         placeholder = stringResource(Res.string.codex_entry_placeholder_location_description),
     )
+    CoverField(form, eventSink)
 }
 
 @Composable

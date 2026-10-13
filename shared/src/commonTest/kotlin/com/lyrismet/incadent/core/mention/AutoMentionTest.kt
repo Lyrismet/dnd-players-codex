@@ -203,7 +203,7 @@ class PartyMentionTest {
                 hpMax = null,
                 hpCurrent = null,
                 description = "",
-                portraitBase64 = null,
+                portrait = null,
             )
 
         assertEquals(
