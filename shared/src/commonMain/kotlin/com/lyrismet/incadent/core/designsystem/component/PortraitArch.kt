@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,7 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.StatusColor
-import com.lyrismet.incadent.core.portrait.decodePortraitBitmap
+import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
+import com.lyrismet.incadent.domain.model.Photo
 
 private val PortraitArchShape =
     RoundedCornerShape(topStart = 44.dp, topEnd = 44.dp, bottomStart = 12.dp, bottomEnd = 12.dp)
@@ -37,12 +37,12 @@ private val DiamondHaloSize = 14.dp
 
 /**
  * the npc/party portrait of the entity sheet header, see Players Codex v6.dc.html's sheet `sh.isPortrait` - an 88x114
- * arch with a gold inset ring and diamond. A decoded [portraitBase64] fills it, otherwise [emblemText]. [onClick]
+ * arch with a gold inset ring and diamond. A decoded [portrait] fills it, otherwise [emblemText]. [onClick]
  * non-null makes it tappable and, while empty, adds the "+" badge that invites a tap.
  */
 @Composable
 fun PortraitArch(
-    portraitBase64: String?,
+    portrait: Photo?,
     emblemText: String,
     color: StatusColor,
     monochrome: Boolean,
@@ -60,8 +60,8 @@ fun PortraitArch(
                     .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
             contentAlignment = Alignment.Center,
         ) {
-            if (portraitBase64 != null) {
-                val bitmap = remember(portraitBase64) { decodePortraitBitmap(portraitBase64) }
+            if (portrait != null) {
+                val bitmap = rememberPhotoBitmap(portrait.display)
                 Image(
                     bitmap = bitmap,
                     contentDescription = null,
@@ -85,7 +85,7 @@ fun PortraitArch(
             )
         }
         ArchDiamond(Modifier.align(Alignment.TopCenter))
-        if (onClick != null && portraitBase64 == null) {
+        if (onClick != null && portrait == null) {
             AddPortraitBadge(Modifier.align(Alignment.BottomEnd))
         }
     }

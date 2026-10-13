@@ -1,10 +1,12 @@
 package com.lyrismet.incadent.core.quickedit
 
+import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.PartyPresence
+import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import kotlin.test.Test
@@ -37,7 +39,7 @@ class QuickEditApplyTest {
             hpMax = 40,
             hpCurrent = 38,
             description = "",
-            portraitBase64 = null,
+            portrait = null,
         )
 
     @Test
@@ -66,11 +68,25 @@ class QuickEditApplyTest {
 
     @Test
     fun `a picked portrait is written for npc and party and rejected elsewhere`() {
-        val portrait = QuickEditValue.Portrait("abc")
+        val photo = Photo(thumb = byteArrayOf(1), full = byteArrayOf(1, 2, 3))
+        val portrait = QuickEditValue.Picture(photo)
 
-        assertEquals("abc", npc.withQuickEdit(QuickEditField.PORTRAIT, portrait)?.portraitBase64)
-        assertEquals("abc", member.withQuickEdit(QuickEditField.PORTRAIT, portrait)?.portraitBase64)
+        assertEquals(photo, npc.withQuickEdit(QuickEditField.PORTRAIT, portrait)?.portrait)
+        assertEquals(photo, member.withQuickEdit(QuickEditField.PORTRAIT, portrait)?.portrait)
         assertNull(npc.withQuickEdit(QuickEditField.NAME, portrait))
+    }
+
+    @Test
+    fun `a removed photo clears the portrait and a place takes a cover`() {
+        val old = Photo(byteArrayOf(9), byteArrayOf(9, 9))
+        val fresh = Photo(byteArrayOf(1), byteArrayOf(1, 1))
+        val withPortrait = npc.copy(portrait = old)
+        val place = Location(id = 4, name = "Храм", description = "", cover = old)
+
+        assertNull(withPortrait.withQuickEdit(QuickEditField.PORTRAIT, QuickEditValue.Picture(null))?.portrait)
+        assertEquals(fresh, place.withQuickEdit(QuickEditField.COVER, QuickEditValue.Picture(fresh))?.cover)
+        assertNull(place.withQuickEdit(QuickEditField.COVER, QuickEditValue.Picture(null))?.cover)
+        assertNull(npc.withQuickEdit(QuickEditField.COVER, QuickEditValue.Picture(fresh)))
     }
 
     @Test

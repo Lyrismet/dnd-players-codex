@@ -57,7 +57,7 @@ private val bard =
         hpMax = 20,
         hpCurrent = 20,
         description = "Ловкий карманник",
-        portraitBase64 = null,
+        portrait = null,
     )
 
 private val regions = CodexRegions(npcs, locations)

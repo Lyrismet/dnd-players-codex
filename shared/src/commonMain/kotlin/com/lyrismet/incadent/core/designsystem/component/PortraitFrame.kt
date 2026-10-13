@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,7 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.portrait.decodePortraitBitmap
+import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
+import com.lyrismet.incadent.domain.model.Photo
 
 private val PortraitFrameWidth = 72.dp
 private val PortraitFrameHeight = 94.dp
@@ -33,11 +33,11 @@ private val DiamondSize = 6.dp
 
 /**
  * the arch-shaped portrait slot of the create/edit form, see Players Codex v6.dc.html's form `photo()` - a decoded
- * [portraitBase64] cropped to fill when present, otherwise a gold "+". The ring turns gold once a portrait is set.
+ * [portrait] cropped to fill when present, otherwise a gold "+". The ring turns gold once a portrait is set.
  */
 @Composable
 fun PortraitFrame(
-    portraitBase64: String?,
+    portrait: Photo?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -51,8 +51,8 @@ fun PortraitFrame(
                     .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            if (portraitBase64 != null) {
-                val bitmap = remember(portraitBase64) { decodePortraitBitmap(portraitBase64) }
+            if (portrait != null) {
+                val bitmap = rememberPhotoBitmap(portrait.display)
                 Image(
                     bitmap = bitmap,
                     contentDescription = null,
@@ -62,7 +62,7 @@ fun PortraitFrame(
             } else {
                 Text("+", color = AppPalette.GoldBright, fontWeight = FontWeight.SemiBold, fontSize = 24.sp)
             }
-            val ring = if (portraitBase64 != null) AppPalette.Gold.copy(alpha = 0.6f) else AppPalette.BorderHover
+            val ring = if (portrait != null) AppPalette.Gold.copy(alpha = 0.6f) else AppPalette.BorderHover
             Box(Modifier.matchParentSize().border(1.5.dp, ring, PortraitFrameShape))
         }
         Box(

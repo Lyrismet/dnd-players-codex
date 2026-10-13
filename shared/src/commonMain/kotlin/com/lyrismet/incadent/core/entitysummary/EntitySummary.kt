@@ -14,6 +14,7 @@ import com.lyrismet.incadent.core.designsystem.toStatusGlyph
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.core.mention.MentionCandidate
+import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.core.quickedit.InlineEdit
 import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
@@ -23,6 +24,7 @@ import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.PartyPresence
+import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.SessionEntry
@@ -80,7 +82,7 @@ data class EntityEmblem(
     val shape: EntityEmblemShape,
     val color: StatusColor,
     // only an npc or a party member can carry a portrait - see Players Codex v6.dc.html's `por` flag
-    val portraitBase64: String? = null,
+    val portrait: Photo? = null,
     val isMonochrome: Boolean = false,
     // the sheet header draws the big arch instead of the round badge - npc and party only
     val hasPortraitSlot: Boolean = false,
@@ -169,6 +171,7 @@ sealed interface EntitySummaryItem {
         val ref: EntityRef.Location,
         val name: String,
         val description: String,
+        val cover: Photo?,
         val emblem: EntityEmblem,
         val subtitle: String,
         val facts: List<FactRow>,
@@ -252,7 +255,7 @@ private fun buildNpcSummary(
                 text = npc.name.take(1).uppercase(),
                 shape = EntityEmblemShape.CIRCLE,
                 color = npc.status.toStatusColor(),
-                portraitBase64 = npc.portraitBase64,
+                portrait = npc.portrait,
                 isMonochrome = isDead,
                 hasPortraitSlot = true,
             ),
@@ -310,7 +313,7 @@ private fun buildPartySummary(
                 text = member.name.take(1).uppercase(),
                 shape = EntityEmblemShape.CIRCLE,
                 color = PartyMemberColor,
-                portraitBase64 = member.portraitBase64,
+                portrait = member.portrait,
                 hasPortraitSlot = true,
             ),
         presenceOptions =
@@ -403,6 +406,7 @@ private fun buildLocationSummary(
         ref = EntityRef.Location(location.id),
         name = location.name,
         description = location.description,
+        cover = location.cover,
         emblem = EntityEmblem(MentionGlyph.LOCATION.symbol, EntityEmblemShape.ROUNDED, LocationMentionColor),
         subtitle = tree.ancestorsLabel(location),
         facts =
@@ -532,6 +536,8 @@ data class EntitySummarySheetActions(
 /** the in-place editing state a card renders - the presenter owns it, the card only shows it and forwards events */
 data class QuickEditSheet(
     val inlineEdit: InlineEdit?,
+    // the photo waiting in the crop window - drawn over the card until it is confirmed or cancelled
+    val photoCrop: PhotoCropDraft?,
     val holdTipVisible: Boolean,
     val onEvent: (QuickEditUiEvent) -> Unit,
 )

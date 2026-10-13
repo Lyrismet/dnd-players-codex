@@ -24,7 +24,7 @@ internal fun Npc.toCodexItem(
         id = npc.id,
         name = npc.name,
         initial = npc.name.take(1).uppercase(),
-        portraitBase64 = npc.portraitBase64,
+        portrait = npc.portrait,
         isDead = isDead,
         lifeBadge =
             if (isDead) {
@@ -44,7 +44,7 @@ internal fun List<PartyMember>.toPartyCodexItems(labels: PartyCardLabels): List<
             id = member.id,
             name = member.name,
             initial = member.name.take(1).uppercase(),
-            portraitBase64 = member.portraitBase64,
+            portrait = member.portrait,
             color = PartyMemberColor,
             presenceLabel = labels.presence.getValue(member.presence),
             presenceColor = member.presence.toStatusColor(),
@@ -91,4 +91,4 @@ internal fun Quest.toCodexItem(
 }
 
 internal fun Location.toCodexItem(subtitle: String? = null): LocationCodexItem =
-    LocationCodexItem(id = id, name = name, subtitle = subtitle)
+    LocationCodexItem(id = id, name = name, subtitle = subtitle, cover = cover)

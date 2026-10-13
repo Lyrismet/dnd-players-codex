@@ -173,9 +173,9 @@
     <string name="codex_entry_quick_add_helper">Запись появится в кодексе и сразу выберется здесь. Детали допишете позже.</string>
     <string name="codex_entry_quick_add_toast_format">«%1$s» добавлен в кодекс</string>
     <string name="codex_entry_label_portrait">Портрет</string>
-    <string name="codex_entry_portrait_hint_empty">Нажмите на рамку: сфотографируйте распечатку от мастера или выберите из галереи. Снимок сожмётся до ~60 КБ.</string>
+    <string name="codex_entry_portrait_hint_empty">Нажмите на рамку: сфотографируйте распечатку от мастера или выберите из галереи. Снимок сожмётся до ~50 КБ.</string>
     <string name="codex_entry_portrait_hint_filled">Портрет · %1$d КБ — хранится только на устройстве. Нажмите на рамку, чтобы переснять</string>
-    <string name="codex_entry_portrait_remove">Убрать</string>
+    <string name="codex_entry_portrait_remove">Удалить фото</string>
     <string name="codex_entry_portrait_source_camera">Камера</string>
     <string name="codex_entry_portrait_source_gallery">Галерея</string>
 
@@ -253,8 +253,8 @@
     <!-- settings -->
     <string name="settings_title">Настройки</string>
     <string name="settings_section_app">ПРИЛОЖЕНИЕ</string>
-    <string name="settings_language_title">Язык</string>
-    <string name="settings_language_desc">Язык интерфейса приложения</string>
+    <string name="settings_language_title">Язык интерфейса</string>
+    <string name="settings_language_desc">Записи и кодекс не переводятся - только кнопки и подписи</string>
     <string name="settings_language_ru">Русский</string>
     <string name="settings_language_en">English</string>
     <string name="settings_section_diary">ДНЕВНИК</string>
@@ -377,4 +377,29 @@
     <string name="codex_place_select_done">Готово · %1$d</string>
     <string name="codex_entry_pick_places_hint">Выберите одно или несколько мест</string>
     <string name="codex_entry_pick_place_hint">Выберите место</string>
+    <string name="photo_crop_overline">КАДРИРОВАНИЕ</string>
+    <string name="photo_crop_done">Готово</string>
+    <string name="photo_crop_cancel">Отмена</string>
+    <string name="photo_crop_reset">Сбросить</string>
+    <string name="photo_crop_hint">Перетащите снимок, чтобы выбрать кадр · %1$s</string>
+    <string name="photo_crop_again">Кадрировать</string>
+    <string name="photo_kind_portrait">Портрет</string>
+    <string name="photo_kind_cover">Обложка места</string>
+    <string name="photo_viewer_close">Закрыть просмотр</string>
+    <string name="photo_viewer_replace">Заменить</string>
+    <string name="photo_viewer_crop">Кадрировать</string>
+    <string name="photo_viewer_delete">Удалить</string>
+    <string name="photo_viewer_read_only">Заменить или удалить фото - в форме записи («Изменить» в шапке карточки)</string>
+    <string name="codex_cover_add">Добавить обложку</string>
+    <string name="codex_cover_form_placeholder">Широкое изображение места</string>
+    <string name="codex_cover_form_hint">карта, вид, иллюстрация · 16:9</string>
+    <string name="codex_cover_remove">Удалить обложку</string>
+    <string name="codex_entry_label_cover">Обложка места</string>
+    <string name="settings_language_ru_sub">Russian</string>
+    <string name="settings_language_en_sub">Английский</string>
+    <string name="settings_language_search">Найти язык</string>
+    <string name="settings_language_empty">Такого языка пока нет в списке.</string>
+    <string name="settings_language_footnote">Список строится из файлов перевода: новый язык появляется здесь сам, когда для него добавлены строки. Названия - на самом языке, чтобы его узнал тот, кто его читает.</string>
+    <string name="settings_section_general">Общее</string>
+    <string name="photo_cover_expand">⤢ Развернуть</string>
 </resources>

@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.PartyPresence
+import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -28,14 +29,14 @@ class PartyRepositoryImpl(
 
     override suspend fun getById(id: Long): PartyMember? =
         withContext(Dispatchers.Default) {
-            queries.selectById(id, ::toDomain).executeAsOneOrNull()
+            queries.selectById(id, ::toDomainFull).executeAsOneOrNull()
         }
 
     // a renamed member takes the "@mentions" of its old name along, in the same transaction as the update
     override suspend fun upsert(member: PartyMember): Long =
         withContext(Dispatchers.Default) {
             val oldName =
-                if (member.id == 0L) null else queries.selectById(member.id, ::toDomain).executeAsOneOrNull()?.name
+                if (member.id == 0L) null else queries.selectById(member.id, ::toDomainFull).executeAsOneOrNull()?.name
             if (oldName != null && oldName != member.name) {
                 mentionRenamer.partyRenamed(member.id, oldName, member.name) { write(member) }
                 member.id
@@ -60,7 +61,8 @@ class PartyRepositoryImpl(
                         hp_max = member.hpMax?.toLong(),
                         hp_current = member.hpCurrent?.toLong(),
                         description = member.description,
-                        portrait_uri = member.portraitBase64,
+                        portrait = member.portrait?.full,
+                        portrait_thumb = member.portrait?.thumb,
                     )
                     queries.lastInsertRowId().executeAsOne()
                 } else {
@@ -77,15 +79,26 @@ class PartyRepositoryImpl(
                                 hp_max = member.hpMax?.toLong(),
                                 hp_current = member.hpCurrent?.toLong(),
                                 description = member.description,
-                                portrait_uri = member.portraitBase64,
                                 id = member.id,
                             ).value
                     check(updatedRows > 0L) { "party member ${member.id} no longer exists" }
+                    writePortrait(member.id, member.portrait)
                     member.id
                 }
             if (member.isPlayerCharacter) queries.clearOtherPlayerCharacters(id)
             id
         }
+
+    // a photo without its full jpeg came from a list-level model and means "unchanged", null removes it
+    private fun writePortrait(
+        memberId: Long,
+        portrait: Photo?,
+    ) {
+        when {
+            portrait == null -> queries.setPortrait(null, null, memberId)
+            portrait.full != null -> queries.setPortrait(portrait.full, portrait.thumb, memberId)
+        }
+    }
 
     override suspend fun delete(id: Long) {
         withContext(Dispatchers.Default) {
@@ -107,7 +120,7 @@ class PartyRepositoryImpl(
         hpMax: Long?,
         hpCurrent: Long?,
         description: String,
-        portraitBase64: String?,
+        portraitThumb: ByteArray?,
     ) = PartyMember(
         id = id,
         name = name,
@@ -120,6 +133,37 @@ class PartyRepositoryImpl(
         hpMax = hpMax?.toInt(),
         hpCurrent = hpCurrent?.toInt(),
         description = description,
-        portraitBase64 = portraitBase64,
+        portrait = portraitThumb?.let { Photo(it) },
     )
+
+    // the by-id row also carries the full jpeg
+    @Suppress("LongParameterList")
+    private fun toDomainFull(
+        id: Long,
+        name: String,
+        characterClass: String,
+        race: String,
+        level: Long?,
+        playerName: String,
+        isPlayerCharacter: Long,
+        presence: PartyPresence,
+        hpMax: Long?,
+        hpCurrent: Long?,
+        description: String,
+        portraitThumb: ByteArray?,
+        portrait: ByteArray?,
+    ) = toDomain(
+        id,
+        name,
+        characterClass,
+        race,
+        level,
+        playerName,
+        isPlayerCharacter,
+        presence,
+        hpMax,
+        hpCurrent,
+        description,
+        portraitThumb,
+    ).copy(portrait = portraitThumb?.let { Photo(it, portrait) })
 }

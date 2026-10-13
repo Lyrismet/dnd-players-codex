@@ -72,7 +72,7 @@ private val lira =
         hpMax = 28,
         hpCurrent = 22,
         description = "Школа Воплощения",
-        portraitBase64 = null,
+        portrait = null,
     )
 private val forge = Location(id = 2, name = "Кузница", description = "")
 private val swordQuest =

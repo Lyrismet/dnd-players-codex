@@ -17,7 +17,9 @@ import com.lyrismet.incadent.core.designsystem.component.toChipItem
 import com.lyrismet.incadent.core.designsystem.toStatusColor
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
+import com.lyrismet.incadent.core.entitysummary.rememberFullPhoto
 import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
+import com.lyrismet.incadent.core.entitysummary.withFullPhoto
 import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
@@ -209,7 +211,7 @@ class SessionDetailPresenter(
         val entryMentions = mentionsIn(entries.map { it.body }, mention.candidates)
         val headerMentions = entryMentions.map { it.toChipItem() }
 
-        val selectedEntity =
+        val selectedSummary =
             selectedEntitySummary(
                 selectedEntityRef.value,
                 npcs,
@@ -221,6 +223,14 @@ class SessionDetailPresenter(
                 numbering,
                 parties,
             )
+        val fullPhoto =
+            rememberFullPhoto(
+                selectedSummary,
+                mentionRepositories.npcRepository,
+                partyRepository,
+                mentionRepositories.locationRepository,
+            )
+        val selectedEntity = selectedSummary?.withFullPhoto(fullPhoto)
 
         val editingEntryTimeLabel =
             editingEntryId.value?.let { id -> entries.find { it.id == id }?.createdAt?.toDisplayTime() }

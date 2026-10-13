@@ -1,8 +1,0 @@
--- an unchecked note has no pending auto-mention hint, a deleted mention keeps just the name and kind of its record
-ALTER TABLE session_entry ADD COLUMN mention_check INTEGER NOT NULL DEFAULT 0;
-
-CREATE TABLE deleted_mention (
-    name TEXT NOT NULL,
-    type TEXT NOT NULL,
-    PRIMARY KEY (name, type)
-);

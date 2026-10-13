@@ -219,6 +219,7 @@ private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
 private fun quickEditSheet(state: CodexState): QuickEditSheet =
     QuickEditSheet(
         inlineEdit = state.inlineEdit,
+        photoCrop = state.photoCrop,
         holdTipVisible = state.holdTipVisible,
         onEvent = { event -> state.eventSink(CodexEvent.QuickEdit(event)) },
     )

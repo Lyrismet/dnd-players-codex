@@ -1,12 +1,16 @@
 package com.lyrismet.incadent.presentation.codex
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,6 +36,8 @@ import com.lyrismet.incadent.core.designsystem.component.StatusBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.orDash
+import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
+import com.lyrismet.incadent.domain.model.Photo
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
@@ -61,11 +69,11 @@ private fun CodexCardRow(
 private fun CodexInitialBadge(
     initial: String,
     color: StatusColor,
-    portraitBase64: String? = null,
+    portrait: Photo? = null,
     monochrome: Boolean = false,
 ) {
     PortraitBadge(
-        portraitBase64 = portraitBase64,
+        portrait = portrait,
         color = color,
         size = 44.dp,
         shape = CircleShape,
@@ -85,7 +93,7 @@ internal fun NpcCodexCard(
         onClick = onClick,
         modifier = modifier,
         badge = {
-            CodexInitialBadge(item.initial, item.statusColor, item.portraitBase64, monochrome = item.isDead)
+            CodexInitialBadge(item.initial, item.statusColor, item.portrait, monochrome = item.isDead)
         },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -121,7 +129,7 @@ internal fun PartyCodexCard(
     CodexCardRow(
         onClick = onClick,
         modifier = modifier,
-        badge = { CodexInitialBadge(item.initial, item.color, item.portraitBase64) },
+        badge = { CodexInitialBadge(item.initial, item.color, item.portrait) },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
@@ -220,6 +228,21 @@ private fun QuestFactLabel(text: String) {
     Text(text, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextTertiary)
 }
 
+/** the place mark of the badge, drawn instead of typed - the "▲" glyph falls back to a tiny one in some fonts */
+@Composable
+private fun PlaceTriangle() {
+    Canvas(Modifier.size(width = 14.dp, height = 12.dp)) {
+        val path =
+            Path().apply {
+                moveTo(size.width / 2, 0f)
+                lineTo(size.width, size.height)
+                lineTo(0f, size.height)
+                close()
+            }
+        drawPath(path, AppPalette.Parchment)
+    }
+}
+
 @Composable
 internal fun LocationCodexCard(
     item: LocationCodexItem,
@@ -236,7 +259,18 @@ internal fun LocationCodexCard(
                 background = AppPalette.Parchment.copy(alpha = 0.08f),
                 border = AppPalette.Parchment.copy(alpha = 0.3f),
             ) {
-                Text(MentionGlyph.LOCATION.symbol, fontSize = 13.sp, color = AppPalette.Parchment)
+                PlaceTriangle()
+                // the mockup's badge: the cover fills the 44dp square above the glyph
+                item.cover?.let { cover ->
+                    // the list draws the thumbnail only
+                    val bitmap = rememberPhotoBitmap(cover.thumb)
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
             }
         },
     ) {

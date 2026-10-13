@@ -234,7 +234,7 @@ class EntitySheetInteractionsTest {
         hpMax = 52,
         hpCurrent = 43,
         description = "",
-        portraitBase64 = null,
+        portrait = null,
     )
 
     private fun npc(

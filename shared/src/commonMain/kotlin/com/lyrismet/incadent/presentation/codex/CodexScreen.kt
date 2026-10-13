@@ -7,6 +7,9 @@ import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
+import com.lyrismet.incadent.core.portrait.CropRect
+import com.lyrismet.incadent.core.portrait.PhotoCropDraft
+import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.core.quickedit.InlineEdit
 import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.core.selectlist.SelectOption
@@ -17,6 +20,7 @@ import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.PartyPresence
+import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
@@ -46,7 +50,7 @@ data class NpcCodexItem(
     val id: Long,
     val name: String,
     val initial: String,
-    val portraitBase64: String?,
+    val portrait: Photo?,
     val isDead: Boolean,
     val lifeBadge: NpcLifeBadge?,
     val statusLabel: String,
@@ -72,7 +76,7 @@ data class PartyCodexItem(
     val id: Long,
     val name: String,
     val initial: String,
-    val portraitBase64: String?,
+    val portrait: Photo?,
     val color: StatusColor,
     val presenceLabel: String,
     val presenceColor: StatusColor,
@@ -101,6 +105,8 @@ data class LocationCodexItem(
     val name: String,
     // the path above the place, null when there is nothing to show
     val subtitle: String?,
+    // the cover fills the list badge when the place has one
+    val cover: Photo? = null,
 )
 
 /** one chip of the codex group row */
@@ -120,7 +126,11 @@ data class CodexEntryFormState(
     val name: String = "",
     val description: String = "",
     // only rendered for party/npc types - see PortraitField in CodexEntryFormUi
-    val portraitBase64: String? = null,
+    val portrait: Photo? = null,
+    // the wide picture of a place, only rendered for the location type
+    val cover: Photo? = null,
+    // the photo waiting in the crop window over the form
+    val photoCrop: PhotoCropDraft? = null,
     val race: String = "",
     val faction: String = "",
     val reward: String = "",
@@ -247,6 +257,8 @@ data class CodexState(
     val editMode: EntityEditMode = EntityEditMode.QUICK,
     // the field editor open inside the entity card, if any - quick mode only
     val inlineEdit: InlineEdit? = null,
+    // the photo waiting in the crop window of the open card, quick mode only
+    val photoCrop: PhotoCropDraft? = null,
     // the select sheet of a place field being held on the card, quick mode only
     val quickPlaceSelect: PlaceSelectState? = null,
     val holdTipVisible: Boolean = false,
@@ -348,11 +360,24 @@ sealed interface CodexEvent : CircuitUiEvent {
         val text: String,
     ) : CodexEntryFormEvent
 
-    data class EntryPortraitPicked(
+    class EntryPhotoPicked(
+        val slot: PhotoSlot,
         val bytes: ByteArray,
     ) : CodexEntryFormEvent
 
-    data object EntryPortraitRemoved : CodexEntryFormEvent
+    data class EntryPhotoRecropRequested(
+        val slot: PhotoSlot,
+    ) : CodexEntryFormEvent
+
+    data class EntryPhotoCropConfirmed(
+        val crop: CropRect,
+    ) : CodexEntryFormEvent
+
+    data object EntryPhotoCropCancelled : CodexEntryFormEvent
+
+    data class EntryPhotoRemoved(
+        val slot: PhotoSlot,
+    ) : CodexEntryFormEvent
 
     data class EntryNpcStatusChanged(
         val status: NpcStatus,

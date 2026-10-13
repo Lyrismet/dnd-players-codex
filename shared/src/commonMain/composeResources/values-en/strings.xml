@@ -172,9 +172,9 @@
     <string name="codex_entry_quick_add_helper">The entry appears in the codex and is selected here right away. Fill in details later.</string>
     <string name="codex_entry_quick_add_toast_format">“%1$s” added to the codex</string>
     <string name="codex_entry_label_portrait">Portrait</string>
-    <string name="codex_entry_portrait_hint_empty">Tap the frame: take a photo of a handout from the GM or pick one from the gallery. The photo is compressed to ~60 KB.</string>
+    <string name="codex_entry_portrait_hint_empty">Tap the frame: take a photo of a handout from the GM or pick one from the gallery. The photo is compressed to ~50 KB.</string>
     <string name="codex_entry_portrait_hint_filled">Portrait · %1$d KB — stored on this device only. Tap the frame to retake it</string>
-    <string name="codex_entry_portrait_remove">Remove</string>
+    <string name="codex_entry_portrait_remove">Delete photo</string>
     <string name="codex_entry_portrait_source_camera">Camera</string>
     <string name="codex_entry_portrait_source_gallery">Gallery</string>
 
@@ -244,8 +244,8 @@
     <!-- settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_section_app">APP</string>
-    <string name="settings_language_title">Language</string>
-    <string name="settings_language_desc">Interface language</string>
+    <string name="settings_language_title">Interface language</string>
+    <string name="settings_language_desc">Entries and the codex are not translated - only buttons and labels</string>
     <string name="settings_language_ru">Русский</string>
     <string name="settings_language_en">English</string>
     <string name="settings_section_diary">JOURNAL</string>
@@ -364,4 +364,29 @@
     <string name="codex_place_select_done">Done · %1$d</string>
     <string name="codex_entry_pick_places_hint">Pick one or more places</string>
     <string name="codex_entry_pick_place_hint">Pick a place</string>
+    <string name="photo_crop_overline">CROP</string>
+    <string name="photo_crop_done">Done</string>
+    <string name="photo_crop_cancel">Cancel</string>
+    <string name="photo_crop_reset">Reset</string>
+    <string name="photo_crop_hint">Drag the photo to choose the frame · %1$s</string>
+    <string name="photo_crop_again">Crop</string>
+    <string name="photo_kind_portrait">Portrait</string>
+    <string name="photo_kind_cover">Place cover</string>
+    <string name="photo_viewer_close">Close viewer</string>
+    <string name="photo_viewer_replace">Replace</string>
+    <string name="photo_viewer_crop">Crop</string>
+    <string name="photo_viewer_delete">Delete</string>
+    <string name="photo_viewer_read_only">To replace or delete the photo, use the entry form (“Edit” in the card header)</string>
+    <string name="codex_cover_add">Add cover</string>
+    <string name="codex_cover_form_placeholder">A wide picture of the place</string>
+    <string name="codex_cover_form_hint">map, view, illustration · 16:9</string>
+    <string name="codex_cover_remove">Delete cover</string>
+    <string name="codex_entry_label_cover">Place cover</string>
+    <string name="settings_language_ru_sub">Russian</string>
+    <string name="settings_language_en_sub">Английский</string>
+    <string name="settings_language_search">Find a language</string>
+    <string name="settings_language_empty">No such language in the list yet.</string>
+    <string name="settings_language_footnote">The list is built from translation files: a new language appears here by itself once its strings are added. Names are in the language itself, so its reader can recognise it.</string>
+    <string name="settings_section_general">General</string>
+    <string name="photo_cover_expand">⤢ Expand</string>
 </resources>

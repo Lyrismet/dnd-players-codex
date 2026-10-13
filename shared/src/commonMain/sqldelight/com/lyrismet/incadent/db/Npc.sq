@@ -11,33 +11,45 @@ CREATE TABLE npc (
     race TEXT NOT NULL DEFAULT '',
     faction TEXT NOT NULL DEFAULT '',
     life_state TEXT AS NpcLifeState NOT NULL DEFAULT 'ALIVE',
-    portrait_base64 TEXT
+    portrait BLOB,
+    portrait_thumb BLOB
 );
 
 CREATE INDEX npc_location_id ON npc(location_id);
 
+-- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT * FROM npc ORDER BY name;
+SELECT id, name, status, description, location_id, race, faction, life_state, portrait_thumb
+FROM npc
+ORDER BY name;
 
 -- places come along in the same query so a write to either table re-emits one consistent list
 selectAllWithLocations:
 SELECT
-    npc.*,
+    npc.id, npc.name, npc.status, npc.description, npc.location_id, npc.race, npc.faction, npc.life_state,
+    npc.portrait_thumb,
     COALESCE((SELECT group_concat(location_id) FROM npc_location WHERE npc_id = npc.id), '') AS location_ids
 FROM npc
 ORDER BY name;
 
 selectById:
-SELECT * FROM npc WHERE id = ?;
+SELECT id, name, status, description, location_id, race, faction, life_state, portrait_thumb, portrait
+FROM npc
+WHERE id = ?;
 
 insert:
-INSERT INTO npc(name, status, description, race, faction, life_state, portrait_base64)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO npc(name, status, description, race, faction, life_state, portrait, portrait_thumb)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
+-- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE npc
-SET name = ?, status = ?, description = ?, race = ?, faction = ?, life_state = ?, portrait_base64 = ?
+SET name = ?, status = ?, description = ?, race = ?, faction = ?, life_state = ?
 WHERE id = ?;
+
+setPortrait:
+UPDATE npc SET portrait = ?, portrait_thumb = ? WHERE id = ?;
+
 
 deleteById:
 DELETE FROM npc WHERE id = ?;

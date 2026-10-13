@@ -3,16 +3,34 @@ package com.lyrismet.incadent.core.quickedit
 import androidx.compose.runtime.MutableState
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
+import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.ImageCompressor
-import com.lyrismet.incadent.core.portrait.encodePortraitBase64
+import com.lyrismet.incadent.core.portrait.PhotoCropDraft
+import com.lyrismet.incadent.core.portrait.PhotoSlot
+import com.lyrismet.incadent.core.portrait.encode
+import com.lyrismet.incadent.core.portrait.prepareCropDraft
+import com.lyrismet.incadent.core.portrait.recropDraft
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/** a photo in the crop window and the card it will be saved to - the ref is read once, the sheet may close meanwhile */
+class QuickPhotoCrop(
+    val draft: PhotoCropDraft,
+    val ref: EntityRef,
+)
+
+private fun PhotoSlot.field(): QuickEditField =
+    when (this) {
+        PhotoSlot.PORTRAIT -> QuickEditField.PORTRAIT
+        PhotoSlot.COVER -> QuickEditField.COVER
+    }
+
 /** the open-editor flow every card that supports quick edits delegates to - the presenter owns the state */
 class QuickEditInteractions(
     private val inlineEdit: MutableState<InlineEdit?>,
+    private val photoCrop: MutableState<QuickPhotoCrop?>,
     private val selectedRef: MutableState<EntityRef?>,
     private val entitySheet: EntitySheetInteractions,
     private val imageCompressor: ImageCompressor,
@@ -42,24 +60,59 @@ class QuickEditInteractions(
                 }
             is QuickEditUiEvent.RelationToggled -> toggleRelation(scope, event.id)
             QuickEditUiEvent.HoldHintDismissed -> onHoldHintSeen()
-            is QuickEditUiEvent.PortraitPicked -> savePortrait(scope, event.bytes)
+            is QuickEditPhotoEvent -> onPhotoEvent(scope, event)
+        }
+    }
+
+    private fun onPhotoEvent(
+        scope: CoroutineScope,
+        event: QuickEditPhotoEvent,
+    ) {
+        when (event) {
+            is QuickEditUiEvent.PhotoPicked -> openCrop(scope, event.slot, event.bytes)
+            is QuickEditUiEvent.PhotoRecropRequested -> openRecrop(event.slot, event.stored)
+            is QuickEditUiEvent.PhotoCropConfirmed -> saveCrop(scope, event.crop)
+            QuickEditUiEvent.PhotoCropCancelled -> photoCrop.value = null
+            is QuickEditUiEvent.PhotoRemoved -> commit(scope, event.slot.field(), QuickEditValue.Picture(null))
         }
     }
 
     /** drops any open editor - called when the card closes or switches to another entity */
     fun onSheetClosed() {
         inlineEdit.value = null
+        photoCrop.value = null
     }
 
-    // compression runs off the main thread, the sheet may close meanwhile so the ref is read once up front
-    private fun savePortrait(
+    // shrinking a big pick runs off the main thread, a second pick while one is working simply wins the race
+    private fun openCrop(
         scope: CoroutineScope,
+        slot: PhotoSlot,
         rawBytes: ByteArray,
     ) {
         val ref = selectedRef.value ?: return
         scope.launch {
-            val base64 = withContext(Dispatchers.Default) { encodePortraitBase64(rawBytes, imageCompressor) }
-            entitySheet.onQuickEdit(scope, ref, QuickEditField.PORTRAIT, QuickEditValue.Portrait(base64))
+            val draft = withContext(Dispatchers.Default) { prepareCropDraft(rawBytes, slot, imageCompressor) }
+            photoCrop.value = QuickPhotoCrop(draft, ref)
+        }
+    }
+
+    private fun openRecrop(
+        slot: PhotoSlot,
+        stored: ByteArray,
+    ) {
+        val ref = selectedRef.value ?: return
+        photoCrop.value = QuickPhotoCrop(recropDraft(stored, slot), ref)
+    }
+
+    private fun saveCrop(
+        scope: CoroutineScope,
+        crop: CropRect,
+    ) {
+        val pending = photoCrop.value ?: return
+        photoCrop.value = null
+        scope.launch {
+            val photo = withContext(Dispatchers.Default) { pending.draft.encode(crop, imageCompressor) }
+            entitySheet.onQuickEdit(scope, pending.ref, pending.draft.slot.field(), QuickEditValue.Picture(photo))
         }
     }
 

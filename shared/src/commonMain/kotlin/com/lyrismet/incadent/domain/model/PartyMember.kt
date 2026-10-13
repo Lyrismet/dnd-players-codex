@@ -12,7 +12,7 @@ data class PartyMember(
     val hpMax: Int?,
     val hpCurrent: Int?,
     val description: String,
-    val portraitBase64: String? = null,
+    val portrait: Photo? = null,
 )
 
 enum class PartyPresence {

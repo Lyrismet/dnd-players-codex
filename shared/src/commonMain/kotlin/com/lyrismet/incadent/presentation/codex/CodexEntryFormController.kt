@@ -13,8 +13,13 @@ import com.lyrismet.incadent.core.entitysummary.npcStatusLabels
 import com.lyrismet.incadent.core.entitysummary.partyPresenceLabels
 import com.lyrismet.incadent.core.entitysummary.questStatusLabels
 import com.lyrismet.incadent.core.format.capitalizeFirst
+import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.ImageCompressor
-import com.lyrismet.incadent.core.portrait.encodePortraitBase64
+import com.lyrismet.incadent.core.portrait.PhotoCropDraft
+import com.lyrismet.incadent.core.portrait.PhotoSlot
+import com.lyrismet.incadent.core.portrait.encode
+import com.lyrismet.incadent.core.portrait.prepareCropDraft
+import com.lyrismet.incadent.core.portrait.recropDraft
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -22,6 +27,7 @@ import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.PartyStatRanges
+import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.clampedToRanges
@@ -71,7 +77,7 @@ internal data class CodexEntryFormFields(
     val name: String = "",
     val description: String = "",
     // shared between npc and party - the only two types the mockup gives a portrait frame to
-    val portraitBase64: String? = null,
+    val portrait: Photo? = null,
     val race: String = "",
     val faction: String = "",
     val npcStatus: NpcStatus = NpcStatus.NEUTRAL,
@@ -82,12 +88,16 @@ internal data class CodexEntryFormFields(
     val questLocationId: Long? = null,
     val questStatus: QuestStatus = QuestStatus.ACTIVE,
     val locationParentId: Long? = null,
+    // the wide picture of a place - the only photo a location has
+    val cover: Photo? = null,
     val party: PartyFormFields = PartyFormFields(),
     // null means the select sheet is closed - see onPlaceFieldOpened
     val placeSelectField: CodexEntryPlaceField? = null,
     // null means no "+ New X" quick-add input is open - see onQuickAddOpened
     val quickAddField: CodexEntryChipField? = null,
     val quickAddDraft: String = "",
+    // the photo waiting in the crop window, transient like the select sheet
+    val photoCrop: PhotoCropDraft? = null,
 ) {
     // the select sheet and quick-add are transient panels, only the values the user typed or picked count as a change
     fun hasUnsavedChanges(baseline: CodexEntryFormFields?): Boolean =
@@ -96,6 +106,7 @@ internal data class CodexEntryFormFields(
                 placeSelectField = baseline.placeSelectField,
                 quickAddField = baseline.quickAddField,
                 quickAddDraft = baseline.quickAddDraft,
+                photoCrop = baseline.photoCrop,
             ) != baseline
 }
 
@@ -158,8 +169,11 @@ class CodexEntryFormController private constructor(
         when (event) {
             is CodexEvent.EntryTypeChanged -> onTypeChanged(event.type)
             is CodexEvent.EntryFieldChanged -> onFieldChanged(event.field, event.text)
-            is CodexEvent.EntryPortraitPicked -> onPortraitPicked(scope, imageCompressor, event.bytes)
-            CodexEvent.EntryPortraitRemoved -> onPortraitRemoved()
+            is CodexEvent.EntryPhotoPicked -> onPhotoPicked(scope, imageCompressor, event.slot, event.bytes)
+            is CodexEvent.EntryPhotoRecropRequested -> onPhotoRecropRequested(event.slot)
+            is CodexEvent.EntryPhotoCropConfirmed -> onPhotoCropConfirmed(scope, imageCompressor, event.crop)
+            CodexEvent.EntryPhotoCropCancelled -> onPhotoCropCancelled()
+            is CodexEvent.EntryPhotoRemoved -> onPhotoRemoved(event.slot)
             is CodexEvent.EntryNumberChanged -> onNumberChanged(event.field, event.value)
             is CodexEvent.EntryNpcStatusChanged -> onNpcStatusChanged(event.status)
             is CodexEvent.EntryNpcLifeChanged -> onNpcLifeChanged(event.lifeState)
@@ -389,21 +403,51 @@ class CodexEntryFormController private constructor(
         }
     }
 
-    // compression runs off the main thread - a second pick while one is still compressing simply wins the race
-    fun onPortraitPicked(
+    // shrinking a big pick runs off the main thread - a second pick while one is working simply wins the race
+    fun onPhotoPicked(
         scope: CoroutineScope,
         compressor: ImageCompressor,
+        slot: PhotoSlot,
         rawBytes: ByteArray,
     ) {
         if (fields.value == null) return
         scope.launch {
-            val base64 = withContext(Dispatchers.Default) { encodePortraitBase64(rawBytes, compressor) }
-            fields.value = fields.value?.copy(portraitBase64 = base64)
+            val draft = withContext(Dispatchers.Default) { prepareCropDraft(rawBytes, slot, compressor) }
+            fields.value = fields.value?.copy(photoCrop = draft)
         }
     }
 
-    fun onPortraitRemoved() {
-        fields.value = fields.value?.copy(portraitBase64 = null)
+    fun onPhotoRecropRequested(slot: PhotoSlot) {
+        val current = fields.value ?: return
+        val stored = if (slot == PhotoSlot.COVER) current.cover else current.portrait
+        fields.value = current.copy(photoCrop = stored?.let { recropDraft(it.display, slot) })
+    }
+
+    fun onPhotoCropConfirmed(
+        scope: CoroutineScope,
+        compressor: ImageCompressor,
+        crop: CropRect,
+    ) {
+        val draft = fields.value?.photoCrop ?: return
+        fields.value = fields.value?.copy(photoCrop = null)
+        scope.launch {
+            val photo = withContext(Dispatchers.Default) { draft.encode(crop, compressor) }
+            fields.value =
+                fields.value?.let {
+                    if (draft.slot == PhotoSlot.COVER) it.copy(cover = photo) else it.copy(portrait = photo)
+                }
+        }
+    }
+
+    fun onPhotoCropCancelled() {
+        fields.value = fields.value?.copy(photoCrop = null)
+    }
+
+    fun onPhotoRemoved(slot: PhotoSlot) {
+        fields.value =
+            fields.value?.let {
+                if (slot == PhotoSlot.COVER) it.copy(cover = null) else it.copy(portrait = null)
+            }
     }
 
     fun onClosed() {
@@ -445,7 +489,7 @@ class CodexEntryFormController private constructor(
                             locationIds = current.npcLocationIds,
                             race = current.race.trim().capitalizeFirst(),
                             faction = current.faction.trim().capitalizeFirst(),
-                            portraitBase64 = current.portraitBase64,
+                            portrait = current.portrait,
                         ),
                     )
 
@@ -469,6 +513,7 @@ class CodexEntryFormController private constructor(
                             name = current.name.trim().capitalizeFirst(),
                             description = current.description.trim(),
                             parentId = current.locationParentId,
+                            cover = current.cover,
                         ),
                     )
             }
@@ -501,7 +546,9 @@ class CodexEntryFormController private constructor(
             type = current.type,
             name = current.name,
             description = current.description,
-            portraitBase64 = current.portraitBase64,
+            portrait = current.portrait,
+            cover = current.cover,
+            photoCrop = current.photoCrop,
             race = current.race,
             faction = current.faction,
             reward = current.reward,
@@ -627,7 +674,7 @@ private fun CodexEntryFormFields.toPartyMember(): PartyMember {
         hpMax = party.hpMax,
         hpCurrent = party.hpCurrent ?: party.hpMax,
         description = description.trim(),
-        portraitBase64 = portraitBase64,
+        portrait = portrait,
     )
 }
 
@@ -638,7 +685,7 @@ private fun Npc.toFields(ref: EntityRef.Npc) =
         type = CodexEntryType.NPC,
         name = name,
         description = description,
-        portraitBase64 = portraitBase64,
+        portrait = portrait,
         race = race,
         faction = faction,
         npcStatus = status,
@@ -653,7 +700,7 @@ private fun PartyMember.toFields(ref: EntityRef.Party) =
         type = CodexEntryType.PARTY,
         name = name,
         description = description,
-        portraitBase64 = portraitBase64,
+        portrait = portrait,
         race = race,
         party =
             PartyFormFields(
@@ -688,4 +735,5 @@ private fun Location.toFields(ref: EntityRef.Location) =
         name = name,
         description = description,
         locationParentId = parentId,
+        cover = cover,
     )
