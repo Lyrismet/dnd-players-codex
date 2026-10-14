@@ -26,7 +26,6 @@
     <string name="session_list_undo_deleted_title">Сессия удалена</string>
     <string name="session_list_rename_saved_toast">Кампания переименована</string>
     <string name="new_session_default_title">Новая сессия</string>
-    <string name="default_campaign_name">Моя кампания</string>
     <string name="session_overline_format">Сессия %1$s</string>
 
     <string name="session_detail_back">‹ Дневник</string>
@@ -89,7 +88,6 @@
     <string name="codex_quest_status_completed">Выполнен</string>
     <string name="codex_quest_status_failed">Провален</string>
     <string name="codex_quest_given_by_label">Кто дал</string>
-    <string name="codex_quest_given_by_none">—</string>
     <string name="codex_quest_reward_label">Награда</string>
     <string name="codex_empty_all_title">Кодекс пуст</string>
     <string name="codex_empty_all_text">Здесь соберутся персонажи, NPC, квесты и места вашей кампании.</string>
@@ -230,7 +228,6 @@
     <string name="deleted_mention_back">‹ Назад</string>
     <string name="deleted_mention_linked_title">Упоминания связаны</string>
     <string name="deleted_mention_text_toast_title">Упоминания стали текстом</string>
-    <string name="deleted_mention_close">Закрыть</string>
     <plurals name="auto_mention_matches">
         <item quantity="one">%1$d совпадение с кодексом</item>
         <item quantity="few">%1$d совпадения с кодексом</item>
@@ -432,7 +429,6 @@
     <string name="campaign_copy_phrases">Перенести заготовки фраз</string>
     <string name="campaign_create_button">Создать кампанию</string>
     <string name="campaign_create_next">Далее · выбрать записи</string>
-    <string name="campaign_items_from">Из «%1$s»</string>
     <string name="campaign_items_tab_format">%1$s · %2$d из %3$d</string>
     <string name="campaign_tab_places">Места</string>
     <string name="campaign_tab_npcs">NPC</string>

@@ -39,15 +39,17 @@ class LocationRepositoryImpl(
     override suspend fun upsert(location: Location): Long =
         withContext(Dispatchers.Default) {
             if (location.id == 0L) {
-                queries.insert(
-                    location.name,
-                    location.description,
-                    location.parentId,
-                    location.cover?.full,
-                    location.cover?.thumb,
-                    current.requireId(),
-                )
-                queries.lastInsertRowId().executeAsOne()
+                database.transactionWithResult {
+                    queries.insert(
+                        location.name,
+                        location.description,
+                        location.parentId,
+                        location.cover?.full,
+                        location.cover?.thumb,
+                        current.requireId(),
+                    )
+                    queries.lastInsertRowId().executeAsOne()
+                }
             } else {
                 val stored = queries.selectById(location.id, ::toDomainFull).executeAsOneOrNull()
                 val oldName = stored?.name

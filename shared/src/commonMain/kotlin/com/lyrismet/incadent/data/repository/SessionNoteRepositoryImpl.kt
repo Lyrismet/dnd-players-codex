@@ -22,7 +22,7 @@ import kotlin.time.ExperimentalTime
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class SessionNoteRepositoryImpl(
-    database: AppDatabase,
+    private val database: AppDatabase,
     private val current: CurrentCampaign,
 ) : SessionNoteRepository {
     private val queries = database.sessionNoteQueries
@@ -41,14 +41,16 @@ class SessionNoteRepositoryImpl(
     override suspend fun upsert(sessionNote: SessionNote): Long =
         withContext(Dispatchers.Default) {
             if (sessionNote.id == 0L) {
-                queries.insert(
-                    sessionNote.title,
-                    sessionNote.sessionDate,
-                    sessionNote.endedAt,
-                    Clock.System.now().toEpochMilliseconds(),
-                    current.requireId(),
-                )
-                queries.lastInsertRowId().executeAsOne()
+                database.transactionWithResult {
+                    queries.insert(
+                        sessionNote.title,
+                        sessionNote.sessionDate,
+                        sessionNote.endedAt,
+                        Clock.System.now().toEpochMilliseconds(),
+                        current.requireId(),
+                    )
+                    queries.lastInsertRowId().executeAsOne()
+                }
             } else {
                 queries.update(sessionNote.title, sessionNote.sessionDate, sessionNote.endedAt, sessionNote.id)
                 sessionNote.id

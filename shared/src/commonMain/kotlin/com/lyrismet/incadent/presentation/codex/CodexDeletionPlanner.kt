@@ -101,10 +101,15 @@ internal class CodexDeletionPlanner(
         labels: Map<CodexEntryType, String>,
     ): CodexDeletionPlan? =
         records.parties.find { it.id == id }?.let { member ->
+            // the list row carries only the thumbnail, so the stored record with its photo is read before the delete
+            var stored: PartyMember? = null
             CodexDeletionPlan(
                 subtitle = "${labels.getValue(CodexEntryType.PARTY)} · ${member.name}",
-                delete = { partyRepository.delete(id) },
-                restore = { partyRepository.upsert(member.copy(id = 0)) },
+                delete = {
+                    stored = partyRepository.getById(id)
+                    partyRepository.delete(id)
+                },
+                restore = { partyRepository.upsert((stored ?: member).copy(id = 0)) },
             )
         }
 
@@ -115,11 +120,15 @@ internal class CodexDeletionPlanner(
     ): CodexDeletionPlan? =
         records.npcs.find { it.id == id }?.let { npc ->
             val givenQuestIds = records.quests.filter { it.givenByNpcId == id }.map { it.id }
+            var stored: Npc? = null
             CodexDeletionPlan(
                 subtitle = "${labels.getValue(CodexEntryType.NPC)} · ${npc.name}",
-                delete = { npcRepository.delete(id) },
+                delete = {
+                    stored = npcRepository.getById(id)
+                    npcRepository.delete(id)
+                },
                 restore = {
-                    val newId = npcRepository.upsert(npc.copy(id = 0))
+                    val newId = npcRepository.upsert((stored ?: npc).copy(id = 0))
                     givenQuestIds.forEach { questId ->
                         questRepository.getById(questId)?.let {
                             questRepository.upsert(it.copy(givenByNpcId = newId))
@@ -151,11 +160,15 @@ internal class CodexDeletionPlanner(
             val npcIdsHere = records.npcs.filter { id in it.locationIds }.map { it.id }
             val childIds = records.locations.filter { it.parentId == id }.map { it.id }
             val questIdsHere = records.quests.filter { it.locationId == id }.map { it.id }
+            var stored: Location? = null
             CodexDeletionPlan(
                 subtitle = "${labels.getValue(CodexEntryType.LOCATION)} · ${location.name}",
-                delete = { locationRepository.delete(id) },
+                delete = {
+                    stored = locationRepository.getById(id)
+                    locationRepository.delete(id)
+                },
                 restore = {
-                    val newId = locationRepository.upsert(location.copy(id = 0))
+                    val newId = locationRepository.upsert((stored ?: location).copy(id = 0))
                     npcIdsHere.forEach { npcId ->
                         npcRepository.getById(npcId)?.let {
                             npcRepository.upsert(it.copy(locationIds = (it.locationIds + newId).distinct()))

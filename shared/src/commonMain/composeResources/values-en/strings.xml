@@ -26,7 +26,6 @@
     <string name="session_list_undo_deleted_title">Session deleted</string>
     <string name="session_list_rename_saved_toast">Campaign renamed</string>
     <string name="new_session_default_title">New session</string>
-    <string name="default_campaign_name">My campaign</string>
     <string name="session_overline_format">Session %1$s</string>
 
     <string name="session_detail_back">‹ Diary</string>
@@ -89,7 +88,6 @@
     <string name="codex_quest_status_completed">Completed</string>
     <string name="codex_quest_status_failed">Failed</string>
     <string name="codex_quest_given_by_label">Given by</string>
-    <string name="codex_quest_given_by_none">—</string>
     <string name="codex_quest_reward_label">Reward</string>
     <string name="codex_empty_all_title">The codex is empty</string>
     <string name="codex_empty_all_text">Characters, NPCs, quests and places of your campaign will gather here.</string>
@@ -157,6 +155,7 @@
     <string name="codex_entry_placeholder_npc_faction">Guild, order, house…</string>
     <string name="codex_entry_placeholder_npc_notes">Appearance, motives, what they promised…</string>
     <string name="codex_entry_placeholder_quest_name">E.g. Key to the crypt</string>
+    <string name="codex_entry_placeholder_quest_description">What needs to be done</string>
     <string name="codex_entry_placeholder_quest_reward">200 gp, an item, a favor…</string>
     <string name="codex_entry_placeholder_location_name">E.g. Watchtower</string>
     <string name="codex_entry_placeholder_location_description">What\'s here</string>
@@ -223,7 +222,6 @@
     <string name="deleted_mention_back">‹ Back</string>
     <string name="deleted_mention_linked_title">Mentions linked</string>
     <string name="deleted_mention_text_toast_title">Mentions turned into text</string>
-    <string name="deleted_mention_close">Close</string>
     <plurals name="auto_mention_matches">
         <item quantity="one">%1$d match with the codex</item>
         <item quantity="other">%1$d matches with the codex</item>
@@ -417,7 +415,6 @@
     <string name="campaign_copy_phrases">Copy phrase snippets</string>
     <string name="campaign_create_button">Create campaign</string>
     <string name="campaign_create_next">Next · pick entries</string>
-    <string name="campaign_items_from">From «%1$s»</string>
     <string name="campaign_items_tab_format">%1$s · %2$d of %3$d</string>
     <string name="campaign_tab_places">Places</string>
     <string name="campaign_tab_npcs">NPCs</string>

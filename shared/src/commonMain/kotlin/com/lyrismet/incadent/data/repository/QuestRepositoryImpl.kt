@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class QuestRepositoryImpl(
-    database: AppDatabase,
+    private val database: AppDatabase,
     private val mentionRenamer: MentionRenamer,
     private val current: CurrentCampaign,
 ) : QuestRepository {
@@ -44,16 +44,18 @@ class QuestRepositoryImpl(
     override suspend fun upsert(quest: Quest): Long =
         withContext(Dispatchers.Default) {
             if (quest.id == 0L) {
-                queries.insert(
-                    quest.title,
-                    quest.status,
-                    quest.reward,
-                    quest.givenByNpcId,
-                    quest.locationId,
-                    quest.description,
-                    current.requireId(),
-                )
-                queries.lastInsertRowId().executeAsOne()
+                database.transactionWithResult {
+                    queries.insert(
+                        quest.title,
+                        quest.status,
+                        quest.reward,
+                        quest.givenByNpcId,
+                        quest.locationId,
+                        quest.description,
+                        current.requireId(),
+                    )
+                    queries.lastInsertRowId().executeAsOne()
+                }
             } else {
                 val oldTitle = queries.selectById(quest.id, ::toDomain).executeAsOneOrNull()?.title
                 val update: () -> Unit = {

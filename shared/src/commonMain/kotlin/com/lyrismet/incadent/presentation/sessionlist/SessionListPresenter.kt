@@ -277,6 +277,7 @@ class SessionListPresenter(
         val numLabel = sessions.sessionNumberLabels(numbering)[id].orEmpty()
         scope.launch {
             val entries = sessionEntryRepository.observeForSession(id).first()
+            val tags = tagRepository.observeTagsFor(id).first()
             sessionNoteRepository.delete(id)
             undoController.show(undoDeletedTitle, "$numLabel · ${note.title}") {
                 // another session may have gone live meanwhile, so the restored one comes back ended
@@ -289,6 +290,7 @@ class SessionListPresenter(
                     }
                 val newId = sessionNoteRepository.upsert(restored)
                 entries.forEach { entry -> sessionEntryRepository.restore(entry.copy(sessionNoteId = newId)) }
+                tags.forEach { tag -> tagRepository.addTag(newId, tag) }
             }
         }
     }

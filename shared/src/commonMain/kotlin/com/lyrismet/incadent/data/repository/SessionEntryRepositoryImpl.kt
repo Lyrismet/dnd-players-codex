@@ -24,7 +24,7 @@ import kotlin.time.ExperimentalTime
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class SessionEntryRepositoryImpl(
-    database: AppDatabase,
+    private val database: AppDatabase,
     private val current: CurrentCampaign,
 ) : SessionEntryRepository {
     private val queries = database.sessionEntryQueries
@@ -44,20 +44,24 @@ class SessionEntryRepositoryImpl(
     ): Long =
         withContext(Dispatchers.Default) {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-            queries.insert(sessionNoteId, now, body, edited = 0L, mention_check = 1L)
-            queries.lastInsertRowId().executeAsOne()
+            database.transactionWithResult {
+                queries.insert(sessionNoteId, now, body, edited = 0L, mention_check = 1L)
+                queries.lastInsertRowId().executeAsOne()
+            }
         }
 
     override suspend fun restore(entry: SessionEntry): Long =
         withContext(Dispatchers.Default) {
-            queries.insert(
-                entry.sessionNoteId,
-                entry.createdAt,
-                entry.body,
-                if (entry.edited) 1L else 0L,
-                if (entry.mentionCheck) 1L else 0L,
-            )
-            queries.lastInsertRowId().executeAsOne()
+            database.transactionWithResult {
+                queries.insert(
+                    entry.sessionNoteId,
+                    entry.createdAt,
+                    entry.body,
+                    if (entry.edited) 1L else 0L,
+                    if (entry.mentionCheck) 1L else 0L,
+                )
+                queries.lastInsertRowId().executeAsOne()
+            }
         }
 
     override suspend fun update(
