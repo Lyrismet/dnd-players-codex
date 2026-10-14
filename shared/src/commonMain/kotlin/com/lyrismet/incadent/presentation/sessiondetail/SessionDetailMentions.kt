@@ -12,7 +12,6 @@ import com.lyrismet.incadent.core.mention.MentionEntity
 import com.lyrismet.incadent.core.mention.countMentionHits
 import com.lyrismet.incadent.core.mention.dedupeKey
 import com.lyrismet.incadent.core.mention.linkAutoMentions
-import com.lyrismet.incadent.core.mention.mentionKey
 import com.lyrismet.incadent.core.mention.renameMentionIn
 import com.lyrismet.incadent.core.mention.unlinkMentionIn
 import com.lyrismet.incadent.core.undo.UndoController
@@ -26,7 +25,6 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.auto_mention_linked_title
 import dndplayerscodex.shared.generated.resources.deleted_mention_linked_title
 import dndplayerscodex.shared.generated.resources.deleted_mention_text_toast_title
-import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -69,7 +67,6 @@ internal class MentionTitles(
 /** everything the mention events read - one value instead of one parameter per piece */
 internal class MentionEventData(
     val candidates: List<MentionCandidate>,
-    val questPrefix: String,
     val allEntries: List<SessionEntry>,
     val deleted: List<DeletedMention>,
     val linkTargets: List<MentionLinkTarget>,
@@ -100,7 +97,7 @@ internal class SessionMentionActions(
         data: MentionEventData,
         only: MentionEntity?,
     ) {
-        val linked = linkAutoMentions(entry.body, data.candidates, data.questPrefix, only)
+        val linked = linkAutoMentions(entry.body, data.candidates, only)
         scope.launch {
             if (linked != entry.body) entryRepository.rewriteBody(entry.id, linked)
             // a single word leaves the others still waiting for a decision
@@ -128,7 +125,7 @@ internal class SessionMentionActions(
         target: MentionEntity?,
         data: MentionEventData,
     ) {
-        val oldKey = mentionKey(MentionEntity.DeletedMention(deleted.name, deleted.type), data.questPrefix)
+        val oldKey = deleted.name
         val otherKeys = data.candidates.map { it.key }
         val changes =
             data.allEntries.mapNotNull { entry ->
@@ -136,7 +133,7 @@ internal class SessionMentionActions(
                     if (target == null) {
                         unlinkMentionIn(entry.body, oldKey, deleted.name, otherKeys)
                     } else {
-                        renameMentionIn(entry.body, oldKey, mentionKey(target, data.questPrefix), otherKeys)
+                        renameMentionIn(entry.body, oldKey, target.name, otherKeys)
                     }
                 (entry to rewritten).takeIf { rewritten != entry.body }
             }
@@ -178,7 +175,6 @@ internal fun mentionEventData(
 ): MentionEventData =
     MentionEventData(
         candidates = candidates,
-        questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix),
         allEntries = allEntries,
         deleted = deleted,
         linkTargets = mentionLinkTargets(entities),

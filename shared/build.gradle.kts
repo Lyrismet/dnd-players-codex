@@ -58,7 +58,6 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             implementation(libs.sqldelight.android.driver)
-            implementation(libs.ktor.client.android)
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
@@ -70,23 +69,16 @@ kotlin {
             implementation(libs.androidx.navigationevent.compose)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
 
             implementation(libs.kermit)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.kotlinx.serialization.json)
 
             api(libs.circuit.foundation)
             implementation(libs.circuit.serialization)
 
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines.extensions)
-
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization.kotlinx.json)
 
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.coroutines)
@@ -95,10 +87,14 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.multiplatform.settings.test)
+            implementation(libs.turbine)
+        }
+        // real SQL against an in-memory JDBC database, the iOS and device builds use the native drivers instead
+        getByName("androidHostTest").dependencies {
+            implementation(libs.sqldelight.sqlite.driver)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.native.driver)
-            implementation(libs.ktor.client.darwin)
         }
     }
 }

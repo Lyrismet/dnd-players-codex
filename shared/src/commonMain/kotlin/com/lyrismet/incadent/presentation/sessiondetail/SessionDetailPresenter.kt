@@ -33,7 +33,6 @@ import com.lyrismet.incadent.core.mention.insertMention
 import com.lyrismet.incadent.core.mention.matchingMentionEntities
 import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
-import com.lyrismet.incadent.core.mention.mentionKey
 import com.lyrismet.incadent.core.mention.mentionsIn
 import com.lyrismet.incadent.core.mention.parseMentions
 import com.lyrismet.incadent.core.mention.trailingMentionQuery
@@ -82,7 +81,6 @@ import dndplayerscodex.shared.generated.resources.session_detail_mention_type_np
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_party
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
 import dndplayerscodex.shared.generated.resources.session_detail_phrase_saved_toast
-import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import dndplayerscodex.shared.generated.resources.session_detail_tag_button_label_empty
 import dndplayerscodex.shared.generated.resources.session_detail_tag_button_label_has_tags
 import dndplayerscodex.shared.generated.resources.session_detail_tag_sheet_overline_format
@@ -272,7 +270,6 @@ class SessionDetailPresenter(
             }
 
         val phraseSavedToast = stringResource(Res.string.session_detail_phrase_saved_toast)
-        val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
         val mentionData = mentionEventData(mention.candidates, mention.entities, allEntries, deleted)
         val phrasePool = remember(pinnedPhrases, frequentPhrases) { phrasePool(pinnedPhrases, frequentPhrases) }
         val completions =
@@ -305,8 +302,8 @@ class SessionDetailPresenter(
             tagButtonLabel = tagButtonLabel,
             tagSuggestionCount = tagSuggestions.size,
             tagSheet = tagSheet,
-            phraseStrip = phrasePool.take(PHRASE_STRIP_SIZE).map { it.toItem(questPrefix) },
-            phraseCompletions = completions.orEmpty().map { it.toItem(questPrefix) },
+            phraseStrip = phrasePool.take(PHRASE_STRIP_SIZE).map { it.toItem() },
+            phraseCompletions = completions.orEmpty().map { it.toItem() },
             phraseSheet = fields.phrases.sheetState(pinnedPhrases, frequentPhrases),
             toast = fields.toast.value,
             deletedMentionSheet = deletedSheet(fields.deletedSheet.value, mentionData),
@@ -665,10 +662,10 @@ private fun insertPhraseIntoDraft(
     draft.value = TextFieldValue(next, TextRange(next.length))
 }
 
-private fun PhraseOption.toItem(questPrefix: String) =
+private fun PhraseOption.toItem() =
     SessionPhraseItem(
         text = text,
-        label = phraseLabel(text, questPrefix),
+        label = phraseLabel(text),
         isPinned = isPinned,
         entryCount = entryCount,
     )
@@ -719,13 +716,10 @@ private fun buildMentionContext(
     deleted: List<DeletedMention>,
     draftText: String,
 ): MentionContext {
-    val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
     val mentionEntities = mentionEntitiesFrom(npcs, locations, quests, parties)
-    val candidates = mentionCandidates(mentionEntities, questPrefix, deleted)
-    val liveKeys = mentionEntities.mapTo(HashSet()) { mentionKey(it, questPrefix) }
-    val revived =
-        deleted
-            .filter { mentionKey(MentionEntity.DeletedMention(it.name, it.type), questPrefix) in liveKeys }
+    val candidates = mentionCandidates(mentionEntities, deleted)
+    val liveKeys = mentionEntities.mapTo(HashSet()) { it.name }
+    val revived = deleted.filter { it.name in liveKeys }
 
     val typeLabels =
         MentionTypeLabels(
@@ -736,9 +730,9 @@ private fun buildMentionContext(
         )
     val suggestions =
         trailingMentionQuery(draftText)
-            ?.let { matchingMentionEntities(mentionEntities, it, questPrefix) }
+            ?.let { matchingMentionEntities(mentionEntities, it) }
             .orEmpty()
-            .map { it.toSuggestion(questPrefix, typeLabels) }
+            .map { it.toSuggestion(typeLabels) }
 
     return MentionContext(candidates, suggestions, mentionEntities, revived)
 }
@@ -801,10 +795,7 @@ private class MentionTypeLabels(
     val quest: String,
 )
 
-private fun MentionEntity.toSuggestion(
-    questPrefix: String,
-    labels: MentionTypeLabels,
-): SessionMentionSuggestion {
+private fun MentionEntity.toSuggestion(labels: MentionTypeLabels): SessionMentionSuggestion {
     val (glyph, tint, typeLabel) =
         when (this) {
             is MentionEntity.NpcMention -> Triple(MentionGlyph.NPC, status.toStatusColor().foreground, labels.npc)
@@ -817,7 +808,7 @@ private fun MentionEntity.toSuggestion(
             is MentionEntity.DeletedMention -> Triple(MentionGlyph.DELETED, LocationMentionColor.foreground, "")
         }
     return SessionMentionSuggestion(
-        candidateKey = mentionKey(this, questPrefix),
+        candidateKey = name,
         glyph = glyph,
         tint = tint,
         name = name,

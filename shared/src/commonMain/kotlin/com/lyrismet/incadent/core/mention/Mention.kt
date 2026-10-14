@@ -56,35 +56,23 @@ fun mentionEntitiesFrom(
         locations.map { MentionEntity.LocationMention(it.id, it.name) } +
         quests.map { MentionEntity.QuestMention(it.id, it.title, it.status) }
 
-/** the literal text typed after "@" for [entity] - quests are always mentioned as "<prefix><title>" */
-fun mentionKey(
-    entity: MentionEntity,
-    questPrefix: String,
-): String =
-    when (entity) {
-        is MentionEntity.QuestMention -> questPrefix + entity.name
-        is MentionEntity.DeletedMention ->
-            if (entity.type == DeletedMentionType.QUEST) questPrefix + entity.name else entity.name
-        is MentionEntity.NpcMention, is MentionEntity.LocationMention, is MentionEntity.PartyMention -> entity.name
-    }
-
 data class MentionCandidate(
     val key: String,
     val entity: MentionEntity,
 )
 
-// longest key first so "@Кассиан Вейл" beats "@Кассиан", a deleted record yields to a live one with its key
+// longest key first so "@Кассиан Вейл" beats "@Кассиан", a deleted record yields to a live one with its name,
+// records of different kinds sharing a name resolve to the first listed one (npc, party, place, quest)
 fun mentionCandidates(
     entities: List<MentionEntity>,
-    questPrefix: String,
     deleted: List<DeletedMention> = emptyList(),
 ): List<MentionCandidate> {
-    val live = entities.map { MentionCandidate(mentionKey(it, questPrefix), it) }
+    val live = entities.map { MentionCandidate(it.name, it) }
     val liveKeys = live.mapTo(HashSet()) { it.key }
     val gone =
         deleted
             .map { MentionEntity.DeletedMention(it.name, it.type) }
-            .map { MentionCandidate(mentionKey(it, questPrefix), it) }
+            .map { MentionCandidate(it.name, it) }
             .filter { it.key !in liveKeys }
             .distinctBy { it.key }
     return (live + gone).sortedByDescending { it.key.length }
@@ -167,14 +155,9 @@ fun trailingMentionQuery(draft: String): String? = TRAILING_MENTION_REGEX.find(d
 fun matchingMentionEntities(
     entities: List<MentionEntity>,
     rawQuery: String,
-    questPrefix: String,
     limit: Int = 5,
 ): List<MentionEntity> {
-    val prefixLower = questPrefix.trim().lowercase()
-    var query = rawQuery.trim().lowercase()
-    if (prefixLower.isNotEmpty() && query.startsWith(prefixLower)) {
-        query = query.removePrefix(prefixLower).trimStart()
-    }
+    val query = rawQuery.trim().lowercase()
     return entities
         .filter { entity ->
             val name = entity.name.lowercase()

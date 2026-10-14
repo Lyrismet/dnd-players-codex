@@ -68,10 +68,9 @@ fun insertPhrase(
 /** the phrase as plain text for a chip or row - mention markers dropped, cut to [maxLength] with an ellipsis */
 fun phraseLabel(
     text: String,
-    questPrefix: String,
     maxLength: Int? = null,
 ): String {
-    val plain = text.replace("@$questPrefix", "").replace("@", "")
+    val plain = text.replace("@", "")
     return if (maxLength != null && plain.length > maxLength) plain.take(maxLength - 1) + "…" else plain
 }
 

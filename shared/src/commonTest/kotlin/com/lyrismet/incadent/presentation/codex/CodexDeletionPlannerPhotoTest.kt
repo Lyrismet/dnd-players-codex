@@ -46,7 +46,13 @@ class CodexDeletionPlannerPhotoTest {
             plan.delete()
             plan.restore()
 
-            assertContentEquals(full, npcs.stored(0)?.portrait?.full)
+            assertContentEquals(
+                full,
+                npcs.all
+                    .single()
+                    .portrait
+                    ?.full,
+            )
         }
 
     @Test
@@ -66,7 +72,13 @@ class CodexDeletionPlannerPhotoTest {
             plan.delete()
             plan.restore()
 
-            assertContentEquals(full, party.stored(0)?.portrait?.full)
+            assertContentEquals(
+                full,
+                party.all
+                    .single()
+                    .portrait
+                    ?.full,
+            )
         }
 
     @Test
@@ -85,7 +97,13 @@ class CodexDeletionPlannerPhotoTest {
             plan.delete()
             plan.restore()
 
-            assertContentEquals(full, locations.stored(0)?.cover?.full)
+            assertContentEquals(
+                full,
+                locations.all
+                    .single()
+                    .cover
+                    ?.full,
+            )
         }
 
     private fun planner(

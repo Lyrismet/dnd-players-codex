@@ -9,8 +9,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-private const val PREFIX = "Квест: "
-
 private val gromm = MentionEntity.NpcMention(1, "Громм", NpcStatus.FRIEND, NpcLifeState.ALIVE)
 private val grommFull = MentionEntity.NpcMention(2, "Громм Железный", NpcStatus.FRIEND, NpcLifeState.ALIVE)
 private val artyom = MentionEntity.NpcMention(3, "Артём", NpcStatus.NEUTRAL, NpcLifeState.ALIVE)
@@ -18,7 +16,7 @@ private val temple = MentionEntity.LocationMention(4, "Храм Рассвета
 private val ox = MentionEntity.NpcMention(5, "Ох", NpcStatus.NEUTRAL, NpcLifeState.ALIVE)
 private val blade = MentionEntity.QuestMention(6, "Клинок", QuestStatus.ACTIVE)
 
-private val candidates = mentionCandidates(listOf(gromm, grommFull, artyom, temple, ox, blade), PREFIX)
+private val candidates = mentionCandidates(listOf(gromm, grommFull, artyom, temple, ox, blade))
 
 private fun autoMatches(text: String) = autoMatchedEntities(parseMentions(text, candidates, autoMatch = true))
 
@@ -74,33 +72,33 @@ class AutoMentionTest {
     @Test
     fun `a deleted record is never an auto match`() {
         val withDeleted =
-            mentionCandidates(listOf(gromm), PREFIX, listOf(DeletedMention("Кассиан", DeletedMentionType.NPC)))
+            mentionCandidates(listOf(gromm), listOf(DeletedMention("Кассиан", DeletedMentionType.NPC)))
 
         assertTrue(autoMatchedEntities(parseMentions("Кассиан ушёл", withDeleted, autoMatch = true)).isEmpty())
     }
 
     @Test
     fun `linking puts the at sign in front of the record's own spelling`() {
-        val linked = linkAutoMentions("громм и артем ушли", candidates, PREFIX)
+        val linked = linkAutoMentions("громм и артем ушли", candidates)
 
         assertEquals("@Громм и @Артём ушли", linked)
     }
 
     @Test
     fun `linking one entity leaves the other matches alone`() {
-        val linked = linkAutoMentions("Громм и Артём", candidates, PREFIX, only = artyom)
+        val linked = linkAutoMentions("Громм и Артём", candidates, only = artyom)
 
         assertEquals("Громм и @Артём", linked)
     }
 
     @Test
-    fun `a quest is linked with its prefix`() {
-        assertEquals("взяли @Квест: Клинок", linkAutoMentions("взяли Клинок", candidates, PREFIX))
+    fun `a quest is linked by its title`() {
+        assertEquals("взяли @Клинок", linkAutoMentions("взяли Клинок", candidates))
     }
 
     @Test
     fun `linking keeps existing mentions and text byte for byte`() {
-        assertEquals("@Громм\nи @Артём!", linkAutoMentions("@Громм\nи артём!", candidates, PREFIX))
+        assertEquals("@Громм\nи @Артём!", linkAutoMentions("@Громм\nи артём!", candidates))
     }
 }
 
@@ -109,23 +107,23 @@ class DeletedMentionTest {
     private val deletedQuest = DeletedMention("Проклятие", DeletedMentionType.QUEST)
 
     @Test
-    fun `a deleted record becomes a candidate under its key and quests keep the prefix`() {
-        val all = mentionCandidates(emptyList(), PREFIX, listOf(deleted, deletedQuest))
+    fun `a deleted record becomes a candidate under its name`() {
+        val all = mentionCandidates(emptyList(), listOf(deleted, deletedQuest))
 
-        assertEquals(setOf("Кассиан", "Квест: Проклятие"), all.map { it.key }.toSet())
+        assertEquals(setOf("Кассиан", "Проклятие"), all.map { it.key }.toSet())
     }
 
     @Test
     fun `a live record with the same name wins over the deleted one`() {
         val recreated = MentionEntity.NpcMention(9, "Кассиан", NpcStatus.NEUTRAL, NpcLifeState.ALIVE)
-        val all = mentionCandidates(listOf(recreated), PREFIX, listOf(deleted))
+        val all = mentionCandidates(listOf(recreated), listOf(deleted))
 
         assertEquals(listOf<MentionEntity>(recreated), all.map { it.entity })
     }
 
     @Test
     fun `a mention of a deleted record parses into a deleted entity`() {
-        val all = mentionCandidates(emptyList(), PREFIX, listOf(deleted))
+        val all = mentionCandidates(emptyList(), listOf(deleted))
         val segments = parseMentions("видели @Кассиан у моста", all)
 
         assertEquals(
@@ -163,17 +161,17 @@ class DeletedMentionTest {
     }
 
     @Test
-    fun `unlinking a quest drops the prefix`() {
+    fun `unlinking a quest drops the at sign`() {
         assertEquals(
             "взяли Проклятие",
-            unlinkMentionIn("взяли @Квест: Проклятие", "Квест: Проклятие", "Проклятие", emptyList()),
+            unlinkMentionIn("взяли @Проклятие", "Проклятие", "Проклятие", emptyList()),
         )
     }
 }
 
 class PartyMentionTest {
     private val bran = MentionEntity.PartyMention(7, "Бран")
-    private val withParty = mentionCandidates(listOf(bran), PREFIX)
+    private val withParty = mentionCandidates(listOf(bran))
 
     @Test
     fun `a party member is mentioned by name like any other record`() {
@@ -185,7 +183,7 @@ class PartyMentionTest {
     @Test
     fun `a party member written without at is an auto match and links to its own spelling`() {
         assertEquals(listOf<MentionEntity>(bran), autoMatchedEntities(parseMentions("бран ушёл", withParty, true)))
-        assertEquals("@Бран ушёл", linkAutoMentions("бран ушёл", withParty, PREFIX))
+        assertEquals("@Бран ушёл", linkAutoMentions("бран ушёл", withParty))
     }
 
     @Test
@@ -214,7 +212,7 @@ class PartyMentionTest {
 
     @Test
     fun `a deleted party member keeps its type for the create action`() {
-        val gone = mentionCandidates(emptyList(), PREFIX, listOf(DeletedMention("Бран", DeletedMentionType.PARTY)))
+        val gone = mentionCandidates(emptyList(), listOf(DeletedMention("Бран", DeletedMentionType.PARTY)))
 
         assertEquals(
             listOf(MentionSegment.Mention(MentionEntity.DeletedMention("Бран", DeletedMentionType.PARTY))),

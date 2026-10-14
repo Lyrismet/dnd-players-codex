@@ -3,17 +3,12 @@ package com.lyrismet.incadent.data.repository
 import com.lyrismet.incadent.core.mention.renameMentionIn
 import com.lyrismet.incadent.data.campaign.CurrentCampaign
 import com.lyrismet.incadent.db.AppDatabase
-import com.lyrismet.incadent.domain.model.DeletedMentionType
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
-import org.jetbrains.compose.resources.getString
 
 /**
  * runs a rename of an npc, location or quest and rewrites the "@mention" text in session entries in one transaction.
- * The quest prefix follows the current app language, same as the mention parser.
  */
 @Inject
 @SingleIn(AppScope::class)
@@ -21,47 +16,41 @@ class MentionRenamer(
     private val database: AppDatabase,
     private val current: CurrentCampaign,
 ) {
-    suspend fun npcRenamed(
+    fun npcRenamed(
         id: Long,
         oldName: String,
         newName: String,
         update: () -> Unit,
     ) {
-        val prefix = questPrefix()
-        rename(oldName, newName, update) { keysExcluding(prefix, npcId = id) }
+        rename(oldName, newName, update) { keysExcluding(npcId = id) }
     }
 
-    suspend fun partyRenamed(
+    fun partyRenamed(
         id: Long,
         oldName: String,
         newName: String,
         update: () -> Unit,
     ) {
-        val prefix = questPrefix()
-        rename(oldName, newName, update) { keysExcluding(prefix, partyId = id) }
+        rename(oldName, newName, update) { keysExcluding(partyId = id) }
     }
 
-    suspend fun locationRenamed(
+    fun locationRenamed(
         id: Long,
         oldName: String,
         newName: String,
         update: () -> Unit,
     ) {
-        val prefix = questPrefix()
-        rename(oldName, newName, update) { keysExcluding(prefix, locationId = id) }
+        rename(oldName, newName, update) { keysExcluding(locationId = id) }
     }
 
-    suspend fun questRenamed(
+    fun questRenamed(
         id: Long,
         oldTitle: String,
         newTitle: String,
         update: () -> Unit,
     ) {
-        val prefix = questPrefix()
-        rename(prefix + oldTitle, prefix + newTitle, update) { keysExcluding(prefix, questId = id) }
+        rename(oldTitle, newTitle, update) { keysExcluding(questId = id) }
     }
-
-    private suspend fun questPrefix(): String = getString(Res.string.session_detail_quest_mention_prefix)
 
     private fun rename(
         oldKey: String,
@@ -88,7 +77,6 @@ class MentionRenamer(
     }
 
     private fun keysExcluding(
-        questPrefix: String,
         npcId: Long? = null,
         locationId: Long? = null,
         questId: Long? = null,
@@ -113,10 +101,10 @@ class MentionRenamer(
                 .selectAll(current.requireId())
                 .executeAsList()
                 .filter { it.id != questId }
-                .map { questPrefix + it.title } +
+                .map { it.title } +
             // a "?" tag keeps its own key, so a rename must not eat the tag of a longer deleted name
             database.deletedMentionQueries
                 .selectAll(current.requireId())
                 .executeAsList()
-                .map { if (it.type == DeletedMentionType.QUEST.name) questPrefix + it.name else it.name }
+                .map { it.name }
 }

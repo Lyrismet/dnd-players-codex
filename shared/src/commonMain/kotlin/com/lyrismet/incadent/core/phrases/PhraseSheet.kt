@@ -11,7 +11,6 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.phrase_meta_format
 import dndplayerscodex.shared.generated.resources.phrase_meta_sessions
 import dndplayerscodex.shared.generated.resources.phrase_meta_times
-import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -101,9 +100,8 @@ fun PhraseSheetController.sheetState(
     frequent: List<FrequentPhrase>,
 ): PhraseSheetState? {
     if (!isOpen.value) return null
-    val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
     return PhraseSheetState(
-        pinned = pinned.map { PhrasePinnedRow(it, phraseLabel(it, questPrefix)) },
+        pinned = pinned.map { PhrasePinnedRow(it, phraseLabel(it)) },
         frequent =
             frequent.filter { phrase -> pinned.none { it == phrase.text } }.map { phrase ->
                 val times = pluralStringResource(Res.plurals.phrase_meta_times, phrase.entryCount, phrase.entryCount)
@@ -111,7 +109,7 @@ fun PhraseSheetController.sheetState(
                     pluralStringResource(Res.plurals.phrase_meta_sessions, phrase.sessionCount, phrase.sessionCount)
                 PhraseFrequentRow(
                     text = phrase.text,
-                    label = phraseLabel(phrase.text, questPrefix),
+                    label = phraseLabel(phrase.text),
                     meta = stringResource(Res.string.phrase_meta_format, times, sessions),
                 )
             },

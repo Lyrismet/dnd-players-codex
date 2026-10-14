@@ -20,8 +20,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-private const val QUEST_PREFIX = "Квест: "
-
 private val npcStatusLabels =
     mapOf(
         NpcStatus.FRIEND to "Друг",
@@ -104,7 +102,7 @@ private fun lookup(
     numbering: SessionNumbering = SessionNumbering.ROMAN,
     parties: List<PartyMember> = listOf(lira),
 ): EntityLookup {
-    val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests), QUEST_PREFIX)
+    val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests))
     return EntityLookup(
         npcs = npcs,
         locations = locations,

@@ -54,7 +54,6 @@ fun autoMatchedEntities(segments: List<MentionSegment>): List<MentionEntity> =
 fun linkAutoMentions(
     text: String,
     candidates: List<MentionCandidate>,
-    questPrefix: String,
     only: MentionEntity? = null,
 ): String =
     parseMentions(text, candidates, autoMatch = true)
@@ -62,16 +61,16 @@ fun linkAutoMentions(
             val isWanted =
                 only == null || only.dedupeKey() == (segment as? MentionSegment.AutoMatch)?.entity?.dedupeKey()
             if (segment is MentionSegment.AutoMatch && isWanted) {
-                "@" + mentionKey(segment.entity, questPrefix)
+                "@" + segment.entity.name
             } else {
-                segment.sourceText(questPrefix)
+                segment.sourceText()
             }
         }
 
 // the text a segment stood for - a mention is rebuilt from its own key, the key it was parsed from
-private fun MentionSegment.sourceText(questPrefix: String): String =
+private fun MentionSegment.sourceText(): String =
     when (this) {
         is MentionSegment.Text -> text
         is MentionSegment.AutoMatch -> text
-        is MentionSegment.Mention -> "@" + mentionKey(entity, questPrefix)
+        is MentionSegment.Mention -> "@" + entity.name
     }

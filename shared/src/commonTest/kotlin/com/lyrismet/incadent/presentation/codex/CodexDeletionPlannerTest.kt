@@ -44,7 +44,7 @@ class CodexDeletionPlannerTest {
             quests = emptyList(),
             locations = emptyList(),
             entries = bodies.mapIndexed { index, (session, body) -> entry(index + 1L, session, body) },
-            mentionCandidates = mentionCandidates(entities, "Квест: "),
+            mentionCandidates = mentionCandidates(entities),
         )
     }
 

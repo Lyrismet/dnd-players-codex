@@ -43,7 +43,6 @@
     <string name="session_detail_composer_hint">@ — тег записи</string>
     <string name="session_detail_undo_deleted_entry_title">Запись удалена</string>
     <string name="session_entry_edited_label">изм.</string>
-    <string name="session_detail_quest_mention_prefix">Квест: </string>
     <string name="session_detail_meeting_separator_format">ВСТРЕЧА %1$d · %2$s</string>
     <string name="session_detail_mention_type_npc">NPC</string>
     <string name="session_detail_mention_type_location">Локация</string>

@@ -48,9 +48,9 @@ class PhraseSnippetsTest {
 
     @Test
     fun `label drops mention markers and cuts long text`() {
-        assertEquals("Бран скрылся", phraseLabel("@Бран скрылся", "Квест: "))
-        assertEquals("Взять Ключ", phraseLabel("Взять @Квест: Ключ", "Квест: "))
-        assertEquals("Длинная…", phraseLabel("Длинная фраза", "Квест: ", maxLength = 8))
+        assertEquals("Бран скрылся", phraseLabel("@Бран скрылся"))
+        assertEquals("Взять Ключ", phraseLabel("Взять @Ключ"))
+        assertEquals("Длинная…", phraseLabel("Длинная фраза", maxLength = 8))
     }
 
     @Test

@@ -7,14 +7,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-private const val QUEST_PREFIX = "Квест: "
-
 private val ragnar = MentionEntity.NpcMention(1, "Рагнар", NpcStatus.FRIEND, NpcLifeState.ALIVE)
 private val ragnarWithSurname = MentionEntity.NpcMention(2, "Рагнар Каменный", NpcStatus.FRIEND, NpcLifeState.ALIVE)
 private val forge = MentionEntity.LocationMention(3, "Кузница")
 private val sword = MentionEntity.QuestMention(4, "Меч", QuestStatus.ACTIVE)
 
-private val candidates = mentionCandidates(listOf(ragnar, ragnarWithSurname, forge, sword), QUEST_PREFIX)
+private val candidates = mentionCandidates(listOf(ragnar, ragnarWithSurname, forge, sword))
 
 class MentionTest {
     @Test
@@ -57,8 +55,8 @@ class MentionTest {
     }
 
     @Test
-    fun `parseMentions resolves a quest mention using its prefix`() {
-        val segments = parseMentions("выполнили @Квест: Меч", candidates)
+    fun `parseMentions resolves a quest mention by its title`() {
+        val segments = parseMentions("выполнили @Меч", candidates)
         assertEquals(
             listOf(MentionSegment.Text("выполнили "), MentionSegment.Mention(sword)),
             segments,
@@ -67,14 +65,24 @@ class MentionTest {
 
     @Test
     fun `matchingMentionEntities matches by name prefix case-insensitively`() {
-        val matches = matchingMentionEntities(listOf(ragnar, forge, sword), "рагн", QUEST_PREFIX)
+        val matches = matchingMentionEntities(listOf(ragnar, forge, sword), "рагн")
         assertEquals(listOf(ragnar), matches)
     }
 
     @Test
-    fun `matchingMentionEntities strips the quest prefix before matching`() {
-        val matches = matchingMentionEntities(listOf(ragnar, forge, sword), "Квест: ме", QUEST_PREFIX)
+    fun `matchingMentionEntities finds a quest by its title`() {
+        val matches = matchingMentionEntities(listOf(ragnar, forge, sword), "ме")
         assertEquals(listOf(sword), matches)
+    }
+
+    @Test
+    fun `records of different kinds with one name resolve to the first listed one`() {
+        val questNamedLikeNpc = MentionEntity.QuestMention(8, "Рагнар", QuestStatus.ACTIVE)
+        val both = mentionCandidates(listOf(ragnar, questNamedLikeNpc))
+
+        val segments = parseMentions("@Рагнар", both)
+
+        assertEquals(listOf<MentionSegment>(MentionSegment.Mention(ragnar)), segments)
     }
 
     @Test
@@ -88,7 +96,7 @@ class MentionTest {
                     NpcLifeState.ALIVE,
                 )
             }
-        val matches = matchingMentionEntities(many, "страж", QUEST_PREFIX, limit = 3)
+        val matches = matchingMentionEntities(many, "страж", limit = 3)
         assertEquals(3, matches.size)
     }
 

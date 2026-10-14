@@ -46,7 +46,6 @@ import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.new_session_default_title
-import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import dndplayerscodex.shared.generated.resources.session_list_live_no_notes
 import dndplayerscodex.shared.generated.resources.session_list_live_notes_summary_format
 import dndplayerscodex.shared.generated.resources.session_list_undo_deleted_title
@@ -90,10 +89,9 @@ class SessionListPresenter(
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
         val newSessionTitle = stringResource(Res.string.new_session_default_title)
-        val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
         val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
-        val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests, parties), questPrefix)
+        val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests, parties))
         val toast = remember { mutableStateOf<SessionListToast?>(null) }
         toast.autoDismiss()
         val campaignHost =

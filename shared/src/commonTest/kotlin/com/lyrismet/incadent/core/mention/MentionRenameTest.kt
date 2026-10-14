@@ -22,9 +22,9 @@ class MentionRenameTest {
     }
 
     @Test
-    fun `renames a quest mention with its prefix`() {
-        val result = renameMentionIn("взяли @Квест: Меч", "Квест: Меч", "Квест: Щит", emptyList())
-        assertEquals("взяли @Квест: Щит", result)
+    fun `renames a quest mention by its title`() {
+        val result = renameMentionIn("взяли @Меч", "Меч", "Щит", emptyList())
+        assertEquals("взяли @Щит", result)
     }
 
     @Test

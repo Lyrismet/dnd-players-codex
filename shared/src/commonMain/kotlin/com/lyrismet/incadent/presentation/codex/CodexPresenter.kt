@@ -91,7 +91,6 @@ import dndplayerscodex.shared.generated.resources.codex_party_card_player_prefix
 import dndplayerscodex.shared.generated.resources.codex_party_card_you
 import dndplayerscodex.shared.generated.resources.codex_undo_deleted_title
 import dndplayerscodex.shared.generated.resources.quick_edit_changed_suffix
-import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
@@ -188,10 +187,9 @@ class CodexPresenter(
         val fields = rememberFields(labels)
         val formController = rememberFormController(fields, parties)
 
-        val prefix = questPrefix()
         val candidates =
-            remember(npcs, locations, quests, parties, prefix) {
-                mentionCandidates(mentionEntitiesFrom(npcs, locations, quests, parties), prefix)
+            remember(npcs, locations, quests, parties) {
+                mentionCandidates(mentionEntitiesFrom(npcs, locations, quests, parties))
             }
         val records = CodexRecords(parties, npcs, quests, locations, sessionEntries, candidates)
         val search = buildSearchResults(records, fields)
@@ -424,9 +422,6 @@ class CodexPresenter(
                 ),
             npcLife = npcLifeLabels(),
         )
-
-    @Composable
-    private fun questPrefix(): String = stringResource(Res.string.session_detail_quest_mention_prefix)
 
     // assembles the full screen state from already-computed pieces - a flat data merge, not real complexity
     @Suppress("LongParameterList")

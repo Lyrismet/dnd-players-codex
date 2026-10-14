@@ -18,92 +18,91 @@ import com.slack.circuit.runtime.navigation.NavStackList
 import com.slack.circuit.runtime.screen.PopResult
 import com.slack.circuit.runtime.screen.Screen
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
+
+/** an id-keyed in-memory table that assigns ids on insert and re-emits on every write, like the real repositories */
+internal abstract class InMemoryStore<T>(
+    initial: List<T>,
+    private val idOf: (T) -> Long,
+    private val withId: (T, Long) -> T,
+) {
+    private val items = MutableStateFlow(initial.associateBy(idOf))
+    private var nextId = (initial.maxOfOrNull(idOf) ?: 0L) + 1
+
+    /** every stored record, oldest first */
+    val all: List<T> get() = items.value.values.toList()
+
+    fun stored(id: Long): T? = items.value[id]
+
+    protected fun observe(): Flow<List<T>> = items.map { it.values.toList() }
+
+    protected fun put(item: T): Long {
+        val id = if (idOf(item) == 0L) nextId++ else idOf(item)
+        items.update { it + (id to withId(item, id)) }
+        return id
+    }
+
+    protected fun remove(id: Long) {
+        items.update { it - id }
+    }
+}
 
 internal class FakeNpcRepository(
     vararg initial: Npc,
-) : NpcRepository {
-    private val store = initial.associateBy { it.id }.toMutableMap()
+) : InMemoryStore<Npc>(initial.toList(), { it.id }, { npc, id -> npc.copy(id = id) }),
+    NpcRepository {
+    override fun observeAll(): Flow<List<Npc>> = observe()
 
-    fun stored(id: Long): Npc? = store[id]
+    override suspend fun getById(id: Long): Npc? = stored(id)
 
-    override fun observeAll(): Flow<List<Npc>> = flowOf(store.values.toList())
+    override suspend fun upsert(npc: Npc): Long = put(npc)
 
-    override suspend fun getById(id: Long): Npc? = store[id]
-
-    override suspend fun upsert(npc: Npc): Long {
-        store[npc.id] = npc
-        return npc.id
-    }
-
-    override suspend fun delete(id: Long) {
-        store.remove(id)
-    }
+    override suspend fun delete(id: Long) = remove(id)
 }
 
 internal class FakePartyRepository(
     vararg initial: PartyMember,
-) : PartyRepository {
-    private val store = initial.associateBy { it.id }.toMutableMap()
+) : InMemoryStore<PartyMember>(initial.toList(), { it.id }, { member, id -> member.copy(id = id) }),
+    PartyRepository {
+    override fun observeAll(): Flow<List<PartyMember>> = observe()
 
-    fun stored(id: Long): PartyMember? = store[id]
+    override suspend fun getById(id: Long): PartyMember? = stored(id)
 
-    override fun observeAll(): Flow<List<PartyMember>> = flowOf(store.values.toList())
+    override suspend fun upsert(member: PartyMember): Long = put(member)
 
-    override suspend fun getById(id: Long): PartyMember? = store[id]
-
-    override suspend fun upsert(member: PartyMember): Long {
-        store[member.id] = member
-        return member.id
-    }
-
-    override suspend fun delete(id: Long) {
-        store.remove(id)
-    }
+    override suspend fun delete(id: Long) = remove(id)
 }
 
 internal class FakeLocationRepository(
     vararg initial: Location,
-) : LocationRepository {
-    private val store = initial.associateBy { it.id }.toMutableMap()
+) : InMemoryStore<Location>(initial.toList(), { it.id }, { location, id -> location.copy(id = id) }),
+    LocationRepository {
+    override fun observeAll(): Flow<List<Location>> = observe()
 
-    fun stored(id: Long): Location? = store[id]
+    override suspend fun getById(id: Long): Location? = stored(id)
 
-    override fun observeAll(): Flow<List<Location>> = flowOf(store.values.toList())
+    override suspend fun upsert(location: Location): Long = put(location)
 
-    override suspend fun getById(id: Long): Location? = store[id]
-
-    override suspend fun upsert(location: Location): Long {
-        store[location.id] = location
-        return location.id
-    }
-
-    override suspend fun delete(id: Long) {
-        store.remove(id)
-    }
+    override suspend fun delete(id: Long) = remove(id)
 }
 
 internal class FakeQuestRepository(
     vararg initial: Quest,
-) : QuestRepository {
-    private val store = initial.associateBy { it.id }.toMutableMap()
+) : InMemoryStore<Quest>(initial.toList(), { it.id }, { quest, id -> quest.copy(id = id) }),
+    QuestRepository {
+    override fun observeAll(): Flow<List<Quest>> = observe()
 
-    fun stored(id: Long): Quest? = store[id]
+    override fun observeByStatus(status: QuestStatus): Flow<List<Quest>> =
+        observe().map { quests -> quests.filter { it.status == status } }
 
-    override fun observeAll(): Flow<List<Quest>> = flowOf(store.values.toList())
+    override suspend fun getById(id: Long): Quest? = stored(id)
 
-    override fun observeByStatus(status: QuestStatus): Flow<List<Quest>> = flowOf(emptyList())
+    override suspend fun upsert(quest: Quest): Long = put(quest)
 
-    override suspend fun getById(id: Long): Quest? = store[id]
-
-    override suspend fun upsert(quest: Quest): Long {
-        store[quest.id] = quest
-        return quest.id
-    }
-
-    override suspend fun delete(id: Long) {
-        store.remove(id)
-    }
+    override suspend fun delete(id: Long) = remove(id)
 }
 
 internal class RecordingNavigator : Navigator {
