@@ -27,7 +27,6 @@ import com.lyrismet.incadent.core.campaign.CampaignSourceItem
 import com.lyrismet.incadent.core.campaign.CampaignTransferRow
 import com.lyrismet.incadent.core.campaign.CampaignTransferTab
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.format.russianPluralForm
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.campaign_copy_phrases
 import dndplayerscodex.shared.generated.resources.campaign_copy_tags
@@ -45,10 +44,11 @@ import dndplayerscodex.shared.generated.resources.campaign_items_none
 import dndplayerscodex.shared.generated.resources.campaign_items_note
 import dndplayerscodex.shared.generated.resources.campaign_items_search
 import dndplayerscodex.shared.generated.resources.campaign_items_title
-import dndplayerscodex.shared.generated.resources.campaign_items_transfer_format
+import dndplayerscodex.shared.generated.resources.campaign_items_transfer
 import dndplayerscodex.shared.generated.resources.campaign_world_new
 import dndplayerscodex.shared.generated.resources.campaign_world_same
 import dndplayerscodex.shared.generated.resources.campaign_world_same_hint
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -245,9 +245,8 @@ private fun CampaignItemsStep(
     TransferSearchRow(sheet, onEvent)
     TransferList(sheet, onEvent)
     CampaignNote(stringResource(Res.string.campaign_items_note))
-    val word = russianPluralForm(sheet.transferCount, "запись", "записи", "записей")
     FormPrimaryButton(
-        text = stringResource(Res.string.campaign_items_transfer_format, sheet.transferCount, word),
+        text = pluralStringResource(Res.plurals.campaign_items_transfer, sheet.transferCount, sheet.transferCount),
         onClick = { onEvent(CampaignSheetEvent.FormNext) },
     )
     Text(

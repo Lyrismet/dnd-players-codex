@@ -76,8 +76,7 @@ class CampaignRepositoryImpl(
     override suspend fun archive(id: String) {
         withContext(Dispatchers.Default) {
             queries.setStatus(CampaignStatus.ARCHIVED, id)
-            // the last live campaign leaves the app on the library instead of an archive
-            if (current.id.value == id && queries.selectFirstLiveId().executeAsOneOrNull() == null) current.close()
+            if (current.id.value == id) openFirstLiveOrClose()
         }
     }
 
@@ -88,10 +87,13 @@ class CampaignRepositoryImpl(
     override suspend fun deleteWithData(id: String) {
         withContext(Dispatchers.Default) {
             queries.deleteById(id)
-            if (current.id.value == id) {
-                queries.selectFirstLiveId().executeAsOneOrNull()?.let { current.open(it) } ?: current.close()
-            }
+            if (current.id.value == id) openFirstLiveOrClose()
         }
+    }
+
+    // the last live campaign leaves the app on the library instead of an archive
+    private fun openFirstLiveOrClose() {
+        queries.selectFirstLiveId().executeAsOneOrNull()?.let { current.open(it) } ?: current.close()
     }
 
     override fun observeTransferCandidates(sourceId: String): Flow<TransferCandidates> =
@@ -154,6 +156,7 @@ class CampaignRepositoryImpl(
             )
             placeMap[oldId] = locationQueries.lastInsertRowId().executeAsOne()
         }
+        var copiedNpcs = 0
         transfer.npcIds.forEach { oldId ->
             val npc = npcQueries.selectById(oldId).executeAsOneOrNull() ?: return@forEach
             npcQueries.insert(
@@ -169,10 +172,11 @@ class CampaignRepositoryImpl(
             )
             val newId = npcQueries.lastInsertRowId().executeAsOne()
             npcPlaces[oldId].orEmpty().mapNotNull(placeMap::get).forEach { npcLocationQueries.insert(newId, it) }
+            copiedNpcs++
         }
         if (transfer.copyTags) queries.copyTags(targetId, source)
         if (transfer.copyPhrases) queries.copyPhrases(targetId, source)
-        return placeMap.size + transfer.npcIds.size
+        return placeMap.size + copiedNpcs
     }
 
     private fun depth(

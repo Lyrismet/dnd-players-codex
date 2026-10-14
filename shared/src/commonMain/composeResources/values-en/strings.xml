@@ -398,7 +398,10 @@
     <string name="campaign_action_finish">Finish</string>
     <string name="campaign_new">+ New campaign</string>
     <string name="campaign_last_new">new</string>
-    <string name="campaign_sessions_count_format">%1$d %2$s</string>
+    <plurals name="campaign_sessions_count">
+        <item quantity="one">%1$d session</item>
+        <item quantity="other">%1$d sessions</item>
+    </plurals>
     <string name="campaign_player_format">%1$s, %2$s</string>
     <string name="campaign_player_level_format">lvl %1$d</string>
     <string name="campaign_switcher_description">Switch campaign</string>
@@ -423,7 +426,10 @@
     <string name="campaign_items_none">Clear all</string>
     <string name="campaign_items_empty">Nothing here</string>
     <string name="campaign_items_note">Copies are made: name, description, photo, nesting. An NPC brings its places. Quests and notes stay in the old campaign.</string>
-    <string name="campaign_items_transfer_format">Copy %1$d %2$s</string>
+    <plurals name="campaign_items_transfer">
+        <item quantity="one">Copy %1$d item</item>
+        <item quantity="other">Copy %1$d items</item>
+    </plurals>
     <string name="campaign_items_back">‹ Back</string>
     <string name="campaign_toast_created">Campaign «%1$s» created</string>
     <string name="campaign_toast_created_transfer">Campaign «%1$s» created · %2$d copied</string>

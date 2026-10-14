@@ -19,6 +19,8 @@ data class CampaignCreateDraft(
     val query: String = "",
     val uncheckedPlaceIds: Set<Long> = emptySet(),
     val checkedNpcIds: Set<Long> = emptySet(),
+    // set once create is launched so a second tap cannot insert a duplicate
+    val submitting: Boolean = false,
 ) {
     /** a same-world campaign needs its source, and every campaign its name */
     val canProceed: Boolean

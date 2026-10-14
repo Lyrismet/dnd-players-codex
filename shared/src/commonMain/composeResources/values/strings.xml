@@ -411,7 +411,12 @@
     <string name="campaign_action_finish">Завершить</string>
     <string name="campaign_new">+ Новая кампания</string>
     <string name="campaign_last_new">новая</string>
-    <string name="campaign_sessions_count_format">%1$d %2$s</string>
+    <plurals name="campaign_sessions_count">
+        <item quantity="one">%1$d сессия</item>
+        <item quantity="few">%1$d сессии</item>
+        <item quantity="many">%1$d сессий</item>
+        <item quantity="other">%1$d сессии</item>
+    </plurals>
     <string name="campaign_player_format">%1$s, %2$s</string>
     <string name="campaign_player_level_format">%1$d ур.</string>
     <string name="campaign_switcher_description">Сменить кампанию</string>
@@ -436,7 +441,12 @@
     <string name="campaign_items_none">Снять все</string>
     <string name="campaign_items_empty">Здесь пусто</string>
     <string name="campaign_items_note">Переносятся копии: название, описание, фото, вложенность. С NPC переносятся и его места. Квесты и заметки остаются в старой кампании.</string>
-    <string name="campaign_items_transfer_format">Перенести %1$d %2$s</string>
+    <plurals name="campaign_items_transfer">
+        <item quantity="one">Перенести %1$d запись</item>
+        <item quantity="few">Перенести %1$d записи</item>
+        <item quantity="many">Перенести %1$d записей</item>
+        <item quantity="other">Перенести %1$d записи</item>
+    </plurals>
     <string name="campaign_items_back">‹ Назад</string>
     <string name="campaign_toast_created">Кампания «%1$s» создана</string>
     <string name="campaign_toast_created_transfer">Кампания «%1$s» создана · перенесено %2$d</string>

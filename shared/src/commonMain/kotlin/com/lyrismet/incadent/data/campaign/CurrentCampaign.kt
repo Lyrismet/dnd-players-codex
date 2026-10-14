@@ -42,6 +42,12 @@ class CurrentCampaign(
     private fun resolveInitialId(): String? {
         val saved = settings.getStringOrNull(KEY_CURRENT_CAMPAIGN_ID)
         if (saved != null && queries.exists(saved).executeAsOne() > 0L) return saved
-        return queries.selectFirstLiveId().executeAsOneOrNull()?.also { open(it) }
+        // written straight to settings, open() would touch state before it is assigned
+        return queries.selectFirstLiveId().executeAsOneOrNull()?.also {
+            settings.putString(
+                KEY_CURRENT_CAMPAIGN_ID,
+                it,
+            )
+        }
     }
 }

@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import com.lyrismet.incadent.core.format.russianPluralForm
 import com.lyrismet.incadent.core.format.toShortDisplayDate
 import com.lyrismet.incadent.domain.model.Campaign
 import com.lyrismet.incadent.domain.model.CampaignStatus
@@ -18,7 +17,7 @@ import dndplayerscodex.shared.generated.resources.campaign_items_tab_format
 import dndplayerscodex.shared.generated.resources.campaign_last_new
 import dndplayerscodex.shared.generated.resources.campaign_player_format
 import dndplayerscodex.shared.generated.resources.campaign_player_level_format
-import dndplayerscodex.shared.generated.resources.campaign_sessions_count_format
+import dndplayerscodex.shared.generated.resources.campaign_sessions_count
 import dndplayerscodex.shared.generated.resources.campaign_tab_npcs
 import dndplayerscodex.shared.generated.resources.campaign_tab_places
 import dndplayerscodex.shared.generated.resources.campaign_toast_archived
@@ -30,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 /** everything a screen needs of the campaign switcher - the card lists, what is open and the sheet over the screen */
@@ -217,14 +217,14 @@ private fun submitForm(
 ): CampaignCreateDraft {
     val name = savableCampaignName(draft.name)
     return when {
-        name == null || !draft.canProceed -> draft
+        name == null || !draft.canProceed || draft.submitting -> draft
         draft.sameWorld && draft.step == CampaignCreateStep.FORM -> draft.copy(step = CampaignCreateStep.ITEMS)
         else -> {
             scope.launch {
                 val copied = repository.create(name, draft.toTransfer(candidates))
                 showToast(createdToast(name, copied))
             }
-            draft
+            draft.copy(submitting = true)
         }
     }
 }
@@ -289,8 +289,7 @@ private fun createState(
 private fun campaignSessionLabels(campaigns: List<Campaign>): Map<String, String> =
     campaigns.associate { campaign ->
         val n = campaign.sessionCount
-        val word = russianPluralForm(n, "сессия", "сессии", "сессий")
-        campaign.id to stringResource(Res.string.campaign_sessions_count_format, n, word)
+        campaign.id to pluralStringResource(Res.plurals.campaign_sessions_count, n, n)
     }
 
 @Composable
