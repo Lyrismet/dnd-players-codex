@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.core.phrases
 
+import com.lyrismet.incadent.core.mention.plainMentionText
+
 /** one phrase offered above the composer - a pinned snippet (★) or an automatically found frequent one (↻ ×N) */
 data class PhraseOption(
     val text: String,
@@ -70,7 +72,7 @@ fun phraseLabel(
     text: String,
     maxLength: Int? = null,
 ): String {
-    val plain = text.replace("@", "")
+    val plain = plainMentionText(text).replace("@", "")
     return if (maxLength != null && plain.length > maxLength) plain.take(maxLength - 1) + "…" else plain
 }
 

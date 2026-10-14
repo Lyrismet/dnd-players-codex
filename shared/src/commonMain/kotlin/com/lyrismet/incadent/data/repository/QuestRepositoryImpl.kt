@@ -21,7 +21,6 @@ import kotlinx.coroutines.withContext
 @ContributesBinding(AppScope::class)
 class QuestRepositoryImpl(
     private val database: AppDatabase,
-    private val mentionRenamer: MentionRenamer,
     private val current: CurrentCampaign,
 ) : QuestRepository {
     private val queries = database.questQueries
@@ -41,24 +40,12 @@ class QuestRepositoryImpl(
             queries.selectById(id, ::toDomain).executeAsOneOrNull()
         }
 
+    // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
     override suspend fun upsert(quest: Quest): Long =
         withContext(Dispatchers.Default) {
-            if (quest.id == 0L) {
-                database.transactionWithResult {
-                    queries.insert(
-                        quest.title,
-                        quest.status,
-                        quest.reward,
-                        quest.givenByNpcId,
-                        quest.locationId,
-                        quest.description,
-                        current.requireId(),
-                    )
-                    queries.lastInsertRowId().executeAsOne()
-                }
-            } else {
-                val oldTitle = queries.selectById(quest.id, ::toDomain).executeAsOneOrNull()?.title
-                val update: () -> Unit = {
+            database.transactionWithResult {
+                val exists = quest.id != 0L && queries.selectById(quest.id, ::toDomain).executeAsOneOrNull() != null
+                if (exists) {
                     queries.update(
                         quest.title,
                         quest.status,
@@ -68,11 +55,38 @@ class QuestRepositoryImpl(
                         quest.description,
                         quest.id,
                     )
+                    quest.id
+                } else {
+                    insert(quest)
                 }
-                if (oldTitle != null) mentionRenamer.questRenamed(quest.id, oldTitle, quest.title, update) else update()
-                quest.id
             }
         }
+
+    private fun insert(quest: Quest): Long {
+        if (quest.id != 0L) {
+            queries.insertWithId(
+                quest.id,
+                quest.title,
+                quest.status,
+                quest.reward,
+                quest.givenByNpcId,
+                quest.locationId,
+                quest.description,
+                current.requireId(),
+            )
+            return quest.id
+        }
+        queries.insert(
+            quest.title,
+            quest.status,
+            quest.reward,
+            quest.givenByNpcId,
+            quest.locationId,
+            quest.description,
+            current.requireId(),
+        )
+        return queries.lastInsertRowId().executeAsOne()
+    }
 
     override suspend fun delete(id: Long) {
         withContext(Dispatchers.Default) {

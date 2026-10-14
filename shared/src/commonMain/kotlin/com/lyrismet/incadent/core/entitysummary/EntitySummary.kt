@@ -13,7 +13,7 @@ import com.lyrismet.incadent.core.designsystem.toStatusColor
 import com.lyrismet.incadent.core.designsystem.toStatusGlyph
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.orDash
-import com.lyrismet.incadent.core.mention.MentionCandidate
+import com.lyrismet.incadent.core.mention.MentionIndex
 import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.core.quickedit.InlineEdit
 import com.lyrismet.incadent.core.quickedit.QuickEditField
@@ -219,7 +219,7 @@ data class EntityLookup(
     val partyYouLabel: String,
     val sessionNotes: List<SessionNote>,
     val sessionEntries: List<SessionEntry>,
-    val mentionCandidates: List<MentionCandidate>,
+    val mentionIndex: MentionIndex,
     val sessionNumbering: SessionNumbering,
 )
 
@@ -469,7 +469,7 @@ fun entityLookupOf(
     quests: List<Quest>,
     sessionNotes: List<SessionNote>,
     sessionEntries: List<SessionEntry>,
-    mentionCandidates: List<MentionCandidate>,
+    mentionIndex: MentionIndex,
     sessionNumbering: SessionNumbering,
     parties: List<PartyMember>,
 ): EntityLookup =
@@ -485,7 +485,7 @@ fun entityLookupOf(
         partyYouLabel = stringResource(Res.string.entity_sheet_party_you_label),
         sessionNotes = sessionNotes,
         sessionEntries = sessionEntries,
-        mentionCandidates = mentionCandidates,
+        mentionIndex = mentionIndex,
         sessionNumbering = sessionNumbering,
     )
 
@@ -498,7 +498,7 @@ fun selectedEntitySummary(
     quests: List<Quest>,
     sessionNotes: List<SessionNote>,
     sessionEntries: List<SessionEntry>,
-    mentionCandidates: List<MentionCandidate>,
+    mentionIndex: MentionIndex,
     sessionNumbering: SessionNumbering,
     parties: List<PartyMember>,
 ): EntitySummaryItem? {
@@ -510,7 +510,7 @@ fun selectedEntitySummary(
             quests,
             sessionNotes,
             sessionEntries,
-            mentionCandidates,
+            mentionIndex,
             sessionNumbering,
             parties,
         )

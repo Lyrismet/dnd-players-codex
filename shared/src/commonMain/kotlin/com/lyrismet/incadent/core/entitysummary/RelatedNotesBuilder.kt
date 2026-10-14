@@ -2,8 +2,8 @@ package com.lyrismet.incadent.core.entitysummary
 
 import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
-import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.mention.MentionEntity
+import com.lyrismet.incadent.core.mention.MentionIndex
 import com.lyrismet.incadent.core.mention.MentionSegment
 import com.lyrismet.incadent.core.mention.parseMentions
 
@@ -29,7 +29,7 @@ internal fun buildRelatedNotes(
         .mapNotNull { note ->
             val hits =
                 entriesBySession[note.id].orEmpty().filter { entry ->
-                    parseMentions(entry.body, lookup.mentionCandidates)
+                    parseMentions(entry.body, lookup.mentionIndex)
                         .filterIsInstance<MentionSegment.Mention>()
                         .any { ref.matches(it.entity) }
                 }
@@ -42,7 +42,7 @@ internal fun buildRelatedNotes(
                     numberLabel = numberLabels.getValue(note.id),
                     title = note.title,
                     dateLabel = note.sessionDate.toDisplayDate(),
-                    snippet = plainTextSnippet(hits.first().body, lookup.mentionCandidates),
+                    snippet = plainTextSnippet(hits.first().body, lookup.mentionIndex),
                     matchCount = hits.size,
                 )
             }
@@ -51,7 +51,7 @@ internal fun buildRelatedNotes(
 
 private fun plainTextSnippet(
     body: String,
-    candidates: List<MentionCandidate>,
+    candidates: MentionIndex,
 ): String {
     val plain =
         parseMentions(body, candidates).joinToString("") { segment ->

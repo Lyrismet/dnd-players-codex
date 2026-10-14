@@ -1,13 +1,10 @@
 package com.lyrismet.incadent.core.entitysummary
 
-import com.lyrismet.incadent.domain.model.DeletedMention
-import com.lyrismet.incadent.domain.model.DeletedMentionType
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
-import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.NpcRepository
 import com.lyrismet.incadent.domain.repository.PartyRepository
@@ -19,7 +16,6 @@ import com.slack.circuit.runtime.screen.PopResult
 import com.slack.circuit.runtime.screen.Screen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
@@ -129,18 +125,4 @@ internal class RecordingNavigator : Navigator {
         newRoot: Screen,
         options: StateOptions,
     ): List<Screen> = emptyList()
-}
-
-internal class FakeDeletedMentionRepository : DeletedMentionRepository {
-    val stored = mutableMapOf<Pair<String, DeletedMentionType>, DeletedMention>()
-
-    override fun observeAll(): Flow<List<DeletedMention>> = flowOf(stored.values.toList())
-
-    override suspend fun remember(mention: DeletedMention) {
-        stored[mention.name to mention.type] = mention
-    }
-
-    override suspend fun forget(mention: DeletedMention) {
-        stored.remove(mention.name to mention.type)
-    }
 }

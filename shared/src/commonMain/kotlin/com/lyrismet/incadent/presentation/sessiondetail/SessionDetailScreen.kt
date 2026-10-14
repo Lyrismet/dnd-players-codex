@@ -135,7 +135,7 @@ sealed interface SessionEntrySegment {
 }
 
 data class SessionMentionSuggestion(
-    val candidateKey: String,
+    val token: String,
     val glyph: MentionGlyph,
     val tint: Color,
     val name: String,
@@ -157,7 +157,7 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     data object InsertMentionTriggerClicked : SessionDetailEvent
 
     data class MentionSuggestionPicked(
-        val candidateKey: String,
+        val token: String,
     ) : SessionDetailEvent
 
     data class MentionChipClicked(

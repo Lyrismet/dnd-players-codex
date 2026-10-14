@@ -24,17 +24,20 @@ import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.format.toShortDayMonthUpper
-import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.mention.MentionEntity
+import com.lyrismet.incadent.core.mention.MentionIndex
+import com.lyrismet.incadent.core.mention.MentionRef
 import com.lyrismet.incadent.core.mention.MentionSegment
 import com.lyrismet.incadent.core.mention.autoMatchedEntities
 import com.lyrismet.incadent.core.mention.dedupeKey
 import com.lyrismet.incadent.core.mention.insertMention
+import com.lyrismet.incadent.core.mention.linkTypedMentions
 import com.lyrismet.incadent.core.mention.matchingMentionEntities
-import com.lyrismet.incadent.core.mention.mentionCandidates
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.core.mention.mentionsIn
 import com.lyrismet.incadent.core.mention.parseMentions
+import com.lyrismet.incadent.core.mention.plainMentionText
+import com.lyrismet.incadent.core.mention.token
 import com.lyrismet.incadent.core.mention.trailingMentionQuery
 import com.lyrismet.incadent.core.phrases.PhraseOption
 import com.lyrismet.incadent.core.phrases.PhraseSheetController
@@ -63,7 +66,6 @@ import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.CampaignRepository
-import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
@@ -141,11 +143,10 @@ class SessionDetailPresenter(
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val phraseSnippetRepository: PhraseSnippetRepository,
-    private val deletedMentionRepository: DeletedMentionRepository,
     private val imageCompressor: ImageCompressor,
     private val campaignRepository: CampaignRepository,
 ) : Presenter<SessionDetailState> {
-    private val mentionActions = SessionMentionActions(sessionEntryRepository, deletedMentionRepository, undoController)
+    private val mentionActions = SessionMentionActions(sessionEntryRepository, undoController)
 
     // one collection per source the screen reads - a flat merge, not real complexity
     @Suppress("LongMethod")
@@ -161,7 +162,6 @@ class SessionDetailPresenter(
         val locations by mentionRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
         val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
-        val deleted by deletedMentionRepository.observeAll().collectAsState(initial = emptyList())
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
@@ -193,9 +193,7 @@ class SessionDetailPresenter(
             }
         }
 
-        val mention = buildMentionContext(npcs, locations, quests, parties, deleted, draft.value.text)
-        // a record created again takes its mentions back, so its snapshot has nothing left to stand in for
-        ForgetRevivedMentions(mention.revived, deletedMentionRepository)
+        val mention = buildMentionContext(npcs, locations, quests, parties, draft.value.text)
         // parsing every note is the costly part, so it only reruns when a note or a mention candidate changes
         val noteItems =
             remember(entries, mention.candidates) {
@@ -242,8 +240,12 @@ class SessionDetailPresenter(
         val tagCatalog by tagRepository.observeCatalog().collectAsState(initial = emptyList())
         val mentionedQuestNames = entryMentions.filterIsInstance<MentionEntity.QuestMention>().map { it.name }
         val tagSuggestions =
-            suggestSessionTags(entries.map { it.body }, mentionedQuestNames, assignedTags, tagReasonLabels())
-                .map { SessionTagSuggestionItem(it.tag, it.reason) }
+            suggestSessionTags(
+                entries.map { plainMentionText(it.body) },
+                mentionedQuestNames,
+                assignedTags,
+                tagReasonLabels(),
+            ).map { SessionTagSuggestionItem(it.tag, it.reason) }
         val tagButtonLabel =
             if (assignedTags.isEmpty()) {
                 stringResource(Res.string.session_detail_tag_button_label_empty)
@@ -270,7 +272,7 @@ class SessionDetailPresenter(
             }
 
         val phraseSavedToast = stringResource(Res.string.session_detail_phrase_saved_toast)
-        val mentionData = mentionEventData(mention.candidates, mention.entities, allEntries, deleted)
+        val mentionData = mentionEventData(mention.candidates, mention.entities, allEntries)
         val phrasePool = remember(pinnedPhrases, frequentPhrases) { phrasePool(pinnedPhrases, frequentPhrases) }
         val completions =
             if (mention.suggestions.isEmpty()) phraseCompletions(draft.value.text, phrasePool)?.options else null
@@ -376,11 +378,10 @@ class SessionDetailPresenter(
         when (event) {
             SessionDetailEvent.BackClicked -> navigator.pop()
             is SessionDetailEvent.TitleChanged -> onTitleChanged(event.title, currentNote, scope, fields.titleField)
-            is SessionDetailEvent.DraftChanged ->
-                fields.draft.value = TextFieldValue(event.text, event.selection)
+            is SessionDetailEvent.DraftChanged -> fields.draft.value = withoutBrokenTokens(event.text, event.selection)
             SessionDetailEvent.InsertMentionTriggerClicked -> onInsertMentionTrigger(fields.draft)
             is SessionDetailEvent.MentionSuggestionPicked ->
-                onMentionSuggestionPicked(event.candidateKey, fields.draft)
+                onMentionSuggestionPicked(event.token, fields.draft)
             is SessionDetailEvent.MentionChipClicked -> fields.entitySheet.onEntityClicked(event.ref)
             is SessionDetailEvent.NpcStatusSelected ->
                 fields.entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
@@ -391,7 +392,7 @@ class SessionDetailPresenter(
             is SessionDetailEvent.RelatedNoteClicked ->
                 fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId, event.entryId)
             SessionDetailEvent.SheetDismissed -> fields.entitySheet.onDismissed()
-            SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, entries, fields)
+            SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, entries, fields, mentionData.candidates)
             is SessionDetailEvent.EntryClicked -> onEntryClicked(event.id, fields.selectedEntryId)
             is SessionDetailEvent.EditEntryClicked -> onEditEntry(event.id, entries, fields)
             SessionDetailEvent.CancelEditEntryClicked -> {
@@ -431,7 +432,7 @@ class SessionDetailPresenter(
                 fields.deletedSheet.value = fields.deletedSheet.value?.copy(isPicking = event.isPicking, query = "")
             is SessionDetailEvent.DeletedMentionQueryChanged ->
                 fields.deletedSheet.value = fields.deletedSheet.value?.copy(query = event.query)
-            SessionDetailEvent.DeletedMentionCreateClicked -> onDeletedMentionCreate(fields, mentionData)
+            SessionDetailEvent.DeletedMentionCreateClicked -> onDeletedMentionCreate(fields)
             is SessionDetailEvent.DeletedMentionLinked ->
                 onDeletedMentionRewrite(event.key, fields, mentionData, scope)
             SessionDetailEvent.DeletedMentionKeptAsText -> onDeletedMentionRewrite(null, fields, mentionData, scope)
@@ -442,8 +443,7 @@ class SessionDetailPresenter(
             is SessionDetailEvent.AutoMentionsDismissed -> mentionActions.dismissAutoMatches(scope, event.entryId)
             is SessionDetailEvent.AutoMentionWordClicked ->
                 entries.find { it.id == event.entryId }?.let { entry ->
-                    mentionData.candidates
-                        .map { it.entity }
+                    mentionData.candidates.entities
                         .firstOrNull { it.dedupeKey() == event.entityKey }
                         ?.let { mentionActions.linkAutoMatches(scope, entry, mentionData, only = it) }
                 }
@@ -458,14 +458,11 @@ class SessionDetailPresenter(
     }
 
     // the sheet closes and the codex form opens over the screen, named and typed like the tag - nothing is created yet
-    private fun onDeletedMentionCreate(
-        fields: SessionDetailFields,
-        data: MentionEventData,
-    ) {
-        val open = fields.deletedSheet.value ?: return
-        val deleted = data.deletedMatching(open.deleted) ?: return
+    private fun onDeletedMentionCreate(fields: SessionDetailFields) {
+        val deleted = fields.deletedSheet.value?.deleted ?: return
         fields.deletedSheet.value = null
-        fields.formController.onAddEntryClicked(deleted.type.toEntryType(), deleted.name)
+        // created under the old id, so the tokens already in the notes point at it again
+        fields.formController.onAddEntryClicked(deleted.type.toEntryType(), deleted.name, reviveId = deleted.id)
     }
 
     // a null [key] keeps the name as plain words, otherwise the mention points at the picked record
@@ -475,7 +472,7 @@ class SessionDetailPresenter(
         data: MentionEventData,
         scope: CoroutineScope,
     ) {
-        val deleted = fields.deletedSheet.value?.let { data.deletedMatching(it.deleted) } ?: return
+        val deleted = fields.deletedSheet.value?.deleted ?: return
         val target = key?.let { id -> data.linkTargets.firstOrNull { it.id == id }?.entity }
         // a picked record that is gone by now leaves the tag alone instead of turning it into words
         if (key == null || target != null) {
@@ -484,13 +481,14 @@ class SessionDetailPresenter(
         }
     }
 
-    // the sheet only exists while its snapshot does, so a tag that was linked or revived closes it by itself
+    // the sheet only exists while the tag does, so one that was linked, turned into words or revived closes it
     private fun deletedSheet(
         open: OpenDeletedSheet?,
         data: MentionEventData,
     ): DeletedMentionSheetState? {
-        val deleted = open?.let { data.deletedMatching(it.deleted) } ?: return null
+        val deleted = open?.deleted ?: return null
         val hits = data.hitsOf(deleted)
+        val tagStillThere = hits.notes > 0 && !data.candidates.has(MentionRef(deleted.type, deleted.id))
         return DeletedMentionSheetState(
             name = deleted.name,
             type = deleted.type,
@@ -499,7 +497,7 @@ class SessionDetailPresenter(
             isPicking = open.isPicking,
             query = open.query,
             linkOptions = if (open.isPicking) data.linkOptionsFor(open.query) else emptyList(),
-        )
+        ).takeIf { tagStillThere }
     }
 
     private fun onSaveEntryAsPhrase(
@@ -564,10 +562,10 @@ class SessionDetailPresenter(
     }
 
     private fun onMentionSuggestionPicked(
-        candidateKey: String,
+        token: String,
         draft: MutableState<TextFieldValue>,
     ) {
-        val next = insertMention(draft.value.text, candidateKey)
+        val next = insertMention(draft.value.text, token)
         draft.value = TextFieldValue(next, TextRange(next.length))
     }
 
@@ -575,10 +573,15 @@ class SessionDetailPresenter(
         scope: CoroutineScope,
         entries: List<SessionEntry>,
         fields: SessionDetailFields,
+        index: MentionIndex,
     ) {
+        // a name typed after "@" without picking it from the list still turns into the token of its record
         val body =
-            fields.draft.value.text
-                .trim()
+            linkTypedMentions(
+                fields.draft.value.text
+                    .trim(),
+                index,
+            )
         if (body.isEmpty()) return
         val editingId = fields.editingEntryId.value
         fields.draft.value = TextFieldValue("")
@@ -671,12 +674,11 @@ private fun PhraseOption.toItem() =
     )
 
 private data class MentionContext(
-    val candidates: List<MentionCandidate>,
+    val candidates: MentionIndex,
     val suggestions: List<SessionMentionSuggestion>,
     // the live records, in the order the "link to" list offers them
     val entities: List<MentionEntity>,
     // snapshots whose name a live record has taken again
-    val revived: List<DeletedMention>,
 )
 
 // deletes immediately and offers undo - clears in-progress editing if the edited entry is the one removed
@@ -698,8 +700,9 @@ private fun onDeleteEntryClicked(
     }
     scope.launch {
         sessionEntryRepository.delete(id)
-        val preview = entry.body.take(ENTRY_PREVIEW_LENGTH)
-        val suffix = if (entry.body.length > ENTRY_PREVIEW_LENGTH) "…" else ""
+        val plain = plainMentionText(entry.body)
+        val preview = plain.take(ENTRY_PREVIEW_LENGTH)
+        val suffix = if (plain.length > ENTRY_PREVIEW_LENGTH) "…" else ""
         undoController.show(undoDeletedEntryTitle, "${entry.createdAt.toDisplayTime()} · $preview$suffix") {
             sessionEntryRepository.restore(entry)
         }
@@ -713,13 +716,10 @@ private fun buildMentionContext(
     locations: List<Location>,
     quests: List<Quest>,
     parties: List<PartyMember>,
-    deleted: List<DeletedMention>,
     draftText: String,
 ): MentionContext {
     val mentionEntities = mentionEntitiesFrom(npcs, locations, quests, parties)
-    val candidates = mentionCandidates(mentionEntities, deleted)
-    val liveKeys = mentionEntities.mapTo(HashSet()) { it.name }
-    val revived = deleted.filter { it.name in liveKeys }
+    val candidates = MentionIndex(mentionEntities)
 
     val typeLabels =
         MentionTypeLabels(
@@ -734,7 +734,7 @@ private fun buildMentionContext(
             .orEmpty()
             .map { it.toSuggestion(typeLabels) }
 
-    return MentionContext(candidates, suggestions, mentionEntities, revived)
+    return MentionContext(candidates, suggestions, mentionEntities)
 }
 
 /** groups [entries] under a "ВСТРЕЧА N" separator per calendar day, only when the session spans more than one */
@@ -768,7 +768,7 @@ private fun buildFeed(
     return feed
 }
 
-private fun SessionEntry.toItem(candidates: List<MentionCandidate>): SessionEntryItem {
+private fun SessionEntry.toItem(candidates: MentionIndex): SessionEntryItem {
     // only a note that was sent or edited and not decided on yet is searched for words without "@"
     val parsed = parseMentions(body, candidates, autoMatch = mentionCheck)
     return SessionEntryItem(
@@ -808,7 +808,7 @@ private fun MentionEntity.toSuggestion(labels: MentionTypeLabels): SessionMentio
             is MentionEntity.DeletedMention -> Triple(MentionGlyph.DELETED, LocationMentionColor.foreground, "")
         }
     return SessionMentionSuggestion(
-        candidateKey = name,
+        token = token(),
         glyph = glyph,
         tint = tint,
         name = name,
@@ -823,3 +823,19 @@ private fun tagReasonLabels() =
         quests = stringResource(Res.string.session_tag_reason_quests),
         words = stringResource(Res.string.session_tag_reason_words),
     )
+
+// a cut token goes whole, the caret lands where the same text position now is
+private fun withoutBrokenTokens(
+    text: String,
+    selection: TextRange,
+): TextFieldValue {
+    val clean =
+        com.lyrismet.incadent.core.mention
+            .withoutBrokenTokens(text)
+    if (clean == text) return TextFieldValue(text, selection)
+    val caret =
+        com.lyrismet.incadent.core.mention
+            .withoutBrokenTokens(text.take(selection.end))
+            .length
+    return TextFieldValue(clean, TextRange(caret.coerceAtMost(clean.length)))
+}

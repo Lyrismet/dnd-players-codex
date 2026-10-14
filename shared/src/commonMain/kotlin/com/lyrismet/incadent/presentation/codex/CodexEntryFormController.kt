@@ -68,6 +68,8 @@ internal data class PartyFormFields(
 /** the form's own editable-in-place fields - kept separate from [CodexEntryFormState] so typing survives rebuilds */
 internal data class CodexEntryFormFields(
     val editingRef: EntityRef?,
+    // the id a new record is created under - a deleted record's, so the tokens in notes find it again
+    val reviveId: Long = 0,
     val originalName: String = "",
     val type: CodexEntryType,
     val name: String = "",
@@ -198,8 +200,13 @@ class CodexEntryFormController private constructor(
     fun onAddEntryClicked(
         defaultType: CodexEntryType,
         initialName: String = "",
+        reviveId: Long = 0,
     ) {
-        open(withDefaults(CodexEntryFormFields(editingRef = null, type = defaultType, name = initialName)))
+        open(
+            withDefaults(
+                CodexEntryFormFields(editingRef = null, type = defaultType, name = initialName, reviveId = reviveId),
+            ),
+        )
     }
 
     // a new party member starts at the player character's level, when that is known
@@ -480,7 +487,7 @@ class CodexEntryFormController private constructor(
                 CodexEntryType.NPC ->
                     npcRepository.upsert(
                         Npc(
-                            id = (current.editingRef as? EntityRef.Npc)?.id ?: 0,
+                            id = (current.editingRef as? EntityRef.Npc)?.id ?: current.reviveId,
                             name = current.name.trim().capitalizeFirst(),
                             status = current.npcStatus,
                             lifeState = current.npcLife,
@@ -495,7 +502,7 @@ class CodexEntryFormController private constructor(
                 CodexEntryType.QUEST ->
                     questRepository.upsert(
                         Quest(
-                            id = (current.editingRef as? EntityRef.Quest)?.id ?: 0,
+                            id = (current.editingRef as? EntityRef.Quest)?.id ?: current.reviveId,
                             title = current.name.trim().capitalizeFirst(),
                             status = current.questStatus,
                             reward = current.reward.trim(),
@@ -508,7 +515,7 @@ class CodexEntryFormController private constructor(
                 CodexEntryType.LOCATION ->
                     locationRepository.upsert(
                         Location(
-                            id = (current.editingRef as? EntityRef.Location)?.id ?: 0,
+                            id = (current.editingRef as? EntityRef.Location)?.id ?: current.reviveId,
                             name = current.name.trim().capitalizeFirst(),
                             description = current.description.trim(),
                             parentId = current.locationParentId,
@@ -661,7 +668,7 @@ private fun Long?.toggled(id: Long): Long? = if (this == id) null else id
 private fun CodexEntryFormFields.toPartyMember(): PartyMember {
     val party = party
     return PartyMember(
-        id = (editingRef as? EntityRef.Party)?.id ?: 0,
+        id = (editingRef as? EntityRef.Party)?.id ?: reviveId,
         name = name.trim().capitalizeFirst(),
         characterClass = party.characterClass.trim().capitalizeFirst(),
         race = race.trim().capitalizeFirst(),

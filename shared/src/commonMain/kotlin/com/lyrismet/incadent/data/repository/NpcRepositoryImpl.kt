@@ -23,7 +23,6 @@ import kotlinx.coroutines.withContext
 @ContributesBinding(AppScope::class)
 class NpcRepositoryImpl(
     private val database: AppDatabase,
-    private val mentionRenamer: MentionRenamer,
     private val current: CurrentCampaign,
 ) : NpcRepository {
     private val queries = database.npcQueries
@@ -41,30 +40,13 @@ class NpcRepositoryImpl(
             }
         }
 
+    // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
     override suspend fun upsert(npc: Npc): Long =
         withContext(Dispatchers.Default) {
-            if (npc.id == 0L) {
-                database.transactionWithResult {
-                    queries.insert(
-                        npc.name,
-                        npc.status,
-                        npc.description,
-                        npc.race,
-                        npc.faction,
-                        npc.lifeState,
-                        npc.portrait?.full,
-                        npc.portrait?.thumb,
-                        current.requireId(),
-                    )
-                    val id = queries.lastInsertRowId().executeAsOne()
-                    writeLocations(id, npc.locationIds)
-                    id
-                }
-            } else {
-                val stored = queries.selectById(npc.id, ::toDomainFull).executeAsOneOrNull()
-                val oldName = stored?.name
-                val update: () -> Unit = {
-                    database.transaction {
+            database.transactionWithResult {
+                val stored = if (npc.id == 0L) null else queries.selectById(npc.id, ::toDomainFull).executeAsOneOrNull()
+                val id =
+                    if (stored != null) {
                         queries.update(
                             npc.name,
                             npc.status,
@@ -74,14 +56,45 @@ class NpcRepositoryImpl(
                             npc.lifeState,
                             npc.id,
                         )
-                        writePortrait(npc.id, npc.portrait, stored?.portrait)
-                        writeLocations(npc.id, npc.locationIds)
+                        writePortrait(npc.id, npc.portrait, stored.portrait)
+                        npc.id
+                    } else {
+                        insert(npc)
                     }
-                }
-                if (oldName != null) mentionRenamer.npcRenamed(npc.id, oldName, npc.name, update) else update()
-                npc.id
+                writeLocations(id, npc.locationIds)
+                id
             }
         }
+
+    private fun insert(npc: Npc): Long {
+        if (npc.id != 0L) {
+            queries.insertWithId(
+                npc.id,
+                npc.name,
+                npc.status,
+                npc.description,
+                npc.race,
+                npc.faction,
+                npc.lifeState,
+                npc.portrait?.full,
+                npc.portrait?.thumb,
+                current.requireId(),
+            )
+            return npc.id
+        }
+        queries.insert(
+            npc.name,
+            npc.status,
+            npc.description,
+            npc.race,
+            npc.faction,
+            npc.lifeState,
+            npc.portrait?.full,
+            npc.portrait?.thumb,
+            current.requireId(),
+        )
+        return queries.lastInsertRowId().executeAsOne()
+    }
 
     override suspend fun delete(id: Long) {
         withContext(Dispatchers.Default) {

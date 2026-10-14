@@ -34,6 +34,11 @@ insert:
 INSERT INTO quest(title, status, reward, given_by_npc_id, location_id, description, campaign_id)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
+-- puts a deleted record back under its old id, so the "@" tokens in notes find it again
+insertWithId:
+INSERT INTO quest(id, title, status, reward, given_by_npc_id, location_id, description, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
 update:
 UPDATE quest
 SET title = ?, status = ?, reward = ?, given_by_npc_id = ?, location_id = ?, description = ?

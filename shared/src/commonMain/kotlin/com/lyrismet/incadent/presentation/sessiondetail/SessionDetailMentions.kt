@@ -1,24 +1,23 @@
 package com.lyrismet.incadent.presentation.sessiondetail
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
 import com.lyrismet.incadent.core.designsystem.component.toChipItem
 import com.lyrismet.incadent.core.format.foldForSearch
 import com.lyrismet.incadent.core.mention.MentionBody
-import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.mention.MentionEntity
+import com.lyrismet.incadent.core.mention.MentionIndex
+import com.lyrismet.incadent.core.mention.MentionRef
 import com.lyrismet.incadent.core.mention.countMentionHits
 import com.lyrismet.incadent.core.mention.dedupeKey
 import com.lyrismet.incadent.core.mention.linkAutoMentions
-import com.lyrismet.incadent.core.mention.renameMentionIn
+import com.lyrismet.incadent.core.mention.relinkMentionIn
 import com.lyrismet.incadent.core.mention.unlinkMentionIn
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.DeletedMention
 import com.lyrismet.incadent.domain.model.DeletedMentionType
 import com.lyrismet.incadent.domain.model.SessionEntry
-import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.presentation.codex.CodexEntryType
 import dndplayerscodex.shared.generated.resources.Res
@@ -66,20 +65,16 @@ internal class MentionTitles(
 
 /** everything the mention events read - one value instead of one parameter per piece */
 internal class MentionEventData(
-    val candidates: List<MentionCandidate>,
+    val candidates: MentionIndex,
     val allEntries: List<SessionEntry>,
-    val deleted: List<DeletedMention>,
     val linkTargets: List<MentionLinkTarget>,
     val titles: MentionTitles,
 )
 
-internal fun MentionEventData.deletedMatching(snapshot: DeletedMention): DeletedMention? =
-    deleted.firstOrNull { it == snapshot }
-
 /** how many notes in how many sessions still carry the tag of [deleted] - across every session, not just this one */
 internal fun MentionEventData.hitsOf(deleted: DeletedMention) =
     countMentionHits(
-        MentionEntity.DeletedMention(deleted.name, deleted.type),
+        MentionEntity.DeletedMention(deleted.id, deleted.name, deleted.type),
         allEntries.map { MentionBody(it.sessionNoteId, it.body) },
         candidates,
     )
@@ -87,7 +82,6 @@ internal fun MentionEventData.hitsOf(deleted: DeletedMention) =
 /** writes the mention changes that touch note texts, each one undoable and never silent */
 internal class SessionMentionActions(
     private val entryRepository: SessionEntryRepository,
-    private val deletedRepository: DeletedMentionRepository,
     private val undoController: UndoController,
 ) {
     /** puts "@" on the auto matched words of [entry] - only those of [only] when given - and settles its check */
@@ -125,25 +119,18 @@ internal class SessionMentionActions(
         target: MentionEntity?,
         data: MentionEventData,
     ) {
-        val oldKey = deleted.name
-        val otherKeys = data.candidates.map { it.key }
+        val ref = MentionRef(deleted.type, deleted.id)
         val changes =
             data.allEntries.mapNotNull { entry ->
                 val rewritten =
-                    if (target == null) {
-                        unlinkMentionIn(entry.body, oldKey, deleted.name, otherKeys)
-                    } else {
-                        renameMentionIn(entry.body, oldKey, target.name, otherKeys)
-                    }
+                    if (target == null) unlinkMentionIn(entry.body, ref) else relinkMentionIn(entry.body, ref, target)
                 (entry to rewritten).takeIf { rewritten != entry.body }
             }
         val title = if (target == null) data.titles.deletedToText else data.titles.deletedLinked
         scope.launch {
             changes.forEach { (entry, body) -> entryRepository.rewriteBody(entry.id, body) }
-            deletedRepository.forget(deleted)
             undoController.show(title, deleted.name) {
                 changes.forEach { (entry, _) -> entryRepository.rewriteBody(entry.id, entry.body) }
-                deletedRepository.remember(deleted)
             }
         }
     }
@@ -168,15 +155,13 @@ internal fun DeletedMentionType.toEntryType(): CodexEntryType =
 /** the data the mention events read, with the texts of their undo toasts resolved from resources */
 @Composable
 internal fun mentionEventData(
-    candidates: List<MentionCandidate>,
+    candidates: MentionIndex,
     entities: List<MentionEntity>,
     allEntries: List<SessionEntry>,
-    deleted: List<DeletedMention>,
 ): MentionEventData =
     MentionEventData(
         candidates = candidates,
         allEntries = allEntries,
-        deleted = deleted,
         linkTargets = mentionLinkTargets(entities),
         titles =
             MentionTitles(
@@ -185,15 +170,6 @@ internal fun mentionEventData(
                 deletedToText = stringResource(Res.string.deleted_mention_text_toast_title),
             ),
     )
-
-/** a record created again takes its mentions back, so the snapshot that stood in for it is dropped */
-@Composable
-internal fun ForgetRevivedMentions(
-    revived: List<DeletedMention>,
-    repository: DeletedMentionRepository,
-) {
-    LaunchedEffect(revived) { revived.forEach { repository.forget(it) } }
-}
 
 /** the records that match [query] by name, as the list rows - everything when nothing is typed */
 internal fun MentionEventData.linkOptionsFor(query: String): List<DeletedMentionLinkOption> {

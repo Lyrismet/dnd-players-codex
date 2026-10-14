@@ -6,11 +6,8 @@ internal class AutoName(
     val entity: MentionEntity,
 )
 
-internal fun autoNamesOf(candidates: List<MentionCandidate>): List<AutoName> =
-    candidates
-        .map { it.entity }
-        .filter { it !is MentionEntity.DeletedMention }
-        .distinctBy { it.dedupeKey() }
+internal fun autoNamesOf(index: MentionIndex): List<AutoName> =
+    index.uniqueByName
         .filter { it.name.length >= AUTO_MATCH_MIN_LENGTH }
         .map { AutoName(it.name.foldPerChar(), it) }
         .sortedByDescending { it.folded.length }
@@ -50,27 +47,22 @@ fun autoMatchedEntities(segments: List<MentionSegment>): List<MentionEntity> =
         .map { it.entity }
         .distinctBy { it.dedupeKey() }
 
-/** puts "@" before the auto matched words of [text], only those of [only] when given, in the record's own spelling */
+/** turns the auto matched words of [text] into mention tokens, only those of [only] when given */
 fun linkAutoMentions(
     text: String,
-    candidates: List<MentionCandidate>,
+    index: MentionIndex,
     only: MentionEntity? = null,
 ): String =
-    parseMentions(text, candidates, autoMatch = true)
+    parseMentions(text, index, autoMatch = true)
         .joinToString("") { segment ->
-            val isWanted =
-                only == null || only.dedupeKey() == (segment as? MentionSegment.AutoMatch)?.entity?.dedupeKey()
-            if (segment is MentionSegment.AutoMatch && isWanted) {
-                "@" + segment.entity.name
-            } else {
-                segment.sourceText()
+            when (segment) {
+                is MentionSegment.Text -> segment.text
+                is MentionSegment.Mention -> segment.entity.token()
+                is MentionSegment.AutoMatch ->
+                    if (only == null || only.dedupeKey() == segment.entity.dedupeKey()) {
+                        segment.entity.token()
+                    } else {
+                        segment.text
+                    }
             }
         }
-
-// the text a segment stood for - a mention is rebuilt from its own key, the key it was parsed from
-private fun MentionSegment.sourceText(): String =
-    when (this) {
-        is MentionSegment.Text -> text
-        is MentionSegment.AutoMatch -> text
-        is MentionSegment.Mention -> "@" + entity.name
-    }

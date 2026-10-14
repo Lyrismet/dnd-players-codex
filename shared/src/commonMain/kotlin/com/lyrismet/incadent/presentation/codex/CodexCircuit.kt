@@ -4,7 +4,6 @@ import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.CampaignRepository
-import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.NpcRepository
 import com.lyrismet.incadent.domain.repository.PartyRepository
@@ -36,7 +35,6 @@ class CodexPresenterFactory(
     private val locationRepository: LocationRepository,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
-    private val deletedMentionRepository: DeletedMentionRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
@@ -57,7 +55,6 @@ class CodexPresenterFactory(
                     locationRepository,
                     sessionNoteRepository,
                     sessionEntryRepository,
-                    deletedMentionRepository,
                     undoController,
                     appPreferencesRepository,
                     imageCompressor,

@@ -21,7 +21,6 @@ import kotlinx.coroutines.withContext
 @ContributesBinding(AppScope::class)
 class LocationRepositoryImpl(
     private val database: AppDatabase,
-    private val mentionRenamer: MentionRenamer,
     private val current: CurrentCampaign,
 ) : LocationRepository {
     private val queries = database.locationQueries
@@ -36,42 +35,51 @@ class LocationRepositoryImpl(
             queries.selectById(id, ::toDomainFull).executeAsOneOrNull()
         }
 
+    // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
     override suspend fun upsert(location: Location): Long =
         withContext(Dispatchers.Default) {
-            if (location.id == 0L) {
-                database.transactionWithResult {
-                    queries.insert(
-                        location.name,
-                        location.description,
-                        location.parentId,
-                        location.cover?.full,
-                        location.cover?.thumb,
-                        current.requireId(),
-                    )
-                    queries.lastInsertRowId().executeAsOne()
-                }
-            } else {
-                val stored = queries.selectById(location.id, ::toDomainFull).executeAsOneOrNull()
-                val oldName = stored?.name
-                val update: () -> Unit = {
-                    database.transaction {
-                        queries.update(
-                            location.name,
-                            location.description,
-                            location.parentId,
-                            location.id,
-                        )
-                        writeCover(location.id, location.cover, stored?.cover)
+            database.transactionWithResult {
+                val stored =
+                    if (location.id ==
+                        0L
+                    ) {
+                        null
+                    } else {
+                        queries.selectById(location.id, ::toDomainFull).executeAsOneOrNull()
                     }
-                }
-                if (oldName != null) {
-                    mentionRenamer.locationRenamed(location.id, oldName, location.name, update)
+                if (stored != null) {
+                    queries.update(location.name, location.description, location.parentId, location.id)
+                    writeCover(location.id, location.cover, stored.cover)
+                    location.id
                 } else {
-                    update()
+                    insert(location)
                 }
-                location.id
             }
         }
+
+    private fun insert(location: Location): Long {
+        if (location.id != 0L) {
+            queries.insertWithId(
+                location.id,
+                location.name,
+                location.description,
+                location.parentId,
+                location.cover?.full,
+                location.cover?.thumb,
+                current.requireId(),
+            )
+            return location.id
+        }
+        queries.insert(
+            location.name,
+            location.description,
+            location.parentId,
+            location.cover?.full,
+            location.cover?.thumb,
+            current.requireId(),
+        )
+        return queries.lastInsertRowId().executeAsOne()
+    }
 
     // null removes the picture, see needsWrite for what leaves it alone
     private fun writeCover(

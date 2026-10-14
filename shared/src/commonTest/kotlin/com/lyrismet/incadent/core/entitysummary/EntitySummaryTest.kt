@@ -1,7 +1,9 @@
 package com.lyrismet.incadent.core.entitysummary
 
-import com.lyrismet.incadent.core.mention.mentionCandidates
+import com.lyrismet.incadent.core.mention.MentionEntity
+import com.lyrismet.incadent.core.mention.MentionIndex
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
+import com.lyrismet.incadent.core.mention.token
 import com.lyrismet.incadent.core.quickedit.QuickEditField
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
@@ -83,7 +85,12 @@ private val mentioningEntry =
         id = 1000,
         sessionNoteId = 100,
         createdAt = LocalDateTime(2026, 9, 1, 10, 5),
-        body = "Поговорили с @Рагнар про меч",
+        body = "Поговорили с ${MentionEntity.NpcMention(
+            1,
+            "Рагнар",
+            NpcStatus.FRIEND,
+            NpcLifeState.ALIVE,
+        ).token()} про меч",
     )
 private val unrelatedNote =
     SessionNote(id = 200, title = "Другая", sessionDate = LocalDateTime(2026, 9, 2, 10, 0), endedAt = null)
@@ -102,7 +109,7 @@ private fun lookup(
     numbering: SessionNumbering = SessionNumbering.ROMAN,
     parties: List<PartyMember> = listOf(lira),
 ): EntityLookup {
-    val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests))
+    val candidates = MentionIndex(mentionEntitiesFrom(npcs, locations, quests))
     return EntityLookup(
         npcs = npcs,
         locations = locations,
@@ -115,7 +122,7 @@ private fun lookup(
         partyYouLabel = "Вы",
         sessionNotes = listOf(mentioningNote, unrelatedNote),
         sessionEntries = listOf(mentioningEntry, unrelatedEntry),
-        mentionCandidates = candidates,
+        mentionIndex = candidates,
         sessionNumbering = numbering,
     )
 }

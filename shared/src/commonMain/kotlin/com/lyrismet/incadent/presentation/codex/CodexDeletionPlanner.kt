@@ -2,18 +2,16 @@ package com.lyrismet.incadent.presentation.codex
 
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.mention.MentionBody
-import com.lyrismet.incadent.core.mention.MentionCandidate
 import com.lyrismet.incadent.core.mention.MentionEntity
 import com.lyrismet.incadent.core.mention.MentionHits
+import com.lyrismet.incadent.core.mention.MentionIndex
 import com.lyrismet.incadent.core.mention.countMentionHits
-import com.lyrismet.incadent.domain.model.DeletedMention
 import com.lyrismet.incadent.domain.model.DeletedMentionType
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.SessionEntry
-import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.NpcRepository
 import com.lyrismet.incadent.domain.repository.PartyRepository
@@ -26,7 +24,7 @@ internal class CodexRecords(
     val quests: List<Quest>,
     val locations: List<Location>,
     val entries: List<SessionEntry> = emptyList(),
-    val mentionCandidates: List<MentionCandidate> = emptyList(),
+    val mentionIndex: MentionIndex = MentionIndex.EMPTY,
 )
 
 /** what a delete does, what the undo toast says, and how to put the entity back */
@@ -46,9 +44,8 @@ internal class CodexDeletionPlanner(
     private val partyRepository: PartyRepository,
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
-    private val deletedMentionRepository: DeletedMentionRepository,
 ) {
-    /** the delete/restore of [ref] - a record notes mention is remembered by name so its mentions turn into "?" tags */
+    /** the delete/restore of [ref] - undo puts the record back under its old id, so tokens in notes find it */
     fun planFor(
         ref: EntityRef,
         records: CodexRecords,
@@ -65,21 +62,13 @@ internal class CodexDeletionPlanner(
         records: CodexRecords,
     ): CodexDeletionPlan {
         val bodies = records.entries.map { MentionBody(it.sessionNoteId, it.body) }
-        val hits = countMentionHits(mentioned.entity, bodies, records.mentionCandidates)
-        val snapshot = DeletedMention(mentioned.entity.name, mentioned.type)
+        val hits = countMentionHits(mentioned.entity, bodies, records.mentionIndex)
         return CodexDeletionPlan(
             subtitle = base.subtitle,
-            delete = {
-                if (hits.notes > 0) deletedMentionRepository.remember(snapshot)
-                base.delete()
-            },
-            restore = {
-                base.restore()
-                // the record is back under its name, so the snapshot has nothing left to stand in for
-                deletedMentionRepository.forget(snapshot)
-            },
+            delete = base.delete,
+            restore = base.restore,
             mentionHits = hits,
-            name = snapshot.name,
+            name = mentioned.entity.name,
         )
     }
 
@@ -109,7 +98,7 @@ internal class CodexDeletionPlanner(
                     stored = partyRepository.getById(id)
                     partyRepository.delete(id)
                 },
-                restore = { partyRepository.upsert((stored ?: member).copy(id = 0)) },
+                restore = { partyRepository.upsert(stored ?: member) },
             )
         }
 
@@ -128,7 +117,7 @@ internal class CodexDeletionPlanner(
                     npcRepository.delete(id)
                 },
                 restore = {
-                    val newId = npcRepository.upsert((stored ?: npc).copy(id = 0))
+                    val newId = npcRepository.upsert(stored ?: npc)
                     givenQuestIds.forEach { questId ->
                         questRepository.getById(questId)?.let {
                             questRepository.upsert(it.copy(givenByNpcId = newId))
@@ -147,7 +136,7 @@ internal class CodexDeletionPlanner(
             CodexDeletionPlan(
                 subtitle = "${labels.getValue(CodexEntryType.QUEST)} · ${quest.title}",
                 delete = { questRepository.delete(id) },
-                restore = { questRepository.upsert(quest.copy(id = 0)) },
+                restore = { questRepository.upsert(quest) },
             )
         }
 
@@ -168,7 +157,7 @@ internal class CodexDeletionPlanner(
                     locationRepository.delete(id)
                 },
                 restore = {
-                    val newId = locationRepository.upsert((stored ?: location).copy(id = 0))
+                    val newId = locationRepository.upsert(stored ?: location)
                     npcIdsHere.forEach { npcId ->
                         npcRepository.getById(npcId)?.let {
                             npcRepository.upsert(it.copy(locationIds = (it.locationIds + newId).distinct()))

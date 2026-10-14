@@ -40,6 +40,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
@@ -59,6 +60,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
+import com.lyrismet.incadent.core.mention.MentionVisualTransformation
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_cancel
@@ -163,6 +165,7 @@ private fun ComposerDraftField(
         value = TextFieldValue(state.draft, state.draftSelection),
         onValueChange = { state.eventSink(SessionDetailEvent.DraftChanged(it.text, it.selection)) },
         textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp, color = AppPalette.TextPrimary),
+        visualTransformation = remember { MentionVisualTransformation(SpanStyle(color = AppPalette.GoldBright)) },
         cursorBrush = GoldCursorBrush,
         minLines = 2,
         keyboardOptions = SentenceKeyboardOptions.copy(imeAction = ImeAction.Send),
@@ -397,7 +400,7 @@ private fun MentionSuggestionsPopover(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(9.dp))
                         .clickable {
-                            state.eventSink(SessionDetailEvent.MentionSuggestionPicked(suggestion.candidateKey))
+                            state.eventSink(SessionDetailEvent.MentionSuggestionPicked(suggestion.token))
                         }.padding(horizontal = 8.dp, vertical = 9.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,

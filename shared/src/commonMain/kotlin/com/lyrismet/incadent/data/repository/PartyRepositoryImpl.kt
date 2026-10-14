@@ -22,7 +22,6 @@ import kotlinx.coroutines.withContext
 @ContributesBinding(AppScope::class)
 class PartyRepositoryImpl(
     private val database: AppDatabase,
-    private val mentionRenamer: MentionRenamer,
     private val current: CurrentCampaign,
 ) : PartyRepository {
     private val queries = database.partyMemberQueries
@@ -37,67 +36,75 @@ class PartyRepositoryImpl(
             queries.selectById(id, ::toDomainFull).executeAsOneOrNull()
         }
 
-    // a renamed member takes the "@mentions" of its old name along, in the same transaction as the update
+    // the "вы" flag is unique per campaign - saving a player character clears it from everyone else
     override suspend fun upsert(member: PartyMember): Long =
         withContext(Dispatchers.Default) {
-            val stored =
-                if (member.id == 0L) null else queries.selectById(member.id, ::toDomainFull).executeAsOneOrNull()
-            val oldName = stored?.name
-            if (oldName != null && oldName != member.name) {
-                mentionRenamer.partyRenamed(member.id, oldName, member.name) { write(member, stored.portrait) }
-                member.id
-            } else {
-                write(member, stored?.portrait)
+            database.transactionWithResult {
+                val stored =
+                    if (member.id == 0L) null else queries.selectById(member.id, ::toDomainFull).executeAsOneOrNull()
+                val id =
+                    if (stored != null) {
+                        queries.update(
+                            name = member.name,
+                            character_class = member.characterClass,
+                            race = member.race,
+                            level = member.level?.toLong(),
+                            player_name = member.playerName,
+                            is_player_character = if (member.isPlayerCharacter) 1L else 0L,
+                            presence = member.presence,
+                            hp_max = member.hpMax?.toLong(),
+                            hp_current = member.hpCurrent?.toLong(),
+                            description = member.description,
+                            id = member.id,
+                        )
+                        writePortrait(member.id, member.portrait, stored.portrait)
+                        member.id
+                    } else {
+                        insert(member)
+                    }
+                if (member.isPlayerCharacter) queries.clearOtherPlayerCharacters(id, current.requireId())
+                id
             }
         }
 
-    // the "вы" flag is unique per campaign - saving a player character clears it from everyone else
-    private fun write(
-        member: PartyMember,
-        storedPortrait: Photo?,
-    ): Long =
-        database.transactionWithResult {
-            val id =
-                if (member.id == 0L) {
-                    queries.insert(
-                        name = member.name,
-                        character_class = member.characterClass,
-                        race = member.race,
-                        level = member.level?.toLong(),
-                        player_name = member.playerName,
-                        is_player_character = if (member.isPlayerCharacter) 1L else 0L,
-                        presence = member.presence,
-                        hp_max = member.hpMax?.toLong(),
-                        hp_current = member.hpCurrent?.toLong(),
-                        description = member.description,
-                        portrait = member.portrait?.full,
-                        portrait_thumb = member.portrait?.thumb,
-                        campaign_id = current.requireId(),
-                    )
-                    queries.lastInsertRowId().executeAsOne()
-                } else {
-                    val updatedRows =
-                        queries
-                            .update(
-                                name = member.name,
-                                character_class = member.characterClass,
-                                race = member.race,
-                                level = member.level?.toLong(),
-                                player_name = member.playerName,
-                                is_player_character = if (member.isPlayerCharacter) 1L else 0L,
-                                presence = member.presence,
-                                hp_max = member.hpMax?.toLong(),
-                                hp_current = member.hpCurrent?.toLong(),
-                                description = member.description,
-                                id = member.id,
-                            ).value
-                    check(updatedRows > 0L) { "party member ${member.id} no longer exists" }
-                    writePortrait(member.id, member.portrait, storedPortrait)
-                    member.id
-                }
-            if (member.isPlayerCharacter) queries.clearOtherPlayerCharacters(id, current.requireId())
-            id
+    // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
+    private fun insert(member: PartyMember): Long {
+        if (member.id != 0L) {
+            queries.insertWithId(
+                id = member.id,
+                name = member.name,
+                character_class = member.characterClass,
+                race = member.race,
+                level = member.level?.toLong(),
+                player_name = member.playerName,
+                is_player_character = if (member.isPlayerCharacter) 1L else 0L,
+                presence = member.presence,
+                hp_max = member.hpMax?.toLong(),
+                hp_current = member.hpCurrent?.toLong(),
+                description = member.description,
+                portrait = member.portrait?.full,
+                portrait_thumb = member.portrait?.thumb,
+                campaign_id = current.requireId(),
+            )
+            return member.id
         }
+        queries.insert(
+            name = member.name,
+            character_class = member.characterClass,
+            race = member.race,
+            level = member.level?.toLong(),
+            player_name = member.playerName,
+            is_player_character = if (member.isPlayerCharacter) 1L else 0L,
+            presence = member.presence,
+            hp_max = member.hpMax?.toLong(),
+            hp_current = member.hpCurrent?.toLong(),
+            description = member.description,
+            portrait = member.portrait?.full,
+            portrait_thumb = member.portrait?.thumb,
+            campaign_id = current.requireId(),
+        )
+        return queries.lastInsertRowId().executeAsOne()
+    }
 
     // null removes the picture, see needsWrite for what leaves it alone
     private fun writePortrait(

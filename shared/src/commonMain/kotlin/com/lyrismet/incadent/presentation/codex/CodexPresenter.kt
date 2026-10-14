@@ -26,7 +26,7 @@ import com.lyrismet.incadent.core.entitysummary.questStatusLabels
 import com.lyrismet.incadent.core.entitysummary.rememberFullPhoto
 import com.lyrismet.incadent.core.entitysummary.withFullPhoto
 import com.lyrismet.incadent.core.format.capitalizeFirst
-import com.lyrismet.incadent.core.mention.mentionCandidates
+import com.lyrismet.incadent.core.mention.MentionIndex
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.portrait.ImageCompressor
@@ -56,7 +56,6 @@ import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.CampaignRepository
-import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.NpcRepository
@@ -152,7 +151,6 @@ class CodexPresenter(
     private val locationRepository: LocationRepository,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
-    deletedMentionRepository: DeletedMentionRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
@@ -164,7 +162,6 @@ class CodexPresenter(
             partyRepository,
             questRepository,
             locationRepository,
-            deletedMentionRepository,
         )
 
     @Composable
@@ -189,7 +186,7 @@ class CodexPresenter(
 
         val candidates =
             remember(npcs, locations, quests, parties) {
-                mentionCandidates(mentionEntitiesFrom(npcs, locations, quests, parties))
+                MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties))
             }
         val records = CodexRecords(parties, npcs, quests, locations, sessionEntries, candidates)
         val search = buildSearchResults(records, fields)

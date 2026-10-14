@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.presentation.codex
 
 import com.lyrismet.incadent.core.entitysummary.EntityRef
-import com.lyrismet.incadent.core.entitysummary.FakeDeletedMentionRepository
 import com.lyrismet.incadent.core.entitysummary.FakeLocationRepository
 import com.lyrismet.incadent.core.entitysummary.FakeNpcRepository
 import com.lyrismet.incadent.core.entitysummary.FakePartyRepository
@@ -110,5 +109,5 @@ class CodexDeletionPlannerPhotoTest {
         npcs: FakeNpcRepository = FakeNpcRepository(),
         party: FakePartyRepository = FakePartyRepository(),
         locations: FakeLocationRepository = FakeLocationRepository(),
-    ) = CodexDeletionPlanner(npcs, party, FakeQuestRepository(), locations, FakeDeletedMentionRepository())
+    ) = CodexDeletionPlanner(npcs, party, FakeQuestRepository(), locations)
 }

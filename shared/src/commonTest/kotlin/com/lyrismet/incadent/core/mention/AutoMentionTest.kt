@@ -1,7 +1,5 @@
 package com.lyrismet.incadent.core.mention
 
-import com.lyrismet.incadent.domain.model.DeletedMention
-import com.lyrismet.incadent.domain.model.DeletedMentionType
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.QuestStatus
@@ -16,9 +14,9 @@ private val temple = MentionEntity.LocationMention(4, "Храм Рассвета
 private val ox = MentionEntity.NpcMention(5, "Ох", NpcStatus.NEUTRAL, NpcLifeState.ALIVE)
 private val blade = MentionEntity.QuestMention(6, "Клинок", QuestStatus.ACTIVE)
 
-private val candidates = mentionCandidates(listOf(gromm, grommFull, artyom, temple, ox, blade))
+private val index = MentionIndex(listOf(gromm, grommFull, artyom, temple, ox, blade))
 
-private fun autoMatches(text: String) = autoMatchedEntities(parseMentions(text, candidates, autoMatch = true))
+private fun autoMatches(text: String) = autoMatchedEntities(parseMentions(text, index, autoMatch = true))
 
 class AutoMentionTest {
     @Test
@@ -56,8 +54,17 @@ class AutoMentionTest {
     }
 
     @Test
-    fun `a name already marked with at is skipped and a plain one next to it is kept`() {
-        val segments = parseMentions("@Громм и Артём", candidates, autoMatch = true)
+    fun `a name two records share is never an auto match`() {
+        val twin = MentionEntity.LocationMention(9, "Артём")
+
+        val shared = MentionIndex(listOf(artyom, twin))
+
+        assertTrue(autoMatchedEntities(parseMentions("пришёл артём", shared, autoMatch = true)).isEmpty())
+    }
+
+    @Test
+    fun `a token is kept and a plain name next to it is found`() {
+        val segments = parseMentions("${gromm.token()} и Артём", index, autoMatch = true)
 
         assertEquals(
             listOf(
@@ -71,119 +78,53 @@ class AutoMentionTest {
 
     @Test
     fun `a deleted record is never an auto match`() {
-        val withDeleted =
-            mentionCandidates(listOf(gromm), listOf(DeletedMention("Кассиан", DeletedMentionType.NPC)))
+        val gone = mentionToken(MentionRef(com.lyrismet.incadent.domain.model.DeletedMentionType.NPC, 50), "Кассиан")
 
-        assertTrue(autoMatchedEntities(parseMentions("Кассиан ушёл", withDeleted, autoMatch = true)).isEmpty())
+        assertTrue(autoMatches("видели $gone и Кассиан").isEmpty())
     }
 
     @Test
-    fun `linking puts the at sign in front of the record's own spelling`() {
-        val linked = linkAutoMentions("громм и артем ушли", candidates)
+    fun `linking turns every auto matched word into the token of its record`() {
+        val linked = linkAutoMentions("громм и артем ушли", index)
 
-        assertEquals("@Громм и @Артём ушли", linked)
+        assertEquals("${gromm.token()} и ${artyom.token()} ушли", linked)
     }
 
     @Test
-    fun `linking one entity leaves the other matches alone`() {
-        val linked = linkAutoMentions("Громм и Артём", candidates, only = artyom)
+    fun `linking one record leaves the other words alone`() {
+        val linked = linkAutoMentions("Громм и Артём", index, only = artyom)
 
-        assertEquals("Громм и @Артём", linked)
+        assertEquals("Громм и ${artyom.token()}", linked)
     }
 
     @Test
-    fun `a quest is linked by its title`() {
-        assertEquals("взяли @Клинок", linkAutoMentions("взяли Клинок", candidates))
+    fun `a quest is linked by its id`() {
+        assertEquals("взяли ${blade.token()}", linkAutoMentions("взяли Клинок", index))
     }
 
     @Test
-    fun `linking keeps existing mentions and text byte for byte`() {
-        assertEquals("@Громм\nи @Артём!", linkAutoMentions("@Громм\nи артём!", candidates))
-    }
-}
+    fun `linking keeps existing tokens and text`() {
+        val body = "${gromm.token()}\nи артём!"
 
-class DeletedMentionTest {
-    private val deleted = DeletedMention("Кассиан", DeletedMentionType.NPC)
-    private val deletedQuest = DeletedMention("Проклятие", DeletedMentionType.QUEST)
-
-    @Test
-    fun `a deleted record becomes a candidate under its name`() {
-        val all = mentionCandidates(emptyList(), listOf(deleted, deletedQuest))
-
-        assertEquals(setOf("Кассиан", "Проклятие"), all.map { it.key }.toSet())
-    }
-
-    @Test
-    fun `a live record with the same name wins over the deleted one`() {
-        val recreated = MentionEntity.NpcMention(9, "Кассиан", NpcStatus.NEUTRAL, NpcLifeState.ALIVE)
-        val all = mentionCandidates(listOf(recreated), listOf(deleted))
-
-        assertEquals(listOf<MentionEntity>(recreated), all.map { it.entity })
-    }
-
-    @Test
-    fun `a mention of a deleted record parses into a deleted entity`() {
-        val all = mentionCandidates(emptyList(), listOf(deleted))
-        val segments = parseMentions("видели @Кассиан у моста", all)
-
-        assertEquals(
-            listOf(
-                MentionSegment.Text("видели "),
-                MentionSegment.Mention(MentionEntity.DeletedMention("Кассиан", DeletedMentionType.NPC)),
-                MentionSegment.Text(" у моста"),
-            ),
-            segments,
-        )
-    }
-
-    @Test
-    fun `hits count notes and distinct sessions of one record`() {
-        val bodies =
-            listOf(
-                MentionBody(1, "@Громм был тут"),
-                MentionBody(1, "и @Громм снова"),
-                MentionBody(2, "@Громм Железный ушёл"),
-                MentionBody(3, "ничего"),
-            )
-
-        // "@Громм Железный" is the longer record's mention, so it is not a hit of the bare name
-        assertEquals(MentionHits(notes = 2, sessions = 1), countMentionHits(gromm, bodies, candidates))
-        assertEquals(MentionHits(notes = 1, sessions = 1), countMentionHits(grommFull, bodies, candidates))
-    }
-
-    @Test
-    fun `unlinking turns the tag into plain words and leaves a longer name alone`() {
-        val body = "@Громм Железный и @Громм"
-
-        val plain = unlinkMentionIn(body, "Громм", "Громм", otherKeys = listOf("Громм Железный"))
-
-        assertEquals("@Громм Железный и Громм", plain)
-    }
-
-    @Test
-    fun `unlinking a quest drops the at sign`() {
-        assertEquals(
-            "взяли Проклятие",
-            unlinkMentionIn("взяли @Проклятие", "Проклятие", "Проклятие", emptyList()),
-        )
+        assertEquals("${gromm.token()}\nи ${artyom.token()}!", linkAutoMentions(body, index))
     }
 }
 
 class PartyMentionTest {
     private val bran = MentionEntity.PartyMention(7, "Бран")
-    private val withParty = mentionCandidates(listOf(bran))
+    private val withParty = MentionIndex(listOf(bran))
 
     @Test
-    fun `a party member is mentioned by name like any other record`() {
-        val segments = parseMentions("@Бран кивнул", withParty)
+    fun `a party member is mentioned by token like any other record`() {
+        val segments = parseMentions("${bran.token()} кивнул", withParty)
 
         assertEquals(listOf(MentionSegment.Mention(bran), MentionSegment.Text(" кивнул")), segments)
     }
 
     @Test
-    fun `a party member written without at is an auto match and links to its own spelling`() {
+    fun `a party member written without at is an auto match and links to its token`() {
         assertEquals(listOf<MentionEntity>(bran), autoMatchedEntities(parseMentions("бран ушёл", withParty, true)))
-        assertEquals("@Бран ушёл", linkAutoMentions("бран ушёл", withParty))
+        assertEquals("${bran.token()} ушёл", linkAutoMentions("бран ушёл", withParty))
     }
 
     @Test
@@ -207,16 +148,6 @@ class PartyMentionTest {
         assertEquals(
             listOf<MentionEntity>(bran),
             mentionEntitiesFrom(emptyList(), emptyList(), emptyList(), listOf(member)),
-        )
-    }
-
-    @Test
-    fun `a deleted party member keeps its type for the create action`() {
-        val gone = mentionCandidates(emptyList(), listOf(DeletedMention("Бран", DeletedMentionType.PARTY)))
-
-        assertEquals(
-            listOf(MentionSegment.Mention(MentionEntity.DeletedMention("Бран", DeletedMentionType.PARTY))),
-            parseMentions("@Бран", gone),
         )
     }
 }

@@ -21,8 +21,7 @@ import com.lyrismet.incadent.core.format.russianPluralForm
 import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
-import com.lyrismet.incadent.core.mention.MentionCandidate
-import com.lyrismet.incadent.core.mention.mentionCandidates
+import com.lyrismet.incadent.core.mention.MentionIndex
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.core.mention.mentionsIn
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
@@ -91,7 +90,7 @@ class SessionListPresenter(
         val newSessionTitle = stringResource(Res.string.new_session_default_title)
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
         val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
-        val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests, parties))
+        val candidates = MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties))
         val toast = remember { mutableStateOf<SessionListToast?>(null) }
         toast.autoDismiss()
         val campaignHost =
@@ -191,7 +190,7 @@ class SessionListPresenter(
     private fun buildLiveSession(
         item: SessionListItem,
         liveEntries: List<SessionEntry>,
-        candidates: List<MentionCandidate>,
+        candidates: MentionIndex,
         noNotesLabel: String,
     ): LiveSessionItem {
         // reversed so a dedupe-by-first-seen keeps each entity's most recent mention, not its oldest one
@@ -299,7 +298,7 @@ class SessionListPresenter(
         numbering: SessionNumbering,
         tagsBySession: Map<Long, List<String>>,
         entriesBySession: Map<Long, List<SessionEntry>>,
-        candidates: List<MentionCandidate>,
+        candidates: MentionIndex,
     ): List<SessionListItem> {
         val numberLabels = sessionNumberLabels(numbering)
         val arabicNumbers = chronologicalIndex()

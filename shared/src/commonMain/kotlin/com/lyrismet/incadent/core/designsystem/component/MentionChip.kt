@@ -119,7 +119,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
                 glyph = MentionGlyph.DELETED,
                 label = name,
                 color = DeletedMentionColor,
-                deleted = DeletedMention(name, type),
+                deleted = DeletedMention(id, name, type),
             )
     }
 
