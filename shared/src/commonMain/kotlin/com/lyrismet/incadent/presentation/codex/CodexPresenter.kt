@@ -447,8 +447,9 @@ class CodexPresenter(
         val inlineEdit = fields.inlineEdit.value
         val activeTab = fields.activeTab.value
         val campaign by campaignRepository.observeCurrent().collectAsState(initial = null)
+        val readOnly = campaign?.status == CampaignStatus.ARCHIVED
         return CodexState(
-            readOnly = campaign?.status == CampaignStatus.ARCHIVED,
+            readOnly = readOnly,
             activeTab = activeTab,
             searchQuery = fields.searchQuery.value,
             tabCounts =
@@ -480,7 +481,16 @@ class CodexPresenter(
             toast = fields.toast.value,
             deleteWarning = deleteWarning(fields.pendingDelete.value, records, labels),
         ) { event ->
-            onEvent(event, fields, formController, records, labels, scope)
+            if (!(readOnly && event.writesCampaignData())) {
+                onEvent(
+                    event,
+                    fields,
+                    formController,
+                    records,
+                    labels,
+                    scope,
+                )
+            }
         }
     }
 

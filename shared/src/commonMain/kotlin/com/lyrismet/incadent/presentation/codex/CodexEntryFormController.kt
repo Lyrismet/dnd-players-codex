@@ -48,11 +48,9 @@ import dndplayerscodex.shared.generated.resources.codex_entry_owner_other
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_create
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
-import dndplayerscodex.shared.generated.resources.codex_group_no_faction
 import dndplayerscodex.shared.generated.resources.codex_group_top_level
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 /** the party-only part of the form, nested so the other entry types never see these fields */
@@ -107,9 +105,6 @@ internal data class CodexEntryFormFields(
                 photoCrop = baseline.photoCrop,
             ) != baseline
 }
-
-// the quick-create stub's placeholder value for a free-text field left blank, per the mockup's quickCreate
-private const val QUICK_ADD_PLACEHOLDER = "—"
 
 // one entry point per form action - splitting them across classes would only forward the same calls
 @Suppress("TooManyFunctions", "LongParameterList")
@@ -314,19 +309,20 @@ class CodexEntryFormController private constructor(
             }
     }
 
-    private suspend fun quickNpc(name: String) =
+    // free-text fields stay blank, lists and sheets render the dash themselves
+    private fun quickNpc(name: String) =
         Npc(
             id = 0,
             name = name,
             status = NpcStatus.NEUTRAL,
             lifeState = NpcLifeState.ALIVE,
-            description = QUICK_ADD_PLACEHOLDER,
+            description = "",
             locationIds = emptyList(),
-            race = QUICK_ADD_PLACEHOLDER,
-            faction = getString(Res.string.codex_group_no_faction),
+            race = "",
+            faction = "",
         )
 
-    private fun quickLocation(name: String) = Location(id = 0, name = name, description = QUICK_ADD_PLACEHOLDER)
+    private fun quickLocation(name: String) = Location(id = 0, name = name, description = "")
 
     fun onQuickAddOpened(field: CodexEntryChipField) {
         val current = fields.value ?: return

@@ -282,8 +282,9 @@ class SessionDetailPresenter(
         // has arrived yet from the Flow's cold start - swapping to a distinct "loading" screen
         // for that one frame was the cause of a visible flash on every navigation into this screen
         val campaign by campaignRepository.observeCurrent().collectAsState(initial = null)
+        val readOnly = campaign?.status == CampaignStatus.ARCHIVED
         return SessionDetailState(
-            readOnly = campaign?.status == CampaignStatus.ARCHIVED,
+            readOnly = readOnly,
             isLoading = currentNote == null,
             overline = numberLabel?.let { stringResource(Res.string.session_overline_format, it) }.orEmpty(),
             title = titleText,
@@ -311,7 +312,7 @@ class SessionDetailPresenter(
             deletedMentionSheet = deletedSheet(fields.deletedSheet.value, mentionData),
             entryForm = fields.formController.buildState(npcs, locations),
         ) { event ->
-            val context = EventContext(currentNote, entries, undoDeletedEntryTitle, phraseSavedToast, scope)
+            val context = EventContext(currentNote, entries, undoDeletedEntryTitle, phraseSavedToast, scope, readOnly)
             onEvent(event, context, fields, assignedTags, tagSuggestions, mentionData)
         }
     }
@@ -374,6 +375,7 @@ class SessionDetailPresenter(
         val undoDeletedEntryTitle = context.undoDeletedEntryTitle
         val phraseSavedToast = context.phraseSavedToast
         val scope = context.scope
+        if (context.readOnly && event.writesCampaignData()) return
         when (event) {
             SessionDetailEvent.BackClicked -> navigator.pop()
             is SessionDetailEvent.TitleChanged -> onTitleChanged(event.title, currentNote, scope, fields.titleField)
@@ -650,6 +652,7 @@ private data class EventContext(
     val undoDeletedEntryTitle: String,
     val phraseSavedToast: String,
     val scope: CoroutineScope,
+    val readOnly: Boolean,
 )
 
 // the cursor lands after the inserted phrase, same as a picked mention
