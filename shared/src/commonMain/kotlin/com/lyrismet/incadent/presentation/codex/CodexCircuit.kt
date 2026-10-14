@@ -3,6 +3,7 @@ package com.lyrismet.incadent.presentation.codex
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
+import com.lyrismet.incadent.domain.repository.CampaignRepository
 import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.NpcRepository
@@ -39,6 +40,7 @@ class CodexPresenterFactory(
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
+    private val campaignRepository: CampaignRepository,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -59,6 +61,7 @@ class CodexPresenterFactory(
                     undoController,
                     appPreferencesRepository,
                     imageCompressor,
+                    campaignRepository,
                 )
             else -> null
         }

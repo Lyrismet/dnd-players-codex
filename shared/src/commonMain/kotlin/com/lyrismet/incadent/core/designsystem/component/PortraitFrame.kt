@@ -28,7 +28,6 @@ private val PortraitFrameShape =
     RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp, bottomStart = 10.dp, bottomEnd = 10.dp)
 
 // mockup's diamond ornament is a square rotated to stand on one corner
-private const val DIAMOND_ROTATION_DEGREES = 45f
 private val DiamondSize = 6.dp
 
 /**

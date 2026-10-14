@@ -31,7 +31,6 @@ private val PortraitArchInsetShape =
     RoundedCornerShape(topStart = 39.dp, topEnd = 39.dp, bottomStart = 8.dp, bottomEnd = 8.dp)
 
 // mockup's diamond is a square rotated to stand on one corner, with a 3px halo in the sheet colour
-private const val DIAMOND_ROTATION_DEGREES = 45f
 private val DiamondSize = 8.dp
 private val DiamondHaloSize = 14.dp
 

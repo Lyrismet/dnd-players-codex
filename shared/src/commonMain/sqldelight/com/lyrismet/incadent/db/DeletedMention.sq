@@ -1,14 +1,15 @@
 CREATE TABLE deleted_mention (
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    PRIMARY KEY (name, type)
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    PRIMARY KEY (campaign_id, name, type)
 );
 
 selectAll:
-SELECT * FROM deleted_mention ORDER BY name ASC;
+SELECT name, type FROM deleted_mention WHERE campaign_id = ? ORDER BY name ASC;
 
 upsert:
-INSERT OR REPLACE INTO deleted_mention(name, type) VALUES (?, ?);
+INSERT OR REPLACE INTO deleted_mention(name, type, campaign_id) VALUES (?, ?, ?);
 
 delete:
-DELETE FROM deleted_mention WHERE name = ? AND type = ?;
+DELETE FROM deleted_mention WHERE name = ? AND type = ? AND campaign_id = ?;

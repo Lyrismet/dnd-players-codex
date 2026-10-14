@@ -2,6 +2,8 @@ package com.lyrismet.incadent.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.lyrismet.incadent.data.campaign.CurrentCampaign
+import com.lyrismet.incadent.data.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Photo
@@ -20,11 +22,14 @@ import kotlinx.coroutines.withContext
 class LocationRepositoryImpl(
     private val database: AppDatabase,
     private val mentionRenamer: MentionRenamer,
+    private val current: CurrentCampaign,
 ) : LocationRepository {
     private val queries = database.locationQueries
 
     override fun observeAll(): Flow<List<Location>> =
-        queries.selectAll(::toDomain).asFlow().mapToList(Dispatchers.Default)
+        current.observe { campaignId ->
+            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+        }
 
     override suspend fun getById(id: Long): Location? =
         withContext(Dispatchers.Default) {
@@ -40,6 +45,7 @@ class LocationRepositoryImpl(
                     location.parentId,
                     location.cover?.full,
                     location.cover?.thumb,
+                    current.requireId(),
                 )
                 queries.lastInsertRowId().executeAsOne()
             } else {

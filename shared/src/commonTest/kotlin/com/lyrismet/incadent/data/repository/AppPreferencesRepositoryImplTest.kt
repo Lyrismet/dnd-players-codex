@@ -10,32 +10,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class AppPreferencesRepositoryImplTest {
-    @Test
-    fun `campaign name is null until it is set and then comes back trimmed`() =
-        runTest {
-            val repository = AppPreferencesRepositoryImpl(MapSettings())
-
-            assertNull(repository.observeCampaignName().first())
-
-            repository.setCampaignName("  Тени Блэквуда  ")
-
-            assertEquals("Тени Блэквуда", repository.observeCampaignName().first())
-        }
-
-    @Test
-    fun `blank campaign name clears the override back to the default`() =
-        runTest {
-            val repository = AppPreferencesRepositoryImpl(MapSettings())
-            repository.setCampaignName("Тени")
-
-            repository.setCampaignName("   ")
-
-            assertNull(repository.observeCampaignName().first())
-        }
-
     @Test
     fun `session numbering defaults to roman and round-trips the chosen style`() =
         runTest {

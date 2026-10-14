@@ -62,10 +62,12 @@ fun CodexUi(
                     overline = stringResource(Res.string.codex_overline),
                     title = stringResource(Res.string.codex_title),
                     overlineTrailingContent = {
-                        HeaderActionButton(
-                            text = stringResource(Res.string.codex_add_entry_button),
-                            onClick = { state.eventSink(CodexEvent.AddEntryClicked) },
-                        )
+                        if (!state.readOnly) {
+                            HeaderActionButton(
+                                text = stringResource(Res.string.codex_add_entry_button),
+                                onClick = { state.eventSink(CodexEvent.AddEntryClicked) },
+                            )
+                        }
                     },
                 )
                 Column(modifier = Modifier.padding(bottom = 12.dp)) {

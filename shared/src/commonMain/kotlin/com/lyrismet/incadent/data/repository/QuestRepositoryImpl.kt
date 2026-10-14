@@ -2,6 +2,8 @@ package com.lyrismet.incadent.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.lyrismet.incadent.data.campaign.CurrentCampaign
+import com.lyrismet.incadent.data.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
@@ -20,13 +22,19 @@ import kotlinx.coroutines.withContext
 class QuestRepositoryImpl(
     database: AppDatabase,
     private val mentionRenamer: MentionRenamer,
+    private val current: CurrentCampaign,
 ) : QuestRepository {
     private val queries = database.questQueries
 
-    override fun observeAll(): Flow<List<Quest>> = queries.selectAll(::toDomain).asFlow().mapToList(Dispatchers.Default)
+    override fun observeAll(): Flow<List<Quest>> =
+        current.observe { campaignId ->
+            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+        }
 
     override fun observeByStatus(status: QuestStatus): Flow<List<Quest>> =
-        queries.selectByStatus(status, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+        current.observe { campaignId ->
+            queries.selectByStatus(campaignId, status, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+        }
 
     override suspend fun getById(id: Long): Quest? =
         withContext(Dispatchers.Default) {
@@ -43,6 +51,7 @@ class QuestRepositoryImpl(
                     quest.givenByNpcId,
                     quest.locationId,
                     quest.description,
+                    current.requireId(),
                 )
                 queries.lastInsertRowId().executeAsOne()
             } else {

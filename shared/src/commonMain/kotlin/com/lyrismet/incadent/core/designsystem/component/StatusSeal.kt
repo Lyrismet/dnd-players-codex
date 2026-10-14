@@ -34,7 +34,6 @@ internal data class StatusSeal<T>(
 
 private val SealShape = RoundedCornerShape(14.dp)
 private val DiamondShape = RoundedCornerShape(6.dp)
-private const val DIAMOND_ROTATION = 45f
 
 /** the read-only card's statuses as equal-width seals (Players Codex v6 `seals`), shown instead of the pickers */
 @Composable
@@ -69,7 +68,7 @@ private fun StatusSealCard(
                 Modifier
                     .padding(horizontal = 2.dp)
                     .size(28.dp)
-                    .rotate(DIAMOND_ROTATION)
+                    .rotate(DIAMOND_ROTATION_DEGREES)
                     .clip(DiamondShape)
                     .background(AppPalette.Background)
                     .border(1.5.dp, color.foreground, DiamondShape),
@@ -77,7 +76,7 @@ private fun StatusSealCard(
         ) {
             Text(
                 option.glyph,
-                modifier = Modifier.rotate(-DIAMOND_ROTATION),
+                modifier = Modifier.rotate(-DIAMOND_ROTATION_DEGREES),
                 style = MaterialTheme.typography.labelMedium.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold),
                 color = color.foreground,
             )

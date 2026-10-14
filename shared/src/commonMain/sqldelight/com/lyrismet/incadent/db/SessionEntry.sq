@@ -15,7 +15,12 @@ selectForSession:
 SELECT * FROM session_entry WHERE session_note_id = ? ORDER BY created_at ASC;
 
 selectAll:
-SELECT * FROM session_entry ORDER BY created_at ASC;
+SELECT session_entry.id, session_entry.session_note_id, session_entry.created_at, session_entry.body,
+    session_entry.edited, session_entry.mention_check
+FROM session_entry
+INNER JOIN session_note ON session_note.id = session_entry.session_note_id
+WHERE session_note.campaign_id = ?
+ORDER BY session_entry.created_at ASC;
 
 insert:
 INSERT INTO session_entry(session_note_id, created_at, body, edited, mention_check)

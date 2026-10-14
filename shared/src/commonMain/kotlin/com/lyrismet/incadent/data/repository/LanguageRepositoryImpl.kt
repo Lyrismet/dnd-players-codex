@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.data.repository
 
+import com.lyrismet.incadent.data.settings.deviceLanguageTag
 import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.repository.LanguageRepository
 import com.russhwolf.settings.ExperimentalSettingsApi
@@ -22,9 +23,13 @@ class LanguageRepositoryImpl(
 ) : LanguageRepository {
     @OptIn(ExperimentalSettingsApi::class)
     override fun observeLanguage(): Flow<AppLanguage> =
-        settings.getStringFlow(KEY_LANGUAGE, AppLanguage.RUSSIAN.tag).map { tag ->
-            AppLanguage.entries.find { it.tag == tag } ?: AppLanguage.RUSSIAN
+        settings.getStringFlow(KEY_LANGUAGE, deviceLanguage().tag).map { tag ->
+            AppLanguage.entries.find { it.tag == tag } ?: deviceLanguage()
         }
+
+    // nothing chosen yet follows the device, a language the app does not have falls back to Russian
+    private fun deviceLanguage(): AppLanguage =
+        AppLanguage.entries.find { it.tag == deviceLanguageTag() } ?: AppLanguage.RUSSIAN
 
     override fun setLanguage(language: AppLanguage) {
         settings.putString(KEY_LANGUAGE, language.tag)

@@ -2,6 +2,7 @@ package com.lyrismet.incadent.presentation.settings
 
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
+import com.lyrismet.incadent.domain.repository.CampaignRepository
 import com.lyrismet.incadent.domain.repository.LanguageRepository
 import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
@@ -28,6 +29,7 @@ class SettingsPresenterFactory(
     private val swipeHintReplayController: SwipeHintReplayController,
     private val phraseSnippetRepository: PhraseSnippetRepository,
     private val sessionEntryRepository: SessionEntryRepository,
+    private val campaignRepository: CampaignRepository,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -42,6 +44,7 @@ class SettingsPresenterFactory(
                     swipeHintReplayController,
                     phraseSnippetRepository,
                     sessionEntryRepository,
+                    campaignRepository,
                 )
             else -> null
         }

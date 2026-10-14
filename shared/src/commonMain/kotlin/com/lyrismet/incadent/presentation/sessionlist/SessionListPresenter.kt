@@ -1,14 +1,14 @@
 package com.lyrismet.incadent.presentation.sessionlist
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import com.lyrismet.incadent.core.campaign.RenameSheetState
-import com.lyrismet.incadent.core.campaign.savedCampaignNameOrNull
+import com.lyrismet.incadent.core.campaign.CampaignSheetEvent
+import com.lyrismet.incadent.core.campaign.CampaignSheetState
+import com.lyrismet.incadent.core.campaign.rememberCampaignSheetHost
 import com.lyrismet.incadent.core.designsystem.component.toChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
@@ -29,11 +29,13 @@ import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.model.CampaignStatus
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
+import com.lyrismet.incadent.domain.repository.CampaignRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
@@ -43,12 +45,10 @@ import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.default_campaign_name
 import dndplayerscodex.shared.generated.resources.new_session_default_title
 import dndplayerscodex.shared.generated.resources.session_detail_quest_mention_prefix
 import dndplayerscodex.shared.generated.resources.session_list_live_no_notes
 import dndplayerscodex.shared.generated.resources.session_list_live_notes_summary_format
-import dndplayerscodex.shared.generated.resources.session_list_rename_saved_toast
 import dndplayerscodex.shared.generated.resources.session_list_undo_deleted_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
 import kotlinx.coroutines.CoroutineScope
@@ -62,25 +62,6 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-/** the rename sheet and its toast - written by the event handlers, read into the state */
-private class CampaignRenameFields(
-    val sheet: MutableState<RenameSheetState>,
-    val toast: MutableState<SessionListToast?>,
-    val savedText: String,
-)
-
-@Composable
-private fun rememberCampaignRenameFields(savedText: String): CampaignRenameFields {
-    val fields =
-        CampaignRenameFields(
-            sheet = remember { mutableStateOf<RenameSheetState>(RenameSheetState.Hidden) },
-            toast = remember { mutableStateOf<SessionListToast?>(null) },
-            savedText = savedText,
-        )
-    fields.toast.autoDismiss()
-    return fields
-}
-
 @Suppress("LongParameterList")
 class SessionListPresenter(
     private val navigator: Navigator,
@@ -91,6 +72,7 @@ class SessionListPresenter(
     private val tagRepository: TagRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val campaignRepository: CampaignRepository,
 ) : Presenter<SessionListState> {
     // one collection per source the screen reads plus the rename wiring - a flat merge, not real complexity
     @Suppress("LongMethod")
@@ -104,17 +86,19 @@ class SessionListPresenter(
         val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
         val tagsBySession by tagRepository.observeAllSessionTags().collectAsState(initial = emptyMap())
         val scope = rememberCoroutineScope()
-        val campaignNameOverride by appPreferencesRepository.observeCampaignName().collectAsState(initial = null)
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
-        val defaultCampaignName = stringResource(Res.string.default_campaign_name)
         val newSessionTitle = stringResource(Res.string.new_session_default_title)
         val questPrefix = stringResource(Res.string.session_detail_quest_mention_prefix)
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
         val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
         val candidates = mentionCandidates(mentionEntitiesFrom(npcs, locations, quests, parties), questPrefix)
-        val renameFields = rememberCampaignRenameFields(stringResource(Res.string.session_list_rename_saved_toast))
+        val toast = remember { mutableStateOf<SessionListToast?>(null) }
+        toast.autoDismiss()
+        val campaignHost =
+            rememberCampaignSheetHost(campaignRepository) { text -> toast.value = SessionListToast(text) }
+        val campaignArchived = campaignHost.current?.status == CampaignStatus.ARCHIVED
         val entriesBySession = allEntries.groupBy { it.sessionNoteId }
 
         val liveNote = sessions.firstOrNull { it.isLive }
@@ -176,18 +160,19 @@ class SessionListPresenter(
                 // a hidden tab stays composed in the background, so it must not burn its one-time hint unseen
                 isBlocked =
                     selectedEntity != null ||
-                        renameFields.sheet.value is RenameSheetState.Editing ||
+                        campaignHost.sheet != CampaignSheetState.Hidden ||
                         !isTabSelected,
             )
 
-        val campaignName = campaignNameOverride ?: defaultCampaignName
         return SessionListState(
-            campaignName = campaignName,
+            campaignName = campaignHost.current?.name.orEmpty(),
+            campaignArchived = campaignArchived,
+            campaignId = campaignHost.current?.id,
+            campaignSheet = campaignHost.sheet,
             liveSession = liveSession,
             sessions = archiveItems,
             selectedEntity = selectedEntity,
-            renameSheet = renameFields.sheet.value,
-            toast = renameFields.toast.value,
+            toast = toast.value,
             swipeHintTarget = swipeHintTarget,
         ) { event ->
             onEvent(
@@ -198,8 +183,8 @@ class SessionListPresenter(
                 sessions,
                 entitySheet,
                 numbering,
-                renameFields,
-                campaignName,
+                campaignHost.onEvent,
+                campaignArchived,
             )
         }
     }
@@ -244,25 +229,27 @@ class SessionListPresenter(
         sessions: List<SessionNote>,
         entitySheet: EntitySheetInteractions,
         numbering: SessionNumbering,
-        rename: CampaignRenameFields,
-        campaignName: String,
+        onCampaignEvent: (CampaignSheetEvent) -> Unit,
+        campaignArchived: Boolean,
     ) {
         when (event) {
             SessionListEvent.NewSessionClicked ->
-                scope.launch {
-                    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                    val id =
-                        sessionNoteRepository.upsert(
-                            SessionNote(id = 0, title = newSessionTitle, sessionDate = now, endedAt = null),
-                        )
-                    // only one session may be live at a time - starting a new one closes out the old one
-                    sessionNoteRepository.endOtherLiveSessions(exceptId = id, endedAt = now)
-                    navigator.goTo(SessionDetailScreen(id))
+                if (!campaignArchived) {
+                    scope.launch {
+                        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                        val id =
+                            sessionNoteRepository.upsert(
+                                SessionNote(id = 0, title = newSessionTitle, sessionDate = now, endedAt = null),
+                            )
+                        // only one session may be live at a time - starting a new one closes out the old one
+                        sessionNoteRepository.endOtherLiveSessions(exceptId = id, endedAt = now)
+                        navigator.goTo(SessionDetailScreen(id))
+                    }
                 }
 
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
             is SessionListEvent.DeleteSessionClicked ->
-                onDeleteSessionClicked(event.id, sessions, undoDeletedTitle, scope, numbering)
+                if (!campaignArchived) onDeleteSessionClicked(event.id, sessions, undoDeletedTitle, scope, numbering)
             is SessionListEvent.MentionChipClicked -> entitySheet.onEntityClicked(event.ref)
             is SessionListEvent.NpcStatusSelected ->
                 entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
@@ -273,19 +260,8 @@ class SessionListPresenter(
             is SessionListEvent.RelatedNoteClicked ->
                 entitySheet.onRelatedNoteClicked(event.sessionNoteId, event.entryId)
             SessionListEvent.SheetDismissed -> entitySheet.onDismissed()
-            SessionListEvent.RenameOpened -> rename.sheet.value = RenameSheetState.Editing(campaignName)
-            is SessionListEvent.RenameDraftChanged -> rename.sheet.value = RenameSheetState.Editing(event.value)
-            SessionListEvent.RenameSaved -> onRenameSaved(rename)
-            SessionListEvent.RenameDismissed -> rename.sheet.value = RenameSheetState.Hidden
+            is SessionListEvent.CampaignSheet -> onCampaignEvent(event.event)
         }
-    }
-
-    // a blank name is never saved - the sheet's save button is disabled for it as well
-    private fun onRenameSaved(rename: CampaignRenameFields) {
-        val name = rename.sheet.value.savedCampaignNameOrNull() ?: return
-        appPreferencesRepository.setCampaignName(name)
-        rename.sheet.value = RenameSheetState.Hidden
-        rename.toast.value = SessionListToast(rename.savedText)
     }
 
     // deletes immediately and offers undo - restoring re-inserts the note and all its entries with fresh ids

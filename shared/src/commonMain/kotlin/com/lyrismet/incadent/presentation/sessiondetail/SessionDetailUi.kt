@@ -91,7 +91,7 @@ private fun ColumnScope.SessionDetailBody(state: SessionDetailState) {
     }
 
     // an ended session only shows the input while one of its notes is being edited
-    if (state.isLive || state.isEditingEntry) {
+    if ((state.isLive || state.isEditingEntry) && !state.readOnly) {
         SessionComposer(state)
     }
 }

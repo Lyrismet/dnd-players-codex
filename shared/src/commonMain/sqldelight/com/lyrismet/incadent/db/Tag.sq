@@ -1,13 +1,15 @@
 CREATE TABLE tag (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    UNIQUE (campaign_id, name)
 );
 
 selectAll:
-SELECT * FROM tag ORDER BY id ASC;
+SELECT id, name FROM tag WHERE campaign_id = ? ORDER BY id ASC;
 
 insert:
-INSERT OR IGNORE INTO tag(name) VALUES (?);
+INSERT OR IGNORE INTO tag(name, campaign_id) VALUES (?, ?);
 
 lastInsertRowId:
 SELECT last_insert_rowid();

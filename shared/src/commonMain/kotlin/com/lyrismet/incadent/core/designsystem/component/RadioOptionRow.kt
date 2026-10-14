@@ -31,7 +31,6 @@ fun RadioOptionRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val ring = if (selected) AppPalette.Gold else AppPalette.RadioIdle
     Row(
         modifier =
             modifier
@@ -44,18 +43,7 @@ fun RadioOptionRow(
                 ).padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(
-            modifier = Modifier.padding(top = 1.dp).size(18.dp).border(1.5.dp, ring, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Box(
-                modifier =
-                    Modifier
-                        .size(
-                            8.dp,
-                        ).background(if (selected) AppPalette.Gold else Color.Transparent, CircleShape),
-            )
-        }
+        RadioDot(selected, Modifier.padding(top = 1.dp))
         Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.weight(1f)) {
             Text(
                 title,
@@ -68,5 +56,20 @@ fun RadioOptionRow(
                 color = AppPalette.TextMuted,
             )
         }
+    }
+}
+
+/** the 18dp radio ring with a gold dot when selected */
+@Composable
+internal fun RadioDot(
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val ring = if (selected) AppPalette.Gold else AppPalette.RadioIdle
+    Box(
+        modifier = modifier.size(18.dp).border(1.5.dp, ring, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(Modifier.size(8.dp).background(if (selected) AppPalette.Gold else Color.Transparent, CircleShape))
     }
 }

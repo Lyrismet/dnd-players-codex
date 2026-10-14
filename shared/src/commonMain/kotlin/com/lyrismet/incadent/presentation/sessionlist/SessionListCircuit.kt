@@ -2,6 +2,7 @@ package com.lyrismet.incadent.presentation.sessionlist
 
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
+import com.lyrismet.incadent.domain.repository.CampaignRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
@@ -33,6 +34,7 @@ class SessionListPresenterFactory(
     private val tagRepository: TagRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val campaignRepository: CampaignRepository,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -50,6 +52,7 @@ class SessionListPresenterFactory(
                     tagRepository,
                     undoController,
                     appPreferencesRepository,
+                    campaignRepository,
                 )
             else -> null
         }

@@ -33,10 +33,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.lyrismet.incadent.core.campaign.RenameSheetState
+import com.lyrismet.incadent.core.campaign.CampaignSheetEvent
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
-import com.lyrismet.incadent.core.designsystem.component.CampaignRenameSheet
+import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.CampaignSheets
 import com.lyrismet.incadent.core.designsystem.component.PhraseSnippetsSheet
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
@@ -47,6 +48,7 @@ import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.settings_all_campaigns_title
 import dndplayerscodex.shared.generated.resources.settings_campaign_name_title
 import dndplayerscodex.shared.generated.resources.settings_hints_desc
 import dndplayerscodex.shared.generated.resources.settings_hints_show
@@ -82,47 +84,54 @@ fun SettingsUi(
     modifier: Modifier = Modifier,
 ) {
     val sink = state.eventSink
-    Scaffold(modifier = modifier) { contentPadding ->
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(contentPadding)
-                    .verticalScroll(rememberScrollState()),
-        ) {
-            ScreenHeader(
-                overline = stringResource(Res.string.settings_section_app),
-                title = stringResource(Res.string.settings_title),
-                modifier = Modifier.fillMaxWidth(),
-            )
+    Box(modifier = modifier.fillMaxSize()) {
+        Scaffold(modifier = Modifier.fillMaxSize()) { contentPadding ->
             Column(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(contentPadding)
+                        .verticalScroll(rememberScrollState()),
             ) {
-                AppSection(language = state.language, onLanguageClick = {
-                    sink(SettingsEvent.LanguageSheet(LanguageSheetEvent.Opened))
-                })
-                DiarySection(
-                    numbering = state.numbering,
-                    mentionStyle = state.mentionStyle,
-                    onNumberingSelected = { sink(SettingsEvent.NumberingSelected(it)) },
-                    onMentionStyleSelected = { sink(SettingsEvent.MentionStyleSelected(it)) },
-                    phrasesSummary =
-                        stringResource(
-                            Res.string.settings_phrases_summary_format,
-                            state.pinnedPhraseCount,
-                            state.frequentPhraseCount,
-                        ),
-                    onPhrasesClick = { sink(SettingsEvent.PhrasesOpened) },
-                    onShowHintsClick = { sink(SettingsEvent.SwipeHintsShowRequested) },
+                ScreenHeader(
+                    overline = stringResource(Res.string.settings_section_app),
+                    title = stringResource(Res.string.settings_title),
+                    modifier = Modifier.fillMaxWidth(),
                 )
-                CodexSection(
-                    editMode = state.editMode,
-                    onEditModeSelected = { sink(SettingsEvent.EditModeSelected(it)) },
-                )
-                CampaignSection(name = state.campaignName, onRenameClick = { sink(SettingsEvent.RenameOpened) })
+                Column(
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    AppSection(language = state.language, onLanguageClick = {
+                        sink(SettingsEvent.LanguageSheet(LanguageSheetEvent.Opened))
+                    })
+                    DiarySection(
+                        numbering = state.numbering,
+                        mentionStyle = state.mentionStyle,
+                        onNumberingSelected = { sink(SettingsEvent.NumberingSelected(it)) },
+                        onMentionStyleSelected = { sink(SettingsEvent.MentionStyleSelected(it)) },
+                        phrasesSummary =
+                            stringResource(
+                                Res.string.settings_phrases_summary_format,
+                                state.pinnedPhraseCount,
+                                state.frequentPhraseCount,
+                            ),
+                        onPhrasesClick = { sink(SettingsEvent.PhrasesOpened) },
+                        onShowHintsClick = { sink(SettingsEvent.SwipeHintsShowRequested) },
+                    )
+                    CodexSection(
+                        editMode = state.editMode,
+                        onEditModeSelected = { sink(SettingsEvent.EditModeSelected(it)) },
+                    )
+                    CampaignSection(
+                        name = state.campaignName,
+                        onRenameClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.RenameClicked)) },
+                        onAllCampaignsClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.LibraryOpened)) },
+                    )
+                }
             }
         }
+        AppToast(text = state.toast, modifier = Modifier.align(Alignment.BottomCenter).padding(12.dp))
     }
 
     SettingsSheets(state)
@@ -141,15 +150,7 @@ private fun SettingsSheets(state: SettingsState) {
             onDismiss = { sink(SettingsEvent.LanguageSheet(LanguageSheetEvent.Dismissed)) },
         )
     }
-    val renameSheet = state.renameSheet
-    if (renameSheet is RenameSheetState.Editing) {
-        CampaignRenameSheet(
-            draft = renameSheet.draft,
-            onDraftChanged = { sink(SettingsEvent.RenameDraftChanged(it)) },
-            onSave = { sink(SettingsEvent.RenameSaved) },
-            onDismiss = { sink(SettingsEvent.RenameDismissed) },
-        )
-    }
+    CampaignSheets(state.campaignSheet) { sink(SettingsEvent.CampaignSheet(it)) }
 }
 
 @Composable
@@ -224,9 +225,12 @@ private fun DiarySection(
 private fun CampaignSection(
     name: String,
     onRenameClick: () -> Unit,
+    onAllCampaignsClick: () -> Unit,
 ) {
     SettingsGroup(overline = stringResource(Res.string.settings_section_campaign), topSpacing = 12.dp) {
         CampaignNameRow(name = name, onClick = onRenameClick)
+        AppDivider()
+        AllCampaignsRow(onClick = onAllCampaignsClick)
         AppDivider()
         InfoRow(
             title = stringResource(Res.string.settings_storage_title),
@@ -309,6 +313,28 @@ internal fun <T> ChoiceRow(
             val tint = if (choice.value == selected) AppPalette.GoldBright else AppPalette.TextSecondary
             Text(text = choice.label, style = labelStyle, color = tint, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
+    }
+}
+
+@Composable
+private fun AllCampaignsRow(onClick: () -> Unit) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = 52.dp)
+                .clickable(onClick = onClick)
+                .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(Res.string.settings_all_campaigns_title),
+            modifier = Modifier.weight(1f),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = AppPalette.TextPrimary,
+        )
+        Text(text = "›", fontSize = 18.sp, color = AppPalette.TextTertiary)
     }
 }
 

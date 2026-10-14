@@ -2,6 +2,8 @@ package com.lyrismet.incadent.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.lyrismet.incadent.data.campaign.CurrentCampaign
+import com.lyrismet.incadent.data.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.PartyPresence
@@ -21,11 +23,14 @@ import kotlinx.coroutines.withContext
 class PartyRepositoryImpl(
     private val database: AppDatabase,
     private val mentionRenamer: MentionRenamer,
+    private val current: CurrentCampaign,
 ) : PartyRepository {
     private val queries = database.partyMemberQueries
 
     override fun observeAll(): Flow<List<PartyMember>> =
-        queries.selectAll(::toDomain).asFlow().mapToList(Dispatchers.Default)
+        current.observe { campaignId ->
+            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+        }
 
     override suspend fun getById(id: Long): PartyMember? =
         withContext(Dispatchers.Default) {
@@ -67,6 +72,7 @@ class PartyRepositoryImpl(
                         description = member.description,
                         portrait = member.portrait?.full,
                         portrait_thumb = member.portrait?.thumb,
+                        campaign_id = current.requireId(),
                     )
                     queries.lastInsertRowId().executeAsOne()
                 } else {
@@ -89,7 +95,7 @@ class PartyRepositoryImpl(
                     writePortrait(member.id, member.portrait, storedPortrait)
                     member.id
                 }
-            if (member.isPlayerCharacter) queries.clearOtherPlayerCharacters(id)
+            if (member.isPlayerCharacter) queries.clearOtherPlayerCharacters(id, current.requireId())
             id
         }
 

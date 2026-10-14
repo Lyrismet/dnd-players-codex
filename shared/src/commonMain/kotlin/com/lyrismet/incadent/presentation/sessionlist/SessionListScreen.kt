@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.presentation.sessionlist
 
-import com.lyrismet.incadent.core.campaign.RenameSheetState
+import com.lyrismet.incadent.core.campaign.CampaignSheetEvent
+import com.lyrismet.incadent.core.campaign.CampaignSheetState
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
@@ -18,10 +19,13 @@ data object SessionListScreen : Screen
 
 data class SessionListState(
     val campaignName: String = "",
+    // a finished campaign is read-only - no new session, no delete, and the banner offers to resume it
+    val campaignArchived: Boolean = false,
+    val campaignId: String? = null,
+    val campaignSheet: CampaignSheetState = CampaignSheetState.Hidden,
     val liveSession: LiveSessionItem? = null,
     val sessions: List<SessionListItem> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
-    val renameSheet: RenameSheetState = RenameSheetState.Hidden,
     val toast: SessionListToast? = null,
     // the archive row the one-time swipe-to-delete hint peeks on - always delete-only, sessions have no swipe-edit
     val swipeHintTarget: SwipeHintTarget<Long>? = null,
@@ -96,13 +100,7 @@ sealed interface SessionListEvent : CircuitUiEvent {
 
     data object SheetDismissed : SessionListEvent
 
-    data object RenameOpened : SessionListEvent
-
-    data class RenameDraftChanged(
-        val value: String,
+    data class CampaignSheet(
+        val event: CampaignSheetEvent,
     ) : SessionListEvent
-
-    data object RenameSaved : SessionListEvent
-
-    data object RenameDismissed : SessionListEvent
 }

@@ -19,8 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 
-private const val DIAMOND_ROTATION_DEGREES = 45f
-
 /** centered gold diamond + serif title + hint - the "blank page" state of a screen that is meant to be filled */
 @Composable
 fun OrnamentedEmptyState(

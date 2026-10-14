@@ -7,27 +7,32 @@ CREATE TABLE quest (
     reward TEXT NOT NULL,
     given_by_npc_id INTEGER REFERENCES npc(id) ON DELETE SET NULL,
     location_id INTEGER REFERENCES location(id) ON DELETE SET NULL,
-    description TEXT NOT NULL DEFAULT ''
+    description TEXT NOT NULL DEFAULT '',
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
 );
 
 CREATE INDEX quest_given_by_npc_id ON quest(given_by_npc_id);
 CREATE INDEX quest_location_id ON quest(location_id);
+CREATE INDEX quest_campaign_id ON quest(campaign_id);
 
 selectAll:
-SELECT * FROM quest ORDER BY id DESC;
+SELECT id, title, status, reward, given_by_npc_id, location_id, description FROM quest
+WHERE campaign_id = ?
+ORDER BY id DESC;
 
 selectById:
-SELECT * FROM quest WHERE id = ?;
+SELECT id, title, status, reward, given_by_npc_id, location_id, description FROM quest WHERE id = ?;
 
 selectByStatus:
-SELECT * FROM quest WHERE status = ?;
+SELECT id, title, status, reward, given_by_npc_id, location_id, description FROM quest
+WHERE campaign_id = ? AND status = ?;
 
 selectByLocation:
-SELECT * FROM quest WHERE location_id = ?;
+SELECT id, title, status, reward, given_by_npc_id, location_id, description FROM quest WHERE location_id = ?;
 
 insert:
-INSERT INTO quest(title, status, reward, given_by_npc_id, location_id, description)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO quest(title, status, reward, given_by_npc_id, location_id, description, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE quest
