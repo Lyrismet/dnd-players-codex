@@ -41,7 +41,7 @@ class MentionTest {
     }
 
     @Test
-    fun `a token resolves by id, so a longer name that starts with the same words is a different record`() {
+    fun `a token resolves by id so a longer name starting with the same words is another record`() {
         val segments = parseMentions("${ragnarWithSurname.token()} идёт", index)
         assertEquals(
             listOf(MentionSegment.Mention(ragnarWithSurname), MentionSegment.Text(" идёт")),

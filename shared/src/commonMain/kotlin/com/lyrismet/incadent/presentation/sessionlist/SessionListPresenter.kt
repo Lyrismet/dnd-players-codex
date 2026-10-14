@@ -5,7 +5,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import com.lyrismet.incadent.core.campaign.CampaignSheetEvent
 import com.lyrismet.incadent.core.campaign.CampaignSheetState
 import com.lyrismet.incadent.core.campaign.rememberCampaignSheetHost
@@ -15,6 +14,7 @@ import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
 import com.lyrismet.incadent.core.entitysummary.rememberFullPhoto
 import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
 import com.lyrismet.incadent.core.entitysummary.withFullPhoto
+import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.format.chronologicalIndex
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.russianPluralForm
@@ -44,6 +44,7 @@ import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.error_action_failed
 import dndplayerscodex.shared.generated.resources.new_session_default_title
 import dndplayerscodex.shared.generated.resources.session_list_live_no_notes
 import dndplayerscodex.shared.generated.resources.session_list_live_notes_summary_format
@@ -83,7 +84,6 @@ class SessionListPresenter(
         val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
         val tagsBySession by tagRepository.observeAllSessionTags().collectAsState(initial = emptyMap())
-        val scope = rememberCoroutineScope()
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
@@ -93,6 +93,8 @@ class SessionListPresenter(
         val candidates = MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties))
         val toast = remember { mutableStateOf<SessionListToast?>(null) }
         toast.autoDismiss()
+        val failedText = stringResource(Res.string.error_action_failed)
+        val scope = rememberGuardedScope { toast.value = SessionListToast(failedText) }
         val campaignHost =
             rememberCampaignSheetHost(campaignRepository) { text -> toast.value = SessionListToast(text) }
         val campaignArchived = campaignHost.current?.status == CampaignStatus.ARCHIVED

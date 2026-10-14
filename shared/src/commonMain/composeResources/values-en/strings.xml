@@ -452,4 +452,5 @@
     <string name="campaign_onboarding_combat_text">Turn order, who is wounded, who is concentrating</string>
     <string name="settings_all_campaigns_title">All campaigns</string>
     <string name="campaign_items_title">What to copy</string>
+    <string name="error_action_failed">Could not save the changes</string>
 </resources>

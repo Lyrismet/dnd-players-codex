@@ -5,8 +5,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.format.toShortDisplayDate
 import com.lyrismet.incadent.domain.model.Campaign
 import com.lyrismet.incadent.domain.model.CampaignStatus
@@ -24,6 +24,7 @@ import dndplayerscodex.shared.generated.resources.campaign_toast_archived
 import dndplayerscodex.shared.generated.resources.campaign_toast_created
 import dndplayerscodex.shared.generated.resources.campaign_toast_created_transfer
 import dndplayerscodex.shared.generated.resources.campaign_toast_deleted
+import dndplayerscodex.shared.generated.resources.error_action_failed
 import dndplayerscodex.shared.generated.resources.session_list_rename_saved_toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.emptyFlow
@@ -74,7 +75,8 @@ fun rememberCampaignSheetHost(
     val campaigns by repository.observeAll().collectAsState(initial = emptyList())
     val current by repository.observeCurrent().collectAsState(initial = null)
     var dialog by remember { mutableStateOf<HostDialog>(HostDialog.Hidden) }
-    val scope = rememberCoroutineScope()
+    val failedText = stringResource(Res.string.error_action_failed)
+    val scope = rememberGuardedScope { showToast(failedText) }
 
     val create = dialog as? HostDialog.Create
     val sourceId = create?.draft?.sourceId?.takeIf { create.draft.sameWorld }

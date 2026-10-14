@@ -7,7 +7,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.incadent.core.designsystem.LocationMentionColor
@@ -20,6 +19,8 @@ import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
 import com.lyrismet.incadent.core.entitysummary.rememberFullPhoto
 import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
 import com.lyrismet.incadent.core.entitysummary.withFullPhoto
+import com.lyrismet.incadent.core.errors.ReportFailures
+import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.format.sessionNumberLabels
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
@@ -167,7 +168,8 @@ class SessionDetailPresenter(
             .collectAsState(initial = SessionNumbering.ROMAN)
         val pinnedPhrases by phraseSnippetRepository.observeAll().collectAsState(initial = emptyList())
         val frequentPhrases = rememberFrequentPhrases(allEntries)
-        val scope = rememberCoroutineScope()
+        val failure = remember { mutableStateOf<Throwable?>(null) }
+        val scope = rememberGuardedScope { failure.value = it }
 
         val currentNote = allSessions.find { it.id == screen.sessionNoteId }
         val numberLabel = allSessions.sessionNumberLabels(numbering)[screen.sessionNoteId]
@@ -181,6 +183,7 @@ class SessionDetailPresenter(
             }
         }
         fields.toast.autoDismiss()
+        ReportFailures(failure) { fields.toast.value = it }
         val titleField = fields.titleField
         val draft = fields.draft
         val editingEntryId = fields.editingEntryId

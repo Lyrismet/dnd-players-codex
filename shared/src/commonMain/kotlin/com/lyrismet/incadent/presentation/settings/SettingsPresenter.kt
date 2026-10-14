@@ -5,8 +5,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import com.lyrismet.incadent.core.campaign.rememberCampaignSheetHost
+import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.phrases.PhraseSheetController
 import com.lyrismet.incadent.core.phrases.phrasePool
 import com.lyrismet.incadent.core.phrases.rememberFrequentPhrases
@@ -24,6 +24,9 @@ import com.lyrismet.incadent.domain.repository.LanguageRepository
 import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.slack.circuit.runtime.presenter.Presenter
+import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.error_action_failed
+import org.jetbrains.compose.resources.stringResource
 
 class SettingsPresenter(
     private val languageRepository: LanguageRepository,
@@ -45,13 +48,14 @@ class SettingsPresenter(
             .collectAsState(initial = EntityEditMode.QUICK)
         val toast = remember { mutableStateOf<String?>(null) }
         toast.autoDismiss()
+        val failedText = stringResource(Res.string.error_action_failed)
         val campaignHost = rememberCampaignSheetHost(campaignRepository) { text -> toast.value = text }
         val languageSheet = remember { LanguageSheetController(languageRepository) }
         val pinnedPhrases by phraseSnippetRepository.observeAll().collectAsState(initial = emptyList())
         val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
         val frequentPhrases = rememberFrequentPhrases(allEntries)
         val phrases = remember { PhraseSheetController(phraseSnippetRepository) }
-        val scope = rememberCoroutineScope()
+        val scope = rememberGuardedScope { toast.value = failedText }
 
         return SettingsState(
             language = language,

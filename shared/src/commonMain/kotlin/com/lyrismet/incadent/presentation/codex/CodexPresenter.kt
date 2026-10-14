@@ -6,7 +6,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import com.lyrismet.incadent.core.codexgroup.CodexGroup
 import com.lyrismet.incadent.core.codexgroup.CodexGroupLabels
 import com.lyrismet.incadent.core.codexgroup.CodexGroupingSelection
@@ -25,6 +24,8 @@ import com.lyrismet.incadent.core.entitysummary.partyPresenceLabels
 import com.lyrismet.incadent.core.entitysummary.questStatusLabels
 import com.lyrismet.incadent.core.entitysummary.rememberFullPhoto
 import com.lyrismet.incadent.core.entitysummary.withFullPhoto
+import com.lyrismet.incadent.core.errors.ReportFailures
+import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.mention.MentionIndex
 import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
@@ -178,10 +179,12 @@ class CodexPresenter(
         val editMode by appPreferencesRepository.observeEntityEditMode().collectAsState(initial = EntityEditMode.QUICK)
         val holdHint by appPreferencesRepository.observeHoldHintState().collectAsState(initial = HoldHintState.SEEN)
         val undoAction by undoController.current.collectAsState()
-        val scope = rememberCoroutineScope()
+        val failure = remember { mutableStateOf<Throwable?>(null) }
+        val scope = rememberGuardedScope { failure.value = it }
         val labels = codexLabels()
 
         val fields = rememberFields(labels)
+        ReportFailures(failure) { fields.toast.value = CodexToast(it) }
         val formController = rememberFormController(fields, parties)
 
         val candidates =

@@ -468,4 +468,5 @@
     <string name="campaign_onboarding_combat_text">Очередь ходов, кто как ранен, на ком концентрация</string>
     <string name="settings_all_campaigns_title">Все кампании</string>
     <string name="campaign_items_title">Что перенести</string>
+    <string name="error_action_failed">Не удалось сохранить изменения</string>
 </resources>
