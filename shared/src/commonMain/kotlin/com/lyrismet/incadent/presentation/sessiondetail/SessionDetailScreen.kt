@@ -27,6 +27,8 @@ data class SessionDetailScreen(
 ) : Screen
 
 data class SessionDetailState(
+    // a finished campaign is read-only, so the note composer stays hidden
+    val readOnly: Boolean = false,
     val isLoading: Boolean = true,
     val overline: String = "",
     val title: String = "",

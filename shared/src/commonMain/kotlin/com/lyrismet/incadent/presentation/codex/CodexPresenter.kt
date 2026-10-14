@@ -43,6 +43,7 @@ import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.model.CampaignStatus
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.Location
@@ -54,6 +55,7 @@ import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
+import com.lyrismet.incadent.domain.repository.CampaignRepository
 import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
@@ -155,6 +157,7 @@ class CodexPresenter(
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
+    private val campaignRepository: CampaignRepository,
 ) : Presenter<CodexState> {
     private val deletionPlanner =
         CodexDeletionPlanner(
@@ -443,7 +446,9 @@ class CodexPresenter(
     ): CodexState {
         val inlineEdit = fields.inlineEdit.value
         val activeTab = fields.activeTab.value
+        val campaign by campaignRepository.observeCurrent().collectAsState(initial = null)
         return CodexState(
+            readOnly = campaign?.status == CampaignStatus.ARCHIVED,
             activeTab = activeTab,
             searchQuery = fields.searchQuery.value,
             tabCounts =

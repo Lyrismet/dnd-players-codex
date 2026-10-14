@@ -6,26 +6,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import com.lyrismet.incadent.core.campaign.RenameSheetState
-import com.lyrismet.incadent.core.campaign.savedCampaignNameOrNull
+import com.lyrismet.incadent.core.campaign.rememberCampaignSheetHost
 import com.lyrismet.incadent.core.phrases.PhraseSheetController
 import com.lyrismet.incadent.core.phrases.phrasePool
 import com.lyrismet.incadent.core.phrases.rememberFrequentPhrases
 import com.lyrismet.incadent.core.phrases.sheetState
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
+import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import com.lyrismet.incadent.domain.model.MentionStyle
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
+import com.lyrismet.incadent.domain.repository.CampaignRepository
 import com.lyrismet.incadent.domain.repository.LanguageRepository
 import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.slack.circuit.runtime.presenter.Presenter
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.default_campaign_name
-import org.jetbrains.compose.resources.stringResource
 
 class SettingsPresenter(
     private val languageRepository: LanguageRepository,
@@ -33,6 +31,7 @@ class SettingsPresenter(
     private val swipeHintReplayController: SwipeHintReplayController,
     private val phraseSnippetRepository: PhraseSnippetRepository,
     private val sessionEntryRepository: SessionEntryRepository,
+    private val campaignRepository: CampaignRepository,
 ) : Presenter<SettingsState> {
     @Composable
     override fun present(): SettingsState {
@@ -44,10 +43,9 @@ class SettingsPresenter(
         val editMode by appPreferencesRepository
             .observeEntityEditMode()
             .collectAsState(initial = EntityEditMode.QUICK)
-        val campaignNameOverride by appPreferencesRepository.observeCampaignName().collectAsState(initial = null)
-        val defaultCampaignName = stringResource(Res.string.default_campaign_name)
-        val campaignName = campaignNameOverride ?: defaultCampaignName
-        val renameSheet = remember { mutableStateOf<RenameSheetState>(RenameSheetState.Hidden) }
+        val toast = remember { mutableStateOf<String?>(null) }
+        toast.autoDismiss()
+        val campaignHost = rememberCampaignSheetHost(campaignRepository) { text -> toast.value = text }
         val languageSheet = remember { LanguageSheetController(languageRepository) }
         val pinnedPhrases by phraseSnippetRepository.observeAll().collectAsState(initial = emptyList())
         val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
@@ -61,8 +59,9 @@ class SettingsPresenter(
             numbering = numbering,
             mentionStyle = mentionStyle,
             editMode = editMode,
-            campaignName = campaignName,
-            renameSheet = renameSheet.value,
+            campaignName = campaignHost.current?.name.orEmpty(),
+            campaignSheet = campaignHost.sheet,
+            toast = toast.value,
             pinnedPhraseCount = pinnedPhrases.size,
             frequentPhraseCount = phrasePool(pinnedPhrases, frequentPhrases).count { !it.isPinned },
             phraseSheet = phrases.sheetState(pinnedPhrases, frequentPhrases),
@@ -81,16 +80,7 @@ class SettingsPresenter(
                 }
                 SettingsEvent.PhrasesOpened -> phrases.open()
                 is SettingsEvent.PhraseSheet -> phrases.onEvent(event.event, scope)
-                SettingsEvent.RenameOpened -> renameSheet.value = RenameSheetState.Editing(campaignName)
-                is SettingsEvent.RenameDraftChanged -> renameSheet.value = RenameSheetState.Editing(event.value)
-                SettingsEvent.RenameSaved -> {
-                    // a blank name is refused and the sheet stays open, matching the disabled save button
-                    renameSheet.value.savedCampaignNameOrNull()?.let { name ->
-                        appPreferencesRepository.setCampaignName(name)
-                        renameSheet.value = RenameSheetState.Hidden
-                    }
-                }
-                SettingsEvent.RenameDismissed -> renameSheet.value = RenameSheetState.Hidden
+                is SettingsEvent.CampaignSheet -> campaignHost.onEvent(event.event)
             }
         }
     }

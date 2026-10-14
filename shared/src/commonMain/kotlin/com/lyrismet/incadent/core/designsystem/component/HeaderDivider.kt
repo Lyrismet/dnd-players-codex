@@ -14,8 +14,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 
-private const val DIAMOND_ROTATION_DEGREES = 45f
-
 /** short gold line + rotated diamond + long border line - the ornamental rule under a screen title */
 @Composable
 fun HeaderDivider(modifier: Modifier = Modifier) {

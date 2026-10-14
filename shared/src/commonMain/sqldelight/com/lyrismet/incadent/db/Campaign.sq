@@ -1,0 +1,52 @@
+import com.lyrismet.incadent.domain.model.CampaignStatus;
+
+CREATE TABLE campaign (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    status TEXT AS CampaignStatus NOT NULL DEFAULT 'LIVE',
+    created_at INTEGER NOT NULL,
+    last_opened_at INTEGER NOT NULL
+);
+
+-- one row per campaign with what the library card shows - session count, last session and the player character
+selectSummaries:
+SELECT
+    campaign.id,
+    campaign.name,
+    campaign.status,
+    (SELECT COUNT(*) FROM session_note WHERE session_note.campaign_id = campaign.id) AS session_count,
+    (SELECT MAX(session_date) FROM session_note WHERE session_note.campaign_id = campaign.id) AS last_session_date,
+    player.name AS player_name,
+    player.character_class AS player_class,
+    player.level AS player_level
+FROM campaign
+LEFT JOIN party_member AS player
+    ON player.campaign_id = campaign.id AND player.is_player_character = 1
+ORDER BY campaign.last_opened_at DESC, campaign.created_at DESC;
+
+exists:
+SELECT COUNT(*) FROM campaign WHERE id = ?;
+
+insert:
+INSERT INTO campaign(id, name, status, created_at, last_opened_at) VALUES (?, ?, ?, ?, ?);
+
+rename:
+UPDATE campaign SET name = ? WHERE id = ?;
+
+setStatus:
+UPDATE campaign SET status = ? WHERE id = ?;
+
+touch:
+UPDATE campaign SET last_opened_at = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM campaign WHERE id = ?;
+
+selectFirstLiveId:
+SELECT id FROM campaign WHERE status = 'LIVE' ORDER BY last_opened_at DESC LIMIT 1;
+
+copyTags:
+INSERT OR IGNORE INTO tag(name, campaign_id) SELECT name, ? FROM tag WHERE campaign_id = ?;
+
+copyPhrases:
+INSERT OR IGNORE INTO phrase_snippet(text, campaign_id) SELECT text, ? FROM phrase_snippet WHERE campaign_id = ?;

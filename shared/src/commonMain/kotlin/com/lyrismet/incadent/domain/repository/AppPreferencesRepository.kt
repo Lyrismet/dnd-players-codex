@@ -8,11 +8,6 @@ import com.lyrismet.incadent.domain.model.SwipeHintState
 import kotlinx.coroutines.flow.Flow
 
 interface AppPreferencesRepository {
-    /** null means the campaign has never been renamed, so the default name applies */
-    fun observeCampaignName(): Flow<String?>
-
-    fun setCampaignName(name: String)
-
     fun observeSessionNumbering(): Flow<SessionNumbering>
 
     fun setSessionNumbering(numbering: SessionNumbering)

@@ -5,5 +5,5 @@ import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import com.lyrismet.incadent.db.AppDatabase
 
 actual class DatabaseDriverFactory {
-    actual fun createDriver(): SqlDriver = NativeSqliteDriver(AppDatabase.Schema, "dnd_players_codex.db")
+    actual fun createDriver(): SqlDriver = NativeSqliteDriver(AppDatabase.Schema, "incadent_campaigns.db")
 }

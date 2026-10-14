@@ -2,6 +2,8 @@ package com.lyrismet.incadent.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.lyrismet.incadent.data.campaign.CurrentCampaign
+import com.lyrismet.incadent.data.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
@@ -21,11 +23,14 @@ import kotlin.time.ExperimentalTime
 @ContributesBinding(AppScope::class)
 class SessionNoteRepositoryImpl(
     database: AppDatabase,
+    private val current: CurrentCampaign,
 ) : SessionNoteRepository {
     private val queries = database.sessionNoteQueries
 
     override fun observeAll(): Flow<List<SessionNote>> =
-        queries.selectAll(::toDomain).asFlow().mapToList(Dispatchers.Default)
+        current.observe { campaignId ->
+            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+        }
 
     override suspend fun getById(id: Long): SessionNote? =
         withContext(Dispatchers.Default) {
@@ -41,6 +46,7 @@ class SessionNoteRepositoryImpl(
                     sessionNote.sessionDate,
                     sessionNote.endedAt,
                     Clock.System.now().toEpochMilliseconds(),
+                    current.requireId(),
                 )
                 queries.lastInsertRowId().executeAsOne()
             } else {
@@ -60,7 +66,7 @@ class SessionNoteRepositoryImpl(
         endedAt: LocalDateTime,
     ) {
         withContext(Dispatchers.Default) {
-            queries.endOtherLive(endedAt, exceptId)
+            queries.endOtherLive(endedAt, exceptId, current.requireId())
         }
     }
 

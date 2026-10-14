@@ -9,7 +9,6 @@ import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.coroutines.getStringFlow
-import com.russhwolf.settings.coroutines.getStringOrNullFlow
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -17,7 +16,6 @@ import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-private const val KEY_CAMPAIGN_NAME = "campaign_name"
 private const val KEY_SESSION_NUMBERING = "session_numbering"
 private const val KEY_MENTION_STYLE = "mention_style"
 private const val KEY_ENTITY_EDIT_MODE = "entity_edit_mode"
@@ -31,14 +29,6 @@ private const val KEY_CODEX_SWIPE_HINT_STATE = "codex_swipe_hint_state"
 class AppPreferencesRepositoryImpl(
     private val settings: ObservableSettings,
 ) : AppPreferencesRepository {
-    @OptIn(ExperimentalSettingsApi::class)
-    override fun observeCampaignName(): Flow<String?> = settings.getStringOrNullFlow(KEY_CAMPAIGN_NAME)
-
-    override fun setCampaignName(name: String) {
-        val trimmed = name.trim()
-        if (trimmed.isEmpty()) settings.remove(KEY_CAMPAIGN_NAME) else settings.putString(KEY_CAMPAIGN_NAME, trimmed)
-    }
-
     @OptIn(ExperimentalSettingsApi::class)
     override fun observeSessionNumbering(): Flow<SessionNumbering> =
         settings.getStringFlow(KEY_SESSION_NUMBERING, SessionNumbering.ROMAN.tag).map { tag ->

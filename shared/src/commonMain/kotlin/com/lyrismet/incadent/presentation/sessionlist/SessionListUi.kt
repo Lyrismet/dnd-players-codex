@@ -22,12 +22,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.lyrismet.incadent.core.campaign.RenameSheetState
+import com.lyrismet.incadent.core.campaign.CampaignSheetEvent
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.component.AppArchiveBanner
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
-import com.lyrismet.incadent.core.designsystem.component.CampaignRenameSheet
+import com.lyrismet.incadent.core.designsystem.component.CampaignSheets
+import com.lyrismet.incadent.core.designsystem.component.CampaignSwitcherPill
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
@@ -48,6 +50,7 @@ import com.lyrismet.incadent.core.format.NumberSizeLadder
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.core.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.campaign_switcher_description
 import dndplayerscodex.shared.generated.resources.session_list_archive_section
 import dndplayerscodex.shared.generated.resources.session_list_delete_content_description
 import dndplayerscodex.shared.generated.resources.session_list_empty
@@ -93,7 +96,7 @@ fun SessionListUi(
         }
     }
 
-    RenameSheetHost(state)
+    CampaignSheets(state.campaignSheet) { event -> state.eventSink(SessionListEvent.CampaignSheet(event)) }
 
     state.selectedEntity?.let { entity ->
         AppBottomSheet(onDismissRequest = { state.eventSink(SessionListEvent.SheetDismissed) }) {
@@ -130,40 +133,46 @@ private fun SessionListBody(
         ScreenHeader(
             overline = state.campaignName,
             title = stringResource(Res.string.session_list_title),
-            onOverlineClick = { state.eventSink(SessionListEvent.RenameOpened) },
-            overlineTrailingContent = {
-                HeaderActionButton(
-                    text = stringResource(Res.string.session_list_new_session_button),
-                    onClick = { state.eventSink(SessionListEvent.NewSessionClicked) },
+            overlineContent = {
+                CampaignSwitcherPill(
+                    text = state.campaignName,
+                    contentDescription = stringResource(Res.string.campaign_switcher_description),
+                    onClick = { state.eventSink(SessionListEvent.CampaignSheet(CampaignSheetEvent.LibraryOpened)) },
+                    muted = state.campaignArchived,
                 )
             },
+            overlineTrailingContent = {
+                if (!state.campaignArchived) {
+                    HeaderActionButton(
+                        text = stringResource(Res.string.session_list_new_session_button),
+                        onClick = { state.eventSink(SessionListEvent.NewSessionClicked) },
+                    )
+                }
+            },
         )
+        val campaignId = state.campaignId
+        if (state.campaignArchived && campaignId != null) {
+            AppArchiveBanner(
+                onResume = { state.eventSink(SessionListEvent.CampaignSheet(CampaignSheetEvent.Resumed(campaignId))) },
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+            )
+        }
         if (state.liveSession == null && state.sessions.isEmpty()) {
             EmptyStateActions(
                 title = stringResource(Res.string.session_list_empty_title),
                 text = stringResource(Res.string.session_list_empty),
                 primaryAction =
-                    EmptyStateAction(label = stringResource(Res.string.session_list_empty_button)) {
-                        state.eventSink(SessionListEvent.NewSessionClicked)
+                    if (state.campaignArchived) {
+                        null
+                    } else {
+                        EmptyStateAction(label = stringResource(Res.string.session_list_empty_button)) {
+                            state.eventSink(SessionListEvent.NewSessionClicked)
+                        }
                     },
             )
         } else {
             SessionListContent(state, swipeHintPeekOffsetPx)
         }
-    }
-}
-
-@Composable
-private fun RenameSheetHost(state: SessionListState) {
-    when (val sheet = state.renameSheet) {
-        RenameSheetState.Hidden -> Unit
-        is RenameSheetState.Editing ->
-            CampaignRenameSheet(
-                draft = sheet.draft,
-                onDraftChanged = { value -> state.eventSink(SessionListEvent.RenameDraftChanged(value)) },
-                onSave = { state.eventSink(SessionListEvent.RenameSaved) },
-                onDismiss = { state.eventSink(SessionListEvent.RenameDismissed) },
-            )
     }
 }
 

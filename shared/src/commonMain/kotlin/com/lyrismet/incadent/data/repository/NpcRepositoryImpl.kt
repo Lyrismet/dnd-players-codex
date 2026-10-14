@@ -2,6 +2,8 @@ package com.lyrismet.incadent.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.lyrismet.incadent.data.campaign.CurrentCampaign
+import com.lyrismet.incadent.data.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -22,12 +24,15 @@ import kotlinx.coroutines.withContext
 class NpcRepositoryImpl(
     private val database: AppDatabase,
     private val mentionRenamer: MentionRenamer,
+    private val current: CurrentCampaign,
 ) : NpcRepository {
     private val queries = database.npcQueries
     private val locationQueries = database.npcLocationQueries
 
     override fun observeAll(): Flow<List<Npc>> =
-        queries.selectAllWithLocations(::toDomainWithLocations).asFlow().mapToList(Dispatchers.Default)
+        current.observe { campaignId ->
+            queries.selectAllWithLocations(campaignId, ::toDomainWithLocations).asFlow().mapToList(Dispatchers.Default)
+        }
 
     override suspend fun getById(id: Long): Npc? =
         withContext(Dispatchers.Default) {
@@ -49,6 +54,7 @@ class NpcRepositoryImpl(
                         npc.lifeState,
                         npc.portrait?.full,
                         npc.portrait?.thumb,
+                        current.requireId(),
                     )
                     val id = queries.lastInsertRowId().executeAsOne()
                     writeLocations(id, npc.locationIds)

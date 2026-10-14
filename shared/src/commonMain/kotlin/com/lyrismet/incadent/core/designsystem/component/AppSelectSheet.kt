@@ -282,7 +282,7 @@ private fun highlighted(row: SelectRow) =
     }
 
 @Composable
-private fun SelectCheckbox(checked: Boolean) {
+internal fun SelectCheckbox(checked: Boolean) {
     val shape = RoundedCornerShape(6.dp)
     Box(
         modifier =
@@ -320,7 +320,7 @@ private fun SelectOutlinedButton(
 }
 
 @Composable
-private fun SelectCreateRow(
+internal fun SelectCreateRow(
     text: String,
     onClick: () -> Unit,
 ) {

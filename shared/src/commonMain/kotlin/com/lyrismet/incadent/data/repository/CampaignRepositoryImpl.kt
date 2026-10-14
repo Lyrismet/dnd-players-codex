@@ -1,0 +1,204 @@
+package com.lyrismet.incadent.data.repository
+
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import com.lyrismet.incadent.data.campaign.CurrentCampaign
+import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.domain.model.Campaign
+import com.lyrismet.incadent.domain.model.CampaignPlayer
+import com.lyrismet.incadent.domain.model.CampaignStatus
+import com.lyrismet.incadent.domain.model.CampaignTransfer
+import com.lyrismet.incadent.domain.model.TransferCandidate
+import com.lyrismet.incadent.domain.model.TransferCandidates
+import com.lyrismet.incadent.domain.repository.CampaignRepository
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.LocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
+
+@OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
+@Inject
+@SingleIn(AppScope::class)
+@ContributesBinding(AppScope::class)
+class CampaignRepositoryImpl(
+    private val database: AppDatabase,
+    private val current: CurrentCampaign,
+) : CampaignRepository {
+    private val queries = database.campaignQueries
+    private val locationQueries = database.locationQueries
+    private val npcQueries = database.npcQueries
+    private val npcLocationQueries = database.npcLocationQueries
+
+    override fun observeAll(): Flow<List<Campaign>> =
+        queries.selectSummaries(::toDomain).asFlow().mapToList(Dispatchers.Default)
+
+    override fun observeCurrent(): Flow<Campaign?> =
+        combine(observeAll(), current.id) { all, id -> all.firstOrNull { it.id == id } }
+
+    override suspend fun open(id: String) {
+        withContext(Dispatchers.Default) {
+            queries.touch(now(), id)
+            current.open(id)
+        }
+    }
+
+    override suspend fun create(
+        name: String,
+        transfer: CampaignTransfer?,
+    ): Int =
+        withContext(Dispatchers.Default) {
+            val id = Uuid.random().toString()
+            val copied =
+                database.transactionWithResult {
+                    queries.insert(id, name.trim(), CampaignStatus.LIVE, now(), now())
+                    if (transfer == null) 0 else copyWorld(transfer, id)
+                }
+            current.open(id)
+            copied
+        }
+
+    override suspend fun rename(
+        id: String,
+        name: String,
+    ) {
+        withContext(Dispatchers.Default) { queries.rename(name.trim(), id) }
+    }
+
+    override suspend fun archive(id: String) {
+        withContext(Dispatchers.Default) {
+            queries.setStatus(CampaignStatus.ARCHIVED, id)
+            // the last live campaign leaves the app on the library instead of an archive
+            if (current.id.value == id && queries.selectFirstLiveId().executeAsOneOrNull() == null) current.close()
+        }
+    }
+
+    override suspend fun resume(id: String) {
+        withContext(Dispatchers.Default) { queries.setStatus(CampaignStatus.LIVE, id) }
+    }
+
+    override suspend fun deleteWithData(id: String) {
+        withContext(Dispatchers.Default) {
+            queries.deleteById(id)
+            if (current.id.value == id) {
+                queries.selectFirstLiveId().executeAsOneOrNull()?.let { current.open(it) } ?: current.close()
+            }
+        }
+    }
+
+    override fun observeTransferCandidates(sourceId: String): Flow<TransferCandidates> =
+        combine(
+            locationQueries.selectAll(sourceId).asFlow().mapToList(Dispatchers.Default),
+            npcQueries.selectAllWithLocations(sourceId).asFlow().mapToList(Dispatchers.Default),
+        ) { places, npcs ->
+            val byId = places.associateBy { it.id }
+
+            fun path(parentId: Long?): String =
+                generateSequence(parentId?.let(byId::get)) { it.parent_id?.let(byId::get) }
+                    .toList()
+                    .reversed()
+                    .joinToString(" › ") { it.name }
+            TransferCandidates(
+                places = places.map { TransferCandidate(it.id, it.name, path(it.parent_id)) },
+                npcs =
+                    npcs.map { npc ->
+                        val where =
+                            npc.location_ids
+                                .split(',')
+                                .mapNotNull { it.toLongOrNull()?.let(byId::get)?.name }
+                                .joinToString(", ")
+                        TransferCandidate(npc.id, npc.name, where)
+                    },
+            )
+        }
+
+    // copies are independent rows - names, descriptions, photos and nesting. Notes, quests and the party stay behind
+    private fun copyWorld(
+        transfer: CampaignTransfer,
+        targetId: String,
+    ): Int {
+        val source = transfer.sourceId
+        val parents =
+            locationQueries
+                .selectAll(source) { id, _, _, parentId, _ -> id to parentId }
+                .executeAsList()
+                .toMap()
+        val npcPlaces =
+            transfer.npcIds.associateWith { npcLocationQueries.selectByNpc(it).executeAsList() }
+
+        // a place brings its parents along so the copied tree keeps its shape
+        val wanted = linkedSetOf<Long>()
+        (transfer.placeIds + npcPlaces.values.flatten()).forEach { id ->
+            var next: Long? = id
+            while (next != null && next in parents && wanted.add(next)) next = parents[next]
+        }
+        val placeMap = mutableMapOf<Long, Long>()
+        // parents first, so a child always finds its copied parent
+        wanted.sortedBy { depth(it, parents) }.forEach { oldId ->
+            val full = locationQueries.selectById(oldId).executeAsOne()
+            locationQueries.insert(
+                full.name,
+                full.description,
+                full.parent_id?.let(placeMap::get),
+                full.cover,
+                full.cover_thumb,
+                targetId,
+            )
+            placeMap[oldId] = locationQueries.lastInsertRowId().executeAsOne()
+        }
+        transfer.npcIds.forEach { oldId ->
+            val npc = npcQueries.selectById(oldId).executeAsOneOrNull() ?: return@forEach
+            npcQueries.insert(
+                npc.name,
+                npc.status,
+                npc.description,
+                npc.race,
+                npc.faction,
+                npc.life_state,
+                npc.portrait,
+                npc.portrait_thumb,
+                targetId,
+            )
+            val newId = npcQueries.lastInsertRowId().executeAsOne()
+            npcPlaces[oldId].orEmpty().mapNotNull(placeMap::get).forEach { npcLocationQueries.insert(newId, it) }
+        }
+        if (transfer.copyTags) queries.copyTags(targetId, source)
+        if (transfer.copyPhrases) queries.copyPhrases(targetId, source)
+        return placeMap.size + transfer.npcIds.size
+    }
+
+    private fun depth(
+        id: Long,
+        parents: Map<Long, Long?>,
+    ): Int = generateSequence(parents[id]) { parents[it] }.count()
+
+    private fun now(): Long = Clock.System.now().toEpochMilliseconds()
+
+    // one param per summary column - dictated by SQLDelight's generated query mapper shape
+    @Suppress("LongParameterList")
+    private fun toDomain(
+        id: String,
+        name: String,
+        status: CampaignStatus,
+        sessionCount: Long,
+        lastSessionDate: LocalDateTime?,
+        playerName: String?,
+        playerClass: String?,
+        playerLevel: Long?,
+    ) = Campaign(
+        id = id,
+        name = name,
+        status = status,
+        sessionCount = sessionCount.toInt(),
+        lastSessionDate = lastSessionDate,
+        player = playerName?.let { CampaignPlayer(it, playerClass.orEmpty(), playerLevel?.toInt()) },
+    )
+}

@@ -243,6 +243,8 @@ sealed interface CodexEmptyState {
 }
 
 data class CodexState(
+    // a finished campaign is read-only, so nothing in the header offers a new record
+    val readOnly: Boolean = false,
     val activeTab: CodexTab = CodexTab.PARTY,
     val searchQuery: String = "",
     val tabCounts: CodexTabCounts = CodexTabCounts(),

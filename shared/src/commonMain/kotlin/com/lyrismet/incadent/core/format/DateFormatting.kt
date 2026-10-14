@@ -51,3 +51,6 @@ fun LocalDateTime.toDisplayTime(): String {
 
 /** "19 СЕНТ" - the day-separator label between a multi-day session's meetings */
 fun LocalDate.toShortDayMonthUpper(): String = "$day ${RUSSIAN_SHORT_MONTHS_UPPER.getValue(month)}"
+
+/** "12 июня" - the date without the year, for a compact meta label */
+fun LocalDateTime.toShortDisplayDate(): String = "$day ${RUSSIAN_GENITIVE_MONTHS.getValue(month)}"

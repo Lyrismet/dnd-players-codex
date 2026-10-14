@@ -53,6 +53,7 @@ import com.lyrismet.incadent.core.tags.normalizeCustomTagName
 import com.lyrismet.incadent.core.tags.suggestSessionTags
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.model.CampaignStatus
 import com.lyrismet.incadent.domain.model.DeletedMention
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
@@ -62,6 +63,7 @@ import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
+import com.lyrismet.incadent.domain.repository.CampaignRepository
 import com.lyrismet.incadent.domain.repository.DeletedMentionRepository
 import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.PartyRepository
@@ -143,6 +145,7 @@ class SessionDetailPresenter(
     private val phraseSnippetRepository: PhraseSnippetRepository,
     private val deletedMentionRepository: DeletedMentionRepository,
     private val imageCompressor: ImageCompressor,
+    private val campaignRepository: CampaignRepository,
 ) : Presenter<SessionDetailState> {
     private val mentionActions = SessionMentionActions(sessionEntryRepository, deletedMentionRepository, undoController)
 
@@ -278,7 +281,9 @@ class SessionDetailPresenter(
         // deliberately renders the same header/feed/composer shape whether or not currentNote
         // has arrived yet from the Flow's cold start - swapping to a distinct "loading" screen
         // for that one frame was the cause of a visible flash on every navigation into this screen
+        val campaign by campaignRepository.observeCurrent().collectAsState(initial = null)
         return SessionDetailState(
+            readOnly = campaign?.status == CampaignStatus.ARCHIVED,
             isLoading = currentNote == null,
             overline = numberLabel?.let { stringResource(Res.string.session_overline_format, it) }.orEmpty(),
             title = titleText,

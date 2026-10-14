@@ -2,6 +2,8 @@ package com.lyrismet.incadent.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.lyrismet.incadent.data.campaign.CurrentCampaign
+import com.lyrismet.incadent.data.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
@@ -23,6 +25,7 @@ import kotlin.time.ExperimentalTime
 @ContributesBinding(AppScope::class)
 class SessionEntryRepositoryImpl(
     database: AppDatabase,
+    private val current: CurrentCampaign,
 ) : SessionEntryRepository {
     private val queries = database.sessionEntryQueries
 
@@ -30,7 +33,9 @@ class SessionEntryRepositoryImpl(
         queries.selectForSession(sessionNoteId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
 
     override fun observeAll(): Flow<List<SessionEntry>> =
-        queries.selectAll(::toDomain).asFlow().mapToList(Dispatchers.Default)
+        current.observe { campaignId ->
+            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+        }
 
     @OptIn(ExperimentalTime::class)
     override suspend fun add(

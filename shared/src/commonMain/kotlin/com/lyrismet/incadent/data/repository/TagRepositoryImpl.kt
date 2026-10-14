@@ -3,6 +3,8 @@ package com.lyrismet.incadent.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.tags.BUILT_IN_SESSION_TAGS
+import com.lyrismet.incadent.data.campaign.CurrentCampaign
+import com.lyrismet.incadent.data.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.repository.TagRepository
 import dev.zacsweers.metro.AppScope
@@ -19,29 +21,34 @@ import kotlinx.coroutines.withContext
 @ContributesBinding(AppScope::class)
 class TagRepositoryImpl(
     database: AppDatabase,
+    private val current: CurrentCampaign,
 ) : TagRepository {
     private val tagQueries = database.tagQueries
     private val sessionTagQueries = database.sessionTagQueries
 
     override fun observeCatalog(): Flow<List<String>> =
-        tagQueries
-            .selectAll()
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { rows ->
-                val custom = rows.map { it.name }.filterNot { name -> name.isBuiltIn() }
-                BUILT_IN_SESSION_TAGS + custom
-            }
+        current.observe { campaignId ->
+            tagQueries
+                .selectAll(campaignId)
+                .asFlow()
+                .mapToList(Dispatchers.Default)
+                .map { rows ->
+                    val custom = rows.map { it.name }.filterNot { name -> name.isBuiltIn() }
+                    BUILT_IN_SESSION_TAGS + custom
+                }
+        }
 
     override fun observeTagsFor(sessionNoteId: Long): Flow<List<String>> =
         sessionTagQueries.selectTagNamesForSession(sessionNoteId).asFlow().mapToList(Dispatchers.Default)
 
     override fun observeAllSessionTags(): Flow<Map<Long, List<String>>> =
-        sessionTagQueries
-            .selectAllSessionTagNames()
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { rows -> rows.groupBy({ it.session_note_id }, { it.name }) }
+        current.observe { campaignId ->
+            sessionTagQueries
+                .selectAllSessionTagNames(campaignId)
+                .asFlow()
+                .mapToList(Dispatchers.Default)
+                .map { rows -> rows.groupBy({ it.session_note_id }, { it.name }) }
+        }
 
     override suspend fun addTag(
         sessionNoteId: Long,
@@ -66,7 +73,7 @@ class TagRepositoryImpl(
     // sqlite's own NOCASE collation only folds ascii, so an existing name is matched in kotlin instead
     private fun findTagId(name: String): Long? =
         tagQueries
-            .selectAll()
+            .selectAll(current.requireId())
             .executeAsList()
             .firstOrNull { it.name.equals(name, ignoreCase = true) }
             ?.id
@@ -74,7 +81,7 @@ class TagRepositoryImpl(
     // insert is OR IGNORE so a race is swallowed, id is re-read by name since lastInsertRowId would be stale then
     private fun ensureTagId(name: String): Long {
         findTagId(name)?.let { return it }
-        tagQueries.insert(name)
+        tagQueries.insert(name, current.requireId())
         return findTagId(name) ?: error("tag '$name' missing immediately after insert")
     }
 

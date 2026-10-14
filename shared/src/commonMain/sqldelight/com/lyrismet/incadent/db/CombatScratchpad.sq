@@ -4,18 +4,21 @@ CREATE TABLE combat_scratchpad (
     boss_name TEXT NOT NULL,
     boss_hp_current INTEGER NOT NULL,
     boss_hp_max INTEGER NOT NULL,
-    notes TEXT NOT NULL
+    notes TEXT NOT NULL,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
 );
 
 selectAll:
-SELECT * FROM combat_scratchpad ORDER BY id DESC;
+SELECT id, session_note_id, boss_name, boss_hp_current, boss_hp_max, notes FROM combat_scratchpad
+WHERE campaign_id = ?
+ORDER BY id DESC;
 
 selectById:
-SELECT * FROM combat_scratchpad WHERE id = ?;
+SELECT id, session_note_id, boss_name, boss_hp_current, boss_hp_max, notes FROM combat_scratchpad WHERE id = ?;
 
 insert:
-INSERT INTO combat_scratchpad(session_note_id, boss_name, boss_hp_current, boss_hp_max, notes)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO combat_scratchpad(session_note_id, boss_name, boss_hp_current, boss_hp_max, notes, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?);
 
 updateBossHp:
 UPDATE combat_scratchpad SET boss_hp_current = ? WHERE id = ?;

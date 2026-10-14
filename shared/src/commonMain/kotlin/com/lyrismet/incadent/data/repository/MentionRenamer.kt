@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.data.repository
 
 import com.lyrismet.incadent.core.mention.renameMentionIn
+import com.lyrismet.incadent.data.campaign.CurrentCampaign
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.DeletedMentionType
 import dev.zacsweers.metro.AppScope
@@ -18,6 +19,7 @@ import org.jetbrains.compose.resources.getString
 @SingleIn(AppScope::class)
 class MentionRenamer(
     private val database: AppDatabase,
+    private val current: CurrentCampaign,
 ) {
     suspend fun npcRenamed(
         id: Long,
@@ -79,7 +81,7 @@ class MentionRenamer(
         otherKeys: List<String>,
     ) {
         val queries = database.sessionEntryQueries
-        queries.selectAll().executeAsList().forEach { entry ->
+        queries.selectAll(current.requireId()).executeAsList().forEach { entry ->
             val renamed = renameMentionIn(entry.body, oldKey, newKey, otherKeys)
             if (renamed != entry.body) queries.renameBody(renamed, entry.id)
         }
@@ -93,28 +95,28 @@ class MentionRenamer(
         partyId: Long? = null,
     ): List<String> =
         database.npcQueries
-            .selectAll()
+            .selectAll(current.requireId())
             .executeAsList()
             .filter { it.id != npcId }
             .map { it.name } +
             database.partyMemberQueries
-                .selectAll()
+                .selectAll(current.requireId())
                 .executeAsList()
                 .filter { it.id != partyId }
                 .map { it.name } +
             database.locationQueries
-                .selectAll()
+                .selectAll(current.requireId())
                 .executeAsList()
                 .filter { it.id != locationId }
                 .map { it.name } +
             database.questQueries
-                .selectAll()
+                .selectAll(current.requireId())
                 .executeAsList()
                 .filter { it.id != questId }
                 .map { questPrefix + it.title } +
             // a "?" tag keeps its own key, so a rename must not eat the tag of a longer deleted name
             database.deletedMentionQueries
-                .selectAll()
+                .selectAll(current.requireId())
                 .executeAsList()
                 .map { if (it.type == DeletedMentionType.QUEST.name) questPrefix + it.name else it.name }
 }

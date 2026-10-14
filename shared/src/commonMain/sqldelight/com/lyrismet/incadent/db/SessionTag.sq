@@ -15,6 +15,8 @@ ORDER BY tag.name ASC;
 selectAllSessionTagNames:
 SELECT session_tag.session_note_id AS session_note_id, tag.name AS name FROM session_tag
 INNER JOIN tag ON tag.id = session_tag.tag_id
+INNER JOIN session_note ON session_note.id = session_tag.session_note_id
+WHERE session_note.campaign_id = ?
 ORDER BY session_tag.session_note_id DESC, tag.name ASC;
 
 insert:

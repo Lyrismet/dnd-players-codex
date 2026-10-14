@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.data.db
 
 import app.cash.sqldelight.ColumnAdapter
+import com.lyrismet.incadent.domain.model.CampaignStatus
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.PartyPresence
@@ -11,6 +12,7 @@ val npcStatusAdapter = enumColumnAdapter<NpcStatus>()
 val npcLifeStateAdapter = enumColumnAdapter<NpcLifeState>()
 val partyPresenceAdapter = enumColumnAdapter<PartyPresence>()
 val questStatusAdapter = enumColumnAdapter<QuestStatus>()
+val campaignStatusAdapter = enumColumnAdapter<CampaignStatus>()
 
 val localDateTimeAdapter =
     object : ColumnAdapter<LocalDateTime, String> {
