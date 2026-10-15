@@ -215,7 +215,7 @@ private fun QuickAddInput(
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
     BasicTextField(
         value = quickAdd.draft,
-        onValueChange = quickAdd.onDraftChanged,
+        onValueChange = { quickAdd.onDraftChanged(it.take(TextLimits.LINE)) },
         singleLine = true,
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = AppPalette.TextPrimary),
         cursorBrush = GoldCursorBrush,

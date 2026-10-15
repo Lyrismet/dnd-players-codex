@@ -52,6 +52,7 @@ import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.MentionChip
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.TagChip
+import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.tags.sessionTagLabel
@@ -207,8 +208,9 @@ private fun SessionTitleEditor(
         BasicTextField(
             value = field,
             onValueChange = {
-                field = it
-                onTitleChanged(it.text)
+                val capped = it.copy(text = it.text.take(TextLimits.SESSION_TITLE))
+                field = capped
+                onTitleChanged(capped.text)
             },
             textStyle = titleStyle,
             singleLine = true,

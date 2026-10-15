@@ -49,7 +49,11 @@ fun CampaignRenameSheet(
                 title = stringResource(Res.string.settings_rename_title),
                 onClose = onDismiss,
             )
-            RenameNameInput(draft = draft, onDraftChanged = onDraftChanged, onDone = { if (canSave) onSave() })
+            RenameNameInput(
+                draft = draft,
+                onDraftChanged = { onDraftChanged(it.take(TextLimits.LINE)) },
+                onDone = { if (canSave) onSave() },
+            )
             Text(
                 text = stringResource(Res.string.settings_rename_hint),
                 fontSize = 12.5.sp,
@@ -85,7 +89,7 @@ private fun RenameNameInput(
         BasicTextField(
             value = draft,
             onValueChange = onDraftChanged,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(end = 56.dp),
             singleLine = true,
             textStyle =
                 MaterialTheme.typography.headlineMedium.copy(
@@ -106,6 +110,11 @@ private fun RenameNameInput(
                 }
                 innerField()
             },
+        )
+        AppCharCountPill(
+            count = draft.length,
+            max = TextLimits.LINE,
+            modifier = Modifier.align(Alignment.CenterEnd),
         )
     }
 }
