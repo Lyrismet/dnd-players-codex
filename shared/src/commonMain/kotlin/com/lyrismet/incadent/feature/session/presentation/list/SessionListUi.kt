@@ -350,7 +350,7 @@ private fun SessionArchiveRow(
                         border = AppPalette.BorderSubtle,
                         onClick = onClick,
                     ).padding(14.dp),
-            verticalAlignment = Alignment.Top,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             NumberLabel(text = session.numberLabel, width = 52.dp, color = AppPalette.GoldDim)

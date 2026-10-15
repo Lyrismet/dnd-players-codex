@@ -371,14 +371,16 @@ private fun LocationEntryFields(
         placeholder = stringResource(Res.string.codex_entry_placeholder_location_name),
         required = true,
     )
-    FormPickField(
-        label = stringResource(Res.string.codex_entry_label_parent),
-        placeholder = stringResource(Res.string.codex_entry_pick_place_hint),
-        onClick = { eventSink(CodexEntryFormEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.LOCATION_PARENT)) },
-        title = form.locationParent?.name,
-        subtitle = form.locationParent?.path,
-        leadingGlyph = MentionGlyph.LOCATION.symbol,
-    )
+    if (form.hasParentCandidates) {
+        FormPickField(
+            label = stringResource(Res.string.codex_entry_label_parent),
+            placeholder = stringResource(Res.string.codex_entry_pick_place_hint),
+            onClick = { eventSink(CodexEntryFormEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.LOCATION_PARENT)) },
+            title = form.locationParent?.name,
+            subtitle = form.locationParent?.path,
+            leadingGlyph = MentionGlyph.LOCATION.symbol,
+        )
+    }
     CodexEntryTextArea(
         label = stringResource(Res.string.codex_entry_label_description),
         value = form.description,

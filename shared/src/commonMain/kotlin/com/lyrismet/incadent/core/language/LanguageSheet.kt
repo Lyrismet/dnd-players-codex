@@ -65,6 +65,8 @@ internal fun LanguageRow(
         value = current,
         onClick = onClick,
         minHeight = 56.dp,
+        titleLineHeight = 20.sp,
+        subtitleLineHeight = 16.sp,
         leading = {
             IconBadge(
                 size = 32.dp,

@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
@@ -64,6 +65,8 @@ fun AppListRow(
     onClick: (() -> Unit)? = null,
     chevron: Boolean = onClick != null,
     minHeight: Dp = if (onClick != null) 52.dp else 0.dp,
+    titleLineHeight: TextUnit = TextUnit.Unspecified,
+    subtitleLineHeight: TextUnit = TextUnit.Unspecified,
     leading: (@Composable () -> Unit)? = null,
     trailing: (@Composable RowScope.() -> Unit)? = null,
 ) {
@@ -82,6 +85,7 @@ fun AppListRow(
             Text(
                 text = title,
                 fontSize = AppFontSize.Medium,
+                lineHeight = titleLineHeight,
                 fontWeight = FontWeight.Medium,
                 color = AppPalette.TextPrimary,
             )
@@ -90,6 +94,7 @@ fun AppListRow(
                     text = subtitle,
                     modifier = Modifier.padding(top = 2.dp),
                     fontSize = AppFontSize.Small,
+                    lineHeight = subtitleLineHeight,
                     color = AppPalette.TextSecondary,
                 )
             }

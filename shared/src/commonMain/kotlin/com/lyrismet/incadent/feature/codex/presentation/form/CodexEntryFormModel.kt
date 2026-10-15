@@ -37,6 +37,8 @@ data class CodexEntryFormState(
     val npcPlaces: List<MentionChipItem> = emptyList(),
     val questPlace: SelectedPlace? = null,
     val locationParent: SelectedPlace? = null,
+    // false while no other place exists, so the parent field has nothing to pick from and stays hidden
+    val hasParentCandidates: Boolean = false,
     // non-null while the select sheet is open over the form
     val placeSelect: PlaceSelectState? = null,
     val npcOptions: List<FormChipOption<Long>> = emptyList(),

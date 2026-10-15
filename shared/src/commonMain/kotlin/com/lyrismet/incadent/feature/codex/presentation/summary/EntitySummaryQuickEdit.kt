@@ -82,7 +82,7 @@ internal fun QuickEditableValue(
     } else {
         HoldToEditField(
             onHeld = { quick.onEvent(QuickEditUiEvent.FieldHeld(field, value)) },
-            frame = if (field == QuickEditField.DESCRIPTION) HoldFrame.Description else HoldFrame.Title,
+            frame = if (field == QuickEditField.DESCRIPTION) HoldFrame.Note else HoldFrame.Title,
         ) {
             content()
         }

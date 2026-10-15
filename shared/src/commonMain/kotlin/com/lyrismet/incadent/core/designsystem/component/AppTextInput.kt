@@ -215,7 +215,7 @@ private fun InputDecoration(
     inner: @Composable () -> Unit,
 ) {
     val text: @Composable () -> Unit = {
-        Box(contentAlignment = Alignment.CenterStart) {
+        Box(contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart) {
             // stacked, not side by side, so the caret sits at the start of the placeholder
             if (isEmpty && placeholder != null) {
                 Text(placeholder, style = textStyle, color = style.placeholderColor)

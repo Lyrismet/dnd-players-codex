@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.codex.presentation
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,17 +15,16 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -40,6 +40,36 @@ import com.lyrismet.incadent.core.designsystem.component.PillSize
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.appCard
 
+// the diamond's 7dp plus the 8dp gap, so the path starts under the first letter of the name
+private val PathIndent = 15.dp
+
+/** a filled triangle, pointing down while the section is open and right while it is folded */
+@Composable
+private fun FoldTriangle(
+    collapsed: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val color = AppPalette.TextSecondary
+    Canvas(modifier = modifier.size(FoldTriangleSize)) {
+        val path =
+            Path().apply {
+                if (collapsed) {
+                    moveTo(size.width * 0.2f, 0f)
+                    lineTo(size.width, size.height / 2)
+                    lineTo(size.width * 0.2f, size.height)
+                } else {
+                    moveTo(0f, size.height * 0.2f)
+                    lineTo(size.width, size.height * 0.2f)
+                    lineTo(size.width / 2, size.height)
+                }
+                close()
+            }
+        drawPath(path, color)
+    }
+}
+
+private val FoldTriangleSize = 10.dp
+
 /**
  * the header of one place of the tree - a diamond, its name over the path above it, a rule, how many places lie
  * directly in it and the fold chevron. A tap folds or unfolds the section.
@@ -53,54 +83,51 @@ internal fun CodexPlaceSectionHeader(
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    Column(
         modifier =
             modifier
                 .fillMaxWidth()
                 .padding(start = 2.dp, end = 2.dp, top = 8.dp)
-                .clickable(onClick = onToggle)
-                .heightIn(min = 32.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .clickable(onClick = onToggle),
     ) {
-        DiamondOutline(size = 7.dp, color = AppPalette.Parchment, strokeWidth = 1.5.dp)
-        Column(modifier = Modifier.weight(1f, fill = false)) {
-            Text(
-                title,
-                style =
-                    MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.16.em,
-                    ),
-                color = AppPalette.Parchment,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (path != null) {
+        Row(
+            modifier = Modifier.fillMaxWidth().heightIn(min = if (path != null) 24.dp else 32.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            // the name takes the width it needs and the rule fills what is left of its row
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                DiamondOutline(size = 7.dp, color = AppPalette.Parchment, strokeWidth = 1.5.dp)
                 Text(
-                    path,
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
-                    color = AppPalette.TextSecondary,
-                    modifier = Modifier.padding(top = 1.dp),
+                    title,
+                    style =
+                        MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.16.em,
+                        ),
+                    color = AppPalette.Parchment,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(end = 4.dp),
                 )
+                Box(modifier = Modifier.weight(1f).height(1.dp).background(AppPalette.Border))
             }
+            Text(count.toString(), fontSize = AppFontSize.CaptionPlus, color = AppPalette.TextSecondary)
+            FoldTriangle(collapsed = collapsed)
         }
-        Box(
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .widthIn(min = 12.dp)
-                    .height(1.dp)
-                    .background(AppPalette.Border),
-        )
-        Text(count.toString(), fontSize = AppFontSize.CaptionPlus, color = AppPalette.TextSecondary)
-        Text(
-            if (collapsed) "▸" else "▾",
-            fontSize = AppFontSize.Small,
-            color = AppPalette.TextSecondary,
-            modifier = Modifier.width(14.dp),
-            textAlign = TextAlign.Center,
-        )
+        // under the name and across the whole row, so a deep path has the full width to wrap in
+        if (path != null) {
+            Text(
+                path,
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
+                color = AppPalette.TextSecondary,
+                modifier = Modifier.padding(start = PathIndent, bottom = 4.dp),
+            )
+        }
     }
 }
 

@@ -484,6 +484,8 @@ class CodexEntryFormController private constructor(
             npcPlaces = current.npcLocationIds.mapNotNull { id -> places.find(id)?.toMentionChip() },
             questPlace = places.find(current.questLocationId)?.toSelectedPlace(places, topLevelLabel),
             locationParent = places.find(current.locationParentId)?.toSelectedPlace(places, topLevelLabel),
+            hasParentCandidates =
+                locations.any { it.id != (current.editingRef as? EntityRef.Location)?.id },
             placeSelect =
                 current.placeSelectField?.let { field ->
                     placeSelectState(

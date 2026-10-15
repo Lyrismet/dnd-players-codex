@@ -221,6 +221,7 @@ private fun buildLocationSummary(
     val questsHere = lookup.quests.filter { it.locationId == location.id }
     val placesInside = lookup.locations.filter { it.parentId == location.id }
     val parent = tree.find(location.parentId)
+    val hasPlaceToBeIn = lookup.locations.any { other -> other.id != location.id }
     return EntitySummaryItem.LocationSummary(
         ref = EntityRef.Location(location.id),
         name = location.name,
@@ -228,13 +229,14 @@ private fun buildLocationSummary(
         cover = location.cover,
         emblem = EntityEmblem(MentionGlyph.LOCATION.symbol, EntityEmblemShape.ROUNDED, LocationMentionColor),
         subtitle = tree.ancestorsLabel(location),
+        // with no other place in the codex there is nothing to be inside of, so the row would be a dead end
         facts =
-            listOf(
+            listOfNotNull(
                 linkFact(
                     Res.string.entity_sheet_location_parent_label,
                     parent?.toMentionChip(),
                     QuickEditField.PARENT,
-                ),
+                ).takeIf { hasPlaceToBeIn || parent != null },
             ),
         groups =
             listOfNotNull(
