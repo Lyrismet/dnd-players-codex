@@ -1,6 +1,6 @@
 package com.lyrismet.incadent.core.mention
 
-import com.lyrismet.incadent.domain.model.DeletedMentionType
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.QuestStatus
@@ -87,12 +87,12 @@ class MentionTest {
 
     @Test
     fun `a token of a record that is gone becomes a deleted mention carrying its name and kind`() {
-        val segments = parseMentions("видели ${mentionToken(MentionRef(DeletedMentionType.NPC, 99), "Кассиан")}", index)
+        val segments = parseMentions("видели ${mentionToken(MentionRef(EntityKind.NPC, 99), "Кассиан")}", index)
 
         assertEquals(
             listOf(
                 MentionSegment.Text("видели "),
-                MentionSegment.Mention(MentionEntity.DeletedMention(99, "Кассиан", DeletedMentionType.NPC)),
+                MentionSegment.Mention(MentionEntity.DeletedMention(99, "Кассиан", EntityKind.NPC)),
             ),
             segments,
         )

@@ -1,24 +1,24 @@
 package com.lyrismet.incadent.core.mention
 
-import com.lyrismet.incadent.domain.model.DeletedMentionType
+import com.lyrismet.incadent.domain.model.EntityKind
 
 // "@[Name|n:12]" - the name is only what a tag shows once its record is gone, the kind letter and id decide who it is
 internal val TOKEN_REGEX = Regex("@\\[([^\\[\\]|]*)\\|([npql]):(\\d+)]")
 
-private fun DeletedMentionType.code(): Char =
+private fun EntityKind.code(): Char =
     when (this) {
-        DeletedMentionType.NPC -> 'n'
-        DeletedMentionType.PARTY -> 'p'
-        DeletedMentionType.LOCATION -> 'l'
-        DeletedMentionType.QUEST -> 'q'
+        EntityKind.NPC -> 'n'
+        EntityKind.PARTY -> 'p'
+        EntityKind.LOCATION -> 'l'
+        EntityKind.QUEST -> 'q'
     }
 
-private fun Char.toMentionType(): DeletedMentionType =
+private fun Char.toMentionType(): EntityKind =
     when (this) {
-        'n' -> DeletedMentionType.NPC
-        'p' -> DeletedMentionType.PARTY
-        'l' -> DeletedMentionType.LOCATION
-        else -> DeletedMentionType.QUEST
+        'n' -> EntityKind.NPC
+        'p' -> EntityKind.PARTY
+        'l' -> EntityKind.LOCATION
+        else -> EntityKind.QUEST
     }
 
 internal const val NAME_GROUP = 1

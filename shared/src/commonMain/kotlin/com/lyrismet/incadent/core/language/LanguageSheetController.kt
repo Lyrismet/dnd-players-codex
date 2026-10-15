@@ -1,4 +1,4 @@
-package com.lyrismet.incadent.presentation.settings
+package com.lyrismet.incadent.core.language
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf

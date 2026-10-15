@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.core.tags
 
+import com.lyrismet.incadent.domain.model.BUILT_IN_SESSION_TAGS
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

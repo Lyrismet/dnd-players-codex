@@ -35,7 +35,7 @@ import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.domain.model.DeletedMentionType
+import com.lyrismet.incadent.domain.model.EntityKind
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.deleted_mention_back
 import dndplayerscodex.shared.generated.resources.deleted_mention_body
@@ -241,18 +241,18 @@ private fun DeletedMentionLinkRow(
     }
 }
 
-private fun DeletedMentionType.kindLabelRes(): StringResource =
+private fun EntityKind.kindLabelRes(): StringResource =
     when (this) {
-        DeletedMentionType.NPC -> Res.string.session_detail_mention_type_npc
-        DeletedMentionType.PARTY -> Res.string.session_detail_mention_type_party
-        DeletedMentionType.QUEST -> Res.string.session_detail_mention_type_quest
-        DeletedMentionType.LOCATION -> Res.string.session_detail_mention_type_location
+        EntityKind.NPC -> Res.string.session_detail_mention_type_npc
+        EntityKind.PARTY -> Res.string.session_detail_mention_type_party
+        EntityKind.QUEST -> Res.string.session_detail_mention_type_quest
+        EntityKind.LOCATION -> Res.string.session_detail_mention_type_location
     }
 
-private fun DeletedMentionType.typeLabelRes(): StringResource =
+private fun EntityKind.typeLabelRes(): StringResource =
     when (this) {
-        DeletedMentionType.NPC -> Res.string.deleted_mention_type_npc
-        DeletedMentionType.PARTY -> Res.string.deleted_mention_type_party
-        DeletedMentionType.QUEST -> Res.string.deleted_mention_type_quest
-        DeletedMentionType.LOCATION -> Res.string.deleted_mention_type_location
+        EntityKind.NPC -> Res.string.deleted_mention_type_npc
+        EntityKind.PARTY -> Res.string.deleted_mention_type_party
+        EntityKind.QUEST -> Res.string.deleted_mention_type_quest
+        EntityKind.LOCATION -> Res.string.deleted_mention_type_location
     }

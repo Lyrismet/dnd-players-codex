@@ -7,7 +7,6 @@ import com.lyrismet.incadent.core.entitysummary.FakeLocationRepository
 import com.lyrismet.incadent.core.entitysummary.FakeNpcRepository
 import com.lyrismet.incadent.core.entitysummary.FakePartyRepository
 import com.lyrismet.incadent.core.entitysummary.FakeQuestRepository
-import com.lyrismet.incadent.core.entitysummary.RecordingNavigator
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.core.portrait.PhotoSlot
@@ -16,7 +15,7 @@ import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
-import com.lyrismet.incadent.domain.repository.MentionRepositories
+import com.lyrismet.incadent.domain.repository.CodexRepositories
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -145,9 +144,8 @@ class QuickEditInteractionsTest {
         private val entitySheet =
             EntitySheetInteractions(
                 selected,
-                MentionRepositories(npcs, FakeLocationRepository(), quests),
-                FakePartyRepository(),
-                RecordingNavigator(),
+                CodexRepositories(FakePartyRepository(), npcs, quests, FakeLocationRepository()),
+                { _, _ -> },
             )
         val interactions =
             QuickEditInteractions(inlineEdit, photoCrop, selected, entitySheet, ImageCompressor()) { hintSeen = true }

@@ -4,9 +4,10 @@ import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.data.db.DatabaseDriverFactory
 import com.lyrismet.incadent.data.db.createAppDatabase
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.domain.repository.CodexRepositories
 import com.lyrismet.incadent.domain.repository.LocationRepository
-import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.NpcRepository
+import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.BindingContainer
@@ -27,11 +28,12 @@ object DataBindings {
         createAppDatabase(driverFactory.createDriver())
 
     @Provides
-    fun provideMentionRepositories(
+    fun provideCodexRepositories(
+        partyRepository: PartyRepository,
         npcRepository: NpcRepository,
-        locationRepository: LocationRepository,
         questRepository: QuestRepository,
-    ): MentionRepositories = MentionRepositories(npcRepository, locationRepository, questRepository)
+        locationRepository: LocationRepository,
+    ): CodexRepositories = CodexRepositories(partyRepository, npcRepository, questRepository, locationRepository)
 
     @Provides
     @SingleIn(AppScope::class)

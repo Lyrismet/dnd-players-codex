@@ -1,6 +1,6 @@
 package com.lyrismet.incadent.core.mention
 
-import com.lyrismet.incadent.domain.model.DeletedMentionType
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -11,7 +11,7 @@ import com.lyrismet.incadent.domain.model.QuestStatus
 
 /** one record a note can mention, told apart by kind and id so records sharing a name stay separate */
 data class MentionRef(
-    val type: DeletedMentionType,
+    val type: EntityKind,
     val id: Long,
 )
 
@@ -26,14 +26,14 @@ sealed interface MentionEntity {
         val status: NpcStatus,
         val lifeState: NpcLifeState,
     ) : MentionEntity {
-        override val ref: MentionRef get() = MentionRef(DeletedMentionType.NPC, id)
+        override val ref: MentionRef get() = MentionRef(EntityKind.NPC, id)
     }
 
     data class LocationMention(
         val id: Long,
         override val name: String,
     ) : MentionEntity {
-        override val ref: MentionRef get() = MentionRef(DeletedMentionType.LOCATION, id)
+        override val ref: MentionRef get() = MentionRef(EntityKind.LOCATION, id)
     }
 
     data class QuestMention(
@@ -41,7 +41,7 @@ sealed interface MentionEntity {
         override val name: String,
         val status: QuestStatus,
     ) : MentionEntity {
-        override val ref: MentionRef get() = MentionRef(DeletedMentionType.QUEST, id)
+        override val ref: MentionRef get() = MentionRef(EntityKind.QUEST, id)
     }
 
     /** a character of the party - mentioned by name like an npc, but it has no relation or life state to colour it */
@@ -49,14 +49,14 @@ sealed interface MentionEntity {
         val id: Long,
         override val name: String,
     ) : MentionEntity {
-        override val ref: MentionRef get() = MentionRef(DeletedMentionType.PARTY, id)
+        override val ref: MentionRef get() = MentionRef(EntityKind.PARTY, id)
     }
 
     /** a record that is gone from the codex but still mentioned by notes - drawn as a "?" tag, named by its token */
     data class DeletedMention(
         val id: Long,
         override val name: String,
-        val type: DeletedMentionType,
+        val type: EntityKind,
     ) : MentionEntity {
         override val ref: MentionRef get() = MentionRef(type, id)
     }

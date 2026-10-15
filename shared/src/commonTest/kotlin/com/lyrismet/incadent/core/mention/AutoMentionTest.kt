@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.core.mention
 
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.QuestStatus
@@ -78,7 +79,7 @@ class AutoMentionTest {
 
     @Test
     fun `a deleted record is never an auto match`() {
-        val gone = mentionToken(MentionRef(com.lyrismet.incadent.domain.model.DeletedMentionType.NPC, 50), "Кассиан")
+        val gone = mentionToken(MentionRef(com.lyrismet.incadent.domain.model.EntityKind.NPC, 50), "Кассиан")
 
         assertTrue(autoMatches("видели $gone и Кассиан").isEmpty())
     }

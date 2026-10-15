@@ -2,10 +2,10 @@ package com.lyrismet.incadent.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import com.lyrismet.incadent.core.tags.BUILT_IN_SESSION_TAGS
 import com.lyrismet.incadent.data.campaign.CurrentCampaign
 import com.lyrismet.incadent.data.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.domain.model.BUILT_IN_SESSION_TAGS
 import com.lyrismet.incadent.domain.repository.TagRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding

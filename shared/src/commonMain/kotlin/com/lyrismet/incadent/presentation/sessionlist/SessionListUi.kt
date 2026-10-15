@@ -45,7 +45,8 @@ import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.entitysummary.EntityRef
-import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
+import com.lyrismet.incadent.core.entitysummary.EntitySheetEvent
+import com.lyrismet.incadent.core.entitysummary.entitySheetActions
 import com.lyrismet.incadent.core.format.NumberSizeLadder
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.core.tags.sessionTagLabel
@@ -99,26 +100,13 @@ fun SessionListUi(
     CampaignSheets(state.campaignSheet) { event -> state.eventSink(SessionListEvent.CampaignSheet(event)) }
 
     state.selectedEntity?.let { entity ->
-        AppBottomSheet(onDismissRequest = { state.eventSink(SessionListEvent.SheetDismissed) }) {
+        AppBottomSheet(
+            onDismissRequest = { state.eventSink(SessionListEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
+        ) {
             EntitySummarySheetContent(
                 item = entity,
-                actions =
-                    EntitySummarySheetActions(
-                        onEntityRefClicked = { ref -> state.eventSink(SessionListEvent.MentionChipClicked(ref)) },
-                        onNpcStatusSelected = { id, status ->
-                            state.eventSink(SessionListEvent.NpcStatusSelected(id, status))
-                        },
-                        onNpcLifeSelected = { id, life ->
-                            state.eventSink(SessionListEvent.NpcLifeSelected(id, life))
-                        },
-                        onQuestStatusSelected = { id, status ->
-                            state.eventSink(SessionListEvent.QuestStatusSelected(id, status))
-                        },
-                        onRelatedNoteClicked = { id, entryId ->
-                            state.eventSink(SessionListEvent.RelatedNoteClicked(id, entryId))
-                        },
-                    ),
-                onClose = { state.eventSink(SessionListEvent.SheetDismissed) },
+                actions = entitySheetActions { state.eventSink(SessionListEvent.EntitySheet(it)) },
+                onClose = { state.eventSink(SessionListEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
             )
         }
     }
@@ -196,7 +184,9 @@ private fun SessionListContent(
                     LiveSessionCard(
                         session = live,
                         onClick = { state.eventSink(SessionListEvent.SessionClicked(live.id)) },
-                        onMentionClick = { ref -> state.eventSink(SessionListEvent.MentionChipClicked(ref)) },
+                        onMentionClick = { ref ->
+                            state.eventSink(SessionListEvent.EntitySheet(EntitySheetEvent.EntityClicked(ref)))
+                        },
                     )
                 }
             }

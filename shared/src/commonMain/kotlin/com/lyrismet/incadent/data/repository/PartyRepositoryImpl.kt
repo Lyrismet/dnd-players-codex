@@ -37,32 +37,32 @@ class PartyRepositoryImpl(
         }
 
     // the "вы" flag is unique per campaign - saving a player character clears it from everyone else
-    override suspend fun upsert(member: PartyMember): Long =
+    override suspend fun upsert(entity: PartyMember): Long =
         withContext(Dispatchers.Default) {
             database.transactionWithResult {
                 val stored =
-                    if (member.id == 0L) null else queries.selectById(member.id, ::toDomainFull).executeAsOneOrNull()
+                    if (entity.id == 0L) null else queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
                 val id =
                     if (stored != null) {
                         queries.update(
-                            name = member.name,
-                            character_class = member.characterClass,
-                            race = member.race,
-                            level = member.level?.toLong(),
-                            player_name = member.playerName,
-                            is_player_character = member.isPlayerCharacter,
-                            presence = member.presence,
-                            hp_max = member.hpMax?.toLong(),
-                            hp_current = member.hpCurrent?.toLong(),
-                            description = member.description,
-                            id = member.id,
+                            name = entity.name,
+                            character_class = entity.characterClass,
+                            race = entity.race,
+                            level = entity.level?.toLong(),
+                            player_name = entity.playerName,
+                            is_player_character = entity.isPlayerCharacter,
+                            presence = entity.presence,
+                            hp_max = entity.hpMax?.toLong(),
+                            hp_current = entity.hpCurrent?.toLong(),
+                            description = entity.description,
+                            id = entity.id,
                         )
-                        writePortrait(member.id, member.portrait, stored.portrait)
-                        member.id
+                        writePortrait(entity.id, entity.portrait, stored.portrait)
+                        entity.id
                     } else {
-                        insert(member)
+                        insert(entity)
                     }
-                if (member.isPlayerCharacter) queries.clearOtherPlayerCharacters(id, current.requireId())
+                if (entity.isPlayerCharacter) queries.clearOtherPlayerCharacters(id, current.requireId())
                 id
             }
         }

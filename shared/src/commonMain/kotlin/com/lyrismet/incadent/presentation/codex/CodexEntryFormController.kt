@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.lyrismet.incadent.core.codexgroup.PlaceTree
+import com.lyrismet.incadent.core.codexgroup.withRecentPlaces
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.designsystem.component.toMentionChip
 import com.lyrismet.incadent.core.designsystem.toStatusColor
@@ -20,6 +21,7 @@ import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.core.portrait.encodeAsync
 import com.lyrismet.incadent.core.portrait.prepareCropDraftAsync
 import com.lyrismet.incadent.core.portrait.recropDraft
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -71,7 +73,7 @@ internal data class CodexEntryFormFields(
     // the id a new record is created under - a deleted record's, so the tokens in notes find it again
     val reviveId: Long = 0,
     val originalName: String = "",
-    val type: CodexEntryType,
+    val type: EntityKind,
     val name: String = "",
     val description: String = "",
     // shared between npc and party - the only two types the mockup gives a portrait frame to
@@ -198,7 +200,7 @@ class CodexEntryFormController private constructor(
 
     // defaultType mirrors the mockup's openNew() - the active codex tab pre-selects the form's type
     fun onAddEntryClicked(
-        defaultType: CodexEntryType,
+        defaultType: EntityKind,
         initialName: String = "",
         reviveId: Long = 0,
     ) {
@@ -211,7 +213,7 @@ class CodexEntryFormController private constructor(
 
     // a new party member starts at the player character's level, when that is known
     private fun withDefaults(form: CodexEntryFormFields): CodexEntryFormFields =
-        if (form.type == CodexEntryType.PARTY && form.editingRef == null && form.party.level == null) {
+        if (form.type == EntityKind.PARTY && form.editingRef == null && form.party.level == null) {
             form.copy(party = form.party.copy(level = playerCharacterLevel))
         } else {
             form
@@ -239,7 +241,7 @@ class CodexEntryFormController private constructor(
         }
     }
 
-    fun onTypeChanged(type: CodexEntryType) {
+    fun onTypeChanged(type: EntityKind) {
         val current = fields.value ?: return
         fields.value = withDefaults(current.copy(type = type))
     }
@@ -382,7 +384,7 @@ class CodexEntryFormController private constructor(
         val current = fields.value ?: return
         val field = current.placeSelectField ?: return
         fields.value = current.withPlaces(field, ids).copy(placeSelectField = null)
-        recentPlaceIds.value = (ids + recentPlaceIds.value).distinct().take(MAX_RECENT_PLACES)
+        recentPlaceIds.value = recentPlaceIds.value.withRecentPlaces(ids)
     }
 
     // the typed name becomes a new top level place that joins whatever was already checked
@@ -400,7 +402,7 @@ class CodexEntryFormController private constructor(
             val id = locationRepository.upsert(quickLocation(trimmed))
             val ids = if (field == CodexEntryPlaceField.NPC_PLACES) checked + id else listOf(id)
             fields.value = fields.value?.withPlaces(field, ids)
-            recentPlaceIds.value = (listOf(id) + recentPlaceIds.value).distinct().take(MAX_RECENT_PLACES)
+            recentPlaceIds.value = recentPlaceIds.value.withRecentPlaces(listOf(id))
         }
     }
 
@@ -481,10 +483,10 @@ class CodexEntryFormController private constructor(
         onClosed()
         scope.launch {
             when (current.type) {
-                CodexEntryType.PARTY ->
+                EntityKind.PARTY ->
                     partyRepository.upsert(current.toPartyMember().clampedToRanges())
 
-                CodexEntryType.NPC ->
+                EntityKind.NPC ->
                     npcRepository.upsert(
                         Npc(
                             id = (current.editingRef as? EntityRef.Npc)?.id ?: current.reviveId,
@@ -499,7 +501,7 @@ class CodexEntryFormController private constructor(
                         ),
                     )
 
-                CodexEntryType.QUEST ->
+                EntityKind.QUEST ->
                     questRepository.upsert(
                         Quest(
                             id = (current.editingRef as? EntityRef.Quest)?.id ?: current.reviveId,
@@ -512,7 +514,7 @@ class CodexEntryFormController private constructor(
                         ),
                     )
 
-                CodexEntryType.LOCATION ->
+                EntityKind.LOCATION ->
                     locationRepository.upsert(
                         Location(
                             id = (current.editingRef as? EntityRef.Location)?.id ?: current.reviveId,
@@ -638,13 +640,13 @@ private fun CodexEntryNumberField.range(): IntRange =
     }
 
 @Composable
-private fun newEntryHeading(type: CodexEntryType): String =
+private fun newEntryHeading(type: EntityKind): String =
     stringResource(
         when (type) {
-            CodexEntryType.PARTY -> Res.string.codex_entry_heading_new_party
-            CodexEntryType.NPC -> Res.string.codex_entry_heading_new_npc
-            CodexEntryType.QUEST -> Res.string.codex_entry_heading_new_quest
-            CodexEntryType.LOCATION -> Res.string.codex_entry_heading_new_location
+            EntityKind.PARTY -> Res.string.codex_entry_heading_new_party
+            EntityKind.NPC -> Res.string.codex_entry_heading_new_npc
+            EntityKind.QUEST -> Res.string.codex_entry_heading_new_quest
+            EntityKind.LOCATION -> Res.string.codex_entry_heading_new_location
         },
     )
 
@@ -660,8 +662,6 @@ private fun saveLabel(
             else -> Res.string.codex_entry_save_label_create
         },
     )
-
-private const val MAX_RECENT_PLACES = 12
 
 private fun Long?.toggled(id: Long): Long? = if (this == id) null else id
 
@@ -688,7 +688,7 @@ private fun Npc.toFields(ref: EntityRef.Npc) =
     CodexEntryFormFields(
         editingRef = ref,
         originalName = name,
-        type = CodexEntryType.NPC,
+        type = EntityKind.NPC,
         name = name,
         description = description,
         portrait = portrait,
@@ -703,7 +703,7 @@ private fun PartyMember.toFields(ref: EntityRef.Party) =
     CodexEntryFormFields(
         editingRef = ref,
         originalName = name,
-        type = CodexEntryType.PARTY,
+        type = EntityKind.PARTY,
         name = name,
         description = description,
         portrait = portrait,
@@ -724,7 +724,7 @@ private fun Quest.toFields(ref: EntityRef.Quest) =
     CodexEntryFormFields(
         editingRef = ref,
         originalName = title,
-        type = CodexEntryType.QUEST,
+        type = EntityKind.QUEST,
         name = title,
         description = description,
         reward = reward,
@@ -737,7 +737,7 @@ private fun Location.toFields(ref: EntityRef.Location) =
     CodexEntryFormFields(
         editingRef = ref,
         originalName = name,
-        type = CodexEntryType.LOCATION,
+        type = EntityKind.LOCATION,
         name = name,
         description = description,
         locationParentId = parentId,

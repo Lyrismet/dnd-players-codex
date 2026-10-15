@@ -4,9 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import com.lyrismet.incadent.domain.model.Photo
-import com.lyrismet.incadent.domain.repository.LocationRepository
-import com.lyrismet.incadent.domain.repository.NpcRepository
-import com.lyrismet.incadent.domain.repository.PartyRepository
+import com.lyrismet.incadent.domain.repository.CodexRepositories
 
 /** the ref of whatever the card shows */
 val EntitySummaryItem.entityRef: EntityRef
@@ -44,9 +42,7 @@ fun EntitySummaryItem.withFullPhoto(full: Photo?): EntitySummaryItem {
 @Composable
 fun rememberFullPhoto(
     item: EntitySummaryItem?,
-    npcRepository: NpcRepository,
-    partyRepository: PartyRepository,
-    locationRepository: LocationRepository,
+    repositories: CodexRepositories,
 ): Photo? {
     val ref = item?.entityRef
     val listPhoto = item?.photo
@@ -56,9 +52,9 @@ fun rememberFullPhoto(
                 null
             } else {
                 when (ref) {
-                    is EntityRef.Npc -> npcRepository.getById(ref.id)?.portrait
-                    is EntityRef.Party -> partyRepository.getById(ref.id)?.portrait
-                    is EntityRef.Location -> locationRepository.getById(ref.id)?.cover
+                    is EntityRef.Npc -> repositories.npcRepository.getById(ref.id)?.portrait
+                    is EntityRef.Party -> repositories.partyRepository.getById(ref.id)?.portrait
+                    is EntityRef.Location -> repositories.locationRepository.getById(ref.id)?.cover
                     is EntityRef.Quest, null -> null
                 }
             }

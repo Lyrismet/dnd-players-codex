@@ -16,6 +16,7 @@ import com.lyrismet.incadent.core.designsystem.component.toChipItem
 import com.lyrismet.incadent.core.designsystem.toStatusColor
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
+import com.lyrismet.incadent.core.entitysummary.onEvent
 import com.lyrismet.incadent.core.entitysummary.rememberFullPhoto
 import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
 import com.lyrismet.incadent.core.entitysummary.withFullPhoto
@@ -67,8 +68,7 @@ import com.lyrismet.incadent.domain.model.SessionNote
 import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.CampaignRepository
-import com.lyrismet.incadent.domain.repository.MentionRepositories
-import com.lyrismet.incadent.domain.repository.PartyRepository
+import com.lyrismet.incadent.domain.repository.CodexRepositories
 import com.lyrismet.incadent.domain.repository.PhraseSnippetRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
@@ -139,8 +139,7 @@ class SessionDetailPresenter(
     private val navigator: Navigator,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
-    private val partyRepository: PartyRepository,
-    private val mentionRepositories: MentionRepositories,
+    private val codexRepositories: CodexRepositories,
     private val tagRepository: TagRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
@@ -160,10 +159,10 @@ class SessionDetailPresenter(
         val entries by sessionEntryRepository
             .observeForSession(screen.sessionNoteId)
             .collectAsState(initial = emptyList())
-        val npcs by mentionRepositories.npcRepository.observeAll().collectAsState(initial = emptyList())
-        val locations by mentionRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
-        val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
-        val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
+        val npcs by codexRepositories.npcRepository.observeAll().collectAsState(initial = emptyList())
+        val locations by codexRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
+        val quests by codexRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
+        val parties by codexRepositories.partyRepository.observeAll().collectAsState(initial = emptyList())
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
@@ -227,12 +226,7 @@ class SessionDetailPresenter(
                 parties,
             )
         val fullPhoto =
-            rememberFullPhoto(
-                selectedSummary,
-                mentionRepositories.npcRepository,
-                partyRepository,
-                mentionRepositories.locationRepository,
-            )
+            rememberFullPhoto(selectedSummary, codexRepositories)
         val selectedEntity = selectedSummary?.withFullPhoto(fullPhoto)
 
         val editingEntryTimeLabel =
@@ -330,10 +324,10 @@ class SessionDetailPresenter(
         val recentPlaceIds = remember { mutableStateOf(emptyList<Long>()) }
         val formController =
             CodexEntryFormController.rememberController(
-                mentionRepositories.npcRepository,
-                partyRepository,
-                mentionRepositories.questRepository,
-                mentionRepositories.locationRepository,
+                codexRepositories.npcRepository,
+                codexRepositories.partyRepository,
+                codexRepositories.questRepository,
+                codexRepositories.locationRepository,
                 recentPlaceIds,
                 playerCharacterLevel,
             )
@@ -359,9 +353,8 @@ class SessionDetailPresenter(
         entityHistory: MutableState<List<EntityRef>>,
     ) = EntitySheetInteractions(
         selectedEntityRef,
-        mentionRepositories,
-        partyRepository,
-        navigator,
+        codexRepositories,
+        navigator.sessionEntryOpener(),
         entityHistory,
     )
 
@@ -388,16 +381,7 @@ class SessionDetailPresenter(
             SessionDetailEvent.InsertMentionTriggerClicked -> onInsertMentionTrigger(fields.draft)
             is SessionDetailEvent.MentionSuggestionPicked ->
                 onMentionSuggestionPicked(event.token, fields.draft)
-            is SessionDetailEvent.MentionChipClicked -> fields.entitySheet.onEntityClicked(event.ref)
-            is SessionDetailEvent.NpcStatusSelected ->
-                fields.entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
-            is SessionDetailEvent.NpcLifeSelected ->
-                fields.entitySheet.onNpcLifeSelected(scope, event.npcId, event.lifeState)
-            is SessionDetailEvent.QuestStatusSelected ->
-                fields.entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
-            is SessionDetailEvent.RelatedNoteClicked ->
-                fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId, event.entryId)
-            SessionDetailEvent.SheetDismissed -> fields.entitySheet.onDismissed()
+            is SessionDetailEvent.EntitySheet -> fields.entitySheet.onEvent(scope, event.event)
             SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, entries, fields, mentionData.candidates)
             is SessionDetailEvent.EntryClicked -> {
                 onEntryClicked(event.id, fields.selectedEntryId)
@@ -481,7 +465,7 @@ class SessionDetailPresenter(
         val deleted = fields.deletedSheet.value?.deleted ?: return
         fields.deletedSheet.value = null
         // created under the old id, so the tokens already in the notes point at it again
-        fields.formController.onAddEntryClicked(deleted.type.toEntryType(), deleted.name, reviveId = deleted.id)
+        fields.formController.onAddEntryClicked(deleted.type, deleted.name, reviveId = deleted.id)
     }
 
     // a null [key] keeps the name as plain words, otherwise the mention points at the picked record
@@ -647,10 +631,8 @@ class SessionDetailPresenter(
     ) {
         currentNote?.let { note ->
             scope.launch {
-                sessionNoteRepository.upsert(note.copy(endedAt = null))
-                // only one session may be live at a time - resuming this one closes out any other
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                sessionNoteRepository.endOtherLiveSessions(exceptId = note.id, endedAt = now)
+                sessionNoteRepository.makeOnlyLive(note.id, now)
             }
         }
     }

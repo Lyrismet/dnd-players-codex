@@ -1,6 +1,6 @@
 package com.lyrismet.incadent.core.mention
 
-import com.lyrismet.incadent.domain.model.DeletedMentionType
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.QuestStatus
@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 
 private val gromm = MentionEntity.NpcMention(1, "Громм", NpcStatus.FRIEND, NpcLifeState.ALIVE)
 private val curse = MentionEntity.QuestMention(2, "Проклятие", QuestStatus.ACTIVE)
-private val goneRef = MentionRef(DeletedMentionType.NPC, 7)
+private val goneRef = MentionRef(EntityKind.NPC, 7)
 
 class MentionRewriteTest {
     @Test
@@ -35,7 +35,7 @@ class MentionRewriteTest {
     fun `a record with the same id but another kind is not touched`() {
         val questToken = curse.token()
 
-        assertEquals(questToken, unlinkMentionIn(questToken, MentionRef(DeletedMentionType.NPC, curse.id)))
+        assertEquals(questToken, unlinkMentionIn(questToken, MentionRef(EntityKind.NPC, curse.id)))
     }
 }
 
@@ -44,12 +44,12 @@ class DeletedMentionTest {
 
     @Test
     fun `a record created again under its old id takes its tags back`() {
-        val tag = mentionToken(MentionRef(DeletedMentionType.NPC, 5), "Кассиан")
+        val tag = mentionToken(MentionRef(EntityKind.NPC, 5), "Кассиан")
         val revived = MentionEntity.NpcMention(5, "Кассиан", NpcStatus.NEUTRAL, NpcLifeState.ALIVE)
 
         assertEquals(
             listOf<MentionSegment>(
-                MentionSegment.Mention(MentionEntity.DeletedMention(5, "Кассиан", DeletedMentionType.NPC)),
+                MentionSegment.Mention(MentionEntity.DeletedMention(5, "Кассиан", EntityKind.NPC)),
             ),
             parseMentions(tag, index),
         )

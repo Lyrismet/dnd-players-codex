@@ -30,34 +30,29 @@ class QuestRepositoryImpl(
             queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
         }
 
-    override fun observeByStatus(status: QuestStatus): Flow<List<Quest>> =
-        current.observe { campaignId ->
-            queries.selectByStatus(campaignId, status, ::toDomain).asFlow().mapToList(Dispatchers.Default)
-        }
-
     override suspend fun getById(id: Long): Quest? =
         withContext(Dispatchers.Default) {
             queries.selectById(id, ::toDomain).executeAsOneOrNull()
         }
 
     // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
-    override suspend fun upsert(quest: Quest): Long =
+    override suspend fun upsert(entity: Quest): Long =
         withContext(Dispatchers.Default) {
             database.transactionWithResult {
-                val exists = quest.id != 0L && queries.selectById(quest.id, ::toDomain).executeAsOneOrNull() != null
+                val exists = entity.id != 0L && queries.selectById(entity.id, ::toDomain).executeAsOneOrNull() != null
                 if (exists) {
                     queries.update(
-                        quest.title,
-                        quest.status,
-                        quest.reward,
-                        quest.givenByNpcId,
-                        quest.locationId,
-                        quest.description,
-                        quest.id,
+                        entity.title,
+                        entity.status,
+                        entity.reward,
+                        entity.givenByNpcId,
+                        entity.locationId,
+                        entity.description,
+                        entity.id,
                     )
-                    quest.id
+                    entity.id
                 } else {
-                    insert(quest)
+                    insert(entity)
                 }
             }
         }

@@ -6,11 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.campaign.rememberCampaignSheetHost
+import com.lyrismet.incadent.core.language.LanguageSheetController
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.domain.model.AppLanguage
 import com.lyrismet.incadent.domain.repository.CampaignRepository
 import com.lyrismet.incadent.domain.repository.LanguageRepository
-import com.lyrismet.incadent.presentation.settings.LanguageSheetController
 import com.slack.circuit.runtime.presenter.Presenter
 
 /** loads the campaign list and hands every tap to the shared campaign sheet flow */

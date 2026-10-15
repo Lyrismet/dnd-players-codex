@@ -13,9 +13,9 @@ interface SessionNoteRepository {
 
     suspend fun delete(id: Long)
 
-    // enforces the "only one live session" invariant - call after a session becomes live
-    suspend fun endOtherLiveSessions(
-        exceptId: Long,
-        endedAt: LocalDateTime,
+    /** [id] becomes the campaign's only live session - reopened if ended, every other live one ends at [now] */
+    suspend fun makeOnlyLive(
+        id: Long,
+        now: LocalDateTime,
     )
 }

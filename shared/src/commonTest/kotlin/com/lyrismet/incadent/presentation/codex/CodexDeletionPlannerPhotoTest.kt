@@ -5,6 +5,7 @@ import com.lyrismet.incadent.core.entitysummary.FakeLocationRepository
 import com.lyrismet.incadent.core.entitysummary.FakeNpcRepository
 import com.lyrismet.incadent.core.entitysummary.FakePartyRepository
 import com.lyrismet.incadent.core.entitysummary.FakeQuestRepository
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
@@ -18,7 +19,7 @@ import kotlin.test.assertContentEquals
 
 private val thumb = byteArrayOf(1)
 private val full = byteArrayOf(1, 2, 3)
-private val labels = CodexEntryType.entries.associateWith { it.name }
+private val labels = EntityKind.entries.associateWith { it.name }
 
 // the list rows carry only the thumbnail, the repository record carries the compressed full picture too
 private fun listRecords(

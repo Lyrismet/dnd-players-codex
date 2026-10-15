@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import com.lyrismet.incadent.core.designsystem.component.SwipeEditAction
 import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.incadent.core.entitysummary.EntityRef
+import com.lyrismet.incadent.core.entitysummary.EntitySheetEvent
 import com.lyrismet.incadent.domain.model.EntityEditMode
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_edit
@@ -49,7 +50,9 @@ internal fun PartyRow(
         swipeEditEnabled = swipeEditEnabled,
         peekOffsetPx = peekOffsetPx,
     ) {
-        PartyCodexCard(item = member, onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Party(member.id))) })
+        PartyCodexCard(item = member, onClick = {
+            eventSink(CodexEvent.EntitySheet(EntitySheetEvent.EntityClicked(EntityRef.Party(member.id))))
+        })
     }
 }
 
@@ -66,7 +69,9 @@ internal fun NpcRow(
         swipeEditEnabled = swipeEditEnabled,
         peekOffsetPx = peekOffsetPx,
     ) {
-        NpcCodexCard(item = npc, onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Npc(npc.id))) })
+        NpcCodexCard(item = npc, onClick = {
+            eventSink(CodexEvent.EntitySheet(EntitySheetEvent.EntityClicked(EntityRef.Npc(npc.id))))
+        })
     }
 }
 
@@ -85,8 +90,8 @@ internal fun QuestRow(
     ) {
         QuestCodexCard(
             item = quest,
-            onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Quest(quest.id))) },
-            onGiverClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Npc(it))) },
+            onClick = { eventSink(CodexEvent.EntitySheet(EntitySheetEvent.EntityClicked(EntityRef.Quest(quest.id)))) },
+            onGiverClick = { eventSink(CodexEvent.EntitySheet(EntitySheetEvent.EntityClicked(EntityRef.Npc(it)))) },
         )
     }
 }
@@ -106,7 +111,11 @@ internal fun LocationRow(
     ) {
         LocationCodexCard(
             item = location,
-            onClick = { eventSink(CodexEvent.EntityClicked(EntityRef.Location(location.id))) },
+            onClick = {
+                eventSink(
+                    CodexEvent.EntitySheet(EntitySheetEvent.EntityClicked(EntityRef.Location(location.id))),
+                )
+            },
         )
     }
 }

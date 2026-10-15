@@ -4,20 +4,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.MentionGlyph
-import com.lyrismet.incadent.core.entitysummary.EntityRef
+import com.lyrismet.incadent.core.entitysummary.EntitySheetEvent
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.phrases.PhraseSheetEvent
 import com.lyrismet.incadent.core.phrases.PhraseSheetState
 import com.lyrismet.incadent.domain.model.DeletedMention
-import com.lyrismet.incadent.domain.model.NpcLifeState
-import com.lyrismet.incadent.domain.model.NpcStatus
-import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.presentation.codex.CodexEntryFormEvent
 import com.lyrismet.incadent.presentation.codex.CodexEntryFormState
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
+import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.screen.Screen
 import kotlinx.serialization.Serializable
+
+/** what an entity sheet calls to open a session at one of its notes */
+internal fun Navigator.sessionEntryOpener(): (Long, Long) -> Unit =
+    { sessionNoteId, entryId -> goTo(SessionDetailScreen(sessionNoteId, focusEntryId = entryId)) }
 
 @Serializable
 data class SessionDetailScreen(
@@ -165,31 +167,10 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
         val token: String,
     ) : SessionDetailEvent
 
-    data class MentionChipClicked(
-        val ref: EntityRef,
+    /** a tap or change on the entity card that opens over this screen */
+    data class EntitySheet(
+        val event: EntitySheetEvent,
     ) : SessionDetailEvent
-
-    data class NpcStatusSelected(
-        val npcId: Long,
-        val status: NpcStatus,
-    ) : SessionDetailEvent
-
-    data class NpcLifeSelected(
-        val npcId: Long,
-        val lifeState: NpcLifeState,
-    ) : SessionDetailEvent
-
-    data class QuestStatusSelected(
-        val questId: Long,
-        val status: QuestStatus,
-    ) : SessionDetailEvent
-
-    data class RelatedNoteClicked(
-        val sessionNoteId: Long,
-        val entryId: Long,
-    ) : SessionDetailEvent
-
-    data object SheetDismissed : SessionDetailEvent
 
     data object SubmitEntryClicked : SessionDetailEvent
 

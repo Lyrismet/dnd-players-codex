@@ -13,13 +13,16 @@ import com.lyrismet.incadent.core.codexgroup.CodexRegions
 import com.lyrismet.incadent.core.codexgroup.LocationGroupBy
 import com.lyrismet.incadent.core.codexgroup.NpcGroupBy
 import com.lyrismet.incadent.core.codexgroup.QuestGroupBy
+import com.lyrismet.incadent.core.codexgroup.withRecentPlaces
 import com.lyrismet.incadent.core.entitysummary.EntityRef
+import com.lyrismet.incadent.core.entitysummary.EntitySheetEvent
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.entitysummary.buildEntitySummary
 import com.lyrismet.incadent.core.entitysummary.entityLookupOf
 import com.lyrismet.incadent.core.entitysummary.npcLifeLabels
 import com.lyrismet.incadent.core.entitysummary.npcStatusLabels
+import com.lyrismet.incadent.core.entitysummary.onEvent
 import com.lyrismet.incadent.core.entitysummary.partyPresenceLabels
 import com.lyrismet.incadent.core.entitysummary.questStatusLabels
 import com.lyrismet.incadent.core.entitysummary.rememberFullPhoto
@@ -41,11 +44,13 @@ import com.lyrismet.incadent.core.quickedit.rememberQuickEditFieldTitles
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.core.swipehint.codexSwipeHintDirection
 import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
+import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.CampaignStatus
 import com.lyrismet.incadent.domain.model.EntityEditMode
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.HoldHintState
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
@@ -57,13 +62,14 @@ import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.CampaignRepository
+import com.lyrismet.incadent.domain.repository.CodexRepositories
 import com.lyrismet.incadent.domain.repository.LocationRepository
-import com.lyrismet.incadent.domain.repository.MentionRepositories
 import com.lyrismet.incadent.domain.repository.NpcRepository
 import com.lyrismet.incadent.domain.repository.PartyRepository
 import com.lyrismet.incadent.domain.repository.QuestRepository
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
+import com.lyrismet.incadent.presentation.sessiondetail.sessionEntryOpener
 import com.slack.circuit.retained.rememberRetained
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
@@ -108,7 +114,7 @@ private class CodexFields(
     // the photo waiting in the crop window of the open card, quick mode only
     val photoCrop: MutableState<QuickPhotoCrop?>,
     val quickEdit: QuickEditInteractions,
-    val toast: MutableState<CodexToast?>,
+    val toast: MutableState<ToastMessage?>,
     // the places picked or created last, newest first - the select sheet lists them above the rest
     val recentPlaceIds: MutableState<List<Long>>,
     // the places whose tree section is folded on the places tab
@@ -136,7 +142,7 @@ private class CodexListing(
 /** the labels the codex screen resolves from resources, collected once per composition */
 private class CodexLabels(
     val partyCard: PartyCardLabels,
-    val entityType: Map<CodexEntryType, String>,
+    val entityType: Map<EntityKind, String>,
     val undoDeletedTitle: String,
     val grouped: CodexGroupedLabels,
     val fieldTitles: Map<QuickEditField, String>,
@@ -157,6 +163,8 @@ class CodexPresenter(
     private val imageCompressor: ImageCompressor,
     private val campaignRepository: CampaignRepository,
 ) : Presenter<CodexState> {
+    private val codexRepositories =
+        CodexRepositories(partyRepository, npcRepository, questRepository, locationRepository)
     private val deletionPlanner =
         CodexDeletionPlanner(
             npcRepository,
@@ -184,7 +192,7 @@ class CodexPresenter(
         val labels = codexLabels()
 
         val fields = rememberFields(labels)
-        ReportFailures(failure) { fields.toast.value = CodexToast(it) }
+        ReportFailures(failure) { fields.toast.value = ToastMessage(it) }
         val formController = rememberFormController(fields, parties)
 
         val candidates =
@@ -204,7 +212,7 @@ class CodexPresenter(
         // keyed on the lookup data, so typing in the open editor doesn't re-parse every session entry
         val selectedRef = fields.selectedEntityRef.value
         val selectedSummary = remember(selectedRef, lookup) { selectedRef?.let { buildEntitySummary(it, lookup) } }
-        val fullPhoto = rememberFullPhoto(selectedSummary, npcRepository, partyRepository, locationRepository)
+        val fullPhoto = rememberFullPhoto(selectedSummary, codexRepositories)
         val selectedEntity = selectedSummary?.withFullPhoto(fullPhoto)
 
         val isTabSelected = LocalTabSelected.current
@@ -322,9 +330,8 @@ class CodexPresenter(
         val entitySheet =
             EntitySheetInteractions(
                 selectedEntityRef,
-                MentionRepositories(npcRepository, locationRepository, questRepository),
-                partyRepository,
-                navigator,
+                codexRepositories,
+                navigator.sessionEntryOpener(),
                 entityHistory,
                 onChanged = { change ->
                     val title = labels.fieldTitles.getValue(change.field) + labels.changedSuffix
@@ -335,7 +342,7 @@ class CodexPresenter(
             QuickEditInteractions(inlineEdit, photoCrop, selectedEntityRef, entitySheet, imageCompressor) {
                 appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
             }
-        val toast = rememberRetained { mutableStateOf<CodexToast?>(null) }
+        val toast = rememberRetained { mutableStateOf<ToastMessage?>(null) }
         val recentPlaceIds = rememberRetained { mutableStateOf(emptyList<Long>()) }
         val collapsedPlaceIds = rememberRetained { mutableStateOf(emptySet<Long>()) }
         val pendingDelete = rememberRetained { mutableStateOf<EntityRef?>(null) }
@@ -369,10 +376,10 @@ class CodexPresenter(
                 ),
             entityType =
                 mapOf(
-                    CodexEntryType.PARTY to stringResource(Res.string.codex_entry_type_party),
-                    CodexEntryType.NPC to stringResource(Res.string.codex_entry_type_npc),
-                    CodexEntryType.QUEST to stringResource(Res.string.codex_entry_type_quest),
-                    CodexEntryType.LOCATION to stringResource(Res.string.codex_entry_type_location),
+                    EntityKind.PARTY to stringResource(Res.string.codex_entry_type_party),
+                    EntityKind.NPC to stringResource(Res.string.codex_entry_type_npc),
+                    EntityKind.QUEST to stringResource(Res.string.codex_entry_type_quest),
+                    EntityKind.LOCATION to stringResource(Res.string.codex_entry_type_location),
                 ),
             undoDeletedTitle = stringResource(Res.string.codex_undo_deleted_title),
             grouped = groupedLabels(npcStatusLabels(), questStatusLabels()),
@@ -552,21 +559,12 @@ class CodexPresenter(
             is CodexEvent.TabSelected -> fields.activeTab.value = event.tab
             is CodexEvent.SearchQueryChanged -> fields.searchQuery.value = event.query
             is CodexEvent.GroupBySelected -> fields.grouping.value = fields.grouping.value.select(event.choice)
-            is CodexEvent.EntityClicked -> {
-                fields.quickEdit.onSheetClosed()
-                fields.entitySheet.onEntityClicked(event.ref)
-            }
-            is CodexEvent.NpcStatusSelected -> fields.entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
-            is CodexEvent.NpcLifeSelected -> fields.entitySheet.onNpcLifeSelected(scope, event.npcId, event.lifeState)
-            is CodexEvent.PartyPresenceSelected ->
-                fields.entitySheet.onPartyPresenceSelected(scope, event.partyId, event.presence)
-            is CodexEvent.QuestStatusSelected ->
-                fields.entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
-            is CodexEvent.RelatedNoteClicked ->
-                fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId, event.entryId)
-            CodexEvent.SheetDismissed -> {
-                fields.entitySheet.onDismissed()
-                fields.quickEdit.onSheetClosed()
+            is CodexEvent.EntitySheet -> {
+                // a card that opens or closes drops the half typed value of the one underneath
+                if (event.event is EntitySheetEvent.EntityClicked || event.event == EntitySheetEvent.Dismissed) {
+                    fields.quickEdit.onSheetClosed()
+                }
+                fields.entitySheet.onEvent(scope, event.event)
             }
             is CodexEvent.QuickEdit -> {
                 val answer = event.event
@@ -586,7 +584,8 @@ class CodexPresenter(
             is CodexEntryFormEvent -> {
                 val closed =
                     formController.onEvent(event, scope, imageCompressor) { name ->
-                        fields.toast.value = CodexToast(getString(Res.string.codex_entry_quick_add_toast_format, name))
+                        fields.toast.value =
+                            ToastMessage(getString(Res.string.codex_entry_quick_add_toast_format, name))
                     }
                 if (closed) fields.toast.value = null
             }
@@ -644,10 +643,8 @@ class CodexPresenter(
     }
 }
 
-private const val MAX_RECENT_PLACES = 12
-
 private fun CodexFields.rememberRecentPlaces(ids: List<Long>) {
-    recentPlaceIds.value = (ids + recentPlaceIds.value).distinct().take(MAX_RECENT_PLACES)
+    recentPlaceIds.value = recentPlaceIds.value.withRecentPlaces(ids)
 }
 
 /** the edit preferences and the undo toast the screen state is assembled from */

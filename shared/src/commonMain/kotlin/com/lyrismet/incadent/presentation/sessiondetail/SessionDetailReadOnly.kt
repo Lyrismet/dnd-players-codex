@@ -1,15 +1,15 @@
 package com.lyrismet.incadent.presentation.sessiondetail
 
+import com.lyrismet.incadent.core.entitysummary.writesCampaignData
+
 /** true for the events that write campaign data, an archived campaign drops these in the presenter too */
 internal fun SessionDetailEvent.writesCampaignData(): Boolean =
     when (this) {
+        is SessionDetailEvent.EntitySheet -> event.writesCampaignData()
         SessionDetailEvent.BackClicked,
         is SessionDetailEvent.DraftChanged,
         SessionDetailEvent.InsertMentionTriggerClicked,
         is SessionDetailEvent.MentionSuggestionPicked,
-        is SessionDetailEvent.MentionChipClicked,
-        is SessionDetailEvent.RelatedNoteClicked,
-        SessionDetailEvent.SheetDismissed,
         is SessionDetailEvent.EntryClicked,
         SessionDetailEvent.CancelEditEntryClicked,
         SessionDetailEvent.TagButtonClicked,
@@ -27,9 +27,6 @@ internal fun SessionDetailEvent.writesCampaignData(): Boolean =
         -> false
         is SessionDetailEvent.TitleChanged,
         SessionDetailEvent.TitleEditStarted,
-        is SessionDetailEvent.NpcStatusSelected,
-        is SessionDetailEvent.NpcLifeSelected,
-        is SessionDetailEvent.QuestStatusSelected,
         SessionDetailEvent.SubmitEntryClicked,
         is SessionDetailEvent.EditEntryClicked,
         is SessionDetailEvent.DeleteEntryClicked,

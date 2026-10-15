@@ -63,12 +63,15 @@ class SessionNoteRepositoryImpl(
         }
     }
 
-    override suspend fun endOtherLiveSessions(
-        exceptId: Long,
-        endedAt: LocalDateTime,
+    override suspend fun makeOnlyLive(
+        id: Long,
+        now: LocalDateTime,
     ) {
         withContext(Dispatchers.Default) {
-            queries.endOtherLive(endedAt, exceptId, current.requireId())
+            database.transaction {
+                queries.reopen(id)
+                queries.endOtherLive(now, id, current.requireId())
+            }
         }
     }
 

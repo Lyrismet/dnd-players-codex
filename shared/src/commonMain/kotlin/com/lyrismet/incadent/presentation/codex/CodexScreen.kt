@@ -6,6 +6,7 @@ import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
+import com.lyrismet.incadent.core.entitysummary.EntitySheetEvent
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.PhotoCropDraft
@@ -15,8 +16,10 @@ import com.lyrismet.incadent.core.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
+import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.domain.model.EntityEditMode
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
 import com.lyrismet.incadent.domain.model.PartyPresence
@@ -115,14 +118,12 @@ data class CodexFilterOption<T>(
     val label: String,
 )
 
-enum class CodexEntryType { PARTY, NPC, QUEST, LOCATION }
-
 /** pre-formatted create/edit sheet state - null fields/lists are simply unused for the current [type] */
 data class CodexEntryFormState(
     val overline: String,
     val heading: String,
     val isEditing: Boolean,
-    val type: CodexEntryType,
+    val type: EntityKind,
     val name: String = "",
     val description: String = "",
     // only rendered for party/npc types - see PortraitField in CodexEntryFormUi
@@ -212,7 +213,7 @@ sealed interface CodexSheet {
 /** a button of the empty state that opens the entry form of [entryType], with [name] prefilled */
 data class CodexEmptyAction(
     val label: String,
-    val entryType: CodexEntryType,
+    val entryType: EntityKind,
     val name: String = "",
 )
 
@@ -268,7 +269,7 @@ data class CodexState(
     // the row the one-time swipe hint peeks on, and the direction captured when it started - see core/swipehint
     val swipeHintTarget: SwipeHintTarget<EntityRef>? = null,
     val swipeHintDirection: SwipeHintDirection = SwipeHintDirection.DELETE_ONLY,
-    val toast: CodexToast? = null,
+    val toast: ToastMessage? = null,
     // set while a delete waits on the "notes still mention this record" warning
     val deleteWarning: CodexDeleteWarning? = null,
     val eventSink: (CodexEvent) -> Unit = {},
@@ -280,11 +281,6 @@ data class CodexDeleteWarning(
     val name: String,
     val notes: Int,
     val sessions: Int,
-)
-
-/** compared by identity, so repeating the same message restarts its timer - the quick-add "added" confirmation */
-class CodexToast(
-    val text: String,
 )
 
 /** the events of the create/edit form sheet - the codex and the session screen both host that sheet */
@@ -303,41 +299,15 @@ sealed interface CodexEvent : CircuitUiEvent {
         val choice: CodexGroupBy,
     ) : CodexEvent
 
-    data class EntityClicked(
-        val ref: EntityRef,
+    /** a tap or change on the entity card that opens over this screen */
+    data class EntitySheet(
+        val event: EntitySheetEvent,
     ) : CodexEvent
-
-    data class NpcStatusSelected(
-        val npcId: Long,
-        val status: NpcStatus,
-    ) : CodexEvent
-
-    data class NpcLifeSelected(
-        val npcId: Long,
-        val lifeState: NpcLifeState,
-    ) : CodexEvent
-
-    data class PartyPresenceSelected(
-        val partyId: Long,
-        val presence: PartyPresence,
-    ) : CodexEvent
-
-    data class QuestStatusSelected(
-        val questId: Long,
-        val status: QuestStatus,
-    ) : CodexEvent
-
-    data class RelatedNoteClicked(
-        val sessionNoteId: Long,
-        val entryId: Long,
-    ) : CodexEvent
-
-    data object SheetDismissed : CodexEvent
 
     data object AddEntryClicked : CodexEvent
 
     data class EmptyActionClicked(
-        val entryType: CodexEntryType,
+        val entryType: EntityKind,
         val name: String,
     ) : CodexEvent
 
@@ -354,7 +324,7 @@ sealed interface CodexEvent : CircuitUiEvent {
     ) : CodexEvent
 
     data class EntryTypeChanged(
-        val type: CodexEntryType,
+        val type: EntityKind,
     ) : CodexEntryFormEvent
 
     data class EntryFieldChanged(

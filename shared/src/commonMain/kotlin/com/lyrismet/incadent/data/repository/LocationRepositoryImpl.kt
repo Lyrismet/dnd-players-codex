@@ -36,23 +36,23 @@ class LocationRepositoryImpl(
         }
 
     // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
-    override suspend fun upsert(location: Location): Long =
+    override suspend fun upsert(entity: Location): Long =
         withContext(Dispatchers.Default) {
             database.transactionWithResult {
                 val stored =
-                    if (location.id ==
+                    if (entity.id ==
                         0L
                     ) {
                         null
                     } else {
-                        queries.selectById(location.id, ::toDomainFull).executeAsOneOrNull()
+                        queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
                     }
                 if (stored != null) {
-                    queries.update(location.name, location.description, location.parentId, location.id)
-                    writeCover(location.id, location.cover, stored.cover)
-                    location.id
+                    queries.update(entity.name, entity.description, entity.parentId, entity.id)
+                    writeCover(entity.id, entity.cover, stored.cover)
+                    entity.id
                 } else {
-                    insert(location)
+                    insert(entity)
                 }
             }
         }

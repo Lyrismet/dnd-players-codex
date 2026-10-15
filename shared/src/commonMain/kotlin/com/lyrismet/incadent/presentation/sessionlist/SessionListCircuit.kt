@@ -3,8 +3,7 @@ package com.lyrismet.incadent.presentation.sessionlist
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.CampaignRepository
-import com.lyrismet.incadent.domain.repository.MentionRepositories
-import com.lyrismet.incadent.domain.repository.PartyRepository
+import com.lyrismet.incadent.domain.repository.CodexRepositories
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.domain.repository.TagRepository
@@ -29,8 +28,7 @@ import dev.zacsweers.metro.Provides
 class SessionListPresenterFactory(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
-    private val partyRepository: PartyRepository,
-    private val mentionRepositories: MentionRepositories,
+    private val codexRepositories: CodexRepositories,
     private val tagRepository: TagRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
@@ -47,8 +45,7 @@ class SessionListPresenterFactory(
                     navigator,
                     sessionNoteRepository,
                     sessionEntryRepository,
-                    partyRepository,
-                    mentionRepositories,
+                    codexRepositories,
                     tagRepository,
                     undoController,
                     appPreferencesRepository,

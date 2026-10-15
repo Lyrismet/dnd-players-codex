@@ -1,22 +1,18 @@
 package com.lyrismet.incadent.presentation.codex
 
+import com.lyrismet.incadent.core.entitysummary.writesCampaignData
+
 /** true for the events that write campaign data, an archived campaign drops these in the presenter too */
 internal fun CodexEvent.writesCampaignData(): Boolean =
     when (this) {
+        is CodexEvent.EntitySheet -> event.writesCampaignData()
         is CodexEvent.TabSelected,
         is CodexEvent.SearchQueryChanged,
         is CodexEvent.GroupBySelected,
-        is CodexEvent.EntityClicked,
-        is CodexEvent.RelatedNoteClicked,
         is CodexEvent.PlaceSectionToggled,
-        CodexEvent.SheetDismissed,
         CodexEvent.UndoClicked,
         CodexEvent.EntityDeleteCancelled,
         -> false
-        is CodexEvent.NpcStatusSelected,
-        is CodexEvent.NpcLifeSelected,
-        is CodexEvent.PartyPresenceSelected,
-        is CodexEvent.QuestStatusSelected,
         is CodexEvent.QuickEdit,
         is CodexEvent.QuickPlaceCreated,
         CodexEvent.AddEntryClicked,

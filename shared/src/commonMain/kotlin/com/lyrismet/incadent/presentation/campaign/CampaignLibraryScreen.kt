@@ -3,8 +3,8 @@ package com.lyrismet.incadent.presentation.campaign
 import com.lyrismet.incadent.core.campaign.CampaignLibraryState
 import com.lyrismet.incadent.core.campaign.CampaignSheetEvent
 import com.lyrismet.incadent.core.campaign.CampaignSheetState
+import com.lyrismet.incadent.core.language.LanguageSheetEvent
 import com.lyrismet.incadent.domain.model.AppLanguage
-import com.lyrismet.incadent.presentation.settings.LanguageSheetEvent
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen

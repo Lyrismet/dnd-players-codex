@@ -31,6 +31,9 @@ WHERE id = ?;
 deleteById:
 DELETE FROM session_note WHERE id = ?;
 
+reopen:
+UPDATE session_note SET ended_at = NULL WHERE id = ?;
+
 endOtherLive:
 UPDATE session_note
 SET ended_at = ?

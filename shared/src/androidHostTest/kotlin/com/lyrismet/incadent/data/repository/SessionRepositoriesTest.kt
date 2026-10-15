@@ -50,7 +50,7 @@ class SessionRepositoriesTest {
         }
 
     @Test
-    fun `ending other live sessions leaves the chosen one and other campaigns alone`() =
+    fun `making a session the only live one ends the others and leaves other campaigns alone`() =
         runTest {
             val old = notes.upsert(note("Старая"))
             val fresh = notes.upsert(note("Новая"))
@@ -59,11 +59,23 @@ class SessionRepositoriesTest {
             val foreign = notes.upsert(note("Другая кампания"))
             db.current.open(TestDatabase.FIRST_CAMPAIGN)
 
-            notes.endOtherLiveSessions(exceptId = fresh, endedAt = moment)
+            notes.makeOnlyLive(fresh, moment)
 
             assertTrue(checkNotNull(notes.getById(old)).endedAt != null)
             assertTrue(checkNotNull(notes.getById(fresh)).isLive)
             assertTrue(checkNotNull(notes.getById(foreign)).isLive)
+        }
+
+    @Test
+    fun `resuming an ended session reopens it and ends the live one`() =
+        runTest {
+            val ended = notes.upsert(SessionNote(0, "Закончена", moment, endedAt = moment))
+            val live = notes.upsert(note("Идёт"))
+
+            notes.makeOnlyLive(ended, moment)
+
+            assertTrue(checkNotNull(notes.getById(ended)).isLive)
+            assertTrue(!checkNotNull(notes.getById(live)).isLive)
         }
 
     @Test

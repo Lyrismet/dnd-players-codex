@@ -11,9 +11,11 @@ import com.lyrismet.incadent.core.campaign.rememberCampaignSheetHost
 import com.lyrismet.incadent.core.designsystem.component.toChipItem
 import com.lyrismet.incadent.core.entitysummary.EntityRef
 import com.lyrismet.incadent.core.entitysummary.EntitySheetInteractions
+import com.lyrismet.incadent.core.entitysummary.onEvent
 import com.lyrismet.incadent.core.entitysummary.rememberFullPhoto
 import com.lyrismet.incadent.core.entitysummary.selectedEntitySummary
 import com.lyrismet.incadent.core.entitysummary.withFullPhoto
+import com.lyrismet.incadent.core.entitysummary.writesCampaignData
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.format.chronologicalIndex
 import com.lyrismet.incadent.core.format.joinWithDot
@@ -26,6 +28,7 @@ import com.lyrismet.incadent.core.mention.mentionEntitiesFrom
 import com.lyrismet.incadent.core.mention.mentionsIn
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
+import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.CampaignStatus
@@ -35,12 +38,12 @@ import com.lyrismet.incadent.domain.model.SessionNumbering
 import com.lyrismet.incadent.domain.model.SwipeHintState
 import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
 import com.lyrismet.incadent.domain.repository.CampaignRepository
-import com.lyrismet.incadent.domain.repository.MentionRepositories
-import com.lyrismet.incadent.domain.repository.PartyRepository
+import com.lyrismet.incadent.domain.repository.CodexRepositories
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.domain.repository.TagRepository
 import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
+import com.lyrismet.incadent.presentation.sessiondetail.sessionEntryOpener
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
@@ -66,8 +69,7 @@ class SessionListPresenter(
     private val navigator: Navigator,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
-    private val partyRepository: PartyRepository,
-    private val mentionRepositories: MentionRepositories,
+    private val codexRepositories: CodexRepositories,
     private val tagRepository: TagRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
@@ -79,10 +81,10 @@ class SessionListPresenter(
     override fun present(): SessionListState {
         val sessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
         val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
-        val npcs by mentionRepositories.npcRepository.observeAll().collectAsState(initial = emptyList())
-        val locations by mentionRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
-        val quests by mentionRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
-        val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
+        val npcs by codexRepositories.npcRepository.observeAll().collectAsState(initial = emptyList())
+        val locations by codexRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
+        val quests by codexRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
+        val parties by codexRepositories.partyRepository.observeAll().collectAsState(initial = emptyList())
         val tagsBySession by tagRepository.observeAllSessionTags().collectAsState(initial = emptyMap())
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
@@ -91,12 +93,12 @@ class SessionListPresenter(
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
         val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
         val candidates = MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties))
-        val toast = remember { mutableStateOf<SessionListToast?>(null) }
+        val toast = remember { mutableStateOf<ToastMessage?>(null) }
         toast.autoDismiss()
         val failedText = stringResource(Res.string.error_action_failed)
-        val scope = rememberGuardedScope { toast.value = SessionListToast(failedText) }
+        val scope = rememberGuardedScope { toast.value = ToastMessage(failedText) }
         val campaignHost =
-            rememberCampaignSheetHost(campaignRepository) { text -> toast.value = SessionListToast(text) }
+            rememberCampaignSheetHost(campaignRepository) { text -> toast.value = ToastMessage(text) }
         val campaignArchived = campaignHost.current?.status == CampaignStatus.ARCHIVED
         val entriesBySession = allEntries.groupBy { it.sessionNoteId }
 
@@ -119,9 +121,8 @@ class SessionListPresenter(
         val entitySheet =
             EntitySheetInteractions(
                 selectedEntityRef,
-                mentionRepositories,
-                partyRepository,
-                navigator,
+                codexRepositories,
+                navigator.sessionEntryOpener(),
                 entityHistory,
             )
         val selectedSummary =
@@ -137,12 +138,7 @@ class SessionListPresenter(
                 parties,
             )
         val fullPhoto =
-            rememberFullPhoto(
-                selectedSummary,
-                mentionRepositories.npcRepository,
-                partyRepository,
-                mentionRepositories.locationRepository,
-            )
+            rememberFullPhoto(selectedSummary, codexRepositories)
         val selectedEntity = selectedSummary?.withFullPhoto(fullPhoto)
 
         val archiveItems = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems
@@ -240,8 +236,7 @@ class SessionListPresenter(
                             sessionNoteRepository.upsert(
                                 SessionNote(id = 0, title = newSessionTitle, sessionDate = now, endedAt = null),
                             )
-                        // only one session may be live at a time - starting a new one closes out the old one
-                        sessionNoteRepository.endOtherLiveSessions(exceptId = id, endedAt = now)
+                        sessionNoteRepository.makeOnlyLive(id, now)
                         navigator.goTo(SessionDetailScreen(id))
                     }
                 }
@@ -249,16 +244,8 @@ class SessionListPresenter(
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
             is SessionListEvent.DeleteSessionClicked ->
                 if (!campaignArchived) onDeleteSessionClicked(event.id, sessions, undoDeletedTitle, scope, numbering)
-            is SessionListEvent.MentionChipClicked -> entitySheet.onEntityClicked(event.ref)
-            is SessionListEvent.NpcStatusSelected ->
-                entitySheet.onNpcStatusSelected(scope, event.npcId, event.status)
-            is SessionListEvent.NpcLifeSelected ->
-                entitySheet.onNpcLifeSelected(scope, event.npcId, event.lifeState)
-            is SessionListEvent.QuestStatusSelected ->
-                entitySheet.onQuestStatusSelected(scope, event.questId, event.status)
-            is SessionListEvent.RelatedNoteClicked ->
-                entitySheet.onRelatedNoteClicked(event.sessionNoteId, event.entryId)
-            SessionListEvent.SheetDismissed -> entitySheet.onDismissed()
+            is SessionListEvent.EntitySheet ->
+                if (!campaignArchived || !event.event.writesCampaignData()) entitySheet.onEvent(scope, event.event)
             is SessionListEvent.CampaignSheet -> onCampaignEvent(event.event)
         }
     }

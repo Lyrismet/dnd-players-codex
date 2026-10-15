@@ -16,10 +16,9 @@ import com.lyrismet.incadent.core.mention.relinkMentionIn
 import com.lyrismet.incadent.core.mention.unlinkMentionIn
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.DeletedMention
-import com.lyrismet.incadent.domain.model.DeletedMentionType
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.SessionEntry
 import com.lyrismet.incadent.domain.repository.SessionEntryRepository
-import com.lyrismet.incadent.presentation.codex.CodexEntryType
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.auto_mention_linked_title
 import dndplayerscodex.shared.generated.resources.deleted_mention_linked_title
@@ -31,7 +30,7 @@ import org.jetbrains.compose.resources.stringResource
 /** the "?" tag sheet's content - absent (null on [SessionDetailState]) while it is closed */
 data class DeletedMentionSheetState(
     val name: String,
-    val type: DeletedMentionType,
+    val type: EntityKind,
     val notes: Int,
     val sessions: Int,
     // true while the "link to another record" list replaces the three actions
@@ -47,7 +46,7 @@ data class DeletedMentionLinkOption(
     val name: String,
     val glyph: MentionGlyph,
     val color: StatusColor,
-    val type: DeletedMentionType,
+    val type: EntityKind,
 )
 
 /** one record a deleted mention can be linked to - the select option and what picking it writes into the notes */
@@ -144,14 +143,6 @@ internal class SessionMentionActions(
 internal fun mentionLinkTargets(entities: List<MentionEntity>): List<MentionLinkTarget> =
     entities.map { MentionLinkTarget(it.dedupeKey(), it) }
 
-internal fun DeletedMentionType.toEntryType(): CodexEntryType =
-    when (this) {
-        DeletedMentionType.NPC -> CodexEntryType.NPC
-        DeletedMentionType.PARTY -> CodexEntryType.PARTY
-        DeletedMentionType.QUEST -> CodexEntryType.QUEST
-        DeletedMentionType.LOCATION -> CodexEntryType.LOCATION
-    }
-
 /** the data the mention events read, with the texts of their undo toasts resolved from resources */
 @Composable
 internal fun mentionEventData(
@@ -182,15 +173,6 @@ internal fun MentionEventData.linkOptionsFor(query: String): List<DeletedMention
                     .contains(needle)
         }.map { target ->
             val chip = target.entity.toChipItem()
-            DeletedMentionLinkOption(target.id, chip.label, chip.glyph, chip.color, target.entity.mentionType())
+            DeletedMentionLinkOption(target.id, chip.label, chip.glyph, chip.color, target.entity.ref.type)
         }
 }
-
-private fun MentionEntity.mentionType(): DeletedMentionType =
-    when (this) {
-        is MentionEntity.NpcMention -> DeletedMentionType.NPC
-        is MentionEntity.PartyMention -> DeletedMentionType.PARTY
-        is MentionEntity.LocationMention -> DeletedMentionType.LOCATION
-        is MentionEntity.QuestMention -> DeletedMentionType.QUEST
-        is MentionEntity.DeletedMention -> type
-    }

@@ -6,7 +6,7 @@ import com.lyrismet.incadent.core.mention.MentionEntity
 import com.lyrismet.incadent.core.mention.MentionHits
 import com.lyrismet.incadent.core.mention.MentionIndex
 import com.lyrismet.incadent.core.mention.countMentionHits
-import com.lyrismet.incadent.domain.model.DeletedMentionType
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.PartyMember
@@ -49,7 +49,7 @@ internal class CodexDeletionPlanner(
     fun planFor(
         ref: EntityRef,
         records: CodexRecords,
-        labels: Map<CodexEntryType, String>,
+        labels: Map<EntityKind, String>,
     ): CodexDeletionPlan? {
         val base = basePlan(ref, records, labels)
         val mentioned = mentionedAs(ref, records)
@@ -75,7 +75,7 @@ internal class CodexDeletionPlanner(
     private fun basePlan(
         ref: EntityRef,
         records: CodexRecords,
-        labels: Map<CodexEntryType, String>,
+        labels: Map<EntityKind, String>,
     ): CodexDeletionPlan? =
         when (ref) {
             is EntityRef.Party -> partyPlan(ref.id, records, labels)
@@ -87,13 +87,13 @@ internal class CodexDeletionPlanner(
     private fun partyPlan(
         id: Long,
         records: CodexRecords,
-        labels: Map<CodexEntryType, String>,
+        labels: Map<EntityKind, String>,
     ): CodexDeletionPlan? =
         records.parties.find { it.id == id }?.let { member ->
             // the list row carries only the thumbnail, so the stored record with its photo is read before the delete
             var stored: PartyMember? = null
             CodexDeletionPlan(
-                subtitle = "${labels.getValue(CodexEntryType.PARTY)} · ${member.name}",
+                subtitle = "${labels.getValue(EntityKind.PARTY)} · ${member.name}",
                 delete = {
                     stored = partyRepository.getById(id)
                     partyRepository.delete(id)
@@ -105,13 +105,13 @@ internal class CodexDeletionPlanner(
     private fun npcPlan(
         id: Long,
         records: CodexRecords,
-        labels: Map<CodexEntryType, String>,
+        labels: Map<EntityKind, String>,
     ): CodexDeletionPlan? =
         records.npcs.find { it.id == id }?.let { npc ->
             val givenQuestIds = records.quests.filter { it.givenByNpcId == id }.map { it.id }
             var stored: Npc? = null
             CodexDeletionPlan(
-                subtitle = "${labels.getValue(CodexEntryType.NPC)} · ${npc.name}",
+                subtitle = "${labels.getValue(EntityKind.NPC)} · ${npc.name}",
                 delete = {
                     stored = npcRepository.getById(id)
                     npcRepository.delete(id)
@@ -130,11 +130,11 @@ internal class CodexDeletionPlanner(
     private fun questPlan(
         id: Long,
         records: CodexRecords,
-        labels: Map<CodexEntryType, String>,
+        labels: Map<EntityKind, String>,
     ): CodexDeletionPlan? =
         records.quests.find { it.id == id }?.let { quest ->
             CodexDeletionPlan(
-                subtitle = "${labels.getValue(CodexEntryType.QUEST)} · ${quest.title}",
+                subtitle = "${labels.getValue(EntityKind.QUEST)} · ${quest.title}",
                 delete = { questRepository.delete(id) },
                 restore = { questRepository.upsert(quest) },
             )
@@ -143,7 +143,7 @@ internal class CodexDeletionPlanner(
     private fun locationPlan(
         id: Long,
         records: CodexRecords,
-        labels: Map<CodexEntryType, String>,
+        labels: Map<EntityKind, String>,
     ): CodexDeletionPlan? =
         records.locations.find { it.id == id }?.let { location ->
             val npcIdsHere = records.npcs.filter { id in it.locationIds }.map { it.id }
@@ -151,7 +151,7 @@ internal class CodexDeletionPlanner(
             val questIdsHere = records.quests.filter { it.locationId == id }.map { it.id }
             var stored: Location? = null
             CodexDeletionPlan(
-                subtitle = "${labels.getValue(CodexEntryType.LOCATION)} · ${location.name}",
+                subtitle = "${labels.getValue(EntityKind.LOCATION)} · ${location.name}",
                 delete = {
                     stored = locationRepository.getById(id)
                     locationRepository.delete(id)
@@ -180,7 +180,7 @@ internal class CodexDeletionPlanner(
 
 private class MentionedRecord(
     val entity: MentionEntity,
-    val type: DeletedMentionType,
+    val type: EntityKind,
 )
 
 private fun mentionedAs(
@@ -190,21 +190,21 @@ private fun mentionedAs(
     when (ref) {
         is EntityRef.Party ->
             records.parties.find { it.id == ref.id }?.let {
-                MentionedRecord(MentionEntity.PartyMention(it.id, it.name), DeletedMentionType.PARTY)
+                MentionedRecord(MentionEntity.PartyMention(it.id, it.name), EntityKind.PARTY)
             }
         is EntityRef.Npc ->
             records.npcs.find { it.id == ref.id }?.let {
                 MentionedRecord(
                     MentionEntity.NpcMention(it.id, it.name, it.status, it.lifeState),
-                    DeletedMentionType.NPC,
+                    EntityKind.NPC,
                 )
             }
         is EntityRef.Quest ->
             records.quests.find { it.id == ref.id }?.let {
-                MentionedRecord(MentionEntity.QuestMention(it.id, it.title, it.status), DeletedMentionType.QUEST)
+                MentionedRecord(MentionEntity.QuestMention(it.id, it.title, it.status), EntityKind.QUEST)
             }
         is EntityRef.Location ->
             records.locations.find { it.id == ref.id }?.let {
-                MentionedRecord(MentionEntity.LocationMention(it.id, it.name), DeletedMentionType.LOCATION)
+                MentionedRecord(MentionEntity.LocationMention(it.id, it.name), EntityKind.LOCATION)
             }
     }

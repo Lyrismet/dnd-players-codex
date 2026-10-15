@@ -8,6 +8,7 @@ import com.lyrismet.incadent.core.entitysummary.FakeQuestRepository
 import com.lyrismet.incadent.core.mention.MentionEntity
 import com.lyrismet.incadent.core.mention.MentionIndex
 import com.lyrismet.incadent.core.mention.token
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.NpcLifeState
 import com.lyrismet.incadent.domain.model.NpcStatus
@@ -20,7 +21,7 @@ import kotlin.test.assertNull
 
 private val gromm = Npc(1, "Громм", NpcStatus.FRIEND, NpcLifeState.ALIVE, "", emptyList(), "", "")
 private val grommMention = MentionEntity.NpcMention(1, "Громм", NpcStatus.FRIEND, NpcLifeState.ALIVE)
-private val labels = CodexEntryType.entries.associateWith { it.name }
+private val labels = EntityKind.entries.associateWith { it.name }
 
 private fun entry(
     id: Long,

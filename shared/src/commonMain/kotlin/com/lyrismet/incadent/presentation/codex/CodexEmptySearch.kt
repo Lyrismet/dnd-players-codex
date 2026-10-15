@@ -1,11 +1,13 @@
 package com.lyrismet.incadent.presentation.codex
 
+import com.lyrismet.incadent.domain.model.EntityKind
+
 // a shorter trimmed query is more likely a typo than a name worth creating an entry for
 internal const val CREATE_FROM_SEARCH_MIN_LENGTH = 3
 
 /** a name typed into an empty search, with the entry type of the tab the search ran on */
 internal data class CodexSearchCreate(
-    val type: CodexEntryType,
+    val type: EntityKind,
     val name: String,
 )
 
@@ -66,10 +68,10 @@ internal fun otherSectionMatches(
     }
 
 // mirrors the mockup's openNew() - "Все" falls back to NPC, every other tab keeps its own type
-internal fun CodexTab.toEntryType(): CodexEntryType =
+internal fun CodexTab.toEntryType(): EntityKind =
     when (this) {
-        CodexTab.PARTY -> CodexEntryType.PARTY
-        CodexTab.QUEST -> CodexEntryType.QUEST
-        CodexTab.LOCATION -> CodexEntryType.LOCATION
-        CodexTab.ALL, CodexTab.NPC -> CodexEntryType.NPC
+        CodexTab.PARTY -> EntityKind.PARTY
+        CodexTab.QUEST -> EntityKind.QUEST
+        CodexTab.LOCATION -> EntityKind.LOCATION
+        CodexTab.ALL, CodexTab.NPC -> EntityKind.NPC
     }

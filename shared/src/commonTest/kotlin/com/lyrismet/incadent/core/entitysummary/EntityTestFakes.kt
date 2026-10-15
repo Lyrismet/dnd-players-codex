@@ -4,7 +4,6 @@ import com.lyrismet.incadent.domain.model.Location
 import com.lyrismet.incadent.domain.model.Npc
 import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.Quest
-import com.lyrismet.incadent.domain.model.QuestStatus
 import com.lyrismet.incadent.domain.repository.LocationRepository
 import com.lyrismet.incadent.domain.repository.NpcRepository
 import com.lyrismet.incadent.domain.repository.PartyRepository
@@ -54,7 +53,7 @@ internal class FakeNpcRepository(
 
     override suspend fun getById(id: Long): Npc? = stored(id)
 
-    override suspend fun upsert(npc: Npc): Long = put(npc)
+    override suspend fun upsert(entity: Npc): Long = put(entity)
 
     override suspend fun delete(id: Long) = remove(id)
 }
@@ -67,7 +66,7 @@ internal class FakePartyRepository(
 
     override suspend fun getById(id: Long): PartyMember? = stored(id)
 
-    override suspend fun upsert(member: PartyMember): Long = put(member)
+    override suspend fun upsert(entity: PartyMember): Long = put(entity)
 
     override suspend fun delete(id: Long) = remove(id)
 }
@@ -80,7 +79,7 @@ internal class FakeLocationRepository(
 
     override suspend fun getById(id: Long): Location? = stored(id)
 
-    override suspend fun upsert(location: Location): Long = put(location)
+    override suspend fun upsert(entity: Location): Long = put(entity)
 
     override suspend fun delete(id: Long) = remove(id)
 }
@@ -91,12 +90,9 @@ internal class FakeQuestRepository(
     QuestRepository {
     override fun observeAll(): Flow<List<Quest>> = observe()
 
-    override fun observeByStatus(status: QuestStatus): Flow<List<Quest>> =
-        observe().map { quests -> quests.filter { it.status == status } }
-
     override suspend fun getById(id: Long): Quest? = stored(id)
 
-    override suspend fun upsert(quest: Quest): Long = put(quest)
+    override suspend fun upsert(entity: Quest): Long = put(entity)
 
     override suspend fun delete(id: Long) = remove(id)
 }

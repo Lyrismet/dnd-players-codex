@@ -19,10 +19,7 @@ import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
-import com.lyrismet.incadent.domain.repository.MentionRepositories
-import com.lyrismet.incadent.domain.repository.PartyRepository
-import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
-import com.slack.circuit.runtime.Navigator
+import com.lyrismet.incadent.domain.repository.CodexRepositories
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -34,13 +31,14 @@ private val entityWriteLock = Mutex()
 /** the tap/dismiss/change-value/related-note flow every entity-sheet host reuses - [onChanged] feeds the undo toast */
 class EntitySheetInteractions(
     private val selectedRef: MutableState<EntityRef?>,
-    repositories: MentionRepositories,
-    private val partyRepository: PartyRepository,
-    private val navigator: Navigator,
+    repositories: CodexRepositories,
+    // opens a session at one of its notes - the host decides how, so this stays free of any screen
+    private val openSession: (sessionNoteId: Long, entryId: Long) -> Unit,
     // the entities left open underneath, newest last - the host keeps it alive across recompositions
     private val history: MutableState<List<EntityRef>> = mutableStateOf(emptyList()),
     private val onChanged: (EntityChange) -> Unit = {},
 ) {
+    private val partyRepository = repositories.partyRepository
     private val npcRepository = repositories.npcRepository
     private val questRepository = repositories.questRepository
     private val locationRepository = repositories.locationRepository
@@ -196,7 +194,7 @@ class EntitySheetInteractions(
     ) {
         selectedRef.value = null
         history.value = emptyList()
-        navigator.goTo(SessionDetailScreen(sessionNoteId, focusEntryId = entryId))
+        openSession(sessionNoteId, entryId)
     }
 
     // a no-op change (same value, unknown field, missing record) writes nothing and offers no undo

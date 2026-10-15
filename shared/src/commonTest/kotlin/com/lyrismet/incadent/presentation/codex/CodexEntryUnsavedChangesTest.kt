@@ -1,11 +1,12 @@
 package com.lyrismet.incadent.presentation.codex
 
+import com.lyrismet.incadent.domain.model.EntityKind
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CodexEntryUnsavedChangesTest {
-    private val baseline = CodexEntryFormFields(editingRef = null, type = CodexEntryType.NPC, name = "Рагнар")
+    private val baseline = CodexEntryFormFields(editingRef = null, type = EntityKind.NPC, name = "Рагнар")
 
     @Test
     fun `no baseline means nothing to lose`() {

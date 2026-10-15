@@ -37,11 +37,11 @@ import com.lyrismet.incadent.core.designsystem.component.HeaderDivider
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.language.GlobeIcon
+import com.lyrismet.incadent.core.language.LanguageSheet
+import com.lyrismet.incadent.core.language.LanguageSheetEvent
+import com.lyrismet.incadent.core.language.label
 import com.lyrismet.incadent.domain.model.AppLanguage
-import com.lyrismet.incadent.presentation.settings.GlobeIcon
-import com.lyrismet.incadent.presentation.settings.LanguageSheet
-import com.lyrismet.incadent.presentation.settings.LanguageSheetEvent
-import com.lyrismet.incadent.presentation.settings.label
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.campaign_library_title
 import dndplayerscodex.shared.generated.resources.campaign_new

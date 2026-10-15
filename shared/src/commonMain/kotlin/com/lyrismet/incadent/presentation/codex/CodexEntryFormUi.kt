@@ -34,6 +34,7 @@ import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.PartyStatRanges
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_discard_back
@@ -140,10 +141,10 @@ private fun CodexEntryFormContent(
             CodexEntryTypeSwitch(selected = form.type, onSelected = { eventSink(CodexEvent.EntryTypeChanged(it)) })
         }
         when (form.type) {
-            CodexEntryType.PARTY -> PartyEntryFields(form, eventSink)
-            CodexEntryType.NPC -> NpcEntryFields(form, eventSink)
-            CodexEntryType.QUEST -> QuestEntryFields(form, eventSink)
-            CodexEntryType.LOCATION -> LocationEntryFields(form, eventSink)
+            EntityKind.PARTY -> PartyEntryFields(form, eventSink)
+            EntityKind.NPC -> NpcEntryFields(form, eventSink)
+            EntityKind.QUEST -> QuestEntryFields(form, eventSink)
+            EntityKind.LOCATION -> LocationEntryFields(form, eventSink)
         }
         Text(
             stringResource(Res.string.codex_entry_required_note),
@@ -373,16 +374,16 @@ private fun LocationEntryFields(
 
 @Composable
 private fun CodexEntryTypeSwitch(
-    selected: CodexEntryType,
-    onSelected: (CodexEntryType) -> Unit,
+    selected: EntityKind,
+    onSelected: (EntityKind) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val options =
         listOf(
-            CodexEntryType.PARTY to stringResource(Res.string.codex_entry_type_party),
-            CodexEntryType.NPC to stringResource(Res.string.codex_entry_type_npc),
-            CodexEntryType.QUEST to stringResource(Res.string.codex_entry_type_quest),
-            CodexEntryType.LOCATION to stringResource(Res.string.codex_entry_type_location),
+            EntityKind.PARTY to stringResource(Res.string.codex_entry_type_party),
+            EntityKind.NPC to stringResource(Res.string.codex_entry_type_npc),
+            EntityKind.QUEST to stringResource(Res.string.codex_entry_type_quest),
+            EntityKind.LOCATION to stringResource(Res.string.codex_entry_type_location),
         )
     SegmentedControl(
         items = options,

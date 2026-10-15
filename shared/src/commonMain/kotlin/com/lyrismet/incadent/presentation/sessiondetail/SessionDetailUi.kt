@@ -46,8 +46,9 @@ import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.EntitySummarySheetContent
 import com.lyrismet.incadent.core.designsystem.component.OrnamentedEmptyState
 import com.lyrismet.incadent.core.designsystem.component.PhraseSnippetsSheet
+import com.lyrismet.incadent.core.entitysummary.EntitySheetEvent
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
-import com.lyrismet.incadent.core.entitysummary.EntitySummarySheetActions
+import com.lyrismet.incadent.core.entitysummary.entitySheetActions
 import com.lyrismet.incadent.presentation.codex.CodexEntryFormSheet
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_empty_feed
@@ -143,7 +144,7 @@ private fun SessionFeed(
                             state.eventSink(SessionDetailEvent.DeleteEntryClicked(feedItem.entry.id))
                         },
                         onMentionClick = { ref ->
-                            state.eventSink(SessionDetailEvent.MentionChipClicked(ref))
+                            state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.EntityClicked(ref)))
                         },
                         mentionActions = entryMentionActions(feedItem.entry.id, state.eventSink),
                         modifier = Modifier.animateItem(),
@@ -179,26 +180,11 @@ private fun SessionDetailEntitySheet(
     state: SessionDetailState,
     entity: EntitySummaryItem,
 ) {
-    AppBottomSheet(onDismissRequest = { state.eventSink(SessionDetailEvent.SheetDismissed) }) {
+    AppBottomSheet(onDismissRequest = { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) }) {
         EntitySummarySheetContent(
             item = entity,
-            actions =
-                EntitySummarySheetActions(
-                    onEntityRefClicked = { ref -> state.eventSink(SessionDetailEvent.MentionChipClicked(ref)) },
-                    onNpcStatusSelected = { id, status ->
-                        state.eventSink(SessionDetailEvent.NpcStatusSelected(id, status))
-                    },
-                    onNpcLifeSelected = { id, life ->
-                        state.eventSink(SessionDetailEvent.NpcLifeSelected(id, life))
-                    },
-                    onQuestStatusSelected = { id, status ->
-                        state.eventSink(SessionDetailEvent.QuestStatusSelected(id, status))
-                    },
-                    onRelatedNoteClicked = { id, entryId ->
-                        state.eventSink(SessionDetailEvent.RelatedNoteClicked(id, entryId))
-                    },
-                ),
-            onClose = { state.eventSink(SessionDetailEvent.SheetDismissed) },
+            actions = entitySheetActions { state.eventSink(SessionDetailEvent.EntitySheet(it)) },
+            onClose = { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
         )
     }
 }

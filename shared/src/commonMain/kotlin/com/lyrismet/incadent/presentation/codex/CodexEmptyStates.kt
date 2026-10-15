@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.presentation.codex
 
 import androidx.compose.runtime.Composable
+import com.lyrismet.incadent.domain.model.EntityKind
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_empty_all_button
 import dndplayerscodex.shared.generated.resources.codex_empty_all_text
@@ -147,10 +148,10 @@ private fun CodexTab.blankStrings(): BlankStrings =
             )
     }
 
-private fun CodexEntryType.searchCreateButton(): StringResource =
+private fun EntityKind.searchCreateButton(): StringResource =
     when (this) {
-        CodexEntryType.PARTY -> Res.string.codex_search_create_party
-        CodexEntryType.NPC -> Res.string.codex_search_create_npc
-        CodexEntryType.QUEST -> Res.string.codex_search_create_quest
-        CodexEntryType.LOCATION -> Res.string.codex_search_create_location
+        EntityKind.PARTY -> Res.string.codex_search_create_party
+        EntityKind.NPC -> Res.string.codex_search_create_npc
+        EntityKind.QUEST -> Res.string.codex_search_create_quest
+        EntityKind.LOCATION -> Res.string.codex_search_create_location
     }

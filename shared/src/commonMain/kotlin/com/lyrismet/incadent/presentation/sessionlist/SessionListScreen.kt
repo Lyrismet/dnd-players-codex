@@ -3,12 +3,10 @@ package com.lyrismet.incadent.presentation.sessionlist
 import com.lyrismet.incadent.core.campaign.CampaignSheetEvent
 import com.lyrismet.incadent.core.campaign.CampaignSheetState
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
-import com.lyrismet.incadent.core.entitysummary.EntityRef
+import com.lyrismet.incadent.core.entitysummary.EntitySheetEvent
 import com.lyrismet.incadent.core.entitysummary.EntitySummaryItem
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
-import com.lyrismet.incadent.domain.model.NpcLifeState
-import com.lyrismet.incadent.domain.model.NpcStatus
-import com.lyrismet.incadent.domain.model.QuestStatus
+import com.lyrismet.incadent.core.toast.ToastMessage
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -26,16 +24,11 @@ data class SessionListState(
     val liveSession: LiveSessionItem? = null,
     val sessions: List<SessionListItem> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
-    val toast: SessionListToast? = null,
+    val toast: ToastMessage? = null,
     // the archive row the one-time swipe-to-delete hint peeks on - always delete-only, sessions have no swipe-edit
     val swipeHintTarget: SwipeHintTarget<Long>? = null,
     val eventSink: (SessionListEvent) -> Unit = {},
 ) : CircuitUiState
-
-/** compared by identity, so repeating the same message restarts its timer */
-class SessionListToast(
-    val text: String,
-)
 
 /** pre-formatted for direct rendering - the Ui never touches a domain model or does formatting itself */
 data class SessionListItem(
@@ -74,31 +67,10 @@ sealed interface SessionListEvent : CircuitUiEvent {
         val id: Long,
     ) : SessionListEvent
 
-    data class MentionChipClicked(
-        val ref: EntityRef,
+    /** a tap or change on the entity card that opens over this screen */
+    data class EntitySheet(
+        val event: EntitySheetEvent,
     ) : SessionListEvent
-
-    data class NpcStatusSelected(
-        val npcId: Long,
-        val status: NpcStatus,
-    ) : SessionListEvent
-
-    data class NpcLifeSelected(
-        val npcId: Long,
-        val lifeState: NpcLifeState,
-    ) : SessionListEvent
-
-    data class QuestStatusSelected(
-        val questId: Long,
-        val status: QuestStatus,
-    ) : SessionListEvent
-
-    data class RelatedNoteClicked(
-        val sessionNoteId: Long,
-        val entryId: Long,
-    ) : SessionListEvent
-
-    data object SheetDismissed : SessionListEvent
 
     data class CampaignSheet(
         val event: CampaignSheetEvent,

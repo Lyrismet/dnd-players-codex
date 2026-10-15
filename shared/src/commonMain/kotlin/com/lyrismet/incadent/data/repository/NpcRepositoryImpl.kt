@@ -41,27 +41,34 @@ class NpcRepositoryImpl(
         }
 
     // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
-    override suspend fun upsert(npc: Npc): Long =
+    override suspend fun upsert(entity: Npc): Long =
         withContext(Dispatchers.Default) {
             database.transactionWithResult {
-                val stored = if (npc.id == 0L) null else queries.selectById(npc.id, ::toDomainFull).executeAsOneOrNull()
+                val stored =
+                    if (entity.id ==
+                        0L
+                    ) {
+                        null
+                    } else {
+                        queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
+                    }
                 val id =
                     if (stored != null) {
                         queries.update(
-                            npc.name,
-                            npc.status,
-                            npc.description,
-                            npc.race,
-                            npc.faction,
-                            npc.lifeState,
-                            npc.id,
+                            entity.name,
+                            entity.status,
+                            entity.description,
+                            entity.race,
+                            entity.faction,
+                            entity.lifeState,
+                            entity.id,
                         )
-                        writePortrait(npc.id, npc.portrait, stored.portrait)
-                        npc.id
+                        writePortrait(entity.id, entity.portrait, stored.portrait)
+                        entity.id
                     } else {
-                        insert(npc)
+                        insert(entity)
                     }
-                writeLocations(id, npc.locationIds)
+                writeLocations(id, entity.locationIds)
                 id
             }
         }

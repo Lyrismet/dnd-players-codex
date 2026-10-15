@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.presentation.codex
 
+import com.lyrismet.incadent.domain.model.EntityKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -13,16 +14,16 @@ class CodexEmptySearchTest {
 
     @Test
     fun `a trimmed query of the minimum length offers a create with the trimmed name`() {
-        assertEquals(CodexSearchCreate(CodexEntryType.NPC, "abc"), codexSearchCreate(CodexTab.NPC, "  abc "))
+        assertEquals(CodexSearchCreate(EntityKind.NPC, "abc"), codexSearchCreate(CodexTab.NPC, "  abc "))
     }
 
     @Test
     fun `the create type follows the tab and the all tab creates an npc`() {
-        assertEquals(CodexEntryType.NPC, codexSearchCreate(CodexTab.ALL, "Рагнар")?.type)
-        assertEquals(CodexEntryType.NPC, codexSearchCreate(CodexTab.NPC, "Рагнар")?.type)
-        assertEquals(CodexEntryType.QUEST, codexSearchCreate(CodexTab.QUEST, "Ключ")?.type)
-        assertEquals(CodexEntryType.LOCATION, codexSearchCreate(CodexTab.LOCATION, "Башня")?.type)
-        assertEquals(CodexEntryType.PARTY, codexSearchCreate(CodexTab.PARTY, "Бран")?.type)
+        assertEquals(EntityKind.NPC, codexSearchCreate(CodexTab.ALL, "Рагнар")?.type)
+        assertEquals(EntityKind.NPC, codexSearchCreate(CodexTab.NPC, "Рагнар")?.type)
+        assertEquals(EntityKind.QUEST, codexSearchCreate(CodexTab.QUEST, "Ключ")?.type)
+        assertEquals(EntityKind.LOCATION, codexSearchCreate(CodexTab.LOCATION, "Башня")?.type)
+        assertEquals(EntityKind.PARTY, codexSearchCreate(CodexTab.PARTY, "Бран")?.type)
     }
 
     @Test
@@ -40,7 +41,7 @@ class CodexEmptySearchTest {
     @Test
     fun `a search that finds nothing is a no-match state with the trimmed query`() {
         assertEquals(
-            CodexEmptyKind.NoMatch("Рагнар", CodexSearchCreate(CodexEntryType.NPC, "Рагнар")),
+            CodexEmptyKind.NoMatch("Рагнар", CodexSearchCreate(EntityKind.NPC, "Рагнар")),
             codexEmptyKind(CodexTab.ALL, "  Рагнар ", hasEntries = false),
         )
     }
@@ -53,7 +54,7 @@ class CodexEmptySearchTest {
     @Test
     fun `a no-match state carries the matches of the other tabs`() {
         assertEquals(
-            CodexEmptyKind.NoMatch("Рагнар", CodexSearchCreate(CodexEntryType.QUEST, "Рагнар"), otherMatches = 3),
+            CodexEmptyKind.NoMatch("Рагнар", CodexSearchCreate(EntityKind.QUEST, "Рагнар"), otherMatches = 3),
             codexEmptyKind(CodexTab.QUEST, "Рагнар", hasEntries = false, otherMatches = 3),
         )
     }

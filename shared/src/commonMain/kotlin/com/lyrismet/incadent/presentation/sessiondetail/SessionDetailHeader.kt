@@ -59,6 +59,7 @@ import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
+import com.lyrismet.incadent.core.entitysummary.EntitySheetEvent
 import com.lyrismet.incadent.core.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_back
@@ -271,7 +272,9 @@ private fun HeaderMentionsRow(
             MentionChip(
                 item = chip,
                 onClick =
-                    chip.entityRef?.let { ref -> { eventSink(SessionDetailEvent.MentionChipClicked(ref)) } }
+                    chip.entityRef?.let { ref ->
+                        { eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.EntityClicked(ref))) }
+                    }
                         ?: chip.deleted?.let { deleted ->
                             { eventSink(SessionDetailEvent.DeletedMentionClicked(deleted)) }
                         },

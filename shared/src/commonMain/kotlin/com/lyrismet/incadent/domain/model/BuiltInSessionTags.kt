@@ -1,6 +1,6 @@
-package com.lyrismet.incadent.core.tags
+package com.lyrismet.incadent.domain.model
 
-/** the 7 tags the catalog starts with (Players Codex v6.dc.html `TAGS`) - always shown first, in this order */
+/** the 7 tags the catalog starts with - always shown first, in this order, their russian names are the stored keys */
 val BUILT_IN_SESSION_TAGS =
     listOf(
         "Бой",

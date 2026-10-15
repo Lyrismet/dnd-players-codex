@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.core.tags
 
 import androidx.compose.runtime.Composable
+import com.lyrismet.incadent.domain.model.BUILT_IN_SESSION_TAGS
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_tag_builtin_combat
 import dndplayerscodex.shared.generated.resources.session_tag_builtin_intrigue

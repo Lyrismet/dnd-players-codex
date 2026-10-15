@@ -12,9 +12,7 @@ import com.lyrismet.incadent.domain.model.PartyMember
 import com.lyrismet.incadent.domain.model.PartyPresence
 import com.lyrismet.incadent.domain.model.Quest
 import com.lyrismet.incadent.domain.model.QuestStatus
-import com.lyrismet.incadent.domain.repository.MentionRepositories
-import com.lyrismet.incadent.presentation.sessiondetail.SessionDetailScreen
-import com.slack.circuit.runtime.screen.Screen
+import com.lyrismet.incadent.domain.repository.CodexRepositories
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -164,13 +162,13 @@ class EntitySheetInteractionsTest {
     @Test
     fun `following a related note closes the sheet and opens its session`() {
         val selected = mutableStateOf<EntityRef?>(EntityRef.Npc(id = 1))
-        val navigator = RecordingNavigator()
-        val interactions = interactions(selected = selected, navigator = navigator)
+        val opened = mutableListOf<Pair<Long, Long>>()
+        val interactions = interactions(selected = selected, openSession = { id, entry -> opened += id to entry })
 
         interactions.onRelatedNoteClicked(sessionNoteId = 7, entryId = 70)
 
         assertNull(selected.value)
-        assertEquals(listOf<Screen>(SessionDetailScreen(7, focusEntryId = 70)), navigator.goneTo)
+        assertEquals(listOf(7L to 70L), opened)
     }
 
     @Test
@@ -207,14 +205,13 @@ class EntitySheetInteractionsTest {
         quests: FakeQuestRepository = FakeQuestRepository(),
         party: FakePartyRepository = FakePartyRepository(),
         locations: FakeLocationRepository = FakeLocationRepository(),
-        navigator: RecordingNavigator = RecordingNavigator(),
+        openSession: (Long, Long) -> Unit = { _, _ -> },
         history: androidx.compose.runtime.MutableState<List<EntityRef>> = mutableStateOf(emptyList()),
         onChanged: (EntityChange) -> Unit = {},
     ) = EntitySheetInteractions(
         selected,
-        MentionRepositories(npcs, locations, quests),
-        party,
-        navigator,
+        CodexRepositories(party, npcs, quests, locations),
+        openSession,
         history,
         onChanged,
     )
