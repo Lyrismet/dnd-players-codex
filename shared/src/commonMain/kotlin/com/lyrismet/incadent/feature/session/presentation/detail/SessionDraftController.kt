@@ -27,6 +27,8 @@ internal class SessionDraftController(
     val editingEntryId: MutableState<Long?>,
     val selectedEntryId: MutableState<Long?>,
 ) {
+    private var sending = false
+
     /** a cut token goes whole, the caret lands where the same text position now is */
     fun onDraftChanged(
         text: String,
@@ -68,14 +70,35 @@ internal class SessionDraftController(
     ) {
         // a name typed after "@" without picking it from the list still turns into the token of its record
         val body = linkTypedMentions(draft.value.text.trim(), index)
-        if (body.isEmpty()) return
         val editingId = editingEntryId.value
-        draft.value = TextFieldValue("")
-        editingEntryId.value = null
         // an unchanged save must not flip the "изм." mark, so it only writes when the body actually differs
-        if (editingId != null && entries.find { it.id == editingId }?.body == body) return
+        val unchanged = editingId != null && entries.find { it.id == editingId }?.body == body
+        when {
+            body.isEmpty() || sending -> Unit
+            unchanged -> cancelEdit()
+            else -> write(scope, editingId, body)
+        }
+    }
+
+    private fun write(
+        scope: CoroutineScope,
+        editingId: Long?,
+        body: String,
+    ) {
+        sending = true
+        val sent = draft.value
         scope.launch {
-            if (editingId != null) entryRepository.update(editingId, body) else entryRepository.add(sessionNoteId, body)
+            try {
+                if (editingId != null) {
+                    entryRepository.update(editingId, body)
+                } else {
+                    entryRepository.add(sessionNoteId, body)
+                }
+                // a failed write throws before this, so the text stays in the composer, and a newer draft is kept
+                if (draft.value == sent) cancelEdit()
+            } finally {
+                sending = false
+            }
         }
     }
 

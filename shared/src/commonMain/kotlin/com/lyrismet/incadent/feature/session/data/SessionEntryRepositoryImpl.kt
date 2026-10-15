@@ -52,16 +52,15 @@ class SessionEntryRepositoryImpl(
 
     override suspend fun restore(entry: SessionEntry): Long =
         withContext(Dispatchers.Default) {
-            database.transactionWithResult {
-                queries.insert(
-                    entry.sessionNoteId,
-                    entry.createdAt,
-                    entry.body,
-                    entry.edited,
-                    entry.mentionCheck,
-                )
-                queries.lastInsertRowId().executeAsOne()
-            }
+            queries.insertWithId(
+                entry.id,
+                entry.sessionNoteId,
+                entry.createdAt,
+                entry.body,
+                entry.edited,
+                entry.mentionCheck,
+            )
+            entry.id
         }
 
     override suspend fun update(

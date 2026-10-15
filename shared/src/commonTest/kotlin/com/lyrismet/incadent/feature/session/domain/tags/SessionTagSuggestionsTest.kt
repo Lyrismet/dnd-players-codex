@@ -24,6 +24,14 @@ class SessionTagSuggestionsTest {
     }
 
     @Test
+    fun `an english combat word does not match a longer class name`() {
+        val result = suggestSessionTags(listOf("The fighter checked the door"), emptyList(), emptyList())
+        assertTrue(result.none { it.tag == "Бой" })
+        val fight = suggestSessionTags(listOf("A fight broke out"), emptyList(), emptyList())
+        assertTrue(fight.any { it.tag == "Бой" })
+    }
+
+    @Test
     fun `the exact stem matches the standalone word`() {
         val result = suggestSessionTags(listOf("Заплатили 200 зм за информацию"), emptyList(), emptyList())
         assertTrue(result.any { it.tag == "Торговля" })

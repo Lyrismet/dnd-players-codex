@@ -26,6 +26,10 @@ insert:
 INSERT INTO session_entry(session_note_id, created_at, body, edited, mention_check)
 VALUES (?, ?, ?, ?, ?);
 
+insertWithId:
+INSERT INTO session_entry(id, session_note_id, created_at, body, edited, mention_check)
+VALUES (?, ?, ?, ?, ?, ?);
+
 updateBody:
 UPDATE session_entry SET body = ?, edited = 1, mention_check = 1 WHERE id = ?;
 

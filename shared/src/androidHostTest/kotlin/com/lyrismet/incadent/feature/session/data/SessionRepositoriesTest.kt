@@ -33,6 +33,20 @@ class SessionRepositoriesTest {
         }
 
     @Test
+    fun `a restored entry comes back under its old id`() =
+        runTest {
+            val session = notes.upsert(note("A"))
+            val id = entries.add(session, "раз")
+            val entry = entries.observeForSession(session).first().single()
+
+            entries.delete(id)
+            val restoredId = entries.restore(entry)
+
+            assertEquals(id, restoredId)
+            assertEquals(entry, entries.observeForSession(session).first().single())
+        }
+
+    @Test
     fun `notes and entries are scoped to the open campaign`() =
         runTest {
             val mine = notes.upsert(note("Моя"))

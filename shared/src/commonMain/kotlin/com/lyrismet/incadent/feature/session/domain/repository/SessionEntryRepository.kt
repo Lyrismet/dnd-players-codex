@@ -13,7 +13,7 @@ interface SessionEntryRepository {
         body: String,
     ): Long
 
-    // re-inserts a deleted entry with its original timestamp, for undo - a fresh id, same position in the feed
+    // re-inserts a deleted entry with its original timestamp, for undo - under its old id, same position in the feed
     suspend fun restore(entry: SessionEntry): Long
 
     suspend fun update(

@@ -10,9 +10,13 @@ import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.token
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
+import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -72,6 +76,24 @@ class SessionDraftControllerTest {
 
             assertEquals(listOf("пришёл ${gromm.token()}"), repository.all.map { it.body })
             assertEquals("", composer.draft.value.text)
+        }
+
+    @Test
+    fun `a failed write keeps the draft in the composer`() =
+        runTest {
+            val composer = controller()
+            composer.draft.value = TextFieldValue("важная заметка")
+            repository.failWrites = true
+
+            composer.submit(
+                CoroutineScope(coroutineContext + SupervisorJob() + CoroutineExceptionHandler { _, _ -> }),
+                emptyList(),
+                MentionIndex.EMPTY,
+            )
+            testScheduler.advanceUntilIdle()
+
+            assertEquals("важная заметка", composer.draft.value.text)
+            assertEquals(0, repository.all.size)
         }
 
     @Test

@@ -39,12 +39,10 @@ private val TAG_RULES =
                 "засад",
                 "сраж",
                 "напал",
-                "fight",
-                "attack",
                 "ambush",
                 "battle",
-                "combat",
-            ).map(TagSignal::Prefix),
+            ).map(TagSignal::Prefix) +
+                listOf("fight", "fights", "fighting", "attack", "attacks", "attacked", "combat").map(TagSignal::Exact),
         ),
         TagRule("Сюжет", listOf(TagSignal.QuestMentioned)),
         TagRule(

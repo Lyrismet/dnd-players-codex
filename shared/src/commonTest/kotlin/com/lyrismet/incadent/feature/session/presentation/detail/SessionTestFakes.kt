@@ -19,6 +19,9 @@ internal class FakeSessionEntryRepository(
 
     val all: List<SessionEntry> get() = items.value
 
+    /** makes the next add or update throw, like a failed disk write */
+    var failWrites = false
+
     override fun observeForSession(sessionNoteId: Long): Flow<List<SessionEntry>> =
         items.map { list -> list.filter { it.sessionNoteId == sessionNoteId } }
 
@@ -28,21 +31,22 @@ internal class FakeSessionEntryRepository(
         sessionNoteId: Long,
         body: String,
     ): Long {
+        check(!failWrites) { "write failed" }
         val id = nextId++
         items.value = items.value + SessionEntry(id, sessionNoteId, FIXED_MOMENT, body, mentionCheck = true)
         return id
     }
 
     override suspend fun restore(entry: SessionEntry): Long {
-        val id = nextId++
-        items.value = items.value + entry.copy(id = id)
-        return id
+        items.value = items.value + entry
+        return entry.id
     }
 
     override suspend fun update(
         id: Long,
         body: String,
     ) {
+        check(!failWrites) { "write failed" }
         items.value = items.value.map { if (it.id == id) it.copy(body = body, edited = true) else it }
     }
 
