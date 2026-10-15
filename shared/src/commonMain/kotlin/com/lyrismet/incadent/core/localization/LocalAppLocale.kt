@@ -6,6 +6,7 @@ import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.preferences.AppLanguage
 
@@ -25,7 +26,9 @@ expect object LocalAppLocale {
 @Composable
 fun currentAppLanguage(): AppLanguage {
     val tag = LocalAppLocale.current
-    return AppLanguage.entries.firstOrNull { tag.startsWith(it.tag, ignoreCase = true) } ?: AppLanguage.RUSSIAN
+    return remember(tag) {
+        AppLanguage.entries.firstOrNull { tag.startsWith(it.tag, ignoreCase = true) } ?: AppLanguage.RUSSIAN
+    }
 }
 
 @Composable

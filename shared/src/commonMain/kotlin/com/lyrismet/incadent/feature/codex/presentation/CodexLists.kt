@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
@@ -103,7 +104,7 @@ internal fun CodexPartyList(
     modifier: Modifier = Modifier,
 ) {
     CodexGroupedList(
-        groups = listOf(CodexGroup(title = null, items = state.party)),
+        groups = remember(state.party) { listOf(CodexGroup(title = null, items = state.party)) },
         itemKey = { it.id },
         modifier = modifier,
     ) { CodexPartyEntry(state, it, hintPeekOffsetPx) }

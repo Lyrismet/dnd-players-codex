@@ -3,7 +3,6 @@ package com.lyrismet.incadent.core.format
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.Month
 
 private val RUSSIAN_GENITIVE_MONTHS =
     listOf(
@@ -42,13 +41,11 @@ private val RUSSIAN_SHORT_MONTHS_UPPER =
 
 private const val ENGLISH_SHORT_LENGTH = 3
 
-private fun Month.index(): Int = ordinal
-
 /** "26 сентября 2026" or "September 26, 2026" - the date format used throughout the session diary */
 fun LocalDateTime.toDisplayDate(language: AppLanguage): String =
     when (language) {
-        AppLanguage.RUSSIAN -> "$day ${RUSSIAN_GENITIVE_MONTHS[month.index()]} $year"
-        AppLanguage.ENGLISH -> "${ENGLISH_MONTHS[month.index()]} $day, $year"
+        AppLanguage.RUSSIAN -> "$day ${RUSSIAN_GENITIVE_MONTHS[month.ordinal]} $year"
+        AppLanguage.ENGLISH -> "${ENGLISH_MONTHS[month.ordinal]} $day, $year"
     }
 
 /** "09:41" - the timestamp shown next to each entry in a session's feed */
@@ -61,13 +58,13 @@ fun LocalDateTime.toDisplayTime(): String {
 /** "19 СЕНТ" or "SEP 19" - the day-separator label between a multi-day session's meetings */
 fun LocalDate.toShortDayMonthUpper(language: AppLanguage): String =
     when (language) {
-        AppLanguage.RUSSIAN -> "$day ${RUSSIAN_SHORT_MONTHS_UPPER[month.index()]}"
-        AppLanguage.ENGLISH -> "${ENGLISH_MONTHS[month.index()].take(ENGLISH_SHORT_LENGTH).uppercase()} $day"
+        AppLanguage.RUSSIAN -> "$day ${RUSSIAN_SHORT_MONTHS_UPPER[month.ordinal]}"
+        AppLanguage.ENGLISH -> "${ENGLISH_MONTHS[month.ordinal].take(ENGLISH_SHORT_LENGTH).uppercase()} $day"
     }
 
 /** "12 июня" or "June 12" - the date without the year, for a compact meta label */
 fun LocalDateTime.toShortDisplayDate(language: AppLanguage): String =
     when (language) {
-        AppLanguage.RUSSIAN -> "$day ${RUSSIAN_GENITIVE_MONTHS[month.index()]}"
-        AppLanguage.ENGLISH -> "${ENGLISH_MONTHS[month.index()]} $day"
+        AppLanguage.RUSSIAN -> "$day ${RUSSIAN_GENITIVE_MONTHS[month.ordinal]}"
+        AppLanguage.ENGLISH -> "${ENGLISH_MONTHS[month.ordinal]} $day"
     }
