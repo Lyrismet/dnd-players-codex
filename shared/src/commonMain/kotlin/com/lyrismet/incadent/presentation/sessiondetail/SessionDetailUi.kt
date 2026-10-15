@@ -2,7 +2,6 @@ package com.lyrismet.incadent.presentation.sessiondetail
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,9 +27,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -59,7 +62,8 @@ fun SessionDetailUi(
     // AppTabHost's bottom tab bar already reserves the nav-bar inset, so this scaffold must not reserve it again
     val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     Scaffold(modifier = modifier, contentWindowInsets = contentWindowInsets) { contentPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+        // on the whole screen, not the list, which is only as tall as its notes
+        Column(modifier = Modifier.fillMaxSize().padding(contentPadding).clearSelectionOnTap(state.eventSink)) {
             SessionDetailBody(state)
         }
     }
@@ -80,8 +84,7 @@ private fun ColumnScope.SessionDetailBody(state: SessionDetailState) {
     SessionDetailHeader(state)
 
     // the toast floats at the feed's bottom edge, so it never covers the composer
-    // the tap handler sits on this box, not the list, which only is as tall as its notes
-    Box(modifier = Modifier.weight(1f).clearSelectionOnTap(state.eventSink)) {
+    Box(modifier = Modifier.weight(1f)) {
         if (state.feed.isEmpty()) {
             OrnamentedEmptyState(
                 title = stringResource(Res.string.session_detail_empty_feed),
@@ -227,12 +230,35 @@ private fun DaySeparatorRow(
     }
 }
 
-// a tap no note or button consumed lands on free space and drops the selected note's action row
+// a tap no note, field or button consumed lands on free space and drops the note selection and the title editor
 private fun Modifier.clearSelectionOnTap(eventSink: (SessionDetailEvent) -> Unit): Modifier =
-    pointerInput(eventSink) {
-        awaitEachGesture {
-            awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-            val up = waitForUpOrCancellation(PointerEventPass.Final)
-            if (up != null && !up.isConsumed) eventSink(SessionDetailEvent.EntrySelectionCleared)
+    composed {
+        val currentSink by rememberUpdatedState(eventSink)
+        pointerInput(Unit) {
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                // waitForUpOrCancellation(Final) would swallow the release itself, so the Final pass is read by hand
+                if (awaitTapReleaseUnconsumed(down.position, viewConfiguration.touchSlop)) {
+                    currentSink(SessionDetailEvent.OutsideTapped)
+                }
+            }
         }
     }
+
+private suspend fun AwaitPointerEventScope.awaitTapReleaseUnconsumed(
+    start: Offset,
+    slop: Float,
+): Boolean {
+    var result: Boolean? = null
+    while (result == null) {
+        val change = awaitPointerEvent(PointerEventPass.Final).changes.firstOrNull()
+        val moved = change != null && (change.position - start).getDistance() > slop
+        result =
+            when {
+                change == null || change.isConsumed || moved -> false
+                !change.pressed -> true
+                else -> null
+            }
+    }
+    return result
+}

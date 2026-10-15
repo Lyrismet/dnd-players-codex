@@ -42,6 +42,7 @@ data class SessionDetailState(
     val selectedEntity: EntitySummaryItem? = null,
     val editingEntryTimeLabel: String? = null,
     val selectedEntryId: Long? = null,
+    val isTitleEditing: Boolean = false,
     val editingEntryId: Long? = null,
     val highlightedEntryId: Long? = null,
     // feed position the list scrolls to while the highlight is active - null once the entry is not in the feed yet
@@ -145,6 +146,10 @@ data class SessionMentionSuggestion(
 sealed interface SessionDetailEvent : CircuitUiEvent {
     data object BackClicked : SessionDetailEvent
 
+    data object TitleEditStarted : SessionDetailEvent
+
+    data object TitleEditFinished : SessionDetailEvent
+
     data class TitleChanged(
         val title: String,
     ) : SessionDetailEvent
@@ -198,7 +203,7 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
 
     data object CancelEditEntryClicked : SessionDetailEvent
 
-    data object EntrySelectionCleared : SessionDetailEvent
+    data object OutsideTapped : SessionDetailEvent
 
     data class DeleteEntryClicked(
         val id: Long,
