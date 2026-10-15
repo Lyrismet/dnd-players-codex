@@ -3,7 +3,6 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -19,6 +18,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
@@ -30,9 +30,7 @@ import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.FormTextArea
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.core.designsystem.component.QuickAddOutsideTapHost
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
-import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
@@ -131,14 +129,12 @@ private fun CodexEntryFormContent(
                 .padding(top = 6.dp, bottom = 44.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // overline and heading sit flush, only the blocks around them get the 16dp rhythm
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                SectionOverline(text = form.overline, color = AppPalette.Gold)
-                Text(form.heading, style = MaterialTheme.typography.headlineLarge, color = AppPalette.TextHeading)
-            }
-            SheetCloseButton(onClick = onClose, size = CloseButtonSize)
-        }
+        AppSheetHeader(
+            title = form.heading,
+            onClose = onClose,
+            overline = form.overline,
+            closeSize = CloseButtonSize,
+        )
         if (!form.isEditing) {
             CodexEntryTypeSwitch(
                 selected = form.type,

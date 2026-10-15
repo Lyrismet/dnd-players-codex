@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
+import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
@@ -69,14 +70,7 @@ internal fun CampaignCreateSheet(
 ) {
     val onItems = sheet.step == CampaignCreateStep.ITEMS
     AppBottomSheet(onDismissRequest = { onEvent(CampaignSheetEvent.Dismissed) }) {
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(start = 20.dp, top = 6.dp, end = 20.dp, bottom = 44.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
+        AppSheetColumn(spacing = 14.dp, scroll = true) {
             AppSheetHeader(
                 overline = stringResource(Res.string.campaign_create_overline),
                 title =

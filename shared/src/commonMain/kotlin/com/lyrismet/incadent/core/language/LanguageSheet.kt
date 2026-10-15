@@ -34,6 +34,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
+import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -134,10 +135,7 @@ internal fun LanguageSheet(
             .map { LanguageOption(it, it.label(), it.subLabel()) }
             .filter { query.isBlank() || "${it.name} ${it.sub}".contains(query.trim(), ignoreCase = true) }
     AppBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(start = 20.dp, top = 6.dp, end = 20.dp, bottom = 44.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
+        AppSheetColumn(spacing = 14.dp) {
             AppSheetHeader(
                 overline = stringResource(Res.string.settings_title),
                 title = stringResource(Res.string.settings_language_title),

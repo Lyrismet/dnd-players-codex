@@ -18,10 +18,11 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
+import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
-import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -44,11 +45,13 @@ internal fun SessionDetailTagsSheet(
     eventSink: (SessionDetailEvent) -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = { eventSink(SessionDetailEvent.TagSheetDismissed) }) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
-        ) {
-            TagSheetHeader(sheet, onClose = { eventSink(SessionDetailEvent.TagSheetDismissed) })
+        AppSheetColumn(spacing = 18.dp) {
+            AppSheetHeader(
+                title = stringResource(Res.string.session_detail_tag_sheet_title),
+                onClose = { eventSink(SessionDetailEvent.TagSheetDismissed) },
+                overline = sheet.overline.ifEmpty { null },
+                subtitle = sheet.sessionTitle,
+            )
             if (sheet.suggestions.isNotEmpty()) {
                 TagSuggestionsSection(sheet.suggestions, eventSink)
             }
@@ -60,34 +63,6 @@ internal fun SessionDetailTagsSheet(
                 color = AppPalette.TextTertiary,
             )
         }
-    }
-}
-
-@Composable
-private fun TagSheetHeader(
-    sheet: SessionTagSheetState,
-    onClose: () -> Unit,
-) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                sheet.overline,
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.16.em),
-                color = AppPalette.Gold,
-            )
-            Text(
-                stringResource(Res.string.session_detail_tag_sheet_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = AppPalette.TextHeading,
-            )
-            Text(
-                sheet.sessionTitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = AppPalette.TextSecondary,
-                modifier = Modifier.padding(top = 2.dp),
-            )
-        }
-        SheetCloseButton(onClick = onClose, size = 40.dp)
     }
 }
 

@@ -24,17 +24,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
+import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
+import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
-import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.domain.model.EntityKind
 import dndplayerscodex.shared.generated.resources.Res
@@ -68,44 +67,25 @@ internal fun DeletedMentionSheet(
     eventSink: (SessionDetailEvent) -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = { eventSink(SessionDetailEvent.DeletedMentionSheetDismissed) }) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(start = 20.dp, top = 6.dp, end = 20.dp, bottom = 44.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            DeletedMentionHeader(sheet.name) { eventSink(SessionDetailEvent.DeletedMentionSheetDismissed) }
+        AppSheetColumn(spacing = 14.dp) {
+            AppSheetHeader(
+                title =
+                    buildAnnotatedString {
+                        withStyle(SpanStyle(color = AppPalette.GoldBright)) { append("? ") }
+                        append(sheet.name)
+                    },
+                onClose = { eventSink(SessionDetailEvent.DeletedMentionSheetDismissed) },
+                // the same overline and "? name" over both steps, so picking a record does not retitle the sheet
+                overline = stringResource(Res.string.deleted_mention_overline),
+                overlineColor = AppPalette.TextSecondary,
+                closeSize = 32.dp,
+            )
             if (sheet.isPicking) {
                 DeletedMentionPicker(sheet, eventSink)
             } else {
                 DeletedMentionActions(sheet, eventSink)
             }
         }
-    }
-}
-
-// the same overline and "? name" over both steps, so picking a record does not retitle the sheet
-@Composable
-private fun DeletedMentionHeader(
-    name: String,
-    onClose: () -> Unit,
-) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-        Column(modifier = Modifier.weight(1f)) {
-            SectionOverline(
-                text = stringResource(Res.string.deleted_mention_overline),
-                color = AppPalette.TextSecondary,
-                letterSpacing = 0.16.em,
-            )
-            Text(
-                text =
-                    buildAnnotatedString {
-                        withStyle(SpanStyle(color = AppPalette.GoldBright)) { append("? ") }
-                        append(name)
-                    },
-                style = MaterialTheme.typography.headlineLarge,
-                color = AppPalette.TextHeading,
-            )
-        }
-        SheetCloseButton(onClick = onClose)
     }
 }
 

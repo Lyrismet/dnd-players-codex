@@ -1,15 +1,9 @@
 package com.lyrismet.incadent.feature.campaign.presentation.sheet
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.SelectCreateRow
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSections
@@ -48,14 +42,7 @@ private fun CampaignLibrarySheet(
     onEvent: (CampaignSheetEvent) -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = { onEvent(CampaignSheetEvent.Dismissed) }) {
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(start = 20.dp, top = 6.dp, end = 20.dp, bottom = 44.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
+        AppSheetColumn(spacing = 10.dp, scroll = true) {
             AppSheetHeader(
                 title = stringResource(Res.string.campaign_sheet_title),
                 onClose = { onEvent(CampaignSheetEvent.Dismissed) },

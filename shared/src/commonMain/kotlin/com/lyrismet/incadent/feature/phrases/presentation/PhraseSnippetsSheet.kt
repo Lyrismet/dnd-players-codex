@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,10 +19,11 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
+import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
-import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseFrequentRow
@@ -51,11 +50,13 @@ fun PhraseSnippetsSheet(
     onEvent: (PhraseSheetEvent) -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = { onEvent(PhraseSheetEvent.Dismissed) }) {
-        Column(
-            modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
-        ) {
-            PhraseSheetHeader(onClose = { onEvent(PhraseSheetEvent.Dismissed) })
+        AppSheetColumn(spacing = 18.dp, scroll = true) {
+            AppSheetHeader(
+                title = stringResource(Res.string.phrase_sheet_title),
+                onClose = { onEvent(PhraseSheetEvent.Dismissed) },
+                overline = stringResource(Res.string.phrase_sheet_overline),
+                intro = stringResource(Res.string.phrase_sheet_intro),
+            )
             PinnedPhrasesSection(state, onEvent)
             FrequentPhrasesSection(state.frequent, onEvent)
             Text(
@@ -64,32 +65,6 @@ fun PhraseSnippetsSheet(
                 color = AppPalette.TextTertiary,
             )
         }
-    }
-}
-
-@Composable
-private fun PhraseSheetHeader(onClose: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    stringResource(Res.string.phrase_sheet_overline),
-                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.16.em),
-                    color = AppPalette.Gold,
-                )
-                Text(
-                    stringResource(Res.string.phrase_sheet_title),
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = AppPalette.TextHeading,
-                )
-            }
-            SheetCloseButton(onClick = onClose, size = 40.dp)
-        }
-        Text(
-            stringResource(Res.string.phrase_sheet_intro),
-            style = MaterialTheme.typography.bodyMedium,
-            color = AppPalette.TextMuted,
-        )
     }
 }
 
