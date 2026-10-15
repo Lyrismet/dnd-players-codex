@@ -4,12 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -21,9 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
@@ -35,13 +31,10 @@ import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 
 private val FieldShape = RoundedCornerShape(12.dp)
-private val ChipShape = RoundedCornerShape(20.dp)
-private val ChipMinHeight = 40.dp
 private val PrimaryButtonHeight = 52.dp
 private val FieldHeight = 48.dp
 private val AreaMinHeight = 92.dp
 private const val AREA_MIN_LINES = 3
-private const val SELECTED_CHIP_FILL_ALPHA = 0.14f
 
 /** one chip option for [FormChipPicker] - a single pill, selected state driven by the caller */
 data class FormChipOption<T>(
@@ -306,33 +299,14 @@ private fun <T> ChipOptionPill(
     option: FormChipOption<T>,
     onClick: (T) -> Unit,
 ) {
-    val tint = option.selectedColor.takeIf { option.selected }
-    val background =
-        when {
-            tint != null -> tint.background
-            option.selected -> AppPalette.Gold.copy(alpha = SELECTED_CHIP_FILL_ALPHA)
-            else -> Color.Transparent
-        }
-    val foreground = tint?.foreground ?: if (option.selected) AppPalette.GoldBright else AppPalette.TextMuted
-    val border = tint?.border ?: if (option.selected) AppPalette.Gold else AppPalette.Border
-    // mockup chip - min-height 40px, 14px side padding, 13px semibold label
-    Box(
-        modifier =
-            Modifier
-                .clip(ChipShape)
-                .background(background)
-                .border(1.dp, border, ChipShape)
-                .clickable { onClick(option.value) }
-                .defaultMinSize(minHeight = ChipMinHeight)
-                .padding(horizontal = 14.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            option.label,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
-            color = foreground,
-        )
-    }
+    SelectablePill(
+        text = option.label,
+        selected = option.selected,
+        onClick = { onClick(option.value) },
+        selectedFill = PillFill.GoldTint,
+        selectedColor = option.selectedColor,
+        unselectedContent = AppPalette.TextMuted,
+    )
 }
 
 /**

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -13,7 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -22,6 +20,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
+import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
@@ -172,38 +171,13 @@ private fun TagCatalogSection(
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             catalog.forEach { item ->
-                TagCatalogChip(item, onClick = { eventSink(SessionDetailEvent.TagToggled(item.name)) })
+                SelectablePill(
+                    text = sessionTagLabel(item.name).let { if (item.assigned) "✓ $it" else it },
+                    selected = item.assigned,
+                    onClick = { eventSink(SessionDetailEvent.TagToggled(item.name)) },
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun TagCatalogChip(
-    item: SessionTagCatalogItem,
-    onClick: () -> Unit,
-) {
-    val background = if (item.assigned) AppPalette.Gold else Color.Transparent
-    val foreground = if (item.assigned) AppPalette.Background else AppPalette.TextDescription
-    val border = if (item.assigned) AppPalette.Gold else AppPalette.Border
-    Row(
-        modifier =
-            Modifier
-                .height(40.dp)
-                .appCard(
-                    shape = RoundedCornerShape(20.dp),
-                    background = background,
-                    border = border,
-                    borderWidth = 0.5.dp,
-                    onClick = onClick,
-                ).padding(horizontal = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = sessionTagLabel(item.name).let { if (item.assigned) "✓ $it" else it },
-            style = MaterialTheme.typography.bodyMedium,
-            color = foreground,
-        )
     }
 }
 

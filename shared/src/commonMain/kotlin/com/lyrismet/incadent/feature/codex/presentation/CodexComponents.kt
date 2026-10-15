@@ -37,9 +37,10 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
-import com.lyrismet.incadent.core.designsystem.component.ChoiceChip
+import com.lyrismet.incadent.core.designsystem.component.PillSize
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
+import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.appCard
 
 @Composable
@@ -204,10 +205,13 @@ internal fun <T> CodexFilterChipRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         items.forEach { option ->
-            ChoiceChip(
+            SelectablePill(
                 text = option.label,
                 selected = option.value == selected,
                 onClick = { onSelected(option.value) },
+                size = PillSize.Small,
+                background = AppPalette.Surface,
+                unselectedContent = AppPalette.TextDescription,
             )
         }
     }

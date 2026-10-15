@@ -1,14 +1,12 @@
 package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -23,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -42,12 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
 import com.lyrismet.incadent.core.designsystem.component.AppTextInputCounter
 import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
+import com.lyrismet.incadent.core.designsystem.component.PillFill
+import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.presentation.summary.RelationOption
@@ -152,18 +150,20 @@ fun LinkOptionEditor(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            LinkOptionButton(
+            SelectablePill(
                 text = stringResource(Res.string.quick_edit_link_none),
                 selected = selectedId == null,
                 onClick = { onEvent(QuickEditUiEvent.LinkChosen(null)) },
+                selectedFill = PillFill.Neutral,
             )
             options.forEach { option ->
                 val id = option.entityRef?.id ?: return@forEach
                 val selected = id == selectedId
-                LinkOptionButton(
+                SelectablePill(
                     text = if (selected) "✓ ${option.label}" else option.label,
                     selected = selected,
                     onClick = { onEvent(QuickEditUiEvent.LinkChosen(id)) },
+                    selectedFill = PillFill.Neutral,
                     selectedColor = option.color,
                 )
             }
@@ -189,10 +189,11 @@ fun RelationOptionEditor(
         ) {
             options.forEach { option ->
                 val id = option.chip.entityRef?.id ?: return@forEach
-                LinkOptionButton(
+                SelectablePill(
                     text = if (option.isSelected) "✓ ${option.chip.label}" else option.chip.label,
                     selected = option.isSelected,
                     onClick = { onEvent(QuickEditUiEvent.RelationToggled(id)) },
+                    selectedFill = PillFill.Neutral,
                     selectedColor = option.chip.color,
                 )
             }
@@ -217,49 +218,6 @@ private fun EditorHeader(
             overflow = TextOverflow.Ellipsis,
         )
         actions()
-    }
-}
-
-// mockup - min-height 38, radius 19, 13px/600 - the selected one takes the entity's colours, "Не указано" a neutral set
-@Composable
-private fun LinkOptionButton(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    selectedColor: StatusColor? = null,
-) {
-    val foreground =
-        when {
-            !selected -> AppPalette.TextDescription
-            selectedColor != null -> selectedColor.foreground
-            else -> AppPalette.TextMuted
-        }
-    val background =
-        when {
-            !selected -> Color.Transparent
-            selectedColor != null -> selectedColor.background
-            else -> AppPalette.SurfacePopover
-        }
-    val border =
-        when {
-            !selected -> AppPalette.Border
-            selectedColor != null -> selectedColor.border
-            else -> AppPalette.BorderHover
-        }
-    Box(
-        modifier =
-            Modifier
-                .appCard(shape = RoundedCornerShape(19.dp), background = background, border = border, onClick = onClick)
-                .heightIn(min = 38.dp)
-                .padding(horizontal = 12.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text,
-            style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp),
-            color = foreground,
-            fontWeight = FontWeight.SemiBold,
-        )
     }
 }
 

@@ -24,12 +24,13 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
-import com.lyrismet.incadent.core.designsystem.component.ChoiceChip
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
+import com.lyrismet.incadent.core.designsystem.component.PillSize
 import com.lyrismet.incadent.core.designsystem.component.RadioDot
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SelectCheckbox
+import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignCreateStep
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
@@ -241,15 +242,21 @@ private fun CampaignItemsStep(
     onEvent: (CampaignSheetEvent) -> Unit,
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        ChoiceChip(
+        SelectablePill(
             text = sheet.placesLabel,
             selected = sheet.tab == CampaignTransferTab.PLACES,
             onClick = { onEvent(CampaignSheetEvent.TabSelected(CampaignTransferTab.PLACES)) },
+            size = PillSize.Small,
+            background = AppPalette.Surface,
+            unselectedContent = AppPalette.TextDescription,
         )
-        ChoiceChip(
+        SelectablePill(
             text = sheet.npcsLabel,
             selected = sheet.tab == CampaignTransferTab.NPCS,
             onClick = { onEvent(CampaignSheetEvent.TabSelected(CampaignTransferTab.NPCS)) },
+            size = PillSize.Small,
+            background = AppPalette.Surface,
+            unselectedContent = AppPalette.TextDescription,
         )
     }
     TransferSearchRow(sheet, onEvent)
