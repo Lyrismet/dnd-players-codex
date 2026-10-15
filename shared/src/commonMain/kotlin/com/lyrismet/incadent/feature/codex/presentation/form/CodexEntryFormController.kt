@@ -7,25 +7,21 @@ import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.ImageCompressor
-import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.core.portrait.encodeAsync
 import com.lyrismet.incadent.core.portrait.prepareCropDraftAsync
 import com.lyrismet.incadent.core.portrait.recropDraft
 import com.lyrismet.incadent.domain.model.EntityKind
-import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
 import com.lyrismet.incadent.feature.codex.domain.grouping.withRecentPlaces
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
-import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
-import com.lyrismet.incadent.feature.codex.domain.model.clampedToRanges
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
@@ -55,61 +51,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
-/** the party-only part of the form, nested so the other entry types never see these fields */
-internal data class PartyFormFields(
-    val isPlayerCharacter: Boolean = false,
-    val player: String = "",
-    val characterClass: String = "",
-    val presence: PartyPresence = PartyPresence.IN,
-    // a number the user has not filled in stays null and shows as a dash
-    val level: Int? = null,
-    val hpMax: Int? = null,
-    val hpCurrent: Int? = null,
-)
-
-/** the form's own editable-in-place fields - kept separate from [CodexEntryFormState] so typing survives rebuilds */
-internal data class CodexEntryFormFields(
-    val editingRef: EntityRef?,
-    // the id a new record is created under - a deleted record's, so the tokens in notes find it again
-    val reviveId: Long = 0,
-    val originalName: String = "",
-    val type: EntityKind,
-    val name: String = "",
-    val description: String = "",
-    // shared between npc and party - the only two types the mockup gives a portrait frame to
-    val portrait: Photo? = null,
-    val race: String = "",
-    val faction: String = "",
-    val npcStatus: NpcStatus = NpcStatus.NEUTRAL,
-    val npcLife: NpcLifeState = NpcLifeState.ALIVE,
-    val npcLocationIds: List<Long> = emptyList(),
-    val reward: String = "",
-    val questGiverId: Long? = null,
-    val questLocationId: Long? = null,
-    val questStatus: QuestStatus = QuestStatus.ACTIVE,
-    val locationParentId: Long? = null,
-    // the wide picture of a place - the only photo a location has
-    val cover: Photo? = null,
-    val party: PartyFormFields = PartyFormFields(),
-    // null means the select sheet is closed - see onPlaceFieldOpened
-    val placeSelectField: CodexEntryPlaceField? = null,
-    // null means no "+ New X" quick-add input is open - see onQuickAddOpened
-    val quickAddField: CodexEntryChipField? = null,
-    val quickAddDraft: String = "",
-    // the photo waiting in the crop window, transient like the select sheet
-    val photoCrop: PhotoCropDraft? = null,
-) {
-    // the select sheet and quick-add are transient panels, only the values the user typed or picked count as a change
-    fun hasUnsavedChanges(baseline: CodexEntryFormFields?): Boolean =
-        baseline != null &&
-            copy(
-                placeSelectField = baseline.placeSelectField,
-                quickAddField = baseline.quickAddField,
-                quickAddDraft = baseline.quickAddDraft,
-                photoCrop = baseline.photoCrop,
-            ) != baseline
-}
-
 // one entry point per form action - splitting them across classes would only forward the same calls
 @Suppress("TooManyFunctions", "LongParameterList")
 class CodexEntryFormController private constructor(
@@ -124,6 +65,8 @@ class CodexEntryFormController private constructor(
     // the level a new party member starts with and the "same as yours" shortcut offers, null without a level
     private val playerCharacterLevel: Int?,
 ) {
+    private val persister = CodexEntryPersister(npcRepository, partyRepository, questRepository, locationRepository)
+
     companion object {
         @Composable
         fun rememberController(
@@ -481,51 +424,7 @@ class CodexEntryFormController private constructor(
         val current = fields.value ?: return
         if (current.name.isBlank()) return
         onClosed()
-        scope.launch {
-            when (current.type) {
-                EntityKind.PARTY ->
-                    partyRepository.upsert(current.toPartyMember().clampedToRanges())
-
-                EntityKind.NPC ->
-                    npcRepository.upsert(
-                        Npc(
-                            id = (current.editingRef as? EntityRef.Npc)?.id ?: current.reviveId,
-                            name = current.name.trim().capitalizeFirst(),
-                            status = current.npcStatus,
-                            lifeState = current.npcLife,
-                            description = current.description.trim(),
-                            locationIds = current.npcLocationIds,
-                            race = current.race.trim().capitalizeFirst(),
-                            faction = current.faction.trim().capitalizeFirst(),
-                            portrait = current.portrait,
-                        ),
-                    )
-
-                EntityKind.QUEST ->
-                    questRepository.upsert(
-                        Quest(
-                            id = (current.editingRef as? EntityRef.Quest)?.id ?: current.reviveId,
-                            title = current.name.trim().capitalizeFirst(),
-                            status = current.questStatus,
-                            reward = current.reward.trim(),
-                            givenByNpcId = current.questGiverId,
-                            locationId = current.questLocationId,
-                            description = current.description.trim(),
-                        ),
-                    )
-
-                EntityKind.LOCATION ->
-                    locationRepository.upsert(
-                        Location(
-                            id = (current.editingRef as? EntityRef.Location)?.id ?: current.reviveId,
-                            name = current.name.trim().capitalizeFirst(),
-                            description = current.description.trim(),
-                            parentId = current.locationParentId,
-                            cover = current.cover,
-                        ),
-                    )
-            }
-        }
+        scope.launch { persister.save(current) }
     }
 
     // one assignment per form-state field - a flat mapping, not real complexity
@@ -664,82 +563,3 @@ private fun saveLabel(
     )
 
 private fun Long?.toggled(id: Long): Long? = if (this == id) null else id
-
-private fun CodexEntryFormFields.toPartyMember(): PartyMember {
-    val party = party
-    return PartyMember(
-        id = (editingRef as? EntityRef.Party)?.id ?: reviveId,
-        name = name.trim().capitalizeFirst(),
-        characterClass = party.characterClass.trim().capitalizeFirst(),
-        race = race.trim().capitalizeFirst(),
-        level = party.level,
-        // the "вы" flag replaces the player name, so a player character never keeps one
-        playerName = if (party.isPlayerCharacter) "" else party.player.trim().capitalizeFirst(),
-        isPlayerCharacter = party.isPlayerCharacter,
-        presence = party.presence,
-        hpMax = party.hpMax,
-        hpCurrent = party.hpCurrent ?: party.hpMax,
-        description = description.trim(),
-        portrait = portrait,
-    )
-}
-
-private fun Npc.toFields(ref: EntityRef.Npc) =
-    CodexEntryFormFields(
-        editingRef = ref,
-        originalName = name,
-        type = EntityKind.NPC,
-        name = name,
-        description = description,
-        portrait = portrait,
-        race = race,
-        faction = faction,
-        npcStatus = status,
-        npcLife = lifeState,
-        npcLocationIds = locationIds,
-    )
-
-private fun PartyMember.toFields(ref: EntityRef.Party) =
-    CodexEntryFormFields(
-        editingRef = ref,
-        originalName = name,
-        type = EntityKind.PARTY,
-        name = name,
-        description = description,
-        portrait = portrait,
-        race = race,
-        party =
-            PartyFormFields(
-                isPlayerCharacter = isPlayerCharacter,
-                player = playerName,
-                characterClass = characterClass,
-                presence = presence,
-                level = level,
-                hpMax = hpMax,
-                hpCurrent = hpCurrent,
-            ),
-    )
-
-private fun Quest.toFields(ref: EntityRef.Quest) =
-    CodexEntryFormFields(
-        editingRef = ref,
-        originalName = title,
-        type = EntityKind.QUEST,
-        name = title,
-        description = description,
-        reward = reward,
-        questGiverId = givenByNpcId,
-        questLocationId = locationId,
-        questStatus = status,
-    )
-
-private fun Location.toFields(ref: EntityRef.Location) =
-    CodexEntryFormFields(
-        editingRef = ref,
-        originalName = name,
-        type = EntityKind.LOCATION,
-        name = name,
-        description = description,
-        locationParentId = parentId,
-        cover = cover,
-    )
