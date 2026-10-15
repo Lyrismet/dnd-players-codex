@@ -99,9 +99,6 @@ class PlaceTree(
         result.remove(id)
         return result
     }
-
-    /** how many places sit one level in [id] */
-    fun childCount(id: Long): Int = childrenOf[id]?.size ?: 0
 }
 
 const val PATH_SEPARATOR = " › "

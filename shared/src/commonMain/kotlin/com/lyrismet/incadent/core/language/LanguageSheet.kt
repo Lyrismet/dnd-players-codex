@@ -5,14 +5,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,6 +37,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
+import com.lyrismet.incadent.core.designsystem.component.RadioDot
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import dndplayerscodex.shared.generated.resources.Res
@@ -212,19 +211,7 @@ private fun LanguageOptionRow(
                 color = AppPalette.TextSecondary,
             )
         }
-        RadioMark(isSelected)
-    }
-}
-
-// the mockup's 22px ring with a 10px dot - gold while it is the current language
-@Composable
-private fun RadioMark(isSelected: Boolean) {
-    val ring = if (isSelected) AppPalette.Gold else AppPalette.RadioIdle
-    Box(
-        modifier = Modifier.size(22.dp).border(1.5.dp, ring, CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (isSelected) Box(Modifier.size(10.dp).background(AppPalette.Gold, CircleShape))
+        RadioDot(isSelected)
     }
 }
 

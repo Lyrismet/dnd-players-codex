@@ -25,8 +25,6 @@ class CodexRegions(
         return place?.let { places.regionOf(it) }
     }
 
-    fun regionOfLocation(place: Location): Location = places.regionOf(place)
-
     /** the names a search for a place can hit - every place the npc is met at and everything above them */
     fun placeNamesOfNpc(npc: Npc): List<String> =
         npc.locationIds.mapNotNull { places.find(it) }.flatMap { place -> places.pathOf(place).map { it.name } }

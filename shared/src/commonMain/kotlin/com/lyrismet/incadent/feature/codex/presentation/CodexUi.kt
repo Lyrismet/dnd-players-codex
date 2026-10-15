@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
@@ -79,7 +80,7 @@ fun CodexUi(
                     },
                 )
                 Column(modifier = Modifier.padding(bottom = 12.dp)) {
-                    CodexSearchField(
+                    AppSearchField(
                         query = state.searchQuery,
                         onQueryChange = { state.eventSink(CodexEvent.SearchQueryChanged(it)) },
                         placeholder = stringResource(Res.string.codex_search_placeholder),
