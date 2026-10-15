@@ -281,11 +281,14 @@ private fun PartyStatFields(
         range = PartyStatRanges.hpMax,
         onChange = { eventSink(CodexEvent.EntryNumberChanged(CodexEntryNumberField.PARTY_HP_MAX, it)) },
     )
-    FormChipPicker(
-        label = stringResource(Res.string.codex_entry_label_presence),
-        options = form.partyPresenceOptions,
-        onClick = { eventSink(CodexEvent.EntryPartyPresenceChanged(it)) },
-    )
+    // a new party member is always in the party, the switch only matters when editing
+    if (form.isEditing) {
+        FormChipPicker(
+            label = stringResource(Res.string.codex_entry_label_presence),
+            options = form.partyPresenceOptions,
+            onClick = { eventSink(CodexEvent.EntryPartyPresenceChanged(it)) },
+        )
+    }
     FormTextArea(
         label = stringResource(Res.string.codex_entry_label_notes),
         value = form.description,

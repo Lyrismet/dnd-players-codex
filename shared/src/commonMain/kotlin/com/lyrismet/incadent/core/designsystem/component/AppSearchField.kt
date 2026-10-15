@@ -64,7 +64,7 @@ fun AppSearchField(
             }
             BasicTextField(
                 value = query,
-                onValueChange = onQueryChange,
+                onValueChange = { onQueryChange(it.take(TextLimits.SEARCH)) },
                 singleLine = true,
                 textStyle = textStyle.copy(color = AppPalette.TextPrimary),
                 cursorBrush = GoldCursorBrush,

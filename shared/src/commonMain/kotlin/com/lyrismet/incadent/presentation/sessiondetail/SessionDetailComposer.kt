@@ -55,8 +55,10 @@ import androidx.compose.ui.window.PopupPositionProvider
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
+import com.lyrismet.incadent.core.designsystem.component.AppCharCountPill
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
+import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
@@ -161,7 +163,10 @@ private fun ComposerDraftField(
 ) {
     BasicTextField(
         value = TextFieldValue(state.draft, state.draftSelection),
-        onValueChange = { state.eventSink(SessionDetailEvent.DraftChanged(it.text, it.selection)) },
+        onValueChange = {
+            val capped = it.copy(text = it.text.take(TextLimits.NOTE))
+            state.eventSink(SessionDetailEvent.DraftChanged(capped.text, capped.selection))
+        },
         textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp, color = AppPalette.TextPrimary),
         cursorBrush = GoldCursorBrush,
         minLines = 2,
@@ -174,15 +179,22 @@ private fun ComposerDraftField(
                 .onFocusChanged { onDraftFocusChanged(it.isFocused) }
                 .onPreviewKeyEvent { event -> acceptFirstCompletionOnTab(event, state) },
         decorationBox = { innerTextField ->
-            Box {
-                if (state.draft.isEmpty()) {
-                    Text(
-                        stringResource(Res.string.session_detail_composer_placeholder),
-                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp),
-                        color = AppPalette.TextTertiary,
-                    )
+            Column {
+                Box {
+                    if (state.draft.isEmpty()) {
+                        Text(
+                            stringResource(Res.string.session_detail_composer_placeholder),
+                            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp),
+                            color = AppPalette.TextTertiary,
+                        )
+                    }
+                    innerTextField()
                 }
-                innerTextField()
+                AppCharCountPill(
+                    count = state.draft.length,
+                    max = TextLimits.NOTE,
+                    modifier = Modifier.align(Alignment.End),
+                )
             }
         },
     )
