@@ -8,12 +8,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.HoldFrame
 import com.lyrismet.incadent.core.designsystem.component.HoldToEditField
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.RelationOptionEditor
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
@@ -67,7 +66,7 @@ private fun RelationGroupContent(
     onEntityRefClicked: (EntityRef) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionOverline(text = title, color = AppPalette.TextTertiary, letterSpacing = 0.14.em)
+        FormFieldLabel(text = title, fontSize = AppFontSize.Caption)
         if (group.items.isEmpty()) {
             group.emptyText?.let {
                 Text(

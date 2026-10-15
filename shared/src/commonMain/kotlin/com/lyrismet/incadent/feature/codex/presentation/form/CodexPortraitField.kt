@@ -22,10 +22,9 @@ import com.lyrismet.incadent.core.designsystem.component.AppPhotoSlot
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
-import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
+import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.PhotoSlotActions
 import com.lyrismet.incadent.core.designsystem.component.PortraitFrame
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.core.portrait.photoSizeKb
@@ -62,10 +61,8 @@ internal fun PortraitField(
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        SectionOverline(
+        FormFieldLabel(
             text = stringResource(Res.string.codex_entry_label_portrait),
-            color = AppPalette.TextTertiary,
-            style = OverlineStyle.Field,
         )
         Row(
             modifier = PortraitCardModifier,
@@ -121,10 +118,8 @@ internal fun CoverField(
 ) {
     val cover = form.cover
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        SectionOverline(
+        FormFieldLabel(
             text = stringResource(Res.string.codex_entry_label_cover),
-            color = AppPalette.TextTertiary,
-            style = OverlineStyle.Field,
         )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             AppPhotoSlot(

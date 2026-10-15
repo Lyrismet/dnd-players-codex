@@ -19,8 +19,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
-import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
+import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
@@ -76,10 +75,9 @@ private fun TagSuggestionsSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            SectionOverline(
+            FormFieldLabel(
                 text = stringResource(Res.string.session_detail_tag_suggested_header),
                 color = AppPalette.GoldBright,
-                style = OverlineStyle.Field,
             )
             AppButton(
                 text = stringResource(Res.string.session_detail_tag_add_all_button),
@@ -136,10 +134,8 @@ private fun TagCatalogSection(
     eventSink: (SessionDetailEvent) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionOverline(
+        FormFieldLabel(
             text = stringResource(Res.string.session_detail_tag_catalog_header),
-            color = AppPalette.TextTertiary,
-            style = OverlineStyle.Field,
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             catalog.forEach { item ->
@@ -159,10 +155,8 @@ private fun TagCustomInputSection(
     eventSink: (SessionDetailEvent) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionOverline(
+        FormFieldLabel(
             text = stringResource(Res.string.session_detail_tag_custom_header),
-            color = AppPalette.TextTertiary,
-            style = OverlineStyle.Field,
         )
         SheetDraftInput(
             draft = draft,

@@ -119,7 +119,7 @@ private fun ViewerHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            SectionOverline(text = kind, color = AppPalette.TextTertiary, style = OverlineStyle.Field)
+            FormFieldLabel(text = kind)
             Text(title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading, maxLines = 1)
         }
         IconBadge(

@@ -34,13 +34,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
@@ -48,7 +44,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -65,8 +60,6 @@ private const val QUICK_ADD_BORDER_ALPHA = 0.6f
 private const val QUICK_ADD_PANEL_FILL_ALPHA = 0.06f
 private const val QUICK_ADD_PANEL_BORDER_ALPHA = 0.35f
 private const val QUICK_ADD_INPUT_BORDER_ALPHA = 0.5f
-private const val DASH_LENGTH_PX = 6f
-private const val DASH_GAP_PX = 4f
 
 /**
  * optional "+ New NPC"/"+ New place" affordance appended to a [FormChipPicker]'s chip row (Players Codex
@@ -228,21 +221,3 @@ private fun QuickAddInput(
         autoFocus = true,
     )
 }
-
-/** dashed rounded-rect border - [Modifier.border] has no dash support, used by the quick-add and phrase pills */
-internal fun Modifier.dashedBorder(
-    color: Color,
-    width: Dp = 1.dp,
-    cornerRadius: Dp = 20.dp,
-): Modifier =
-    drawBehind {
-        drawRoundRect(
-            color = color,
-            cornerRadius = CornerRadius(cornerRadius.toPx()),
-            style =
-                Stroke(
-                    width = width.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(DASH_LENGTH_PX, DASH_GAP_PX)),
-                ),
-        )
-    }

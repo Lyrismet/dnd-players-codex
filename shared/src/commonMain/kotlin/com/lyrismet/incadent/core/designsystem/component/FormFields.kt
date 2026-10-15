@@ -219,16 +219,9 @@ private fun FormFieldColumn(
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        SectionOverline(
+        FormFieldLabel(
             text = label,
-            color = AppPalette.TextTertiary,
-            inlineContent =
-                if (required) {
-                    { Text(" *", color = AppPalette.GoldBright) }
-                } else {
-                    null
-                },
-            style = OverlineStyle.Field,
+            required = required,
         )
         content()
     }
@@ -283,7 +276,7 @@ fun <T> FormChipPicker(
 ) {
     if (options.isEmpty() && quickAdd == null) return
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        SectionOverline(text = label, color = AppPalette.TextTertiary)
+        FormFieldLabel(text = label)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             options.forEach { option -> ChipOptionPill(option, onClick) }
             if (quickAdd != null && !quickAdd.isOpen) {

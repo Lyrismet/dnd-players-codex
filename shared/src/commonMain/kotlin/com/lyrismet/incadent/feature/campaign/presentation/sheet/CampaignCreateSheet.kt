@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
@@ -24,11 +23,11 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
+import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.core.designsystem.component.PillSize
 import com.lyrismet.incadent.core.designsystem.component.RadioDot
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SelectCheckbox
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -110,10 +109,10 @@ private fun CampaignWorldSection(
     onEvent: (CampaignSheetEvent) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionOverline(
+        FormFieldLabel(
             text = stringResource(Res.string.campaign_create_world_label),
             color = AppPalette.TextSecondary,
-            letterSpacing = 0.14.em,
+            fontSize = AppFontSize.Caption,
         )
         WorldOptionRow(
             title = stringResource(Res.string.campaign_world_new),

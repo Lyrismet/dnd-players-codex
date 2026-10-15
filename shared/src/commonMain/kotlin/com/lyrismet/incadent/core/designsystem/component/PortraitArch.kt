@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -93,22 +92,14 @@ fun PortraitArch(
 @Composable
 private fun ArchDiamond(modifier: Modifier = Modifier) {
     Box(modifier = modifier) {
-        Box(
-            modifier =
-                Modifier
-                    .offset(y = -(DiamondHaloSize / 2))
-                    .size(DiamondHaloSize)
-                    .rotate(DIAMOND_ROTATION_DEGREES)
-                    .background(AppPalette.Surface),
+        DiamondFill(
+            size = DiamondHaloSize,
+            color = AppPalette.Surface,
+            modifier = Modifier.offset(y = -(DiamondHaloSize / 2)),
         )
-        Box(
-            modifier =
-                Modifier
-                    .align(Alignment.TopCenter)
-                    .offset(y = -(DiamondSize / 2))
-                    .size(DiamondSize)
-                    .rotate(DIAMOND_ROTATION_DEGREES)
-                    .background(AppPalette.Gold),
+        DiamondFill(
+            size = DiamondSize,
+            modifier = Modifier.align(Alignment.TopCenter).offset(y = -(DiamondSize / 2)),
         )
     }
 }

@@ -131,3 +131,58 @@ private fun swipeEditAction(
         releaseLabel = stringResource(Res.string.swipe_release_label),
         onEdit = { eventSink(CodexEvent.EditEntryRequested(ref)) },
     )
+
+// the four rows as the lists build them - the swipe state and the peek of the hinted row come from the screen state
+@Composable
+internal fun CodexPartyEntry(
+    state: CodexState,
+    member: PartyCodexItem,
+    hintPeekOffsetPx: Float,
+) = PartyRow(
+    member = member,
+    eventSink = state.eventSink,
+    swipeEditEnabled = state.swipeEditEnabled,
+    peekOffsetPx = state.peekOffsetPxFor(EntityRef.Party(member.id), hintPeekOffsetPx),
+)
+
+@Composable
+internal fun CodexNpcEntry(
+    state: CodexState,
+    npc: NpcCodexItem,
+    hintPeekOffsetPx: Float,
+) = NpcRow(
+    npc = npc,
+    eventSink = state.eventSink,
+    swipeEditEnabled = state.swipeEditEnabled,
+    peekOffsetPx = state.peekOffsetPxFor(EntityRef.Npc(npc.id), hintPeekOffsetPx),
+)
+
+@Composable
+internal fun CodexQuestEntry(
+    state: CodexState,
+    quest: QuestCodexItem,
+    hintPeekOffsetPx: Float,
+) = QuestRow(
+    quest = quest,
+    eventSink = state.eventSink,
+    swipeEditEnabled = state.swipeEditEnabled,
+    peekOffsetPx = state.peekOffsetPxFor(EntityRef.Quest(quest.id), hintPeekOffsetPx),
+)
+
+@Composable
+internal fun CodexLocationEntry(
+    state: CodexState,
+    location: LocationCodexItem,
+    hintPeekOffsetPx: Float,
+) = LocationRow(
+    location = location,
+    eventSink = state.eventSink,
+    swipeEditEnabled = state.swipeEditEnabled,
+    peekOffsetPx = state.peekOffsetPxFor(EntityRef.Location(location.id), hintPeekOffsetPx),
+)
+
+// only the row the swipe hint targets actually peeks - every other row stays at rest
+internal fun CodexState.peekOffsetPxFor(
+    ref: EntityRef,
+    hintPeekOffsetPx: Float,
+): Float = if (swipeHintTarget?.itemId == ref) hintPeekOffsetPx else 0f

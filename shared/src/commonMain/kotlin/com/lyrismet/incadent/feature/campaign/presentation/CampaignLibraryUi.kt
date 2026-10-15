@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -31,7 +30,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppListCard
 import com.lyrismet.incadent.core.designsystem.component.AppListRow
 import com.lyrismet.incadent.core.designsystem.component.AppToast
-import com.lyrismet.incadent.core.designsystem.component.DIAMOND_ROTATION_DEGREES
+import com.lyrismet.incadent.core.designsystem.component.DiamondOutline
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.HeaderDivider
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
@@ -164,12 +163,7 @@ private fun OnboardingBody() {
             )
         }
         OnboardingCard(Res.string.campaign_onboarding_codex_title, Res.string.campaign_onboarding_codex_text) {
-            Box(
-                Modifier
-                    .size(10.dp)
-                    .rotate(DIAMOND_ROTATION_DEGREES)
-                    .border(1.6.dp, AppPalette.GoldBright),
-            )
+            DiamondOutline(size = 10.dp, color = AppPalette.GoldBright, strokeWidth = 1.6.dp)
         }
         OnboardingCard(Res.string.campaign_onboarding_combat_title, Res.string.campaign_onboarding_combat_text) {
             Box(Modifier.size(14.dp).border(1.6.dp, AppPalette.GoldBright, CircleShape))

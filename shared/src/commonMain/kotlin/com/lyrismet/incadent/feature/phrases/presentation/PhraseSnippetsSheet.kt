@@ -22,9 +22,8 @@ import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
+import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
-import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseFrequentRow
@@ -75,13 +74,11 @@ private fun PinnedPhrasesSection(
     onEvent: (PhraseSheetEvent) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionOverline(
+        FormFieldLabel(
             text = stringResource(Res.string.phrase_sheet_pinned_header),
-            color = AppPalette.TextTertiary,
             trailingContent = {
                 Text(state.pinned.size.toString(), fontSize = AppFontSize.Small, color = AppPalette.GoldBright)
             },
-            style = OverlineStyle.Field,
         )
         state.pinned.forEach { row -> PinnedPhraseRow(row, onRemove = { onEvent(PhraseSheetEvent.Removed(row.text)) }) }
         if (state.pinned.isEmpty()) {
@@ -142,10 +139,9 @@ private fun FrequentPhrasesSection(
     onEvent: (PhraseSheetEvent) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionOverline(
+        FormFieldLabel(
             text = stringResource(Res.string.phrase_sheet_frequent_header),
             color = AppPalette.Azure,
-            style = OverlineStyle.Field,
         )
         frequent.forEach { row -> FrequentPhraseRow(row, onPin = { onEvent(PhraseSheetEvent.Pinned(row.text)) }) }
         if (frequent.isEmpty()) {

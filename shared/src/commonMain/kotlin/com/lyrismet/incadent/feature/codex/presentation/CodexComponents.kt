@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +36,7 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
+import com.lyrismet.incadent.core.designsystem.component.DiamondOutline
 import com.lyrismet.incadent.core.designsystem.component.PillSize
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -50,8 +50,6 @@ internal fun CodexSearchField(
 ) {
     AppSearchField(query = query, onQueryChange = onQueryChange, placeholder = placeholder, modifier = modifier)
 }
-
-private const val DIAMOND_ROTATION_DEGREES = 45f
 
 /**
  * the header of one place of the tree - a diamond, its name over the path above it, a rule, how many places lie
@@ -76,12 +74,7 @@ internal fun CodexPlaceSectionHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Box(
-            Modifier
-                .size(7.dp)
-                .rotate(DIAMOND_ROTATION_DEGREES)
-                .border(1.5.dp, AppPalette.Parchment),
-        )
+        DiamondOutline(size = 7.dp, color = AppPalette.Parchment, strokeWidth = 1.5.dp)
         Column(modifier = Modifier.weight(1f, fill = false)) {
             Text(
                 title,
@@ -169,12 +162,10 @@ internal fun CodexOtherSectionsHint(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(
-                Modifier
-                    .padding(top = OTHER_SECTIONS_DIAMOND_TOP_DP.dp)
-                    .size(8.dp)
-                    .rotate(DIAMOND_ROTATION_DEGREES)
-                    .border(1.5.dp, AppPalette.Gold),
+            DiamondOutline(
+                size = 8.dp,
+                strokeWidth = 1.5.dp,
+                modifier = Modifier.padding(top = OTHER_SECTIONS_DIAMOND_TOP_DP.dp),
             )
             Text(
                 text =

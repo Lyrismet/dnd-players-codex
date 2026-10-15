@@ -11,13 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
+import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.NumberLabel
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.format.NumberSizeLadder
 import com.lyrismet.incadent.feature.codex.presentation.summary.RelatedNoteItem
@@ -36,10 +35,8 @@ internal fun EntityRelatedNotesSection(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionOverline(
+        FormFieldLabel(
             text = stringResource(Res.string.entity_sheet_related_title),
-            color = AppPalette.TextTertiary,
-            letterSpacing = 0.14.em,
             trailingContent = {
                 Text(
                     stringResource(Res.string.entity_sheet_related_count_format, relatedNotes.size),
@@ -48,6 +45,7 @@ internal fun EntityRelatedNotesSection(
                     color = AppPalette.Gold,
                 )
             },
+            fontSize = AppFontSize.Caption,
         )
         if (relatedNotes.isEmpty()) {
             Text(

@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.core.designsystem.component
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,7 +40,7 @@ fun EmptyState(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (ornament) {
-                Box(Modifier.size(10.dp).rotate(DIAMOND_ROTATION_DEGREES).border(1.dp, AppPalette.Gold))
+                DiamondOutline(size = 10.dp)
             }
             if (title != null) {
                 Text(

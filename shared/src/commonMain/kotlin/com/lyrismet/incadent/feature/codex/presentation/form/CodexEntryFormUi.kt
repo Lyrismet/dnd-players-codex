@@ -23,11 +23,8 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
 import com.lyrismet.incadent.core.designsystem.component.FormFieldAction
-import com.lyrismet.incadent.core.designsystem.component.FormNumberField
 import com.lyrismet.incadent.core.designsystem.component.FormPickField
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
-import com.lyrismet.incadent.core.designsystem.component.FormTextArea
-import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.core.designsystem.component.QuickAddOutsideTapHost
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
@@ -166,23 +163,26 @@ private fun NpcEntryFields(
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     PortraitField(form, eventSink)
-    FormTextField(
+    CodexEntryTextField(
         label = stringResource(Res.string.codex_entry_label_name_npc),
         value = form.name,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.NAME, it)) },
+        field = CodexEntryField.NAME,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_npc_name),
         required = true,
     )
-    FormTextField(
+    CodexEntryTextField(
         label = stringResource(Res.string.codex_entry_label_race),
         value = form.race,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.RACE, it)) },
+        field = CodexEntryField.RACE,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_npc_race),
     )
-    FormTextField(
+    CodexEntryTextField(
         label = stringResource(Res.string.codex_entry_label_faction),
         value = form.faction,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.FACTION, it)) },
+        field = CodexEntryField.FACTION,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_npc_faction),
     )
     FormChipPicker(
@@ -204,10 +204,11 @@ private fun NpcEntryFields(
                 { places.forEach { MentionChip(item = it, onClick = null) } }
             },
     )
-    FormTextArea(
+    CodexEntryTextArea(
         label = stringResource(Res.string.codex_entry_label_notes),
         value = form.description,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.DESCRIPTION, it)) },
+        field = CodexEntryField.DESCRIPTION,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_npc_notes),
     )
 }
@@ -232,32 +233,36 @@ private fun PartyIdentityFields(
         onClick = { eventSink(CodexEntryFormEvent.EntryPartyOwnerChanged(it)) },
     )
     PortraitField(form, eventSink)
-    FormTextField(
+    CodexEntryTextField(
         label = stringResource(Res.string.codex_entry_label_name_party),
         value = form.name,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.NAME, it)) },
+        field = CodexEntryField.NAME,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_party_name),
         required = true,
     )
     // a player character's "вы" flag stands in for the player's name, so the field only shows for everyone else
     if (!form.partyIsPlayerCharacter) {
-        FormTextField(
+        CodexEntryTextField(
             label = stringResource(Res.string.codex_entry_label_player),
             value = form.partyPlayer,
-            onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.PARTY_PLAYER, it)) },
+            field = CodexEntryField.PARTY_PLAYER,
+            eventSink = eventSink,
             placeholder = stringResource(Res.string.codex_entry_placeholder_party_player),
         )
     }
-    FormTextField(
+    CodexEntryTextField(
         label = stringResource(Res.string.codex_entry_label_class),
         value = form.partyClass,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.PARTY_CLASS, it)) },
+        field = CodexEntryField.PARTY_CLASS,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_party_class),
     )
-    FormTextField(
+    CodexEntryTextField(
         label = stringResource(Res.string.codex_entry_label_race),
         value = form.race,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.RACE, it)) },
+        field = CodexEntryField.RACE,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_party_race),
     )
 }
@@ -267,11 +272,12 @@ private fun PartyStatFields(
     form: CodexEntryFormState,
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
-    FormNumberField(
+    CodexEntryNumberField(
         label = stringResource(Res.string.codex_entry_label_level),
         value = form.partyLevel,
         range = PartyStatRanges.level,
-        onChange = { eventSink(CodexEntryFormEvent.EntryNumberChanged(CodexEntryNumberField.PARTY_LEVEL, it)) },
+        field = CodexEntryNumberField.PARTY_LEVEL,
+        eventSink = eventSink,
         action =
             form.partyLevelFromPlayer?.let {
                 FormFieldAction(
@@ -280,11 +286,12 @@ private fun PartyStatFields(
                 )
             },
     )
-    FormNumberField(
+    CodexEntryNumberField(
         label = stringResource(Res.string.codex_entry_label_hp_max),
         value = form.partyHpMax,
         range = PartyStatRanges.hpMax,
-        onChange = { eventSink(CodexEntryFormEvent.EntryNumberChanged(CodexEntryNumberField.PARTY_HP_MAX, it)) },
+        field = CodexEntryNumberField.PARTY_HP_MAX,
+        eventSink = eventSink,
     )
     // a new party member is always in the party, the switch only matters when editing
     if (form.isEditing) {
@@ -294,10 +301,11 @@ private fun PartyStatFields(
             onClick = { eventSink(CodexEntryFormEvent.EntryPartyPresenceChanged(it)) },
         )
     }
-    FormTextArea(
+    CodexEntryTextArea(
         label = stringResource(Res.string.codex_entry_label_notes),
         value = form.description,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.DESCRIPTION, it)) },
+        field = CodexEntryField.DESCRIPTION,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_party_notes),
     )
 }
@@ -307,10 +315,11 @@ private fun QuestEntryFields(
     form: CodexEntryFormState,
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
-    FormTextField(
+    CodexEntryTextField(
         label = stringResource(Res.string.codex_entry_label_name_quest),
         value = form.name,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.NAME, it)) },
+        field = CodexEntryField.NAME,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_quest_name),
         required = true,
     )
@@ -320,10 +329,11 @@ private fun QuestEntryFields(
         onClick = { eventSink(CodexEntryFormEvent.EntryChipToggled(CodexEntryChipField.QUEST_GIVER, it)) },
         quickAdd = npcQuickAdd(form, eventSink, CodexEntryChipField.QUEST_GIVER),
     )
-    FormTextField(
+    CodexEntryTextField(
         label = stringResource(Res.string.codex_entry_label_reward),
         value = form.reward,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.REWARD, it)) },
+        field = CodexEntryField.REWARD,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_quest_reward),
     )
     FormPickField(
@@ -339,10 +349,11 @@ private fun QuestEntryFields(
         options = form.questStatusOptions,
         onClick = { eventSink(CodexEntryFormEvent.EntryQuestStatusChanged(it)) },
     )
-    FormTextArea(
+    CodexEntryTextArea(
         label = stringResource(Res.string.codex_entry_label_description),
         value = form.description,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.DESCRIPTION, it)) },
+        field = CodexEntryField.DESCRIPTION,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_quest_description),
     )
 }
@@ -352,10 +363,11 @@ private fun LocationEntryFields(
     form: CodexEntryFormState,
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
-    FormTextField(
+    CodexEntryTextField(
         label = stringResource(Res.string.codex_entry_label_name_location),
         value = form.name,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.NAME, it)) },
+        field = CodexEntryField.NAME,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_location_name),
         required = true,
     )
@@ -367,10 +379,11 @@ private fun LocationEntryFields(
         subtitle = form.locationParent?.path,
         leadingGlyph = MentionGlyph.LOCATION.symbol,
     )
-    FormTextArea(
+    CodexEntryTextArea(
         label = stringResource(Res.string.codex_entry_label_description),
         value = form.description,
-        onChange = { eventSink(CodexEntryFormEvent.EntryFieldChanged(CodexEntryField.DESCRIPTION, it)) },
+        field = CodexEntryField.DESCRIPTION,
+        eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_location_description),
     )
     CoverField(form, eventSink)
