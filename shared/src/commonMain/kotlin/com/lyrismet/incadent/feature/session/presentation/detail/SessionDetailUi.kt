@@ -44,6 +44,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.OrnamentedEmptyState
+import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
@@ -96,7 +97,7 @@ private fun ColumnScope.SessionDetailBody(state: SessionDetailState) {
         }
         AppToast(
             text = state.toast,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+            modifier = floatingBarAnchor(),
         )
     }
 

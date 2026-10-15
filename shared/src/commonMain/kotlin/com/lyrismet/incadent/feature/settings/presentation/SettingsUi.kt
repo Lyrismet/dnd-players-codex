@@ -40,6 +40,7 @@ import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.language.LanguageRow
 import com.lyrismet.incadent.core.language.LanguageSheet
@@ -135,7 +136,7 @@ fun SettingsUi(
                 }
             }
         }
-        AppToast(text = state.toast, modifier = Modifier.align(Alignment.BottomCenter).padding(12.dp))
+        AppToast(text = state.toast, modifier = floatingBarAnchor())
     }
 
     SettingsSheets(state)

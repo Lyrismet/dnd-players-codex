@@ -20,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -36,6 +35,7 @@ import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.EmptyStatePlaceholder
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.dismissKeyboardOnTap
+import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.icons.CodexTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.CombatTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.SessionsTabIcon
@@ -164,7 +164,7 @@ internal fun AppTabHost(
             UndoToast(
                 action = pendingUndo,
                 onUndo = undoController::undo,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+                modifier = floatingBarAnchor(),
             )
         }
         BottomTabBar(

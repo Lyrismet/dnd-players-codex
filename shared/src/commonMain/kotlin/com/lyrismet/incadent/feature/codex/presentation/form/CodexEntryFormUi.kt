@@ -11,7 +11,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
@@ -31,6 +30,7 @@ import com.lyrismet.incadent.core.designsystem.component.FormTextArea
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.core.designsystem.component.QuickAddOutsideTapHost
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
+import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
@@ -436,7 +436,7 @@ internal fun CodexEntryFormSheet(
             // the sheet covers the app-level toast, so the quick-add confirmation gets its own copy here
             AppToast(
                 text = toast,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+                modifier = floatingBarAnchor(),
             )
         }
     }

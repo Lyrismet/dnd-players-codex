@@ -34,6 +34,7 @@ import com.lyrismet.incadent.core.designsystem.component.HeaderDivider
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.language.GlobeIcon
 import com.lyrismet.incadent.core.language.LanguageSheet
 import com.lyrismet.incadent.core.language.LanguageSheetEvent
@@ -94,7 +95,7 @@ fun CampaignLibraryUi(
             }
             AppToast(
                 text = state.toast,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 96.dp),
+                modifier = floatingBarAnchor(bottomInset = 96.dp),
             )
         }
     }

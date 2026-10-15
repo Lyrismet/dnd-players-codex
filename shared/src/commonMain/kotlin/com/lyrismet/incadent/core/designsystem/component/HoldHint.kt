@@ -1,10 +1,5 @@
 package com.lyrismet.incadent.core.designsystem.component
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -94,22 +88,11 @@ fun HoldTooShortToast(
             visible = false
         }
     }
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn() + slideInVertically { it / 2 },
-        exit = fadeOut() + slideOutVertically { it / 2 },
-        modifier = modifier,
-    ) {
+    FloatingBar(visible = visible, modifier = modifier) {
         Text(
             text,
             style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, lineHeight = 18.sp),
             color = AppPalette.TextPrimary,
-            modifier =
-                Modifier
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(AppPalette.SurfaceElevated)
-                    .border(1.dp, AppPalette.BorderHover, RoundedCornerShape(14.dp))
-                    .padding(start = 14.dp, top = 10.dp, end = 10.dp, bottom = 10.dp),
         )
     }
 }

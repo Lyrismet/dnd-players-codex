@@ -37,6 +37,7 @@ import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.format.NumberSizeLadder
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
@@ -82,7 +83,7 @@ fun SessionListUi(
             SessionListBody(state, swipeHint.peekOffsetPx)
             AppToast(
                 text = state.toast?.text,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+                modifier = floatingBarAnchor(),
             )
             SwipeHintBanner(
                 // the campaign-rename toast shares this anchor, so the hint yields to it instead of stacking
@@ -92,7 +93,7 @@ fun SessionListUi(
                 subtitle = stringResource(Res.string.swipe_hint_sessions_subtitle),
                 dismissLabel = stringResource(Res.string.swipe_hint_dismiss),
                 onDismiss = swipeHint::dismiss,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+                modifier = floatingBarAnchor(),
             )
         }
     }

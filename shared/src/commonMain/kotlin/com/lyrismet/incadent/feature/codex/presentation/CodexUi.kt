@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
@@ -15,6 +14,7 @@ import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
+import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
@@ -100,7 +100,7 @@ fun CodexUi(
                 subtitle = codexSwipeHintSubtitle(state.swipeHintDirection),
                 dismissLabel = stringResource(Res.string.swipe_hint_dismiss),
                 onDismiss = swipeHint::dismiss,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+                modifier = floatingBarAnchor(),
             )
         }
     }
@@ -192,7 +192,7 @@ private fun CodexEntitySheet(
             UndoToast(
                 action = state.undoAction,
                 onUndo = { state.eventSink(CodexEvent.UndoClicked) },
-                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+                modifier = floatingBarAnchor(),
             )
         }
     }
