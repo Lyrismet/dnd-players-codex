@@ -69,12 +69,14 @@ fun FormTextField(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     required: Boolean = false,
+    maxLength: Int = TextLimits.LINE,
 ) {
     FormFieldColumn(label, modifier, required) {
         FormInput(
             value = value,
-            onChange = onChange,
+            onChange = { onChange(it.take(maxLength)) },
             placeholder = placeholder,
+            maxLength = maxLength,
             singleLine = true,
             modifier = Modifier.height(FieldHeight),
         )
@@ -90,12 +92,14 @@ fun FormTextArea(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     required: Boolean = false,
+    maxLength: Int = TextLimits.NOTE,
 ) {
     FormFieldColumn(label, modifier, required) {
         FormInput(
             value = value,
-            onChange = onChange,
+            onChange = { onChange(it.take(maxLength)) },
             placeholder = placeholder,
+            maxLength = maxLength,
             singleLine = false,
             modifier = Modifier.heightIn(min = AreaMinHeight),
         )
@@ -253,6 +257,7 @@ private fun FormInput(
     value: String,
     onChange: (String) -> Unit,
     placeholder: String?,
+    maxLength: Int,
     singleLine: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -270,14 +275,29 @@ private fun FormInput(
                 .fillMaxWidth()
                 .appCard(shape = FieldShape, background = AppPalette.Background, border = AppPalette.Border),
         decorationBox = { innerTextField ->
-            Box(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = if (singleLine) 0.dp else 12.dp),
-                contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart,
-            ) {
-                if (value.isEmpty() && placeholder != null) {
-                    Text(placeholder, style = textStyle, color = AppPalette.TextTertiary)
+            val text: @Composable () -> Unit = {
+                Box {
+                    if (value.isEmpty() && placeholder != null) {
+                        Text(placeholder, style = textStyle, color = AppPalette.TextTertiary)
+                    }
+                    innerTextField()
                 }
-                innerTextField()
+            }
+            // the counter sits inside the field - centered at the end of a line, bottom end of an area
+            if (singleLine) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp).fillMaxWidth().height(FieldHeight),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Box(modifier = Modifier.weight(1f)) { text() }
+                    AppCharCountPill(count = value.length, max = maxLength)
+                }
+            } else {
+                Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp).fillMaxWidth()) {
+                    text()
+                    AppCharCountPill(count = value.length, max = maxLength, modifier = Modifier.align(Alignment.End))
+                }
             }
         },
     )

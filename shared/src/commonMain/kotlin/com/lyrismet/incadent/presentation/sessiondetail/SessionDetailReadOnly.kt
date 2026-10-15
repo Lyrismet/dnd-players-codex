@@ -22,8 +22,11 @@ internal fun SessionDetailEvent.writesCampaignData(): Boolean =
         SessionDetailEvent.DeletedMentionSheetDismissed,
         is SessionDetailEvent.DeletedMentionPickingChanged,
         is SessionDetailEvent.DeletedMentionQueryChanged,
+        SessionDetailEvent.TitleEditFinished,
+        SessionDetailEvent.OutsideTapped,
         -> false
         is SessionDetailEvent.TitleChanged,
+        SessionDetailEvent.TitleEditStarted,
         is SessionDetailEvent.NpcStatusSelected,
         is SessionDetailEvent.NpcLifeSelected,
         is SessionDetailEvent.QuestStatusSelected,

@@ -1,6 +1,9 @@
 package com.lyrismet.incadent.presentation.sessiondetail
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +37,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +56,7 @@ import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.MentionChip
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
 import com.lyrismet.incadent.core.designsystem.component.TagChip
+import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.tags.sessionTagLabel
@@ -90,6 +95,9 @@ private fun SessionDetailHeaderContent(
             )
             SessionTitle(
                 title = state.title,
+                isEditing = state.isTitleEditing,
+                onEditStarted = { state.eventSink(SessionDetailEvent.TitleEditStarted) },
+                onEditFinished = { state.eventSink(SessionDetailEvent.TitleEditFinished) },
                 onTitleChanged = { state.eventSink(SessionDetailEvent.TitleChanged(it)) },
                 modifier = Modifier.padding(top = 2.dp),
             )
@@ -154,16 +162,18 @@ private fun SessionHeaderTopRow(
 @Composable
 private fun SessionTitle(
     title: String,
+    isEditing: Boolean,
+    onEditStarted: () -> Unit,
+    onEditFinished: () -> Unit,
     onTitleChanged: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var isEditing by remember { mutableStateOf(false) }
     val titleStyle = MaterialTheme.typography.headlineLarge.copy(color = AppPalette.TextHeading)
     if (isEditing) {
-        SessionTitleEditor(title, titleStyle, onTitleChanged, onDone = { isEditing = false }, modifier = modifier)
+        SessionTitleEditor(title, titleStyle, onTitleChanged, onDone = onEditFinished, modifier = modifier)
     } else {
         Row(
-            modifier = modifier.fillMaxWidth().clickable { isEditing = true },
+            modifier = modifier.fillMaxWidth().clickable(onClick = onEditStarted),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.Top,
         ) {
@@ -199,7 +209,7 @@ private fun SessionTitleEditor(
     // a plain String value would start the caret at 0, so the selection is kept here and begins at the end
     var field by remember { mutableStateOf(TextFieldValue(title, TextRange(title.length))) }
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().consumeTaps(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -207,8 +217,9 @@ private fun SessionTitleEditor(
         BasicTextField(
             value = field,
             onValueChange = {
-                field = it
-                onTitleChanged(it.text)
+                val capped = it.copy(text = it.text.take(TextLimits.SESSION_TITLE))
+                field = capped
+                onTitleChanged(capped.text)
             },
             textStyle = titleStyle,
             singleLine = true,
@@ -380,3 +391,12 @@ private fun SessionStatusBadge(
         )
     }
 }
+
+// a tap inside the title editor must not read as a tap outside it, which closes the editor
+private fun Modifier.consumeTaps(): Modifier =
+    pointerInput(Unit) {
+        awaitEachGesture {
+            awaitFirstDown(requireUnconsumed = false)
+            waitForUpOrCancellation()?.consume()
+        }
+    }

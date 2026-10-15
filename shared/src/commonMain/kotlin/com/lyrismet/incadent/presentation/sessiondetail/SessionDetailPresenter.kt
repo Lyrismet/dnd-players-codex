@@ -114,6 +114,7 @@ private class SessionDetailFields(
     val draft: MutableState<TextFieldValue>,
     val editingEntryId: MutableState<Long?>,
     val selectedEntryId: MutableState<Long?>,
+    val titleEditing: MutableState<Boolean>,
     val selectedEntityRef: MutableState<EntityRef?>,
     val entitySheet: EntitySheetInteractions,
     val tagSheetOpen: MutableState<Boolean>,
@@ -300,6 +301,7 @@ class SessionDetailPresenter(
             selectedEntity = selectedEntity,
             editingEntryTimeLabel = editingEntryTimeLabel,
             selectedEntryId = selectedEntryId.value,
+            isTitleEditing = fields.titleEditing.value,
             editingEntryId = editingEntryId.value,
             highlightedEntryId = highlightedEntryId.value,
             focusIndex = focusIndex,
@@ -340,6 +342,7 @@ class SessionDetailPresenter(
             draft = remember(noteId) { mutableStateOf(TextFieldValue("")) },
             editingEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
             selectedEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
+            titleEditing = remember(noteId) { mutableStateOf(false) },
             selectedEntityRef = selectedEntityRef,
             entitySheet = entitySheetInteractions(selectedEntityRef, entityHistory),
             tagSheetOpen = remember(noteId) { mutableStateOf(false) },
@@ -396,7 +399,20 @@ class SessionDetailPresenter(
                 fields.entitySheet.onRelatedNoteClicked(event.sessionNoteId, event.entryId)
             SessionDetailEvent.SheetDismissed -> fields.entitySheet.onDismissed()
             SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, entries, fields, mentionData.candidates)
-            is SessionDetailEvent.EntryClicked -> onEntryClicked(event.id, fields.selectedEntryId)
+            is SessionDetailEvent.EntryClicked -> {
+                onEntryClicked(event.id, fields.selectedEntryId)
+                // the note's action row and the title editor never show together
+                if (fields.selectedEntryId.value != null) fields.titleEditing.value = false
+            }
+            SessionDetailEvent.TitleEditStarted -> {
+                fields.titleEditing.value = true
+                fields.selectedEntryId.value = null
+            }
+            SessionDetailEvent.TitleEditFinished -> fields.titleEditing.value = false
+            SessionDetailEvent.OutsideTapped -> {
+                fields.selectedEntryId.value = null
+                fields.titleEditing.value = false
+            }
             is SessionDetailEvent.EditEntryClicked -> onEditEntry(event.id, entries, fields)
             SessionDetailEvent.CancelEditEntryClicked -> {
                 fields.editingEntryId.value = null

@@ -23,6 +23,7 @@ import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
+import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
@@ -224,6 +225,7 @@ private fun TagCustomInputSection(
             placeholder = stringResource(Res.string.session_detail_tag_draft_placeholder),
             onDraftChanged = { eventSink(SessionDetailEvent.TagDraftChanged(it)) },
             onSubmit = { eventSink(SessionDetailEvent.TagDraftSubmitted) },
+            maxLength = TextLimits.TAG,
         )
     }
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
@@ -27,17 +28,24 @@ fun Modifier.tapOrQuickHold(
         awaitEachGesture {
             awaitFirstDown()
             var released = false
+            var up: PointerInputChange? = null
             val finishedInTime =
                 withTimeoutOrNull(holdDelayMs) {
-                    released = waitForUpOrCancellation() != null
+                    up = waitForUpOrCancellation()
+                    released = up != null
                     true
                 }
             when {
                 finishedInTime == null -> {
                     onHold()
-                    waitForUpOrCancellation()
+                    // consumed so a parent tap handler does not read the release of a hold as a tap
+                    waitForUpOrCancellation()?.consume()
                 }
-                released -> onTap()
+                released -> {
+                    // consumed so a parent tap handler (clearing the selection) does not also fire
+                    up?.consume()
+                    onTap()
+                }
             }
         }
     }

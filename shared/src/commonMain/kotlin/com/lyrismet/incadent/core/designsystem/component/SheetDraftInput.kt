@@ -27,11 +27,12 @@ fun SheetDraftInput(
     onDraftChanged: (String) -> Unit,
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
+    maxLength: Int = TextLimits.PHRASE,
 ) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         BasicTextField(
             value = draft,
-            onValueChange = onDraftChanged,
+            onValueChange = { onDraftChanged(it.take(maxLength)) },
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = AppPalette.TextPrimary),
             cursorBrush = GoldCursorBrush,

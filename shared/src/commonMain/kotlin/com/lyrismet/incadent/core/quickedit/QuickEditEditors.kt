@@ -47,8 +47,10 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.AppCharCountPill
 import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.MentionChipItem
+import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.entitysummary.RelationOption
 import dndplayerscodex.shared.generated.resources.Res
@@ -93,6 +95,7 @@ fun InlineFieldEditor(
 ) {
     val focusRequester = remember { FocusRequester() }
     var value by remember { mutableStateOf(TextFieldValue(draft, editorCaretAtEnd(draft))) }
+    val maxLength = if (kind == InlineInputKind.MULTILINE) TextLimits.NOTE else TextLimits.LINE
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
     EditorFrame(modifier) {
         EditorHeader(label) {
@@ -107,8 +110,9 @@ fun InlineFieldEditor(
         BasicTextField(
             value = value,
             onValueChange = {
-                value = it
-                onEvent(QuickEditUiEvent.DraftChanged(it.text))
+                val capped = it.copy(text = it.text.take(maxLength))
+                value = capped
+                onEvent(QuickEditUiEvent.DraftChanged(capped.text))
             },
             textStyle = inputTextStyle(kind),
             cursorBrush = GoldCursorBrush,
@@ -117,16 +121,13 @@ fun InlineFieldEditor(
             keyboardOptions = inputKeyboardOptions(kind),
             keyboardActions = KeyboardActions(onDone = { onEvent(QuickEditUiEvent.EditSaved) }),
             decorationBox = { inner ->
-                Box {
-                    if (value.text.isEmpty() && kind == InlineInputKind.MULTILINE) {
-                        Text(
-                            stringResource(Res.string.quick_edit_description_hint),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp, lineHeight = 24.sp),
-                            color = AppPalette.TextTertiary,
-                        )
-                    }
-                    inner()
-                }
+                InlineEditorDecoration(
+                    isArea = kind == InlineInputKind.MULTILINE,
+                    length = value.text.length,
+                    maxLength = maxLength,
+                    showHint = value.text.isEmpty(),
+                    inner = inner,
+                )
             },
             modifier =
                 Modifier
@@ -138,6 +139,40 @@ fun InlineFieldEditor(
                         handleEditorKey(event.type, event.key, commandPressed, onEvent)
                     },
         )
+    }
+}
+
+// the counter sits inside the field - centered at the end of a line, bottom end of an area
+@Composable
+private fun InlineEditorDecoration(
+    isArea: Boolean,
+    length: Int,
+    maxLength: Int,
+    showHint: Boolean,
+    inner: @Composable () -> Unit,
+) {
+    val text: @Composable () -> Unit = {
+        Box {
+            if (showHint && isArea) {
+                Text(
+                    stringResource(Res.string.quick_edit_description_hint),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp, lineHeight = 24.sp),
+                    color = AppPalette.TextTertiary,
+                )
+            }
+            inner()
+        }
+    }
+    if (isArea) {
+        Column {
+            text()
+            AppCharCountPill(length, maxLength, Modifier.align(Alignment.End))
+        }
+    } else {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(modifier = Modifier.weight(1f)) { text() }
+            AppCharCountPill(length, maxLength)
+        }
     }
 }
 
