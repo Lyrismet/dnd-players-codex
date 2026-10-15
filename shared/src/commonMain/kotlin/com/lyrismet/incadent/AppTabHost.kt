@@ -45,9 +45,9 @@ import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.navigation.resolveBackAction
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.undo.UndoController
-import com.lyrismet.incadent.presentation.codex.CodexScreen
-import com.lyrismet.incadent.presentation.sessionlist.SessionListScreen
-import com.lyrismet.incadent.presentation.settings.SettingsScreen
+import com.lyrismet.incadent.feature.codex.presentation.CodexScreen
+import com.lyrismet.incadent.feature.session.presentation.list.SessionListScreen
+import com.lyrismet.incadent.feature.settings.presentation.SettingsScreen
 import com.slack.circuit.backstack.SaveableBackStack
 import com.slack.circuit.backstack.rememberSaveableBackStack
 import com.slack.circuit.foundation.NavigableCircuitContent

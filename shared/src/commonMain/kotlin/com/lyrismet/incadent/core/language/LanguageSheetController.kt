@@ -2,8 +2,8 @@ package com.lyrismet.incadent.core.language
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.lyrismet.incadent.domain.model.AppLanguage
-import com.lyrismet.incadent.domain.repository.LanguageRepository
+import com.lyrismet.incadent.core.preferences.AppLanguage
+import com.lyrismet.incadent.core.preferences.LanguageRepository
 
 sealed interface LanguageSheetEvent {
     data object Opened : LanguageSheetEvent

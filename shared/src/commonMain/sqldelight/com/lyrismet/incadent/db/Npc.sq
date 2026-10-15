@@ -1,6 +1,5 @@
-import com.lyrismet.incadent.domain.model.NpcLifeState;
-import com.lyrismet.incadent.domain.model.NpcStatus;
-
+import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState;
+import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus;
 CREATE TABLE npc (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,

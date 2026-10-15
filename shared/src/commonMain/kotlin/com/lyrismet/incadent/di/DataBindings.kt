@@ -1,14 +1,14 @@
 package com.lyrismet.incadent.di
 
 import com.lyrismet.incadent.core.portrait.ImageCompressor
-import com.lyrismet.incadent.data.db.DatabaseDriverFactory
-import com.lyrismet.incadent.data.db.createAppDatabase
 import com.lyrismet.incadent.db.AppDatabase
-import com.lyrismet.incadent.domain.repository.CodexRepositories
-import com.lyrismet.incadent.domain.repository.LocationRepository
-import com.lyrismet.incadent.domain.repository.NpcRepository
-import com.lyrismet.incadent.domain.repository.PartyRepository
-import com.lyrismet.incadent.domain.repository.QuestRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
+import com.lyrismet.incadent.persistence.DatabaseDriverFactory
+import com.lyrismet.incadent.persistence.createAppDatabase
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo

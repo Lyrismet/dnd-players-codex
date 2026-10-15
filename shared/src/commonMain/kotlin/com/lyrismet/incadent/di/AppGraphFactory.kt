@@ -1,7 +1,7 @@
 package com.lyrismet.incadent.di
 
-import com.lyrismet.incadent.data.db.DatabaseDriverFactory
-import com.lyrismet.incadent.data.settings.SettingsFactory
+import com.lyrismet.incadent.core.preferences.SettingsFactory
+import com.lyrismet.incadent.persistence.DatabaseDriverFactory
 import dev.zacsweers.metro.createGraphFactory
 
 /** the single place the graph is built, so platform entry points never touch Metro directly */

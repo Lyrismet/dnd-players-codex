@@ -1,6 +1,6 @@
 package com.lyrismet.incadent.core.selectlist
 
-import com.lyrismet.incadent.core.codexgroup.collationKey
+import com.lyrismet.incadent.core.format.collationKey
 
 /** one entry of a select list - [searchText] is what a query is matched against, usually the title plus the subtitle */
 data class SelectOption(

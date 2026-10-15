@@ -1,5 +1,4 @@
-import com.lyrismet.incadent.domain.model.QuestStatus;
-
+import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus;
 CREATE TABLE quest (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,

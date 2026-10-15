@@ -37,7 +37,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.domain.model.AppLanguage
+import com.lyrismet.incadent.core.preferences.AppLanguage
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.settings_language_empty
 import dndplayerscodex.shared.generated.resources.settings_language_en

@@ -178,7 +178,7 @@ fun FormPickField(
     modifier: Modifier = Modifier,
     title: String? = null,
     subtitle: String? = null,
-    chips: List<MentionChipItem> = emptyList(),
+    chips: (@Composable () -> Unit)? = null,
     leadingGlyph: String? = null,
 ) {
     FormFieldColumn(label, modifier) {
@@ -196,16 +196,16 @@ fun FormPickField(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (leadingGlyph != null && title != null && chips.isEmpty()) {
+            if (leadingGlyph != null && title != null && chips == null) {
                 Text(leadingGlyph, fontSize = 9.sp, color = AppPalette.Parchment)
             }
             Column(modifier = Modifier.weight(1f)) {
                 when {
-                    chips.isNotEmpty() ->
+                    chips != null ->
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp),
-                        ) { chips.forEach { MentionChip(item = it, onClick = null) } }
+                        ) { chips() }
                     title != null -> {
                         Text(title, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
                         if (!subtitle.isNullOrBlank()) {
