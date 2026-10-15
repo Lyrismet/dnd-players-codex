@@ -5,9 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.lyrismet.incadent.data.db.DatabaseDriverFactory
-import com.lyrismet.incadent.data.settings.SettingsFactory
-import com.lyrismet.incadent.di.createAppGraph
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,11 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        val graph =
-            createAppGraph(
-                DatabaseDriverFactory(applicationContext),
-                SettingsFactory(applicationContext),
-            )
+        val graph = (application as IncadentApplication).graph
 
         setContent {
             App(graph, onExit = { finish() })

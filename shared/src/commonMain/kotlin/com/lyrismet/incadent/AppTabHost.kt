@@ -20,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -33,9 +32,10 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import com.lyrismet.incadent.core.designsystem.component.BottomTabBar
 import com.lyrismet.incadent.core.designsystem.component.BottomTabBarItem
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
-import com.lyrismet.incadent.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.dismissKeyboardOnTap
+import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.icons.CodexTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.CombatTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.SessionsTabIcon
@@ -45,9 +45,9 @@ import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.navigation.resolveBackAction
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.undo.UndoController
-import com.lyrismet.incadent.presentation.codex.CodexScreen
-import com.lyrismet.incadent.presentation.sessionlist.SessionListScreen
-import com.lyrismet.incadent.presentation.settings.SettingsScreen
+import com.lyrismet.incadent.feature.codex.presentation.CodexScreen
+import com.lyrismet.incadent.feature.session.presentation.list.SessionListScreen
+import com.lyrismet.incadent.feature.settings.presentation.SettingsScreen
 import com.slack.circuit.backstack.SaveableBackStack
 import com.slack.circuit.backstack.rememberSaveableBackStack
 import com.slack.circuit.foundation.NavigableCircuitContent
@@ -164,7 +164,7 @@ internal fun AppTabHost(
             UndoToast(
                 action = pendingUndo,
                 onUndo = undoController::undo,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 12.dp),
+                modifier = floatingBarAnchor(),
             )
         }
         BottomTabBar(
@@ -256,7 +256,7 @@ private fun TabBackstackHost(
 @Composable
 private fun CombatPlaceholder() {
     Scaffold { contentPadding ->
-        EmptyStatePlaceholder(
+        EmptyState(
             text = stringResource(Res.string.combat_tab_placeholder),
             modifier = Modifier.padding(contentPadding),
         )

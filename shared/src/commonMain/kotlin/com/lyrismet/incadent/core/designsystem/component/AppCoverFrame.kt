@@ -23,8 +23,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
 import com.lyrismet.incadent.domain.model.Photo
 import dndplayerscodex.shared.generated.resources.Res
@@ -32,9 +33,9 @@ import dndplayerscodex.shared.generated.resources.photo_cover_expand
 import org.jetbrains.compose.resources.stringResource
 
 private val CardCoverShape = RoundedCornerShape(16.dp)
-private val AddStripShape = RoundedCornerShape(14.dp)
-private val FieldShape = RoundedCornerShape(14.dp)
-private val FieldInnerShape = RoundedCornerShape(10.dp)
+private val AddStripShape = AppShapes.Card
+private val FieldShape = AppShapes.Card
+private val FieldInnerShape = AppShapes.Control
 private val ExpandPillShape = RoundedCornerShape(15.dp)
 
 // mockup - rgba(10,11,14,0.72) behind the "Развернуть" pill
@@ -79,7 +80,7 @@ fun AppCoverFrame(
             ) {
                 Text(
                     stringResource(Res.string.photo_cover_expand),
-                    fontSize = 12.sp,
+                    fontSize = AppFontSize.Small,
                     fontWeight = FontWeight.SemiBold,
                     color = AppPalette.TextHeading,
                 )
@@ -106,8 +107,8 @@ fun AppCoverAddStrip(
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("+", fontSize = 18.sp, color = AppPalette.Parchment)
-        Text(text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AppPalette.Parchment)
+        Text("+", fontSize = AppFontSize.Title, color = AppPalette.Parchment)
+        Text(text, fontSize = AppFontSize.Body, fontWeight = FontWeight.SemiBold, color = AppPalette.Parchment)
     }
 }
 
@@ -149,9 +150,19 @@ fun AppCoverField(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
             ) {
-                Text("+", fontSize = 22.sp, color = AppPalette.Parchment)
-                Text(placeholder, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AppPalette.Parchment)
-                Text(hint, fontSize = 11.5.sp, color = AppPalette.TextSecondary, textAlign = TextAlign.Center)
+                Text("+", fontSize = AppFontSize.Section, color = AppPalette.Parchment)
+                Text(
+                    placeholder,
+                    fontSize = AppFontSize.Body,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppPalette.Parchment,
+                )
+                Text(
+                    hint,
+                    fontSize = AppFontSize.CaptionPlus,
+                    color = AppPalette.TextSecondary,
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }

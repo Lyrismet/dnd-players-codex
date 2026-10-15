@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +33,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.core.selectlist.SelectRow
 import com.lyrismet.incadent.core.selectlist.canCreateFromQuery
@@ -45,7 +46,7 @@ private val SearchHeight = 46.dp
 private val RowMinHeight = 58.dp
 private val RowContentGap = 16.dp
 private val CheckboxSize = 20.dp
-private val ListShape = RoundedCornerShape(14.dp)
+private val ListShape = AppShapes.Card
 
 /** the words a host gives [AppSelectSheet] - everything the sheet shows besides the options themselves */
 @Suppress("LongParameterList")
@@ -129,7 +130,7 @@ fun AppSelectSheetContent(
                 onQueryChange = { query = it },
                 placeholder = texts.searchPlaceholder,
                 height = SearchHeight,
-                textSize = 15.sp,
+                textSize = AppFontSize.Large,
                 background = AppPalette.Background,
                 clearEndInset = 6.dp,
             )
@@ -142,7 +143,7 @@ fun AppSelectSheetContent(
             if (rows.isEmpty()) {
                 Text(
                     texts.emptyText,
-                    fontSize = 13.sp,
+                    fontSize = AppFontSize.Body,
                     color = AppPalette.TextTertiary,
                     modifier = Modifier.padding(4.dp),
                 )
@@ -193,11 +194,11 @@ private fun SelectHeader(
     ) {
         Text(
             texts.title,
-            style = MaterialTheme.typography.headlineMedium.copy(fontSize = 22.sp),
+            style = MaterialTheme.typography.headlineMedium.copy(fontSize = AppFontSize.Section),
             color = AppPalette.TextHeading,
             modifier = Modifier.weight(1f),
         )
-        if (multi) Text(texts.multiHint, fontSize = 12.sp, color = AppPalette.TextSecondary)
+        if (multi) Text(texts.multiHint, fontSize = AppFontSize.Small, color = AppPalette.TextSecondary)
     }
 }
 
@@ -243,19 +244,23 @@ private fun SelectListRow(
         horizontalArrangement = Arrangement.spacedBy(RowContentGap),
     ) {
         if (multi) SelectCheckbox(row.selected)
-        if (!multi && leadingGlyph != null) Text(leadingGlyph, fontSize = 9.sp, color = AppPalette.Parchment)
+        if (!multi &&
+            leadingGlyph != null
+        ) {
+            Text(leadingGlyph, fontSize = AppFontSize.Micro, color = AppPalette.Parchment)
+        }
         Column(modifier = Modifier.weight(1f)) {
             // explicit line heights - without them the theme's tall default spreads the title and the path apart
             Text(
                 highlighted(row),
-                fontSize = 15.sp,
+                fontSize = AppFontSize.Large,
                 lineHeight = 20.sp,
                 color = AppPalette.TextPrimary,
             )
             row.option.subtitle?.let { subtitle ->
                 Text(
                     subtitle,
-                    fontSize = 11.5.sp,
+                    fontSize = AppFontSize.CaptionPlus,
                     lineHeight = 16.sp,
                     color = AppPalette.TextSecondary,
                     modifier = Modifier.padding(top = 1.dp),
@@ -283,7 +288,7 @@ private fun highlighted(row: SelectRow) =
 
 @Composable
 internal fun SelectCheckbox(checked: Boolean) {
-    val shape = RoundedCornerShape(6.dp)
+    val shape = AppShapes.Badge
     Box(
         modifier =
             Modifier
@@ -293,7 +298,14 @@ internal fun SelectCheckbox(checked: Boolean) {
                 .border(1.5.dp, if (checked) AppPalette.Gold else AppPalette.RadioIdle, shape),
         contentAlignment = Alignment.Center,
     ) {
-        if (checked) Text("✓", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = AppPalette.Background)
+        if (checked) {
+            Text(
+                "✓",
+                fontSize = AppFontSize.Small,
+                fontWeight = FontWeight.Bold,
+                color = AppPalette.Background,
+            )
+        }
     }
 }
 
@@ -308,14 +320,14 @@ private fun SelectOutlinedButton(
                 .fillMaxWidth()
                 .height(44.dp)
                 .appCard(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = AppShapes.Field,
                     background = Color.Transparent,
                     border = AppPalette.Border,
                     onClick = onClick,
                 ),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, fontSize = 13.5.sp, color = AppPalette.TextMuted)
+        Text(text, fontSize = AppFontSize.BodyPlus, color = AppPalette.TextMuted)
     }
 }
 
@@ -329,11 +341,11 @@ internal fun SelectCreateRow(
             Modifier
                 .fillMaxWidth()
                 .heightIn(min = 50.dp)
-                .clip(RoundedCornerShape(14.dp))
+                .clip(AppShapes.Card)
                 .dashedBorder(AppPalette.Gold.copy(alpha = 0.6f), cornerRadius = 14.dp)
                 .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = AppPalette.GoldBright)
+        Text(text, fontSize = AppFontSize.Medium, fontWeight = FontWeight.SemiBold, color = AppPalette.GoldBright)
     }
 }

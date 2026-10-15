@@ -1,7 +1,5 @@
 package com.lyrismet.incadent.core.designsystem.component.icons
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -35,8 +33,26 @@ private fun quillIcon(): ImageVector =
         ).clearGroup()
         .build()
 
+// the outlined trash can, a lid over a body with the handle notch
+private fun deleteIcon(): ImageVector =
+    ImageVector
+        .Builder(
+            name = "Delete",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = ICON_VIEWPORT,
+            viewportHeight = ICON_VIEWPORT,
+        ).addPath(
+            pathData =
+                addPathNodes(
+                    "M6,19c0,1.1 0.9,2 2,2h8c1.1,0 2,-0.9 2,-2V7H6v12zM8,9h8v10H8V9z" +
+                        "M15.5,4l-1,-1h-5l-1,1H5v2h14V4h-3.5z",
+                ),
+            fill = SolidColor(Color.Black),
+        ).build()
+
 /** glyphs reused across 2+ features - one place to see, and if needed swap, every reference */
 object AppIcons {
     val Edit: ImageVector = quillIcon()
-    val Delete: ImageVector = Icons.Outlined.Delete
+    val Delete: ImageVector = deleteIcon()
 }

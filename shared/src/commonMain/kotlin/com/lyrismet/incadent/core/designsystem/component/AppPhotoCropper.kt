@@ -55,7 +55,9 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.portrait.CropAspect
 import com.lyrismet.incadent.core.portrait.CropGeometry
@@ -73,8 +75,8 @@ import org.jetbrains.compose.resources.stringResource
 
 private val PortraitWindowShape =
     RoundedCornerShape(topStart = 120.dp, topEnd = 120.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
-private val WideWindowShape = RoundedCornerShape(14.dp)
-private val ButtonShape = RoundedCornerShape(12.dp)
+private val WideWindowShape = AppShapes.Card
+private val ButtonShape = AppShapes.Field
 
 // the mockup's crop screen - #0B0C10 ground, the picture outside the frame at 28%, a 35% shade and a thirds grid
 private val CropBackground = Color(0xFF0B0C10)
@@ -142,7 +144,7 @@ private fun CropHeader(
         ) {
             Text(
                 stringResource(Res.string.photo_crop_cancel),
-                fontSize = 15.sp,
+                fontSize = AppFontSize.Large,
                 fontWeight = FontWeight.Medium,
                 color = AppPalette.TextMuted,
             )
@@ -150,14 +152,18 @@ private fun CropHeader(
         Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 stringResource(Res.string.photo_crop_overline),
-                fontSize = 10.5.sp,
+                fontSize = AppFontSize.TinyPlus,
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = 0.16.em,
                 color = AppPalette.Gold,
             )
             Text(
                 title,
-                style = MaterialTheme.typography.headlineMedium.copy(fontSize = 20.sp, lineHeight = 24.sp),
+                style =
+                    MaterialTheme.typography.headlineMedium.copy(
+                        fontSize = AppFontSize.Heading,
+                        lineHeight = 24.sp,
+                    ),
                 color = AppPalette.TextHeading,
                 textAlign = TextAlign.Center,
             )
@@ -173,7 +179,7 @@ private fun CropHeader(
         ) {
             Text(
                 stringResource(Res.string.photo_crop_done),
-                fontSize = 14.sp,
+                fontSize = AppFontSize.Medium,
                 fontWeight = FontWeight.Bold,
                 color = AppPalette.Background,
             )
@@ -292,7 +298,7 @@ private fun CropControls(
             Text(
                 stringResource(Res.string.photo_crop_hint, "${tenths / TENTHS}.${tenths % TENTHS}×"),
                 modifier = Modifier.weight(1f),
-                fontSize = 12.sp,
+                fontSize = AppFontSize.Small,
                 lineHeight = 17.4.sp,
                 color = AppPalette.TextSecondary,
             )
@@ -301,13 +307,13 @@ private fun CropControls(
                     Modifier
                         .height(36.dp)
                         .clickable(onClick = onReset)
-                        .border(1.dp, AppPalette.BorderHover, RoundedCornerShape(10.dp))
+                        .border(1.dp, AppPalette.BorderHover, AppShapes.Control)
                         .padding(horizontal = 12.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     stringResource(Res.string.photo_crop_reset),
-                    fontSize = 12.5.sp,
+                    fontSize = AppFontSize.SmallPlus,
                     color = AppPalette.TextDescription,
                 )
             }
@@ -326,5 +332,5 @@ private fun ZoomButton(
         background = AppPalette.Surface,
         border = AppPalette.Border,
         onClick = onClick,
-    ) { Text(glyph, color = AppPalette.TextPrimary, fontSize = 20.sp) }
+    ) { Text(glyph, color = AppPalette.TextPrimary, fontSize = AppFontSize.Heading) }
 }

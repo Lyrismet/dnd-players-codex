@@ -1,13 +1,15 @@
 package com.lyrismet.incadent.di
 
+import com.lyrismet.incadent.core.coroutines.AppCoroutineScope
 import com.lyrismet.incadent.core.portrait.ImageCompressor
-import com.lyrismet.incadent.data.db.DatabaseDriverFactory
-import com.lyrismet.incadent.data.db.createAppDatabase
 import com.lyrismet.incadent.db.AppDatabase
-import com.lyrismet.incadent.domain.repository.LocationRepository
-import com.lyrismet.incadent.domain.repository.MentionRepositories
-import com.lyrismet.incadent.domain.repository.NpcRepository
-import com.lyrismet.incadent.domain.repository.QuestRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
+import com.lyrismet.incadent.persistence.DatabaseDriverFactory
+import com.lyrismet.incadent.persistence.createAppDatabase
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo
@@ -27,11 +29,12 @@ object DataBindings {
         createAppDatabase(driverFactory.createDriver())
 
     @Provides
-    fun provideMentionRepositories(
+    fun provideCodexRepositories(
+        partyRepository: PartyRepository,
         npcRepository: NpcRepository,
-        locationRepository: LocationRepository,
         questRepository: QuestRepository,
-    ): MentionRepositories = MentionRepositories(npcRepository, locationRepository, questRepository)
+        locationRepository: LocationRepository,
+    ): CodexRepositories = CodexRepositories(partyRepository, npcRepository, questRepository, locationRepository)
 
     @Provides
     @SingleIn(AppScope::class)
@@ -39,5 +42,6 @@ object DataBindings {
 
     @Provides
     @SingleIn(AppScope::class)
+    @AppCoroutineScope
     fun provideAppScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 }

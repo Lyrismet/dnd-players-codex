@@ -1,8 +1,11 @@
 package com.lyrismet.incadent.core.undo
 
+import com.lyrismet.incadent.core.coroutines.AppCoroutineScope
+import com.lyrismet.incadent.core.logging.AppLog
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -12,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 private const val UNDO_WINDOW_MS = 5000L
+private const val LOG_COMPONENT = "UndoController"
 
 data class UndoAction(
     val title: String,
@@ -23,7 +27,7 @@ data class UndoAction(
 @Inject
 @SingleIn(AppScope::class)
 class UndoController(
-    private val scope: CoroutineScope,
+    @AppCoroutineScope private val scope: CoroutineScope,
 ) {
     private val _current = MutableStateFlow<UndoAction?>(null)
     val current: StateFlow<UndoAction?> = _current.asStateFlow()
@@ -49,6 +53,11 @@ class UndoController(
         dismissJob?.cancel()
         _current.value = null
         // a failed restore must not crash the app from the shared scope
-        scope.launch { runCatching { action.onUndo() } }
+        scope.launch {
+            runCatching { action.onUndo() }.onFailure { failure ->
+                if (failure is CancellationException) throw failure
+                AppLog.error(LOG_COMPONENT, "undo failed", failure)
+            }
+        }
     }
 }

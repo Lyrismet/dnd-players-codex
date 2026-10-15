@@ -1,5 +1,4 @@
-import com.lyrismet.incadent.domain.model.CampaignStatus;
-
+import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus;
 CREATE TABLE campaign (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,

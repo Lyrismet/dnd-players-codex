@@ -1,5 +1,4 @@
 import kotlinx.datetime.LocalDateTime;
-
 CREATE TABLE session_note (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -9,7 +8,7 @@ CREATE TABLE session_note (
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
 );
 
-CREATE INDEX session_note_campaign_id ON session_note(campaign_id);
+CREATE INDEX session_note_campaign_date ON session_note(campaign_id, session_date);
 
 selectAll:
 SELECT id, title, session_date, ended_at, created_at FROM session_note
@@ -30,6 +29,9 @@ WHERE id = ?;
 
 deleteById:
 DELETE FROM session_note WHERE id = ?;
+
+reopen:
+UPDATE session_note SET ended_at = NULL WHERE id = ?;
 
 endOtherLive:
 UPDATE session_note

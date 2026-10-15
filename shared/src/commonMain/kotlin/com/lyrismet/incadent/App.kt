@@ -16,13 +16,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import com.lyrismet.incadent.core.designsystem.AppTheme
-import com.lyrismet.incadent.core.designsystem.component.LocalMentionStyle
 import com.lyrismet.incadent.core.localization.AppEnvironment
 import com.lyrismet.incadent.core.localization.customAppLocale
+import com.lyrismet.incadent.core.preferences.AppLanguage
+import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.di.AppGraph
-import com.lyrismet.incadent.domain.model.AppLanguage
-import com.lyrismet.incadent.domain.model.MentionStyle
-import com.lyrismet.incadent.presentation.campaign.CampaignLibraryScreen
+import com.lyrismet.incadent.feature.campaign.presentation.CampaignLibraryScreen
+import com.lyrismet.incadent.feature.mention.presentation.LocalMentionStyle
 import com.slack.circuit.foundation.CircuitCompositionLocals
 import com.slack.circuit.foundation.CircuitContent
 import kotlinx.coroutines.delay

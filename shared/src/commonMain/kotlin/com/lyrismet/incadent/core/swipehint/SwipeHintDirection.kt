@@ -1,7 +1,7 @@
 package com.lyrismet.incadent.core.swipehint
 
-import com.lyrismet.incadent.domain.model.EntityEditMode
-import com.lyrismet.incadent.domain.model.SwipeHintState
+import com.lyrismet.incadent.core.preferences.EntityEditMode
+import com.lyrismet.incadent.core.preferences.SwipeHintState
 
 /** whether the one-time teaching peek also plays a right "edit" leg before its left "delete" one */
 enum class SwipeHintDirection {

@@ -1,5 +1,5 @@
-import com.lyrismet.incadent.domain.model.PartyPresence;
-
+import kotlin.Boolean;
+import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence;
 CREATE TABLE party_member (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE party_member (
     race TEXT NOT NULL DEFAULT '',
     level INTEGER,
     player_name TEXT NOT NULL DEFAULT '',
-    is_player_character INTEGER NOT NULL DEFAULT 0,
+    is_player_character INTEGER AS Boolean NOT NULL DEFAULT 0,
     presence TEXT AS PartyPresence NOT NULL DEFAULT 'IN',
     hp_max INTEGER,
     hp_current INTEGER,
@@ -36,6 +36,11 @@ WHERE id = ?;
 insert:
 INSERT INTO party_member(name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, portrait, portrait_thumb, campaign_id)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- puts a deleted record back under its old id, so the "@" tokens in notes find it again
+insertWithId:
+INSERT INTO party_member(id, name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, portrait, portrait_thumb, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:

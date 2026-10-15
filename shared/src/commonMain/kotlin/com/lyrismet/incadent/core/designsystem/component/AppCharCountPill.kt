@@ -2,16 +2,16 @@ package com.lyrismet.incadent.core.designsystem.component
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 
 private const val NEAR_LIMIT_SHARE = 0.9f
-private val CounterShape = RoundedCornerShape(10.dp)
+private val CounterShape = AppShapes.Control
 
 /** the "3/24" pill - turns gold when the field is within 10% of its cap */
 @Composable
@@ -23,7 +23,7 @@ fun AppCharCountPill(
     val nearLimit = count >= max * NEAR_LIMIT_SHARE
     Text(
         text = "$count/$max",
-        fontSize = 10.5.sp,
+        fontSize = AppFontSize.TinyPlus,
         color = if (nearLimit) AppPalette.GoldBright else AppPalette.TextTertiary,
         modifier =
             modifier

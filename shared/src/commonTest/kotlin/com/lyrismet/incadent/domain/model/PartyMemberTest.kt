@@ -1,5 +1,8 @@
 package com.lyrismet.incadent.domain.model
 
+import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
+import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
+import com.lyrismet.incadent.feature.codex.domain.model.clampedToRanges
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

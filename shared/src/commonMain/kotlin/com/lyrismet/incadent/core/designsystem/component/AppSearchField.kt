@@ -1,27 +1,18 @@
 package com.lyrismet.incadent.core.designsystem.component
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
-import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.icons.SearchIcon
 
 /**
@@ -36,51 +27,38 @@ fun AppSearchField(
     placeholder: String,
     modifier: Modifier = Modifier,
     height: Dp = 42.dp,
-    textSize: TextUnit = 14.sp,
+    textSize: TextUnit = AppFontSize.Medium,
     background: Color = AppPalette.Surface,
     clearEndInset: Dp = 4.dp,
 ) {
-    val textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = textSize, lineHeight = textSize * 1.3f)
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .height(height)
-                .appCard(shape = RoundedCornerShape(12.dp), background = background, border = AppPalette.Border)
-                .padding(start = 12.dp, end = if (query.isEmpty()) 12.dp else clearEndInset),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        SearchIcon()
-        Box(modifier = Modifier.weight(1f)) {
+    AppTextInput(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier,
+        placeholder = placeholder,
+        style =
+            AppTextInputStyle(
+                textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = textSize, lineHeight = textSize * 1.3f),
+                chrome = AppInputChrome(background = background),
+                height = height,
+                contentPadding = PaddingValues(start = 12.dp, end = if (query.isEmpty()) 12.dp else clearEndInset),
+            ),
+        maxLength = TextLimits.SEARCH,
+        leading = { SearchIcon() },
+        trailing =
             if (query.isEmpty()) {
-                Text(
-                    placeholder,
-                    style = textStyle,
-                    color = AppPalette.TextTertiary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            BasicTextField(
-                value = query,
-                onValueChange = { onQueryChange(it.take(TextLimits.SEARCH)) },
-                singleLine = true,
-                textStyle = textStyle.copy(color = AppPalette.TextPrimary),
-                cursorBrush = GoldCursorBrush,
-                keyboardOptions = SentenceKeyboardOptions,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        if (query.isNotEmpty()) {
-            IconBadge(
-                size = 36.dp,
-                shape = RoundedCornerShape(10.dp),
-                background = Color.Transparent,
-                onClick = { onQueryChange("") },
-            ) {
-                Text("✕", fontSize = 14.sp, color = AppPalette.TextSecondary)
-            }
-        }
-    }
+                null
+            } else {
+                {
+                    IconBadge(
+                        size = 36.dp,
+                        shape = AppShapes.Control,
+                        background = Color.Transparent,
+                        onClick = { onQueryChange("") },
+                    ) {
+                        Text("✕", fontSize = AppFontSize.Medium, color = AppPalette.TextSecondary)
+                    }
+                }
+            },
+    )
 }

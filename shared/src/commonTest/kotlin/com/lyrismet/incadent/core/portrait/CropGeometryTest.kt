@@ -47,4 +47,17 @@ class CropGeometryTest {
         val rect = geometry.toCropRect(geometry.zoomTo(geometry.initial(), 3f))
         assertTrue(rect.left >= 0f && rect.top >= 0f && rect.right <= 1.0001f && rect.bottom <= 1.0001f)
     }
+
+    @Test
+    fun clampNeverThrowsOnFloatRoundingForAnyImageSize() {
+        for (aspect in CropAspect.entries) {
+            for (width in 300..1500 step 7) {
+                for (height in listOf(300, 541, 777, 1000, 1333, 2048)) {
+                    val g = CropGeometry(aspect, width, height)
+                    val rect = g.toCropRect(g.initial())
+                    assertTrue(rect.left >= 0f && rect.top >= 0f)
+                }
+            }
+        }
+    }
 }

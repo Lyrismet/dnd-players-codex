@@ -53,10 +53,17 @@ data class HoldFrame(
     val paddingHorizontal: Dp,
     val paddingVertical: Dp,
     val radius: Dp,
+    // spans the whole row so a short value is as easy to hold as a long one
+    val fillWidth: Boolean = false,
+    // a faint dashed outline that tells the area can be edited even when it holds text
+    val outlined: Boolean = false,
 ) {
     companion object {
         val Title = HoldFrame(-6.dp, -4.dp, 6.dp, 4.dp, 10.dp)
         val Description = HoldFrame(-6.dp, -6.dp, 6.dp, 6.dp, 10.dp)
+
+        // no overhang, the outline lines up with the neighbouring blocks and the inset keeps the text off it
+        val Note = HoldFrame(0.dp, 0.dp, 12.dp, 10.dp, 10.dp, fillWidth = true, outlined = true)
         val FactLine = HoldFrame(0.dp, 0.dp, 14.dp, 4.dp, 0.dp)
     }
 }
@@ -80,8 +87,14 @@ fun HoldToEditField(
     Box(
         modifier =
             modifier
-                .negativeMargin(frame.marginHorizontal, frame.marginVertical)
-                .clip(RoundedCornerShape(frame.radius))
+                .negativeMargin(frame.marginHorizontal, frame.marginVertical, frame.fillWidth)
+                .then(
+                    if (frame.outlined) {
+                        Modifier.dashedBorder(AppPalette.BorderHover, cornerRadius = frame.radius)
+                    } else {
+                        Modifier
+                    },
+                ).clip(RoundedCornerShape(frame.radius))
                 .drawBehind {
                     if (progress.value > 0f) {
                         drawRect(
@@ -130,11 +143,19 @@ fun HoldToEditField(
 private fun Modifier.negativeMargin(
     horizontal: Dp,
     vertical: Dp,
+    fillWidth: Boolean = false,
 ): Modifier =
     layout { measurable, constraints ->
         val h = horizontal.roundToPx()
         val v = vertical.roundToPx()
-        val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
+        // a full-width area is measured as wide as the slot plus both overhangs, so it reports exactly the slot
+        val inner =
+            if (fillWidth && constraints.hasBoundedWidth) {
+                (constraints.maxWidth - 2 * h).let { constraints.copy(minWidth = it, maxWidth = it, minHeight = 0) }
+            } else {
+                constraints.copy(minWidth = 0, minHeight = 0)
+            }
+        val placeable = measurable.measure(inner)
         layout((placeable.width + 2 * h).coerceAtLeast(0), (placeable.height + 2 * v).coerceAtLeast(0)) {
             placeable.placeRelative(h, v)
         }

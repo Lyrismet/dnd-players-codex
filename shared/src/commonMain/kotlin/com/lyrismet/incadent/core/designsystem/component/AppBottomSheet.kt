@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 
@@ -119,6 +119,6 @@ fun SheetCloseButton(
     size: Dp = 32.dp,
 ) {
     IconBadge(modifier = modifier, size = size, background = AppPalette.BorderSubtle, onClick = onClick) {
-        Text("✕", fontSize = 13.sp, color = AppPalette.TextMuted)
+        Text("✕", fontSize = AppFontSize.Body, color = AppPalette.TextMuted)
     }
 }

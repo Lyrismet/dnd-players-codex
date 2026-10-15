@@ -22,6 +22,11 @@ insert:
 INSERT INTO location(name, description, parent_id, cover, cover_thumb, campaign_id)
 VALUES (?, ?, ?, ?, ?, ?);
 
+-- puts a deleted record back under its old id, so the "@" tokens in notes find it again
+insertWithId:
+INSERT INTO location(id, name, description, parent_id, cover, cover_thumb, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE location

@@ -1,10 +1,5 @@
 package com.lyrismet.incadent.core.designsystem.component
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -25,11 +19,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.icons.QuillIcon
 import kotlinx.coroutines.delay
 
@@ -50,7 +46,7 @@ fun HoldHintCard(
         modifier =
             modifier
                 .appCard(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = AppShapes.Field,
                     background = AppPalette.Gold.copy(alpha = 0.08f),
                     border = AppPalette.Gold.copy(alpha = 0.4f),
                 ).padding(start = 12.dp, top = 6.dp, bottom = 6.dp, end = 6.dp),
@@ -60,19 +56,23 @@ fun HoldHintCard(
         QuillIcon(size = PIN_SIZE_DP.dp)
         Text(
             text,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp, lineHeight = 17.5.sp),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.SmallPlus, lineHeight = 17.5.sp),
             color = AppPalette.TextHeading,
             modifier = Modifier.weight(1f),
         )
         TextButton(
             onClick = onDismiss,
             modifier = Modifier.height(36.dp),
-            shape = RoundedCornerShape(8.dp),
+            shape = AppShapes.Small,
             contentPadding = PaddingValues(horizontal = 10.dp),
         ) {
             Text(
                 dismissLabel,
-                style = MaterialTheme.typography.titleSmall.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold),
+                style =
+                    MaterialTheme.typography.titleSmall.copy(
+                        fontSize = AppFontSize.Body,
+                        fontWeight = FontWeight.Bold,
+                    ),
                 color = AppPalette.GoldBright,
             )
         }
@@ -94,22 +94,11 @@ fun HoldTooShortToast(
             visible = false
         }
     }
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn() + slideInVertically { it / 2 },
-        exit = fadeOut() + slideOutVertically { it / 2 },
-        modifier = modifier,
-    ) {
+    FloatingBar(visible = visible, modifier = modifier) {
         Text(
             text,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, lineHeight = 18.sp),
+            style = AppText.notice,
             color = AppPalette.TextPrimary,
-            modifier =
-                Modifier
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(AppPalette.SurfaceElevated)
-                    .border(1.dp, AppPalette.BorderHover, RoundedCornerShape(14.dp))
-                    .padding(start = 14.dp, top = 10.dp, end = 10.dp, bottom = 10.dp),
         )
     }
 }

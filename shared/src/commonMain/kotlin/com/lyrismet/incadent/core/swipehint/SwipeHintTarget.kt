@@ -7,8 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.lyrismet.incadent.core.preferences.SwipeHintState
 import com.lyrismet.incadent.core.undo.UndoController
-import com.lyrismet.incadent.domain.model.SwipeHintState
 
 /** one playback's identity - the nonce forces a restart even when the same row/entity is targeted again */
 data class SwipeHintTarget<T>(

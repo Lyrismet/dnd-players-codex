@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.core.portrait
 
 import kotlin.math.max
+import kotlin.math.min
 
 private const val BYTES_PER_KB = 1024
 
@@ -68,8 +69,9 @@ class CropGeometry(
     fun clamp(state: CropState): CropState {
         val zoom = state.zoom.coerceIn(MIN_ZOOM, MAX_ZOOM)
         val scale = scaleOf(zoom)
-        val minX = aspect.viewWidth - imageWidth * scale
-        val minY = aspect.viewHeight - imageHeight * scale
+        // float rounding can push the covering side a hair past 0 and make the range empty
+        val minX = min(0f, aspect.viewWidth - imageWidth * scale)
+        val minY = min(0f, aspect.viewHeight - imageHeight * scale)
         return CropState(zoom, state.offsetX.coerceIn(minX, 0f), state.offsetY.coerceIn(minY, 0f))
     }
 

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +18,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 
 /** background/border are callbacks, not a flag, since the status picker tints each item by its own status color */
 @Composable
@@ -27,10 +27,10 @@ fun <T> SegmentedControl(
     onSelected: (T) -> Unit,
     itemBackground: (T) -> Color,
     modifier: Modifier = Modifier,
-    containerShape: Shape = RoundedCornerShape(12.dp),
+    containerShape: Shape = AppShapes.Field,
     containerBackground: Color = AppPalette.Surface,
     containerBorder: Color = AppPalette.BorderSubtle,
-    itemShape: Shape = RoundedCornerShape(9.dp),
+    itemShape: Shape = AppShapes.Tile,
     itemHeight: Dp = 34.dp,
     itemSpacing: Dp = 3.dp,
     itemBorder: ((T) -> Color)? = null,

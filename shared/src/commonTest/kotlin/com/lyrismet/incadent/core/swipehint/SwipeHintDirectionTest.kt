@@ -1,7 +1,7 @@
 package com.lyrismet.incadent.core.swipehint
 
-import com.lyrismet.incadent.domain.model.EntityEditMode
-import com.lyrismet.incadent.domain.model.SwipeHintState
+import com.lyrismet.incadent.core.preferences.EntityEditMode
+import com.lyrismet.incadent.core.preferences.SwipeHintState
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

@@ -8,3 +8,6 @@ fun joinWithDot(vararg parts: String): String = parts.filter { it.isNotBlank() }
 
 /** lowercases and folds the yo letter into ye so either spelling is found */
 fun String.foldForSearch(): String = lowercase().replace('ё', 'е')
+
+/** approximates russian alphabetical order without an ICU collator - case-insensitive, with ё sorted as е */
+fun String.collationKey(): String = lowercase().replace('ё', 'е')

@@ -15,11 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
@@ -71,7 +70,7 @@ fun PortraitArch(
             } else {
                 Text(
                     emblemText,
-                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
+                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = AppFontSize.Hero),
                     color = color.foreground,
                 )
             }
@@ -93,22 +92,14 @@ fun PortraitArch(
 @Composable
 private fun ArchDiamond(modifier: Modifier = Modifier) {
     Box(modifier = modifier) {
-        Box(
-            modifier =
-                Modifier
-                    .offset(y = -(DiamondHaloSize / 2))
-                    .size(DiamondHaloSize)
-                    .rotate(DIAMOND_ROTATION_DEGREES)
-                    .background(AppPalette.Surface),
+        DiamondFill(
+            size = DiamondHaloSize,
+            color = AppPalette.Surface,
+            modifier = Modifier.offset(y = -(DiamondHaloSize / 2)),
         )
-        Box(
-            modifier =
-                Modifier
-                    .align(Alignment.TopCenter)
-                    .offset(y = -(DiamondSize / 2))
-                    .size(DiamondSize)
-                    .rotate(DIAMOND_ROTATION_DEGREES)
-                    .background(AppPalette.Gold),
+        DiamondFill(
+            size = DiamondSize,
+            modifier = Modifier.align(Alignment.TopCenter).offset(y = -(DiamondSize / 2)),
         )
     }
 }
@@ -122,6 +113,6 @@ private fun AddPortraitBadge(modifier: Modifier = Modifier) {
         border = AppPalette.Surface,
         borderWidth = 3.dp,
     ) {
-        Text("+", color = AppPalette.Background, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text("+", color = AppPalette.Background, fontWeight = FontWeight.Bold, fontSize = AppFontSize.Title)
     }
 }

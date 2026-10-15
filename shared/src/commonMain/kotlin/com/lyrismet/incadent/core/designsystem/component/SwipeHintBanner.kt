@@ -1,22 +1,17 @@
 package com.lyrismet.incadent.core.designsystem.component
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -38,7 +33,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -134,19 +131,13 @@ fun SwipeHintBanner(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    AnimatedVisibility(
+    FloatingBar(
         visible = visible,
-        enter = fadeIn() + slideInVertically { it / 2 },
-        exit = fadeOut() + slideOutVertically { it / 2 },
         modifier = modifier,
+        border = AppPalette.Gold.copy(alpha = 0.45f),
+        contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
     ) {
         Row(
-            modifier =
-                Modifier
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(AppPalette.SurfaceElevated)
-                    .border(1.dp, AppPalette.Gold.copy(alpha = 0.45f), RoundedCornerShape(14.dp))
-                    .padding(start = 12.dp, top = 8.dp, bottom = 8.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -156,7 +147,7 @@ fun SwipeHintBanner(
                     title,
                     style =
                         MaterialTheme.typography.titleSmall.copy(
-                            fontSize = 13.5.sp,
+                            fontSize = AppFontSize.BodyPlus,
                             fontWeight = FontWeight.SemiBold,
                         ),
                     color = AppPalette.TextHeading,
@@ -164,7 +155,7 @@ fun SwipeHintBanner(
                 Text(
                     subtitle,
                     modifier = Modifier.padding(top = 1.dp),
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 16.sp),
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small, lineHeight = 16.sp),
                     color = AppPalette.TextSecondary,
                 )
             }
@@ -223,14 +214,14 @@ private fun SwipeHintArrowBadge(
             Modifier
                 .width(width)
                 .height(32.dp)
-                .clip(RoundedCornerShape(9.dp))
+                .clip(AppShapes.Tile)
                 .background(background),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             symbol,
             color = textColor,
-            fontSize = 15.sp,
+            fontSize = AppFontSize.Large,
             fontWeight = FontWeight.Bold,
             letterSpacing = letterSpacing,
         )

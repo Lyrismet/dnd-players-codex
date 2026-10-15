@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.isSpecified
 import com.lyrismet.incadent.core.designsystem.AppPalette
 
@@ -21,8 +20,10 @@ fun SectionOverline(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = AppPalette.Gold,
-    letterSpacing: TextUnit = 0.18.em,
-    fontSize: TextUnit = TextUnit.Unspecified,
+    style: OverlineStyle = OverlineStyle.Page,
+    // a value here replaces what [style] sets
+    letterSpacing: TextUnit = style.letterSpacing,
+    fontSize: TextUnit = style.fontSize,
     // tapping the text and [inlineContent] together, e.g. an editable title with a pen after it
     onClick: (() -> Unit)? = null,
     inlineContent: (@Composable () -> Unit)? = null,

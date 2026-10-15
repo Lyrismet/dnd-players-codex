@@ -1,11 +1,11 @@
 package com.lyrismet.incadent.di
 
+import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
+import com.lyrismet.incadent.core.preferences.LanguageRepository
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.undo.UndoController
-import com.lyrismet.incadent.data.db.DatabaseDriverFactory
-import com.lyrismet.incadent.domain.repository.AppPreferencesRepository
-import com.lyrismet.incadent.domain.repository.CampaignRepository
-import com.lyrismet.incadent.domain.repository.LanguageRepository
+import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
+import com.lyrismet.incadent.persistence.DatabaseDriverFactory
 import com.russhwolf.settings.ObservableSettings
 import com.slack.circuit.foundation.Circuit
 import dev.zacsweers.metro.AppScope

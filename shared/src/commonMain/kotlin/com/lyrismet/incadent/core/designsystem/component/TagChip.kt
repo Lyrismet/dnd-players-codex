@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 
 /**
  * small rounded label pill - multi-day session badges, generic tags, "has mentions" indicators, status badges.
@@ -31,7 +31,7 @@ fun TagChip(
     border: Color? = null,
     height: Dp? = null,
 ) {
-    val shape = RoundedCornerShape(6.dp)
+    val shape = AppShapes.Badge
     val chrome =
         modifier
             .clip(shape)

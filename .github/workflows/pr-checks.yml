@@ -41,6 +41,9 @@ jobs:
       - name: detekt
         run: ./gradlew detekt --no-daemon
 
+      - name: Unit tests
+        run: ./gradlew :shared:testAndroidHostTest --no-daemon
+
       - name: Upload quality reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,4 +52,5 @@ jobs:
           path: |
             **/build/reports/detekt/**
             **/build/reports/ktlint/**
+            **/build/reports/tests/**
           if-no-files-found: ignore

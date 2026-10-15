@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,8 +16,6 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,15 +34,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
@@ -51,25 +44,22 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
-import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import kotlinx.coroutines.flow.collectLatest
 
-private val ChipShape = RoundedCornerShape(20.dp)
-private val QuickAddPanelShape = RoundedCornerShape(12.dp)
-private val QuickAddFieldShape = RoundedCornerShape(10.dp)
+private val ChipShape = AppShapes.Pill
+private val QuickAddPanelShape = AppShapes.Field
+private val QuickAddFieldShape = AppShapes.Control
 private val QuickAddFieldSize = 44.dp
 private val QuickAddKeyboardClearance = 24.dp
 private const val QUICK_ADD_BORDER_ALPHA = 0.6f
 private const val QUICK_ADD_PANEL_FILL_ALPHA = 0.06f
 private const val QUICK_ADD_PANEL_BORDER_ALPHA = 0.35f
 private const val QUICK_ADD_INPUT_BORDER_ALPHA = 0.5f
-private const val DASH_LENGTH_PX = 6f
-private const val DASH_GAP_PX = 4f
 
 /**
  * optional "+ New NPC"/"+ New place" affordance appended to a [FormChipPicker]'s chip row (Players Codex
@@ -123,7 +113,7 @@ fun QuickAddOutsideTapHost(
 internal fun QuickAddPill(quickAdd: FormChipQuickAdd) {
     Text(
         quickAdd.addLabel,
-        style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
+        style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Body, fontWeight = FontWeight.SemiBold),
         color = AppPalette.GoldBright,
         modifier =
             Modifier
@@ -179,7 +169,7 @@ private fun QuickAddPanelBody(
     ) {
         Text(
             quickAdd.helperText,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp, lineHeight = 16.sp),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.CaptionPlus, lineHeight = 16.sp),
             color = AppPalette.TextSecondary,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -211,54 +201,23 @@ private fun QuickAddInput(
     quickAdd: FormChipQuickAdd,
     modifier: Modifier = Modifier,
 ) {
-    val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
-    BasicTextField(
+    AppTextInput(
         value = quickAdd.draft,
-        onValueChange = { quickAdd.onDraftChanged(it.take(TextLimits.LINE)) },
-        singleLine = true,
-        textStyle = MaterialTheme.typography.bodyLarge.copy(color = AppPalette.TextPrimary),
-        cursorBrush = GoldCursorBrush,
-        keyboardOptions = SentenceKeyboardOptions,
+        onValueChange = quickAdd.onDraftChanged,
+        modifier = modifier,
+        placeholder = quickAdd.placeholder,
+        style =
+            AppTextInputStyle(
+                chrome =
+                    AppInputChrome(
+                        shape = QuickAddFieldShape,
+                        border = AppPalette.Gold.copy(alpha = QUICK_ADD_INPUT_BORDER_ALPHA),
+                    ),
+                height = QuickAddFieldSize,
+                contentPadding = PaddingValues(horizontal = 12.dp),
+            ),
+        maxLength = TextLimits.LINE,
         keyboardActions = KeyboardActions(onDone = { quickAdd.onSave() }),
-        modifier =
-            modifier
-                .height(QuickAddFieldSize)
-                .focusRequester(focusRequester)
-                .appCard(
-                    shape = QuickAddFieldShape,
-                    background = AppPalette.Background,
-                    border = AppPalette.Gold.copy(alpha = QUICK_ADD_INPUT_BORDER_ALPHA),
-                ),
-        decorationBox = { innerTextField ->
-            Box(modifier = Modifier.padding(horizontal = 12.dp), contentAlignment = Alignment.CenterStart) {
-                if (quickAdd.draft.isEmpty()) {
-                    Text(
-                        quickAdd.placeholder,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = AppPalette.TextTertiary,
-                    )
-                }
-                innerTextField()
-            }
-        },
+        autoFocus = true,
     )
 }
-
-/** dashed rounded-rect border - [Modifier.border] has no dash support, used by the quick-add and phrase pills */
-internal fun Modifier.dashedBorder(
-    color: Color,
-    width: Dp = 1.dp,
-    cornerRadius: Dp = 20.dp,
-): Modifier =
-    drawBehind {
-        drawRoundRect(
-            color = color,
-            cornerRadius = CornerRadius(cornerRadius.toPx()),
-            style =
-                Stroke(
-                    width = width.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(DASH_LENGTH_PX, DASH_GAP_PX)),
-                ),
-        )
-    }
