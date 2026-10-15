@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,8 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
-import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 
@@ -124,31 +122,23 @@ fun FormNumberField(
     action: FormFieldAction? = null,
 ) {
     FormFieldColumn(label, modifier) {
-        val textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp, color = AppPalette.TextPrimary)
-        BasicTextField(
+        AppTextInput(
             value = value?.toString().orEmpty(),
             onValueChange = { typed ->
                 val digits = typed.filter { it.isDigit() }.take(NUMBER_FIELD_MAX_DIGITS)
                 onChange(digits.toIntOrNull()?.coerceAtMost(range.last))
             },
-            singleLine = true,
-            textStyle = textStyle,
-            cursorBrush = GoldCursorBrush,
+            placeholder = EMPTY_VALUE_DASH,
+            style =
+                AppTextInputStyle(
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp),
+                    height = FieldHeight,
+                ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(FieldHeight)
-                    .appCard(shape = FieldShape, background = AppPalette.Background, border = AppPalette.Border)
-                    .onFocusChanged { focus ->
-                        if (!focus.isFocused && value != null && value < range.first) onChange(range.first)
-                    },
-            decorationBox = { innerTextField ->
-                Box(modifier = Modifier.padding(horizontal = 14.dp), contentAlignment = Alignment.CenterStart) {
-                    if (value == null) Text(EMPTY_VALUE_DASH, style = textStyle, color = AppPalette.TextTertiary)
-                    innerTextField()
-                }
-            },
+                Modifier.onFocusChanged { focus ->
+                    if (!focus.isFocused && value != null && value < range.first) onChange(range.first)
+                },
         )
         if (action != null) {
             Text(
@@ -248,7 +238,6 @@ private fun FormFieldColumn(
     }
 }
 
-// BasicTextField, not Material3's TextField, whose 56dp minimum height and 16dp inset don't match the design
 @Composable
 private fun FormInput(
     value: String,
@@ -258,45 +247,27 @@ private fun FormInput(
     singleLine: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp, color = AppPalette.TextPrimary)
-    BasicTextField(
+    AppTextInput(
         value = value,
         onValueChange = onChange,
+        modifier = modifier,
+        placeholder = placeholder,
+        style =
+            AppTextInputStyle(
+                textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp),
+                height = if (singleLine) FieldHeight else null,
+                contentPadding =
+                    if (singleLine) {
+                        PaddingValues(
+                            horizontal = 14.dp,
+                        )
+                    } else {
+                        PaddingValues(horizontal = 14.dp, vertical = 12.dp)
+                    },
+            ),
         singleLine = singleLine,
         minLines = if (singleLine) 1 else AREA_MIN_LINES,
-        textStyle = textStyle,
-        cursorBrush = GoldCursorBrush,
-        keyboardOptions = SentenceKeyboardOptions,
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .appCard(shape = FieldShape, background = AppPalette.Background, border = AppPalette.Border),
-        decorationBox = { innerTextField ->
-            val text: @Composable () -> Unit = {
-                Box {
-                    if (value.isEmpty() && placeholder != null) {
-                        Text(placeholder, style = textStyle, color = AppPalette.TextTertiary)
-                    }
-                    innerTextField()
-                }
-            }
-            // the counter sits inside the field - centered at the end of a line, bottom end of an area
-            if (singleLine) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 14.dp).fillMaxWidth().height(FieldHeight),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Box(modifier = Modifier.weight(1f)) { text() }
-                    AppCharCountPill(count = value.length, max = maxLength)
-                }
-            } else {
-                Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp).fillMaxWidth()) {
-                    text()
-                    AppCharCountPill(count = value.length, max = maxLength, modifier = Modifier.align(Alignment.End))
-                }
-            }
-        },
+        counter = AppTextInputCounter(maxLength),
     )
 }
 

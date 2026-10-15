@@ -4,28 +4,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -45,10 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.AppButton
-import com.lyrismet.incadent.core.designsystem.component.AppCharCountPill
+import com.lyrismet.incadent.core.designsystem.component.AppTextInput
+import com.lyrismet.incadent.core.designsystem.component.AppTextInputCounter
+import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -94,10 +92,9 @@ fun InlineFieldEditor(
     onEvent: (QuickEditUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val focusRequester = remember { FocusRequester() }
     var value by remember { mutableStateOf(TextFieldValue(draft, editorCaretAtEnd(draft))) }
     val maxLength = if (kind == InlineInputKind.MULTILINE) TextLimits.NOTE else TextLimits.LINE
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    val isArea = kind == InlineInputKind.MULTILINE
     EditorFrame(modifier) {
         EditorHeader(label) {
             AppButton(
@@ -106,72 +103,36 @@ fun InlineFieldEditor(
                 variant = ButtonVariant.Solid,
             )
         }
-        BasicTextField(
+        AppTextInput(
             value = value,
             onValueChange = {
-                val capped = it.copy(text = it.text.take(maxLength))
-                value = capped
-                onEvent(QuickEditUiEvent.DraftChanged(capped.text))
+                value = it
+                onEvent(QuickEditUiEvent.DraftChanged(it.text))
             },
-            textStyle = inputTextStyle(kind),
-            cursorBrush = GoldCursorBrush,
-            singleLine = kind != InlineInputKind.MULTILINE,
-            minLines = if (kind == InlineInputKind.MULTILINE) 5 else 1,
+            placeholder = if (isArea) stringResource(Res.string.quick_edit_description_hint) else null,
+            style =
+                AppTextInputStyle(
+                    textStyle = inputTextStyle(kind),
+                    chrome = null,
+                    contentPadding = PaddingValues(),
+                    placeholderColor = AppPalette.TextTertiary,
+                ),
+            singleLine = !isArea,
+            minLines = if (isArea) 5 else 1,
+            maxLength = maxLength,
+            counter = AppTextInputCounter(maxLength),
             keyboardOptions = inputKeyboardOptions(kind),
             keyboardActions = KeyboardActions(onDone = { onEvent(QuickEditUiEvent.EditSaved) }),
-            decorationBox = { inner ->
-                InlineEditorDecoration(
-                    isArea = kind == InlineInputKind.MULTILINE,
-                    length = value.text.length,
-                    maxLength = maxLength,
-                    showHint = value.text.isEmpty(),
-                    inner = inner,
-                )
-            },
+            autoFocus = true,
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .then(inputHeight(kind))
-                    .focusRequester(focusRequester)
                     .onPreviewKeyEvent { event ->
                         val commandPressed = event.isCtrlPressed || event.isMetaPressed
                         handleEditorKey(event.type, event.key, commandPressed, onEvent)
                     },
         )
-    }
-}
-
-// the counter sits inside the field - centered at the end of a line, bottom end of an area
-@Composable
-private fun InlineEditorDecoration(
-    isArea: Boolean,
-    length: Int,
-    maxLength: Int,
-    showHint: Boolean,
-    inner: @Composable () -> Unit,
-) {
-    val text: @Composable () -> Unit = {
-        Box {
-            if (showHint && isArea) {
-                Text(
-                    stringResource(Res.string.quick_edit_description_hint),
-                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp, lineHeight = 24.sp),
-                    color = AppPalette.TextTertiary,
-                )
-            }
-            inner()
-        }
-    }
-    if (isArea) {
-        Column {
-            text()
-            AppCharCountPill(length, maxLength, Modifier.align(Alignment.End))
-        }
-    } else {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(modifier = Modifier.weight(1f)) { text() }
-            AppCharCountPill(length, maxLength)
-        }
     }
 }
 

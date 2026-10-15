@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,8 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -55,8 +53,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
-import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import kotlinx.coroutines.flow.collectLatest
 
 private val ChipShape = RoundedCornerShape(20.dp)
@@ -211,37 +207,24 @@ private fun QuickAddInput(
     quickAdd: FormChipQuickAdd,
     modifier: Modifier = Modifier,
 ) {
-    val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
-    BasicTextField(
+    AppTextInput(
         value = quickAdd.draft,
-        onValueChange = { quickAdd.onDraftChanged(it.take(TextLimits.LINE)) },
-        singleLine = true,
-        textStyle = MaterialTheme.typography.bodyLarge.copy(color = AppPalette.TextPrimary),
-        cursorBrush = GoldCursorBrush,
-        keyboardOptions = SentenceKeyboardOptions,
+        onValueChange = quickAdd.onDraftChanged,
+        modifier = modifier,
+        placeholder = quickAdd.placeholder,
+        style =
+            AppTextInputStyle(
+                chrome =
+                    AppInputChrome(
+                        shape = QuickAddFieldShape,
+                        border = AppPalette.Gold.copy(alpha = QUICK_ADD_INPUT_BORDER_ALPHA),
+                    ),
+                height = QuickAddFieldSize,
+                contentPadding = PaddingValues(horizontal = 12.dp),
+            ),
+        maxLength = TextLimits.LINE,
         keyboardActions = KeyboardActions(onDone = { quickAdd.onSave() }),
-        modifier =
-            modifier
-                .height(QuickAddFieldSize)
-                .focusRequester(focusRequester)
-                .appCard(
-                    shape = QuickAddFieldShape,
-                    background = AppPalette.Background,
-                    border = AppPalette.Gold.copy(alpha = QUICK_ADD_INPUT_BORDER_ALPHA),
-                ),
-        decorationBox = { innerTextField ->
-            Box(modifier = Modifier.padding(horizontal = 12.dp), contentAlignment = Alignment.CenterStart) {
-                if (quickAdd.draft.isEmpty()) {
-                    Text(
-                        quickAdd.placeholder,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = AppPalette.TextTertiary,
-                    )
-                }
-                innerTextField()
-            }
-        },
+        autoFocus = true,
     )
 }
 

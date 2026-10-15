@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -54,10 +54,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
-import com.lyrismet.incadent.core.designsystem.component.AppCharCountPill
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppTextInput
+import com.lyrismet.incadent.core.designsystem.component.AppTextInputCounter
+import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -165,43 +166,32 @@ private fun ComposerDraftField(
     draftFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
 ) {
-    BasicTextField(
+    AppTextInput(
         value = TextFieldValue(state.draft, state.draftSelection),
         onValueChange = {
             val capped = it.copy(text = takeMentionDisplay(it.text, TextLimits.NOTE))
             state.eventSink(SessionDetailEvent.DraftChanged(capped.text, capped.selection))
         },
-        textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp, color = AppPalette.TextPrimary),
-        visualTransformation = remember { MentionVisualTransformation(SpanStyle(color = AppPalette.GoldBright)) },
-        cursorBrush = GoldCursorBrush,
+        placeholder = stringResource(Res.string.session_detail_composer_placeholder),
+        // the card around the field is the composer's own, so the input draws none and counts what the user sees
+        style =
+            AppTextInputStyle(
+                textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp),
+                chrome = null,
+                contentPadding = PaddingValues(),
+            ),
+        singleLine = false,
         minLines = 2,
+        counter = AppTextInputCounter(TextLimits.NOTE, count = mentionDisplayLength(state.draft)),
         keyboardOptions = SentenceKeyboardOptions.copy(imeAction = ImeAction.Send),
         keyboardActions = KeyboardActions(onSend = { state.eventSink(SessionDetailEvent.SubmitEntryClicked) }),
+        visualTransformation = remember { MentionVisualTransformation(SpanStyle(color = AppPalette.GoldBright)) },
+        focusRequester = draftFocusRequester,
         modifier =
             modifier
                 .fillMaxWidth()
-                .focusRequester(draftFocusRequester)
                 .onFocusChanged { onDraftFocusChanged(it.isFocused) }
                 .onPreviewKeyEvent { event -> acceptFirstCompletionOnTab(event, state) },
-        decorationBox = { innerTextField ->
-            Column {
-                Box {
-                    if (state.draft.isEmpty()) {
-                        Text(
-                            stringResource(Res.string.session_detail_composer_placeholder),
-                            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp),
-                            color = AppPalette.TextTertiary,
-                        )
-                    }
-                    innerTextField()
-                }
-                AppCharCountPill(
-                    count = mentionDisplayLength(state.draft),
-                    max = TextLimits.NOTE,
-                    modifier = Modifier.align(Alignment.End),
-                )
-            }
-        },
     )
 }
 

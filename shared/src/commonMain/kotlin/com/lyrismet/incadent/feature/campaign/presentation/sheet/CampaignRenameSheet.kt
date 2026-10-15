@@ -1,32 +1,29 @@
 package com.lyrismet.incadent.feature.campaign.presentation.sheet
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
-import com.lyrismet.incadent.core.designsystem.component.AppCharCountPill
+import com.lyrismet.incadent.core.designsystem.component.AppInputChrome
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
+import com.lyrismet.incadent.core.designsystem.component.AppTextInput
+import com.lyrismet.incadent.core.designsystem.component.AppTextInputCounter
+import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
-import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.savableCampaignName
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.settings_rename_hint
@@ -80,47 +77,21 @@ private fun RenameNameInput(
     onDraftChanged: (String) -> Unit,
     onDone: () -> Unit,
 ) {
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .appCard(
-                    shape = RoundedCornerShape(12.dp),
-                    background = AppPalette.Background,
-                    border = AppPalette.Gold.copy(alpha = 0.5f),
-                ).padding(horizontal = 14.dp),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        BasicTextField(
-            value = draft,
-            onValueChange = onDraftChanged,
-            modifier = Modifier.fillMaxWidth().padding(end = 56.dp),
-            singleLine = true,
-            textStyle =
-                MaterialTheme.typography.headlineMedium.copy(
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = AppPalette.TextHeading,
-                ),
-            cursorBrush = GoldCursorBrush,
-            keyboardOptions = SentenceKeyboardOptions.copy(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { onDone() }),
-            decorationBox = { innerField ->
-                if (draft.isEmpty()) {
-                    Text(
-                        stringResource(Res.string.settings_rename_placeholder),
-                        style = MaterialTheme.typography.headlineMedium.copy(fontSize = 22.sp),
-                        color = AppPalette.TextTertiary,
-                    )
-                }
-                innerField()
-            },
-        )
-        AppCharCountPill(
-            count = draft.length,
-            max = TextLimits.LINE,
-            modifier = Modifier.align(Alignment.CenterEnd),
-        )
-    }
+    AppTextInput(
+        value = draft,
+        onValueChange = onDraftChanged,
+        placeholder = stringResource(Res.string.settings_rename_placeholder),
+        style =
+            AppTextInputStyle(
+                textStyle =
+                    MaterialTheme.typography.headlineMedium.copy(fontSize = 22.sp, fontWeight = FontWeight.SemiBold),
+                textColor = AppPalette.TextHeading,
+                chrome = AppInputChrome(border = AppPalette.Gold.copy(alpha = 0.5f)),
+                height = 56.dp,
+            ),
+        maxLength = TextLimits.LINE,
+        counter = AppTextInputCounter(TextLimits.LINE),
+        keyboardOptions = SentenceKeyboardOptions.copy(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { onDone() }),
+    )
 }
