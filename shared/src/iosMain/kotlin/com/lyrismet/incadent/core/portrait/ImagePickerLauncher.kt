@@ -14,6 +14,8 @@ import platform.UIKit.UIImagePickerControllerSourceType
 import platform.UIKit.UINavigationControllerDelegateProtocol
 import platform.darwin.NSObject
 
+private val GALLERY_SOURCE = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
+
 @Composable
 actual fun rememberImagePickerLauncher(onPicked: (ByteArray) -> Unit): ImagePickerLauncher {
     val rootViewController = LocalUIViewController.current
@@ -21,6 +23,11 @@ actual fun rememberImagePickerLauncher(onPicked: (ByteArray) -> Unit): ImagePick
     val activeDelegate = remember { mutableStateOf<ImagePickerDelegate?>(null) }
 
     fun launch(sourceType: UIImagePickerControllerSourceType) {
+        // a device without a camera (the simulator) would crash on the camera source, so it opens the library instead
+        if (!UIImagePickerController.isSourceTypeAvailable(sourceType)) {
+            if (sourceType != GALLERY_SOURCE) launch(GALLERY_SOURCE)
+            return
+        }
         val picker = UIImagePickerController()
         picker.sourceType = sourceType
         val delegate = ImagePickerDelegate(onPicked = onPicked, onFinished = { activeDelegate.value = null })
@@ -31,7 +38,7 @@ actual fun rememberImagePickerLauncher(onPicked: (ByteArray) -> Unit): ImagePick
 
     return ImagePickerLauncher(
         launchCamera = { launch(UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera) },
-        launchGallery = { launch(UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary) },
+        launchGallery = { launch(GALLERY_SOURCE) },
     )
 }
 

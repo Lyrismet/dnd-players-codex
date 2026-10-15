@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.core.undo
 
+import com.lyrismet.incadent.core.coroutines.AppCoroutineScope
 import com.lyrismet.incadent.core.logging.AppLog
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -26,7 +27,7 @@ data class UndoAction(
 @Inject
 @SingleIn(AppScope::class)
 class UndoController(
-    private val scope: CoroutineScope,
+    @AppCoroutineScope private val scope: CoroutineScope,
 ) {
     private val _current = MutableStateFlow<UndoAction?>(null)
     val current: StateFlow<UndoAction?> = _current.asStateFlow()

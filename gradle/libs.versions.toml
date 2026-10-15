@@ -7,7 +7,6 @@ androidx-activity = "1.13.0"
 androidx-navigationevent = "1.1.1"
 androidx-coreSplashscreen = "1.0.1"
 circuit = "0.39.0"
-composeMaterialIcons = "1.7.3"
 composeMultiplatform = "1.12.1"
 detekt = "2.0.0-alpha.6"
 kotlin = "2.4.20"
@@ -47,7 +46,6 @@ compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", v
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
-compose-materialIconsCore = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "composeMaterialIcons" }
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 
 [plugins]

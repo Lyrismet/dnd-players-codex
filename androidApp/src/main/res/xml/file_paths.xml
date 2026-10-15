@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- the camera writes the full-size shot here before it is cropped and compressed -->
+    <cache-path name="camera" path="camera/" />
+</paths>

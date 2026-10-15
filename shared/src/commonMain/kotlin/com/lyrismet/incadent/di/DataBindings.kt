@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.di
 
+import com.lyrismet.incadent.core.coroutines.AppCoroutineScope
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
@@ -41,5 +42,6 @@ object DataBindings {
 
     @Provides
     @SingleIn(AppScope::class)
+    @AppCoroutineScope
     fun provideAppScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 }
