@@ -1,31 +1,32 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# DnD Players Codex (Incadent)
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+A diary and codex for tabletop RPG players: session notes with `@` mentions, a codex of party, NPCs, quests and
+places, and (planned) a combat tracker. Kotlin Multiplatform, Android and iOS, UI in Compose Multiplatform, data
+stays on the device (SQLDelight).
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
+## Layout
 
-### Running the apps
+* [/androidApp](./androidApp) is the thin Android entry point.
+* [/iosApp](./iosApp/iosApp) is the Xcode project, the iOS entry point (it hosts the shared Compose UI).
+* [/shared](./shared/src) is almost all of the code:
+  - [commonMain](./shared/src/commonMain/kotlin) groups code by feature (`feature/<name>/{domain,data,presentation}`),
+    with cross-feature building blocks in `core/` (design system, formatting, undo, ...) and the Metro graph in `di/`.
+  - [androidMain](./shared/src/androidMain/kotlin) and [iosMain](./shared/src/iosMain/kotlin) hold the `actual`
+    implementations of platform-only code.
+  - [commonTest](./shared/src/commonTest/kotlin) and [androidHostTest](./shared/src/androidHostTest/kotlin) hold the tests.
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+More detail: [CLAUDE.md](./CLAUDE.md) (architecture, DI, rules for code), [CORE_COMPONENTS.md](./CORE_COMPONENTS.md)
+(reusable UI building blocks) and [FEATURES.md](./FEATURES.md) (feature map and what is done).
+
+## Running the apps
 
 - Android app: `./gradlew :androidApp:assembleDebug`
 - iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
 
-### Running tests
+## Checks
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
-
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
-
----
-
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+- Tests: `./gradlew :shared:testAndroidHostTest` and `./gradlew :shared:iosSimulatorArm64Test`
+- Formatting: `./gradlew ktlintFormat` (check with `ktlintCheck`)
+- Static analysis: `./gradlew detekt`
+- Everyday build without the slow release iOS framework links:
+  `./gradlew build -x :shared:linkReleaseFrameworkIosArm64 -x :shared:linkReleaseFrameworkIosSimulatorArm64`

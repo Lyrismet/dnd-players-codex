@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.session.presentation.detail
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.format.toShortDayMonthUpper
+import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.MentionSegment
 import com.lyrismet.incadent.feature.mention.domain.autoMatchedEntities
@@ -23,6 +24,7 @@ internal fun buildFeed(
     noteItems: Map<Long, SessionEntryItem>,
 ): List<SessionFeedItem> {
     if (entries.isEmpty()) return emptyList()
+    val language = currentAppLanguage()
     val distinctDays = (listOfNotNull(sessionStartDay) + entries.map { it.createdAt.date }).distinct().sorted()
     val isMultiDay = distinctDays.size > 1
 
@@ -36,7 +38,7 @@ internal fun buildFeed(
                 stringResource(
                     Res.string.session_detail_meeting_separator_format,
                     meetingNumber,
-                    day.toShortDayMonthUpper(),
+                    day.toShortDayMonthUpper(language),
                 )
             feed += SessionFeedItem.DaySeparator(key = "sep-$day", label = label)
             lastDay = day

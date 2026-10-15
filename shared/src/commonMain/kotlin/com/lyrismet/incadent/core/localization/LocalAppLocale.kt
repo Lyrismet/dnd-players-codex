@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.lyrismet.incadent.core.preferences.AppLanguage
 
 // BCP 47 tag (eg "ru", "en"), null follows the OS locale - see AppLanguage for the app's actual supported values
 var customAppLocale: String? by mutableStateOf(null)
@@ -18,6 +19,13 @@ expect object LocalAppLocale {
 
     @Composable
     infix fun provides(value: String?): ProvidedValue<*>
+}
+
+/** the app's language as the strings are resolved - the OS locale when none is chosen, Russian when unsupported */
+@Composable
+fun currentAppLanguage(): AppLanguage {
+    val tag = LocalAppLocale.current
+    return AppLanguage.entries.firstOrNull { tag.startsWith(it.tag, ignoreCase = true) } ?: AppLanguage.RUSSIAN
 }
 
 @Composable

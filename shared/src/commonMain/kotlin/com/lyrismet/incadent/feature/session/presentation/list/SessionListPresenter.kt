@@ -6,11 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
-import com.lyrismet.incadent.core.format.joinWithDot
-import com.lyrismet.incadent.core.format.russianPluralForm
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
+import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
+import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.core.preferences.SwipeHintState
@@ -109,9 +109,10 @@ class SessionListPresenter(
             }
         val liveEntries by liveEntriesFlow.collectAsState(initial = emptyList())
 
+        val language = currentAppLanguage()
         val allItems =
-            remember(sessions, numbering, tagsBySession, entriesBySession, candidates) {
-                sessions.toListItems(numbering, tagsBySession, entriesBySession, candidates)
+            remember(sessions, numbering, tagsBySession, entriesBySession, candidates, language) {
+                sessions.toListItems(numbering, tagsBySession, entriesBySession, candidates, language)
             }
         val liveItem = liveNote?.let { note -> allItems.first { it.id == note.id } }
         val liveSession = liveItem?.let { item -> buildLiveSession(item, liveEntries, candidates, noNotesLabel) }
@@ -288,21 +289,21 @@ class SessionListPresenter(
         tagsBySession: Map<Long, List<String>>,
         entriesBySession: Map<Long, List<SessionEntry>>,
         candidates: MentionIndex,
+        language: AppLanguage,
     ): List<SessionListItem> {
         val numberLabels = sessionNumberLabels(numbering)
         val arabicNumbers = chronologicalIndex()
         return map { note ->
             val entries = entriesBySession[note.id].orEmpty()
             val bodies = entries.map { it.body }
-            val dateLabel = note.sessionDate.toDisplayDate()
-            val noteCountLabel = "${entries.size} ${russianPluralForm(entries.size, "заметка", "заметки", "заметок")}"
+            val dateLabel = note.sessionDate.toDisplayDate(language)
             SessionListItem(
                 id = note.id,
                 numberLabel = numberLabels.getValue(note.id),
                 arabicNumber = arabicNumbers.getValue(note.id),
                 title = note.title,
                 dateLabel = dateLabel,
-                archiveMeta = joinWithDot(dateLabel, noteCountLabel),
+                noteCount = entries.size,
                 tags = tagsBySession[note.id].orEmpty(),
                 mentionCount = mentionsIn(bodies, candidates).size,
             )

@@ -8,6 +8,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.format.toShortDisplayDate
+import com.lyrismet.incadent.core.localization.currentAppLanguage
+import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.feature.campaign.domain.model.Campaign
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.campaign.domain.model.TransferCandidates
@@ -86,7 +88,9 @@ fun rememberCampaignSheetHost(
 
     val sessionWords = campaignSessionLabels(campaigns)
     val lastNew = stringResource(Res.string.campaign_last_new)
-    val cards = campaigns.map { it.toCard(current?.id, sessionWords.getValue(it.id), lastNew, playerSuffix(it)) }
+    val language = currentAppLanguage()
+    val cards =
+        campaigns.map { it.toCard(current?.id, sessionWords.getValue(it.id), lastNew, playerSuffix(it), language) }
     val library =
         CampaignLibraryState(
             live = cards.filterNot { it.isArchived },
@@ -309,11 +313,12 @@ private fun Campaign.toCard(
     sessions: String,
     lastNew: String,
     playerSuffix: String,
+    language: AppLanguage,
 ) = CampaignCardItem(
     id = id,
     name = name,
     subtitle = sessions + playerSuffix,
-    lastLabel = lastSessionDate?.toShortDisplayDate() ?: lastNew,
+    lastLabel = lastSessionDate?.toShortDisplayDate(language) ?: lastNew,
     isCurrent = id == currentId,
     isArchived = status == CampaignStatus.ARCHIVED,
 )

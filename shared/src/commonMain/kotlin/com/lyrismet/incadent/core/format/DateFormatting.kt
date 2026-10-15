@@ -1,46 +1,55 @@
 package com.lyrismet.incadent.core.format
 
+import com.lyrismet.incadent.core.preferences.AppLanguage
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.Month
 
 private val RUSSIAN_GENITIVE_MONTHS =
-    mapOf(
-        Month.JANUARY to "января",
-        Month.FEBRUARY to "февраля",
-        Month.MARCH to "марта",
-        Month.APRIL to "апреля",
-        Month.MAY to "мая",
-        Month.JUNE to "июня",
-        Month.JULY to "июля",
-        Month.AUGUST to "августа",
-        Month.SEPTEMBER to "сентября",
-        Month.OCTOBER to "октября",
-        Month.NOVEMBER to "ноября",
-        Month.DECEMBER to "декабря",
+    listOf(
+        "января",
+        "февраля",
+        "марта",
+        "апреля",
+        "мая",
+        "июня",
+        "июля",
+        "августа",
+        "сентября",
+        "октября",
+        "ноября",
+        "декабря",
+    )
+
+private val ENGLISH_MONTHS =
+    listOf(
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
     )
 
 private val RUSSIAN_SHORT_MONTHS_UPPER =
-    mapOf(
-        Month.JANUARY to "ЯНВ",
-        Month.FEBRUARY to "ФЕВ",
-        Month.MARCH to "МАР",
-        Month.APRIL to "АПР",
-        Month.MAY to "МАЯ",
-        Month.JUNE to "ИЮН",
-        Month.JULY to "ИЮЛ",
-        Month.AUGUST to "АВГ",
-        Month.SEPTEMBER to "СЕНТ",
-        Month.OCTOBER to "ОКТ",
-        Month.NOVEMBER to "НОЯБ",
-        Month.DECEMBER to "ДЕК",
-    )
+    listOf("ЯНВ", "ФЕВ", "МАР", "АПР", "МАЯ", "ИЮН", "ИЮЛ", "АВГ", "СЕНТ", "ОКТ", "НОЯБ", "ДЕК")
 
-/** "26 сентября 2026" - the date format used throughout the session diary */
-fun LocalDateTime.toDisplayDate(): String {
-    val month = RUSSIAN_GENITIVE_MONTHS.getValue(this.month)
-    return "${this.day} $month ${this.year}"
-}
+private const val ENGLISH_SHORT_LENGTH = 3
+
+private fun Month.index(): Int = ordinal
+
+/** "26 сентября 2026" or "September 26, 2026" - the date format used throughout the session diary */
+fun LocalDateTime.toDisplayDate(language: AppLanguage): String =
+    when (language) {
+        AppLanguage.RUSSIAN -> "$day ${RUSSIAN_GENITIVE_MONTHS[month.index()]} $year"
+        AppLanguage.ENGLISH -> "${ENGLISH_MONTHS[month.index()]} $day, $year"
+    }
 
 /** "09:41" - the timestamp shown next to each entry in a session's feed */
 fun LocalDateTime.toDisplayTime(): String {
@@ -49,8 +58,16 @@ fun LocalDateTime.toDisplayTime(): String {
     return "$hour:$minute"
 }
 
-/** "19 СЕНТ" - the day-separator label between a multi-day session's meetings */
-fun LocalDate.toShortDayMonthUpper(): String = "$day ${RUSSIAN_SHORT_MONTHS_UPPER.getValue(month)}"
+/** "19 СЕНТ" or "SEP 19" - the day-separator label between a multi-day session's meetings */
+fun LocalDate.toShortDayMonthUpper(language: AppLanguage): String =
+    when (language) {
+        AppLanguage.RUSSIAN -> "$day ${RUSSIAN_SHORT_MONTHS_UPPER[month.index()]}"
+        AppLanguage.ENGLISH -> "${ENGLISH_MONTHS[month.index()].take(ENGLISH_SHORT_LENGTH).uppercase()} $day"
+    }
 
-/** "12 июня" - the date without the year, for a compact meta label */
-fun LocalDateTime.toShortDisplayDate(): String = "$day ${RUSSIAN_GENITIVE_MONTHS.getValue(month)}"
+/** "12 июня" or "June 12" - the date without the year, for a compact meta label */
+fun LocalDateTime.toShortDisplayDate(language: AppLanguage): String =
+    when (language) {
+        AppLanguage.RUSSIAN -> "$day ${RUSSIAN_GENITIVE_MONTHS[month.index()]}"
+        AppLanguage.ENGLISH -> "${ENGLISH_MONTHS[month.index()]} $day"
+    }

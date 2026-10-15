@@ -13,6 +13,7 @@ import com.lyrismet.incadent.core.errors.ReportFailures
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
+import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.SessionNumbering
@@ -249,7 +250,7 @@ class SessionDetailPresenter(
             isLoading = currentNote == null,
             overline = numberLabel?.let { stringResource(Res.string.session_overline_format, it) }.orEmpty(),
             title = titleText,
-            dateLabel = currentNote?.sessionDate?.toDisplayDate().orEmpty(),
+            dateLabel = currentNote?.sessionDate?.toDisplayDate(currentAppLanguage()).orEmpty(),
             isLive = currentNote?.isLive ?: true,
             headerMentions = headerMentions,
             feed = feed,

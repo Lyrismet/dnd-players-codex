@@ -1,6 +1,6 @@
 package com.lyrismet.incadent.feature.session.domain.tags
 
-/** one tag the catalog would suggest, with the reason shown under it (Players Codex v6.dc.html `tagSuggest`) */
+/** one tag the catalog would suggest, with the reason shown under it (Players Codex v7.dc.html `tagSuggest`) */
 data class TagSuggestion(
     val tag: String,
     val reason: String,
@@ -30,22 +30,80 @@ private data class TagRule(
 // has no "бой" session-entry kind yet, that's part of the still-unstarted P3 combat feature
 private val TAG_RULES =
     listOf(
-        TagRule("Бой", listOf("бой", "боя", "атак", "засад", "сраж", "напал").map(TagSignal::Prefix)),
+        TagRule(
+            "Бой",
+            listOf(
+                "бой",
+                "боя",
+                "атак",
+                "засад",
+                "сраж",
+                "напал",
+                "fight",
+                "attack",
+                "ambush",
+                "battle",
+                "combat",
+            ).map(TagSignal::Prefix),
+        ),
         TagRule("Сюжет", listOf(TagSignal.QuestMentioned)),
         TagRule(
             "Расследование",
-            listOf("улик", "мёртв", "расслед", "допрос", "выясн", "загадк", "следы").map(TagSignal::Prefix),
+            listOf(
+                "улик",
+                "мёртв",
+                "расслед",
+                "допрос",
+                "выясн",
+                "загадк",
+                "следы",
+                "clue",
+                "investigat",
+                "interrogat",
+                "mystery",
+            ).map(TagSignal::Prefix),
         ),
         TagRule(
             "Интрига",
-            listOf("сделк", "предал", "шпион", "синдикат", "заговор", "печать", "вынюхив").map(TagSignal::Prefix),
+            listOf(
+                "сделк",
+                "предал",
+                "шпион",
+                "синдикат",
+                "заговор",
+                "печать",
+                "вынюхив",
+                "betray",
+                "spy",
+                "spies",
+                "syndicate",
+                "conspir",
+            ).map(TagSignal::Prefix),
         ),
         TagRule(
             "Торговля",
-            listOf("торг", "купил", "продал", "скидк").map(TagSignal::Prefix) + TagSignal.Exact("зм"),
+            listOf("торг", "купил", "продал", "скидк", "trade", "bought", "discount", "haggl").map(TagSignal::Prefix) +
+                listOf("зм", "gp").map(TagSignal::Exact),
         ),
-        TagRule("Путешествие", listOf("добрал", "дорог", "лагер", "троп", "переход").map(TagSignal::Prefix)),
-        TagRule("Отдых", listOf("отдых", "ночлег", "привал").map(TagSignal::Prefix)),
+        TagRule(
+            "Путешествие",
+            listOf(
+                "добрал",
+                "дорог",
+                "лагер",
+                "троп",
+                "переход",
+                "road",
+                "trail",
+                "journey",
+                "travel",
+                "campfire",
+            ).map(TagSignal::Prefix),
+        ),
+        TagRule(
+            "Отдых",
+            listOf("отдых", "ночлег", "привал", "sleep", "bedroll").map(TagSignal::Prefix) + TagSignal.Exact("rest"),
+        ),
     )
 
 private const val MAX_REASON_WORDS = 2

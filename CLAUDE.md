@@ -53,7 +53,7 @@ Adding a feature (checklist):
 3. `<Feature>Circuit.kt` with the presenter factory, ui factory and screen registration, copied from a reference file above.
 4. Nothing else to register: contributions are collected by the graph. A missing binding is a compile error naming the missing type.
 
-Verification status: `:shared:compileAndroidMain`, `:androidApp:compileDebugKotlin`, `detekt`, `ktlintFormat` and `:shared:testAndroidHostTest` pass in the Linux cloud environment. iOS cannot be built there (Kotlin/Native iOS needs macOS), so every Metro change must be built and smoke-tested on a Mac before it is considered done. The owner confirmed the settings pilot builds; the session screens, the codex migration and the removal of `AppContainer` have not been explicitly confirmed on iOS.
+Verification status: `:shared:compileAndroidMain`, `:androidApp:compileDebugKotlin`, `detekt`, `ktlintFormat`, `:shared:testAndroidHostTest` and `:shared:iosSimulatorArm64Test` pass on a Mac; CI (`pr-checks.yml`) runs the Android compile, ktlint, detekt and the Android host tests. The iOS app itself (Metro graph at launch, camera and gallery) still has to be smoke-tested on a device or simulator by the owner after Metro or platform changes.
 
 ### Planned: Firebase sharing (online sync of the local data)
 Everything stored locally today (sessions, notes, NPCs, quests, locations, party, tags) will later be shared online through Firebase. Rules so today's code does not block that:
@@ -87,6 +87,14 @@ Each feature under `presentation/<feature>/` is four files — see `feature/sess
 - When 3+ presenters need identical interactive behavior around a shared `core/<name>` model (e.g. tap a mention chip → show the entity sheet → dismiss/update-status/follow a related note), extract the event handling into a plain class in that `core/<name>` package (see `EntitySheetInteractions` in `feature/codex/presentation/summary`) that each presenter constructs and delegates its matching event branches to — don't let the same `when` branches get copy-pasted per presenter.
 - Exception: `feature/codex/presentation/CodexScreen.kt` is intentionally one Circuit screen with an internal, Presenter-owned sub-tab switch across 4 related entity types (Отряд/NPC/Квесты/Места), not 4 independent features - the design mock treats it as one screen with tab UI, not 4 screens, so splitting it would fight the source of truth for no benefit.
 
+### Tests
+- `commonTest` holds pure logic and presenter-side controllers on fakes (`InMemoryStore`, `Fake*Repository`); `androidHostTest` holds what needs the JVM: repositories on an in-memory SQLite (`TestDatabase`) and `ArchitectureTest`. Run `:shared:testAndroidHostTest` and `:shared:iosSimulatorArm64Test`.
+- Controllers and pure mappers get a test next to them; presenter-level tests (circuit-test/Molecule) and a `DispatcherProvider` are deliberately not added until a consumer needs them.
+
+### Localization
+- User-visible text lives in `composeResources/values{,-en}/strings.xml` (plurals as `<plurals>`); never build a sentence or a plural form in code. A key present in `values` must be present in `values-en`.
+- Dates are formatted with `AppLanguage` (`core/format/DateFormatting.kt`), resolved in composable code with `currentAppLanguage()`. Two keys with the same text are kept apart on purpose when they sit in different screens, so each can be translated on its own.
+
 ### Kotlin typing rules
 - Strict, non-nullable-by-default typing. Avoid `Any`, unchecked `as` casts, and `!!` — prefer `as?` with explicit handling, or remove the need for the cast with a `sealed interface`/`sealed class`.
 - Model exhaustive UI/domain states with `sealed interface`/`sealed class` rather than nullable flags or booleans — keeps `when` exhaustive without a defensive `else`.
@@ -96,7 +104,7 @@ No more than 1 line, concise, and only where the code actually needs explaining 
 
 ### Static analysis & formatting
 - **ktlint** owns formatting/style (official Kotlin code style, applied to `.kt` and `.kts` including Gradle build scripts). Never hand-format against what `./gradlew ktlintFormat` would produce.
-- **detekt** owns code-quality rules (complexity, unused code, code smells). Project overrides live in `config/detekt/detekt.yml` (empty today — add rule overrides there as they come up, `buildUponDefaultConfig = true` is set so unmentioned rules keep detekt's defaults).
+- **detekt** owns code-quality rules (complexity, unused code, code smells). Project overrides live in `config/detekt/detekt.yml` (a few justified ones, each with its reason - add new ones there with a reason, `buildUponDefaultConfig = true` is set so unmentioned rules keep detekt's defaults).
 - detekt is pinned to `dev.detekt` `2.0.0-alpha.6` because Kotlin 2.4.20 has no stable detekt release yet. Bump the `detekt` version in `gradle/libs.versions.toml` once a stable 2.x build supports this Kotlin version — don't downgrade Kotlin to chase detekt stability instead, that risks breaking compatibility with Compose Multiplatform/Circuit/SQLDelight/Ktor versions that were pinned together.
 - `build/generated/**` (SQLDelight, Compose resources) is excluded from ktlint in `shared/build.gradle.kts` via a direct `tasks.withType<BaseKtLintCheckTask> { exclude(...) }` — the ktlint extension's own `filter {}` block does not reliably exclude generated Kotlin-Multiplatform sources on its own (known ktlint-gradle limitation), keep both in place.
 - `@Composable` functions are allowed PascalCase names via `.editorconfig` (`ktlint_function_naming_ignore_when_annotated_with = Composable`). The one non-Composable PascalCase exception, `MainViewController` (name required verbatim by the Swift caller in `iosApp`), uses a targeted `@Suppress("ktlint:standard:function-naming")` instead of loosening `.editorconfig` further.

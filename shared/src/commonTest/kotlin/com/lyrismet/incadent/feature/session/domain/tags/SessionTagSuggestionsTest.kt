@@ -87,4 +87,18 @@ class SessionTagSuggestionsTest {
         val quests = suggestSessionTags(emptyList(), listOf("Меч", "Щит"), emptyList(), labels)
         assertTrue(quests.single { it.tag == "Сюжет" }.reason.startsWith("Quests: "))
     }
+
+    @Test
+    fun `an english word suggests the same tag as its russian one`() {
+        val result = suggestSessionTags(listOf("The party fell into an ambush"), emptyList(), emptyList())
+        assertTrue(result.any { it.tag == "Бой" })
+    }
+
+    @Test
+    fun `an english whole word stem does not match inside a longer word`() {
+        val noRest = suggestSessionTags(listOf("The campaign went on in the restaurant"), emptyList(), emptyList())
+        assertTrue(noRest.none { it.tag == "Отдых" })
+        val rest = suggestSessionTags(listOf("Time to rest"), emptyList(), emptyList())
+        assertTrue(rest.any { it.tag == "Отдых" })
+    }
 }

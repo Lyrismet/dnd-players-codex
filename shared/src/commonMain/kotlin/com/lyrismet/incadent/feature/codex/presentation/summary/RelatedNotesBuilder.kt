@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
-import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.MentionSegment
@@ -41,7 +40,7 @@ internal fun buildRelatedNotes(
                     entryId = hits.first().id,
                     numberLabel = numberLabels.getValue(note.id),
                     title = note.title,
-                    dateLabel = note.sessionDate.toDisplayDate(),
+                    sessionDate = note.sessionDate,
                     snippet = plainTextSnippet(hits.first().body, lookup.mentionIndex),
                     matchCount = hits.size,
                 )

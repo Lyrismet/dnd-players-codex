@@ -37,9 +37,8 @@ data class SessionListItem(
     val arabicNumber: Int,
     val title: String,
     val dateLabel: String,
-    // "{date} · {N} заметок" - the archive row's meta line, kept apart from [dateLabel] since the live
-    // card shows its own separate "N заметок · последняя в HH:MM" line and must stay just the date
-    val archiveMeta: String,
+    // the archive row's meta line is the date and this count, the live card shows its own notes summary
+    val noteCount: Int,
     val tags: List<String> = emptyList(),
     // distinct @-mentioned entities (any type) across every note of the session, 0 hides the "@ N" badge
     val mentionCount: Int = 0,

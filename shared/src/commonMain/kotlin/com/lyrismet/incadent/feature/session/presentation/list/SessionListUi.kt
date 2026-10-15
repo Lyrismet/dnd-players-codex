@@ -41,6 +41,7 @@ import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.format.NumberSizeLadder
+import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.AppArchiveBanner
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
@@ -54,6 +55,7 @@ import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import com.lyrismet.incadent.feature.session.domain.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.campaign_switcher_description
+import dndplayerscodex.shared.generated.resources.mention_count_notes
 import dndplayerscodex.shared.generated.resources.session_list_archive_section
 import dndplayerscodex.shared.generated.resources.session_list_delete_content_description
 import dndplayerscodex.shared.generated.resources.session_list_empty
@@ -67,6 +69,7 @@ import dndplayerscodex.shared.generated.resources.session_list_title
 import dndplayerscodex.shared.generated.resources.swipe_hint_delete_only_title
 import dndplayerscodex.shared.generated.resources.swipe_hint_dismiss
 import dndplayerscodex.shared.generated.resources.swipe_hint_sessions_subtitle
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 // matches the bordered tag chip's own rendered height (16sp text + 3dp top/bottom padding) so an unbordered
@@ -353,7 +356,7 @@ private fun SessionArchiveRow(
             NumberLabel(text = session.numberLabel, width = 52.dp, color = AppPalette.GoldDim)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(session.title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
-                Text(session.archiveMeta, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
+                ArchiveMeta(session)
                 if (session.tags.isNotEmpty() || session.mentionCount > 0) {
                     FlowRow(
                         modifier = Modifier.padding(top = 4.dp),
@@ -384,4 +387,15 @@ private fun SessionArchiveRow(
             }
         }
     }
+}
+
+// the date and how many notes the session holds
+@Composable
+private fun ArchiveMeta(session: SessionListItem) {
+    val notes = pluralStringResource(Res.plurals.mention_count_notes, session.noteCount, session.noteCount)
+    Text(
+        joinWithDot(session.dateLabel, notes),
+        style = MaterialTheme.typography.bodySmall,
+        color = AppPalette.TextSecondary,
+    )
 }
