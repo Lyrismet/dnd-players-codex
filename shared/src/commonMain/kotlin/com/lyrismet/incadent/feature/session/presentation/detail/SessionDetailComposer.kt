@@ -53,7 +53,10 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
@@ -148,7 +151,7 @@ private fun ComposerInputCard(
             modifier
                 .fillMaxWidth()
                 .appCard(
-                    shape = RoundedCornerShape(14.dp),
+                    shape = AppShapes.Card,
                     background = AppPalette.SurfaceInput,
                     border = AppPalette.Border,
                 ).padding(start = 12.dp, top = 10.dp, end = 12.dp, bottom = 8.dp),
@@ -227,7 +230,7 @@ private fun ComposerActionRow(
         )
         Text(
             stringResource(Res.string.session_detail_composer_hint),
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+            style = AppText.caption,
             color = AppPalette.TextTertiary,
             modifier = Modifier.weight(1f),
         )
@@ -266,7 +269,7 @@ private fun SubmitButton(
     ) {
         Text(
             label,
-            style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp),
+            style = MaterialTheme.typography.labelLarge.copy(fontSize = AppFontSize.Medium),
             color = if (enabled) AppPalette.Background else AppPalette.TextTertiary,
         )
     }
@@ -295,7 +298,7 @@ private fun EditingEntryBanner(
                 Modifier
                     .height(32.dp)
                     .appCard(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = AppShapes.Small,
                         background = Color.Transparent,
                         border = AppPalette.BorderHover,
                         onClick = { eventSink(SessionDetailEvent.CancelEditEntryClicked) },
@@ -320,13 +323,13 @@ private fun MentionTriggerButton(
     IconBadge(
         modifier = modifier,
         size = 32.dp,
-        shape = RoundedCornerShape(9.dp),
+        shape = AppShapes.Tile,
         background = AppPalette.SurfaceElevated,
         onClick = onClick,
     ) {
         Text(
             "@",
-            style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
+            style = MaterialTheme.typography.titleSmall.copy(fontSize = AppFontSize.Large),
             color = AppPalette.GoldBright,
         )
     }
@@ -355,7 +358,7 @@ private fun ComposerPopover(
     if (!LocalTabSelected.current) return
     val density = LocalDensity.current
     val popupWidth = with(density) { composerWidthPx.toDp() }
-    val shape = RoundedCornerShape(14.dp)
+    val shape = AppShapes.Card
     val gapPx = with(density) { POPOVER_OFFSET_ABOVE_CONTENT.roundToPx() }
     Popup(popupPositionProvider = AbovePopupPositionProvider(gapPx)) {
         Column(
@@ -393,7 +396,7 @@ private fun MentionSuggestionsPopover(
     ComposerPopover(composerWidthPx) {
         Text(
             stringResource(Res.string.session_detail_mention_suggestions_header),
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, letterSpacing = 0.14.em),
+            style = AppText.fieldOverline,
             color = AppPalette.TextTertiary,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
         )
@@ -402,7 +405,7 @@ private fun MentionSuggestionsPopover(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(9.dp))
+                        .clip(AppShapes.Tile)
                         .clickable {
                             state.eventSink(SessionDetailEvent.MentionSuggestionPicked(suggestion.token))
                         }.padding(horizontal = 8.dp, vertical = 9.dp),
@@ -410,15 +413,15 @@ private fun MentionSuggestionsPopover(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(modifier = Modifier.width(14.dp), contentAlignment = Alignment.Center) {
-                    Text(suggestion.glyph.symbol, fontSize = 9.sp, color = suggestion.tint)
+                    Text(suggestion.glyph.symbol, fontSize = AppFontSize.Micro, color = suggestion.tint)
                 }
                 Text(
                     suggestion.name,
-                    fontSize = 14.sp,
+                    fontSize = AppFontSize.Medium,
                     color = AppPalette.TextPrimary,
                     modifier = Modifier.weight(1f),
                 )
-                Text(suggestion.typeLabel, fontSize = 11.sp, color = AppPalette.TextSecondary)
+                Text(suggestion.typeLabel, fontSize = AppFontSize.Caption, color = AppPalette.TextSecondary)
             }
         }
     }

@@ -17,7 +17,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
 import com.lyrismet.incadent.domain.model.Photo
@@ -59,7 +59,12 @@ fun PortraitFrame(
                     contentScale = ContentScale.Crop,
                 )
             } else {
-                Text("+", color = AppPalette.GoldBright, fontWeight = FontWeight.SemiBold, fontSize = 24.sp)
+                Text(
+                    "+",
+                    color = AppPalette.GoldBright,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = AppFontSize.SubDisplay,
+                )
             }
             val ring = if (portrait != null) AppPalette.Gold.copy(alpha = 0.6f) else AppPalette.BorderHover
             Box(Modifier.matchParentSize().border(1.5.dp, ring, PortraitFrameShape))

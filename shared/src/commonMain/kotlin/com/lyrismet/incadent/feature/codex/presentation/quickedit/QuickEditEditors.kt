@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -36,9 +35,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
 import com.lyrismet.incadent.core.designsystem.component.AppTextInputCounter
@@ -70,7 +71,7 @@ private fun EditorFrame(
                 .fillMaxWidth()
                 .onGloballyPositioned { tracker?.report(it) }
                 .appCard(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = AppShapes.Field,
                     background = AppPalette.Background,
                     border = AppPalette.Gold,
                     borderWidth = 1.5.dp,
@@ -210,7 +211,7 @@ private fun EditorHeader(
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             label.uppercase(),
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, letterSpacing = 0.14.em),
+            style = AppText.fieldOverline,
             color = AppPalette.GoldBright,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.weight(1f),
@@ -234,16 +235,16 @@ private fun inputTextStyle(kind: InlineInputKind) =
     when (kind) {
         InlineInputKind.TITLE ->
             MaterialTheme.typography.headlineLarge.copy(
-                fontSize = 24.sp,
+                fontSize = AppFontSize.SubDisplay,
                 lineHeight = 29.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = AppPalette.TextHeading,
             )
         InlineInputKind.TEXT, InlineInputKind.NUMBER ->
-            MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp, color = AppPalette.TextPrimary)
+            MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Large, color = AppPalette.TextPrimary)
         InlineInputKind.MULTILINE ->
             MaterialTheme.typography.bodyLarge.copy(
-                fontSize = 15.sp,
+                fontSize = AppFontSize.Large,
                 lineHeight = 24.sp,
                 color = AppPalette.TextPrimary,
             )

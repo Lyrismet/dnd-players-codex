@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
@@ -52,7 +52,7 @@ fun CampaignRenameSheet(
             )
             Text(
                 text = stringResource(Res.string.settings_rename_hint),
-                fontSize = 12.5.sp,
+                fontSize = AppFontSize.SmallPlus,
                 color = AppPalette.TextSecondary,
             )
             FormPrimaryButton(
@@ -77,7 +77,10 @@ private fun RenameNameInput(
         style =
             AppTextInputStyle(
                 textStyle =
-                    MaterialTheme.typography.headlineMedium.copy(fontSize = 22.sp, fontWeight = FontWeight.SemiBold),
+                    MaterialTheme.typography.headlineMedium.copy(
+                        fontSize = AppFontSize.Section,
+                        fontWeight = FontWeight.SemiBold,
+                    ),
                 textColor = AppPalette.TextHeading,
                 chrome = AppInputChrome(border = AppPalette.Gold.copy(alpha = 0.5f)),
                 height = 56.dp,

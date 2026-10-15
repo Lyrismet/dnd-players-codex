@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,7 +19,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
@@ -39,7 +41,7 @@ import dndplayerscodex.shared.generated.resources.campaign_section_archived
 import dndplayerscodex.shared.generated.resources.campaign_section_live
 import org.jetbrains.compose.resources.stringResource
 
-private val CardShape = RoundedCornerShape(14.dp)
+private val CardShape = AppShapes.Card
 private const val ARCHIVED_ALPHA = 0.85f
 
 /**
@@ -180,12 +182,12 @@ private fun CampaignRow(
             Text(
                 text = item.lastLabel,
                 color = AppPalette.TextSecondary,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                style = AppText.caption,
             )
             Text(
                 text = "›",
                 color = AppPalette.TextTertiary,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Title),
             )
         }
     }
@@ -228,6 +230,6 @@ private fun CampaignSectionOverline(
         modifier = Modifier.padding(start = 4.dp, top = topPadding),
         color = color,
         letterSpacing = 0.14.em,
-        fontSize = 10.5.sp,
+        fontSize = AppFontSize.TinyPlus,
     )
 }

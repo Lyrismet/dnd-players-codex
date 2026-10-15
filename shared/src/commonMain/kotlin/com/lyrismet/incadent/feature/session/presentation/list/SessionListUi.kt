@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
@@ -31,6 +32,7 @@ import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
 import com.lyrismet.incadent.core.designsystem.component.GlowingDot
 import com.lyrismet.incadent.core.designsystem.component.NumberLabel
+import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
@@ -197,7 +199,7 @@ private fun SessionListContent(
                 text = stringResource(Res.string.session_list_archive_section),
                 modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 10.dp, bottom = 2.dp),
                 color = AppPalette.TextSecondary,
-                letterSpacing = 0.16.em,
+                style = OverlineStyle.Section,
                 trailingContent = {
                     Text(
                         state.sessions.size.toString(),
@@ -353,7 +355,7 @@ private fun SessionArchiveRow(
                 Modifier
                     .fillMaxWidth()
                     .appCard(
-                        shape = RoundedCornerShape(14.dp),
+                        shape = AppShapes.Card,
                         background = AppPalette.SurfaceVariant,
                         border = AppPalette.BorderSubtle,
                         onClick = onClick,

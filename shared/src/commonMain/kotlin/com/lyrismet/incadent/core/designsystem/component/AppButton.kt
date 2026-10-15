@@ -17,12 +17,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppText
 
 /** the accent a button speaks in - gold for the main action, maroon for a destructive or closing one */
 enum class ButtonTone { Gold, Maroon, Neutral }
@@ -103,7 +102,7 @@ private fun textStyle(size: ButtonSize): TextStyle =
         ButtonSize.Compact, ButtonSize.Medium -> MaterialTheme.typography.labelLarge
         ButtonSize.Large -> MaterialTheme.typography.titleSmall
         ButtonSize.Primary ->
-            MaterialTheme.typography.labelLarge.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            AppText.action
     }
 
 /**

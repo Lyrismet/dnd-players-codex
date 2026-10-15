@@ -5,16 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppCoverField
 import com.lyrismet.incadent.core.designsystem.component.AppPhotoCropDraftWindow
@@ -22,6 +22,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppPhotoSlot
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
+import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.PhotoSlotActions
 import com.lyrismet.incadent.core.designsystem.component.PortraitFrame
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
@@ -43,7 +44,7 @@ import dndplayerscodex.shared.generated.resources.photo_kind_portrait
 import org.jetbrains.compose.resources.stringResource
 
 private val PortraitCardModifier =
-    Modifier.fillMaxWidth().appCard(RoundedCornerShape(14.dp), AppPalette.Background, AppPalette.Border).padding(12.dp)
+    Modifier.fillMaxWidth().appCard(AppShapes.Card, AppPalette.Background, AppPalette.Border).padding(12.dp)
 
 private fun photoActions(
     slot: PhotoSlot,
@@ -64,8 +65,7 @@ internal fun PortraitField(
         SectionOverline(
             text = stringResource(Res.string.codex_entry_label_portrait),
             color = AppPalette.TextTertiary,
-            fontSize = 10.sp,
-            letterSpacing = 0.14.em,
+            style = OverlineStyle.Field,
         )
         Row(
             modifier = PortraitCardModifier,
@@ -94,7 +94,11 @@ internal fun PortraitField(
                     }
                 Text(
                     hint,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp, lineHeight = 18.sp),
+                    style =
+                        MaterialTheme.typography.bodySmall.copy(
+                            fontSize = AppFontSize.SmallPlus,
+                            lineHeight = 18.sp,
+                        ),
                     color = AppPalette.TextMuted,
                 )
                 if (portrait != null) {
@@ -120,8 +124,7 @@ internal fun CoverField(
         SectionOverline(
             text = stringResource(Res.string.codex_entry_label_cover),
             color = AppPalette.TextTertiary,
-            fontSize = 10.sp,
-            letterSpacing = 0.14.em,
+            style = OverlineStyle.Field,
         )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             AppPhotoSlot(

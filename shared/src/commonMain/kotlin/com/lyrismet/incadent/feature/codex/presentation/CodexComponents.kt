@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,10 +32,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
+import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.PillSize
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
@@ -89,7 +91,6 @@ internal fun CodexPlaceSectionHeader(
                 title,
                 style =
                     MaterialTheme.typography.labelMedium.copy(
-                        fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.16.em,
                     ),
@@ -100,7 +101,7 @@ internal fun CodexPlaceSectionHeader(
             if (path != null) {
                 Text(
                     path,
-                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
                     color = AppPalette.TextSecondary,
                     modifier = Modifier.padding(top = 1.dp),
                 )
@@ -114,10 +115,10 @@ internal fun CodexPlaceSectionHeader(
                     .height(1.dp)
                     .background(AppPalette.Border),
         )
-        Text(count.toString(), fontSize = 11.5.sp, color = AppPalette.TextSecondary)
+        Text(count.toString(), fontSize = AppFontSize.CaptionPlus, color = AppPalette.TextSecondary)
         Text(
             if (collapsed) "▸" else "▾",
-            fontSize = 12.sp,
+            fontSize = AppFontSize.Small,
             color = AppPalette.TextSecondary,
             modifier = Modifier.width(14.dp),
             textAlign = TextAlign.Center,
@@ -136,7 +137,7 @@ internal fun CodexSectionHeader(
         text = text,
         modifier = modifier.padding(start = 4.dp, end = 4.dp, top = if (isFirst) 4.dp else 12.dp),
         color = AppPalette.TextSecondary,
-        letterSpacing = 0.16.em,
+        style = OverlineStyle.Section,
         trailingContent = {
             Text(
                 count.toString(),
@@ -179,14 +180,14 @@ internal fun CodexTabRow(
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
             Text(
                 text = item.label,
-                style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.sp),
+                style = MaterialTheme.typography.labelLarge.copy(fontSize = AppFontSize.Small),
                 color = tint,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = item.count.toString(),
-                style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.5.sp),
+                style = MaterialTheme.typography.labelMedium.copy(fontSize = AppFontSize.TinyPlus),
                 color = tint.copy(alpha = 0.65f),
             )
         }
@@ -217,7 +218,7 @@ internal fun <T> CodexFilterChipRow(
     }
 }
 
-private val OtherSectionsHintShape = RoundedCornerShape(14.dp)
+private val OtherSectionsHintShape = AppShapes.Card
 private const val OTHER_SECTIONS_DIAMOND_TOP_DP = 6
 
 /** the note over the list a tab with no hits falls back to - what was not found here and how many hits lie elsewhere */
@@ -257,7 +258,7 @@ internal fun CodexOtherSectionsHint(
                             append(hint.count.toString())
                         }
                     },
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp, lineHeight = 20.sp),
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.BodyPlus, lineHeight = 20.sp),
             )
         }
         hint.create?.let { create ->

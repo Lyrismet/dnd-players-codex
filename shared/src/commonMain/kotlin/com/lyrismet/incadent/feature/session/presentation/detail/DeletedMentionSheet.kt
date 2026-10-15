@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,7 +24,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
@@ -98,7 +99,7 @@ private fun DeletedMentionActions(
     val sessions = pluralStringResource(Res.plurals.mention_count_in_sessions, sheet.sessions, sheet.sessions)
     Text(
         stringResource(Res.string.deleted_mention_body, notes, sessions),
-        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 22.sp),
+        style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Medium, lineHeight = 22.sp),
         color = AppPalette.TextMuted,
     )
     FormPrimaryButton(
@@ -133,15 +134,23 @@ private fun DeletedMentionOption(
             Modifier
                 .fillMaxWidth()
                 .appCard(
-                    shape = RoundedCornerShape(14.dp),
+                    shape = AppShapes.Card,
                     background = Color.Transparent,
                     border = AppPalette.BorderHover,
                     onClick = onClick,
                 ).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        Text(title, style = MaterialTheme.typography.titleSmall.copy(fontSize = 14.sp), color = AppPalette.TextPrimary)
-        Text(hint, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp), color = AppPalette.TextSecondary)
+        Text(
+            title,
+            style = MaterialTheme.typography.titleSmall.copy(fontSize = AppFontSize.Medium),
+            color = AppPalette.TextPrimary,
+        )
+        Text(
+            hint,
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small),
+            color = AppPalette.TextSecondary,
+        )
     }
 }
 
@@ -156,7 +165,7 @@ private fun DeletedMentionPicker(
         onQueryChange = { eventSink(SessionDetailEvent.DeletedMentionQueryChanged(it)) },
         placeholder = stringResource(Res.string.deleted_mention_search_placeholder),
         height = 44.dp,
-        textSize = 14.sp,
+        textSize = AppFontSize.Medium,
         background = AppPalette.Background,
     )
     LazyColumn(
@@ -164,7 +173,7 @@ private fun DeletedMentionPicker(
             Modifier
                 .fillMaxWidth()
                 .heightIn(max = PICKER_MAX_HEIGHT)
-                .appCard(shape = RoundedCornerShape(14.dp), background = AppPalette.Background),
+                .appCard(shape = AppShapes.Card, background = AppPalette.Background),
         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 2.dp),
     ) {
         itemsIndexed(sheet.linkOptions, key = { _, option -> option.id }) { index, option ->
@@ -199,14 +208,14 @@ private fun DeletedMentionLinkRow(
     ) {
         Text(
             option.glyph.symbol,
-            fontSize = 9.sp,
+            fontSize = AppFontSize.Micro,
             color = option.color.foreground,
             textAlign = TextAlign.Center,
             modifier = Modifier.width(14.dp),
         )
         Text(
             option.name,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp),
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Large),
             color = option.color.foreground,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -214,7 +223,7 @@ private fun DeletedMentionLinkRow(
         )
         Text(
             stringResource(option.type.kindLabelRes()),
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.CaptionPlus),
             color = AppPalette.TextSecondary,
         )
     }

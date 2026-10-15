@@ -65,7 +65,8 @@ fun headingFontFamily(font: HeadingFont = HeadingFont.ALEGREYA): FontFamily =
             )
     }
 
-/** [headingFontFamily] is the injection point for the future serif-picker setting */
+// one flat table of the design's type slots - a longer list of styles, not real complexity
+@Suppress("LongMethod")
 @Composable
 fun appTypography(headingFontFamily: FontFamily = headingFontFamily(HeadingFont.ALEGREYA)): Typography {
     val body = interFontFamily()
@@ -74,52 +75,85 @@ fun appTypography(headingFontFamily: FontFamily = headingFontFamily(HeadingFont.
             TextStyle(
                 fontFamily = headingFontFamily,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 32.sp,
+                fontSize = AppFontSize.Display,
                 lineHeight = 37.sp,
             ),
         headlineLarge =
             TextStyle(
                 fontFamily = headingFontFamily,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 27.sp,
+                fontSize = AppFontSize.EntityTitle,
                 lineHeight = 32.sp,
             ),
         headlineMedium =
             TextStyle(
                 fontFamily = headingFontFamily,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 23.sp,
+                fontSize = AppFontSize.SectionPlus,
                 lineHeight = 28.sp,
             ),
         titleLarge =
             TextStyle(
                 fontFamily = headingFontFamily,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 20.sp,
+                fontSize = AppFontSize.Heading,
                 lineHeight = 24.sp,
             ),
         titleMedium =
             TextStyle(
                 fontFamily = headingFontFamily,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
+                fontSize = AppFontSize.Title,
                 lineHeight = 23.sp,
             ),
         titleSmall =
-            TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 20.sp),
-        bodyLarge = TextStyle(fontFamily = body, fontWeight = FontWeight.Normal, fontSize = 15.sp, lineHeight = 24.sp),
-        bodyMedium = TextStyle(fontFamily = body, fontWeight = FontWeight.Normal, fontSize = 13.sp, lineHeight = 19.sp),
-        bodySmall = TextStyle(fontFamily = body, fontWeight = FontWeight.Normal, fontSize = 12.sp, lineHeight = 17.sp),
+            TextStyle(
+                fontFamily = body,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = AppFontSize.Medium,
+                lineHeight = 20.sp,
+            ),
+        bodyLarge =
+            TextStyle(
+                fontFamily = body,
+                fontWeight = FontWeight.Normal,
+                fontSize = AppFontSize.Large,
+                lineHeight = 24.sp,
+            ),
+        bodyMedium =
+            TextStyle(
+                fontFamily = body,
+                fontWeight = FontWeight.Normal,
+                fontSize = AppFontSize.Body,
+                lineHeight = 19.sp,
+            ),
+        bodySmall =
+            TextStyle(
+                fontFamily = body,
+                fontWeight = FontWeight.Normal,
+                fontSize = AppFontSize.Small,
+                lineHeight = 17.sp,
+            ),
         labelLarge =
-            TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, lineHeight = 18.sp),
+            TextStyle(
+                fontFamily = body,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = AppFontSize.Body,
+                lineHeight = 18.sp,
+            ),
         labelMedium =
-            TextStyle(fontFamily = body, fontWeight = FontWeight.SemiBold, fontSize = 11.sp, lineHeight = 16.sp),
+            TextStyle(
+                fontFamily = body,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = AppFontSize.Caption,
+                lineHeight = 16.sp,
+            ),
         // overline section labels (АРХИВ, БАЗА ЗНАНИЙ...) - the wide tracking is what gives them away
         labelSmall =
             TextStyle(
                 fontFamily = body,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 11.sp,
+                fontSize = AppFontSize.Caption,
                 lineHeight = 16.sp,
                 letterSpacing = 0.18.em,
             ),

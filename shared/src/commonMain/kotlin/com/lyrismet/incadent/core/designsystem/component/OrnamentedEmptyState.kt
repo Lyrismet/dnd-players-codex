@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 
 /** centered gold diamond + serif title + hint - the "blank page" state of a screen that is meant to be filled */
@@ -35,12 +36,12 @@ fun OrnamentedEmptyState(
             Box(Modifier.size(10.dp).rotate(DIAMOND_ROTATION_DEGREES).border(1.dp, AppPalette.Gold))
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 21.sp),
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = AppFontSize.HeadingPlus),
                 color = AppPalette.TextHeading,
             )
             Text(
                 text = hint,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp, lineHeight = 21.7.sp),
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Medium, lineHeight = 21.7.sp),
                 color = AppPalette.TextSecondary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.widthIn(max = 260.dp),

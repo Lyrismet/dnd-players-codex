@@ -3,7 +3,6 @@ package com.lyrismet.incadent.core.designsystem.component
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,7 +13,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_cancel
@@ -44,7 +45,7 @@ fun ConfirmationDialog(
     ) {
         IconBadge(
             size = 44.dp,
-            shape = RoundedCornerShape(12.dp),
+            shape = AppShapes.Field,
             background = accent.copy(alpha = 0.2f),
             border = accent.copy(alpha = 0.7f),
         ) {
@@ -53,7 +54,7 @@ fun ConfirmationDialog(
         Text(title, style = MaterialTheme.typography.headlineMedium, color = AppPalette.TextHeading)
         Text(
             text,
-            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 21.sp),
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Medium, lineHeight = 21.sp),
             color = AppPalette.TextMuted,
             maxLines = 4,
             overflow = TextOverflow.Ellipsis,

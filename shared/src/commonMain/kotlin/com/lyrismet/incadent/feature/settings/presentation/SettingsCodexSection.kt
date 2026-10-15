@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,7 +12,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.RadioOptionRow
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -43,13 +44,13 @@ internal fun CodexSection(
             modifier = Modifier.padding(horizontal = 4.dp),
             color = AppPalette.TextSecondary,
             letterSpacing = 0.16.em,
-            fontSize = 11.sp,
+            fontSize = AppFontSize.Caption,
         )
         Column(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .appCard(shape = RoundedCornerShape(14.dp), background = AppPalette.Surface)
+                    .appCard(shape = AppShapes.Card, background = AppPalette.Surface)
                     .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -82,13 +83,17 @@ private fun ModeTitleBlock(
     Column {
         Text(
             title,
-            style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
+            style =
+                MaterialTheme.typography.titleSmall.copy(
+                    fontSize = AppFontSize.Large,
+                    fontWeight = FontWeight.SemiBold,
+                ),
             color = AppPalette.TextPrimary,
         )
         Text(
             description,
             modifier = Modifier.padding(top = 2.dp),
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, lineHeight = 19.5.sp),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Body, lineHeight = 19.5.sp),
             color = AppPalette.TextSecondary,
         )
     }

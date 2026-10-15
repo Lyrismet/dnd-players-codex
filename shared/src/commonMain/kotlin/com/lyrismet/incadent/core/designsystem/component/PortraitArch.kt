@@ -19,7 +19,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
@@ -71,7 +71,7 @@ fun PortraitArch(
             } else {
                 Text(
                     emblemText,
-                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
+                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = AppFontSize.Hero),
                     color = color.foreground,
                 )
             }
@@ -122,6 +122,6 @@ private fun AddPortraitBadge(modifier: Modifier = Modifier) {
         border = AppPalette.Surface,
         borderWidth = 3.dp,
     ) {
-        Text("+", color = AppPalette.Background, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text("+", color = AppPalette.Background, fontWeight = FontWeight.Bold, fontSize = AppFontSize.Title)
     }
 }

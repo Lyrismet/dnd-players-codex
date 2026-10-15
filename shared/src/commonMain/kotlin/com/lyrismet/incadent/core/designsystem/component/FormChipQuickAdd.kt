@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -52,12 +51,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import kotlinx.coroutines.flow.collectLatest
 
-private val ChipShape = RoundedCornerShape(20.dp)
-private val QuickAddPanelShape = RoundedCornerShape(12.dp)
-private val QuickAddFieldShape = RoundedCornerShape(10.dp)
+private val ChipShape = AppShapes.Pill
+private val QuickAddPanelShape = AppShapes.Field
+private val QuickAddFieldShape = AppShapes.Control
 private val QuickAddFieldSize = 44.dp
 private val QuickAddKeyboardClearance = 24.dp
 private const val QUICK_ADD_BORDER_ALPHA = 0.6f
@@ -119,7 +120,7 @@ fun QuickAddOutsideTapHost(
 internal fun QuickAddPill(quickAdd: FormChipQuickAdd) {
     Text(
         quickAdd.addLabel,
-        style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
+        style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Body, fontWeight = FontWeight.SemiBold),
         color = AppPalette.GoldBright,
         modifier =
             Modifier
@@ -175,7 +176,7 @@ private fun QuickAddPanelBody(
     ) {
         Text(
             quickAdd.helperText,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp, lineHeight = 16.sp),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.CaptionPlus, lineHeight = 16.sp),
             color = AppPalette.TextSecondary,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {

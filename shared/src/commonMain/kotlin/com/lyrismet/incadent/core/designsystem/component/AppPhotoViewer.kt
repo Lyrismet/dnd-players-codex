@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,11 +26,11 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.photo_viewer_close
@@ -120,7 +119,7 @@ private fun ViewerHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            SectionOverline(text = kind, color = AppPalette.TextTertiary, fontSize = 10.sp, letterSpacing = 0.14.em)
+            SectionOverline(text = kind, color = AppPalette.TextTertiary, style = OverlineStyle.Field)
             Text(title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading, maxLines = 1)
         }
         IconBadge(
@@ -128,7 +127,7 @@ private fun ViewerHeader(
             background = AppPalette.Surface,
             border = AppPalette.BorderHover,
             onClick = onClose,
-        ) { Text("✕", color = AppPalette.TextPrimary, fontSize = 16.sp) }
+        ) { Text("✕", color = AppPalette.TextPrimary, fontSize = AppFontSize.Lead) }
     }
 }
 
@@ -155,7 +154,7 @@ private fun RowScope.ViewerButton(
             Modifier
                 .weight(1f)
                 .height(48.dp)
-                .appCard(shape = RoundedCornerShape(12.dp), border = AppPalette.BorderHover, onClick = onClick),
+                .appCard(shape = AppShapes.Field, border = AppPalette.BorderHover, onClick = onClick),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {

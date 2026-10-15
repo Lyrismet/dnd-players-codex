@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.HoldFrame
 import com.lyrismet.incadent.core.designsystem.component.HoldToEditField
@@ -72,7 +72,7 @@ private fun RelationGroupContent(
             group.emptyText?.let {
                 Text(
                     stringResource(it),
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Body),
                     color = AppPalette.TextTertiary,
                 )
             }

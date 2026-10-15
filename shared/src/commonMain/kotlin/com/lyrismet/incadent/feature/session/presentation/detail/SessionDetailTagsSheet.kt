@@ -6,21 +6,20 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
+import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
@@ -80,8 +79,7 @@ private fun TagSuggestionsSection(
             SectionOverline(
                 text = stringResource(Res.string.session_detail_tag_suggested_header),
                 color = AppPalette.GoldBright,
-                letterSpacing = 0.14.em,
-                fontSize = 10.sp,
+                style = OverlineStyle.Field,
             )
             AppButton(
                 text = stringResource(Res.string.session_detail_tag_add_all_button),
@@ -104,7 +102,7 @@ private fun TagSuggestionRow(
             Modifier
                 .fillMaxWidth()
                 .appCard(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = AppShapes.Field,
                     background = AppPalette.Gold.copy(alpha = 0.06f),
                     border = AppPalette.Gold.copy(alpha = 0.3f),
                 ).padding(start = 14.dp, top = 10.dp, bottom = 10.dp, end = 10.dp),
@@ -141,8 +139,7 @@ private fun TagCatalogSection(
         SectionOverline(
             text = stringResource(Res.string.session_detail_tag_catalog_header),
             color = AppPalette.TextTertiary,
-            letterSpacing = 0.14.em,
-            fontSize = 10.sp,
+            style = OverlineStyle.Field,
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             catalog.forEach { item ->
@@ -165,8 +162,7 @@ private fun TagCustomInputSection(
         SectionOverline(
             text = stringResource(Res.string.session_detail_tag_custom_header),
             color = AppPalette.TextTertiary,
-            letterSpacing = 0.14.em,
-            fontSize = 10.sp,
+            style = OverlineStyle.Field,
         )
         SheetDraftInput(
             draft = draft,

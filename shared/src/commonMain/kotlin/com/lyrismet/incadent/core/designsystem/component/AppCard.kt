@@ -3,7 +3,6 @@ package com.lyrismet.incadent.core.designsystem.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -11,10 +10,11 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 
 /** the surface-card clip/tint/border/click chrome - callers still own their own layout and padding */
 fun Modifier.appCard(
-    shape: Shape = RoundedCornerShape(14.dp),
+    shape: Shape = AppShapes.Card,
     background: Color = AppPalette.Surface,
     border: Color? = AppPalette.BorderSubtle,
     borderWidth: Dp = 1.dp,

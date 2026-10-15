@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,8 +31,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
@@ -79,8 +79,8 @@ import dndplayerscodex.shared.generated.resources.settings_storage_value
 import dndplayerscodex.shared.generated.resources.settings_title
 import org.jetbrains.compose.resources.stringResource
 
-private val ChoiceLabelSerif = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-internal val ChoiceLabelSans = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+private val ChoiceLabelSerif = TextStyle(fontSize = AppFontSize.Lead, fontWeight = FontWeight.SemiBold)
+internal val ChoiceLabelSans = TextStyle(fontSize = AppFontSize.Small, fontWeight = FontWeight.SemiBold)
 
 /** renders the settings screen - every tap goes out through the state's eventSink */
 @Composable
@@ -259,7 +259,7 @@ internal fun SettingsGroup(
             modifier = Modifier.padding(horizontal = 4.dp),
             color = AppPalette.TextSecondary,
             letterSpacing = 0.16.em,
-            fontSize = 11.sp,
+            fontSize = AppFontSize.Caption,
         )
         Column(
             modifier =
@@ -289,11 +289,16 @@ internal fun <T> ChoiceRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = AppPalette.TextPrimary)
+            Text(
+                text = title,
+                fontSize = AppFontSize.Medium,
+                fontWeight = FontWeight.Medium,
+                color = AppPalette.TextPrimary,
+            )
             Text(
                 text = description,
                 modifier = Modifier.padding(top = 2.dp),
-                fontSize = 12.sp,
+                fontSize = AppFontSize.Small,
                 color = AppPalette.TextSecondary,
             )
         }
@@ -310,9 +315,9 @@ internal fun <T> ChoiceRow(
                 }
             },
             modifier = Modifier.width(width),
-            containerShape = RoundedCornerShape(10.dp),
+            containerShape = AppShapes.Control,
             containerBackground = AppPalette.Background,
-            itemShape = RoundedCornerShape(8.dp),
+            itemShape = AppShapes.Small,
             itemHeight = 30.dp,
         ) { choice ->
             val tint = if (choice.value == selected) AppPalette.GoldBright else AppPalette.TextSecondary
@@ -335,11 +340,11 @@ private fun AllCampaignsRow(onClick: () -> Unit) {
         Text(
             text = stringResource(Res.string.settings_all_campaigns_title),
             modifier = Modifier.weight(1f),
-            fontSize = 14.sp,
+            fontSize = AppFontSize.Medium,
             fontWeight = FontWeight.Medium,
             color = AppPalette.TextPrimary,
         )
-        Text(text = "›", fontSize = 18.sp, color = AppPalette.TextTertiary)
+        Text(text = "›", fontSize = AppFontSize.Title, color = AppPalette.TextTertiary)
     }
 }
 
@@ -360,14 +365,14 @@ private fun CampaignNameRow(
     ) {
         Text(
             text = stringResource(Res.string.settings_campaign_name_title),
-            fontSize = 14.sp,
+            fontSize = AppFontSize.Medium,
             fontWeight = FontWeight.Medium,
             color = AppPalette.TextPrimary,
         )
         Text(
             text = name,
             modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
+            style = MaterialTheme.typography.titleMedium.copy(fontSize = AppFontSize.LeadPlus),
             color = AppPalette.GoldBright,
             textAlign = TextAlign.End,
             maxLines = 1,
@@ -377,9 +382,9 @@ private fun CampaignNameRow(
             modifier =
                 Modifier
                     .size(36.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(AppShapes.Control)
                     .background(AppPalette.SurfacePopover)
-                    .border(1.dp, AppPalette.Border, RoundedCornerShape(10.dp)),
+                    .border(1.dp, AppPalette.Border, AppShapes.Control),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -405,10 +410,10 @@ private fun InfoRow(
         Text(
             text = title,
             modifier = Modifier.weight(1f),
-            fontSize = 14.sp,
+            fontSize = AppFontSize.Medium,
             fontWeight = FontWeight.Medium,
             color = AppPalette.TextPrimary,
         )
-        Text(text = value, fontSize = 13.sp, color = AppPalette.TextSecondary)
+        Text(text = value, fontSize = AppFontSize.Body, color = AppPalette.TextSecondary)
     }
 }

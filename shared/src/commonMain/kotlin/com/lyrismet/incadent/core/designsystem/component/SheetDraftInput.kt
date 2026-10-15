@@ -3,7 +3,6 @@ package com.lyrismet.incadent.core.designsystem.component
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -12,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 
 /** the single-line "add one more" row of a bottom sheet - 48dp input and a gold "+" square, Done submits too */
@@ -37,7 +37,7 @@ fun SheetDraftInput(
         )
         IconBadge(
             size = 48.dp,
-            shape = RoundedCornerShape(12.dp),
+            shape = AppShapes.Field,
             background = AppPalette.SurfaceInput,
             border = AppPalette.Border,
             onClick = onSubmit,

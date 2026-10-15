@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.undo.UndoAction
 import dndplayerscodex.shared.generated.resources.Res
@@ -52,7 +52,7 @@ private fun UndoToastContent(
     ) {
         IconBadge(
             size = 32.dp,
-            shape = RoundedCornerShape(9.dp),
+            shape = AppShapes.Tile,
             background = AppPalette.Maroon.copy(alpha = 0.25f),
         ) {
             Icon(AppIcons.Delete, contentDescription = null, tint = AppPalette.MaroonBright)

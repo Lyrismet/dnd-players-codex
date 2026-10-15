@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 
 /**
@@ -36,11 +36,15 @@ fun AppSheetHeader(
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
             Column(modifier = Modifier.weight(1f)) {
                 if (overline != null) {
-                    SectionOverline(text = overline, color = overlineColor, letterSpacing = 0.16.em)
+                    SectionOverline(text = overline, color = overlineColor, style = OverlineStyle.Section)
                 }
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = 26.sp, lineHeight = 31.sp),
+                    style =
+                        MaterialTheme.typography.headlineLarge.copy(
+                            fontSize = AppFontSize.SheetTitle,
+                            lineHeight = 31.sp,
+                        ),
                     color = AppPalette.TextHeading,
                 )
                 if (subtitle != null) {

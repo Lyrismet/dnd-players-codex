@@ -22,9 +22,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import dndplayerscodex.shared.generated.resources.Res
@@ -70,7 +71,7 @@ internal fun PhraseStrip(
         ) {
             Text(
                 stringResource(Res.string.phrase_strip_open_button),
-                style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.5.sp),
+                style = MaterialTheme.typography.labelLarge.copy(fontSize = AppFontSize.SmallPlus),
                 color = AppPalette.GoldBright,
                 maxLines = 1,
             )
@@ -107,14 +108,14 @@ private fun PhraseChip(
         PhraseGlyph(item.isPinned)
         Text(
             item.label,
-            style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.5.sp),
+            style = MaterialTheme.typography.labelLarge.copy(fontSize = AppFontSize.SmallPlus),
             color = AppPalette.TextDescription,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f, fill = false),
         )
         if (!item.isPinned) {
-            Text(frequentMeta(item), fontSize = 11.sp, color = AppPalette.TextSecondary, maxLines = 1)
+            Text(frequentMeta(item), fontSize = AppFontSize.Caption, color = AppPalette.TextSecondary, maxLines = 1)
         }
     }
 }
@@ -127,7 +128,7 @@ private fun frequentMeta(item: SessionPhraseItem): String =
 private fun PhraseGlyph(isPinned: Boolean) {
     Text(
         if (isPinned) PINNED_GLYPH else FREQUENT_GLYPH,
-        fontSize = 10.sp,
+        fontSize = AppFontSize.Tiny,
         color = if (isPinned) AppPalette.GoldBright else AppPalette.Azure,
     )
 }
@@ -144,17 +145,21 @@ internal fun PhraseCompletionsContent(
     ) {
         Text(
             stringResource(Res.string.phrase_completion_header),
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, letterSpacing = 0.14.em),
+            style = AppText.fieldOverline,
             color = AppPalette.TextTertiary,
         )
-        Text(stringResource(Res.string.phrase_completion_tab), fontSize = 10.sp, color = AppPalette.TextTertiary)
+        Text(
+            stringResource(Res.string.phrase_completion_tab),
+            fontSize = AppFontSize.Tiny,
+            color = AppPalette.TextTertiary,
+        )
     }
     items.forEach { item ->
         Row(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(9.dp))
+                    .clip(AppShapes.Tile)
                     .clickable { onPick(item.text) }
                     .padding(horizontal = 8.dp, vertical = 9.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -163,14 +168,14 @@ internal fun PhraseCompletionsContent(
             PhraseGlyph(item.isPinned)
             Text(
                 item.label,
-                fontSize = 14.sp,
+                fontSize = AppFontSize.Medium,
                 fontWeight = FontWeight.Normal,
                 color = AppPalette.TextPrimary,
                 modifier = Modifier.weight(1f),
             )
             Text(
                 if (item.isPinned) stringResource(Res.string.phrase_completion_pinned_meta) else frequentMeta(item),
-                fontSize = 11.sp,
+                fontSize = AppFontSize.Caption,
                 color = AppPalette.TextSecondary,
             )
         }

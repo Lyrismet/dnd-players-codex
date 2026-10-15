@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 
 /** centered serif title, hint and up to two buttons - the empty state of a list the user is meant to fill */
@@ -34,13 +35,13 @@ fun EmptyStateActions(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 21.sp),
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = AppFontSize.HeadingPlus),
                 color = AppPalette.TextHeading,
                 textAlign = TextAlign.Center,
             )
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp, lineHeight = 21.7.sp),
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Medium, lineHeight = 21.7.sp),
                 color = AppPalette.TextSecondary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.widthIn(max = 280.dp),

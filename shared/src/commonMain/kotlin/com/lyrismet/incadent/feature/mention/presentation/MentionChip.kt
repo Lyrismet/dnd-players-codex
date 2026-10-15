@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +23,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.feature.codex.domain.model.Location
@@ -137,7 +138,7 @@ fun MentionChip(
     item: MentionChipItem,
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
-    fontSize: TextUnit = 13.sp,
+    fontSize: TextUnit = AppFontSize.Body,
     glyphSize: TextUnit = 8.sp,
     glyphGap: Dp = 5.dp,
     lineHeightFactor: Float = 1.6f,
@@ -145,7 +146,7 @@ fun MentionChip(
     val isDeleted = item.glyph == MentionGlyph.DELETED
     // a deleted record has no status colors to fill or line, so it always reads as a dashed underline
     val underlined = isDeleted || LocalMentionStyle.current == MentionStyle.UNDERLINE
-    val shape = RoundedCornerShape(6.dp)
+    val shape = AppShapes.Badge
     Row(
         modifier =
             modifier

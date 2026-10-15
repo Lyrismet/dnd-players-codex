@@ -42,7 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.designsystem.component.icons.QuillIcon
@@ -231,7 +231,11 @@ private fun BoxScope.SwipeEditBackground(
         Spacer(Modifier.height(EditLabelGap))
         Text(
             if (isPastFull) action.releaseLabel else action.label,
-            style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp, fontWeight = FontWeight.Bold),
+            style =
+                MaterialTheme.typography.labelMedium.copy(
+                    fontSize = AppFontSize.Small,
+                    fontWeight = FontWeight.Bold,
+                ),
             color = AppPalette.Background,
         )
     }

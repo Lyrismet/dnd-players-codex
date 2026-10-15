@@ -25,7 +25,9 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.DIAMOND_ROTATION_DEGREES
@@ -146,7 +148,7 @@ private fun OnboardingBody() {
             text = stringResource(Res.string.campaign_onboarding_lead),
             modifier = Modifier.padding(top = 8.dp),
             color = AppPalette.TextMuted,
-            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.5.sp, lineHeight = 22.sp),
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.MediumPlus, lineHeight = 22.sp),
         )
     }
     Column(
@@ -184,17 +186,17 @@ private fun OnboardingCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .appCard(RoundedCornerShape(14.dp), AppPalette.Surface, AppPalette.BorderSubtle)
+                .appCard(AppShapes.Card, AppPalette.Surface, AppPalette.BorderSubtle)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconBadge(size = 32.dp, shape = RoundedCornerShape(9.dp), background = AppPalette.SurfacePopover) { icon() }
+        IconBadge(size = 32.dp, shape = AppShapes.Tile, background = AppPalette.SurfacePopover) { icon() }
         Column {
             Text(
                 text = stringResource(title),
                 color = AppPalette.TextHeading,
-                style = MaterialTheme.typography.titleSmall.copy(fontSize = 14.5.sp),
+                style = MaterialTheme.typography.titleSmall.copy(fontSize = AppFontSize.MediumPlus),
             )
             Text(
                 text = stringResource(text),
@@ -217,7 +219,7 @@ private fun OnboardingLanguageRow(
             Modifier
                 .fillMaxWidth()
                 .height(48.dp)
-                .appCard(RoundedCornerShape(14.dp), AppPalette.Surface, AppPalette.BorderSubtle, onClick = onClick)
+                .appCard(AppShapes.Card, AppPalette.Surface, AppPalette.BorderSubtle, onClick = onClick)
                 .padding(horizontal = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -227,7 +229,11 @@ private fun OnboardingLanguageRow(
             text = stringResource(Res.string.settings_language_title),
             modifier = Modifier.weight(1f),
             color = AppPalette.TextPrimary,
-            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, fontWeight = FontWeight.Medium),
+            style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = AppFontSize.Medium,
+                    fontWeight = FontWeight.Medium,
+                ),
         )
         Text(
             text = language.label(),
@@ -237,7 +243,7 @@ private fun OnboardingLanguageRow(
         Text(
             text = "›",
             color = AppPalette.TextTertiary,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp),
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Heading),
         )
     }
 }

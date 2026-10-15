@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.HoldFrame
 import com.lyrismet.incadent.core.designsystem.component.HoldHintCard
@@ -101,7 +102,7 @@ internal fun EntityDescription(
     QuickEditableValue(field = QuickEditField.DESCRIPTION, label = label, value = description, quick = quick) {
         Text(
             shown,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp, lineHeight = 24.sp),
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Large, lineHeight = 24.sp),
             color = if (blank) AppPalette.TextTertiary else AppPalette.TextDescription,
         )
     }

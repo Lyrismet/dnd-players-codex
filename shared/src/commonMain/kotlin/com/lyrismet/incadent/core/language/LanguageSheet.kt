@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,7 +29,9 @@ import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
@@ -70,7 +71,7 @@ internal fun LanguageRow(
     ) {
         IconBadge(
             size = 32.dp,
-            shape = RoundedCornerShape(9.dp),
+            shape = AppShapes.Tile,
             background = AppPalette.SurfacePopover,
             border = AppPalette.Border,
         ) {
@@ -79,7 +80,7 @@ internal fun LanguageRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                fontSize = 14.sp,
+                fontSize = AppFontSize.Medium,
                 lineHeight = 19.sp,
                 fontWeight = FontWeight.Medium,
                 color = AppPalette.TextPrimary,
@@ -87,13 +88,18 @@ internal fun LanguageRow(
             Text(
                 text = description,
                 modifier = Modifier.padding(top = 2.dp),
-                fontSize = 12.sp,
+                fontSize = AppFontSize.Small,
                 lineHeight = 16.sp,
                 color = AppPalette.TextSecondary,
             )
         }
-        Text(text = current, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AppPalette.GoldBright)
-        Text(text = "›", fontSize = 20.sp, color = AppPalette.TextTertiary)
+        Text(
+            text = current,
+            fontSize = AppFontSize.Body,
+            fontWeight = FontWeight.SemiBold,
+            color = AppPalette.GoldBright,
+        )
+        Text(text = "›", fontSize = AppFontSize.Heading, color = AppPalette.TextTertiary)
     }
 }
 
@@ -146,14 +152,14 @@ internal fun LanguageSheet(
                 onQueryChange = { query = it },
                 placeholder = stringResource(Res.string.settings_language_search),
                 height = 44.dp,
-                textSize = 14.sp,
+                textSize = AppFontSize.Medium,
                 background = AppPalette.Background,
             )
             if (rows.isEmpty()) {
                 Text(
                     stringResource(Res.string.settings_language_empty),
                     modifier = Modifier.padding(2.dp),
-                    fontSize = 13.sp,
+                    fontSize = AppFontSize.Body,
                     color = AppPalette.TextTertiary,
                 )
             } else {
@@ -161,7 +167,7 @@ internal fun LanguageSheet(
             }
             Text(
                 stringResource(Res.string.settings_language_footnote),
-                fontSize = 12.sp,
+                fontSize = AppFontSize.Small,
                 lineHeight = FootnoteLineHeight,
                 color = AppPalette.TextTertiary,
             )
@@ -170,7 +176,7 @@ internal fun LanguageSheet(
 }
 
 private val FootnoteLineHeight = 18.6.sp
-private val ListShape = RoundedCornerShape(14.dp)
+private val ListShape = AppShapes.Card
 
 private class LanguageOption(
     val language: AppLanguage,
@@ -217,7 +223,7 @@ private fun LanguageOptionRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 row.name,
-                fontSize = 15.sp,
+                fontSize = AppFontSize.Large,
                 lineHeight = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = AppPalette.TextHeading,
@@ -225,7 +231,7 @@ private fun LanguageOptionRow(
             Text(
                 row.sub,
                 modifier = Modifier.padding(top = 1.dp),
-                fontSize = 12.sp,
+                fontSize = AppFontSize.Small,
                 lineHeight = 16.sp,
                 color = AppPalette.TextSecondary,
             )

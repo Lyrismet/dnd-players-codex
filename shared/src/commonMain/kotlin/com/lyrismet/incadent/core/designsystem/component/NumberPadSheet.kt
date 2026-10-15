@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,14 +18,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.icons.CalculatorIcon
 
 private val IconBadgeSize = 42.dp
 private val KeyHeight = 54.dp
-private val ResultBlockShape = RoundedCornerShape(14.dp)
-private val KeyShape = RoundedCornerShape(12.dp)
-private val IconBadgeShape = RoundedCornerShape(12.dp)
+private val ResultBlockShape = AppShapes.Card
+private val KeyShape = AppShapes.Field
+private val IconBadgeShape = AppShapes.Field
 
 /** a quick numeric keypad over a form field - the stepper's "КОДЕКС" calculator (v6.dc.html's `pad`) */
 @Composable
@@ -107,7 +108,7 @@ private fun NumberPadResultBlock(
     ) {
         Text(
             expr,
-            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Medium),
             color = AppPalette.TextSecondary,
             modifier = Modifier.heightIn(min = 20.dp),
         )
@@ -115,7 +116,7 @@ private fun NumberPadResultBlock(
             result,
             style =
                 MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 46.sp,
+                    fontSize = AppFontSize.Number,
                     lineHeight = 46.sp,
                     fontWeight = FontWeight.Bold,
                 ),
@@ -123,7 +124,7 @@ private fun NumberPadResultBlock(
         )
         Text(
             rangeHint,
-            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.5.sp),
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.SmallPlus),
             color = AppPalette.TextMuted,
         )
     }
@@ -189,7 +190,11 @@ private fun NumberPadKeyButton(
     ) {
         Text(
             key.label,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.SemiBold),
+            style =
+                MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = AppFontSize.Heading,
+                    fontWeight = FontWeight.SemiBold,
+                ),
             color = foreground,
         )
     }

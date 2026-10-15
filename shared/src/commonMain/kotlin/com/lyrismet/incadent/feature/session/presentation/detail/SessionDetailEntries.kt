@@ -48,6 +48,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
@@ -179,14 +180,14 @@ private fun EntryActions(
             tone = ButtonTone.Neutral,
             size = ButtonSize.Medium,
             contentColor = AppPalette.TextMuted,
-            leading = { color -> Text("★", fontSize = 12.sp, color = color) },
+            leading = { color -> Text("★", fontSize = AppFontSize.Small, color = color) },
         )
         AppButton(
             text = stringResource(Res.string.action_delete),
             onClick = onDeleteClick,
             tone = ButtonTone.Maroon,
             size = ButtonSize.Medium,
-            leading = { color -> Text("✕", fontSize = 12.sp, color = color) },
+            leading = { color -> Text("✕", fontSize = AppFontSize.Small, color = color) },
         )
     }
 }
@@ -252,7 +253,7 @@ private fun EntryTimeColumn(
         if (edited) {
             Text(
                 stringResource(Res.string.session_entry_edited_label),
-                fontSize = 10.sp,
+                fontSize = AppFontSize.Tiny,
                 color = AppPalette.TextSecondary,
                 modifier = Modifier.offset { IntOffset(0, timeHeightPx + gapPx) },
             )
@@ -291,7 +292,7 @@ private fun AutoMentionBar(
                     }
                     append(label.substring(numberEnd))
                 },
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small),
             color = AppPalette.TextSecondary,
         )
         Text("·", style = MaterialTheme.typography.bodySmall, color = AppPalette.TextTertiary)
@@ -309,7 +310,11 @@ private fun AutoMentionTextButton(
 ) {
     Text(
         text,
-        style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.sp, fontWeight = FontWeight.SemiBold),
+        style =
+            MaterialTheme.typography.labelLarge.copy(
+                fontSize = AppFontSize.Small,
+                fontWeight = FontWeight.SemiBold,
+            ),
         color = color,
         modifier = Modifier.clickable(onClick = onClick).padding(vertical = 8.dp),
     )
@@ -372,7 +377,7 @@ private fun SessionEntryBody(
                         onClick =
                             segment.chip.entityRef?.let { ref -> { onMentionClick(ref) } }
                                 ?: segment.chip.deleted?.let { deleted -> { mentionActions.onDeletedClick(deleted) } },
-                        fontSize = 14.sp,
+                        fontSize = AppFontSize.Medium,
                         glyphSize = 7.sp,
                         glyphGap = 4.dp,
                         lineHeightFactor = 1.5f,

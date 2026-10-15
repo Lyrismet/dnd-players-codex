@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,8 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.NumberLabel
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -74,7 +75,7 @@ private fun EntityRelatedNoteRow(
         modifier =
             modifier
                 .fillMaxWidth()
-                .appCard(shape = RoundedCornerShape(12.dp), background = AppPalette.Background, onClick = onClick)
+                .appCard(shape = AppShapes.Field, background = AppPalette.Background, onClick = onClick)
                 .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -86,21 +87,21 @@ private fun EntityRelatedNoteRow(
                 Text(
                     item.dateLabel,
                     // mockup's date has no bold weight or wide tracking, unlike labelSmall's caption styling
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    style = AppText.caption,
                     color = AppPalette.TextTertiary,
                 )
             }
             Text(
                 "«${item.snippet}»",
                 // mockup - font-size 13px - one step up from bodySmall's 12sp
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Body),
                 color = AppPalette.TextMuted,
                 modifier = Modifier.padding(top = 4.dp),
             )
             Text(
                 stringResource(Res.string.entity_sheet_related_meta_format, item.matchCount),
                 // same de-emphasis as the date above - plain weight, no wide tracking
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                style = AppText.caption,
                 color = AppPalette.TextTertiary,
                 modifier = Modifier.padding(top = 6.dp),
             )

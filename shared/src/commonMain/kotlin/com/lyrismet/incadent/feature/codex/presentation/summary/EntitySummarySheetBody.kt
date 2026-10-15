@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,11 +30,14 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppPhotoCropDraftWindow
 import com.lyrismet.incadent.core.designsystem.component.HoldTooShortToast
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.LocalHoldTooShort
+import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
@@ -311,7 +313,7 @@ private fun EntityOverlineRow(
     SectionOverline(
         text = overline,
         color = color,
-        letterSpacing = 0.16.em,
+        style = OverlineStyle.Section,
         trailingContent = {
             // matches the original Row's spacedBy(8.dp), now that the overline and the buttons are split apart
             Spacer(Modifier.width(8.dp))
@@ -354,7 +356,11 @@ private fun EntityTitleBlock(
         ) {
             Text(
                 title,
-                style = MaterialTheme.typography.headlineLarge.copy(fontSize = 27.sp, lineHeight = 32.sp),
+                style =
+                    MaterialTheme.typography.headlineLarge.copy(
+                        fontSize = AppFontSize.EntityTitle,
+                        lineHeight = 32.sp,
+                    ),
                 color = AppPalette.TextHeading,
                 textDecoration = if (strikeThrough) TextDecoration.LineThrough else TextDecoration.None,
             )
@@ -363,7 +369,7 @@ private fun EntityTitleBlock(
             Text(
                 subtitle,
                 // mockup - font-size 13px - one step up from bodySmall's 12sp
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Body),
                 color = AppPalette.TextSecondary,
                 modifier = Modifier.padding(top = 2.dp),
             )
@@ -371,7 +377,7 @@ private fun EntityTitleBlock(
         if (showPortraitHint) {
             Text(
                 stringResource(Res.string.entity_sheet_portrait_hint),
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 17.sp),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small, lineHeight = 17.sp),
                 color = AppPalette.TextTertiary,
                 modifier = Modifier.padding(top = 8.dp),
             )
@@ -384,7 +390,7 @@ private fun EntityEmblemBox(
     emblem: EntityEmblem,
     modifier: Modifier = Modifier,
 ) {
-    val shape = if (emblem.shape == EntityEmblemShape.CIRCLE) CircleShape else RoundedCornerShape(14.dp)
+    val shape = if (emblem.shape == EntityEmblemShape.CIRCLE) CircleShape else AppShapes.Card
     PortraitBadge(
         portrait = emblem.portrait,
         color = emblem.color,
@@ -434,7 +440,7 @@ internal fun <T> EntityStatusSection(
             Text(
                 option.label,
                 // mockup - font-size 12px - one step up from labelMedium's 11sp
-                style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
+                style = MaterialTheme.typography.labelMedium.copy(fontSize = AppFontSize.Small),
                 color = if (option.isSelected) option.color.foreground else AppPalette.TextSecondary,
             )
         }
@@ -450,12 +456,12 @@ internal fun EntityFactsGrid(
 ) {
     if (facts.isEmpty()) return
     // mockup - font-size 14px on the facts card, 6px vertical padding, 1px BorderSubtle, 14px radius
-    val factTextStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp)
+    val factTextStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Medium)
     Column(
         modifier =
             modifier
                 .fillMaxWidth()
-                .appCard(shape = RoundedCornerShape(14.dp), background = AppPalette.Background)
+                .appCard(shape = AppShapes.Card, background = AppPalette.Background)
                 .padding(vertical = 6.dp),
     ) {
         facts.forEach { fact -> FactLine(fact, factTextStyle, onEntityRefClicked, quick) }

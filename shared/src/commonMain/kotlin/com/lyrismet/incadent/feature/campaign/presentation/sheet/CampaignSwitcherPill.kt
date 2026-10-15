@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +22,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import dndplayerscodex.shared.generated.resources.Res
@@ -32,7 +33,7 @@ import dndplayerscodex.shared.generated.resources.campaign_archive_banner_title
 import dndplayerscodex.shared.generated.resources.campaign_resume
 import org.jetbrains.compose.resources.stringResource
 
-private val PillShape = RoundedCornerShape(10.dp)
+private val PillShape = AppShapes.Control
 private val TriangleSize = 8.dp
 private val TriangleHeight = 5.dp
 
@@ -109,7 +110,7 @@ fun AppArchiveBanner(
             modifier
                 .fillMaxWidth()
                 .appCard(
-                    shape = RoundedCornerShape(14.dp),
+                    shape = AppShapes.Card,
                     background = AppPalette.Parchment.copy(alpha = 0.07f),
                     border = AppPalette.Parchment.copy(alpha = 0.32f),
                 ).padding(start = 14.dp, top = 12.dp, end = 12.dp, bottom = 12.dp),
@@ -122,7 +123,7 @@ fun AppArchiveBanner(
                 color = AppPalette.Parchment,
                 style =
                     MaterialTheme.typography.labelSmall.copy(
-                        fontSize = 10.5.sp,
+                        fontSize = AppFontSize.TinyPlus,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.14.em,
                     ),
@@ -131,7 +132,7 @@ fun AppArchiveBanner(
                 text = stringResource(Res.string.campaign_archive_banner_text),
                 modifier = Modifier.padding(top = 2.dp),
                 color = AppPalette.TextMuted,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp, lineHeight = 18.sp),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.SmallPlus, lineHeight = 18.sp),
             )
         }
         AppButton(text = stringResource(Res.string.campaign_resume), onClick = onResume)

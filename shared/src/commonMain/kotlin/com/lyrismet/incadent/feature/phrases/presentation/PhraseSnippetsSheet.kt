@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,15 +13,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
+import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -77,17 +78,16 @@ private fun PinnedPhrasesSection(
         SectionOverline(
             text = stringResource(Res.string.phrase_sheet_pinned_header),
             color = AppPalette.TextTertiary,
-            letterSpacing = 0.14.em,
-            fontSize = 10.sp,
             trailingContent = {
-                Text(state.pinned.size.toString(), fontSize = 12.sp, color = AppPalette.GoldBright)
+                Text(state.pinned.size.toString(), fontSize = AppFontSize.Small, color = AppPalette.GoldBright)
             },
+            style = OverlineStyle.Field,
         )
         state.pinned.forEach { row -> PinnedPhraseRow(row, onRemove = { onEvent(PhraseSheetEvent.Removed(row.text)) }) }
         if (state.pinned.isEmpty()) {
             Text(
                 stringResource(Res.string.phrase_sheet_pinned_empty),
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Body),
                 color = AppPalette.TextTertiary,
                 modifier = Modifier.padding(horizontal = 2.dp, vertical = 4.dp),
             )
@@ -112,7 +112,7 @@ private fun PinnedPhraseRow(
                 .fillMaxWidth()
                 .heightIn(min = 52.dp)
                 .appCard(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = AppShapes.Field,
                     background = AppPalette.Background,
                     border = AppPalette.BorderSubtle,
                 ).padding(start = 14.dp, top = 4.dp, end = 4.dp, bottom = 4.dp),
@@ -127,11 +127,11 @@ private fun PinnedPhraseRow(
         )
         IconBadge(
             size = 40.dp,
-            shape = RoundedCornerShape(10.dp),
+            shape = AppShapes.Control,
             background = Color.Transparent,
             onClick = onRemove,
         ) {
-            Text("✕", fontSize = 13.sp, color = AppPalette.TextSecondary)
+            Text("✕", fontSize = AppFontSize.Body, color = AppPalette.TextSecondary)
         }
     }
 }
@@ -145,14 +145,13 @@ private fun FrequentPhrasesSection(
         SectionOverline(
             text = stringResource(Res.string.phrase_sheet_frequent_header),
             color = AppPalette.Azure,
-            letterSpacing = 0.14.em,
-            fontSize = 10.sp,
+            style = OverlineStyle.Field,
         )
         frequent.forEach { row -> FrequentPhraseRow(row, onPin = { onEvent(PhraseSheetEvent.Pinned(row.text)) }) }
         if (frequent.isEmpty()) {
             Text(
                 stringResource(Res.string.phrase_sheet_frequent_empty),
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Body),
                 color = AppPalette.TextTertiary,
                 modifier = Modifier.padding(horizontal = 2.dp, vertical = 4.dp),
             )
@@ -170,7 +169,7 @@ private fun FrequentPhraseRow(
             Modifier
                 .fillMaxWidth()
                 .appCard(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = AppShapes.Field,
                     background = AppPalette.Background,
                     border = AppPalette.BorderSubtle,
                 ).padding(start = 14.dp, top = 10.dp, end = 8.dp, bottom = 10.dp),
@@ -185,7 +184,7 @@ private fun FrequentPhraseRow(
             )
             Text(
                 row.meta,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.CaptionPlus),
                 color = AppPalette.TextSecondary,
                 modifier = Modifier.padding(top = 3.dp),
             )

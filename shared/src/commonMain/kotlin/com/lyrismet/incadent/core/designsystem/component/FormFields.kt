@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,13 +23,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 
-private val FieldShape = RoundedCornerShape(12.dp)
+private val FieldShape = AppShapes.Field
 private val PrimaryButtonHeight = 52.dp
 private val FieldHeight = 48.dp
 private val AreaMinHeight = 92.dp
@@ -136,7 +136,11 @@ fun FormNumberField(
         if (action != null) {
             Text(
                 action.label,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold),
+                style =
+                    MaterialTheme.typography.bodySmall.copy(
+                        fontSize = AppFontSize.SmallPlus,
+                        fontWeight = FontWeight.SemiBold,
+                    ),
                 color = AppPalette.GoldBright,
                 modifier = Modifier.clickable(onClick = action.onClick).padding(vertical = 4.dp),
             )
@@ -177,7 +181,7 @@ fun FormPickField(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             if (leadingGlyph != null && title != null && chips == null) {
-                Text(leadingGlyph, fontSize = 9.sp, color = AppPalette.Parchment)
+                Text(leadingGlyph, fontSize = AppFontSize.Micro, color = AppPalette.Parchment)
             }
             Column(modifier = Modifier.weight(1f)) {
                 when {
@@ -189,7 +193,7 @@ fun FormPickField(
                     title != null -> {
                         Text(title, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
                         if (!subtitle.isNullOrBlank()) {
-                            Text(subtitle, fontSize = 11.5.sp, color = AppPalette.TextSecondary)
+                            Text(subtitle, fontSize = AppFontSize.CaptionPlus, color = AppPalette.TextSecondary)
                         }
                     }
                     else ->
@@ -200,7 +204,7 @@ fun FormPickField(
                         )
                 }
             }
-            Text("›", fontSize = 18.sp, color = AppPalette.TextTertiary)
+            Text("›", fontSize = AppFontSize.Title, color = AppPalette.TextTertiary)
         }
     }
 }
@@ -218,14 +222,13 @@ private fun FormFieldColumn(
         SectionOverline(
             text = label,
             color = AppPalette.TextTertiary,
-            fontSize = 10.sp,
-            letterSpacing = 0.14.em,
             inlineContent =
                 if (required) {
-                    { Text(" *", fontSize = 10.sp, color = AppPalette.GoldBright) }
+                    { Text(" *", color = AppPalette.GoldBright) }
                 } else {
                     null
                 },
+            style = OverlineStyle.Field,
         )
         content()
     }

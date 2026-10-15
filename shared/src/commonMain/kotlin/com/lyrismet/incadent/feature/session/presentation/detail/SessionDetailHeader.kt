@@ -40,8 +40,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
@@ -176,7 +177,7 @@ private fun SessionTitle(
             IconBadge(
                 modifier = Modifier.padding(top = 1.dp),
                 size = 36.dp,
-                shape = RoundedCornerShape(10.dp),
+                shape = AppShapes.Control,
                 background = AppPalette.SurfaceInput,
                 border = AppPalette.Border,
             ) {
@@ -237,7 +238,7 @@ private fun SessionTitleEditor(
         )
         IconBadge(
             size = 36.dp,
-            shape = RoundedCornerShape(10.dp),
+            shape = AppShapes.Control,
             background = AppPalette.Gold,
             onClick = onDone,
         ) {
@@ -267,7 +268,7 @@ private fun HeaderMentionsRow(
                         ?: chip.deleted?.let { deleted ->
                             { eventSink(SessionDetailEvent.DeletedMentionClicked(deleted)) }
                         },
-                fontSize = 12.sp,
+                fontSize = AppFontSize.Small,
                 lineHeightFactor = 1.7f,
             )
         }
@@ -320,7 +321,7 @@ private fun TagButton(
             modifier
                 .height(32.dp)
                 .appCard(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = AppShapes.Small,
                     background = Color.Transparent,
                     border = border,
                     onClick = onClick,
@@ -333,7 +334,11 @@ private fun TagButton(
             // the count sits in a gold circle, the same suggestion cue as the sheet's "по записям" header
             Text(
                 suggestionCount.toString(),
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.5.sp, fontWeight = FontWeight.Bold),
+                style =
+                    MaterialTheme.typography.labelSmall.copy(
+                        fontSize = AppFontSize.TinyPlus,
+                        fontWeight = FontWeight.Bold,
+                    ),
                 color = AppPalette.Background,
                 textAlign = TextAlign.Center,
                 modifier =

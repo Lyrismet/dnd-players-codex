@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 
@@ -31,11 +31,16 @@ internal fun HintsRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = AppPalette.TextPrimary)
+            Text(
+                text = title,
+                fontSize = AppFontSize.Medium,
+                fontWeight = FontWeight.Medium,
+                color = AppPalette.TextPrimary,
+            )
             Text(
                 text = description,
                 modifier = Modifier.padding(top = 2.dp),
-                fontSize = 12.sp,
+                fontSize = AppFontSize.Small,
                 color = AppPalette.TextSecondary,
             )
         }
@@ -61,14 +66,19 @@ internal fun PhrasesRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = AppPalette.TextPrimary)
+            Text(
+                text = title,
+                fontSize = AppFontSize.Medium,
+                fontWeight = FontWeight.Medium,
+                color = AppPalette.TextPrimary,
+            )
             Text(
                 text = summary,
                 modifier = Modifier.padding(top = 2.dp),
-                fontSize = 12.sp,
+                fontSize = AppFontSize.Small,
                 color = AppPalette.TextSecondary,
             )
         }
-        Text(text = "›", fontSize = 20.sp, color = AppPalette.TextTertiary)
+        Text(text = "›", fontSize = AppFontSize.Heading, color = AppPalette.TextTertiary)
     }
 }

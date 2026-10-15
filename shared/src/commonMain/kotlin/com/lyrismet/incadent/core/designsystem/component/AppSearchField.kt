@@ -2,7 +2,6 @@ package com.lyrismet.incadent.core.designsystem.component
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,8 +10,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.icons.SearchIcon
 
 /**
@@ -27,7 +27,7 @@ fun AppSearchField(
     placeholder: String,
     modifier: Modifier = Modifier,
     height: Dp = 42.dp,
-    textSize: TextUnit = 14.sp,
+    textSize: TextUnit = AppFontSize.Medium,
     background: Color = AppPalette.Surface,
     clearEndInset: Dp = 4.dp,
 ) {
@@ -52,11 +52,11 @@ fun AppSearchField(
                 {
                     IconBadge(
                         size = 36.dp,
-                        shape = RoundedCornerShape(10.dp),
+                        shape = AppShapes.Control,
                         background = Color.Transparent,
                         onClick = { onQueryChange("") },
                     ) {
-                        Text("✕", fontSize = 14.sp, color = AppPalette.TextSecondary)
+                        Text("✕", fontSize = AppFontSize.Medium, color = AppPalette.TextSecondary)
                     }
                 }
             },

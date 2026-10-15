@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,12 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
@@ -159,7 +158,7 @@ private fun WorldOptionRow(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .appCard(RoundedCornerShape(14.dp), AppPalette.Background, AppPalette.BorderSubtle, onClick = onClick)
+                .appCard(AppShapes.Card, AppPalette.Background, AppPalette.BorderSubtle, onClick = onClick)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -168,7 +167,7 @@ private fun WorldOptionRow(
         Text(
             text = title,
             color = AppPalette.TextHeading,
-            style = MaterialTheme.typography.titleSmall.copy(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+            style = MaterialTheme.typography.titleSmall,
         )
     }
 }
@@ -184,7 +183,7 @@ private fun SourceRow(
             Modifier
                 .fillMaxWidth()
                 .appCard(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = AppShapes.Field,
                     background = if (selected) AppPalette.Gold.copy(alpha = 0.1f) else Color.Transparent,
                     border = if (selected) AppPalette.Gold.copy(alpha = 0.5f) else AppPalette.Border,
                     onClick = onClick,
@@ -216,7 +215,7 @@ private fun CheckRow(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .appCard(RoundedCornerShape(10.dp), Color.Transparent, null, onClick = onClick)
+                .appCard(AppShapes.Control, Color.Transparent, null, onClick = onClick)
                 .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -225,7 +224,7 @@ private fun CheckRow(
         Text(
             text = text,
             color = AppPalette.TextPrimary,
-            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Medium),
         )
     }
 }
@@ -265,7 +264,7 @@ private fun CampaignItemsStep(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .appCard(RoundedCornerShape(10.dp), Color.Transparent, null, onClick = {
+                .appCard(AppShapes.Control, Color.Transparent, null, onClick = {
                     onEvent(CampaignSheetEvent.BackToForm)
                 })
                 .padding(vertical = 10.dp),
@@ -293,12 +292,12 @@ private fun TransferSearchRow(
                 ),
             modifier =
                 Modifier
-                    .appCard(RoundedCornerShape(10.dp), Color.Transparent, null, onClick = {
+                    .appCard(AppShapes.Control, Color.Transparent, null, onClick = {
                         onEvent(CampaignSheetEvent.AllToggled)
                     })
                     .padding(8.dp),
             color = AppPalette.GoldBright,
-            style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.5.sp),
+            style = MaterialTheme.typography.labelLarge.copy(fontSize = AppFontSize.SmallPlus),
         )
     }
 }
@@ -335,7 +334,7 @@ private fun TransferRow(
             Modifier
                 .fillMaxWidth()
                 .appCard(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = AppShapes.Field,
                     background = if (row.checked) AppPalette.Gold.copy(alpha = 0.08f) else AppPalette.Background,
                     border = if (row.checked) AppPalette.Gold.copy(alpha = 0.4f) else AppPalette.BorderSubtle,
                     onClick = onClick,
@@ -370,6 +369,6 @@ private fun CampaignNote(text: String) {
     Text(
         text = text,
         color = AppPalette.TextSecondary,
-        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+        style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.CaptionPlus),
     )
 }

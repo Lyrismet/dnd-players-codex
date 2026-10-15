@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,8 +25,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
@@ -55,7 +55,7 @@ private fun CodexCardRow(
         modifier =
             modifier
                 .fillMaxWidth()
-                .appCard(shape = RoundedCornerShape(14.dp), onClick = onClick)
+                .appCard(shape = AppShapes.Card, onClick = onClick)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -170,14 +170,14 @@ internal fun QuestCodexCard(
         modifier =
             modifier
                 .fillMaxWidth()
-                .appCard(shape = RoundedCornerShape(14.dp), onClick = onClick)
+                .appCard(shape = AppShapes.Card, onClick = onClick)
                 .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
                 MentionGlyph.QUEST.symbol,
-                fontSize = 10.sp,
+                fontSize = AppFontSize.Tiny,
                 color = item.statusColor.foreground,
             )
             Text(
@@ -255,7 +255,7 @@ internal fun LocationCodexCard(
         badge = {
             IconBadge(
                 size = 44.dp,
-                shape = RoundedCornerShape(12.dp),
+                shape = AppShapes.Field,
                 background = AppPalette.Parchment.copy(alpha = 0.08f),
                 border = AppPalette.Parchment.copy(alpha = 0.3f),
             ) {
