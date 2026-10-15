@@ -24,6 +24,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppChevron
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
@@ -184,11 +185,7 @@ private fun CampaignRow(
                 color = AppPalette.TextSecondary,
                 style = AppText.caption,
             )
-            Text(
-                text = "›",
-                color = AppPalette.TextTertiary,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Title),
-            )
+            AppChevron()
         }
     }
 }

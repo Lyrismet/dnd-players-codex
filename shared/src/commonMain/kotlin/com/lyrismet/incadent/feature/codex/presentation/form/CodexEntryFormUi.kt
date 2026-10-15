@@ -12,11 +12,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
@@ -29,7 +29,7 @@ import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.FormTextArea
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.core.designsystem.component.QuickAddOutsideTapHost
-import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
+import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.domain.model.EntityKind
@@ -384,27 +384,19 @@ private fun CodexEntryTypeSwitch(
 ) {
     val options =
         listOf(
-            EntityKind.PARTY to stringResource(Res.string.codex_entry_type_party),
-            EntityKind.NPC to stringResource(Res.string.codex_entry_type_npc),
-            EntityKind.QUEST to stringResource(Res.string.codex_entry_type_quest),
-            EntityKind.LOCATION to stringResource(Res.string.codex_entry_type_location),
+            SegmentedTab(EntityKind.PARTY, stringResource(Res.string.codex_entry_type_party)),
+            SegmentedTab(EntityKind.NPC, stringResource(Res.string.codex_entry_type_npc)),
+            SegmentedTab(EntityKind.QUEST, stringResource(Res.string.codex_entry_type_quest)),
+            SegmentedTab(EntityKind.LOCATION, stringResource(Res.string.codex_entry_type_location)),
         )
-    SegmentedControl(
-        items = options,
-        onSelected = { (type, _) -> onSelected(type) },
-        itemBackground = { (type, _) ->
-            if (type == selected) AppPalette.SurfaceElevated else Color.Transparent
-        },
+    AppSegmentedTabs(
+        tabs = options,
+        selected = selected,
+        onSelected = onSelected,
         modifier = modifier,
         containerBackground = AppPalette.Background,
         itemHeight = 40.dp,
-    ) { (type, label) ->
-        Text(
-            label,
-            style = MaterialTheme.typography.labelLarge,
-            color = if (type == selected) AppPalette.GoldBright else AppPalette.TextSecondary,
-        )
-    }
+    )
 }
 
 /**

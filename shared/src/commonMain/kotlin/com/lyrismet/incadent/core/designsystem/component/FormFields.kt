@@ -204,7 +204,7 @@ fun FormPickField(
                         )
                 }
             }
-            Text("›", fontSize = AppFontSize.Title, color = AppPalette.TextTertiary)
+            AppChevron()
         }
     }
 }

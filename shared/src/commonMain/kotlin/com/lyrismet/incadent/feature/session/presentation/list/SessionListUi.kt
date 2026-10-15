@@ -31,10 +31,9 @@ import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
 import com.lyrismet.incadent.core.designsystem.component.GlowingDot
+import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.core.designsystem.component.NumberLabel
-import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.incadent.core.designsystem.component.TagChip
@@ -195,22 +194,10 @@ private fun SessionListContent(
             }
         }
         item {
-            SectionOverline(
+            ListSectionHeader(
                 text = stringResource(Res.string.session_list_archive_section),
-                modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 10.dp, bottom = 2.dp),
-                color = AppPalette.TextSecondary,
-                style = OverlineStyle.Section,
-                trailingContent = {
-                    Text(
-                        state.sessions.size.toString(),
-                        style =
-                            MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = FontWeight.Medium,
-                                letterSpacing = 0.em,
-                            ),
-                        color = AppPalette.TextSecondary,
-                    )
-                },
+                modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
+                count = state.sessions.size,
             )
         }
         items(state.sessions, key = { it.id }) { session ->

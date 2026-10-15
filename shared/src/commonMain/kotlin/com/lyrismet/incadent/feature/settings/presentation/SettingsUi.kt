@@ -2,17 +2,16 @@ package com.lyrismet.incadent.feature.settings.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -23,23 +22,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppListCard
+import com.lyrismet.incadent.core.designsystem.component.AppListRow
+import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
-import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
-import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.language.LanguageRow
@@ -189,8 +188,8 @@ private fun DiarySection(
             description = stringResource(Res.string.settings_numbering_desc),
             choices =
                 listOf(
-                    SettingsChoice(SessionNumbering.ROMAN, stringResource(Res.string.settings_numbering_roman)),
-                    SettingsChoice(SessionNumbering.ARABIC, stringResource(Res.string.settings_numbering_arabic)),
+                    SegmentedTab(SessionNumbering.ROMAN, stringResource(Res.string.settings_numbering_roman)),
+                    SegmentedTab(SessionNumbering.ARABIC, stringResource(Res.string.settings_numbering_arabic)),
                 ),
             selected = numbering,
             onSelected = onNumberingSelected,
@@ -202,8 +201,8 @@ private fun DiarySection(
             description = stringResource(Res.string.settings_mention_desc),
             choices =
                 listOf(
-                    SettingsChoice(MentionStyle.FILLED, stringResource(Res.string.settings_mention_filled)),
-                    SettingsChoice(MentionStyle.UNDERLINE, stringResource(Res.string.settings_mention_underline)),
+                    SegmentedTab(MentionStyle.FILLED, stringResource(Res.string.settings_mention_filled)),
+                    SegmentedTab(MentionStyle.UNDERLINE, stringResource(Res.string.settings_mention_underline)),
                 ),
             selected = mentionStyle,
             onSelected = onMentionStyleSelected,
@@ -248,28 +247,14 @@ private fun CampaignSection(
 internal fun SettingsGroup(
     overline: String,
     topSpacing: Dp = 0.dp,
-    content: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(top = topSpacing),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        SectionOverline(
-            text = overline,
-            modifier = Modifier.padding(horizontal = 4.dp),
-            color = AppPalette.TextSecondary,
-            letterSpacing = 0.16.em,
-            fontSize = AppFontSize.Caption,
-        )
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .appCard(background = AppPalette.Surface)
-                    .padding(horizontal = 14.dp, vertical = 4.dp),
-        ) {
-            content()
-        }
+        ListSectionHeader(text = overline, fontSize = AppFontSize.Caption)
+        AppListCard(content = content)
     }
 }
 
@@ -277,75 +262,30 @@ internal fun SettingsGroup(
 internal fun <T> ChoiceRow(
     title: String,
     description: String,
-    choices: List<SettingsChoice<T>>,
+    choices: List<SegmentedTab<T>>,
     selected: T,
     onSelected: (T) -> Unit,
     labelStyle: TextStyle,
     width: Dp = 140.dp,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                fontSize = AppFontSize.Medium,
-                fontWeight = FontWeight.Medium,
-                color = AppPalette.TextPrimary,
-            )
-            Text(
-                text = description,
-                modifier = Modifier.padding(top = 2.dp),
-                fontSize = AppFontSize.Small,
-                color = AppPalette.TextSecondary,
-            )
-        }
-        SegmentedControl(
-            items = choices,
-            onSelected = { onSelected(it.value) },
-            itemBackground = { choice ->
-                if (choice.value ==
-                    selected
-                ) {
-                    AppPalette.SurfaceElevated
-                } else {
-                    Color.Transparent
-                }
-            },
+    AppListRow(title = title, subtitle = description) {
+        AppSegmentedTabs(
+            tabs = choices,
+            selected = selected,
+            onSelected = onSelected,
             modifier = Modifier.width(width),
+            labelStyle = labelStyle,
             containerShape = AppShapes.Control,
             containerBackground = AppPalette.Background,
             itemShape = AppShapes.Small,
             itemHeight = 30.dp,
-        ) { choice ->
-            val tint = if (choice.value == selected) AppPalette.GoldBright else AppPalette.TextSecondary
-            Text(text = choice.label, style = labelStyle, color = tint, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
+        )
     }
 }
 
 @Composable
 private fun AllCampaignsRow(onClick: () -> Unit) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 52.dp)
-                .clickable(onClick = onClick)
-                .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = stringResource(Res.string.settings_all_campaigns_title),
-            modifier = Modifier.weight(1f),
-            fontSize = AppFontSize.Medium,
-            fontWeight = FontWeight.Medium,
-            color = AppPalette.TextPrimary,
-        )
-        Text(text = "›", fontSize = AppFontSize.Title, color = AppPalette.TextTertiary)
-    }
+    AppListRow(title = stringResource(Res.string.settings_all_campaigns_title), onClick = onClick)
 }
 
 @Composable
@@ -353,25 +293,14 @@ private fun CampaignNameRow(
     name: String,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 52.dp)
-                .clickable(onClick = onClick)
-                .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    AppListRow(
+        title = stringResource(Res.string.settings_campaign_name_title),
+        onClick = onClick,
+        chevron = false,
     ) {
         Text(
-            text = stringResource(Res.string.settings_campaign_name_title),
-            fontSize = AppFontSize.Medium,
-            fontWeight = FontWeight.Medium,
-            color = AppPalette.TextPrimary,
-        )
-        Text(
             text = name,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.widthIn(max = 180.dp),
             style = MaterialTheme.typography.titleMedium.copy(fontSize = AppFontSize.LeadPlus),
             color = AppPalette.GoldBright,
             textAlign = TextAlign.End,
@@ -402,18 +331,5 @@ private fun InfoRow(
     title: String,
     value: String,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(
-            text = title,
-            modifier = Modifier.weight(1f),
-            fontSize = AppFontSize.Medium,
-            fontWeight = FontWeight.Medium,
-            color = AppPalette.TextPrimary,
-        )
-        Text(text = value, fontSize = AppFontSize.Body, color = AppPalette.TextSecondary)
-    }
+    AppListRow(title = title, value = value, valueColor = AppPalette.TextSecondary, valueWeight = FontWeight.Normal)
 }

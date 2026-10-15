@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.codex.presentation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -11,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
+import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
@@ -69,10 +71,10 @@ private fun <T> CodexGroupedList(
             } else {
                 group.title?.let { title ->
                     item {
-                        CodexSectionHeader(
-                            "${MentionGlyph.LOCATION.symbol} $title",
-                            group.items.size,
-                            isFirst = index == 0,
+                        ListSectionHeader(
+                            text = "${MentionGlyph.LOCATION.symbol} $title",
+                            modifier = Modifier.padding(top = if (index == 0) 4.dp else 12.dp),
+                            count = group.items.size,
                         )
                     }
                 }
@@ -92,7 +94,13 @@ private fun <T> LazyListScope.codexSection(
     itemContent: @Composable (T) -> Unit,
 ) {
     if (items.isEmpty()) return
-    item { CodexSectionHeader(title, items.size, isFirst = isFirst) }
+    item {
+        ListSectionHeader(
+            text = title,
+            modifier = Modifier.padding(top = if (isFirst) 4.dp else 12.dp),
+            count = items.size,
+        )
+    }
     items(items, key = key) { itemContent(it) }
 }
 

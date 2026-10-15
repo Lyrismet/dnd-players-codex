@@ -4,14 +4,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
+import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
@@ -81,11 +85,14 @@ fun CodexUi(
                         placeholder = stringResource(Res.string.codex_search_placeholder),
                         modifier = Modifier.padding(horizontal = 20.dp),
                     )
-                    CodexTabRow(
-                        items = tabItems,
+                    AppSegmentedTabs(
+                        tabs = tabItems,
                         selected = state.activeTab,
                         onSelected = { state.eventSink(CodexEvent.TabSelected(it)) },
                         modifier = Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp),
+                        labelStyle = MaterialTheme.typography.labelLarge.copy(fontSize = AppFontSize.Small),
+                        itemHeight = 36.dp,
+                        itemSpacing = 2.dp,
                     )
                     CodexGroupRow(state, modifier = Modifier.padding(top = 10.dp))
                 }
@@ -227,17 +234,17 @@ private fun quickEditSheet(state: CodexState): QuickEditSheet =
     )
 
 @Composable
-private fun codexTabItems(state: CodexState): List<CodexTabRowItem> =
+private fun codexTabItems(state: CodexState): List<SegmentedTab<CodexTab>> =
     listOf(
-        CodexTabRowItem(
+        SegmentedTab(
             CodexTab.ALL,
             stringResource(Res.string.codex_filter_all),
             state.tabCounts.party + state.tabCounts.npc + state.tabCounts.quest + state.tabCounts.location,
         ),
-        CodexTabRowItem(CodexTab.PARTY, stringResource(Res.string.codex_tab_party), state.tabCounts.party),
-        CodexTabRowItem(CodexTab.NPC, stringResource(Res.string.codex_tab_npc), state.tabCounts.npc),
-        CodexTabRowItem(CodexTab.QUEST, stringResource(Res.string.codex_tab_quest), state.tabCounts.quest),
-        CodexTabRowItem(CodexTab.LOCATION, stringResource(Res.string.codex_tab_location), state.tabCounts.location),
+        SegmentedTab(CodexTab.PARTY, stringResource(Res.string.codex_tab_party), state.tabCounts.party),
+        SegmentedTab(CodexTab.NPC, stringResource(Res.string.codex_tab_npc), state.tabCounts.npc),
+        SegmentedTab(CodexTab.QUEST, stringResource(Res.string.codex_tab_quest), state.tabCounts.quest),
+        SegmentedTab(CodexTab.LOCATION, stringResource(Res.string.codex_tab_location), state.tabCounts.location),
     )
 
 // the record is still mentioned by notes - those mentions stay in the text as "?" tags, and Undo brings the record back

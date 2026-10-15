@@ -22,13 +22,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppListCard
+import com.lyrismet.incadent.core.designsystem.component.AppListRow
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.DIAMOND_ROTATION_DEGREES
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
@@ -214,36 +215,13 @@ private fun OnboardingLanguageRow(
     language: AppLanguage,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .appCard(AppShapes.Card, AppPalette.Surface, AppPalette.BorderSubtle, onClick = onClick)
-                .padding(horizontal = 14.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(imageVector = GlobeIcon, contentDescription = null, modifier = Modifier.size(16.dp))
-        Text(
-            text = stringResource(Res.string.settings_language_title),
-            modifier = Modifier.weight(1f),
-            color = AppPalette.TextPrimary,
-            style =
-                MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = AppFontSize.Medium,
-                    fontWeight = FontWeight.Medium,
-                ),
-        )
-        Text(
-            text = language.label(),
-            color = AppPalette.GoldBright,
-            style = MaterialTheme.typography.labelLarge,
-        )
-        Text(
-            text = "›",
-            color = AppPalette.TextTertiary,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Heading),
+    AppListCard {
+        AppListRow(
+            title = stringResource(Res.string.settings_language_title),
+            value = language.label(),
+            onClick = onClick,
+            minHeight = 48.dp,
+            leading = { Image(imageVector = GlobeIcon, contentDescription = null, modifier = Modifier.size(16.dp)) },
         )
     }
 }

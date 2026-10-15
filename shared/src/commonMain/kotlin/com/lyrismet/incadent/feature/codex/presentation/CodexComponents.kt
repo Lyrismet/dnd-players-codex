@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -38,10 +37,7 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
-import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.PillSize
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
-import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.appCard
 
@@ -123,74 +119,6 @@ internal fun CodexPlaceSectionHeader(
             modifier = Modifier.width(14.dp),
             textAlign = TextAlign.Center,
         )
-    }
-}
-
-@Composable
-internal fun CodexSectionHeader(
-    text: String,
-    count: Int,
-    isFirst: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    SectionOverline(
-        text = text,
-        modifier = modifier.padding(start = 4.dp, end = 4.dp, top = if (isFirst) 4.dp else 12.dp),
-        color = AppPalette.TextSecondary,
-        style = OverlineStyle.Section,
-        trailingContent = {
-            Text(
-                count.toString(),
-                style =
-                    MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Medium,
-                        letterSpacing = 0.em,
-                    ),
-                color = AppPalette.TextSecondary,
-            )
-        },
-    )
-}
-
-internal data class CodexTabRowItem(
-    val tab: CodexTab,
-    val label: String,
-    val count: Int,
-)
-
-@Composable
-internal fun CodexTabRow(
-    items: List<CodexTabRowItem>,
-    selected: CodexTab,
-    onSelected: (CodexTab) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    SegmentedControl(
-        items = items,
-        onSelected = { onSelected(it.tab) },
-        itemBackground = { item ->
-            if (item.tab == selected) AppPalette.SurfaceElevated else Color.Transparent
-        },
-        modifier = modifier,
-        itemHeight = 36.dp,
-        itemSpacing = 2.dp,
-    ) { item ->
-        val isSelected = item.tab == selected
-        val tint = if (isSelected) AppPalette.GoldBright else AppPalette.TextSecondary
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-            Text(
-                text = item.label,
-                style = MaterialTheme.typography.labelLarge.copy(fontSize = AppFontSize.Small),
-                color = tint,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = item.count.toString(),
-                style = MaterialTheme.typography.labelMedium.copy(fontSize = AppFontSize.TinyPlus),
-                color = tint.copy(alpha = 0.65f),
-            )
-        }
     }
 }
 

@@ -34,6 +34,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppListRow
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
@@ -59,48 +60,23 @@ internal fun LanguageRow(
     current: String,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .heightIn(min = 56.dp)
-                .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        IconBadge(
-            size = 32.dp,
-            shape = AppShapes.Tile,
-            background = AppPalette.SurfacePopover,
-            border = AppPalette.Border,
-        ) {
-            Image(imageVector = GlobeIcon, contentDescription = null)
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                fontSize = AppFontSize.Medium,
-                lineHeight = 19.sp,
-                fontWeight = FontWeight.Medium,
-                color = AppPalette.TextPrimary,
-            )
-            Text(
-                text = description,
-                modifier = Modifier.padding(top = 2.dp),
-                fontSize = AppFontSize.Small,
-                lineHeight = 16.sp,
-                color = AppPalette.TextSecondary,
-            )
-        }
-        Text(
-            text = current,
-            fontSize = AppFontSize.Body,
-            fontWeight = FontWeight.SemiBold,
-            color = AppPalette.GoldBright,
-        )
-        Text(text = "›", fontSize = AppFontSize.Heading, color = AppPalette.TextTertiary)
-    }
+    AppListRow(
+        title = title,
+        subtitle = description,
+        value = current,
+        onClick = onClick,
+        minHeight = 56.dp,
+        leading = {
+            IconBadge(
+                size = 32.dp,
+                shape = AppShapes.Tile,
+                background = AppPalette.SurfacePopover,
+                border = AppPalette.Border,
+            ) {
+                Image(imageVector = GlobeIcon, contentDescription = null)
+            }
+        },
+    )
 }
 
 // the mockup's globe - a circle, the equator and a meridian lens, 1.6 strokes on a 24 grid

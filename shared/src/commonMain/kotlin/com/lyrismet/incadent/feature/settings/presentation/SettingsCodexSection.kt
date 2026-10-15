@@ -10,13 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.core.designsystem.component.RadioOptionRow
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.preferences.EntityEditMode
 import dndplayerscodex.shared.generated.resources.Res
@@ -39,13 +38,7 @@ internal fun CodexSection(
         modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        SectionOverline(
-            text = stringResource(Res.string.settings_section_codex),
-            modifier = Modifier.padding(horizontal = 4.dp),
-            color = AppPalette.TextSecondary,
-            letterSpacing = 0.16.em,
-            fontSize = AppFontSize.Caption,
-        )
+        ListSectionHeader(text = stringResource(Res.string.settings_section_codex), fontSize = AppFontSize.Caption)
         Column(
             modifier =
                 Modifier
