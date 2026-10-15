@@ -1,23 +1,21 @@
 package com.lyrismet.incadent.feature.campaign.presentation.sheet
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDialog
+import com.lyrismet.incadent.core.designsystem.component.ButtonSize
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
+import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
-import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetState
 import dndplayerscodex.shared.generated.resources.Res
@@ -52,17 +50,21 @@ internal fun CampaignFinishDialog(
             onClick = { onEvent(CampaignSheetEvent.ArchiveConfirmed) },
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DialogTextAction(
+            AppButton(
                 text = stringResource(Res.string.action_cancel),
-                color = AppPalette.TextPrimary,
-                modifier = Modifier.weight(1f),
                 onClick = { onEvent(CampaignSheetEvent.Dismissed) },
-            )
-            DialogTextAction(
-                text = stringResource(Res.string.campaign_finish_delete),
-                color = AppPalette.MaroonBright,
                 modifier = Modifier.weight(1f),
+                tone = ButtonTone.Neutral,
+                size = ButtonSize.Large,
+                contentColor = AppPalette.TextPrimary,
+            )
+            AppButton(
+                text = stringResource(Res.string.campaign_finish_delete),
                 onClick = { onEvent(CampaignSheetEvent.DeleteDataClicked) },
+                modifier = Modifier.weight(1f),
+                tone = ButtonTone.Maroon,
+                variant = ButtonVariant.Ghost,
+                size = ButtonSize.Large,
             )
         }
     }
@@ -89,37 +91,24 @@ internal fun CampaignDeleteDialog(
             placeholder = sheet.name,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DialogTextAction(
+            AppButton(
                 text = stringResource(Res.string.action_cancel),
-                color = AppPalette.TextPrimary,
-                modifier = Modifier.weight(1f),
                 onClick = { onEvent(CampaignSheetEvent.Dismissed) },
-            )
-            DialogTextAction(
-                text = stringResource(Res.string.action_delete),
-                color = if (sheet.canDelete) AppPalette.MaroonBright else AppPalette.TextTertiary,
                 modifier = Modifier.weight(1f),
-                onClick = { if (sheet.canDelete) onEvent(CampaignSheetEvent.DeleteConfirmed) },
+                tone = ButtonTone.Neutral,
+                size = ButtonSize.Large,
+                contentColor = AppPalette.TextPrimary,
+            )
+            AppButton(
+                text = stringResource(Res.string.action_delete),
+                onClick = { onEvent(CampaignSheetEvent.DeleteConfirmed) },
+                modifier = Modifier.weight(1f),
+                tone = ButtonTone.Maroon,
+                variant = ButtonVariant.Ghost,
+                size = ButtonSize.Large,
+                enabled = sheet.canDelete,
             )
         }
-    }
-}
-
-@Composable
-private fun DialogTextAction(
-    text: String,
-    color: Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier =
-            modifier
-                .heightIn(min = 48.dp)
-                .appCard(RoundedCornerShape(12.dp), Color.Transparent, AppPalette.BorderHover, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text = text, style = MaterialTheme.typography.titleSmall, color = color)
     }
 }
 

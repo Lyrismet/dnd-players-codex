@@ -34,9 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ChoiceChip
-import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -256,12 +257,11 @@ internal fun CodexOtherSectionsHint(
             )
         }
         hint.create?.let { create ->
-            HeaderActionButton(
+            AppButton(
                 text = create.label,
                 onClick = { eventSink(CodexEvent.EmptyActionClicked(create.entryType, create.name)) },
-                foreground = AppPalette.TextPrimary,
-                background = Color.Transparent,
-                border = AppPalette.BorderHover,
+                tone = ButtonTone.Neutral,
+                contentColor = AppPalette.TextPrimary,
             )
         }
     }

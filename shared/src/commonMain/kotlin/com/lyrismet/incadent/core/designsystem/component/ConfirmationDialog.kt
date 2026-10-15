@@ -1,16 +1,11 @@
 package com.lyrismet.incadent.core.designsystem.component
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -36,8 +31,7 @@ fun ConfirmationDialog(
     modifier: Modifier = Modifier,
     confirmLabel: String = stringResource(Res.string.action_delete),
     dismissLabel: String = stringResource(Res.string.action_cancel),
-    confirmColor: Color = AppPalette.Maroon,
-    confirmContentColor: Color = Color.White,
+    confirmTone: ButtonTone = ButtonTone.Maroon,
     icon: ImageVector = AppIcons.Delete,
     accent: Color = AppPalette.Maroon,
     accentBright: Color = AppPalette.MaroonBright,
@@ -65,22 +59,22 @@ fun ConfirmationDialog(
             overflow = TextOverflow.Ellipsis,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
-            OutlinedButton(
+            AppButton(
+                text = dismissLabel,
                 onClick = onDismiss,
-                modifier = Modifier.weight(1f).height(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, AppPalette.BorderHover),
-            ) {
-                Text(dismissLabel, color = AppPalette.TextPrimary, style = MaterialTheme.typography.titleSmall)
-            }
-            Button(
+                modifier = Modifier.weight(1f),
+                tone = ButtonTone.Neutral,
+                size = ButtonSize.Large,
+                contentColor = AppPalette.TextPrimary,
+            )
+            AppButton(
+                text = confirmLabel,
                 onClick = onConfirm,
-                modifier = Modifier.weight(1f).height(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = confirmColor),
-            ) {
-                Text(confirmLabel, color = confirmContentColor, style = MaterialTheme.typography.titleSmall)
-            }
+                modifier = Modifier.weight(1f),
+                tone = confirmTone,
+                variant = ButtonVariant.Solid,
+                size = ButtonSize.Large,
+            )
         }
     }
 }

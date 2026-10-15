@@ -10,8 +10,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
-import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
@@ -67,7 +67,7 @@ fun CodexUi(
                     title = stringResource(Res.string.codex_title),
                     overlineTrailingContent = {
                         if (!state.readOnly) {
-                            HeaderActionButton(
+                            AppButton(
                                 text = stringResource(Res.string.codex_add_entry_button),
                                 onClick = { state.eventSink(CodexEvent.AddEntryClicked) },
                             )

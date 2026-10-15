@@ -28,10 +28,11 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
-import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -191,13 +192,11 @@ private fun DeletedMentionPicker(
             DeletedMentionLinkRow(option) { eventSink(SessionDetailEvent.DeletedMentionLinked(option.id)) }
         }
     }
-    HeaderActionButton(
+    AppButton(
         text = stringResource(Res.string.deleted_mention_back),
         onClick = { eventSink(SessionDetailEvent.DeletedMentionPickingChanged(false)) },
-        modifier = Modifier.heightIn(min = 40.dp),
-        foreground = AppPalette.TextDescription,
-        background = Color.Transparent,
-        border = AppPalette.BorderHover,
+        height = 40.dp,
+        tone = ButtonTone.Neutral,
     )
 }
 

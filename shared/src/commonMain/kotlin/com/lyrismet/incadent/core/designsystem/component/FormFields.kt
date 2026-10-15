@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,7 +39,6 @@ import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 private val FieldShape = RoundedCornerShape(12.dp)
 private val ChipShape = RoundedCornerShape(20.dp)
 private val ChipMinHeight = 40.dp
-private val PrimaryButtonShape = RoundedCornerShape(14.dp)
 private val PrimaryButtonHeight = 52.dp
 private val FieldHeight = 48.dp
 private val AreaMinHeight = 92.dp
@@ -380,19 +377,13 @@ fun FormPrimaryButton(
     enabled: Boolean = true,
     height: Dp = PrimaryButtonHeight,
 ) {
-    Button(
+    AppButton(
+        text = text,
         onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        variant = ButtonVariant.Solid,
+        size = ButtonSize.Primary,
         enabled = enabled,
-        shape = PrimaryButtonShape,
-        colors =
-            ButtonDefaults.buttonColors(
-                containerColor = AppPalette.Gold,
-                contentColor = AppPalette.Background,
-                disabledContainerColor = AppPalette.SurfaceElevated,
-                disabledContentColor = AppPalette.TextTertiary,
-            ),
-        modifier = modifier.fillMaxWidth().height(height),
-    ) {
-        Text(text, style = MaterialTheme.typography.labelLarge.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold))
-    }
+        height = height,
+    )
 }

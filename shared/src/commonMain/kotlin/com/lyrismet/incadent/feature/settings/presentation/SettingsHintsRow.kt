@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 
 // the gesture-hint row of the diary group - "Показать" re-arms the one-time card in the codex
 @Composable
@@ -39,7 +39,7 @@ internal fun HintsRow(
                 color = AppPalette.TextSecondary,
             )
         }
-        HeaderActionButton(text = actionLabel, onClick = onAction)
+        AppButton(text = actionLabel, onClick = onAction)
     }
 }
 

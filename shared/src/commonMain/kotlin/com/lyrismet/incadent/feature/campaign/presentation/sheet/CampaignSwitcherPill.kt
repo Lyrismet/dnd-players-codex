@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.campaign_archive_banner_text
@@ -134,6 +134,6 @@ fun AppArchiveBanner(
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp, lineHeight = 18.sp),
             )
         }
-        HeaderActionButton(text = stringResource(Res.string.campaign_resume), onClick = onResume)
+        AppButton(text = stringResource(Res.string.campaign_resume), onClick = onResume)
     }
 }

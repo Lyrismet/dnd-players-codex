@@ -24,12 +24,12 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
 import com.lyrismet.incadent.core.designsystem.component.GlowingDot
-import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.NumberLabel
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
@@ -131,7 +131,7 @@ private fun SessionListBody(
             },
             overlineTrailingContent = {
                 if (!state.campaignArchived) {
-                    HeaderActionButton(
+                    AppButton(
                         text = stringResource(Res.string.session_list_new_session_button),
                         onClick = { state.eventSink(SessionListEvent.NewSessionClicked) },
                     )

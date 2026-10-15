@@ -17,9 +17,13 @@ complexity:
     allowedFunctionsPerInterface: 20
     allowedFunctionsPerClass: 20
 
+style:
+  UnusedPrivateFunction:
+    # a @Preview is only ever called by the IDE
+    ignoreAnnotated: ['Preview']
+
 coroutines:
   InjectDispatcher:
-    # this project wires dependencies by hand (no DI framework, see AppContainer) and has no test
-    # suite exercising repository coroutines yet - revisit once either of those changes
+    # repositories use Dispatchers.Default directly and no test needs to swap it - turn this on together with
+    # a DispatcherProvider if one ever does
     active: false
-

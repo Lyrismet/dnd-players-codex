@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -50,7 +49,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.ButtonSize
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.designsystem.component.tapOrQuickHold
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
@@ -164,29 +165,28 @@ private fun EntryActions(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        EntryActionButton(
-            glyph = null,
-            label = stringResource(Res.string.action_edit),
-            foreground = AppPalette.GoldBright,
-            background = AppPalette.Gold.copy(alpha = 0.1f),
-            border = AppPalette.Gold.copy(alpha = 0.4f),
+        AppButton(
+            text = stringResource(Res.string.action_edit),
             onClick = onEditClick,
+            size = ButtonSize.Medium,
+            leading = { color ->
+                Icon(AppIcons.Edit, contentDescription = null, tint = color, modifier = Modifier.size(14.dp))
+            },
         )
-        EntryActionButton(
-            glyph = "★",
-            label = stringResource(Res.string.session_detail_entry_save_phrase),
-            foreground = AppPalette.TextMuted,
-            background = AppPalette.SurfaceInput,
-            border = AppPalette.BorderHover,
+        AppButton(
+            text = stringResource(Res.string.session_detail_entry_save_phrase),
             onClick = onSavePhraseClick,
+            tone = ButtonTone.Neutral,
+            size = ButtonSize.Medium,
+            contentColor = AppPalette.TextMuted,
+            leading = { color -> Text("★", fontSize = 12.sp, color = color) },
         )
-        EntryActionButton(
-            glyph = "✕",
-            label = stringResource(Res.string.action_delete),
-            foreground = AppPalette.MaroonBright,
-            background = AppPalette.Maroon.copy(alpha = 0.14f),
-            border = AppPalette.Maroon.copy(alpha = 0.6f),
+        AppButton(
+            text = stringResource(Res.string.action_delete),
             onClick = onDeleteClick,
+            tone = ButtonTone.Maroon,
+            size = ButtonSize.Medium,
+            leading = { color -> Text("✕", fontSize = 12.sp, color = color) },
         )
     }
 }
@@ -229,33 +229,6 @@ private fun Modifier.selectionHighlight(
         drawRoundRect(AppPalette.Surface, topLeft, plateSize, radius)
         drawRoundRect(borderColor, topLeft, plateSize, radius, style = Stroke(width = 1.dp.toPx()))
     }
-
-@Composable
-private fun EntryActionButton(
-    glyph: String?,
-    label: String,
-    foreground: Color,
-    background: Color,
-    border: Color,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier =
-            Modifier
-                .height(36.dp)
-                .appCard(shape = RoundedCornerShape(10.dp), background = background, border = border, onClick = onClick)
-                .padding(horizontal = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (glyph == null) {
-            Icon(AppIcons.Edit, contentDescription = null, tint = foreground, modifier = Modifier.size(14.dp))
-        } else {
-            Text(glyph, fontSize = 12.sp, color = foreground)
-        }
-        Text(label, style = MaterialTheme.typography.labelLarge, color = foreground)
-    }
-}
 
 private const val EDITED_LABEL_GAP_DP = 2
 

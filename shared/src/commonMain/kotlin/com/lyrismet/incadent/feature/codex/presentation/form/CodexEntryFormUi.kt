@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
 import com.lyrismet.incadent.core.designsystem.component.FormFieldAction
@@ -465,8 +466,7 @@ private fun CodexEntryDiscardDialog(eventSink: (CodexEntryFormEvent) -> Unit) {
         onDismiss = { eventSink(CodexEntryFormEvent.EntryFormClosed) },
         confirmLabel = stringResource(Res.string.codex_entry_discard_back),
         dismissLabel = stringResource(Res.string.codex_entry_discard_leave),
-        confirmColor = AppPalette.Gold,
-        confirmContentColor = AppPalette.Background,
+        confirmTone = ButtonTone.Gold,
         icon = AppIcons.Edit,
         accent = AppPalette.Gold,
         accentBright = AppPalette.GoldBright,

@@ -49,9 +49,10 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.GlowingDot
-import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
@@ -142,15 +143,13 @@ private fun SessionHeaderTopRow(
         ) {
             SessionStatusBadge(isLive = state.isLive)
             if (state.isLive) {
-                HeaderActionButton(
+                AppButton(
                     text = stringResource(Res.string.session_detail_end_button),
                     onClick = { state.eventSink(SessionDetailEvent.EndSessionClicked) },
-                    foreground = AppPalette.MaroonBright,
-                    background = AppPalette.Maroon.copy(alpha = 0.16f),
-                    border = AppPalette.Maroon.copy(alpha = 0.7f),
+                    tone = ButtonTone.Maroon,
                 )
             } else {
-                HeaderActionButton(
+                AppButton(
                     text = stringResource(Res.string.session_detail_resume_button),
                     onClick = { state.eventSink(SessionDetailEvent.ResumeSessionClicked) },
                 )

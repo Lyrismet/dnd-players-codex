@@ -47,8 +47,9 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.GoldCursorBrush
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppCharCountPill
-import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
+import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.presentation.summary.RelationOption
@@ -99,12 +100,10 @@ fun InlineFieldEditor(
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
     EditorFrame(modifier) {
         EditorHeader(label) {
-            HeaderActionButton(
+            AppButton(
                 text = stringResource(Res.string.quick_edit_done),
                 onClick = { onEvent(QuickEditUiEvent.EditSaved) },
-                foreground = AppPalette.Background,
-                background = AppPalette.Gold,
-                border = AppPalette.Gold,
+                variant = ButtonVariant.Solid,
             )
         }
         BasicTextField(

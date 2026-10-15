@@ -19,7 +19,8 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
-import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
+import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
@@ -108,7 +109,7 @@ private fun TagSuggestionsSection(
                 letterSpacing = 0.14.em,
                 fontSize = 10.sp,
             )
-            HeaderActionButton(
+            AppButton(
                 text = stringResource(Res.string.session_detail_tag_add_all_button),
                 onClick = { eventSink(SessionDetailEvent.TagAddAllSuggestionsClicked) },
             )
@@ -149,12 +150,10 @@ private fun TagSuggestionRow(
                 modifier = Modifier.padding(top = 2.dp),
             )
         }
-        HeaderActionButton(
+        AppButton(
             text = stringResource(Res.string.session_detail_tag_add_suggestion_button),
             onClick = onAdd,
-            foreground = AppPalette.Background,
-            background = AppPalette.Gold,
-            border = AppPalette.Gold,
+            variant = ButtonVariant.Solid,
         )
     }
 }

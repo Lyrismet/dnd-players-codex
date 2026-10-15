@@ -20,7 +20,8 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
-import com.lyrismet.incadent.core.designsystem.component.HeaderActionButton
+import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
@@ -214,10 +215,10 @@ private fun FrequentPhraseRow(
                 modifier = Modifier.padding(top = 3.dp),
             )
         }
-        HeaderActionButton(
+        AppButton(
             text = stringResource(Res.string.phrase_sheet_pin_button),
             onClick = onPin,
-            background = Color.Transparent,
+            variant = ButtonVariant.Ghost,
         )
     }
 }

@@ -1,11 +1,9 @@
 package com.lyrismet.incadent.feature.campaign.presentation.sheet
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.ButtonSize
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -118,38 +119,24 @@ private fun CurrentCampaignCard(
         }
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             if (onRename != null) {
-                CardAction(stringResource(Res.string.campaign_action_rename), onRename, Modifier.weight(1f))
+                AppButton(
+                    text = stringResource(Res.string.campaign_action_rename),
+                    onClick = onRename,
+                    modifier = Modifier.weight(1f),
+                    tone = ButtonTone.Neutral,
+                    size = ButtonSize.Medium,
+                )
             }
             if (onFinish != null) {
-                CardAction(stringResource(Res.string.campaign_action_finish), onFinish, Modifier.weight(1f))
+                AppButton(
+                    text = stringResource(Res.string.campaign_action_finish),
+                    onClick = onFinish,
+                    modifier = Modifier.weight(1f),
+                    tone = ButtonTone.Neutral,
+                    size = ButtonSize.Medium,
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun CardAction(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier =
-            modifier
-                .height(36.dp)
-                .appCard(
-                    shape = RoundedCornerShape(10.dp),
-                    background = Color.Transparent,
-                    border = AppPalette.BorderHover,
-                    onClick = onClick,
-                ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = text,
-            color = AppPalette.TextDescription,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp),
-        )
     }
 }
 
