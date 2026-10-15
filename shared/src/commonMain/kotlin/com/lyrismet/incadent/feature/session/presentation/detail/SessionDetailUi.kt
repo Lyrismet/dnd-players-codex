@@ -43,7 +43,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
-import com.lyrismet.incadent.core.designsystem.component.OrnamentedEmptyState
+import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
@@ -88,9 +88,10 @@ private fun ColumnScope.SessionDetailBody(state: SessionDetailState) {
     // the toast floats at the feed's bottom edge, so it never covers the composer
     Box(modifier = Modifier.weight(1f)) {
         if (state.feed.isEmpty()) {
-            OrnamentedEmptyState(
+            EmptyState(
                 title = stringResource(Res.string.session_detail_empty_feed),
-                hint = stringResource(Res.string.session_detail_empty_feed_hint),
+                text = stringResource(Res.string.session_detail_empty_feed_hint),
+                ornament = true,
             )
         } else {
             SessionFeed(state)

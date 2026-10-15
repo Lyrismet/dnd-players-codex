@@ -10,8 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
-import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
@@ -267,7 +267,7 @@ internal fun CodexEmptyView(
     when (val empty = state.emptyState) {
         CodexEmptyState.Hidden -> Unit
         is CodexEmptyState.Blank ->
-            EmptyStateActions(
+            EmptyState(
                 title = empty.title,
                 text = empty.text,
                 modifier = modifier,
@@ -278,7 +278,7 @@ internal fun CodexEmptyView(
         is CodexEmptyState.OtherSections -> Unit
 
         is CodexEmptyState.NoMatch ->
-            EmptyStateActions(
+            EmptyState(
                 title = empty.title,
                 text = empty.text,
                 modifier = modifier,

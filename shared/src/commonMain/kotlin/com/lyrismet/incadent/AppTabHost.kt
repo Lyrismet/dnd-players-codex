@@ -32,7 +32,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import com.lyrismet.incadent.core.designsystem.component.BottomTabBar
 import com.lyrismet.incadent.core.designsystem.component.BottomTabBarItem
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
-import com.lyrismet.incadent.core.designsystem.component.EmptyStatePlaceholder
+import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.dismissKeyboardOnTap
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
@@ -256,7 +256,7 @@ private fun TabBackstackHost(
 @Composable
 private fun CombatPlaceholder() {
     Scaffold { contentPadding ->
-        EmptyStatePlaceholder(
+        EmptyState(
             text = stringResource(Res.string.combat_tab_placeholder),
             modifier = Modifier.padding(contentPadding),
         )

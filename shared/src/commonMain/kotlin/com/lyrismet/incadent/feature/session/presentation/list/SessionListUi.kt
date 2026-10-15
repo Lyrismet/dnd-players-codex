@@ -28,8 +28,8 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
-import com.lyrismet.incadent.core.designsystem.component.EmptyStateActions
 import com.lyrismet.incadent.core.designsystem.component.GlowingDot
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.core.designsystem.component.NumberLabel
@@ -148,7 +148,7 @@ private fun SessionListBody(
             )
         }
         if (state.liveSession == null && state.sessions.isEmpty()) {
-            EmptyStateActions(
+            EmptyState(
                 title = stringResource(Res.string.session_list_empty_title),
                 text = stringResource(Res.string.session_list_empty),
                 primaryAction =
