@@ -1,5 +1,8 @@
 package com.lyrismet.incadent.presentation.sessiondetail
 
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -75,7 +80,8 @@ private fun ColumnScope.SessionDetailBody(state: SessionDetailState) {
     SessionDetailHeader(state)
 
     // the toast floats at the feed's bottom edge, so it never covers the composer
-    Box(modifier = Modifier.weight(1f)) {
+    // the tap handler sits on this box, not the list, which only is as tall as its notes
+    Box(modifier = Modifier.weight(1f).clearSelectionOnTap(state.eventSink)) {
         if (state.feed.isEmpty()) {
             OrnamentedEmptyState(
                 title = stringResource(Res.string.session_detail_empty_feed),
@@ -220,3 +226,13 @@ private fun DaySeparatorRow(
         AppDivider(modifier = Modifier.padding(start = 10.dp).weight(1f), color = AppPalette.Border)
     }
 }
+
+// a tap no note or button consumed lands on free space and drops the selected note's action row
+private fun Modifier.clearSelectionOnTap(eventSink: (SessionDetailEvent) -> Unit): Modifier =
+    pointerInput(eventSink) {
+        awaitEachGesture {
+            awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            val up = waitForUpOrCancellation(PointerEventPass.Final)
+            if (up != null && !up.isConsumed) eventSink(SessionDetailEvent.EntrySelectionCleared)
+        }
+    }

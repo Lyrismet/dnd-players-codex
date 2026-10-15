@@ -394,6 +394,7 @@ class SessionDetailPresenter(
             SessionDetailEvent.SheetDismissed -> fields.entitySheet.onDismissed()
             SessionDetailEvent.SubmitEntryClicked -> onSubmitEntry(scope, entries, fields)
             is SessionDetailEvent.EntryClicked -> onEntryClicked(event.id, fields.selectedEntryId)
+            SessionDetailEvent.EntrySelectionCleared -> fields.selectedEntryId.value = null
             is SessionDetailEvent.EditEntryClicked -> onEditEntry(event.id, entries, fields)
             SessionDetailEvent.CancelEditEntryClicked -> {
                 fields.editingEntryId.value = null

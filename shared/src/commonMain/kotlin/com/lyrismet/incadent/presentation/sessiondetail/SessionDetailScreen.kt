@@ -198,6 +198,8 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
 
     data object CancelEditEntryClicked : SessionDetailEvent
 
+    data object EntrySelectionCleared : SessionDetailEvent
+
     data class DeleteEntryClicked(
         val id: Long,
     ) : SessionDetailEvent
