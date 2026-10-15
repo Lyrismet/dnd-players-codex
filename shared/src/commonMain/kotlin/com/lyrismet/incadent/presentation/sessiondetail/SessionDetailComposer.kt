@@ -63,6 +63,8 @@ import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.mention.MentionVisualTransformation
+import com.lyrismet.incadent.core.mention.mentionDisplayLength
+import com.lyrismet.incadent.core.mention.takeMentionDisplay
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_cancel
@@ -166,7 +168,7 @@ private fun ComposerDraftField(
     BasicTextField(
         value = TextFieldValue(state.draft, state.draftSelection),
         onValueChange = {
-            val capped = it.copy(text = it.text.take(TextLimits.NOTE))
+            val capped = it.copy(text = takeMentionDisplay(it.text, TextLimits.NOTE))
             state.eventSink(SessionDetailEvent.DraftChanged(capped.text, capped.selection))
         },
         textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp, color = AppPalette.TextPrimary),
@@ -194,7 +196,7 @@ private fun ComposerDraftField(
                     innerTextField()
                 }
                 AppCharCountPill(
-                    count = state.draft.length,
+                    count = mentionDisplayLength(state.draft),
                     max = TextLimits.NOTE,
                     modifier = Modifier.align(Alignment.End),
                 )

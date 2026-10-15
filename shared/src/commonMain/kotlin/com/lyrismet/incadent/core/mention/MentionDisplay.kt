@@ -58,6 +58,20 @@ internal class MentionDisplay(
     }
 }
 
+/** how many characters the field shows for [raw] - a token counts as its "@Name", not its stored form */
+fun mentionDisplayLength(raw: String): Int = MentionDisplay(raw).text.length
+
+/** [raw] cut to [limit] shown characters, a token that would straddle the limit is left out whole */
+fun takeMentionDisplay(
+    raw: String,
+    limit: Int,
+): String {
+    val display = MentionDisplay(raw)
+    if (display.text.length <= limit) return raw
+    val straddling = display.spans.firstOrNull { it.displayStart < limit && limit < it.displayEnd }
+    return raw.substring(0, straddling?.rawStart ?: display.toRaw(limit))
+}
+
 /** shows every mention token of a draft as its "@Name" in [tokenStyle], the stored text keeps the token */
 class MentionVisualTransformation(
     private val tokenStyle: SpanStyle,

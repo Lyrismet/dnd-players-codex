@@ -6,8 +6,6 @@ CREATE TABLE npc (
     name TEXT NOT NULL,
     status TEXT AS NpcStatus NOT NULL,
     description TEXT NOT NULL,
-    -- legacy single place, superseded by npc_location and no longer written
-    location_id INTEGER REFERENCES location(id) ON DELETE SET NULL,
     race TEXT NOT NULL DEFAULT '',
     faction TEXT NOT NULL DEFAULT '',
     life_state TEXT AS NpcLifeState NOT NULL DEFAULT 'ALIVE',
@@ -16,12 +14,11 @@ CREATE TABLE npc (
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
 );
 
-CREATE INDEX npc_location_id ON npc(location_id);
 CREATE INDEX npc_campaign_id ON npc(campaign_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT id, name, status, description, location_id, race, faction, life_state, portrait_thumb
+SELECT id, name, status, description, race, faction, life_state, portrait_thumb
 FROM npc
 WHERE campaign_id = ?
 ORDER BY name;
@@ -29,7 +26,7 @@ ORDER BY name;
 -- places come along in the same query so a write to either table re-emits one consistent list
 selectAllWithLocations:
 SELECT
-    npc.id, npc.name, npc.status, npc.description, npc.location_id, npc.race, npc.faction, npc.life_state,
+    npc.id, npc.name, npc.status, npc.description, npc.race, npc.faction, npc.life_state,
     npc.portrait_thumb,
     COALESCE((SELECT group_concat(location_id) FROM npc_location WHERE npc_id = npc.id), '') AS location_ids
 FROM npc
@@ -37,7 +34,7 @@ WHERE campaign_id = ?
 ORDER BY name;
 
 selectById:
-SELECT id, name, status, description, location_id, race, faction, life_state, portrait_thumb, portrait
+SELECT id, name, status, description, race, faction, life_state, portrait_thumb, portrait
 FROM npc
 WHERE id = ?;
 

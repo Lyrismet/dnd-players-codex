@@ -45,7 +45,7 @@ class SessionEntryRepositoryImpl(
         withContext(Dispatchers.Default) {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
             database.transactionWithResult {
-                queries.insert(sessionNoteId, now, body, edited = 0L, mention_check = 1L)
+                queries.insert(sessionNoteId, now, body, edited = false, mention_check = true)
                 queries.lastInsertRowId().executeAsOne()
             }
         }
@@ -57,8 +57,8 @@ class SessionEntryRepositoryImpl(
                     entry.sessionNoteId,
                     entry.createdAt,
                     entry.body,
-                    if (entry.edited) 1L else 0L,
-                    if (entry.mentionCheck) 1L else 0L,
+                    entry.edited,
+                    entry.mentionCheck,
                 )
                 queries.lastInsertRowId().executeAsOne()
             }
@@ -84,7 +84,7 @@ class SessionEntryRepositoryImpl(
         id: Long,
         check: Boolean,
     ) {
-        withContext(Dispatchers.Default) { queries.setMentionCheck(if (check) 1L else 0L, id) }
+        withContext(Dispatchers.Default) { queries.setMentionCheck(check, id) }
     }
 
     override suspend fun delete(id: Long) {
@@ -100,14 +100,14 @@ class SessionEntryRepositoryImpl(
         sessionNoteId: Long,
         createdAt: LocalDateTime,
         body: String,
-        edited: Long,
-        mentionCheck: Long,
+        edited: Boolean,
+        mentionCheck: Boolean,
     ) = SessionEntry(
         id = id,
         sessionNoteId = sessionNoteId,
         createdAt = createdAt,
         body = body,
-        edited = edited != 0L,
-        mentionCheck = mentionCheck != 0L,
+        edited = edited,
+        mentionCheck = mentionCheck,
     )
 }

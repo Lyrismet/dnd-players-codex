@@ -1,3 +1,4 @@
+import kotlin.Boolean;
 import com.lyrismet.incadent.domain.model.PartyPresence;
 
 CREATE TABLE party_member (
@@ -7,7 +8,7 @@ CREATE TABLE party_member (
     race TEXT NOT NULL DEFAULT '',
     level INTEGER,
     player_name TEXT NOT NULL DEFAULT '',
-    is_player_character INTEGER NOT NULL DEFAULT 0,
+    is_player_character INTEGER AS Boolean NOT NULL DEFAULT 0,
     presence TEXT AS PartyPresence NOT NULL DEFAULT 'IN',
     hp_max INTEGER,
     hp_current INTEGER,

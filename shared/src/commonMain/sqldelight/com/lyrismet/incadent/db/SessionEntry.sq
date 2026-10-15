@@ -1,3 +1,4 @@
+import kotlin.Boolean;
 import kotlinx.datetime.LocalDateTime;
 
 CREATE TABLE session_entry (
@@ -5,8 +6,8 @@ CREATE TABLE session_entry (
     session_note_id INTEGER NOT NULL REFERENCES session_note(id) ON DELETE CASCADE,
     created_at TEXT AS LocalDateTime NOT NULL,
     body TEXT NOT NULL,
-    edited INTEGER NOT NULL DEFAULT 0,
-    mention_check INTEGER NOT NULL DEFAULT 0
+    edited INTEGER AS Boolean NOT NULL DEFAULT 0,
+    mention_check INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
 CREATE INDEX session_entry_session_note_id ON session_entry(session_note_id);

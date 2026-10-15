@@ -37,6 +37,23 @@ class MentionDisplayTest {
     }
 
     @Test
+    fun `the limit counts a token as its shown name`() {
+        assertEquals("ждали @Рагнар Каменный там".length, mentionDisplayLength(raw))
+    }
+
+    @Test
+    fun `a cut at the limit never leaves half a token`() {
+        val tokenStart = raw.indexOf('@')
+
+        assertEquals(raw, takeMentionDisplay(raw, 100))
+        assertEquals(raw.substring(0, tokenStart), takeMentionDisplay(raw, tokenStart + 3))
+        assertEquals(
+            raw.substring(0, tokenStart + ragnar.token().length),
+            takeMentionDisplay(raw, display.text.indexOf(" там")),
+        )
+    }
+
+    @Test
     fun `text without a token maps one to one`() {
         val plain = MentionDisplay("просто текст")
 

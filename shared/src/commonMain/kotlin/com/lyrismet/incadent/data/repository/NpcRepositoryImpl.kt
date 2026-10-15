@@ -129,23 +129,21 @@ class NpcRepositoryImpl(
         name: String,
         status: NpcStatus,
         description: String,
-        legacyLocationId: Long?,
         race: String,
         faction: String,
         lifeState: NpcLifeState,
         portraitThumb: ByteArray?,
         locationIds: String,
-    ) = toDomain(id, name, status, description, legacyLocationId, race, faction, lifeState, portraitThumb)
+    ) = toDomain(id, name, status, description, race, faction, lifeState, portraitThumb)
         .copy(locationIds = locationIds.split(',').mapNotNull { it.toLongOrNull() })
 
     // one param per npc table column - dictated by SQLDelight's generated query mapper shape, not real complexity
-    @Suppress("LongParameterList", "UnusedParameter")
+    @Suppress("LongParameterList")
     private fun toDomain(
         id: Long,
         name: String,
         status: NpcStatus,
         description: String,
-        legacyLocationId: Long?,
         race: String,
         faction: String,
         lifeState: NpcLifeState,
@@ -153,18 +151,17 @@ class NpcRepositoryImpl(
     ) = Npc(id, name, status, lifeState, description, emptyList(), race, faction, portraitThumb?.let { Photo(it) })
 
     // the by-id row also carries the full jpeg
-    @Suppress("LongParameterList", "UnusedParameter")
+    @Suppress("LongParameterList")
     private fun toDomainFull(
         id: Long,
         name: String,
         status: NpcStatus,
         description: String,
-        legacyLocationId: Long?,
         race: String,
         faction: String,
         lifeState: NpcLifeState,
         portraitThumb: ByteArray?,
         portrait: ByteArray?,
-    ) = toDomain(id, name, status, description, legacyLocationId, race, faction, lifeState, portraitThumb)
+    ) = toDomain(id, name, status, description, race, faction, lifeState, portraitThumb)
         .copy(portrait = portraitThumb?.let { Photo(it, portrait) })
 }

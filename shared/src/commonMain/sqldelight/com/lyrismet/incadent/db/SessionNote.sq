@@ -9,7 +9,7 @@ CREATE TABLE session_note (
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
 );
 
-CREATE INDEX session_note_campaign_id ON session_note(campaign_id);
+CREATE INDEX session_note_campaign_date ON session_note(campaign_id, session_date);
 
 selectAll:
 SELECT id, title, session_date, ended_at, created_at FROM session_note
