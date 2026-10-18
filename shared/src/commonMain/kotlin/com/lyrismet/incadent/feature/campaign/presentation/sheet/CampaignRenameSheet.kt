@@ -5,8 +5,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
@@ -70,9 +76,15 @@ private fun RenameNameInput(
     onDraftChanged: (String) -> Unit,
     onDone: () -> Unit,
 ) {
+    // the caret starts after the last letter so a long name scrolls to its end
+    var value by remember { mutableStateOf(TextFieldValue(draft, TextRange(draft.length))) }
     AppTextInput(
-        value = draft,
-        onValueChange = onDraftChanged,
+        value = value,
+        onValueChange = {
+            value = it
+            onDraftChanged(it.text)
+        },
+        autoFocus = true,
         placeholder = stringResource(Res.string.settings_rename_placeholder),
         style =
             AppTextInputStyle(

@@ -108,6 +108,8 @@ private fun CampaignWorldSection(
     sheet: CampaignSheetState.Create,
     onEvent: (CampaignSheetEvent) -> Unit,
 ) {
+    // with no other campaign to import from the world is always new, so there is nothing to choose
+    if (sheet.sources.isEmpty()) return
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         FormFieldLabel(
             text = stringResource(Res.string.campaign_create_world_label),
@@ -119,13 +121,11 @@ private fun CampaignWorldSection(
             selected = !sheet.sameWorld,
             onClick = { onEvent(CampaignSheetEvent.WorldSelected(false)) },
         )
-        if (sheet.sources.isNotEmpty()) {
-            WorldOptionRow(
-                title = stringResource(Res.string.campaign_world_same),
-                selected = sheet.sameWorld,
-                onClick = { onEvent(CampaignSheetEvent.WorldSelected(true)) },
-            )
-        }
+        WorldOptionRow(
+            title = stringResource(Res.string.campaign_world_same),
+            selected = sheet.sameWorld,
+            onClick = { onEvent(CampaignSheetEvent.WorldSelected(true)) },
+        )
         if (sheet.sameWorld) {
             sheet.sources.forEach { source ->
                 SourceRow(source, selected = source.id == sheet.sourceId) {
