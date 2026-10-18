@@ -37,7 +37,10 @@ fun ScreenHeader(
     Column(modifier = modifier.padding(horizontal = 20.dp).padding(top = 6.dp, bottom = 14.dp)) {
         if (overlineContent != null) {
             Row(modifier = Modifier.height(32.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) { overlineContent() }
+                Box(
+                    modifier = Modifier.weight(1f).padding(end = 12.dp),
+                    contentAlignment = Alignment.CenterStart,
+                ) { overlineContent() }
                 overlineTrailingContent()
             }
         } else {

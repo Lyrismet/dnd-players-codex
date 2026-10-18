@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,7 +28,6 @@ import com.lyrismet.incadent.core.designsystem.component.BrandMark
 import com.lyrismet.incadent.core.designsystem.component.FlameSweepEffect
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.splash_app_name
-import dndplayerscodex.shared.generated.resources.splash_attribution
 import dndplayerscodex.shared.generated.resources.splash_tagline
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -80,12 +78,6 @@ fun Splash(modifier: Modifier = Modifier) {
                         )
                     }
                 },
-            )
-            Text(
-                text = stringResource(Res.string.splash_attribution),
-                style = MaterialTheme.typography.bodySmall,
-                color = AppPalette.TextTertiary,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 46.dp).alpha(textAlpha),
             )
         }
         // starts the text layout warm-up off-screen so the first fade frame is not late
