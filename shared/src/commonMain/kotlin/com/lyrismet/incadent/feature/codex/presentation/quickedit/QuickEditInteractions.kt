@@ -41,7 +41,8 @@ class QuickEditInteractions(
         when (event) {
             is QuickEditUiEvent.FieldHeld -> {
                 inlineEdit.value = InlineEdit(event.field, event.currentText)
-                onHoldHintSeen()
+                // the move button is tapped, not held
+                if (event.field != QuickEditField.MOVE) onHoldHintSeen()
             }
             is QuickEditUiEvent.DraftChanged -> inlineEdit.value = inlineEdit.value?.copy(draft = event.draft)
             QuickEditUiEvent.EditCancelled -> inlineEdit.value = null
@@ -108,6 +109,7 @@ class QuickEditInteractions(
     ) {
         val pending = photoCrop.value ?: return
         photoCrop.value = null
+        if (pending.draft.keepsStored(crop)) return
         scope.launch {
             val photo = pending.draft.encodeAsync(crop, imageCompressor)
             entitySheet.onQuickEdit(scope, pending.ref, pending.draft.slot.field(), QuickEditValue.Picture(photo))

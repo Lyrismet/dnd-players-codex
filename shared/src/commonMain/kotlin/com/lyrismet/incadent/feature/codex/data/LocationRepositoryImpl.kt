@@ -6,7 +6,6 @@ import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
-import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PlaceCycleException
@@ -65,25 +64,33 @@ class LocationRepositoryImpl(
             }
         }
 
-    // the same rule the pickers apply, held here so no path can write a loop
+    // the same rule the pickers apply, held here so no path can write a loop - walks up from the new parent
     private fun checkNoCycle(
         id: Long,
         parentId: Long?,
     ) {
-        if (parentId == null) return
-        val tree = PlaceTree(queries.selectAll(current.requireId(), ::toDomain).executeAsList())
-        if (!tree.canPutInside(id, parentId)) throw PlaceCycleException()
+        val seen = HashSet<Long>()
+        var next = parentId
+        while (next != null && seen.add(next)) {
+            if (next == id) throw PlaceCycleException()
+            next = queries.selectParentId(next).executeAsOneOrNull()?.parent_id
+        }
     }
 
     // a single column write, the photo is never read
     override suspend fun setParent(
         id: Long,
         parentId: Long?,
-    ) {
+    ) = setParents(mapOf(id to parentId))
+
+    // one transaction, so a move the rule refuses rolls the earlier ones back
+    override suspend fun setParents(parents: Map<Long, Long?>) {
         withContext(Dispatchers.Default) {
             database.transaction {
-                checkNoCycle(id, parentId)
-                queries.setParent(parentId, id)
+                parents.forEach { (id, parentId) ->
+                    checkNoCycle(id, parentId)
+                    queries.setParent(parentId, id)
+                }
             }
         }
     }

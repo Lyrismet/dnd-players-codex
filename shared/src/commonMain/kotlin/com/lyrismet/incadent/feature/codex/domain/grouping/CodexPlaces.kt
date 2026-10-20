@@ -2,7 +2,7 @@ package com.lyrismet.incadent.feature.codex.domain.grouping
 
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 
-// caps the parent chain so a loop in the data still terminates
+// caps the wrapper chain so a loop in the data still terminates
 private const val MAX_PATH_DEPTH = 12
 private const val SHORT_PATH_PLACES = 2
 
@@ -19,16 +19,15 @@ class PlaceTree(
 
     fun find(id: Long?): Location? = byId[id]
 
-    /** the places from the top level one down to [place] itself, cut short where the parent chain loops */
+    /** the places from the top level one down to [place] itself, cut short where the chain loops */
     fun pathOf(place: Location): List<Location> =
         paths.getOrPut(place.id) {
             val chain = ArrayList<Location>()
+            val seen = HashSet<Long>()
             var next: Location? = place
-            while (next != null && chain.size < MAX_PATH_DEPTH) {
-                val current: Location = next
-                if (chain.any { it.id == current.id }) break
-                chain.add(current)
-                next = byId[current.parentId]
+            while (next != null && seen.add(next.id)) {
+                chain.add(next)
+                next = byId[next.parentId]
             }
             chain.asReversed().toList()
         }

@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.lyrismet.incadent.feature.codex.domain.grouping.InsideChanges
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
@@ -208,8 +209,9 @@ class EntitySheetInteractions(
             val owner = tree.find(locationId)
             if (owner != null && !changes.isEmpty) {
                 val before = (changes.entering + changes.leaving).associateWith { tree.find(it)?.parentId }
-                changes.entering.forEach { locationRepository.setParent(it, locationId) }
-                changes.leaving.forEach { locationRepository.setParent(it, null) }
+                locationRepository.setParents(
+                    changes.leaving.associateWith { null } + changes.entering.associateWith { locationId },
+                )
                 val sources =
                     changes.entering
                         .map {
@@ -222,13 +224,28 @@ class EntitySheetInteractions(
                 val moved = MovedPlaces(changes.entering.size, sources.singleOrNull())
                 onChanged(
                     EntityChange(QuickEditField.INSIDE, owner.name, moved) {
-                        entityWriteLock.withLock {
-                            before.forEach { (id, parentId) -> locationRepository.setParent(id, parentId) }
-                        }
+                        entityWriteLock.withLock { restoreParents(locationId, changes, before) }
                     },
                 )
             }
         }
+    }
+
+    // a place moved again since keeps its newer parent, one whose old parent is gone or would now loop stays put
+    private suspend fun restoreParents(
+        locationId: Long,
+        changes: InsideChanges,
+        before: Map<Long, Long?>,
+    ) {
+        val tree = PlaceTree(locationRepository.observeAll().first())
+        val restores =
+            before.filter { (id, oldParent) ->
+                val placedBy = if (id in changes.entering) locationId else null
+                tree.find(id)?.parentId == placedBy &&
+                    (oldParent == null || tree.find(oldParent) != null) &&
+                    tree.canPutInside(id, oldParent)
+            }
+        locationRepository.setParents(restores)
     }
 
     private suspend fun commitQuestChange(

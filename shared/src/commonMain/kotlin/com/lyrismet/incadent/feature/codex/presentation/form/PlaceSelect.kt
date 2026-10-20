@@ -27,10 +27,7 @@ import dndplayerscodex.shared.generated.resources.place_block_pending
 import dndplayerscodex.shared.generated.resources.place_cycle_toast
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * what the place select sheet shows for [field]. [editing] is the place whose parent or inside is being picked - a
- * place can't sit in itself or in what it holds, so those are listed greyed with the reason
- */
+/** what the place select sheet shows for [field], places [editing] can't sit in are greyed with the reason */
 @Suppress("LongParameterList")
 @Composable
 internal fun placeSelectState(
@@ -48,8 +45,7 @@ internal fun placeSelectState(
         when {
             editing == null -> emptyMap()
             field == CodexEntryPlaceField.LOCATION_PARENT ->
-                stored.blockedAsParent(editing.id) +
-                    stored.pendingBlocks(editing)
+                stored.pendingBlocks(editing) + stored.blockedAsParent(editing.id)
             field == CodexEntryPlaceField.LOCATION_CHILDREN -> tree.blockedAsChild(editing.id)
             else -> emptyMap()
         }
@@ -135,32 +131,48 @@ internal fun CodexEntryFormFields.withPlaces(
         CodexEntryPlaceField.LOCATION_CHILDREN -> copy(locationChildIds = ids.distinct())
     }
 
+/** the place field a held card fact edits, null for a card without one */
+internal fun quickPlaceField(
+    ref: EntityRef?,
+    held: QuickEditField,
+): CodexEntryPlaceField? =
+    when (ref) {
+        is EntityRef.Npc -> CodexEntryPlaceField.NPC_PLACES
+        is EntityRef.Quest -> CodexEntryPlaceField.QUEST_PLACE
+        is EntityRef.Location ->
+            if (held == QuickEditField.INSIDE) {
+                CodexEntryPlaceField.LOCATION_CHILDREN
+            } else {
+                CodexEntryPlaceField.LOCATION_PARENT
+            }
+        else -> null
+    }
+
 /** the place field a held card fact edits and the places it holds now, null for a fact that is not a place */
 internal fun quickPlaceTarget(
     ref: EntityRef?,
     held: QuickEditField,
     records: CodexRecords,
-): Pair<CodexEntryPlaceField, List<Long>>? =
-    when (ref) {
-        is EntityRef.Npc ->
-            CodexEntryPlaceField.NPC_PLACES to
+): Pair<CodexEntryPlaceField, List<Long>>? {
+    val field = quickPlaceField(ref, held) ?: return null
+    val ids =
+        when (ref) {
+            is EntityRef.Npc ->
                 records.npcs
                     .firstOrNull { it.id == ref.id }
                     ?.locationIds
                     .orEmpty()
-        is EntityRef.Quest ->
-            CodexEntryPlaceField.QUEST_PLACE to
-                listOfNotNull(records.quests.firstOrNull { it.id == ref.id }?.locationId)
-        is EntityRef.Location ->
-            if (held == QuickEditField.INSIDE) {
-                CodexEntryPlaceField.LOCATION_CHILDREN to
+            is EntityRef.Quest -> listOfNotNull(records.quests.firstOrNull { it.id == ref.id }?.locationId)
+            is EntityRef.Location ->
+                if (field == CodexEntryPlaceField.LOCATION_CHILDREN) {
                     records.locations.filter { it.parentId == ref.id }.map { it.id }
-            } else {
-                CodexEntryPlaceField.LOCATION_PARENT to
+                } else {
                     listOfNotNull(records.locations.firstOrNull { it.id == ref.id }?.parentId)
-            }
-        else -> null
-    }
+                }
+            else -> emptyList()
+        }
+    return field to ids
+}
 
 /** the toast text for a failure a place move is known to cause, null for any other failure */
 @Composable

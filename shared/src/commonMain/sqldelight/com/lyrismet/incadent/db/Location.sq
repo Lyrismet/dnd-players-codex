@@ -33,6 +33,9 @@ UPDATE location
 SET name = ?, description = ?, parent_id = ?
 WHERE id = ?;
 
+selectParentId:
+SELECT parent_id FROM location WHERE id = ?;
+
 setParent:
 UPDATE location SET parent_id = ? WHERE id = ?;
 

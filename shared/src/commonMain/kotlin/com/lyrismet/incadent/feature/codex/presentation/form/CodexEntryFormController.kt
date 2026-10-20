@@ -372,10 +372,9 @@ class CodexEntryFormController private constructor(
         crop: CropRect,
     ) {
         val draft = fields.value?.photoCrop ?: return
-        val stored = fields.value?.let { if (draft.slot == PhotoSlot.COVER) it.cover else it.portrait }
         fields.value = fields.value?.copy(photoCrop = null)
         // an untouched window over the stored picture keeps it as it is instead of re-encoding it
-        if (crop.isWholeImage && stored != null && stored.display.contentEquals(draft.source)) return
+        if (draft.keepsStored(crop)) return
         val session = baseline.value
         scope.launch {
             val photo = draft.encodeAsync(crop, compressor)

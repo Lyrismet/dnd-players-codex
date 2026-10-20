@@ -198,9 +198,11 @@ private fun LocationSummaryBody(
     EntityRelationGroups(location.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(location.name, location.relatedNotes, actions.onRelatedNoteClicked)
     // the two buttons share one block, so they sit close instead of one list gap apart
-    Column(modifier = Modifier.padding(top = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        EntityPlaceMoveButton(location, actions.quickEdit)
-        EntityDeleteButton(location.ref, actions, topGap = 0.dp)
+    if ((actions.quickEdit != null && location.canMove) || actions.onDeleteClicked != null) {
+        Column(modifier = Modifier.padding(top = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            EntityPlaceMoveButton(location, actions.quickEdit)
+            EntityDeleteButton(location.ref, actions, topGap = 0.dp)
+        }
     }
 }
 

@@ -236,6 +236,26 @@ class CodexPlacesTest {
 
         assertTrue(NEW_PLACE_ID in PlaceTree(pending).descendantIds(castle.id))
     }
+
+    @Test
+    fun `a chain deeper than twelve places keeps its whole path`() {
+        val chain = (1L..DEEP_PLACES).map { location(it, "П$it", parentId = if (it == 1L) null else it - 1) }
+        val deepTree = PlaceTree(chain)
+
+        assertEquals(DEEP_PLACES.toInt() - 1, deepTree.ancestorsOf(chain.last()).size)
+        assertEquals(PlaceBlock.Contains, deepTree.blockedAsChild(DEEP_PLACES)[1L])
+    }
+
+    @Test
+    fun `places stored inside a place stay marked as inside it while it is edited`() {
+        val merged = tree.pendingBlocks(tree.editingOf(valley)) + tree.blockedAsParent(valley.id)
+
+        assertEquals(PlaceBlock.InsideOf("Долина"), merged[town.id])
+    }
+
+    private companion object {
+        const val DEEP_PLACES = 15L
+    }
 }
 
 internal fun location(

@@ -38,4 +38,52 @@ class PlaceCycleTest {
             repository.upsert(checkNotNull(repository.getById(b)).copy(parentId = null))
             assertEquals(null, repository.getById(b)?.parentId)
         }
+
+    @Test
+    fun `a refused move in a batch leaves every place where it was`() =
+        runTest {
+            val a = repository.upsert(Location(id = 0, name = "А", description = ""))
+            val b = repository.upsert(Location(id = 0, name = "Б", description = ""))
+            val c = repository.upsert(Location(id = 0, name = "В", description = "", parentId = b))
+
+            assertFailsWith<PlaceCycleException> { repository.setParents(linkedMapOf(a to b, b to c)) }
+
+            assertEquals(null, repository.getById(a)?.parentId)
+            assertEquals(null, repository.getById(b)?.parentId)
+        }
+
+    @Test
+    fun `set inside makes a place hold exactly the picked ones`() =
+        runTest {
+            val home = repository.upsert(Location(id = 0, name = "Дом", description = ""))
+            val kept = repository.upsert(Location(id = 0, name = "Кухня", description = "", parentId = home))
+            val dropped = repository.upsert(Location(id = 0, name = "Подвал", description = "", parentId = home))
+            val added = repository.upsert(Location(id = 0, name = "Сад", description = ""))
+
+            val changes = repository.setInside(home, listOf(kept, added))
+
+            assertEquals(setOf(added), changes.entering)
+            assertEquals(setOf(dropped), changes.leaving)
+            assertEquals(home, repository.getById(added)?.parentId)
+            assertEquals(null, repository.getById(dropped)?.parentId)
+            assertEquals(home, repository.getById(kept)?.parentId)
+        }
+
+    @Test
+    fun `a loop through a deep chain is refused`() =
+        runTest {
+            val ids = ArrayList<Long>()
+            repeat(DEEP_LEVELS) { level ->
+                ids +=
+                    repository.upsert(
+                        Location(id = 0, name = "Уровень $level", description = "", parentId = ids.lastOrNull()),
+                    )
+            }
+
+            assertFailsWith<PlaceCycleException> { repository.setParent(ids.first(), ids.last()) }
+        }
+
+    private companion object {
+        const val DEEP_LEVELS = 15
+    }
 }

@@ -45,6 +45,7 @@ import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.editingPlace
 import com.lyrismet.incadent.feature.codex.presentation.form.placeFieldTitle
 import com.lyrismet.incadent.feature.codex.presentation.form.placeSelectState
+import com.lyrismet.incadent.feature.codex.presentation.form.quickPlaceField
 import com.lyrismet.incadent.feature.codex.presentation.form.quickPlaceTarget
 import com.lyrismet.incadent.feature.codex.presentation.form.rememberPlaceFailureText
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
@@ -518,7 +519,8 @@ class CodexPresenter(
     ) {
         val name = event.name.trim().capitalizeFirst()
         if (name.isBlank()) return
-        val isMulti = fields.selectedEntityRef.value is EntityRef.Npc
+        val held = fields.inlineEdit.value?.field ?: return
+        val isMulti = quickPlaceField(fields.selectedEntityRef.value, held)?.isMulti == true
         scope.launch {
             val id = locationRepository.upsert(Location(id = 0, name = name, description = ""))
             val ids = if (isMulti) event.checked + id else listOf(id)

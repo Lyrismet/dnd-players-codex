@@ -3,6 +3,7 @@ package com.lyrismet.incadent.core.errors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import com.lyrismet.incadent.core.logging.AppLog
@@ -10,6 +11,8 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.error_action_failed
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import org.jetbrains.compose.resources.stringResource
 
 private const val LOG_COMPONENT = "Action"
@@ -18,18 +21,18 @@ private const val LOG_COMPONENT = "Action"
 @Composable
 fun rememberGuardedScope(onFailure: (Throwable) -> Unit = {}): CoroutineScope {
     val latest = rememberUpdatedState(onFailure)
-    return rememberCoroutineScope {
-        CoroutineExceptionHandler { _, failure ->
-            AppLog.error(LOG_COMPONENT, "an action failed", failure)
-            latest.value(failure)
+    val base =
+        rememberCoroutineScope {
+            CoroutineExceptionHandler { _, failure ->
+                AppLog.error(LOG_COMPONENT, "an action failed", failure)
+                latest.value(failure)
+            }
         }
-    }
+    // a supervisor so one failed launch does not cancel the later ones
+    return remember(base) { CoroutineScope(base.coroutineContext + SupervisorJob(base.coroutineContext[Job])) }
 }
 
-/**
- * hands the localized "could not save" text to [show] for every failure [failure] receives, then clears it. A host
- * that knows a failure by its own cause answers with a text for it from [known], null leaves it to the general one.
- */
+/** shows the localized "could not save" text, or the one [known] gives for a failure it recognises, then clears it */
 @Composable
 fun ReportFailures(
     failure: MutableState<Throwable?>,

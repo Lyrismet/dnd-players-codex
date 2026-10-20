@@ -34,11 +34,7 @@ fun List<Location>.withPending(editing: PlaceEditing): List<Location> {
 fun PlaceTree.editingOf(place: Location): PlaceEditing =
     PlaceEditing(place.id, place.name, place.parentId, childrenOf(place.id).map { it.id })
 
-/**
- * the places as select options - the name is the title, the path above it tells same-named places apart.
- * [unavailable] holds the notes of the places that can't be picked, [carryAlong] lets a checked place carry the ones
- * inside it.
- */
+/** the places as select options, titled by name with the path above, [unavailable] says why one is not pickable */
 fun PlaceTree.toSelectOptions(
     locations: List<Location>,
     unavailable: Map<Long, String> = emptyMap(),

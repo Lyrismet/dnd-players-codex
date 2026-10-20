@@ -275,12 +275,21 @@ private fun SelectListRow(
                 lineHeight = 20.sp,
                 color = AppPalette.TextPrimary,
             )
-            (note ?: row.option.subtitle)?.let { subtitle ->
+            row.option.subtitle?.let { path ->
                 Text(
-                    subtitle,
+                    path,
                     fontSize = AppFontSize.CaptionPlus,
                     lineHeight = 16.sp,
-                    color = if (note != null) NoteColor else AppPalette.TextSecondary,
+                    color = AppPalette.TextSecondary,
+                    modifier = Modifier.padding(top = 1.dp),
+                )
+            }
+            note?.let { reason ->
+                Text(
+                    reason,
+                    fontSize = AppFontSize.CaptionPlus,
+                    lineHeight = 16.sp,
+                    color = NoteColor,
                     modifier = Modifier.padding(top = 1.dp),
                 )
             }
