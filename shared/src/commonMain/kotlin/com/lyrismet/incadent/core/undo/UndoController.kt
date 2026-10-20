@@ -12,6 +12,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 private const val UNDO_WINDOW_MS = 5000L
@@ -28,6 +29,8 @@ data class UndoAction(
     val subtitle: String,
     val onUndo: suspend () -> Unit,
     val followUp: UndoFollowUp? = null,
+    // a bar of something made keeps its icon after the follow-up is taken away
+    val isMade: Boolean = followUp != null,
 )
 
 /** shared across session/codex deletes - only one undo toast is on screen at a time */
@@ -69,6 +72,11 @@ class UndoController(
         dismissJob?.cancel()
         _current.value = null
         action.followUp?.onClick?.invoke()
+    }
+
+    /** takes the follow-up button off the bar when the screen that can act on it is gone, undo itself stays */
+    fun dropFollowUp() {
+        _current.update { it?.copy(followUp = null) }
     }
 
     fun undo() {

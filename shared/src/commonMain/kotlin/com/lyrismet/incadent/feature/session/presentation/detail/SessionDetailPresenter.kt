@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -150,6 +151,8 @@ class SessionDetailPresenter(
         }
         fields.toast.autoDismiss()
         ReportFailures(failure) { fields.toast.value = it }
+        // the bar of a made record points into this screen, so it loses that button once the screen is gone
+        DisposableEffect(screen.sessionNoteId) { onDispose { undoController.dropFollowUp() } }
         val titleField = fields.titleField
         val draft = fields.composer.draft
         val editingEntryId = fields.composer.editingEntryId
@@ -162,7 +165,10 @@ class SessionDetailPresenter(
             }
         }
 
-        val sessionBodies = mentionSessionBodies(currentNote, allSessions, entries, allEntries)
+        val sessionBodies =
+            remember(currentNote, allSessions, entries, allEntries) {
+                mentionSessionBodies(currentNote, allSessions, entries, allEntries)
+            }
         val mention = buildMentionContext(npcs, locations, quests, parties, draft.value.text, sessionBodies)
         // parsing every note is the costly part, so it only reruns when a note or a mention candidate changes
         val noteItems =

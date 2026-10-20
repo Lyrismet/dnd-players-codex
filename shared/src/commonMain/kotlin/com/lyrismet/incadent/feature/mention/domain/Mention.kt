@@ -96,6 +96,11 @@ class MentionIndex(
             .sortedByDescending { it.name.length }
     }
 
+    private val foldedNames: Set<String> by lazy { entities.mapTo(mutableSetOf()) { it.name.foldPerChar() } }
+
+    /** whether some live record carries [name], whatever its case */
+    fun hasName(name: String): Boolean = name.foldPerChar() in foldedNames
+
     companion object {
         val EMPTY = MentionIndex(emptyList())
     }

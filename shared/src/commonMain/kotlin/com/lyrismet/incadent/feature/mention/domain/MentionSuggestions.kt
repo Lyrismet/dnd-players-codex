@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.feature.mention.domain
 
 import com.lyrismet.incadent.core.format.foldForSearch
-import com.lyrismet.incadent.domain.model.EntityKind
 
 private const val SEARCH_LIMIT = 5
 private const val EMPTY_QUERY_LIMIT = 7
@@ -26,24 +25,19 @@ data class MentionSearch(
     val createName: String?,
 )
 
-/** records whose name or nickname starts with or contains [rawQuery], names before nicknames, [preferred] kind first */
+/** records whose name or nickname starts with or contains [rawQuery], names before nicknames */
 fun searchMentions(
     entities: List<MentionEntity>,
     nicknames: Map<MentionRef, List<String>>,
     rawQuery: String,
-    preferred: EntityKind? = null,
 ): MentionSearch {
     val query = rawQuery.trim().foldForSearch()
     val found =
         entities
             .mapNotNull { entity ->
                 matchRank(entity, nicknames[entity.ref].orEmpty(), query)?.let { entity to it }
-            }.sortedWith(
-                compareBy<Pair<MentionEntity, MentionMatch>>(
-                    { if (it.first.ref.type == preferred) 0 else 1 },
-                    { it.second.rank },
-                ),
-            ).take(SEARCH_LIMIT)
+            }.sortedBy { it.second.rank }
+            .take(SEARCH_LIMIT)
             .map { (entity, match) -> MentionCandidate(entity, match.nickname) }
     val hasExactName = entities.any { it.name.foldForSearch() == query }
     val name = rawQuery.trim()
@@ -87,16 +81,22 @@ private fun nicknameMatch(
     }
 }
 
-/**
- * the rows of an empty "@": records of this session, then of the previous one, then the newest records;
- * the whole codex by name when none of those exist
- */
+/** the newest records, taking turns across kinds because ids are only ordered within a kind */
+fun newestRecords(
+    entities: List<MentionEntity>,
+    limit: Int,
+): List<MentionEntity> {
+    val perKind = entities.groupBy { it.ref.type }.values.map { list -> list.sortedByDescending { it.ref.id } }
+    val rounds = perKind.maxOfOrNull { it.size } ?: 0
+    return (0 until rounds).flatMap { round -> perKind.mapNotNull { it.getOrNull(round) } }.take(limit)
+}
+
+/** the rows of an empty "@" - this session, the previous one, the newest records, or the whole codex when none exist */
 fun emptyMentionRows(
     thisSession: List<MentionEntity>,
     previousSession: List<MentionEntity>,
     recentlyCreated: List<MentionEntity>,
     all: List<MentionEntity>,
-    preferred: EntityKind? = null,
 ): List<MentionSectionRow> {
     val seen = mutableSetOf<MentionRef>()
     val rows = mutableListOf<MentionSectionRow>()
@@ -105,8 +105,7 @@ fun emptyMentionRows(
         section: MentionSection,
         list: List<MentionEntity>,
     ) {
-        val ordered = list.filter { it.ref.type == preferred } + list.filter { it.ref.type != preferred }
-        for (entity in ordered) {
+        for (entity in list) {
             if (rows.size >= EMPTY_QUERY_LIMIT) return
             if (seen.add(entity.ref)) rows += MentionSectionRow(section, MentionCandidate(entity))
         }

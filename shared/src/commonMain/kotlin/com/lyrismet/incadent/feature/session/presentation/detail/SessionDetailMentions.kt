@@ -135,17 +135,13 @@ internal class SessionMentionActions(
     ) {
         val ref = MentionRef(deleted.type, deleted.id)
         val changes =
-            data.allEntries.mapNotNull { entry ->
-                val rewritten =
-                    if (target == null) unlinkMentionIn(entry.body, ref) else relinkMentionIn(entry.body, ref, target)
-                (entry to rewritten).takeIf { rewritten != entry.body }
+            rewrittenEntries(data.allEntries) { body ->
+                if (target == null) unlinkMentionIn(body, ref) else relinkMentionIn(body, ref, target)
             }
         val title = if (target == null) data.titles.deletedToText else data.titles.deletedLinked
         scope.launch {
-            changes.forEach { (entry, body) -> entryRepository.rewriteBody(entry.id, body) }
-            undoController.show(title, deleted.name) {
-                changes.forEach { (entry, _) -> entryRepository.rewriteBody(entry.id, entry.body) }
-            }
+            val revert = writeBodies(changes)
+            undoController.show(title, deleted.name) { revert() }
         }
     }
 
@@ -155,12 +151,20 @@ internal class SessionMentionActions(
         to: MentionRef,
         toName: String,
         entries: List<SessionEntry>,
-    ): suspend () -> Unit {
-        val changes =
-            entries.mapNotNull { entry ->
-                val rewritten = relinkMentionIn(entry.body, from, to, toName)
-                (entry to rewritten).takeIf { rewritten != entry.body }
-            }
+    ): suspend () -> Unit = writeBodies(rewrittenEntries(entries) { relinkMentionIn(it, from, to, toName) })
+
+    // only the entries a rewrite actually changes, each with its new body
+    private fun rewrittenEntries(
+        entries: List<SessionEntry>,
+        rewrite: (String) -> String,
+    ): List<Pair<SessionEntry, String>> =
+        entries.mapNotNull { entry ->
+            val rewritten = rewrite(entry.body)
+            (entry to rewritten).takeIf { rewritten != entry.body }
+        }
+
+    // writes the new bodies and returns the way back to the old ones
+    private suspend fun writeBodies(changes: List<Pair<SessionEntry, String>>): suspend () -> Unit {
         changes.forEach { (entry, body) -> entryRepository.rewriteBody(entry.id, body) }
         return { changes.forEach { (entry, _) -> entryRepository.rewriteBody(entry.id, entry.body) } }
     }

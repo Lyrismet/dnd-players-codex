@@ -184,4 +184,23 @@ class MentionTest {
     fun `a stray token opener loses just its two characters`() {
         assertEquals("почта", withoutBrokenTokens("по@[чта"))
     }
+
+    @Test
+    fun `a typed name links whatever its case`() {
+        assertEquals("${forge.token()} горит", linkTypedMentions("@кузница горит", index))
+    }
+
+    @Test
+    fun `a name shared by two records is left as typed`() {
+        val twins =
+            MentionIndex(listOf(ragnar, MentionEntity.NpcMention(9, "Рагнар", NpcStatus.ENEMY, NpcLifeState.ALIVE)))
+        assertEquals("@Рагнар шёл", linkTypedMentions("@Рагнар шёл", twins))
+    }
+
+    @Test
+    fun `relinking by name and ref points the tokens at the new record`() {
+        val from = MentionRef(EntityKind.NPC, 77)
+        val body = "см. ${mentionToken(from, "Старик")} и ${ragnar.token()}"
+        assertEquals("см. ${forge.token()} и ${ragnar.token()}", relinkMentionIn(body, from, forge.ref, forge.name))
+    }
 }

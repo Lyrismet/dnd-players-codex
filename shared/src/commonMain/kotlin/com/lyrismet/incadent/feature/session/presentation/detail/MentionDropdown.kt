@@ -19,9 +19,11 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
+import com.lyrismet.incadent.core.format.joinWithDot
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.mention_create_row_format
 import dndplayerscodex.shared.generated.resources.mention_empty_codex
+import dndplayerscodex.shared.generated.resources.mention_nickname_format
 import org.jetbrains.compose.resources.stringResource
 
 /** the rows of the "@" dropdown, laid out by the composer's popover chrome */
@@ -82,9 +84,15 @@ private fun MentionDropdownEntry(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (suggestion.detail.isNotEmpty()) {
+            val alias =
+                suggestion.nickname
+                    .takeIf {
+                        it.isNotEmpty()
+                    }?.let { stringResource(Res.string.mention_nickname_format, it) }
+            val detail = joinWithDot(alias.orEmpty(), suggestion.detail)
+            if (detail.isNotEmpty()) {
                 Text(
-                    suggestion.detail,
+                    detail,
                     fontSize = AppFontSize.Caption,
                     color = AppPalette.TextSecondary,
                     maxLines = 1,

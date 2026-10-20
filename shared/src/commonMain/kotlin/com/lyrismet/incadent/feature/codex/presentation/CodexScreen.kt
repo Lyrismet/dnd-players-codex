@@ -251,6 +251,8 @@ sealed interface CodexEvent : CircuitUiEvent {
 
     data object UndoClicked : CodexEvent
 
+    data object UndoFollowUpClicked : CodexEvent
+
     /** a change inside the create/edit form sheet that opens over this screen */
     data class EntryForm(
         val event: CodexEntryFormEvent,

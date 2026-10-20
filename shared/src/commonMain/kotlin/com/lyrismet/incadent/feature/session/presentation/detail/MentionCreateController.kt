@@ -19,6 +19,7 @@ import com.lyrismet.incadent.feature.mention.domain.DeletedMention
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.domain.insertMention
 import com.lyrismet.incadent.feature.mention.domain.mentionToken
+import com.lyrismet.incadent.feature.mention.domain.unlinkedMentionRef
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -119,8 +120,13 @@ internal class MentionCreateController(
         val before = draft.value
         val text = insertMention(before.text, mentionToken(ref, name))
         draft.value = TextFieldValue(text, TextRange(text.length))
+        // older notes that already hold this name as a "no record yet" tag now point at the record too
+        val relinkOlder = mentionActions.relinkAll(unlinkedMentionRef(name), ref, name, data.allEntries)
         // a draft the player kept typing in after the creation is left as it is
-        return { if (draft.value.text == text) draft.value = before }
+        return {
+            relinkOlder()
+            if (draft.value.text == text) draft.value = before
+        }
     }
 }
 

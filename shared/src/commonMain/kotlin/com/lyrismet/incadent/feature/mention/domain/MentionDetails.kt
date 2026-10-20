@@ -8,8 +8,6 @@ import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 
-private const val PATH_SEPARATOR = " › "
-
 /** the grey second line that tells same named records apart - race and place, who gave a quest, the path of a place */
 fun mentionDetails(
     npcs: List<Npc>,
@@ -33,8 +31,7 @@ fun mentionDetails(
         details[MentionRef(EntityKind.PARTY, it.id)] = joinWithDot(it.characterClass, it.race)
     }
     locations.forEach { place ->
-        val path = tree.pathOf(place).dropLast(1).joinToString(PATH_SEPARATOR) { it.name }
-        details[MentionRef(EntityKind.LOCATION, place.id)] = path
+        details[MentionRef(EntityKind.LOCATION, place.id)] = tree.ancestorsLabel(place)
     }
     quests.forEach { quest ->
         val giver = quest.givenByNpcId?.let { npcById[it] }?.name

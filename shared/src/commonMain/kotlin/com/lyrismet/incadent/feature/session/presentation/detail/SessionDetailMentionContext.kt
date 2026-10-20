@@ -2,7 +2,6 @@ package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -20,12 +19,12 @@ import com.lyrismet.incadent.feature.mention.domain.mentionDetails
 import com.lyrismet.incadent.feature.mention.domain.mentionEntitiesFrom
 import com.lyrismet.incadent.feature.mention.domain.mentionNicknames
 import com.lyrismet.incadent.feature.mention.domain.mentionsIn
+import com.lyrismet.incadent.feature.mention.domain.newestRecords
 import com.lyrismet.incadent.feature.mention.domain.searchMentions
 import com.lyrismet.incadent.feature.mention.domain.token
 import com.lyrismet.incadent.feature.mention.domain.trailingMentionQuery
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.mention_nickname_format
 import dndplayerscodex.shared.generated.resources.mention_quest_giver_format
 import dndplayerscodex.shared.generated.resources.mention_section_codex
 import dndplayerscodex.shared.generated.resources.mention_section_previous_session
@@ -46,7 +45,7 @@ internal data class MentionContext(
 )
 
 /** the bodies of the notes the empty "@" dropdown learns from - this session's and the one before it */
-internal class MentionSessionBodies(
+internal data class MentionSessionBodies(
     val current: List<String>,
     val previous: List<String>,
 )
@@ -63,8 +62,9 @@ internal fun buildMentionContext(
     draftText: String,
     sessions: MentionSessionBodies,
 ): MentionContext {
-    val mentionEntities = mentionEntitiesFrom(npcs, locations, quests, parties)
-    val candidates = MentionIndex(mentionEntities)
+    val mentionEntities =
+        remember(npcs, locations, quests, parties) { mentionEntitiesFrom(npcs, locations, quests, parties) }
+    val candidates = remember(mentionEntities) { MentionIndex(mentionEntities) }
 
     val typeLabels =
         MentionTypeLabels(
@@ -73,10 +73,15 @@ internal fun buildMentionContext(
             location = stringResource(Res.string.session_detail_mention_type_location),
             quest = stringResource(Res.string.session_detail_mention_type_quest),
         )
-    val giverFormat = stringResource(Res.string.mention_quest_giver_format)
+    val giverNames =
+        remember(npcs, quests) {
+            val byId = npcs.associateBy { it.id }
+            quests.mapNotNull { quest -> quest.givenByNpcId?.let { byId[it]?.name } }.distinct()
+        }
+    val giverLines = giverNames.associateWith { stringResource(Res.string.mention_quest_giver_format, it) }
     val details =
-        remember(npcs, locations, quests, parties, giverFormat) {
-            mentionDetails(npcs, locations, quests, parties) { giverFormat.replace("%1\$s", it) }
+        remember(npcs, locations, quests, parties, giverLines) {
+            mentionDetails(npcs, locations, quests, parties) { giverLines[it].orEmpty() }
         }
     val nicknames = remember(npcs, locations, quests, parties) { mentionNicknames(npcs, locations, quests, parties) }
     val dropdownTexts =
@@ -86,28 +91,30 @@ internal fun buildMentionContext(
             previousSession = stringResource(Res.string.mention_section_previous_session),
             recent = stringResource(Res.string.mention_section_recent),
             codex = stringResource(Res.string.mention_section_codex),
-            nicknameFormat = stringResource(Res.string.mention_nickname_format),
         )
+    val query = trailingMentionQuery(draftText)
+    // the search and the empty-query sections only rerun when the query or the records change, not on every keystroke
     val dropdown =
-        trailingMentionQuery(draftText)?.let { query ->
-            mentionDropdown(
-                MentionDropdownInput(mentionEntities, candidates, nicknames, details, sessions),
-                query,
-                typeLabels,
-                dropdownTexts,
-            )
+        remember(query, mentionEntities, nicknames, details, sessions, typeLabels, dropdownTexts) {
+            query?.let {
+                mentionDropdown(
+                    MentionDropdownInput(mentionEntities, candidates, nicknames, details, sessions),
+                    it,
+                    typeLabels,
+                    dropdownTexts,
+                )
+            }
         }
 
     return MentionContext(candidates, dropdown.orEmpty(), mentionEntities)
 }
 
-internal class MentionDropdownTexts(
+internal data class MentionDropdownTexts(
     val search: String,
     val thisSession: String,
     val previousSession: String,
     val recent: String,
     val codex: String,
-    val nicknameFormat: String,
 )
 
 internal class MentionDropdownInput(
@@ -126,9 +133,8 @@ internal fun mentionDropdown(
     texts: MentionDropdownTexts,
 ): List<MentionDropdownItem> {
     fun entry(candidate: MentionCandidate): MentionDropdownItem.Entry {
-        val alias = candidate.nickname?.let { texts.nicknameFormat.replace("%1\$s", it) }.orEmpty()
-        val detail = joinWithDot(alias, input.details[candidate.entity.ref].orEmpty())
-        return MentionDropdownItem.Entry(candidate.entity.toSuggestion(labels, detail))
+        val detail = input.details[candidate.entity.ref].orEmpty()
+        return MentionDropdownItem.Entry(candidate.entity.toSuggestion(labels, detail, candidate.nickname.orEmpty()))
     }
     return when {
         input.entities.isEmpty() ->
@@ -152,12 +158,14 @@ private fun emptyRows(
     entry: (MentionCandidate) -> MentionDropdownItem.Entry,
 ): List<MentionDropdownItem> {
     // a record that was deleted still has tokens in the notes, only live ones are offered
-    fun mentioned(bodies: List<String>) = mentionsIn(bodies, input.index).filter { input.index.has(it.ref) }
+    // newest note first, so the cap drops the oldest mentions
+    fun mentioned(bodies: List<String>) =
+        mentionsIn(bodies.asReversed(), input.index).filter { input.index.has(it.ref) }
     val rows =
         emptyMentionRows(
             thisSession = mentioned(input.sessions.current),
             previousSession = mentioned(input.sessions.previous),
-            recentlyCreated = input.entities.sortedByDescending { it.ref.id }.take(RECENT_LIMIT),
+            recentlyCreated = newestRecords(input.entities, RECENT_LIMIT),
             all = input.entities,
         )
     return rows
@@ -175,7 +183,7 @@ private fun emptyRows(
 }
 
 /** the name of each record kind the autocomplete shows next to a suggestion */
-internal class MentionTypeLabels(
+internal data class MentionTypeLabels(
     val npc: String,
     val party: String,
     val location: String,
@@ -185,6 +193,7 @@ internal class MentionTypeLabels(
 internal fun MentionEntity.toSuggestion(
     labels: MentionTypeLabels,
     detail: String = "",
+    nickname: String = "",
 ): SessionMentionSuggestion {
     val (glyph, tint, typeLabel) =
         when (this) {
@@ -204,5 +213,6 @@ internal fun MentionEntity.toSuggestion(
         name = name,
         typeLabel = typeLabel,
         detail = detail,
+        nickname = nickname,
     )
 }

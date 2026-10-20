@@ -24,6 +24,13 @@ internal fun String.foldPerChar(): String =
         }
     }
 
+// the same letters whatever their case, the yo letter counting as ye
+internal fun String.regionMatchesFolded(
+    offset: Int,
+    name: String,
+): Boolean =
+    offset + name.length <= length && substring(offset, offset + name.length).foldPerChar() == name.foldPerChar()
+
 // a whole word - not in the middle of a longer one or of a number and not the tail of an "@" token
 internal fun List<AutoName>.matchAt(
     text: String,

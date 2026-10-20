@@ -200,6 +200,7 @@ private fun CodexEntitySheet(
             UndoToast(
                 action = state.undoAction,
                 onUndo = { state.eventSink(CodexEvent.UndoClicked) },
+                onFollowUp = { state.eventSink(CodexEvent.UndoFollowUpClicked) },
                 modifier = floatingBarAnchor(),
             )
         }

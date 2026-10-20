@@ -632,6 +632,7 @@
 - [x] Прозвища правятся удержанием в карточке (Э1.4)
 - Схема: флаг настройки тоста (Settings, не БД). Приёмка — из `DESIGN_V8.md` Э1.1.
 - Реализация: логика в `feature/mention/domain` (`MentionSuggestions`, `MentionDetails`, `UnlinkedMention` - несвязанное хранится токеном с id от 10^12), дропдаун и шит создания в `session/presentation/detail` (`MentionDropdown`, `MentionCreateSheet`, `MentionCreateController`). Undo-плашка получила кнопку-продолжение (`UndoController.showMade`, `UndoFollowUp`), стартовые заготовки пишет `CampaignRepository.create(starterPhrases)`. Тост первой записи - обычная Undo-плашка с кнопкой «Открыть» (флаг `FirstRecordHintState`). Вид (○) в выбор типа добавится на этапе 4.
+- Правка заметки с «?»-тегом несвязанной записи возвращает его в текст `@Имя` (`unmarkUnlinkedMentions`), при отправке он снова помечается. Шит создания сделан по макету (`qc`): плитки типов, подпись под полем или под кнопкой.
 - Риск: запрос после `@` обрывается на пробеле (`TRAILING_MENTION_REGEX`), имя с пробелами дописывается в поле — держать
   это правило в одном месте.
 

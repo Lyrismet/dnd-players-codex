@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.feature.mention.domain
 
 import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
+import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -55,5 +57,35 @@ class MentionUnlinkedTest {
     fun `text typed next to an unmarked tag joins the name`() {
         val edited = unmarkUnlinkedMentions(markUnlinkedMentions("пришёл @Xyz")) + "ab"
         assertEquals("пришёл ${mentionToken(unlinkedMentionRef("Xyzab"), "Xyzab")}", markUnlinkedMentions(edited))
+    }
+
+    @Test
+    fun `text inside an existing token is never marked`() {
+        val text = "@[Bob_(@home)|n:5] ушёл"
+        assertEquals(text, markUnlinkedMentions(text))
+    }
+
+    @Test
+    fun `a long name is kept whole`() {
+        val name = "Длинноимённыйперсонажкампании"
+        assertEquals(mentionToken(unlinkedMentionRef(name), name), markUnlinkedMentions("@$name"))
+    }
+
+    @Test
+    fun `a name some record carries stays plain text`() {
+        val twins =
+            MentionIndex(
+                listOf(
+                    MentionEntity.NpcMention(1, "Борис", NpcStatus.NEUTRAL, NpcLifeState.ALIVE),
+                    MentionEntity.NpcMention(2, "Борис", NpcStatus.NEUTRAL, NpcLifeState.ALIVE),
+                ),
+            )
+        assertEquals("видели @борис", markUnlinkedMentions("видели @борис", twins))
+    }
+
+    @Test
+    fun `different names get different refs`() {
+        val names = (1..2000).map { "Имя$it" }
+        assertEquals(names.size, names.map { unlinkedMentionRef(it) }.toSet().size)
     }
 }

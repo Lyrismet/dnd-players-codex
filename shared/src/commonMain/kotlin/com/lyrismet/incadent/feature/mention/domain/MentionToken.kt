@@ -52,7 +52,7 @@ fun linkTypedMentions(
     while (i < text.length) {
         val typed =
             if (text[i] == '@' && !text.startsWith("@[", i)) {
-                index.uniqueByName.firstOrNull { text.startsWith(it.name, i + 1) }
+                index.uniqueByName.firstOrNull { text.regionMatchesFolded(i + 1, it.name) }
             } else {
                 null
             }

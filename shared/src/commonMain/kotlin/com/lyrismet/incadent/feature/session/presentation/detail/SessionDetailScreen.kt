@@ -132,8 +132,10 @@ data class SessionMentionSuggestion(
     val tint: Color,
     val name: String,
     val typeLabel: String,
-    // the grey second line - a nickname hit, race and place, who gave the quest, the path of a place
+    // the grey second line - race and place, who gave the quest, the path of a place
     val detail: String = "",
+    // the nickname the query hit, shown ahead of the detail
+    val nickname: String = "",
 )
 
 /** one line of the "@" dropdown */

@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.feature.mention.domain
 
-import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
@@ -32,17 +31,6 @@ class MentionSuggestionsTest {
     fun `yo and ye are the same letter`() {
         assertEquals(listOf(yolka), searchMentions(all, emptyMap(), "елк").candidates.map { it.entity })
         assertEquals(listOf(yolka), searchMentions(all, emptyMap(), "ёлк").candidates.map { it.entity })
-    }
-
-    @Test
-    fun `the preferred kind comes first`() {
-        val search = searchMentions(all, emptyMap(), "мел", preferred = EntityKind.QUEST)
-        assertEquals(
-            quest.ref,
-            search.candidates
-                .first()
-                .entity.ref,
-        )
     }
 
     @Test
@@ -101,5 +89,18 @@ class MentionSuggestionsTest {
     fun `search stops at five rows`() {
         val many = (1L..9L).map { MentionEntity.LocationMention(it, "Страж $it") }
         assertEquals(5, searchMentions(many, emptyMap(), "страж").candidates.size)
+    }
+
+    @Test
+    fun `newest records take turns across kinds`() {
+        val places = (1L..3L).map { MentionEntity.LocationMention(it, "Место $it") }
+        val npcs = (1L..40L).map { MentionEntity.NpcMention(it, "Герой $it", NpcStatus.NEUTRAL, NpcLifeState.ALIVE) }
+        val newest = newestRecords(npcs + places, 3).map { it.ref }
+        assertEquals(listOf(npcs.last().ref, places.last().ref, npcs[38].ref), newest)
+    }
+
+    @Test
+    fun `newest records of an empty codex are empty`() {
+        assertEquals(emptyList(), newestRecords(emptyList(), 3))
     }
 }

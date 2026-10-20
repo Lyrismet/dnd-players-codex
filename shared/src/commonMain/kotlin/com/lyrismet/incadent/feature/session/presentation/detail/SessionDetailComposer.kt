@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -83,6 +86,8 @@ internal val COMPOSER_SIDE_PADDING = 12.dp
 private val COMPOSER_TOP_PADDING = 10.dp
 
 // the popup is anchored to the padded content, so the 1dp divider and top padding sit between it and the footer edge
+// tall enough for the seven rows and three headers of an empty "@", anything more scrolls
+private val POPOVER_MAX_HEIGHT = 360.dp
 private val POPOVER_OFFSET_ABOVE_CONTENT = 6.dp + COMPOSER_TOP_PADDING + 1.dp
 
 @Composable
@@ -366,6 +371,8 @@ private fun ComposerPopover(
                     .width(popupWidth)
                     .shadow(elevation = 16.dp, shape = shape)
                     .appCard(shape = shape, background = AppPalette.SurfacePopover, border = AppPalette.BorderPopover)
+                    .heightIn(max = POPOVER_MAX_HEIGHT)
+                    .verticalScroll(rememberScrollState())
                     .padding(6.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
