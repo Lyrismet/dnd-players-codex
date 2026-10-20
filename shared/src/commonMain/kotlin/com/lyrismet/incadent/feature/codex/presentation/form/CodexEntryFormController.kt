@@ -26,6 +26,8 @@ import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.quickLocation
+import com.lyrismet.incadent.feature.codex.domain.repository.quickNpc
 import com.lyrismet.incadent.feature.codex.presentation.style.toStatusColor
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.npcLifeLabels
@@ -260,20 +262,6 @@ class CodexEntryFormController private constructor(
                 CodexEntryChipField.QUEST_GIVER -> current.copy(questGiverId = current.questGiverId.toggled(id))
             }
     }
-
-    // free-text fields stay blank, lists and sheets render the dash themselves
-    private fun quickNpc(name: String) =
-        Npc(
-            id = 0,
-            name = name,
-            status = NpcStatus.NEUTRAL,
-            lifeState = NpcLifeState.ALIVE,
-            description = "",
-            locationIds = emptyList(),
-            race = "",
-        )
-
-    private fun quickLocation(name: String) = Location(id = 0, name = name, description = "")
 
     fun onQuickAddOpened(field: CodexEntryChipField) {
         val current = fields.value ?: return

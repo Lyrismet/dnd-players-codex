@@ -28,6 +28,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.preferences.MentionStyle
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -62,6 +63,14 @@ enum class MentionGlyph(
     /** the "?" of a mention whose record was deleted from the codex */
     DELETED("?"),
 }
+
+fun EntityKind.mentionGlyph(): MentionGlyph =
+    when (this) {
+        EntityKind.NPC -> MentionGlyph.NPC
+        EntityKind.PARTY -> MentionGlyph.PARTY
+        EntityKind.QUEST -> MentionGlyph.QUEST
+        EntityKind.LOCATION -> MentionGlyph.LOCATION
+    }
 
 /** pre-formatted for direct rendering - built once per presenter from a [MentionEntity], never touched by the Ui */
 data class MentionChipItem(

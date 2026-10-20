@@ -26,3 +26,11 @@ fun countMentionHits(
         }
     return MentionHits(notes = hit.size, sessions = hit.map { it.sessionId }.distinct().size)
 }
+
+/** turns the tokens of [from] into the token of the record [toRef] named [toName] */
+fun relinkMentionIn(
+    body: String,
+    from: MentionRef,
+    toRef: MentionRef,
+    toName: String,
+): String = TOKEN_REGEX.replace(body) { if (it.toRef() == from) mentionToken(toRef, toName) else it.value }

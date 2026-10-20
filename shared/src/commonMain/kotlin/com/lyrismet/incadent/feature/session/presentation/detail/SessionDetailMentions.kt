@@ -23,6 +23,10 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.auto_mention_linked_title
 import dndplayerscodex.shared.generated.resources.deleted_mention_linked_title
 import dndplayerscodex.shared.generated.resources.deleted_mention_text_toast_title
+import dndplayerscodex.shared.generated.resources.mention_created_fill
+import dndplayerscodex.shared.generated.resources.mention_created_first_title
+import dndplayerscodex.shared.generated.resources.mention_created_open
+import dndplayerscodex.shared.generated.resources.mention_created_title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -33,6 +37,8 @@ data class DeletedMentionSheetState(
     val type: EntityKind,
     val notes: Int,
     val sessions: Int,
+    // a name typed after "@" that no record answers to yet - the sheet words itself for a record that never existed
+    val isUnlinked: Boolean,
     // true while the "link to another record" list replaces the three actions
     val isPicking: Boolean,
     val query: String,
@@ -60,6 +66,15 @@ internal class MentionTitles(
     val autoLinked: String,
     val deletedLinked: String,
     val deletedToText: String,
+    val created: CreatedTitles,
+)
+
+/** the texts of the bar shown after a record is made from a typed name, the first one worded differently */
+internal class CreatedTitles(
+    val title: String,
+    val firstTitle: String,
+    val fill: String,
+    val open: String,
 )
 
 /** everything the mention events read - one value instead of one parameter per piece */
@@ -120,18 +135,38 @@ internal class SessionMentionActions(
     ) {
         val ref = MentionRef(deleted.type, deleted.id)
         val changes =
-            data.allEntries.mapNotNull { entry ->
-                val rewritten =
-                    if (target == null) unlinkMentionIn(entry.body, ref) else relinkMentionIn(entry.body, ref, target)
-                (entry to rewritten).takeIf { rewritten != entry.body }
+            rewrittenEntries(data.allEntries) { body ->
+                if (target == null) unlinkMentionIn(body, ref) else relinkMentionIn(body, ref, target)
             }
         val title = if (target == null) data.titles.deletedToText else data.titles.deletedLinked
         scope.launch {
-            changes.forEach { (entry, body) -> entryRepository.rewriteBody(entry.id, body) }
-            undoController.show(title, deleted.name) {
-                changes.forEach { (entry, _) -> entryRepository.rewriteBody(entry.id, entry.body) }
-            }
+            val revert = writeBodies(changes)
+            undoController.show(title, deleted.name) { revert() }
         }
+    }
+
+    /** points every token of [from] at the record [to] named [toName], and returns the way back */
+    suspend fun relinkAll(
+        from: MentionRef,
+        to: MentionRef,
+        toName: String,
+        entries: List<SessionEntry>,
+    ): suspend () -> Unit = writeBodies(rewrittenEntries(entries) { relinkMentionIn(it, from, to, toName) })
+
+    // only the entries a rewrite actually changes, each with its new body
+    private fun rewrittenEntries(
+        entries: List<SessionEntry>,
+        rewrite: (String) -> String,
+    ): List<Pair<SessionEntry, String>> =
+        entries.mapNotNull { entry ->
+            val rewritten = rewrite(entry.body)
+            (entry to rewritten).takeIf { rewritten != entry.body }
+        }
+
+    // writes the new bodies and returns the way back to the old ones
+    private suspend fun writeBodies(changes: List<Pair<SessionEntry, String>>): suspend () -> Unit {
+        changes.forEach { (entry, body) -> entryRepository.rewriteBody(entry.id, body) }
+        return { changes.forEach { (entry, _) -> entryRepository.rewriteBody(entry.id, entry.body) } }
     }
 
     private companion object {
@@ -159,6 +194,13 @@ internal fun mentionEventData(
                 autoLinked = stringResource(Res.string.auto_mention_linked_title),
                 deletedLinked = stringResource(Res.string.deleted_mention_linked_title),
                 deletedToText = stringResource(Res.string.deleted_mention_text_toast_title),
+                created =
+                    CreatedTitles(
+                        title = stringResource(Res.string.mention_created_title),
+                        firstTitle = stringResource(Res.string.mention_created_first_title),
+                        fill = stringResource(Res.string.mention_created_fill),
+                        open = stringResource(Res.string.mention_created_open),
+                    ),
             ),
     )
 

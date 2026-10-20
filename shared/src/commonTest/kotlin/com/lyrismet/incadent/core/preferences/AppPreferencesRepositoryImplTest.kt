@@ -116,4 +116,23 @@ class AppPreferencesRepositoryImplTest {
             assertEquals(SwipeHintState.PENDING, repository.observeCodexSwipeHintState().first())
             assertEquals(SwipeHintState.SEEN, repository.observeSessionListSwipeHintState().first())
         }
+
+    @Test
+    fun `first record hint is pending until it is seen`() =
+        runTest {
+            val repository = AppPreferencesRepositoryImpl(MapSettings())
+            assertEquals(FirstRecordHintState.PENDING, repository.observeFirstRecordHintState().first())
+
+            repository.setFirstRecordHintState(FirstRecordHintState.SEEN)
+
+            assertEquals(FirstRecordHintState.SEEN, repository.observeFirstRecordHintState().first())
+        }
+
+    @Test
+    fun `unknown stored first record hint falls back to pending`() =
+        runTest {
+            val repository = AppPreferencesRepositoryImpl(MapSettings("first_record_hint_state" to "bogus"))
+
+            assertEquals(FirstRecordHintState.PENDING, repository.observeFirstRecordHintState().first())
+        }
 }

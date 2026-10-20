@@ -52,7 +52,7 @@ fun linkTypedMentions(
     while (i < text.length) {
         val typed =
             if (text[i] == '@' && !text.startsWith("@[", i)) {
-                index.uniqueByName.firstOrNull { text.startsWith(it.name, i + 1) }
+                index.uniqueByName.firstOrNull { text.regionMatchesFolded(i + 1, it.name) }
             } else {
                 null
             }
@@ -75,7 +75,7 @@ fun relinkMentionIn(
     body: String,
     from: MentionRef,
     to: MentionEntity,
-): String = TOKEN_REGEX.replace(body) { if (it.toRef() == from) to.token() else it.value }
+): String = relinkMentionIn(body, from, to.ref, to.name)
 
 /** turns the tokens of [from] into the plain name they carry - a "?" tag becoming words */
 fun unlinkMentionIn(

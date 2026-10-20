@@ -15,10 +15,11 @@ interface CampaignRepository {
     /** makes [id] the open campaign, it is also where the app opens next launch */
     suspend fun open(id: String)
 
-    /** creates a campaign, opens it and returns the number of copied places and npcs */
+    /** creates a campaign with [starterPhrases] pinned, opens it and returns how many places and npcs were copied */
     suspend fun create(
         name: String,
         transfer: CampaignTransfer? = null,
+        starterPhrases: List<String> = emptyList(),
     ): Int
 
     suspend fun rename(

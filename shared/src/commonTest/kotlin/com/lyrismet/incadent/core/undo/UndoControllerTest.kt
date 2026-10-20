@@ -63,4 +63,52 @@ class UndoControllerTest {
 
             assertNull(controller.current.value)
         }
+
+    @Test
+    fun `a made bar carries its follow-up and the button closes it`() =
+        runTest {
+            val controller = UndoController(backgroundScope)
+            var opened = false
+            controller.showMade("t", "s", UndoFollowUp("Открыть") { opened = true }) {}
+            assertEquals(
+                "Открыть",
+                controller.current.value
+                    ?.followUp
+                    ?.label,
+            )
+            assertTrue(controller.current.value?.isMade == true)
+
+            controller.followUp()
+
+            assertTrue(opened)
+            assertNull(controller.current.value)
+        }
+
+    @Test
+    fun `dropping the follow-up keeps the undo and the made look`() =
+        runTest {
+            val controller = UndoController(backgroundScope)
+            var restored = false
+            controller.showMade("t", "s", UndoFollowUp("Открыть") {}) { restored = true }
+
+            controller.dropFollowUp()
+
+            assertNull(controller.current.value?.followUp)
+            assertTrue(controller.current.value?.isMade == true)
+            controller.undo()
+            runCurrent()
+            assertTrue(restored)
+        }
+
+    @Test
+    fun `a plain bar is not a made one and follow-up does nothing`() =
+        runTest {
+            val controller = UndoController(backgroundScope)
+            controller.show("t", "s") {}
+            assertTrue(controller.current.value?.isMade == false)
+
+            controller.followUp()
+
+            assertNull(controller.current.value)
+        }
 }

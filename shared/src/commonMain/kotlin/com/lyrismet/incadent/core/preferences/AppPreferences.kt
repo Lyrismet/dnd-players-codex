@@ -37,3 +37,11 @@ enum class SwipeHintState(
     PENDING("pending"),
     SEEN("seen"),
 }
+
+/** whether the one-time "the record is in the Codex now" hint still has to show after the first record from a note */
+enum class FirstRecordHintState(
+    val tag: String,
+) {
+    PENDING("pending"),
+    SEEN("seen"),
+}

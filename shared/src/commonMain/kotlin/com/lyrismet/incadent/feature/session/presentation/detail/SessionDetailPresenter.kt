@@ -1,13 +1,13 @@
 package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.incadent.core.errors.ReportFailures
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
@@ -33,10 +33,8 @@ import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.domain.dedupeKey
 import com.lyrismet.incadent.feature.mention.domain.mentionsIn
 import com.lyrismet.incadent.feature.mention.domain.plainMentionText
-import com.lyrismet.incadent.feature.mention.domain.token
 import com.lyrismet.incadent.feature.mention.presentation.toChipItem
 import com.lyrismet.incadent.feature.phrases.domain.PhraseOption
-import com.lyrismet.incadent.feature.phrases.domain.insertPhrase
 import com.lyrismet.incadent.feature.phrases.domain.phraseCompletions
 import com.lyrismet.incadent.feature.phrases.domain.phraseFragment
 import com.lyrismet.incadent.feature.phrases.domain.phraseLabel
@@ -77,10 +75,9 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
-import com.lyrismet.incadent.feature.mention.domain.withoutBrokenTokens as stripBrokenTokens
+import kotlin.time.Duration.Companion.milliseconds
 
-private const val HIGHLIGHT_DURATION_MS = 2800L
+private val HIGHLIGHT_DURATION = 2800.milliseconds
 private const val PHRASE_STRIP_SIZE = 8
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
@@ -93,6 +90,7 @@ private class SessionDetailFields(
     val composer: SessionDraftController,
     val tags: SessionTagsController,
     val deleted: DeletedMentionController,
+    val create: MentionCreateController,
     val phrases: PhraseSheetController,
     val toast: MutableState<String?>,
     val formController: CodexEntryFormController,
@@ -116,7 +114,6 @@ class SessionDetailPresenter(
 
     // one collection per source the screen reads - a flat merge, not real complexity
     @Suppress("LongMethod")
-    @OptIn(ExperimentalTime::class)
     @Composable
     override fun present(): SessionDetailState {
         val allSessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
@@ -143,12 +140,14 @@ class SessionDetailPresenter(
         val highlightedEntryId = remember { mutableStateOf(screen.focusEntryId) }
         LaunchedEffect(highlightedEntryId.value) {
             if (highlightedEntryId.value != null) {
-                delay(HIGHLIGHT_DURATION_MS)
+                delay(HIGHLIGHT_DURATION)
                 highlightedEntryId.value = null
             }
         }
         fields.toast.autoDismiss()
         ReportFailures(failure) { fields.toast.value = it }
+        // the bar of a made record points into this screen, so it loses that button once the screen is gone
+        DisposableEffect(screen.sessionNoteId) { onDispose { undoController.dropFollowUp() } }
         val titleField = fields.titleField
         val draft = fields.composer.draft
         val editingEntryId = fields.composer.editingEntryId
@@ -161,7 +160,11 @@ class SessionDetailPresenter(
             }
         }
 
-        val mention = buildMentionContext(npcs, locations, quests, parties, draft.value.text)
+        val sessionBodies =
+            remember(currentNote, allSessions, entries, allEntries) {
+                mentionSessionBodies(currentNote, allSessions, entries, allEntries)
+            }
+        val mention = buildMentionContext(npcs, locations, quests, parties, draft.value.text, sessionBodies)
         // parsing every note is the costly part, so it only reruns when a note or a mention candidate changes
         val noteItems =
             remember(entries, mention.candidates) {
@@ -273,6 +276,7 @@ class SessionDetailPresenter(
             phraseSheet = fields.phrases.sheetState(pinnedPhrases, frequentPhrases),
             toast = fields.toast.value,
             deletedMentionSheet = fields.deleted.state(mentionData),
+            mentionCreateSheet = fields.create.state(mentionData),
             entryForm = fields.formController.buildState(npcs, locations),
         ) { event ->
             val context = EventContext(currentNote, entries, undoDeletedEntryTitle, phraseSavedToast, scope, readOnly)
@@ -296,8 +300,9 @@ class SessionDetailPresenter(
                 recentPlaceIds,
                 playerCharacterLevel,
             )
+        val draft = remember(noteId) { mutableStateOf(TextFieldValue("")) }
         return SessionDetailFields(
-            titleField = remember(noteId) { mutableStateOf<String?>(null) },
+            titleField = remember(noteId) { mutableStateOf(null) },
             titleEditing = remember(noteId) { mutableStateOf(false) },
             selectedEntityRef = selectedEntityRef,
             entitySheet = entitySheetInteractions(selectedEntityRef, entityHistory),
@@ -306,9 +311,9 @@ class SessionDetailPresenter(
                     noteId,
                     sessionEntryRepository,
                     undoController,
-                    draft = remember(noteId) { mutableStateOf(TextFieldValue("")) },
-                    editingEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
-                    selectedEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
+                    draft = draft,
+                    editingEntryId = remember(noteId) { mutableStateOf(null) },
+                    selectedEntryId = remember(noteId) { mutableStateOf(null) },
                 ),
             tags =
                 SessionTagsController(
@@ -319,12 +324,22 @@ class SessionDetailPresenter(
                 ),
             deleted =
                 DeletedMentionController(
-                    remember(noteId) { mutableStateOf<OpenDeletedSheet?>(null) },
+                    remember(noteId) { mutableStateOf(null) },
                     mentionActions,
                     formController,
                 ),
+            create =
+                MentionCreateController(
+                    remember(noteId) { mutableStateOf(null) },
+                    draft,
+                    codexRepositories,
+                    undoController,
+                    appPreferencesRepository,
+                    mentionActions,
+                    formController,
+                ) { selectedEntityRef.value = it },
             phrases = remember { PhraseSheetController(phraseSnippetRepository) },
-            toast = remember(noteId) { mutableStateOf<String?>(null) },
+            toast = remember(noteId) { mutableStateOf(null) },
             formController = formController,
         )
     }
@@ -404,7 +419,12 @@ class SessionDetailPresenter(
             SessionDetailEvent.DeletedMentionSheetDismissed -> fields.deleted.dismiss()
             is SessionDetailEvent.DeletedMentionPickingChanged -> fields.deleted.setPicking(event.isPicking)
             is SessionDetailEvent.DeletedMentionQueryChanged -> fields.deleted.setQuery(event.query)
-            SessionDetailEvent.DeletedMentionCreateClicked -> fields.deleted.createRecord()
+            SessionDetailEvent.DeletedMentionCreateClicked -> fields.deleted.createRecord(fields.create::startFor)
+            is SessionDetailEvent.MentionCreateOpened -> fields.create.start(event.name)
+            is SessionDetailEvent.MentionCreateNameChanged -> fields.create.setName(event.name)
+            is SessionDetailEvent.MentionCreateTypeChanged -> fields.create.setType(event.type)
+            SessionDetailEvent.MentionCreateConfirmed -> fields.create.confirm(scope, mentionData)
+            SessionDetailEvent.MentionCreateDismissed -> fields.create.dismiss()
             is SessionDetailEvent.DeletedMentionLinked -> fields.deleted.rewrite(scope, event.key, mentionData)
             SessionDetailEvent.DeletedMentionKeptAsText -> fields.deleted.rewrite(scope, null, mentionData)
             is SessionDetailEvent.AutoMentionsLinkClicked ->
@@ -451,7 +471,6 @@ class SessionDetailPresenter(
         currentNote?.let { note -> scope.launch { sessionNoteRepository.upsert(note.copy(title = title)) } }
     }
 
-    @OptIn(ExperimentalTime::class)
     private fun onEndSession(
         currentNote: SessionNote?,
         scope: CoroutineScope,
@@ -464,7 +483,6 @@ class SessionDetailPresenter(
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     private fun onResumeSession(
         currentNote: SessionNote?,
         scope: CoroutineScope,
@@ -504,13 +522,22 @@ private fun tagReasonLabels() =
         words = stringResource(Res.string.session_tag_reason_words),
     )
 
-// a cut token goes whole, the caret lands where the same text position now is
-private fun withoutBrokenTokens(
-    text: String,
-    selection: TextRange,
-): TextFieldValue {
-    val clean = stripBrokenTokens(text)
-    if (clean == text) return TextFieldValue(text, selection)
-    val caret = stripBrokenTokens(text.take(selection.end)).length
-    return TextFieldValue(clean, TextRange(caret.coerceAtMost(clean.length)))
+/** the notes of this session and of the session played just before it - what the empty "@" dropdown draws from */
+private fun mentionSessionBodies(
+    currentNote: SessionNote?,
+    allSessions: List<SessionNote>,
+    entries: List<SessionEntry>,
+    allEntries: List<SessionEntry>,
+): MentionSessionBodies {
+    val previousId =
+        currentNote?.let { note ->
+            allSessions
+                .filter { it.id != note.id && it.sessionDate <= note.sessionDate }
+                .maxByOrNull { it.sessionDate }
+                ?.id
+        }
+    return MentionSessionBodies(
+        current = entries.map { it.body },
+        previous = allEntries.filter { it.sessionNoteId == previousId }.map { it.body },
+    )
 }

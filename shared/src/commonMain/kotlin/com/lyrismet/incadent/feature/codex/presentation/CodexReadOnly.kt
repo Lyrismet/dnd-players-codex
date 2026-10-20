@@ -11,6 +11,7 @@ internal fun CodexEvent.writesCampaignData(): Boolean =
         is CodexEvent.GroupBySelected,
         is CodexEvent.PlaceSectionToggled,
         CodexEvent.UndoClicked,
+        CodexEvent.UndoFollowUpClicked,
         CodexEvent.EntityDeleteCancelled,
         -> false
         is CodexEvent.QuickEdit,

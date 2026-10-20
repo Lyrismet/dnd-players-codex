@@ -164,6 +164,7 @@ internal fun AppTabHost(
             UndoToast(
                 action = pendingUndo,
                 onUndo = undoController::undo,
+                onFollowUp = undoController::followUp,
                 modifier = floatingBarAnchor(),
             )
         }

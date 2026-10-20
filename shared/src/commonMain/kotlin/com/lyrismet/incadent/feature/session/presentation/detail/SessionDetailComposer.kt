@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
@@ -75,7 +77,6 @@ import dndplayerscodex.shared.generated.resources.action_cancel
 import dndplayerscodex.shared.generated.resources.session_detail_composer_hint
 import dndplayerscodex.shared.generated.resources.session_detail_composer_placeholder
 import dndplayerscodex.shared.generated.resources.session_detail_editing_label_format
-import dndplayerscodex.shared.generated.resources.session_detail_mention_suggestions_header
 import dndplayerscodex.shared.generated.resources.session_detail_save_button
 import dndplayerscodex.shared.generated.resources.session_detail_submit_button
 import org.jetbrains.compose.resources.stringResource
@@ -84,6 +85,8 @@ internal val COMPOSER_SIDE_PADDING = 12.dp
 private val COMPOSER_TOP_PADDING = 10.dp
 
 // the popup is anchored to the padded content, so the 1dp divider and top padding sit between it and the footer edge
+// tall enough for the seven rows and three headers of an empty "@", anything more scrolls
+private val POPOVER_MAX_HEIGHT = 360.dp
 private val POPOVER_OFFSET_ABOVE_CONTENT = 6.dp + COMPOSER_TOP_PADDING + 1.dp
 
 @Composable
@@ -367,6 +370,8 @@ private fun ComposerPopover(
                     .width(popupWidth)
                     .shadow(elevation = 16.dp, shape = shape)
                     .appCard(shape = shape, background = AppPalette.SurfacePopover, border = AppPalette.BorderPopover)
+                    .heightIn(max = POPOVER_MAX_HEIGHT)
+                    .verticalScroll(rememberScrollState())
                     .padding(6.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
@@ -393,36 +398,5 @@ private fun MentionSuggestionsPopover(
     state: SessionDetailState,
     composerWidthPx: Int,
 ) {
-    ComposerPopover(composerWidthPx) {
-        Text(
-            stringResource(Res.string.session_detail_mention_suggestions_header),
-            style = AppText.fieldOverline,
-            color = AppPalette.TextTertiary,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-        )
-        state.mentionSuggestions.forEach { suggestion ->
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(AppShapes.Tile)
-                        .clickable {
-                            state.eventSink(SessionDetailEvent.MentionSuggestionPicked(suggestion.token))
-                        }.padding(horizontal = 8.dp, vertical = 9.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(modifier = Modifier.width(14.dp), contentAlignment = Alignment.Center) {
-                    Text(suggestion.glyph.symbol, fontSize = AppFontSize.Micro, color = suggestion.tint)
-                }
-                Text(
-                    suggestion.name,
-                    fontSize = AppFontSize.Medium,
-                    color = AppPalette.TextPrimary,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(suggestion.typeLabel, fontSize = AppFontSize.Caption, color = AppPalette.TextSecondary)
-            }
-        }
-    }
+    ComposerPopover(composerWidthPx) { MentionDropdownContent(state.mentionSuggestions, state.eventSink) }
 }

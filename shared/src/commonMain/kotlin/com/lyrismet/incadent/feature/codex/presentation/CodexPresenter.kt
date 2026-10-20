@@ -467,6 +467,7 @@ class CodexPresenter(
             }
             is CodexEvent.QuickPlaceCreated -> onQuickPlaceCreated(event, fields, scope)
             CodexEvent.UndoClicked -> undoController.undo()
+            CodexEvent.UndoFollowUpClicked -> undoController.followUp()
             CodexEvent.AddEntryClicked -> formController.onAddEntryClicked(fields.activeTab.value.toEntryType())
             is CodexEvent.EmptyActionClicked -> formController.onAddEntryClicked(event.entryType, event.name)
             is CodexEvent.EditEntryRequested -> formController.onEditEntryRequested(event.ref, scope)

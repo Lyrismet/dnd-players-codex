@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.core.designsystem.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,8 +10,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,6 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 fun UndoToast(
     action: UndoAction?,
     onUndo: () -> Unit,
+    onFollowUp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     FloatingBar(
@@ -37,7 +35,7 @@ fun UndoToast(
         modifier = modifier,
         contentPadding = PaddingValues(start = 14.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
     ) { current ->
-        UndoToastContent(current, onUndo)
+        UndoToastContent(current, onUndo, onFollowUp)
     }
 }
 
@@ -45,6 +43,7 @@ fun UndoToast(
 private fun UndoToastContent(
     action: UndoAction,
     onUndo: () -> Unit,
+    onFollowUp: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -55,7 +54,11 @@ private fun UndoToastContent(
             shape = AppShapes.Tile,
             background = AppPalette.Maroon.copy(alpha = 0.25f),
         ) {
-            Icon(AppIcons.Delete, contentDescription = null, tint = AppPalette.MaroonBright)
+            Icon(
+                if (action.isMade) AppIcons.Edit else AppIcons.Delete,
+                contentDescription = null,
+                tint = if (action.isMade) AppPalette.GoldBright else AppPalette.MaroonBright,
+            )
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(action.title, style = MaterialTheme.typography.titleSmall, color = AppPalette.TextHeading)
@@ -66,6 +69,11 @@ private fun UndoToastContent(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+        }
+        action.followUp?.let { followUp ->
+            TextButton(onClick = onFollowUp, modifier = Modifier.height(44.dp)) {
+                Text(followUp.label, color = AppPalette.GoldBright, style = MaterialTheme.typography.titleSmall)
+            }
         }
         TextButton(onClick = onUndo, modifier = Modifier.height(44.dp)) {
             Text(

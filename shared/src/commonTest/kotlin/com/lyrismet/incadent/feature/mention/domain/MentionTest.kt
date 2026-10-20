@@ -135,27 +135,6 @@ class MentionTest {
     }
 
     @Test
-    fun `matchingMentionEntities matches by name prefix case-insensitively`() {
-        val matches = matchingMentionEntities(listOf(ragnar, forge, sword), "рагн")
-        assertEquals(listOf(ragnar), matches)
-    }
-
-    @Test
-    fun `matchingMentionEntities lists every record that shares the name`() {
-        val twin = MentionEntity.LocationMention(8, "Рагнар")
-        assertEquals(listOf<MentionEntity>(ragnar, twin), matchingMentionEntities(listOf(ragnar, twin), "рагнар"))
-    }
-
-    @Test
-    fun `matchingMentionEntities respects the limit`() {
-        val many =
-            (1..10).map {
-                MentionEntity.NpcMention(it.toLong(), "Стражник $it", NpcStatus.NEUTRAL, NpcLifeState.ALIVE)
-            }
-        assertEquals(3, matchingMentionEntities(many, "страж", limit = 3).size)
-    }
-
-    @Test
     fun `insertMention replaces the trailing query with the token and a space`() {
         val result = insertMention("Поговорили с @Ра", ragnar.token())
         assertEquals("Поговорили с ${ragnar.token()} ", result)
@@ -204,5 +183,24 @@ class MentionTest {
     @Test
     fun `a stray token opener loses just its two characters`() {
         assertEquals("почта", withoutBrokenTokens("по@[чта"))
+    }
+
+    @Test
+    fun `a typed name links whatever its case`() {
+        assertEquals("${forge.token()} горит", linkTypedMentions("@кузница горит", index))
+    }
+
+    @Test
+    fun `a name shared by two records is left as typed`() {
+        val twins =
+            MentionIndex(listOf(ragnar, MentionEntity.NpcMention(9, "Рагнар", NpcStatus.ENEMY, NpcLifeState.ALIVE)))
+        assertEquals("@Рагнар шёл", linkTypedMentions("@Рагнар шёл", twins))
+    }
+
+    @Test
+    fun `relinking by name and ref points the tokens at the new record`() {
+        val from = MentionRef(EntityKind.NPC, 77)
+        val body = "см. ${mentionToken(from, "Старик")} и ${ragnar.token()}"
+        assertEquals("см. ${forge.token()} и ${ragnar.token()}", relinkMentionIn(body, from, forge.ref, forge.name))
     }
 }
