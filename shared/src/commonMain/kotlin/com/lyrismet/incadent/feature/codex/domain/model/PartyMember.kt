@@ -15,7 +15,6 @@ data class PartyMember(
     val hpCurrent: Int?,
     val description: String,
     val portrait: Photo? = null,
-    val nicknames: List<String> = emptyList(),
 )
 
 enum class PartyPresence {

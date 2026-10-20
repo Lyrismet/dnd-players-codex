@@ -26,7 +26,6 @@ internal fun CodexEntryFormFields.toPartyMember(): PartyMember {
         hpCurrent = party.hpCurrent ?: party.hpMax,
         description = description.trim(),
         portrait = portrait,
-        nicknames = parseNicknames(nicknames),
     )
 }
 
@@ -54,7 +53,6 @@ internal fun PartyMember.toFields(ref: EntityRef.Party) =
         description = description,
         portrait = portrait,
         race = race,
-        nicknames = nicknames.joinNicknames(),
         party =
             PartyFormFields(
                 isPlayerCharacter = isPlayerCharacter,
@@ -78,7 +76,6 @@ internal fun Quest.toFields(ref: EntityRef.Quest) =
         questGiverId = givenByNpcId,
         questLocationId = locationId,
         questStatus = status,
-        nicknames = nicknames.joinNicknames(),
     )
 
 internal fun Location.toFields(ref: EntityRef.Location) =
@@ -90,7 +87,6 @@ internal fun Location.toFields(ref: EntityRef.Location) =
         description = description,
         locationParentId = parentId,
         cover = cover,
-        nicknames = nicknames.joinNicknames(),
     )
 
 internal fun CodexEntryFormFields.toNpc() =
@@ -115,7 +111,6 @@ internal fun CodexEntryFormFields.toQuest() =
         givenByNpcId = questGiverId,
         locationId = questLocationId,
         description = description.trim(),
-        nicknames = parseNicknames(nicknames),
     )
 
 internal fun CodexEntryFormFields.toLocation() =
@@ -125,5 +120,4 @@ internal fun CodexEntryFormFields.toLocation() =
         description = description.trim(),
         parentId = locationParentId,
         cover = cover,
-        nicknames = parseNicknames(nicknames),
     )

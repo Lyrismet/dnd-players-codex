@@ -510,4 +510,28 @@
     <string name="settings_all_campaigns_title">Все кампании</string>
     <string name="campaign_items_title">Что перенести</string>
     <string name="error_action_failed">Не получилось сохранить. Попробуйте ещё раз</string>
+    <string name="place_block_itself">это само место</string>
+    <string name="place_block_inside_of">внутри «%1$s»</string>
+    <string name="place_block_contains">содержит это место</string>
+    <string name="place_block_pending">будет внутри этого места</string>
+    <string name="place_select_to_top">На верхний уровень</string>
+    <string name="place_block_carried">едет вместе с «%1$s»</string>
+    <string name="place_cycle_toast">Место нельзя положить внутрь него самого</string>
+    <string name="codex_entry_label_inside">Внутри</string>
+    <string name="entity_sheet_group_location_inside_empty">Вложенных мест нет - удерживайте, чтобы добавить</string>
+    <string name="entity_sheet_move_into">Переместить в…</string>
+    <plurals name="place_move_from">
+        <item quantity="one">%1$d место переехало из «%2$s»</item>
+        <item quantity="few">%1$d места переехали из «%2$s»</item>
+        <item quantity="many">%1$d мест переехали из «%2$s»</item>
+        <item quantity="other">%1$d места переехали из «%2$s»</item>
+    </plurals>
+    <plurals name="place_move_here">
+        <item quantity="one">%1$d место переехало сюда</item>
+        <item quantity="few">%1$d места переехали сюда</item>
+        <item quantity="many">%1$d мест переехали сюда</item>
+        <item quantity="other">%1$d места переехали сюда</item>
+    </plurals>
+    <string name="codex_place_top_level_caption">верхний уровень</string>
+    <string name="place_moved_title">Место перемещено</string>
 </resources>

@@ -54,10 +54,7 @@ class QuickEditApplyTest {
         val edited = npc.withQuickEdit(QuickEditField.NICKNAMES, QuickEditValue.Text(" Седой , Монах "))
 
         assertEquals(listOf("Седой", "Монах"), edited?.nicknames)
-        assertEquals(
-            listOf("Тень"),
-            member.withQuickEdit(QuickEditField.NICKNAMES, QuickEditValue.Text("Тень"))?.nicknames,
-        )
+        assertNull(member.withQuickEdit(QuickEditField.NICKNAMES, QuickEditValue.Text("Тень")))
     }
 
     @Test

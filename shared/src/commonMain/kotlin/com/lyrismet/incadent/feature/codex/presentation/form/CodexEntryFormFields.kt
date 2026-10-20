@@ -43,6 +43,8 @@ internal data class CodexEntryFormFields(
     val questLocationId: Long? = null,
     val questStatus: QuestStatus = QuestStatus.ACTIVE,
     val locationParentId: Long? = null,
+    // the places inside this one, written to those places when the form is saved
+    val locationChildIds: List<Long> = emptyList(),
     // the wide picture of a place - the only photo a location has
     val cover: Photo? = null,
     val party: PartyFormFields = PartyFormFields(),
@@ -56,11 +58,16 @@ internal data class CodexEntryFormFields(
 ) {
     // the select sheet and quick-add are transient panels, only the values the user typed or picked count as a change
     fun hasUnsavedChanges(baseline: CodexEntryFormFields?): Boolean =
-        baseline != null &&
-            copy(
-                placeSelectField = baseline.placeSelectField,
-                quickAddField = baseline.quickAddField,
-                quickAddDraft = baseline.quickAddDraft,
-                photoCrop = baseline.photoCrop,
-            ) != baseline
+        baseline != null && comparable(baseline) != baseline.comparable(baseline)
+
+    // the transient state is dropped and the place ids sorted, as the pick sheet hands them back in its own order
+    private fun comparable(baseline: CodexEntryFormFields): CodexEntryFormFields =
+        copy(
+            placeSelectField = baseline.placeSelectField,
+            quickAddField = baseline.quickAddField,
+            quickAddDraft = baseline.quickAddDraft,
+            photoCrop = baseline.photoCrop,
+            npcLocationIds = npcLocationIds.sorted(),
+            locationChildIds = locationChildIds.sorted(),
+        )
 }

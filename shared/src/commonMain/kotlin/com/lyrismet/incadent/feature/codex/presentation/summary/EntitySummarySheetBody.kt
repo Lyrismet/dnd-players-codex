@@ -197,7 +197,11 @@ private fun LocationSummaryBody(
     EntityFactsGrid(location.facts, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelationGroups(location.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(location.name, location.relatedNotes, actions.onRelatedNoteClicked)
-    EntityDeleteButton(location.ref, actions)
+    // the two buttons share one block, so they sit close instead of one list gap apart
+    Column(modifier = Modifier.padding(top = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        EntityPlaceMoveButton(location, actions.quickEdit)
+        EntityDeleteButton(location.ref, actions, topGap = 0.dp)
+    }
 }
 
 @Composable

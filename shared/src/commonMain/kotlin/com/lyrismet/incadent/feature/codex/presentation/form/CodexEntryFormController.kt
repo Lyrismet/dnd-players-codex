@@ -48,8 +48,9 @@ import dndplayerscodex.shared.generated.resources.codex_entry_owner_other
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_create
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
-import dndplayerscodex.shared.generated.resources.codex_group_top_level
+import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -180,7 +181,11 @@ class CodexEntryFormController private constructor(
                     is EntityRef.Party -> partyRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Npc -> npcRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Quest -> questRepository.getById(ref.id)?.let { it.toFields(ref) }
-                    is EntityRef.Location -> locationRepository.getById(ref.id)?.let { it.toFields(ref) }
+                    is EntityRef.Location ->
+                        locationRepository.getById(ref.id)?.let { place ->
+                            val inside = locationRepository.observeAll().first().filter { it.parentId == ref.id }
+                            place.toFields(ref).copy(locationChildIds = inside.map { it.id })
+                        }
                 }
             if (loaded != null) open(loaded)
         }
@@ -189,6 +194,8 @@ class CodexEntryFormController private constructor(
     fun onTypeChanged(type: EntityKind) {
         val current = fields.value ?: return
         fields.value = withDefaults(current.copy(type = type))
+        // a default the form fills in by itself is not something the user changed
+        baseline.value = baseline.value?.let { withDefaults(it.copy(type = type)).copy(type = it.type) }
     }
 
     fun onFieldChanged(
@@ -330,7 +337,7 @@ class CodexEntryFormController private constructor(
         fields.value = current.copy(placeSelectField = null)
         scope.launch {
             val id = locationRepository.upsert(quickLocation(trimmed))
-            val ids = if (field == CodexEntryPlaceField.NPC_PLACES) checked + id else listOf(id)
+            val ids = if (field.isMulti) checked + id else listOf(id)
             fields.value = fields.value?.withPlaces(field, ids)
             recentPlaceIds.value = recentPlaceIds.value.withRecentPlaces(listOf(id))
         }
@@ -365,7 +372,10 @@ class CodexEntryFormController private constructor(
         crop: CropRect,
     ) {
         val draft = fields.value?.photoCrop ?: return
+        val stored = fields.value?.let { if (draft.slot == PhotoSlot.COVER) it.cover else it.portrait }
         fields.value = fields.value?.copy(photoCrop = null)
+        // an untouched window over the stored picture keeps it as it is instead of re-encoding it
+        if (crop.isWholeImage && stored != null && stored.display.contentEquals(draft.source)) return
         val session = baseline.value
         scope.launch {
             val photo = draft.encodeAsync(crop, compressor)
@@ -429,7 +439,7 @@ class CodexEntryFormController private constructor(
         val partyLabels = partyPresenceLabels()
         val party = current.party
         val places = PlaceTree(locations)
-        val topLevelLabel = stringResource(Res.string.codex_group_top_level)
+        val topLevelLabel = stringResource(Res.string.codex_place_top_level_caption)
         return CodexEntryFormState(
             overline =
                 stringResource(
@@ -469,6 +479,7 @@ class CodexEntryFormController private constructor(
                     )
                 },
             npcPlaces = current.npcLocationIds.mapNotNull { id -> places.find(id)?.toMentionChip() },
+            locationChildren = current.locationChildIds.mapNotNull { id -> places.find(id)?.toMentionChip() },
             questPlace = places.find(current.questLocationId)?.toSelectedPlace(places, topLevelLabel),
             locationParent = places.find(current.locationParentId)?.toSelectedPlace(places, topLevelLabel),
             hasParentCandidates =
@@ -480,7 +491,7 @@ class CodexEntryFormController private constructor(
                         title = placeFieldTitle(field),
                         locations = locations,
                         selectedIds = current.placeIds(field),
-                        editingLocationId = (current.editingRef as? EntityRef.Location)?.id,
+                        editing = current.placeEditing(),
                         recentIds = recentPlaceIds.value,
                     )
                 },

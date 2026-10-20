@@ -8,8 +8,6 @@ import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
-import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
-import com.lyrismet.incadent.feature.codex.domain.model.parseNicknames
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -57,7 +55,6 @@ class PartyRepositoryImpl(
                             hp_max = entity.hpMax?.toLong(),
                             hp_current = entity.hpCurrent?.toLong(),
                             description = entity.description,
-                            nicknames = entity.nicknames.joinNicknames(),
                             id = entity.id,
                         )
                         writePortrait(entity.id, entity.portrait, stored.portrait)
@@ -85,7 +82,6 @@ class PartyRepositoryImpl(
                 hp_max = member.hpMax?.toLong(),
                 hp_current = member.hpCurrent?.toLong(),
                 description = member.description,
-                nicknames = member.nicknames.joinNicknames(),
                 portrait = member.portrait?.full,
                 portrait_thumb = member.portrait?.thumb,
                 campaign_id = current.requireId(),
@@ -103,7 +99,6 @@ class PartyRepositoryImpl(
             hp_max = member.hpMax?.toLong(),
             hp_current = member.hpCurrent?.toLong(),
             description = member.description,
-            nicknames = member.nicknames.joinNicknames(),
             portrait = member.portrait?.full,
             portrait_thumb = member.portrait?.thumb,
             campaign_id = current.requireId(),
@@ -143,7 +138,6 @@ class PartyRepositoryImpl(
         hpMax: Long?,
         hpCurrent: Long?,
         description: String,
-        nicknames: String,
         portraitThumb: ByteArray?,
     ) = PartyMember(
         id = id,
@@ -158,7 +152,6 @@ class PartyRepositoryImpl(
         hpCurrent = hpCurrent?.toInt(),
         description = description,
         portrait = portraitThumb?.let { Photo(it) },
-        nicknames = parseNicknames(nicknames),
     )
 
     // the by-id row also carries the full jpeg
@@ -175,7 +168,6 @@ class PartyRepositoryImpl(
         hpMax: Long?,
         hpCurrent: Long?,
         description: String,
-        nicknames: String,
         portraitThumb: ByteArray?,
         portrait: ByteArray?,
     ) = toDomain(
@@ -190,7 +182,6 @@ class PartyRepositoryImpl(
         hpMax,
         hpCurrent,
         description,
-        nicknames,
         portraitThumb,
     ).copy(portrait = portraitThumb?.let { Photo(it, portrait) })
 }

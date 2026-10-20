@@ -72,5 +72,12 @@ sealed interface QuickEditPhotoEvent : QuickEditUiEvent
 data class EntityChange(
     val field: QuickEditField,
     val entityName: String,
+    val moved: MovedPlaces? = null,
     val restore: suspend () -> Unit,
+)
+
+/** the places a change moved into the card's place, [fromName] is the place they all came out of when it is one */
+data class MovedPlaces(
+    val count: Int,
+    val fromName: String?,
 )

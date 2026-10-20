@@ -23,6 +23,7 @@ import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
+import com.lyrismet.incadent.feature.codex.presentation.form.rememberPlaceFailureText
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
 import com.lyrismet.incadent.feature.codex.presentation.summary.onEvent
@@ -145,7 +146,7 @@ class SessionDetailPresenter(
             }
         }
         fields.toast.autoDismiss()
-        ReportFailures(failure) { fields.toast.value = it }
+        ReportFailures(failure, rememberPlaceFailureText()) { fields.toast.value = it }
         // the bar of a made record points into this screen, so it loses that button once the screen is gone
         DisposableEffect(screen.sessionNoteId) { onDispose { undoController.dropFollowUp() } }
         val titleField = fields.titleField

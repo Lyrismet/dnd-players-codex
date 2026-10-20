@@ -38,7 +38,7 @@ class MentionDetailsTest {
 
     @Test
     fun `nicknames are listed only for records that have them`() {
-        val nicknames = mentionNicknames(listOf(miller), listOf(valley), listOf(quest), emptyList())
+        val nicknames = mentionNicknames(listOf(miller))
         assertEquals(mapOf(MentionRef(EntityKind.NPC, 5) to listOf("Дед")), nicknames)
     }
 }

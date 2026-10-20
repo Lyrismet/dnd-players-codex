@@ -13,6 +13,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.HoldFrame
 import com.lyrismet.incadent.core.designsystem.component.HoldToEditField
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditKind
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.RelationOptionEditor
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
@@ -40,7 +41,7 @@ internal fun EntityRelationGroups(
             val title = stringResource(group.title)
             when {
                 quick == null || field == null -> RelationGroupContent(group, title, onEntityRefClicked)
-                quick.inlineEdit?.field == field ->
+                quick.inlineEdit?.field == field && field.kind == QuickEditKind.Relations ->
                     RelationOptionEditor(
                         label = title,
                         options = group.options,

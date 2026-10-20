@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -12,6 +13,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.MovedPlaces
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditValue
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.withGiverToggled
@@ -21,6 +23,7 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.withPresence
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.withQuickEdit
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.withStatus
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -36,7 +39,7 @@ class EntitySheetInteractions(
     private val openSession: (sessionNoteId: Long, entryId: Long) -> Unit,
     // the entities left open underneath, newest last - the host keeps it alive across recompositions
     private val history: MutableState<List<EntityRef>> = mutableStateOf(emptyList()),
-    private val onChanged: (EntityChange) -> Unit = {},
+    private val onChanged: suspend (EntityChange) -> Unit = {},
 ) {
     private val partyRepository = repositories.partyRepository
     private val npcRepository = repositories.npcRepository
@@ -147,12 +150,16 @@ class EntitySheetInteractions(
                         { it.withQuickEdit(field, value) },
                     ) { questRepository.upsert(it) }
                 is EntityRef.Location ->
-                    commitChange(
-                        field,
-                        { locationRepository.getById(ref.id) },
-                        Location::name,
-                        { it.withQuickEdit(field, value) },
-                    ) { locationRepository.upsert(it) }
+                    if (field == QuickEditField.INSIDE) {
+                        commitInside(ref.id, value)
+                    } else {
+                        commitChange(
+                            field,
+                            { locationRepository.getById(ref.id) },
+                            Location::name,
+                            { it.withQuickEdit(field, value) },
+                        ) { locationRepository.upsert(it) }
+                    }
                 is EntityRef.Party ->
                     commitChange(
                         field,
@@ -184,6 +191,42 @@ class EntitySheetInteractions(
                         Npc::name,
                         { it.withPlaceToggled(owner.id) },
                     ) { npcRepository.upsert(it) }
+            }
+        }
+    }
+
+    // picking the inside of a place sets the parent of those places - the ones dropped from the pick go to the top
+    private suspend fun commitInside(
+        locationId: Long,
+        value: QuickEditValue,
+    ) {
+        val picked = (value as? QuickEditValue.Places)?.ids ?: return
+        entityWriteLock.withLock {
+            val all = locationRepository.observeAll().first()
+            val tree = PlaceTree(all)
+            val changes = tree.insideChanges(locationId, picked)
+            val owner = tree.find(locationId)
+            if (owner != null && !changes.isEmpty) {
+                val before = (changes.entering + changes.leaving).associateWith { tree.find(it)?.parentId }
+                changes.entering.forEach { locationRepository.setParent(it, locationId) }
+                changes.leaving.forEach { locationRepository.setParent(it, null) }
+                val sources =
+                    changes.entering
+                        .map {
+                            tree
+                                .find(it)
+                                ?.parentId
+                                ?.let(tree::find)
+                                ?.name
+                        }.distinct()
+                val moved = MovedPlaces(changes.entering.size, sources.singleOrNull())
+                onChanged(
+                    EntityChange(QuickEditField.INSIDE, owner.name, moved) {
+                        entityWriteLock.withLock {
+                            before.forEach { (id, parentId) -> locationRepository.setParent(id, parentId) }
+                        }
+                    },
+                )
             }
         }
     }

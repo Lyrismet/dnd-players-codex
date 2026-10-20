@@ -103,8 +103,10 @@ data class LocationCodexItem(
     val name: String,
     // the path above the place, null when there is nothing to show
     val subtitle: String?,
-    // the cover fills the list badge when the place has one
+    // the cover is the strip on the card's right edge when the place has one
     val cover: Photo? = null,
+    // a place in no other place - its card gets the night-sky fill and the "top level" caption
+    val isTopLevel: Boolean = false,
 )
 
 /** one chip of the codex group row */

@@ -26,6 +26,7 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_inside
+import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_inside_empty
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_npcs
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_npcs_empty
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_quests
@@ -153,7 +154,6 @@ private fun buildPartySummary(
                     QuickEditField.CHARACTER_CLASS,
                 ),
                 FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(member.race), QuickEditField.RACE),
-                nicknamesFact(member.nicknames),
                 FactRow(
                     Res.string.entity_sheet_party_level_label,
                     FactValue.Text(member.level.orDash()),
@@ -206,7 +206,6 @@ private fun buildQuestSummary(
                     location?.toMentionChip(),
                     QuickEditField.PLACE,
                 ),
-                nicknamesFact(quest.nicknames),
             ),
         groups = emptyList(),
         relatedNotes = buildRelatedNotes(EntityRef.Quest(quest.id), lookup),
@@ -240,13 +239,15 @@ private fun buildLocationSummary(
                     parent?.toMentionChip(),
                     QuickEditField.PARENT,
                 ).takeIf { hasPlaceToBeIn || parent != null },
-                nicknamesFact(location.nicknames),
             ),
         groups =
-            listOfNotNull(
-                placesInside.takeIf { it.isNotEmpty() }?.let {
-                    RelationGroup(Res.string.entity_sheet_group_location_inside, it.map { p -> p.toMentionChip() })
-                },
+            listOf(
+                RelationGroup(
+                    title = Res.string.entity_sheet_group_location_inside,
+                    items = placesInside.map { p -> p.toMentionChip() },
+                    edit = QuickEditField.INSIDE.takeIf { hasPlaceToBeIn },
+                    emptyText = Res.string.entity_sheet_group_location_inside_empty,
+                ),
                 RelationGroup(
                     title = Res.string.entity_sheet_group_location_npcs,
                     items = npcsHere.map { n -> n.toMentionChip() },
@@ -264,6 +265,7 @@ private fun buildLocationSummary(
                 ),
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Location(location.id), lookup),
+        canMove = hasPlaceToBeIn,
     )
 }
 

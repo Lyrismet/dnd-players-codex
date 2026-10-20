@@ -144,6 +144,8 @@ sealed interface EntitySummaryItem {
         val facts: List<FactRow>,
         val groups: List<RelationGroup>,
         val relatedNotes: List<RelatedNoteItem>,
+        // false when no other place exists to move into
+        val canMove: Boolean = false,
     ) : EntitySummaryItem
 
     data class QuestSummary(

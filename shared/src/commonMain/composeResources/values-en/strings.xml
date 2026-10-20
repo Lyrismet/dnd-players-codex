@@ -490,4 +490,24 @@
     <string name="settings_all_campaigns_title">All campaigns</string>
     <string name="campaign_items_title">What to copy</string>
     <string name="error_action_failed">Could not save. Please try again</string>
+    <string name="place_block_itself">this place itself</string>
+    <string name="place_block_inside_of">inside “%1$s”</string>
+    <string name="place_block_contains">contains this place</string>
+    <string name="place_block_pending">will be inside this place</string>
+    <string name="place_select_to_top">To the top level</string>
+    <string name="place_block_carried">moves with “%1$s”</string>
+    <string name="place_cycle_toast">A place can\'t be put inside itself</string>
+    <string name="codex_entry_label_inside">Inside</string>
+    <string name="entity_sheet_group_location_inside_empty">No places inside - hold to add</string>
+    <string name="entity_sheet_move_into">Move to…</string>
+    <plurals name="place_move_from">
+        <item quantity="one">%1$d place moved from “%2$s”</item>
+        <item quantity="other">%1$d places moved from “%2$s”</item>
+    </plurals>
+    <plurals name="place_move_here">
+        <item quantity="one">%1$d place moved here</item>
+        <item quantity="other">%1$d places moved here</item>
+    </plurals>
+    <string name="codex_place_top_level_caption">top level</string>
+    <string name="place_moved_title">Place moved</string>
 </resources>

@@ -26,16 +26,21 @@ fun rememberGuardedScope(onFailure: (Throwable) -> Unit = {}): CoroutineScope {
     }
 }
 
-/** hands the localized "could not save" text to [show] for every failure [failure] receives, then clears it */
+/**
+ * hands the localized "could not save" text to [show] for every failure [failure] receives, then clears it. A host
+ * that knows a failure by its own cause answers with a text for it from [known], null leaves it to the general one.
+ */
 @Composable
 fun ReportFailures(
     failure: MutableState<Throwable?>,
+    known: (Throwable) -> String? = { null },
     show: (String) -> Unit,
 ) {
     val text = stringResource(Res.string.error_action_failed)
     LaunchedEffect(failure.value) {
-        if (failure.value != null) {
-            show(text)
+        val current = failure.value
+        if (current != null) {
+            show(known(current) ?: text)
             failure.value = null
         }
     }

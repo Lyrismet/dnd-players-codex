@@ -13,6 +13,8 @@ import dndplayerscodex.shared.generated.resources.codex_place_select_empty
 import dndplayerscodex.shared.generated.resources.codex_place_select_multi_hint
 import dndplayerscodex.shared.generated.resources.codex_place_select_search
 import dndplayerscodex.shared.generated.resources.codex_search_create_location
+import dndplayerscodex.shared.generated.resources.place_block_carried
+import dndplayerscodex.shared.generated.resources.place_select_to_top
 import org.jetbrains.compose.resources.stringResource
 
 /** the place select as a sheet of its own, shown over whichever sheet opened it */
@@ -42,8 +44,16 @@ internal fun PlaceSelectContent(
             searchPlaceholder = stringResource(Res.string.codex_place_select_search),
             emptyText = stringResource(Res.string.codex_place_select_empty),
             multiHint = stringResource(Res.string.codex_place_select_multi_hint),
-            clearLabel = stringResource(Res.string.codex_place_select_clear),
+            clearLabel =
+                stringResource(
+                    if (select.field == CodexEntryPlaceField.LOCATION_PARENT) {
+                        Res.string.place_select_to_top
+                    } else {
+                        Res.string.codex_place_select_clear
+                    },
+                ),
             doneLabel = { count -> stringResource(Res.string.codex_place_select_done, count) },
+            carriedLabel = { name -> stringResource(Res.string.place_block_carried, name) },
             createLabel = { query -> stringResource(Res.string.codex_search_create_location, query) },
         )
     AppSelectSheetContent(
@@ -54,7 +64,6 @@ internal fun PlaceSelectContent(
         onConfirm = { ids -> onChosen(ids.toList()) },
         modifier = modifier,
         recentIds = select.recentIds,
-        excludedIds = select.excludedIds,
         leadingGlyph = MentionGlyph.LOCATION.symbol,
         onCreate = { name, checked -> onCreated(name, checked.toList()) },
     )

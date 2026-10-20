@@ -174,6 +174,68 @@ class CodexPlacesTest {
 
         assertEquals(listOf("Материальный план", "Долина", "Мирдейл"), regions.placeNamesOfLocation(temple))
     }
+
+    @Test
+    fun `a place can't be the parent of itself or of anything inside it`() {
+        assertFalse(tree.canPutInside(valley.id, valley.id))
+        assertFalse(tree.canPutInside(valley.id, town.id))
+        assertFalse(tree.canPutInside(valley.id, temple.id))
+        assertTrue(tree.canPutInside(valley.id, wastes.id))
+        assertTrue(tree.canPutInside(valley.id, null))
+        assertTrue(tree.canPutInside(valley.id, plane.id))
+    }
+
+    @Test
+    fun `blocked as parent names the place a descendant is inside of`() {
+        val blocked = tree.blockedAsParent(valley.id)
+
+        assertEquals(setOf(valley.id, town.id, temple.id), blocked.keys)
+        assertEquals(PlaceBlock.Itself, blocked[valley.id])
+        assertEquals(PlaceBlock.InsideOf("Долина"), blocked[temple.id])
+    }
+
+    @Test
+    fun `blocked as child holds the place and the places it sits in`() {
+        val blocked = tree.blockedAsChild(town.id)
+
+        assertEquals(setOf(plane.id, valley.id, town.id), blocked.keys)
+        assertEquals(PlaceBlock.Contains, blocked[plane.id])
+        assertEquals(PlaceBlock.Itself, blocked[town.id])
+    }
+
+    @Test
+    fun `a checked place inside another checked one travels with it`() {
+        val checked = listOf(valley.id, temple.id, castle.id)
+
+        assertEquals(listOf(valley.id, castle.id), tree.withoutCarried(checked))
+        val changes = tree.insideChanges(plane.id, listOf(valley.id, temple.id))
+        assertEquals(emptySet(), changes.entering)
+        assertEquals(emptySet(), changes.leaving)
+        val other = tree.insideChanges(wastes.id, listOf(castle.id, plane.id, town.id))
+        assertEquals(setOf(plane.id), other.entering)
+        assertEquals(setOf(tower.id), other.leaving)
+    }
+
+    @Test
+    fun `pending moves are applied to the places before the rule is checked`() {
+        // the valley will sit in the wastes and hold the tower, the town is left without a parent
+        val pending = all.withPending(PlaceEditing(valley.id, valley.name, wastes.id, listOf(tower.id)))
+        val after = PlaceTree(pending)
+
+        assertEquals(listOf("Пустоши", "Долина"), after.pathOf(checkNotNull(after.find(valley.id))).map { it.name })
+        assertEquals(
+            listOf("Пустоши", "Долина", "Башня"),
+            after.pathOf(checkNotNull(after.find(tower.id))).map { it.name },
+        )
+        assertEquals(null, after.find(town.id)?.parentId)
+    }
+
+    @Test
+    fun `a place that is not saved yet joins the pending tree`() {
+        val pending = all.withPending(PlaceEditing(NEW_PLACE_ID, "Новое", castle.id, emptyList()))
+
+        assertTrue(NEW_PLACE_ID in PlaceTree(pending).descendantIds(castle.id))
+    }
 }
 
 internal fun location(

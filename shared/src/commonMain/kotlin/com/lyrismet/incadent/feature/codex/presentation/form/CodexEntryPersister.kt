@@ -1,11 +1,13 @@
 package com.lyrismet.incadent.feature.codex.presentation.form
 
 import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
 import com.lyrismet.incadent.feature.codex.domain.model.clampedToRanges
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
+import kotlinx.coroutines.flow.first
 
 /** turns the form's fields into the domain record of its type and writes it, one repository per kind */
 internal class CodexEntryPersister(
@@ -20,6 +22,15 @@ internal class CodexEntryPersister(
             EntityKind.PARTY -> partyRepository.upsert(form.toPartyMember().clampedToRanges())
             EntityKind.NPC -> npcRepository.upsert(form.toNpc())
             EntityKind.QUEST -> questRepository.upsert(form.toQuest())
-            EntityKind.LOCATION -> locationRepository.upsert(form.toLocation())
+            EntityKind.LOCATION -> saveLocation(form)
         }
+
+    // the places the form lists as inside move under the saved place, the ones it dropped go to the top level
+    private suspend fun saveLocation(form: CodexEntryFormFields): Long {
+        val id = locationRepository.upsert(form.toLocation())
+        val changes = PlaceTree(locationRepository.observeAll().first()).insideChanges(id, form.locationChildIds)
+        changes.entering.forEach { locationRepository.setParent(it, id) }
+        changes.leaving.forEach { locationRepository.setParent(it, null) }
+        return id
+    }
 }
