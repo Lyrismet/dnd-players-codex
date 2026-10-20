@@ -17,10 +17,17 @@ import kotlinx.coroutines.launch
 private const val UNDO_WINDOW_MS = 5000L
 private const val LOG_COMPONENT = "UndoController"
 
+/** a second button on the bar next to "Undo", for what to do with the thing that was just made */
+data class UndoFollowUp(
+    val label: String,
+    val onClick: () -> Unit,
+)
+
 data class UndoAction(
     val title: String,
     val subtitle: String,
     val onUndo: suspend () -> Unit,
+    val followUp: UndoFollowUp? = null,
 )
 
 /** shared across session/codex deletes - only one undo toast is on screen at a time */
@@ -38,14 +45,30 @@ class UndoController(
         title: String,
         subtitle: String,
         onUndo: suspend () -> Unit,
+    ) = showMade(title, subtitle, followUp = null, onUndo)
+
+    /** the bar of something just made, [followUp] being what to do with it next */
+    fun showMade(
+        title: String,
+        subtitle: String,
+        followUp: UndoFollowUp?,
+        onUndo: suspend () -> Unit,
     ) {
         dismissJob?.cancel()
-        _current.value = UndoAction(title, subtitle, onUndo)
+        _current.value = UndoAction(title, subtitle, onUndo, followUp)
         dismissJob =
             scope.launch {
                 delay(UNDO_WINDOW_MS)
                 _current.value = null
             }
+    }
+
+    /** closes the bar without undoing and runs the follow-up button */
+    fun followUp() {
+        val action = _current.value ?: return
+        dismissJob?.cancel()
+        _current.value = null
+        action.followUp?.onClick?.invoke()
     }
 
     fun undo() {

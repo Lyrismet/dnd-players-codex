@@ -93,6 +93,7 @@ private class SessionDetailFields(
     val composer: SessionDraftController,
     val tags: SessionTagsController,
     val deleted: DeletedMentionController,
+    val create: MentionCreateController,
     val phrases: PhraseSheetController,
     val toast: MutableState<String?>,
     val formController: CodexEntryFormController,
@@ -161,7 +162,8 @@ class SessionDetailPresenter(
             }
         }
 
-        val mention = buildMentionContext(npcs, locations, quests, parties, draft.value.text)
+        val sessionBodies = mentionSessionBodies(currentNote, allSessions, entries, allEntries)
+        val mention = buildMentionContext(npcs, locations, quests, parties, draft.value.text, sessionBodies)
         // parsing every note is the costly part, so it only reruns when a note or a mention candidate changes
         val noteItems =
             remember(entries, mention.candidates) {
@@ -273,6 +275,7 @@ class SessionDetailPresenter(
             phraseSheet = fields.phrases.sheetState(pinnedPhrases, frequentPhrases),
             toast = fields.toast.value,
             deletedMentionSheet = fields.deleted.state(mentionData),
+            mentionCreateSheet = fields.create.state(mentionData),
             entryForm = fields.formController.buildState(npcs, locations),
         ) { event ->
             val context = EventContext(currentNote, entries, undoDeletedEntryTitle, phraseSavedToast, scope, readOnly)
@@ -296,6 +299,7 @@ class SessionDetailPresenter(
                 recentPlaceIds,
                 playerCharacterLevel,
             )
+        val draft = remember(noteId) { mutableStateOf(TextFieldValue("")) }
         return SessionDetailFields(
             titleField = remember(noteId) { mutableStateOf<String?>(null) },
             titleEditing = remember(noteId) { mutableStateOf(false) },
@@ -306,7 +310,7 @@ class SessionDetailPresenter(
                     noteId,
                     sessionEntryRepository,
                     undoController,
-                    draft = remember(noteId) { mutableStateOf(TextFieldValue("")) },
+                    draft = draft,
                     editingEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
                     selectedEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
                 ),
@@ -323,6 +327,16 @@ class SessionDetailPresenter(
                     mentionActions,
                     formController,
                 ),
+            create =
+                MentionCreateController(
+                    remember(noteId) { mutableStateOf<OpenMentionCreate?>(null) },
+                    draft,
+                    codexRepositories,
+                    undoController,
+                    appPreferencesRepository,
+                    mentionActions,
+                    formController,
+                ) { selectedEntityRef.value = it },
             phrases = remember { PhraseSheetController(phraseSnippetRepository) },
             toast = remember(noteId) { mutableStateOf<String?>(null) },
             formController = formController,
@@ -404,7 +418,12 @@ class SessionDetailPresenter(
             SessionDetailEvent.DeletedMentionSheetDismissed -> fields.deleted.dismiss()
             is SessionDetailEvent.DeletedMentionPickingChanged -> fields.deleted.setPicking(event.isPicking)
             is SessionDetailEvent.DeletedMentionQueryChanged -> fields.deleted.setQuery(event.query)
-            SessionDetailEvent.DeletedMentionCreateClicked -> fields.deleted.createRecord()
+            SessionDetailEvent.DeletedMentionCreateClicked -> fields.deleted.createRecord(fields.create::startFor)
+            is SessionDetailEvent.MentionCreateOpened -> fields.create.start(event.name)
+            is SessionDetailEvent.MentionCreateNameChanged -> fields.create.setName(event.name)
+            is SessionDetailEvent.MentionCreateTypeChanged -> fields.create.setType(event.type)
+            SessionDetailEvent.MentionCreateConfirmed -> fields.create.confirm(scope, mentionData)
+            SessionDetailEvent.MentionCreateDismissed -> fields.create.dismiss()
             is SessionDetailEvent.DeletedMentionLinked -> fields.deleted.rewrite(scope, event.key, mentionData)
             SessionDetailEvent.DeletedMentionKeptAsText -> fields.deleted.rewrite(scope, null, mentionData)
             is SessionDetailEvent.AutoMentionsLinkClicked ->
@@ -513,4 +532,24 @@ private fun withoutBrokenTokens(
     if (clean == text) return TextFieldValue(text, selection)
     val caret = stripBrokenTokens(text.take(selection.end)).length
     return TextFieldValue(clean, TextRange(caret.coerceAtMost(clean.length)))
+}
+
+/** the notes of this session and of the session played just before it - what the empty "@" dropdown draws from */
+private fun mentionSessionBodies(
+    currentNote: SessionNote?,
+    allSessions: List<SessionNote>,
+    entries: List<SessionEntry>,
+    allEntries: List<SessionEntry>,
+): MentionSessionBodies {
+    val previousId =
+        currentNote?.let { note ->
+            allSessions
+                .filter { it.id != note.id && it.sessionDate <= note.sessionDate }
+                .maxByOrNull { it.sessionDate }
+                ?.id
+        }
+    return MentionSessionBodies(
+        current = entries.map { it.body },
+        previous = allEntries.filter { it.sessionNoteId == previousId }.map { it.body },
+    )
 }

@@ -181,19 +181,6 @@ private val TRAILING_MENTION_REGEX = Regex("@([^@\\s\\[\\]|]{0,24})$")
 /** the in-progress "@query" at the end of [draft], if the caret is mid-mention - drives the suggestion popover */
 fun trailingMentionQuery(draft: String): String? = TRAILING_MENTION_REGEX.find(draft)?.groupValues?.get(1)
 
-fun matchingMentionEntities(
-    entities: List<MentionEntity>,
-    rawQuery: String,
-    limit: Int = 5,
-): List<MentionEntity> {
-    val query = rawQuery.trim().lowercase()
-    return entities
-        .filter { entity ->
-            val name = entity.name.lowercase()
-            name.startsWith(query) || (query.length > 1 && name.contains(query))
-        }.take(limit)
-}
-
 /** replaces the trailing "@query" in [draft] with [token] plus a trailing space */
 fun insertMention(
     draft: String,

@@ -23,6 +23,10 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.auto_mention_linked_title
 import dndplayerscodex.shared.generated.resources.deleted_mention_linked_title
 import dndplayerscodex.shared.generated.resources.deleted_mention_text_toast_title
+import dndplayerscodex.shared.generated.resources.mention_created_fill
+import dndplayerscodex.shared.generated.resources.mention_created_first_title
+import dndplayerscodex.shared.generated.resources.mention_created_open
+import dndplayerscodex.shared.generated.resources.mention_created_title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -33,6 +37,8 @@ data class DeletedMentionSheetState(
     val type: EntityKind,
     val notes: Int,
     val sessions: Int,
+    // a name typed after "@" that no record answers to yet - the sheet words itself for a record that never existed
+    val isUnlinked: Boolean,
     // true while the "link to another record" list replaces the three actions
     val isPicking: Boolean,
     val query: String,
@@ -60,6 +66,15 @@ internal class MentionTitles(
     val autoLinked: String,
     val deletedLinked: String,
     val deletedToText: String,
+    val created: CreatedTitles,
+)
+
+/** the texts of the bar shown after a record is made from a typed name, the first one worded differently */
+internal class CreatedTitles(
+    val title: String,
+    val firstTitle: String,
+    val fill: String,
+    val open: String,
 )
 
 /** everything the mention events read - one value instead of one parameter per piece */
@@ -134,6 +149,22 @@ internal class SessionMentionActions(
         }
     }
 
+    /** points every token of [from] at the record [to] named [toName], and returns the way back */
+    suspend fun relinkAll(
+        from: MentionRef,
+        to: MentionRef,
+        toName: String,
+        entries: List<SessionEntry>,
+    ): suspend () -> Unit {
+        val changes =
+            entries.mapNotNull { entry ->
+                val rewritten = relinkMentionIn(entry.body, from, to, toName)
+                (entry to rewritten).takeIf { rewritten != entry.body }
+            }
+        changes.forEach { (entry, body) -> entryRepository.rewriteBody(entry.id, body) }
+        return { changes.forEach { (entry, _) -> entryRepository.rewriteBody(entry.id, entry.body) } }
+    }
+
     private companion object {
         const val UNDO_PREVIEW_LENGTH = 60
     }
@@ -159,6 +190,13 @@ internal fun mentionEventData(
                 autoLinked = stringResource(Res.string.auto_mention_linked_title),
                 deletedLinked = stringResource(Res.string.deleted_mention_linked_title),
                 deletedToText = stringResource(Res.string.deleted_mention_text_toast_title),
+                created =
+                    CreatedTitles(
+                        title = stringResource(Res.string.mention_created_title),
+                        firstTitle = stringResource(Res.string.mention_created_first_title),
+                        fill = stringResource(Res.string.mention_created_fill),
+                        open = stringResource(Res.string.mention_created_open),
+                    ),
             ),
     )
 

@@ -135,27 +135,6 @@ class MentionTest {
     }
 
     @Test
-    fun `matchingMentionEntities matches by name prefix case-insensitively`() {
-        val matches = matchingMentionEntities(listOf(ragnar, forge, sword), "рагн")
-        assertEquals(listOf(ragnar), matches)
-    }
-
-    @Test
-    fun `matchingMentionEntities lists every record that shares the name`() {
-        val twin = MentionEntity.LocationMention(8, "Рагнар")
-        assertEquals(listOf<MentionEntity>(ragnar, twin), matchingMentionEntities(listOf(ragnar, twin), "рагнар"))
-    }
-
-    @Test
-    fun `matchingMentionEntities respects the limit`() {
-        val many =
-            (1..10).map {
-                MentionEntity.NpcMention(it.toLong(), "Стражник $it", NpcStatus.NEUTRAL, NpcLifeState.ALIVE)
-            }
-        assertEquals(3, matchingMentionEntities(many, "страж", limit = 3).size)
-    }
-
-    @Test
     fun `insertMention replaces the trailing query with the token and a space`() {
         val result = insertMention("Поговорили с @Ра", ragnar.token())
         assertEquals("Поговорили с ${ragnar.token()} ", result)

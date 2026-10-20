@@ -28,6 +28,9 @@ import dndplayerscodex.shared.generated.resources.campaign_toast_created_transfe
 import dndplayerscodex.shared.generated.resources.campaign_toast_deleted
 import dndplayerscodex.shared.generated.resources.error_action_failed
 import dndplayerscodex.shared.generated.resources.session_list_rename_saved_toast
+import dndplayerscodex.shared.generated.resources.starter_phrase_arrived
+import dndplayerscodex.shared.generated.resources.starter_phrase_met
+import dndplayerscodex.shared.generated.resources.starter_phrase_quest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
@@ -227,13 +230,21 @@ private fun submitForm(
         draft.sameWorld && draft.step == CampaignCreateStep.FORM -> draft.copy(step = CampaignCreateStep.ITEMS)
         else -> {
             scope.launch {
-                val copied = repository.create(name, draft.toTransfer(candidates))
+                val copied = repository.create(name, draft.toTransfer(candidates), starterPhrases())
                 showToast(createdToast(name, copied))
             }
             draft.copy(submitting = true)
         }
     }
 }
+
+// a new campaign starts with phrases that open the "@" dropdown
+private suspend fun starterPhrases(): List<String> =
+    listOf(
+        getString(Res.string.starter_phrase_arrived),
+        getString(Res.string.starter_phrase_met),
+        getString(Res.string.starter_phrase_quest),
+    )
 
 private suspend fun createdToast(
     name: String,

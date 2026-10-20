@@ -53,6 +53,10 @@ import dndplayerscodex.shared.generated.resources.deleted_mention_type_party
 import dndplayerscodex.shared.generated.resources.deleted_mention_type_quest
 import dndplayerscodex.shared.generated.resources.mention_count_in_sessions
 import dndplayerscodex.shared.generated.resources.mention_count_notes
+import dndplayerscodex.shared.generated.resources.mention_unlinked_body
+import dndplayerscodex.shared.generated.resources.mention_unlinked_create_format
+import dndplayerscodex.shared.generated.resources.mention_unlinked_link_hint
+import dndplayerscodex.shared.generated.resources.mention_unlinked_overline
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_party
@@ -67,6 +71,8 @@ internal fun DeletedMentionSheet(
     sheet: DeletedMentionSheetState,
     eventSink: (SessionDetailEvent) -> Unit,
 ) {
+    val overlineRes =
+        if (sheet.isUnlinked) Res.string.mention_unlinked_overline else Res.string.deleted_mention_overline
     AppBottomSheet(onDismissRequest = { eventSink(SessionDetailEvent.DeletedMentionSheetDismissed) }) {
         AppSheetColumn(spacing = 14.dp) {
             AppSheetHeader(
@@ -77,7 +83,7 @@ internal fun DeletedMentionSheet(
                     },
                 onClose = { eventSink(SessionDetailEvent.DeletedMentionSheetDismissed) },
                 // the same overline and "? name" over both steps, so picking a record does not retitle the sheet
-                overline = stringResource(Res.string.deleted_mention_overline),
+                overline = stringResource(overlineRes),
                 overlineColor = AppPalette.TextSecondary,
                 closeSize = 32.dp,
             )
@@ -98,22 +104,33 @@ private fun DeletedMentionActions(
     val notes = pluralStringResource(Res.plurals.mention_count_notes, sheet.notes, sheet.notes)
     val sessions = pluralStringResource(Res.plurals.mention_count_in_sessions, sheet.sessions, sheet.sessions)
     Text(
-        stringResource(Res.string.deleted_mention_body, notes, sessions),
+        stringResource(
+            if (sheet.isUnlinked) Res.string.mention_unlinked_body else Res.string.deleted_mention_body,
+            notes,
+            sessions,
+        ),
         style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Medium, lineHeight = 22.sp),
         color = AppPalette.TextMuted,
     )
     FormPrimaryButton(
         text =
-            stringResource(
-                Res.string.deleted_mention_create_format,
-                sheet.name,
-                stringResource(sheet.type.typeLabelRes()),
-            ),
+            if (sheet.isUnlinked) {
+                stringResource(Res.string.mention_unlinked_create_format, sheet.name)
+            } else {
+                stringResource(
+                    Res.string.deleted_mention_create_format,
+                    sheet.name,
+                    stringResource(sheet.type.typeLabelRes()),
+                )
+            },
         onClick = { eventSink(SessionDetailEvent.DeletedMentionCreateClicked) },
     )
     DeletedMentionOption(
         title = stringResource(Res.string.deleted_mention_link_title),
-        hint = stringResource(Res.string.deleted_mention_link_hint),
+        hint =
+            stringResource(
+                if (sheet.isUnlinked) Res.string.mention_unlinked_link_hint else Res.string.deleted_mention_link_hint,
+            ),
         onClick = { eventSink(SessionDetailEvent.DeletedMentionPickingChanged(true)) },
     )
     DeletedMentionOption(
@@ -229,7 +246,8 @@ private fun DeletedMentionLinkRow(
     }
 }
 
-private fun EntityKind.kindLabelRes(): StringResource =
+/** the short kind name shown in the mention sheets - NPC, Квест, Место, Отряд */
+internal fun EntityKind.kindLabelRes(): StringResource =
     when (this) {
         EntityKind.NPC -> Res.string.session_detail_mention_type_npc
         EntityKind.PARTY -> Res.string.session_detail_mention_type_party

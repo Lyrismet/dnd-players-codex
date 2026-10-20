@@ -75,7 +75,7 @@ fun relinkMentionIn(
     body: String,
     from: MentionRef,
     to: MentionEntity,
-): String = TOKEN_REGEX.replace(body) { if (it.toRef() == from) to.token() else it.value }
+): String = relinkMentionIn(body, from, to.ref, to.name)
 
 /** turns the tokens of [from] into the plain name they carry - a "?" tag becoming words */
 fun unlinkMentionIn(

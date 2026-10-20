@@ -52,7 +52,7 @@ fun phraseCompletions(
     return options.takeIf { it.isNotEmpty() }?.let { PhraseCompletions(fragment, it) }
 }
 
-/** appends [phrase] to [draft], or swaps the typed [replacing] fragment for it - always ends with a space */
+/** appends [phrase] to [draft], or swaps the typed [replacing] fragment for it - ends with a space or an open "@" */
 fun insertPhrase(
     draft: String,
     phrase: String,
@@ -64,7 +64,8 @@ fun insertPhrase(
             draft.isNotEmpty() && !draft.last().isWhitespace() -> "$draft "
             else -> draft
         }
-    return "$base$phrase "
+    // a phrase that ends with "@" leaves it open, so the dropdown of records opens right away
+    return if (phrase.endsWith("@")) "$base$phrase" else "$base$phrase "
 }
 
 /** the phrase as plain text for a chip or row - mention markers dropped, cut to [maxLength] with an ellipsis */
@@ -72,7 +73,9 @@ fun phraseLabel(
     text: String,
     maxLength: Int? = null,
 ): String {
-    val plain = plainMentionText(text).replace("@", "")
+    // a trailing "@" is the point of a starter phrase, so it stays in the label
+    val trailingAt = if (text.trimEnd().endsWith("@")) " @" else ""
+    val plain = plainMentionText(text).replace("@", "").trim() + trailingAt
     return if (maxLength != null && plain.length > maxLength) plain.take(maxLength - 1) + "…" else plain
 }
 

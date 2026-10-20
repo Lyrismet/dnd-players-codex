@@ -8,7 +8,9 @@ import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.insertMention
 import com.lyrismet.incadent.feature.mention.domain.linkTypedMentions
+import com.lyrismet.incadent.feature.mention.domain.markUnlinkedMentions
 import com.lyrismet.incadent.feature.mention.domain.plainMentionText
+import com.lyrismet.incadent.feature.mention.domain.unmarkUnlinkedMentions
 import com.lyrismet.incadent.feature.phrases.domain.insertPhrase
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
@@ -68,8 +70,8 @@ internal class SessionDraftController(
         entries: List<SessionEntry>,
         index: MentionIndex,
     ) {
-        // a name typed after "@" without picking it from the list still turns into the token of its record
-        val body = linkTypedMentions(draft.value.text.trim(), index)
+        // a name typed after "@" without picking it turns into its record's token, or into a "?" tag when there is none
+        val body = markUnlinkedMentions(linkTypedMentions(draft.value.text.trim(), index))
         val editingId = editingEntryId.value
         // an unchanged save must not flip the "изм." mark, so it only writes when the body actually differs
         val unchanged = editingId != null && entries.find { it.id == editingId }?.body == body
@@ -109,7 +111,7 @@ internal class SessionDraftController(
         val entry = entries.find { it.id == id } ?: return
         selectedEntryId.value = null
         editingEntryId.value = id
-        setDraft(entry.body)
+        setDraft(unmarkUnlinkedMentions(entry.body))
     }
 
     fun cancelEdit() {

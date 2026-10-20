@@ -37,6 +37,7 @@ class CampaignRepositoryImpl(
     private val locationQueries = database.locationQueries
     private val npcQueries = database.npcQueries
     private val npcLocationQueries = database.npcLocationQueries
+    private val phraseQueries = database.phraseSnippetQueries
 
     override fun observeAll(): Flow<List<Campaign>> =
         queries.selectSummaries(::toDomain).asFlow().mapToList(Dispatchers.Default)
@@ -54,12 +55,14 @@ class CampaignRepositoryImpl(
     override suspend fun create(
         name: String,
         transfer: CampaignTransfer?,
+        starterPhrases: List<String>,
     ): Int =
         withContext(Dispatchers.Default) {
             val id = Uuid.random().toString()
             val copied =
                 database.transactionWithResult {
                     queries.insert(id, name.trim(), CampaignStatus.LIVE, now(), now())
+                    starterPhrases.forEach { phraseQueries.insert(it, id) }
                     if (transfer == null) 0 else copyWorld(transfer, id)
                 }
             current.open(id)

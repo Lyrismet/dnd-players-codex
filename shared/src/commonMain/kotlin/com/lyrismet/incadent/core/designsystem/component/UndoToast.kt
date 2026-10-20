@@ -31,13 +31,14 @@ fun UndoToast(
     action: UndoAction?,
     onUndo: () -> Unit,
     modifier: Modifier = Modifier,
+    onFollowUp: () -> Unit = {},
 ) {
     FloatingBar(
         value = action,
         modifier = modifier,
         contentPadding = PaddingValues(start = 14.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
     ) { current ->
-        UndoToastContent(current, onUndo)
+        UndoToastContent(current, onUndo, onFollowUp)
     }
 }
 
@@ -45,6 +46,7 @@ fun UndoToast(
 private fun UndoToastContent(
     action: UndoAction,
     onUndo: () -> Unit,
+    onFollowUp: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -55,7 +57,13 @@ private fun UndoToastContent(
             shape = AppShapes.Tile,
             background = AppPalette.Maroon.copy(alpha = 0.25f),
         ) {
-            Icon(AppIcons.Delete, contentDescription = null, tint = AppPalette.MaroonBright)
+            // a bar with a follow-up announces something made, not something removed
+            val isMade = action.followUp != null
+            Icon(
+                if (isMade) AppIcons.Edit else AppIcons.Delete,
+                contentDescription = null,
+                tint = if (isMade) AppPalette.GoldBright else AppPalette.MaroonBright,
+            )
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(action.title, style = MaterialTheme.typography.titleSmall, color = AppPalette.TextHeading)
@@ -66,6 +74,11 @@ private fun UndoToastContent(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+        }
+        action.followUp?.let { followUp ->
+            TextButton(onClick = onFollowUp, modifier = Modifier.height(44.dp)) {
+                Text(followUp.label, color = AppPalette.GoldBright, style = MaterialTheme.typography.titleSmall)
+            }
         }
         TextButton(onClick = onUndo, modifier = Modifier.height(44.dp)) {
             Text(

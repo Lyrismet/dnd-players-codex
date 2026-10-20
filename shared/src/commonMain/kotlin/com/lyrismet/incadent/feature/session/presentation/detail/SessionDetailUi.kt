@@ -74,6 +74,7 @@ fun SessionDetailUi(
     state.selectedEntity?.let { entity -> SessionDetailEntitySheet(state, entity) }
     state.tagSheet?.let { sheet -> SessionDetailTagsSheet(sheet, state.eventSink) }
     state.deletedMentionSheet?.let { sheet -> DeletedMentionSheet(sheet, state.eventSink) }
+    state.mentionCreateSheet?.let { sheet -> MentionCreateSheet(sheet, state.eventSink) }
     state.entryForm?.let { form ->
         CodexEntryFormSheet(
             form,

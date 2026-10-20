@@ -47,6 +47,17 @@ class PhraseSnippetsTest {
     }
 
     @Test
+    fun `a phrase ending with at sign leaves it open`() {
+        assertEquals("Привет Пришли в @", insertPhrase("Привет", "Пришли в @"))
+        assertEquals("Пришли в @", insertPhrase("", "Пришли в @"))
+    }
+
+    @Test
+    fun `label keeps the open at sign of a starter phrase`() {
+        assertEquals("Пришли в @", phraseLabel("Пришли в @"))
+    }
+
+    @Test
     fun `label drops mention markers and cuts long text`() {
         assertEquals("Бран скрылся", phraseLabel("@Бран скрылся"))
         assertEquals("Взять Ключ", phraseLabel("Взять @Ключ"))

@@ -75,7 +75,6 @@ import dndplayerscodex.shared.generated.resources.action_cancel
 import dndplayerscodex.shared.generated.resources.session_detail_composer_hint
 import dndplayerscodex.shared.generated.resources.session_detail_composer_placeholder
 import dndplayerscodex.shared.generated.resources.session_detail_editing_label_format
-import dndplayerscodex.shared.generated.resources.session_detail_mention_suggestions_header
 import dndplayerscodex.shared.generated.resources.session_detail_save_button
 import dndplayerscodex.shared.generated.resources.session_detail_submit_button
 import org.jetbrains.compose.resources.stringResource
@@ -393,36 +392,5 @@ private fun MentionSuggestionsPopover(
     state: SessionDetailState,
     composerWidthPx: Int,
 ) {
-    ComposerPopover(composerWidthPx) {
-        Text(
-            stringResource(Res.string.session_detail_mention_suggestions_header),
-            style = AppText.fieldOverline,
-            color = AppPalette.TextTertiary,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-        )
-        state.mentionSuggestions.forEach { suggestion ->
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(AppShapes.Tile)
-                        .clickable {
-                            state.eventSink(SessionDetailEvent.MentionSuggestionPicked(suggestion.token))
-                        }.padding(horizontal = 8.dp, vertical = 9.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(modifier = Modifier.width(14.dp), contentAlignment = Alignment.Center) {
-                    Text(suggestion.glyph.symbol, fontSize = AppFontSize.Micro, color = suggestion.tint)
-                }
-                Text(
-                    suggestion.name,
-                    fontSize = AppFontSize.Medium,
-                    color = AppPalette.TextPrimary,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(suggestion.typeLabel, fontSize = AppFontSize.Caption, color = AppPalette.TextSecondary)
-            }
-        }
-    }
+    ComposerPopover(composerWidthPx) { MentionDropdownContent(state.mentionSuggestions, state.eventSink) }
 }
