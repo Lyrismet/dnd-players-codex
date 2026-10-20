@@ -14,8 +14,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
-private const val UNDO_WINDOW_MS = 5000L
+private val UNDO_WINDOW = 5.seconds
 private const val LOG_COMPONENT = "UndoController"
 
 /** a second button on the bar next to "Undo", for what to do with the thing that was just made */
@@ -61,7 +62,7 @@ class UndoController(
         _current.value = UndoAction(title, subtitle, onUndo, followUp)
         dismissJob =
             scope.launch {
-                delay(UNDO_WINDOW_MS)
+                delay(UNDO_WINDOW)
                 _current.value = null
             }
     }

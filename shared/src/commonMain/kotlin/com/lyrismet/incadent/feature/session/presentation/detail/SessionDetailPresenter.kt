@@ -8,7 +8,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.incadent.core.errors.ReportFailures
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
@@ -34,10 +33,8 @@ import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.domain.dedupeKey
 import com.lyrismet.incadent.feature.mention.domain.mentionsIn
 import com.lyrismet.incadent.feature.mention.domain.plainMentionText
-import com.lyrismet.incadent.feature.mention.domain.token
 import com.lyrismet.incadent.feature.mention.presentation.toChipItem
 import com.lyrismet.incadent.feature.phrases.domain.PhraseOption
-import com.lyrismet.incadent.feature.phrases.domain.insertPhrase
 import com.lyrismet.incadent.feature.phrases.domain.phraseCompletions
 import com.lyrismet.incadent.feature.phrases.domain.phraseFragment
 import com.lyrismet.incadent.feature.phrases.domain.phraseLabel
@@ -78,10 +75,9 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
-import com.lyrismet.incadent.feature.mention.domain.withoutBrokenTokens as stripBrokenTokens
+import kotlin.time.Duration.Companion.milliseconds
 
-private const val HIGHLIGHT_DURATION_MS = 2800L
+private val HIGHLIGHT_DURATION = 2800.milliseconds
 private const val PHRASE_STRIP_SIZE = 8
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
@@ -118,7 +114,6 @@ class SessionDetailPresenter(
 
     // one collection per source the screen reads - a flat merge, not real complexity
     @Suppress("LongMethod")
-    @OptIn(ExperimentalTime::class)
     @Composable
     override fun present(): SessionDetailState {
         val allSessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
@@ -145,7 +140,7 @@ class SessionDetailPresenter(
         val highlightedEntryId = remember { mutableStateOf(screen.focusEntryId) }
         LaunchedEffect(highlightedEntryId.value) {
             if (highlightedEntryId.value != null) {
-                delay(HIGHLIGHT_DURATION_MS)
+                delay(HIGHLIGHT_DURATION)
                 highlightedEntryId.value = null
             }
         }
@@ -307,7 +302,7 @@ class SessionDetailPresenter(
             )
         val draft = remember(noteId) { mutableStateOf(TextFieldValue("")) }
         return SessionDetailFields(
-            titleField = remember(noteId) { mutableStateOf<String?>(null) },
+            titleField = remember(noteId) { mutableStateOf(null) },
             titleEditing = remember(noteId) { mutableStateOf(false) },
             selectedEntityRef = selectedEntityRef,
             entitySheet = entitySheetInteractions(selectedEntityRef, entityHistory),
@@ -317,8 +312,8 @@ class SessionDetailPresenter(
                     sessionEntryRepository,
                     undoController,
                     draft = draft,
-                    editingEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
-                    selectedEntryId = remember(noteId) { mutableStateOf<Long?>(null) },
+                    editingEntryId = remember(noteId) { mutableStateOf(null) },
+                    selectedEntryId = remember(noteId) { mutableStateOf(null) },
                 ),
             tags =
                 SessionTagsController(
@@ -329,13 +324,13 @@ class SessionDetailPresenter(
                 ),
             deleted =
                 DeletedMentionController(
-                    remember(noteId) { mutableStateOf<OpenDeletedSheet?>(null) },
+                    remember(noteId) { mutableStateOf(null) },
                     mentionActions,
                     formController,
                 ),
             create =
                 MentionCreateController(
-                    remember(noteId) { mutableStateOf<OpenMentionCreate?>(null) },
+                    remember(noteId) { mutableStateOf(null) },
                     draft,
                     codexRepositories,
                     undoController,
@@ -344,7 +339,7 @@ class SessionDetailPresenter(
                     formController,
                 ) { selectedEntityRef.value = it },
             phrases = remember { PhraseSheetController(phraseSnippetRepository) },
-            toast = remember(noteId) { mutableStateOf<String?>(null) },
+            toast = remember(noteId) { mutableStateOf(null) },
             formController = formController,
         )
     }
@@ -476,7 +471,6 @@ class SessionDetailPresenter(
         currentNote?.let { note -> scope.launch { sessionNoteRepository.upsert(note.copy(title = title)) } }
     }
 
-    @OptIn(ExperimentalTime::class)
     private fun onEndSession(
         currentNote: SessionNote?,
         scope: CoroutineScope,
@@ -489,7 +483,6 @@ class SessionDetailPresenter(
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     private fun onResumeSession(
         currentNote: SessionNote?,
         scope: CoroutineScope,
@@ -528,17 +521,6 @@ private fun tagReasonLabels() =
         quests = stringResource(Res.string.session_tag_reason_quests),
         words = stringResource(Res.string.session_tag_reason_words),
     )
-
-// a cut token goes whole, the caret lands where the same text position now is
-private fun withoutBrokenTokens(
-    text: String,
-    selection: TextRange,
-): TextFieldValue {
-    val clean = stripBrokenTokens(text)
-    if (clean == text) return TextFieldValue(text, selection)
-    val caret = stripBrokenTokens(text.take(selection.end)).length
-    return TextFieldValue(clean, TextRange(caret.coerceAtMost(clean.length)))
-}
 
 /** the notes of this session and of the session played just before it - what the empty "@" dropdown draws from */
 private fun mentionSessionBodies(
