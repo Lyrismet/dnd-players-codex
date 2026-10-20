@@ -1,7 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 /** how an in-place input behaves - a title is one large line, a number takes a digit keypad, a description wraps */
-enum class InlineInputKind { TITLE, TEXT, NUMBER, MULTILINE }
+enum class InlineInputKind { TITLE, TEXT, LIST, NUMBER, MULTILINE }
 
 /** the input kind a text or number field opens with */
 fun QuickEditField.inputKind(): InlineInputKind =
@@ -11,6 +11,7 @@ fun QuickEditField.inputKind(): InlineInputKind =
             when (this) {
                 QuickEditField.NAME -> InlineInputKind.TITLE
                 QuickEditField.DESCRIPTION -> InlineInputKind.MULTILINE
+                QuickEditField.NICKNAMES -> InlineInputKind.LIST
                 else -> InlineInputKind.TEXT
             }
         QuickEditKind.Link,

@@ -12,6 +12,7 @@ CREATE TABLE party_member (
     hp_max INTEGER,
     hp_current INTEGER,
     description TEXT NOT NULL DEFAULT '',
+    nicknames TEXT NOT NULL DEFAULT '',
     portrait BLOB,
     portrait_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
@@ -22,31 +23,31 @@ CREATE INDEX party_member_campaign_id ON party_member(campaign_id);
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
 SELECT id, name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current,
-    description, portrait_thumb
+    description, nicknames, portrait_thumb
 FROM party_member
 WHERE campaign_id = ?
 ORDER BY name;
 
 selectById:
 SELECT id, name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current,
-    description, portrait_thumb, portrait
+    description, nicknames, portrait_thumb, portrait
 FROM party_member
 WHERE id = ?;
 
 insert:
-INSERT INTO party_member(name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, portrait, portrait_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO party_member(name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, nicknames, portrait, portrait_thumb, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO party_member(id, name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, portrait, portrait_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO party_member(id, name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, nicknames, portrait, portrait_thumb, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE party_member
 SET name = ?, character_class = ?, race = ?, level = ?, player_name = ?, is_player_character = ?, presence = ?,
-    hp_max = ?, hp_current = ?, description = ?
+    hp_max = ?, hp_current = ?, description = ?, nicknames = ?
 WHERE id = ?;
 
 setPortrait:

@@ -130,7 +130,7 @@ class CampaignRepositoryImpl(
         val source = transfer.sourceId
         val parents =
             locationQueries
-                .selectAll(source) { id, _, _, parentId, _ -> id to parentId }
+                .selectAll(source) { id, _, _, parentId, _, _ -> id to parentId }
                 .executeAsList()
                 .toMap()
         val npcPlaces =
@@ -150,6 +150,7 @@ class CampaignRepositoryImpl(
                 full.name,
                 full.description,
                 full.parent_id?.let(placeMap::get),
+                full.nicknames,
                 full.cover,
                 full.cover_thumb,
                 targetId,
@@ -164,8 +165,8 @@ class CampaignRepositoryImpl(
                 npc.status,
                 npc.description,
                 npc.race,
-                npc.faction,
                 npc.life_state,
+                npc.nicknames,
                 npc.portrait,
                 npc.portrait_thumb,
                 targetId,

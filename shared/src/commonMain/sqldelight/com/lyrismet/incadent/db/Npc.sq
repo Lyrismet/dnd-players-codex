@@ -6,8 +6,8 @@ CREATE TABLE npc (
     status TEXT AS NpcStatus NOT NULL,
     description TEXT NOT NULL,
     race TEXT NOT NULL DEFAULT '',
-    faction TEXT NOT NULL DEFAULT '',
     life_state TEXT AS NpcLifeState NOT NULL DEFAULT 'ALIVE',
+    nicknames TEXT NOT NULL DEFAULT '',
     portrait BLOB,
     portrait_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
@@ -17,7 +17,7 @@ CREATE INDEX npc_campaign_id ON npc(campaign_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT id, name, status, description, race, faction, life_state, portrait_thumb
+SELECT id, name, status, description, race, life_state, nicknames, portrait_thumb
 FROM npc
 WHERE campaign_id = ?
 ORDER BY name;
@@ -25,7 +25,7 @@ ORDER BY name;
 -- places come along in the same query so a write to either table re-emits one consistent list
 selectAllWithLocations:
 SELECT
-    npc.id, npc.name, npc.status, npc.description, npc.race, npc.faction, npc.life_state,
+    npc.id, npc.name, npc.status, npc.description, npc.race, npc.life_state, npc.nicknames,
     npc.portrait_thumb,
     COALESCE((SELECT group_concat(location_id) FROM npc_location WHERE npc_id = npc.id), '') AS location_ids
 FROM npc
@@ -33,23 +33,23 @@ WHERE campaign_id = ?
 ORDER BY name;
 
 selectById:
-SELECT id, name, status, description, race, faction, life_state, portrait_thumb, portrait
+SELECT id, name, status, description, race, life_state, nicknames, portrait_thumb, portrait
 FROM npc
 WHERE id = ?;
 
 insert:
-INSERT INTO npc(name, status, description, race, faction, life_state, portrait, portrait_thumb, campaign_id)
+INSERT INTO npc(name, status, description, race, life_state, nicknames, portrait, portrait_thumb, campaign_id)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO npc(id, name, status, description, race, faction, life_state, portrait, portrait_thumb, campaign_id)
+INSERT INTO npc(id, name, status, description, race, life_state, nicknames, portrait, portrait_thumb, campaign_id)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE npc
-SET name = ?, status = ?, description = ?, race = ?, faction = ?, life_state = ?
+SET name = ?, status = ?, description = ?, race = ?, life_state = ?, nicknames = ?
 WHERE id = ?;
 
 setPortrait:

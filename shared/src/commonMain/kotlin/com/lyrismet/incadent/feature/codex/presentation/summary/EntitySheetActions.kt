@@ -16,6 +16,8 @@ data class EntitySummarySheetActions(
     val onQuestStatusSelected: (questId: Long, status: QuestStatus) -> Unit,
     val onRelatedNoteClicked: (sessionNoteId: Long, entryId: Long) -> Unit,
     val onEditClicked: ((EntityRef) -> Unit)? = null,
+    // null hides the delete button - only an editable codex card offers it
+    val onDeleteClicked: ((EntityRef) -> Unit)? = null,
     // null hides the presence picker - only the codex manages party membership
     val onPartyPresenceSelected: ((partyId: Long, presence: PartyPresence) -> Unit)? = null,
     // true shows the status pickers as plain badges - the form-mode card is read-only

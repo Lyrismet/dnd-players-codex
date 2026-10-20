@@ -11,8 +11,8 @@ data class Npc(
     // every place the npc can be met at, in no particular order
     val locationIds: List<Long>,
     val race: String,
-    val faction: String,
     val portrait: Photo? = null,
+    val nicknames: List<String> = emptyList(),
 )
 
 /** the party's relation to this npc - independent of whether the npc is still alive */

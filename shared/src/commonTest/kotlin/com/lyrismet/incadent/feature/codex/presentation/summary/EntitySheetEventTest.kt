@@ -15,7 +15,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class EntitySheetEventTest {
-    private val gromm = Npc(1, "Громм", NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), "", "")
+    private val gromm = Npc(1, "Громм", NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), "")
     private val npcs = FakeNpcRepository(gromm)
     private val selected = mutableStateOf<EntityRef?>(null)
     private val opened = mutableListOf<Pair<Long, Long>>()

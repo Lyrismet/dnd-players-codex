@@ -7,6 +7,8 @@ import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.Location
+import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
+import com.lyrismet.incadent.feature.codex.domain.model.parseNicknames
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -48,7 +50,13 @@ class LocationRepositoryImpl(
                         queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
                     }
                 if (stored != null) {
-                    queries.update(entity.name, entity.description, entity.parentId, entity.id)
+                    queries.update(
+                        entity.name,
+                        entity.description,
+                        entity.parentId,
+                        entity.nicknames.joinNicknames(),
+                        entity.id,
+                    )
                     writeCover(entity.id, entity.cover, stored.cover)
                     entity.id
                 } else {
@@ -64,6 +72,7 @@ class LocationRepositoryImpl(
                 location.name,
                 location.description,
                 location.parentId,
+                location.nicknames.joinNicknames(),
                 location.cover?.full,
                 location.cover?.thumb,
                 current.requireId(),
@@ -74,6 +83,7 @@ class LocationRepositoryImpl(
             location.name,
             location.description,
             location.parentId,
+            location.nicknames.joinNicknames(),
             location.cover?.full,
             location.cover?.thumb,
             current.requireId(),
@@ -99,13 +109,16 @@ class LocationRepositoryImpl(
         }
     }
 
+    // one param per location column - dictated by SQLDelight's generated query mapper shape
+    @Suppress("LongParameterList")
     private fun toDomain(
         id: Long,
         name: String,
         description: String,
         parentId: Long?,
+        nicknames: String,
         coverThumb: ByteArray?,
-    ) = Location(id, name, description, parentId, coverThumb?.let { Photo(it) })
+    ) = Location(id, name, description, parentId, coverThumb?.let { Photo(it) }, parseNicknames(nicknames))
 
     // the by-id row also carries the full jpeg - one param per column, dictated by the generated mapper
     @Suppress("LongParameterList")
@@ -114,7 +127,15 @@ class LocationRepositoryImpl(
         name: String,
         description: String,
         parentId: Long?,
+        nicknames: String,
         coverThumb: ByteArray?,
         cover: ByteArray?,
-    ) = toDomain(id, name, description, parentId, coverThumb).copy(cover = coverThumb?.let { Photo(it, cover) })
+    ) = toDomain(
+        id,
+        name,
+        description,
+        parentId,
+        nicknames,
+        coverThumb,
+    ).copy(cover = coverThumb?.let { Photo(it, cover) })
 }

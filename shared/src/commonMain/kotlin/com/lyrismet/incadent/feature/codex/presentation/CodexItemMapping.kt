@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.feature.codex.presentation
 
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
-import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -12,7 +11,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.presentation.style.PartyMemberColor
 import com.lyrismet.incadent.feature.codex.presentation.style.toStatusColor
 
-// the grouping's subtitle wins over the default race and faction line when it is set
+// the grouping's subtitle wins over the default race line when it is set
 internal fun Npc.toCodexItem(
     statusLabels: Map<NpcStatus, String>,
     lifeLabels: Map<NpcLifeState, String>,
@@ -34,7 +33,7 @@ internal fun Npc.toCodexItem(
             },
         statusLabel = statusLabels.getValue(npc.status),
         statusColor = npc.status.toStatusColor(),
-        subtitle = subtitle ?: joinWithDot(npc.race, npc.faction),
+        subtitle = subtitle ?: npc.race,
     )
 }
 

@@ -7,6 +7,8 @@ import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
+import com.lyrismet.incadent.feature.codex.domain.model.parseNicknames
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -48,6 +50,7 @@ class QuestRepositoryImpl(
                         entity.givenByNpcId,
                         entity.locationId,
                         entity.description,
+                        entity.nicknames.joinNicknames(),
                         entity.id,
                     )
                     entity.id
@@ -67,6 +70,7 @@ class QuestRepositoryImpl(
                 quest.givenByNpcId,
                 quest.locationId,
                 quest.description,
+                quest.nicknames.joinNicknames(),
                 current.requireId(),
             )
             return quest.id
@@ -78,6 +82,7 @@ class QuestRepositoryImpl(
             quest.givenByNpcId,
             quest.locationId,
             quest.description,
+            quest.nicknames.joinNicknames(),
             current.requireId(),
         )
         return queries.lastInsertRowId().executeAsOne()
@@ -99,5 +104,6 @@ class QuestRepositoryImpl(
         givenByNpcId: Long?,
         locationId: Long?,
         description: String,
-    ) = Quest(id, title, status, reward, givenByNpcId, locationId, description)
+        nicknames: String,
+    ) = Quest(id, title, status, reward, givenByNpcId, locationId, description, parseNicknames(nicknames))
 }

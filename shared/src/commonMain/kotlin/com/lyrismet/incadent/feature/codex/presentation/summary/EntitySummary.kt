@@ -12,6 +12,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.style.DEFAULT_STATUS_GLYPH
 import com.lyrismet.incadent.feature.codex.presentation.style.LocationMentionColor
@@ -32,7 +33,7 @@ import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_qu
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_npc_quests_given
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_npc_quests_given_empty
 import dndplayerscodex.shared.generated.resources.entity_sheet_location_parent_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_npc_faction_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_nicknames_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_location_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_race_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_class_label
@@ -78,7 +79,7 @@ private fun buildNpcSummary(
                 isMonochrome = isDead,
                 hasPortraitSlot = true,
             ),
-        subtitle = "${npc.race} · ${npc.faction}",
+        subtitle = npc.race,
         statusOptions =
             statusOptions(NpcStatus.entries, npc.status, lookup.npcStatusLabels, NpcStatus::toStatusGlyph) { status ->
                 status.toStatusColor()
@@ -95,7 +96,7 @@ private fun buildNpcSummary(
         facts =
             listOf(
                 FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(npc.race), QuickEditField.RACE),
-                FactRow(Res.string.entity_sheet_npc_faction_label, FactValue.Text(npc.faction), QuickEditField.FACTION),
+                nicknamesFact(npc.nicknames),
                 FactRow(
                     Res.string.entity_sheet_npc_location_label,
                     FactValue.Links(places.map { it.toMentionChip() }),
@@ -152,6 +153,7 @@ private fun buildPartySummary(
                     QuickEditField.CHARACTER_CLASS,
                 ),
                 FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(member.race), QuickEditField.RACE),
+                nicknamesFact(member.nicknames),
                 FactRow(
                     Res.string.entity_sheet_party_level_label,
                     FactValue.Text(member.level.orDash()),
@@ -204,6 +206,7 @@ private fun buildQuestSummary(
                     location?.toMentionChip(),
                     QuickEditField.PLACE,
                 ),
+                nicknamesFact(quest.nicknames),
             ),
         groups = emptyList(),
         relatedNotes = buildRelatedNotes(EntityRef.Quest(quest.id), lookup),
@@ -237,6 +240,7 @@ private fun buildLocationSummary(
                     parent?.toMentionChip(),
                     QuickEditField.PARENT,
                 ).takeIf { hasPlaceToBeIn || parent != null },
+                nicknamesFact(location.nicknames),
             ),
         groups =
             listOfNotNull(
@@ -281,3 +285,10 @@ private fun <T> statusOptions(
     values.map { value ->
         StatusOption(value, labels.getValue(value), colorOf(value), value == current, glyphOf(value))
     }
+
+private fun nicknamesFact(nicknames: List<String>) =
+    FactRow(
+        Res.string.entity_sheet_nicknames_label,
+        FactValue.Text(nicknames.joinNicknames()),
+        QuickEditField.NICKNAMES,
+    )

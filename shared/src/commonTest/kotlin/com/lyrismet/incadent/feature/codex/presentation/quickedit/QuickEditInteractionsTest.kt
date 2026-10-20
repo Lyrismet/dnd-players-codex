@@ -135,7 +135,7 @@ class QuickEditInteractionsTest {
         }
 
     private class Harness {
-        val npcs = FakeNpcRepository(Npc(1, "Кассиан", NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), "", ""))
+        val npcs = FakeNpcRepository(Npc(1, "Кассиан", NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), ""))
         val quests = FakeQuestRepository(Quest(5, "Меч", QuestStatus.ACTIVE, "", null, null, ""))
         val inlineEdit = mutableStateOf<InlineEdit?>(null)
         val photoCrop = mutableStateOf<QuickPhotoCrop?>(null)

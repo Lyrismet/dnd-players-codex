@@ -64,7 +64,6 @@ private val ragnar =
         description = "Кузнец из Кузницы",
         locationIds = emptyList(),
         race = "Дварф",
-        faction = "Гильдия",
     )
 
 class CodexItemMappingTest {
@@ -175,9 +174,9 @@ class CodexItemMappingTest {
     }
 
     @Test
-    fun `Npc toCodexItem subtitle combines race and faction`() {
+    fun `Npc toCodexItem subtitle is the race`() {
         val item = ragnar.toCodexItem(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
-        assertEquals("Дварф · Гильдия", item.subtitle)
+        assertEquals("Дварф", item.subtitle)
     }
 
     @Test
@@ -186,13 +185,6 @@ class CodexItemMappingTest {
 
         assertEquals("Мирдейл", forge.toCodexItem(subtitle = "Мирдейл").subtitle)
         assertNull(forge.toCodexItem().subtitle)
-    }
-
-    @Test
-    fun `Npc toCodexItem subtitle has no dangling separator when race and faction are blank`() {
-        val bare = ragnar.copy(race = "", faction = "")
-        val item = bare.toCodexItem(statusLabels = mapOf(NpcStatus.FRIEND to "Друг"), lifeLabels = lifeLabels)
-        assertEquals("", item.subtitle)
     }
 
     @Test

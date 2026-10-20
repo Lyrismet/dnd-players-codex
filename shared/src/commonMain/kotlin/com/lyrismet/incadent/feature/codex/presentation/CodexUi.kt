@@ -221,6 +221,15 @@ private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
     return entitySheetActions(
         partyPresence = true,
         onEditClicked = if (isQuick) null else { ref -> state.eventSink(CodexEvent.EditEntryRequested(ref)) },
+        // the swipe stays the quick way, an archived campaign has nothing to delete
+        onDeleteClicked =
+            if (state.readOnly) {
+                null
+            } else {
+                { ref ->
+                    state.eventSink(CodexEvent.EntityDeleteRequested(ref))
+                }
+            },
         statusesReadOnly = !isQuick,
         quickEdit = if (isQuick) quickEditSheet(state) else null,
     ) { state.eventSink(CodexEvent.EntitySheet(it)) }

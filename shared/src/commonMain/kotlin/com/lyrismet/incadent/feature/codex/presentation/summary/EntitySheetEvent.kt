@@ -74,9 +74,11 @@ fun EntitySheetInteractions.onEvent(
  * the card's actions, every one sent to [send] as an [EntitySheetEvent]. Presence is offered only when
  * [partyPresence] is set, the rest are what only the codex manages.
  */
+@Suppress("LongParameterList")
 fun entitySheetActions(
     partyPresence: Boolean = false,
     onEditClicked: ((EntityRef) -> Unit)? = null,
+    onDeleteClicked: ((EntityRef) -> Unit)? = null,
     statusesReadOnly: Boolean = false,
     quickEdit: QuickEditSheet? = null,
     send: (EntitySheetEvent) -> Unit,
@@ -88,6 +90,7 @@ fun entitySheetActions(
         onQuestStatusSelected = { id, status -> send(EntitySheetEvent.QuestStatusSelected(id, status)) },
         onRelatedNoteClicked = { id, entryId -> send(EntitySheetEvent.RelatedNoteClicked(id, entryId)) },
         onEditClicked = onEditClicked,
+        onDeleteClicked = onDeleteClicked,
         onPartyPresenceSelected =
             if (partyPresence) {
                 { id, presence -> send(EntitySheetEvent.PartyPresenceSelected(id, presence)) }

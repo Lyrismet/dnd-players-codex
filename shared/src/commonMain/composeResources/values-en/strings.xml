@@ -117,12 +117,10 @@
     <string name="codex_group_region">Region</string>
     <string name="codex_group_tree">As tree</string>
     <string name="codex_group_relation">Relation</string>
-    <string name="codex_group_faction">Faction</string>
     <string name="codex_group_status">Status</string>
     <string name="codex_group_giver">Given by</string>
     <string name="codex_group_no_region_quest">No region</string>
     <string name="codex_group_no_place">Place not specified</string>
-    <string name="codex_group_no_faction">No faction</string>
     <string name="codex_group_no_giver">Unknown giver</string>
     <string name="codex_group_giver_prefix">From:</string>
     <string name="codex_group_top_level">Top level</string>
@@ -138,8 +136,13 @@
     <string name="codex_entry_label_name_npc">Name</string>
     <string name="codex_entry_label_name_quest">Title</string>
     <string name="codex_entry_label_name_location">Name</string>
+    <string name="codex_entry_more">More details</string>
+    <string name="codex_entry_more_close">Collapse</string>
+    <string name="codex_entry_more_hint_npc">Portrait, race, condition, where to meet, nicknames</string>
+    <string name="codex_entry_summary_portrait">portrait</string>
+    <string name="codex_entry_label_nicknames">Nicknames</string>
+    <string name="codex_entry_placeholder_nicknames">Grey, the Monk</string>
     <string name="codex_entry_label_race">Race</string>
-    <string name="codex_entry_label_faction">Faction</string>
     <string name="codex_entry_label_relationship">Relationship</string>
     <string name="codex_entry_label_where_to_meet">Where to find</string>
     <string name="codex_entry_label_notes">Notes</string>
@@ -150,7 +153,6 @@
     <string name="codex_entry_label_giver">Given by</string>
     <string name="codex_entry_placeholder_npc_name">E.g. Brother Odo</string>
     <string name="codex_entry_placeholder_npc_race">Human, tiefling…</string>
-    <string name="codex_entry_placeholder_npc_faction">Guild, order, house…</string>
     <string name="codex_entry_placeholder_npc_notes">Appearance, motives, what they promised…</string>
     <string name="codex_entry_placeholder_quest_name">E.g. Key to the crypt</string>
     <string name="codex_entry_placeholder_quest_description">What needs to be done</string>
@@ -177,8 +179,9 @@
 
     <string name="entity_sheet_overline_format">%1$s · %2$s</string>
     <string name="entity_sheet_status_label">Status</string>
+    <string name="entity_sheet_delete_button">Delete entry</string>
+    <string name="entity_sheet_nicknames_label">Nicknames</string>
     <string name="entity_sheet_npc_race_label">Race</string>
-    <string name="entity_sheet_npc_faction_label">Faction</string>
     <string name="entity_sheet_npc_location_label">Where to find</string>
     <string name="entity_sheet_quest_location_label">Where</string>
     <string name="entity_sheet_location_parent_label">Located in</string>

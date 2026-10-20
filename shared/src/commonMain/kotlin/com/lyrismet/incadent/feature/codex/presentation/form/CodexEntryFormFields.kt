@@ -33,7 +33,8 @@ internal data class CodexEntryFormFields(
     // shared between npc and party - the only two types the mockup gives a portrait frame to
     val portrait: Photo? = null,
     val race: String = "",
-    val faction: String = "",
+    // the nicknames as typed, comma separated
+    val nicknames: String = "",
     val npcStatus: NpcStatus = NpcStatus.NEUTRAL,
     val npcLife: NpcLifeState = NpcLifeState.ALIVE,
     val npcLocationIds: List<Long> = emptyList(),

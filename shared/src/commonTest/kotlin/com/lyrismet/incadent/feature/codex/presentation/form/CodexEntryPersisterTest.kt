@@ -33,7 +33,6 @@ class CodexEntryPersisterTest {
             persister.save(
                 form(EntityKind.NPC).copy(
                     race = " дварф ",
-                    faction = "гильдия",
                     description = "  кузнец ",
                     npcStatus = NpcStatus.FRIEND,
                     npcLife = NpcLifeState.ALIVE,
@@ -44,7 +43,6 @@ class CodexEntryPersisterTest {
             val saved = npcs.all.single()
             assertEquals("Громм", saved.name)
             assertEquals("Дварф", saved.race)
-            assertEquals("Гильдия", saved.faction)
             assertEquals("кузнец", saved.description)
             assertEquals(NpcStatus.FRIEND, saved.status)
             assertEquals(listOf(4L), saved.locationIds)
@@ -54,7 +52,7 @@ class CodexEntryPersisterTest {
     @Test
     fun `the id of the record being edited wins over a revive id`() =
         runTest {
-            val existing = Npc(5, "Старый", NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), "", "")
+            val existing = Npc(5, "Старый", NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), "")
             val withNpc = FakeNpcRepository(existing)
             val edit = form(EntityKind.NPC, "новый").copy(editingRef = EntityRef.Npc(5), reviveId = 99)
 
@@ -121,7 +119,7 @@ class CodexEntryPersisterTest {
     fun `a record read into the form and written back is unchanged`() =
         runTest {
             val original =
-                Npc(3, "Громм", NpcStatus.ENEMY, NpcLifeState.DEAD, "кузнец", listOf(1, 2), "Дварф", "Гильдия")
+                Npc(3, "Громм", NpcStatus.ENEMY, NpcLifeState.DEAD, "кузнец", listOf(1, 2), "Дварф")
 
             assertEquals(original, original.toFields(EntityRef.Npc(3)).toNpc())
         }

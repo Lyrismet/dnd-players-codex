@@ -487,6 +487,7 @@ class CodexPresenter(
             CodexEvent.EntityDeleteConfirmed ->
                 fields.pendingDelete.value?.let { ref ->
                     fields.pendingDelete.value = null
+                    fields.closeSheetOf(ref)
                     deleteNow(ref, records, labels, scope)
                 }
             CodexEvent.EntityDeleteCancelled -> fields.pendingDelete.value = null
@@ -519,7 +520,12 @@ class CodexPresenter(
         scope: CoroutineScope,
     ) {
         val plan = deletionPlanner.planFor(ref, records, labels.entityType) ?: return
-        if (plan.mentionHits.notes > 0) fields.pendingDelete.value = ref else deleteNow(ref, records, labels, scope)
+        if (plan.mentionHits.notes > 0) {
+            fields.pendingDelete.value = ref
+        } else {
+            fields.closeSheetOf(ref)
+            deleteNow(ref, records, labels, scope)
+        }
     }
 
     // deletes immediately and offers undo - restoring also re-links whatever else referenced the deleted entity
@@ -535,6 +541,12 @@ class CodexPresenter(
             undoController.show(labels.undoDeletedTitle, plan.subtitle, plan.restore)
         }
     }
+}
+
+// a deleted card must not come back by itself when the delete is undone
+private fun CodexFields.closeSheetOf(ref: EntityRef) {
+    if (selectedEntityRef.value == ref) quickEdit.onSheetClosed()
+    entitySheet.onEntityRemoved(ref)
 }
 
 private fun CodexFields.rememberRecentPlaces(ids: List<Long>) {
