@@ -42,10 +42,15 @@ import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
 import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectState
+import com.lyrismet.incadent.feature.codex.presentation.form.editingPlace
 import com.lyrismet.incadent.feature.codex.presentation.form.placeFieldTitle
 import com.lyrismet.incadent.feature.codex.presentation.form.placeSelectState
+import com.lyrismet.incadent.feature.codex.presentation.form.quickPlaceField
 import com.lyrismet.incadent.feature.codex.presentation.form.quickPlaceTarget
+import com.lyrismet.incadent.feature.codex.presentation.form.rememberPlaceFailureText
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineEdit
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditInteractions
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditKind
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
@@ -69,9 +74,14 @@ import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_toast_format
+import dndplayerscodex.shared.generated.resources.entity_sheet_move_into
+import dndplayerscodex.shared.generated.resources.place_move_from
+import dndplayerscodex.shared.generated.resources.place_move_here
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
 @Suppress("LongParameterList")
@@ -153,7 +163,7 @@ class CodexPresenter(
         val labels = codexLabels()
 
         val fields = rememberFields(labels)
-        ReportFailures(failure) { fields.toast.value = ToastMessage(it) }
+        ReportFailures(failure, rememberPlaceFailureText()) { fields.toast.value = ToastMessage(it) }
         val formController = rememberFormController(fields, parties)
 
         val candidates =
@@ -295,8 +305,13 @@ class CodexPresenter(
                 navigator.sessionEntryOpener(),
                 entityHistory,
                 onChanged = { change ->
-                    val title = labels.fieldTitles.getValue(change.field) + labels.changedSuffix
-                    undoController.show(title, change.entityName, change.restore)
+                    val title =
+                        if (change.field == QuickEditField.MOVE) {
+                            labels.fieldTitles.getValue(change.field)
+                        } else {
+                            labels.fieldTitles.getValue(change.field) + labels.changedSuffix
+                        }
+                    undoController.show(title, change.subtitle(), change.restore)
                 },
             )
         val quickEdit =
@@ -408,15 +423,16 @@ class CodexPresenter(
         records: CodexRecords,
     ): PlaceSelectState? {
         val isPlaceEdit = inlineEdit != null && inlineEdit.field.kind is QuickEditKind.Places
+        val moveTitle = stringResource(Res.string.entity_sheet_move_into)
         val ref = fields.selectedEntityRef.value
-        val target = if (isPlaceEdit) quickPlaceTarget(ref, records) else null
+        val target = if (isPlaceEdit && inlineEdit != null) quickPlaceTarget(ref, inlineEdit.field, records) else null
         return target?.let { (field, selectedIds) ->
             placeSelectState(
                 field = field,
-                title = placeFieldTitle(field),
+                title = moveTitle.takeIf { inlineEdit?.field == QuickEditField.MOVE } ?: placeFieldTitle(field),
                 locations = records.locations,
                 selectedIds = selectedIds,
-                editingLocationId = (ref as? EntityRef.Location)?.id,
+                editing = editingPlace(ref, records.locations),
                 recentIds = fields.recentPlaceIds.value,
             )
         }
@@ -503,7 +519,8 @@ class CodexPresenter(
     ) {
         val name = event.name.trim().capitalizeFirst()
         if (name.isBlank()) return
-        val isMulti = fields.selectedEntityRef.value is EntityRef.Npc
+        val held = fields.inlineEdit.value?.field ?: return
+        val isMulti = quickPlaceField(fields.selectedEntityRef.value, held)?.isMulti == true
         scope.launch {
             val id = locationRepository.upsert(Location(id = 0, name = name, description = ""))
             val ids = if (isMulti) event.checked + id else listOf(id)
@@ -608,3 +625,13 @@ private fun codexActiveSheet(
         selectedEntity != null -> CodexSheet.EntityView(selectedEntity)
         else -> null
     }
+
+// the places a change moved are told as a sentence, any other change is told by the name of its record
+private suspend fun EntityChange.subtitle(): String {
+    val places = moved?.takeIf { it.count > 0 } ?: return entityName
+    return if (places.fromName != null) {
+        getPluralString(Res.plurals.place_move_from, places.count, places.count, places.fromName)
+    } else {
+        getPluralString(Res.plurals.place_move_here, places.count, places.count)
+    }
+}

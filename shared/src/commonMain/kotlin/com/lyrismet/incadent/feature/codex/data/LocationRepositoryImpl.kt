@@ -7,9 +7,8 @@ import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.Location
-import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
-import com.lyrismet.incadent.feature.codex.domain.model.parseNicknames
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.PlaceCycleException
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -50,11 +49,11 @@ class LocationRepositoryImpl(
                         queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
                     }
                 if (stored != null) {
+                    if (entity.parentId != stored.parentId) checkNoCycle(entity.id, entity.parentId)
                     queries.update(
                         entity.name,
                         entity.description,
                         entity.parentId,
-                        entity.nicknames.joinNicknames(),
                         entity.id,
                     )
                     writeCover(entity.id, entity.cover, stored.cover)
@@ -65,6 +64,37 @@ class LocationRepositoryImpl(
             }
         }
 
+    // the same rule the pickers apply, held here so no path can write a loop - walks up from the new parent
+    private fun checkNoCycle(
+        id: Long,
+        parentId: Long?,
+    ) {
+        val seen = HashSet<Long>()
+        var next = parentId
+        while (next != null && seen.add(next)) {
+            if (next == id) throw PlaceCycleException()
+            next = queries.selectParentId(next).executeAsOneOrNull()?.parent_id
+        }
+    }
+
+    // a single column write, the photo is never read
+    override suspend fun setParent(
+        id: Long,
+        parentId: Long?,
+    ) = setParents(mapOf(id to parentId))
+
+    // one transaction, so a move the rule refuses rolls the earlier ones back
+    override suspend fun setParents(parents: Map<Long, Long?>) {
+        withContext(Dispatchers.Default) {
+            database.transaction {
+                parents.forEach { (id, parentId) ->
+                    checkNoCycle(id, parentId)
+                    queries.setParent(parentId, id)
+                }
+            }
+        }
+    }
+
     private fun insert(location: Location): Long {
         if (location.id != 0L) {
             queries.insertWithId(
@@ -72,7 +102,6 @@ class LocationRepositoryImpl(
                 location.name,
                 location.description,
                 location.parentId,
-                location.nicknames.joinNicknames(),
                 location.cover?.full,
                 location.cover?.thumb,
                 current.requireId(),
@@ -83,7 +112,6 @@ class LocationRepositoryImpl(
             location.name,
             location.description,
             location.parentId,
-            location.nicknames.joinNicknames(),
             location.cover?.full,
             location.cover?.thumb,
             current.requireId(),
@@ -116,9 +144,8 @@ class LocationRepositoryImpl(
         name: String,
         description: String,
         parentId: Long?,
-        nicknames: String,
         coverThumb: ByteArray?,
-    ) = Location(id, name, description, parentId, coverThumb?.let { Photo(it) }, parseNicknames(nicknames))
+    ) = Location(id, name, description, parentId, coverThumb?.let { Photo(it) })
 
     // the by-id row also carries the full jpeg - one param per column, dictated by the generated mapper
     @Suppress("LongParameterList")
@@ -127,7 +154,6 @@ class LocationRepositoryImpl(
         name: String,
         description: String,
         parentId: Long?,
-        nicknames: String,
         coverThumb: ByteArray?,
         cover: ByteArray?,
     ) = toDomain(
@@ -135,7 +161,6 @@ class LocationRepositoryImpl(
         name,
         description,
         parentId,
-        nicknames,
         coverThumb,
     ).copy(cover = coverThumb?.let { Photo(it, cover) })
 }

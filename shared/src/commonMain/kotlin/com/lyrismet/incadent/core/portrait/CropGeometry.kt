@@ -35,7 +35,17 @@ data class CropRect(
     val top: Float,
     val right: Float,
     val bottom: Float,
-)
+) {
+    /** true when the window still shows the whole image, so cropping it again would change nothing */
+    val isWholeImage: Boolean
+        get() =
+            left <= WHOLE_EPSILON &&
+                top <= WHOLE_EPSILON &&
+                right >= 1f - WHOLE_EPSILON &&
+                bottom >= 1f - WHOLE_EPSILON
+}
+
+private const val WHOLE_EPSILON = 0.005f
 
 /** zoom (1..[MAX_ZOOM]) and the image's top-left offset inside the crop window, in window units (never positive) */
 data class CropState(

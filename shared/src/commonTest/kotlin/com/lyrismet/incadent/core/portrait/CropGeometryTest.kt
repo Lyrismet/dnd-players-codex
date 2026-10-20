@@ -2,6 +2,7 @@ package com.lyrismet.incadent.core.portrait
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CropGeometryTest {
@@ -59,5 +60,23 @@ class CropGeometryTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun aWindowOverTheWholeImageIsWhole() {
+        assertTrue(CropRect(0f, 0.002f, 0.998f, 1f).isWholeImage)
+        assertFalse(CropRect(0.05f, 0f, 1f, 1f).isWholeImage)
+    }
+
+    @Test
+    fun onlyAnUntouchedWindowOverAStoredPictureKeepsIt() {
+        val whole = CropRect(0f, 0f, 1f, 1f)
+        val narrowed = CropRect(0.1f, 0f, 0.9f, 1f)
+        val stored = recropDraft(ByteArray(1), PhotoSlot.COVER)
+        val fresh = PhotoCropDraft(ByteArray(1), PhotoSlot.COVER)
+
+        assertTrue(stored.keepsStored(whole))
+        assertFalse(stored.keepsStored(narrowed))
+        assertFalse(fresh.keepsStored(whole))
     }
 }

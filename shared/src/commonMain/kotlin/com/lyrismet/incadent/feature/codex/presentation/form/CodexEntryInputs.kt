@@ -68,7 +68,7 @@ internal fun CodexEntryNumberField(
     )
 }
 
-/** the comma separated nicknames every record type can carry */
+/** the comma separated nicknames of an npc */
 @Composable
 internal fun NicknamesField(
     form: CodexEntryFormState,

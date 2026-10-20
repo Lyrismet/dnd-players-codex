@@ -79,4 +79,19 @@ class SelectListTest {
         assertFalse(canCreateFromQuery(options, "мирдейл"))
         assertFalse(canCreateFromQuery(options, "   "))
     }
+
+    @Test
+    fun `an unavailable option is listed last and a covered one is inactive while its cover is checked`() {
+        val tower = SelectOption(5, "Донжон", unavailableNote = "это само место")
+        val hall = SelectOption(6, "Зал", coveredBy = listOf(SelectCover(1, "Мирдейл")))
+        val rows = selectRows(options + tower + hall, "", setOf(1L, 6L))
+
+        assertEquals(5L, rows.last().option.id)
+        assertTrue(rows.last().isInactive)
+        val covered = rows.first { it.option.id == 6L }
+        assertEquals("Мирдейл", covered.carriedBy)
+        assertFalse(covered.selected)
+        assertEquals(setOf(1L), pickedIds(options + hall, setOf(1L, 6L)))
+        assertEquals(setOf(6L), pickedIds(options + hall, setOf(6L)))
+    }
 }

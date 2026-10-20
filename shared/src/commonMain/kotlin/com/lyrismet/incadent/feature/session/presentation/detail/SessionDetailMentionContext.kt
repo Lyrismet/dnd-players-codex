@@ -83,7 +83,7 @@ internal fun buildMentionContext(
         remember(npcs, locations, quests, parties, giverLines) {
             mentionDetails(npcs, locations, quests, parties) { giverLines[it].orEmpty() }
         }
-    val nicknames = remember(npcs, locations, quests, parties) { mentionNicknames(npcs, locations, quests, parties) }
+    val nicknames = remember(npcs) { mentionNicknames(npcs) }
     val dropdownTexts =
         MentionDropdownTexts(
             search = stringResource(Res.string.session_detail_mention_suggestions_header),

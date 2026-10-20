@@ -31,6 +31,7 @@ import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
+import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_discard_back
@@ -41,6 +42,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_label_class
 import dndplayerscodex.shared.generated.resources.codex_entry_label_description
 import dndplayerscodex.shared.generated.resources.codex_entry_label_giver
 import dndplayerscodex.shared.generated.resources.codex_entry_label_hp_max
+import dndplayerscodex.shared.generated.resources.codex_entry_label_inside
 import dndplayerscodex.shared.generated.resources.codex_entry_label_level
 import dndplayerscodex.shared.generated.resources.codex_entry_label_name_location
 import dndplayerscodex.shared.generated.resources.codex_entry_label_name_party
@@ -56,6 +58,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_label_status
 import dndplayerscodex.shared.generated.resources.codex_entry_label_where
 import dndplayerscodex.shared.generated.resources.codex_entry_party_level_from_player
 import dndplayerscodex.shared.generated.resources.codex_entry_pick_place_hint
+import dndplayerscodex.shared.generated.resources.codex_entry_pick_places_hint
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_location_description
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_location_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_class
@@ -176,7 +179,6 @@ private fun PartyIdentityFields(
         placeholder = stringResource(Res.string.codex_entry_placeholder_party_name),
         required = true,
     )
-    NicknamesField(form, eventSink)
     // a player character's "вы" flag stands in for the player's name, so the field only shows for everyone else
     if (!form.partyIsPlayerCharacter) {
         CodexEntryTextField(
@@ -259,7 +261,6 @@ private fun QuestEntryFields(
         placeholder = stringResource(Res.string.codex_entry_placeholder_quest_name),
         required = true,
     )
-    NicknamesField(form, eventSink)
     FormChipPicker(
         label = stringResource(Res.string.codex_entry_label_giver),
         options = form.npcOptions,
@@ -300,6 +301,7 @@ private fun LocationEntryFields(
     form: CodexEntryFormState,
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
+    CoverField(form, eventSink)
     CodexEntryTextField(
         label = stringResource(Res.string.codex_entry_label_name_location),
         value = form.name,
@@ -308,7 +310,6 @@ private fun LocationEntryFields(
         placeholder = stringResource(Res.string.codex_entry_placeholder_location_name),
         required = true,
     )
-    NicknamesField(form, eventSink)
     if (form.hasParentCandidates) {
         FormPickField(
             label = stringResource(Res.string.codex_entry_label_parent),
@@ -318,6 +319,15 @@ private fun LocationEntryFields(
             subtitle = form.locationParent?.path,
             leadingGlyph = MentionGlyph.LOCATION.symbol,
         )
+        FormPickField(
+            label = stringResource(Res.string.codex_entry_label_inside),
+            placeholder = stringResource(Res.string.codex_entry_pick_places_hint),
+            onClick = { eventSink(CodexEntryFormEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.LOCATION_CHILDREN)) },
+            chips =
+                form.locationChildren.takeIf { it.isNotEmpty() }?.let { places ->
+                    { places.forEach { MentionChip(item = it, onClick = null) } }
+                },
+        )
     }
     CodexEntryTextArea(
         label = stringResource(Res.string.codex_entry_label_description),
@@ -326,7 +336,6 @@ private fun LocationEntryFields(
         eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_location_description),
     )
-    CoverField(form, eventSink)
 }
 
 @Composable

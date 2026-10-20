@@ -10,5 +10,4 @@ data class Location(
     val parentId: Long? = null,
     // wide picture of the place shown at the top of its card, null until one is set
     val cover: Photo? = null,
-    val nicknames: List<String> = emptyList(),
 )

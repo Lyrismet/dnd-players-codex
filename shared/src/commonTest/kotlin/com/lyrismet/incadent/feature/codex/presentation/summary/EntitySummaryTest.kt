@@ -161,11 +161,10 @@ class EntitySummaryTest {
         val summary = buildEntitySummary(EntityRef.Quest(3), lookup()) as EntitySummaryItem.QuestSummary
 
         assertEquals("Меч", summary.title)
-        // giver, reward, location and nicknames - swordQuest has no location, so that row is a dash
-        assertEquals(4, summary.facts.size)
+        // giver, reward and location - swordQuest has no location, so that row is a dash
+        assertEquals(3, summary.facts.size)
         assertEquals(QuickEditField.PLACE, summary.facts[2].edit)
         assertEquals(FactValue.Text(""), summary.facts[2].value)
-        assertEquals(QuickEditField.NICKNAMES, summary.facts.last().edit)
     }
 
     @Test

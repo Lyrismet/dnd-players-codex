@@ -3,7 +3,6 @@ CREATE TABLE location (
     name TEXT NOT NULL,
     description TEXT NOT NULL,
     parent_id INTEGER REFERENCES location(id) ON DELETE SET NULL,
-    nicknames TEXT NOT NULL DEFAULT '',
     cover BLOB,
     cover_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
@@ -14,25 +13,31 @@ CREATE INDEX location_campaign_id ON location(campaign_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT id, name, description, parent_id, nicknames, cover_thumb FROM location WHERE campaign_id = ? ORDER BY name;
+SELECT id, name, description, parent_id, cover_thumb FROM location WHERE campaign_id = ? ORDER BY name;
 
 selectById:
-SELECT id, name, description, parent_id, nicknames, cover_thumb, cover FROM location WHERE id = ?;
+SELECT id, name, description, parent_id, cover_thumb, cover FROM location WHERE id = ?;
 
 insert:
-INSERT INTO location(name, description, parent_id, nicknames, cover, cover_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO location(name, description, parent_id, cover, cover_thumb, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO location(id, name, description, parent_id, nicknames, cover, cover_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO location(id, name, description, parent_id, cover, cover_thumb, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE location
-SET name = ?, description = ?, parent_id = ?, nicknames = ?
+SET name = ?, description = ?, parent_id = ?
 WHERE id = ?;
+
+selectParentId:
+SELECT parent_id FROM location WHERE id = ?;
+
+setParent:
+UPDATE location SET parent_id = ? WHERE id = ?;
 
 setCover:
 UPDATE location SET cover = ?, cover_thumb = ? WHERE id = ?;

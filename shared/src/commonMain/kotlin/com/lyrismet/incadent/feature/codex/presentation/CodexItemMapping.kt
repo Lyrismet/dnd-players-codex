@@ -90,4 +90,4 @@ internal fun Quest.toCodexItem(
 }
 
 internal fun Location.toCodexItem(subtitle: String? = null): LocationCodexItem =
-    LocationCodexItem(id = id, name = name, subtitle = subtitle, cover = cover)
+    LocationCodexItem(id = id, name = name, subtitle = subtitle, cover = cover, isTopLevel = parentId == null)

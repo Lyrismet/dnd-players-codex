@@ -42,6 +42,12 @@ enum class QuickEditField(
     GIVER(QuickEditKind.Link),
     PLACE(QuickEditKind.Places),
     PARENT(QuickEditKind.Places),
+
+    /** the places inside a place - picking writes the parent of those places, not of the card's own place */
+    INSIDE(QuickEditKind.Places),
+
+    /** "Переместить в…" on a place card - the same parent as [PARENT], with its own sheet title and undo bar */
+    MOVE(QuickEditKind.Places),
     RELATION(QuickEditKind.Choice),
     LIFE(QuickEditKind.Choice),
     QUEST_STATUS(QuickEditKind.Choice),

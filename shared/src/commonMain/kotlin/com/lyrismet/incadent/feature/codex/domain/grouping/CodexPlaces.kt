@@ -2,7 +2,7 @@ package com.lyrismet.incadent.feature.codex.domain.grouping
 
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 
-// caps the parent chain so a loop in the data still terminates
+// caps the wrapper chain so a loop in the data still terminates
 private const val MAX_PATH_DEPTH = 12
 private const val SHORT_PATH_PLACES = 2
 
@@ -19,16 +19,15 @@ class PlaceTree(
 
     fun find(id: Long?): Location? = byId[id]
 
-    /** the places from the top level one down to [place] itself, cut short where the parent chain loops */
+    /** the places from the top level one down to [place] itself, cut short where the chain loops */
     fun pathOf(place: Location): List<Location> =
         paths.getOrPut(place.id) {
             val chain = ArrayList<Location>()
+            val seen = HashSet<Long>()
             var next: Location? = place
-            while (next != null && chain.size < MAX_PATH_DEPTH) {
-                val current: Location = next
-                if (chain.any { it.id == current.id }) break
-                chain.add(current)
-                next = byId[current.parentId]
+            while (next != null && seen.add(next.id)) {
+                chain.add(next)
+                next = byId[next.parentId]
             }
             chain.asReversed().toList()
         }
@@ -99,6 +98,72 @@ class PlaceTree(
         result.remove(id)
         return result
     }
+
+    /** why each place is out of reach as the parent of [id] - itself and everything inside it */
+    fun blockedAsParent(id: Long): Map<Long, PlaceBlock> {
+        val own = byId[id] ?: return emptyMap()
+        return descendantIds(id).associateWith<Long, PlaceBlock> { PlaceBlock.InsideOf(own.name) } +
+            (id to PlaceBlock.Itself)
+    }
+
+    /** the places the form already lists as inside [editing] and everything under them */
+    fun pendingBlocks(editing: PlaceEditing): Map<Long, PlaceBlock> =
+        editing.childIds
+            .flatMap { listOf(it) + descendantIds(it) }
+            .associateWith<Long, PlaceBlock> { PlaceBlock.Pending }
+
+    /** why each place is out of reach as something inside [id] - itself and everything it sits in */
+    fun blockedAsChild(id: Long): Map<Long, PlaceBlock> {
+        val own = byId[id] ?: return emptyMap()
+        return ancestorsOf(own).associate { it.id to PlaceBlock.Contains } + (id to PlaceBlock.Itself)
+    }
+
+    /** true when [id] may sit directly in [parentId] - the top level (null) always fits, a place or its inside never */
+    fun canPutInside(
+        id: Long,
+        parentId: Long?,
+    ): Boolean = parentId == null || (parentId != id && parentId !in descendantIds(id))
+
+    /** which places must move under [parentId], and which leave it, for it to hold exactly [picked] afterwards */
+    fun insideChanges(
+        parentId: Long,
+        picked: Collection<Long>,
+    ): InsideChanges {
+        val wanted = withoutCarried(picked).filter { canPutInside(it, parentId) }.toSet()
+        val current = childrenOf(parentId).map { it.id }.toSet()
+        return InsideChanges(entering = wanted - current, leaving = current - wanted)
+    }
+
+    /** [ids] without the places that already sit inside another one of them - those travel with it */
+    fun withoutCarried(ids: Collection<Long>): List<Long> {
+        val set = ids.toSet()
+        return ids.distinct().filter { id ->
+            val place = byId[id] ?: return@filter true
+            ancestorsOf(place).none { it.id in set }
+        }
+    }
+}
+
+/** the places a "Внутри" pick moves in under a place and out to the top level */
+data class InsideChanges(
+    val entering: Set<Long>,
+    val leaving: Set<Long>,
+) {
+    val isEmpty: Boolean get() = entering.isEmpty() && leaving.isEmpty()
+}
+
+/** the reason a place can't be picked for a move - [InsideOf] names the place being moved */
+sealed interface PlaceBlock {
+    data object Itself : PlaceBlock
+
+    data class InsideOf(
+        val name: String,
+    ) : PlaceBlock
+
+    data object Contains : PlaceBlock
+
+    /** a place the form already lists as inside the moved one, so it can't become its parent */
+    data object Pending : PlaceBlock
 }
 
 const val PATH_SEPARATOR = " › "

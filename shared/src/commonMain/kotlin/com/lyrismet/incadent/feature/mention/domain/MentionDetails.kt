@@ -40,16 +40,8 @@ fun mentionDetails(
     return details
 }
 
-/** every record's nicknames by ref, records without any left out */
-fun mentionNicknames(
-    npcs: List<Npc>,
-    locations: List<Location>,
-    quests: List<Quest>,
-    parties: List<PartyMember>,
-): Map<MentionRef, List<String>> =
+/** the nicknames of the npcs by ref, npcs without any left out */
+fun mentionNicknames(npcs: List<Npc>): Map<MentionRef, List<String>> =
     buildMap {
         npcs.forEach { if (it.nicknames.isNotEmpty()) put(MentionRef(EntityKind.NPC, it.id), it.nicknames) }
-        parties.forEach { if (it.nicknames.isNotEmpty()) put(MentionRef(EntityKind.PARTY, it.id), it.nicknames) }
-        locations.forEach { if (it.nicknames.isNotEmpty()) put(MentionRef(EntityKind.LOCATION, it.id), it.nicknames) }
-        quests.forEach { if (it.nicknames.isNotEmpty()) put(MentionRef(EntityKind.QUEST, it.id), it.nicknames) }
     }

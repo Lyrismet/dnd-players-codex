@@ -19,8 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -181,7 +183,7 @@ fun FormPickField(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             if (leadingGlyph != null && title != null && chips == null) {
-                Text(leadingGlyph, fontSize = AppFontSize.Micro, color = AppPalette.Parchment)
+                Text(leadingGlyph, style = CenteredLine, fontSize = AppFontSize.Micro, color = AppPalette.Parchment)
             }
             Column(modifier = Modifier.weight(1f)) {
                 when {
@@ -191,15 +193,24 @@ fun FormPickField(
                             verticalArrangement = Arrangement.spacedBy(6.dp),
                         ) { chips() }
                     title != null -> {
-                        Text(title, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextPrimary)
+                        Text(
+                            title,
+                            style = MaterialTheme.typography.bodyLarge.centered(),
+                            color = AppPalette.TextPrimary,
+                        )
                         if (!subtitle.isNullOrBlank()) {
-                            Text(subtitle, fontSize = AppFontSize.CaptionPlus, color = AppPalette.TextSecondary)
+                            Text(
+                                subtitle,
+                                style = CenteredLine,
+                                fontSize = AppFontSize.CaptionPlus,
+                                color = AppPalette.TextSecondary,
+                            )
                         }
                     }
                     else ->
                         Text(
                             placeholder,
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodyLarge.centered(),
                             color = AppPalette.TextTertiary,
                         )
                 }
@@ -210,6 +221,12 @@ fun FormPickField(
 }
 
 private val PickFieldMinHeight = 52.dp
+
+// the line box is trimmed to the glyphs, so a one-line value sits in the middle of the field and not above it
+private val CenteredLine =
+    TextStyle(lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both))
+
+private fun TextStyle.centered(): TextStyle = merge(CenteredLine)
 
 @Composable
 private fun FormFieldColumn(

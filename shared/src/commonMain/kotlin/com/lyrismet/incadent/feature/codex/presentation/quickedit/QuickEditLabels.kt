@@ -6,6 +6,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_label_cover
 import dndplayerscodex.shared.generated.resources.codex_entry_label_portrait
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_inside
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_npcs
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_location_quests
 import dndplayerscodex.shared.generated.resources.entity_sheet_group_npc_quests_given
@@ -21,6 +22,7 @@ import dndplayerscodex.shared.generated.resources.entity_sheet_party_presence_la
 import dndplayerscodex.shared.generated.resources.entity_sheet_quest_location_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_relation_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_status_label
+import dndplayerscodex.shared.generated.resources.place_moved_title
 import dndplayerscodex.shared.generated.resources.quick_edit_label_description
 import dndplayerscodex.shared.generated.resources.quick_edit_label_name
 import org.jetbrains.compose.resources.stringResource
@@ -41,6 +43,8 @@ fun rememberQuickEditFieldTitles(): Map<QuickEditField, String> =
         QuickEditField.GIVER to stringResource(Res.string.codex_quest_given_by_label),
         QuickEditField.PLACE to stringResource(Res.string.entity_sheet_quest_location_label),
         QuickEditField.PARENT to stringResource(Res.string.entity_sheet_location_parent_label),
+        QuickEditField.MOVE to stringResource(Res.string.place_moved_title),
+        QuickEditField.INSIDE to stringResource(Res.string.entity_sheet_group_location_inside),
         QuickEditField.RELATION to stringResource(Res.string.entity_sheet_relation_label),
         QuickEditField.LIFE to stringResource(Res.string.entity_sheet_life_label),
         QuickEditField.QUEST_STATUS to stringResource(Res.string.entity_sheet_status_label),

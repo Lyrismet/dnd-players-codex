@@ -35,6 +35,7 @@ data class CodexEntryFormState(
     val questStatusOptions: List<FormChipOption<QuestStatus>> = emptyList(),
     // the places picked in the select-sheet fields, each shown on its field row
     val npcPlaces: List<MentionChipItem> = emptyList(),
+    val locationChildren: List<MentionChipItem> = emptyList(),
     val questPlace: SelectedPlace? = null,
     val locationParent: SelectedPlace? = null,
     // false while no other place exists, so the parent field has nothing to pick from and stays hidden
@@ -81,16 +82,24 @@ data class SelectedPlace(
 )
 
 /** the form fields that open the place select sheet - the same sheet also serves the card's quick edit */
-enum class CodexEntryPlaceField { NPC_PLACES, QUEST_PLACE, LOCATION_PARENT }
+enum class CodexEntryPlaceField {
+    NPC_PLACES,
+    QUEST_PLACE,
+    LOCATION_PARENT,
+    LOCATION_CHILDREN,
+    ;
 
-/** the select sheet's content - [multi] is true for the npc's several places, the rest pick exactly one */
+    /** the npc's places and a place's inside take several, the rest pick exactly one */
+    val isMulti: Boolean get() = this == NPC_PLACES || this == LOCATION_CHILDREN
+}
+
+/** the select sheet's content - [multi] is true for a field that takes several places */
 data class PlaceSelectState(
     val field: CodexEntryPlaceField,
     val title: String,
     val options: List<SelectOption>,
     val selectedIds: Set<Long>,
     val multi: Boolean,
-    val excludedIds: Set<Long>,
     val recentIds: List<Long>,
 )
 

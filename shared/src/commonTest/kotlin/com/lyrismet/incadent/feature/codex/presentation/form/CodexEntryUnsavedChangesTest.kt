@@ -36,4 +36,11 @@ class CodexEntryUnsavedChangesTest {
             )
         assertFalse(transient.hasUnsavedChanges(baseline))
     }
+
+    @Test
+    fun `confirming the same places in another order is not a change`() {
+        val placed = baseline.copy(npcLocationIds = listOf(1, 2, 3))
+        assertFalse(placed.copy(npcLocationIds = listOf(3, 1, 2)).hasUnsavedChanges(placed))
+        assertTrue(placed.copy(npcLocationIds = listOf(3, 1)).hasUnsavedChanges(placed))
+    }
 }

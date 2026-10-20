@@ -20,6 +20,13 @@ internal class CodexEntryPersister(
             EntityKind.PARTY -> partyRepository.upsert(form.toPartyMember().clampedToRanges())
             EntityKind.NPC -> npcRepository.upsert(form.toNpc())
             EntityKind.QUEST -> questRepository.upsert(form.toQuest())
-            EntityKind.LOCATION -> locationRepository.upsert(form.toLocation())
+            EntityKind.LOCATION -> saveLocation(form)
         }
+
+    // the places the form lists as inside move under the saved place, the ones it dropped go to the top level
+    private suspend fun saveLocation(form: CodexEntryFormFields): Long {
+        val id = locationRepository.upsert(form.toLocation())
+        locationRepository.setInside(id, form.locationChildIds)
+        return id
+    }
 }

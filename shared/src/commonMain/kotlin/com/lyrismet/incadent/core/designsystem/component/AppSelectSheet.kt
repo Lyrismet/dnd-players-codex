@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
@@ -39,6 +40,7 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.core.selectlist.SelectRow
 import com.lyrismet.incadent.core.selectlist.canCreateFromQuery
+import com.lyrismet.incadent.core.selectlist.pickedIds
 import com.lyrismet.incadent.core.selectlist.selectRows
 
 private val ListMaxHeight = 380.dp
@@ -47,6 +49,11 @@ private val RowMinHeight = 58.dp
 private val RowContentGap = 16.dp
 private val CheckboxSize = 20.dp
 private val ListShape = AppShapes.Card
+private const val INACTIVE_ALPHA = 0.45f
+private const val CARRIED_FILL_ALPHA = 0.3f
+
+// the muted gold of a note saying why an option is not pickable
+private val NoteColor = Color(0xFFB5A887)
 
 /** the words a host gives [AppSelectSheet] - everything the sheet shows besides the options themselves */
 @Suppress("LongParameterList")
@@ -59,6 +66,8 @@ class AppSelectTexts(
     /** single mode only - the row that clears the value, null hides it */
     val clearLabel: String?,
     val doneLabel: @Composable (count: Int) -> String,
+    /** the grey note of an option carried along by a checked one, given that one's name - null when nothing is */
+    val carriedLabel: (@Composable (name: String) -> String)? = null,
     /** null hides the "create «query»" row */
     val createLabel: (@Composable (query: String) -> String)?,
 )
@@ -116,7 +125,11 @@ fun AppSelectSheetContent(
 ) {
     var query by remember { mutableStateOf("") }
     var checked by remember { mutableStateOf(selectedIds) }
-    val rows = selectRows(options, query, checked, recentIds, excludedIds, floatSelected = multi)
+    val rows =
+        remember(options, query, checked, recentIds, excludedIds, multi) {
+            selectRows(options, query, checked, recentIds, excludedIds, floatSelected = multi)
+        }
+    val picked = remember(options, checked) { pickedIds(options, checked) }
     val canCreate = onCreate != null && texts.createLabel != null && canCreateFromQuery(options, query)
     val canClear = !multi && texts.clearLabel != null && selectedIds.isNotEmpty() && query.isBlank()
     Column(modifier = modifier.fillMaxWidth()) {
@@ -152,6 +165,7 @@ fun AppSelectSheetContent(
                     rows = rows,
                     multi = multi,
                     leadingGlyph = leadingGlyph,
+                    carriedLabel = texts.carriedLabel,
                     onRowClick = { id ->
                         if (multi) checked = if (id in checked) checked - id else checked + id else onConfirm(setOf(id))
                     },
@@ -161,7 +175,7 @@ fun AppSelectSheetContent(
                 SelectCreateRow(texts.createLabel.invoke(query.trim())) { onCreate.invoke(query.trim(), checked) }
             }
         }
-        SelectFooter(multi, texts.doneLabel(checked.size)) { onConfirm(checked) }
+        SelectFooter(multi, texts.doneLabel(picked.size)) { onConfirm(picked) }
     }
 }
 
@@ -207,6 +221,7 @@ private fun SelectRows(
     rows: List<SelectRow>,
     multi: Boolean,
     leadingGlyph: String?,
+    carriedLabel: (@Composable (name: String) -> String)?,
     onRowClick: (Long) -> Unit,
 ) {
     LazyColumn(
@@ -221,7 +236,7 @@ private fun SelectRows(
     ) {
         itemsIndexed(rows, key = { _, row -> row.option.id }) { index, row ->
             if (index > 0) AppDivider(color = AppPalette.SurfacePopover)
-            SelectListRow(row, multi, leadingGlyph) { onRowClick(row.option.id) }
+            SelectListRow(row, multi, leadingGlyph, carriedLabel) { onRowClick(row.option.id) }
         }
     }
 }
@@ -231,19 +246,22 @@ private fun SelectListRow(
     row: SelectRow,
     multi: Boolean,
     leadingGlyph: String?,
+    carriedLabel: (@Composable (name: String) -> String)?,
     onClick: () -> Unit,
 ) {
+    val note = row.option.unavailableNote ?: row.carriedBy?.let { name -> carriedLabel?.invoke(name) }
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clickable(onClick = onClick)
+                .clickable(enabled = !row.isInactive, onClick = onClick)
+                .alpha(if (row.isInactive) INACTIVE_ALPHA else 1f)
                 .heightIn(min = RowMinHeight)
                 .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RowContentGap),
     ) {
-        if (multi) SelectCheckbox(row.selected)
+        if (multi) SelectCheckbox(row.selected, carried = row.carriedBy != null)
         if (!multi &&
             leadingGlyph != null
         ) {
@@ -257,12 +275,21 @@ private fun SelectListRow(
                 lineHeight = 20.sp,
                 color = AppPalette.TextPrimary,
             )
-            row.option.subtitle?.let { subtitle ->
+            row.option.subtitle?.let { path ->
                 Text(
-                    subtitle,
+                    path,
                     fontSize = AppFontSize.CaptionPlus,
                     lineHeight = 16.sp,
                     color = AppPalette.TextSecondary,
+                    modifier = Modifier.padding(top = 1.dp),
+                )
+            }
+            note?.let { reason ->
+                Text(
+                    reason,
+                    fontSize = AppFontSize.CaptionPlus,
+                    lineHeight = 16.sp,
+                    color = NoteColor,
                     modifier = Modifier.padding(top = 1.dp),
                 )
             }
@@ -287,15 +314,24 @@ private fun highlighted(row: SelectRow) =
     }
 
 @Composable
-internal fun SelectCheckbox(checked: Boolean) {
+internal fun SelectCheckbox(
+    checked: Boolean,
+    carried: Boolean = false,
+) {
     val shape = AppShapes.Badge
+    val fill =
+        when {
+            carried -> AppPalette.Gold.copy(alpha = CARRIED_FILL_ALPHA)
+            checked -> AppPalette.Gold
+            else -> null
+        }
     Box(
         modifier =
             Modifier
                 .size(CheckboxSize)
                 .clip(shape)
-                .background(if (checked) AppPalette.Gold else Color.Transparent)
-                .border(1.5.dp, if (checked) AppPalette.Gold else AppPalette.RadioIdle, shape),
+                .background(fill ?: Color.Transparent)
+                .border(1.5.dp, fill ?: AppPalette.RadioIdle, shape),
         contentAlignment = Alignment.Center,
     ) {
         if (checked) {

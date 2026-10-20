@@ -34,7 +34,11 @@ enum class PhotoSlot(
 class PhotoCropDraft(
     val source: ByteArray,
     val slot: PhotoSlot,
-)
+    /** true when [source] is the picture already stored, so an untouched window has nothing to write */
+    val isStored: Boolean = false,
+) {
+    fun keepsStored(crop: CropRect): Boolean = isStored && crop.isWholeImage
+}
 
 /** shrinks a raw pick to a working size and orients it, so the crop window decodes it quickly */
 fun prepareCropDraft(
@@ -58,7 +62,7 @@ suspend fun prepareCropDraftAsync(
 fun recropDraft(
     stored: ByteArray,
     slot: PhotoSlot,
-): PhotoCropDraft = PhotoCropDraft(stored, slot)
+): PhotoCropDraft = PhotoCropDraft(stored, slot, isStored = true)
 
 /** cuts [crop] out of the draft into the slot's stored size and byte budget, with the thumbnail made from it */
 fun PhotoCropDraft.encode(
