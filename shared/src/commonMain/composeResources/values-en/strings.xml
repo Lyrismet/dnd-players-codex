@@ -4,7 +4,7 @@
     <string name="action_edit">Edit</string>
     <string name="action_undo">Undo</string>
     <string name="app_exit_title">Exit the app?</string>
-    <string name="app_exit_text">The app will close.</string>
+    <string name="app_exit_text">Your notes are saved, nothing will be lost.</string>
     <string name="app_exit_confirm">Exit</string>
 
     <string name="splash_app_name">Incadent</string>
@@ -12,9 +12,9 @@
 
     <string name="session_list_title">Session Diary</string>
     <string name="session_list_new_session_button">+ Session</string>
-    <string name="session_list_empty_title">Diary is empty</string>
+    <string name="session_list_empty_title">The first session awaits</string>
     <string name="session_list_empty_button">+ Start session</string>
-    <string name="session_list_empty">Start the first session — notes, fights and NPC mentions will gather here.</string>
+    <string name="session_list_empty">Tap “Start session” and write down what happens. Heroes and places link themselves through @.</string>
     <string name="session_list_archive_section">Archive</string>
     <string name="session_list_mention_count_format">@ %1$d</string>
     <string name="session_list_live_label">CURRENT SESSION</string>
@@ -39,12 +39,12 @@
     <string name="session_detail_editing_label_format">EDITING · %1$s</string>
     <string name="session_detail_empty_feed">A blank page</string>
     <string name="session_detail_empty_feed_hint">Write down what\'s happening. Type @ to link a note to an NPC, place or quest.</string>
-    <string name="session_detail_composer_hint">@ — entry tag</string>
+    <string name="session_detail_composer_hint">@ — mention</string>
     <string name="session_detail_undo_deleted_entry_title">Entry deleted</string>
     <string name="session_entry_edited_label">edited</string>
-    <string name="session_detail_meeting_separator_format">MEETING %1$d · %2$s</string>
+    <string name="session_detail_meeting_separator_format">DAY %1$d · %2$s</string>
     <string name="session_detail_mention_type_npc">NPC</string>
-    <string name="session_detail_mention_type_location">Location</string>
+    <string name="session_detail_mention_type_location">Place</string>
     <string name="session_detail_mention_type_quest">Quest</string>
     <string name="session_detail_mention_type_party">Party</string>
     <string name="deleted_mention_type_party">a party character</string>
@@ -58,7 +58,7 @@
     <string name="session_detail_tag_catalog_header">All tags</string>
     <string name="session_detail_tag_custom_header">Custom tag</string>
     <string name="session_detail_tag_draft_placeholder">E.g. Dungeon</string>
-    <string name="session_detail_tag_disclaimer">A tag is only set once you tap it.</string>
+    <string name="session_detail_tag_disclaimer">Suggestions are never applied on their own — you decide.</string>
     <string name="session_tag_builtin_combat">Combat</string>
     <string name="session_tag_builtin_plot">Plot</string>
     <string name="session_tag_builtin_investigation">Investigation</string>
@@ -87,19 +87,19 @@
     <string name="codex_quest_status_failed">Failed</string>
     <string name="codex_quest_given_by_label">Given by</string>
     <string name="codex_quest_reward_label">Reward</string>
-    <string name="codex_empty_all_title">The codex is empty</string>
-    <string name="codex_empty_all_text">Characters, NPCs, quests and places of your campaign will gather here.</string>
+    <string name="codex_empty_all_title">The codex fills itself</string>
+    <string name="codex_empty_all_text">Mention heroes, places and quests with @ in your notes. Or add them by hand.</string>
     <string name="codex_empty_all_button">+ New entry</string>
-    <string name="codex_empty_party_title">No one in the party yet</string>
-    <string name="codex_empty_party_text">Add the characters of your group — your own and your friends\'.</string>
+    <string name="codex_empty_party_title">Gather the party</string>
+    <string name="codex_empty_party_text">Start with your own hero, then add the others.</string>
     <string name="codex_empty_party_button">+ Add character</string>
-    <string name="codex_empty_npc_title">No NPCs yet</string>
+    <string name="codex_empty_npc_title">NPCs will live here</string>
     <string name="codex_empty_npc_text">Record everyone you meet: merchants, enemies, informants.</string>
     <string name="codex_empty_npc_button">+ Add NPC</string>
-    <string name="codex_empty_quest_title">No quests yet</string>
+    <string name="codex_empty_quest_title">Quests will live here</string>
     <string name="codex_empty_quest_text">Tasks, rewards and those who gave them.</string>
     <string name="codex_empty_quest_button">+ Add quest</string>
-    <string name="codex_empty_location_title">No places yet</string>
+    <string name="codex_empty_location_title">Places will live here</string>
     <string name="codex_empty_location_text">Cities, dungeons, taverns — everywhere the party has been.</string>
     <string name="codex_empty_location_button">+ Add place</string>
     <string name="codex_search_empty_title">Nothing found</string>
@@ -169,8 +169,8 @@
     <string name="codex_entry_quick_add_helper">The entry appears in the codex and is selected here right away. Fill in details later.</string>
     <string name="codex_entry_quick_add_toast_format">“%1$s” added to the codex</string>
     <string name="codex_entry_label_portrait">Portrait</string>
-    <string name="codex_entry_portrait_hint_empty">Tap the frame: take a photo of a handout from the GM or pick one from the gallery. The photo is compressed to ~50 KB.</string>
-    <string name="codex_entry_portrait_hint_filled">Portrait · %1$d KB — stored on this device only. Tap the frame to retake it</string>
+    <string name="codex_entry_portrait_hint_empty">Tap the frame: take a photo of a handout from the GM or pick one from the gallery. You can crop it before saving.</string>
+    <string name="codex_entry_portrait_hint_filled">Portrait is stored on this device only. Tap the frame to retake it</string>
     <string name="codex_entry_portrait_remove">Delete photo</string>
     <string name="codex_entry_portrait_source_camera">Camera</string>
     <string name="codex_entry_portrait_source_gallery">Gallery</string>
@@ -186,12 +186,12 @@
     <string name="entity_sheet_group_npc_quests_given">Quests given</string>
     <string name="entity_sheet_group_location_npcs">Who\'s here</string>
     <string name="entity_sheet_group_location_quests">Quests</string>
-    <string name="entity_sheet_group_npc_quests_given_empty">Gave no quests — hold to add</string>
-    <string name="entity_sheet_group_location_npcs_empty">Nobody marked — hold to add</string>
-    <string name="entity_sheet_group_location_quests_empty">No quests here — hold to add</string>
+    <string name="entity_sheet_group_npc_quests_given_empty">No quests yet — hold to add</string>
+    <string name="entity_sheet_group_location_npcs_empty">Nobody yet — hold to add</string>
+    <string name="entity_sheet_group_location_quests_empty">No quests here yet — hold to add</string>
     <string name="quick_edit_relations_hint">Pick several · tap outside to close</string>
     <string name="codex_delete_warning_title">Delete “%1$s”?</string>
-    <string name="codex_delete_warning_text">%1$s in %2$s. After deleting they stay in the text as “?” tags and the record can be created again.</string>
+    <string name="codex_delete_warning_text">%1$s in %2$s stay in the text as “?” marks. Bring the record back with “Undo” or create it again.</string>
     <string name="codex_delete_warning_confirm">Delete record</string>
     <string name="codex_delete_warning_cancel">Keep it</string>
     <plurals name="mention_count_mentions">
@@ -206,8 +206,8 @@
         <item quantity="one">%1$d session</item>
         <item quantity="other">%1$d sessions</item>
     </plurals>
-    <string name="deleted_mention_overline">NOT IN THE CODEX</string>
-    <string name="deleted_mention_body">This record was deleted from the codex, but %1$s in %2$s still refer to it.</string>
+    <string name="deleted_mention_overline">NO RECORD YET</string>
+    <string name="deleted_mention_body">%1$s in %2$s refer to this record, but it has no card in the codex. What would you like to do?</string>
     <string name="deleted_mention_create_format">+ Create “%1$s” as %2$s</string>
     <string name="deleted_mention_type_npc">an NPC</string>
     <string name="deleted_mention_type_quest">a quest</string>
@@ -229,7 +229,10 @@
     <string name="auto_mention_linked_title">Mentions linked</string>
     <string name="entity_sheet_related_title">Related notes</string>
     <string name="entity_sheet_related_count_format">auto · %1$d</string>
-    <string name="entity_sheet_related_meta_format">%1$d mentions · open session →</string>
+    <plurals name="entity_sheet_related_meta_format">
+        <item quantity="one">%1$d mention · open session →</item>
+        <item quantity="other">%1$d mentions · open session →</item>
+    </plurals>
     <string name="entity_sheet_related_empty_format">Not mentioned anywhere yet. Add @%1$s to a session note.</string>
 
     <string name="bottom_tab_sessions">Sessions</string>
@@ -241,12 +244,12 @@
     <string name="settings_title">Settings</string>
     <string name="settings_section_app">APP</string>
     <string name="settings_language_title">Interface language</string>
-    <string name="settings_language_desc">Entries and the codex are not translated - only buttons and labels</string>
+    <string name="settings_language_desc">Buttons and labels are translated. Your notes and codex stay as they are.</string>
     <string name="settings_language_ru">Русский</string>
     <string name="settings_language_en">English</string>
     <string name="settings_section_diary">JOURNAL</string>
     <string name="settings_numbering_title">Session numbering</string>
-    <string name="settings_numbering_desc">Roman numerals shrink after XX</string>
+    <string name="settings_numbering_desc">XIII or 13, whichever suits you</string>
     <string name="settings_numbering_roman">XIII</string>
     <string name="settings_numbering_arabic">13</string>
     <string name="settings_mention_title">@ mentions</string>
@@ -305,13 +308,13 @@
     <string name="quick_edit_hold_tip_dismiss">Got it</string>
     <string name="quick_edit_description_hint">Appearance, personality, what is known…</string>
     <string name="settings_edit_mode_desc">How codex entries are edited.</string>
-    <string name="quick_edit_hold_too_short">Hold the field to edit it</string>
+    <string name="quick_edit_hold_too_short">Hold a bit longer to edit</string>
     <string name="settings_section_codex">CODEX</string>
     <string name="settings_edit_mode_title">Edit mode</string>
-    <string name="settings_edit_mode_quick">Quick</string>
-    <string name="settings_edit_mode_quick_desc">Hold a field on the card to edit it right there. Relation, state and portrait change with one tap; after every edit an Undo appears at the bottom.</string>
-    <string name="settings_edit_mode_form">Form</string>
-    <string name="settings_edit_mode_form_desc">Read-only card. Edit with the pen in the header or swipe right in the list; everything is edited in a separate form.</string>
+    <string name="settings_edit_mode_quick">On the card</string>
+    <string name="settings_edit_mode_quick_desc">Hold a field on the card and edit it right there. Every edit can be undone.</string>
+    <string name="settings_edit_mode_form">In a form</string>
+    <string name="settings_edit_mode_form_desc">Read-only card. “Edit” opens the form.</string>
     <string name="settings_hints_title">Gesture hints</string>
     <string name="settings_hints_desc">Show again how to delete with a swipe</string>
     <string name="settings_hints_show">Show</string>
@@ -322,13 +325,13 @@
     <string name="swipe_hint_codex_both_title">Right to edit, left to delete</string>
     <string name="swipe_hint_codex_both_subtitle">After deleting, Undo will appear at the bottom</string>
     <string name="swipe_hint_dismiss">Got it</string>
-    <string name="phrase_strip_open_button">Snippets…</string>
+    <string name="phrase_strip_open_button">Phrases…</string>
     <string name="phrase_completion_header">CONTINUE THE PHRASE</string>
     <string name="phrase_completion_tab">TAB</string>
     <string name="phrase_completion_pinned_meta">mine</string>
     <string name="phrase_completion_frequent_meta_format">×%1$d</string>
     <string name="phrase_sheet_overline">JOURNAL</string>
-    <string name="phrase_sheet_title">Snippets</string>
+    <string name="phrase_sheet_title">Quick phrases</string>
     <string name="phrase_sheet_intro">Phrases you keep writing. Tap one in the row above the input to insert it; start typing and the app suggests a continuation.</string>
     <string name="phrase_sheet_pinned_header">★ MINE</string>
     <string name="phrase_sheet_pinned_empty">Nothing yet. Add your own or pin a frequent phrase below.</string>
@@ -336,7 +339,7 @@
     <string name="phrase_sheet_frequent_header">↻ FREQUENT PHRASES · FOUND AUTOMATICALLY</string>
     <string name="phrase_sheet_frequent_empty">No repeats yet — they show up once the same phrase appears in different notes.</string>
     <string name="phrase_sheet_pin_button">★ Pin</string>
-    <string name="phrase_sheet_disclaimer">The search covers every session on the device: chains of 4+ words repeated across notes. No AI, no network.</string>
+    <string name="phrase_sheet_disclaimer">We look for repeats only in your notes on this device. Nothing is sent anywhere.</string>
     <string name="phrase_meta_format">found %1$s · %2$s</string>
     <plurals name="phrase_meta_times">
         <item quantity="one">%1$d time</item>
@@ -348,7 +351,7 @@
     </plurals>
     <string name="session_detail_entry_save_phrase">Save as snippet</string>
     <string name="session_detail_phrase_saved_toast">Added to snippets</string>
-    <string name="settings_phrases_title">Phrase snippets</string>
+    <string name="settings_phrases_title">Quick phrases</string>
     <string name="settings_phrases_summary_format">Mine: %1$d · frequent found: %2$d</string>
     <string name="codex_entry_required_note">* — required field</string>
     <string name="codex_entry_party_level_from_player">Set level to match your character</string>
@@ -382,7 +385,7 @@
     <string name="settings_language_en_sub">Английский</string>
     <string name="settings_language_search">Find a language</string>
     <string name="settings_language_empty">No such language in the list yet.</string>
-    <string name="settings_language_footnote">The list is built from translation files: a new language appears here by itself once its strings are added. Names are in the language itself, so its reader can recognise it.</string>
+    <string name="settings_language_footnote">Languages are shown in their own language so you can recognise yours.</string>
     <string name="settings_section_general">General</string>
     <string name="photo_cover_expand">⤢ Expand</string>
     <string name="campaign_sheet_title">Campaigns</string>
@@ -431,7 +434,7 @@
     <string name="campaign_toast_archived">Campaign archived. You can open it from the campaign list</string>
     <string name="campaign_toast_deleted">Campaign deleted</string>
     <string name="campaign_finish_title">Finish «%1$s»?</string>
-    <string name="campaign_finish_body">The campaign goes to the archive. Notes, codex and fights are kept, and you can reopen and resume it from the campaign list.</string>
+    <string name="campaign_finish_body">The campaign goes to the archive. Notes, codex and fights are kept, and you can come back to it any time from the campaign list.</string>
     <string name="campaign_finish_archive">Archive it</string>
     <string name="campaign_finish_delete">Delete data</string>
     <string name="campaign_delete_title">Delete «%1$s»?</string>
@@ -442,14 +445,14 @@
     <string name="campaign_library_title">Campaigns</string>
     <string name="campaign_library_empty_live">No ongoing campaigns. Start a new one when the group gathers again.</string>
     <string name="campaign_onboarding_title">The journal of your game</string>
-    <string name="campaign_onboarding_lead">Playing a D&amp;D-like game? Keep a session journal and collect everything you learn about the campaign world.</string>
-    <string name="campaign_onboarding_notes_title">Notes as you play</string>
-    <string name="campaign_onboarding_notes_text">What happened tonight - short, right at the table</string>
-    <string name="campaign_onboarding_codex_title">Who is who</string>
-    <string name="campaign_onboarding_codex_text">Characters, quests and places of the world you have learned about</string>
+    <string name="campaign_onboarding_lead">Playing a tabletop RPG? Write down what happened tonight and Incadent links heroes, places and quests for you.</string>
+    <string name="campaign_onboarding_notes_title">Write at the table</string>
+    <string name="campaign_onboarding_notes_text">A few words each evening and you will not forget the session</string>
+    <string name="campaign_onboarding_codex_title">Everything about your world</string>
+    <string name="campaign_onboarding_codex_text">Heroes, quests and places. They appear from your notes</string>
     <string name="campaign_onboarding_combat_title">Help in combat</string>
     <string name="campaign_onboarding_combat_text">Turn order, who is wounded, who is concentrating</string>
     <string name="settings_all_campaigns_title">All campaigns</string>
     <string name="campaign_items_title">What to copy</string>
-    <string name="error_action_failed">Could not save the changes</string>
+    <string name="error_action_failed">Could not save. Please try again</string>
 </resources>

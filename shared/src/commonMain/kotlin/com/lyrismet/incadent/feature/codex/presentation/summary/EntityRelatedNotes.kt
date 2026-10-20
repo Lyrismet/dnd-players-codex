@@ -28,6 +28,7 @@ import dndplayerscodex.shared.generated.resources.entity_sheet_related_count_for
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_empty_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_meta_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_title
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -101,7 +102,7 @@ private fun EntityRelatedNoteRow(
                 modifier = Modifier.padding(top = 4.dp),
             )
             Text(
-                stringResource(Res.string.entity_sheet_related_meta_format, item.matchCount),
+                pluralStringResource(Res.plurals.entity_sheet_related_meta_format, item.matchCount, item.matchCount),
                 // same de-emphasis as the date above - plain weight, no wide tracking
                 style = AppText.caption,
                 color = AppPalette.TextTertiary,
