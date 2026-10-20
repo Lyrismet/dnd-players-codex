@@ -3,7 +3,6 @@ package com.lyrismet.incadent.feature.codex.domain.grouping
 enum class NpcGroupBy {
     REGION,
     RELATION,
-    FACTION,
     NONE,
 }
 

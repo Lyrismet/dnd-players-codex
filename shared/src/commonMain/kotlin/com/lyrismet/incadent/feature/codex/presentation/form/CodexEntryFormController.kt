@@ -199,7 +199,6 @@ class CodexEntryFormController private constructor(
                 CodexEntryField.NAME -> current.copy(name = text)
                 CodexEntryField.DESCRIPTION -> current.copy(description = text)
                 CodexEntryField.RACE -> current.copy(race = text)
-                CodexEntryField.FACTION -> current.copy(faction = text)
                 CodexEntryField.REWARD -> current.copy(reward = text)
                 CodexEntryField.PARTY_CLASS -> current.copy(party = current.party.copy(characterClass = text))
                 CodexEntryField.PARTY_PLAYER -> current.copy(party = current.party.copy(player = text))
@@ -271,7 +270,6 @@ class CodexEntryFormController private constructor(
             description = "",
             locationIds = emptyList(),
             race = "",
-            faction = "",
         )
 
     private fun quickLocation(name: String) = Location(id = 0, name = name, description = "")
@@ -457,7 +455,6 @@ class CodexEntryFormController private constructor(
             cover = current.cover,
             photoCrop = current.photoCrop,
             race = current.race,
-            faction = current.faction,
             reward = current.reward,
             npcStatusOptions =
                 NpcStatus.entries.map { status ->

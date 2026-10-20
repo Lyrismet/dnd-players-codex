@@ -11,6 +11,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
@@ -31,7 +33,6 @@ import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
-import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_discard_back
@@ -40,13 +41,10 @@ import dndplayerscodex.shared.generated.resources.codex_entry_discard_text
 import dndplayerscodex.shared.generated.resources.codex_entry_discard_title
 import dndplayerscodex.shared.generated.resources.codex_entry_label_class
 import dndplayerscodex.shared.generated.resources.codex_entry_label_description
-import dndplayerscodex.shared.generated.resources.codex_entry_label_faction
 import dndplayerscodex.shared.generated.resources.codex_entry_label_giver
 import dndplayerscodex.shared.generated.resources.codex_entry_label_hp_max
 import dndplayerscodex.shared.generated.resources.codex_entry_label_level
-import dndplayerscodex.shared.generated.resources.codex_entry_label_life
 import dndplayerscodex.shared.generated.resources.codex_entry_label_name_location
-import dndplayerscodex.shared.generated.resources.codex_entry_label_name_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_label_name_party
 import dndplayerscodex.shared.generated.resources.codex_entry_label_name_quest
 import dndplayerscodex.shared.generated.resources.codex_entry_label_notes
@@ -55,20 +53,13 @@ import dndplayerscodex.shared.generated.resources.codex_entry_label_parent
 import dndplayerscodex.shared.generated.resources.codex_entry_label_player
 import dndplayerscodex.shared.generated.resources.codex_entry_label_presence
 import dndplayerscodex.shared.generated.resources.codex_entry_label_race
-import dndplayerscodex.shared.generated.resources.codex_entry_label_relationship
 import dndplayerscodex.shared.generated.resources.codex_entry_label_reward
 import dndplayerscodex.shared.generated.resources.codex_entry_label_status
 import dndplayerscodex.shared.generated.resources.codex_entry_label_where
-import dndplayerscodex.shared.generated.resources.codex_entry_label_where_to_meet
 import dndplayerscodex.shared.generated.resources.codex_entry_party_level_from_player
 import dndplayerscodex.shared.generated.resources.codex_entry_pick_place_hint
-import dndplayerscodex.shared.generated.resources.codex_entry_pick_places_hint
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_location_description
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_location_name
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_faction
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_name
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_notes
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_race
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_class
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_notes
@@ -93,6 +84,7 @@ internal fun CodexEntryFormUi(
     eventSink: (CodexEntryFormEvent) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    density: FormDensity = FormDensity.Full,
 ) {
     val focusManager = LocalFocusManager.current
     QuickAddOutsideTapHost(
@@ -103,7 +95,7 @@ internal fun CodexEntryFormUi(
         },
         modifier = modifier,
     ) {
-        CodexEntryFormContent(form, eventSink, onClose)
+        CodexEntryFormContent(form, eventSink, onClose, density)
         FormPhotoCropWindow(form, eventSink)
     }
 }
@@ -113,6 +105,7 @@ private fun CodexEntryFormContent(
     form: CodexEntryFormState,
     eventSink: (CodexEntryFormEvent) -> Unit,
     onClose: () -> Unit,
+    density: FormDensity,
 ) {
     Column(
         modifier =
@@ -140,7 +133,7 @@ private fun CodexEntryFormContent(
         }
         when (form.type) {
             EntityKind.PARTY -> PartyEntryFields(form, eventSink)
-            EntityKind.NPC -> NpcEntryFields(form, eventSink)
+            EntityKind.NPC -> NpcEntryFields(form, eventSink, density)
             EntityKind.QUEST -> QuestEntryFields(form, eventSink)
             EntityKind.LOCATION -> LocationEntryFields(form, eventSink)
         }
@@ -155,62 +148,6 @@ private fun CodexEntryFormContent(
             enabled = form.canSave,
         )
     }
-}
-
-@Composable
-private fun NpcEntryFields(
-    form: CodexEntryFormState,
-    eventSink: (CodexEntryFormEvent) -> Unit,
-) {
-    PortraitField(form, eventSink)
-    CodexEntryTextField(
-        label = stringResource(Res.string.codex_entry_label_name_npc),
-        value = form.name,
-        field = CodexEntryField.NAME,
-        eventSink = eventSink,
-        placeholder = stringResource(Res.string.codex_entry_placeholder_npc_name),
-        required = true,
-    )
-    CodexEntryTextField(
-        label = stringResource(Res.string.codex_entry_label_race),
-        value = form.race,
-        field = CodexEntryField.RACE,
-        eventSink = eventSink,
-        placeholder = stringResource(Res.string.codex_entry_placeholder_npc_race),
-    )
-    CodexEntryTextField(
-        label = stringResource(Res.string.codex_entry_label_faction),
-        value = form.faction,
-        field = CodexEntryField.FACTION,
-        eventSink = eventSink,
-        placeholder = stringResource(Res.string.codex_entry_placeholder_npc_faction),
-    )
-    FormChipPicker(
-        label = stringResource(Res.string.codex_entry_label_relationship),
-        options = form.npcStatusOptions,
-        onClick = { eventSink(CodexEntryFormEvent.EntryNpcStatusChanged(it)) },
-    )
-    FormChipPicker(
-        label = stringResource(Res.string.codex_entry_label_life),
-        options = form.npcLifeOptions,
-        onClick = { eventSink(CodexEntryFormEvent.EntryNpcLifeChanged(it)) },
-    )
-    FormPickField(
-        label = stringResource(Res.string.codex_entry_label_where_to_meet),
-        placeholder = stringResource(Res.string.codex_entry_pick_places_hint),
-        onClick = { eventSink(CodexEntryFormEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.NPC_PLACES)) },
-        chips =
-            form.npcPlaces.takeIf { it.isNotEmpty() }?.let { places ->
-                { places.forEach { MentionChip(item = it, onClick = null) } }
-            },
-    )
-    CodexEntryTextArea(
-        label = stringResource(Res.string.codex_entry_label_notes),
-        value = form.description,
-        field = CodexEntryField.DESCRIPTION,
-        eventSink = eventSink,
-        placeholder = stringResource(Res.string.codex_entry_placeholder_npc_notes),
-    )
 }
 
 @Composable
@@ -417,11 +354,13 @@ private fun CodexEntryTypeSwitch(
 /**
  * the create/edit sheet with the place select and the "save changes?" prompt over it - shown by the codex and by the
  * session screen, which opens it prefilled for a mention whose record is gone. [toast] is the quick-add confirmation.
+ * [density] picks between every field in line and the rarely filled ones folded under "more".
  */
 @Composable
 internal fun CodexEntryFormSheet(
     form: CodexEntryFormState,
     toast: String?,
+    density: FormDensity = FormDensity.Full,
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     AppBottomSheet(
@@ -439,6 +378,7 @@ internal fun CodexEntryFormSheet(
                 form = form,
                 eventSink = eventSink,
                 onClose = { eventSink(CodexEntryFormEvent.EntryFormCloseRequested) },
+                density = density,
             )
             // the sheet covers the app-level toast, so the quick-add confirmation gets its own copy here
             AppToast(

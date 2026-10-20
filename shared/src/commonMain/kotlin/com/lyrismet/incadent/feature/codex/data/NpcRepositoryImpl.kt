@@ -9,6 +9,8 @@ import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
+import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
+import com.lyrismet.incadent.feature.codex.domain.model.parseNicknames
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -59,8 +61,8 @@ class NpcRepositoryImpl(
                             entity.status,
                             entity.description,
                             entity.race,
-                            entity.faction,
                             entity.lifeState,
+                            entity.nicknames.joinNicknames(),
                             entity.id,
                         )
                         writePortrait(entity.id, entity.portrait, stored.portrait)
@@ -81,8 +83,8 @@ class NpcRepositoryImpl(
                 npc.status,
                 npc.description,
                 npc.race,
-                npc.faction,
                 npc.lifeState,
+                npc.nicknames.joinNicknames(),
                 npc.portrait?.full,
                 npc.portrait?.thumb,
                 current.requireId(),
@@ -94,8 +96,8 @@ class NpcRepositoryImpl(
             npc.status,
             npc.description,
             npc.race,
-            npc.faction,
             npc.lifeState,
+            npc.nicknames.joinNicknames(),
             npc.portrait?.full,
             npc.portrait?.thumb,
             current.requireId(),
@@ -137,11 +139,11 @@ class NpcRepositoryImpl(
         status: NpcStatus,
         description: String,
         race: String,
-        faction: String,
         lifeState: NpcLifeState,
+        nicknames: String,
         portraitThumb: ByteArray?,
         locationIds: String,
-    ) = toDomain(id, name, status, description, race, faction, lifeState, portraitThumb)
+    ) = toDomain(id, name, status, description, race, lifeState, nicknames, portraitThumb)
         .copy(locationIds = locationIds.split(',').mapNotNull { it.toLongOrNull() })
 
     // one param per npc table column - dictated by SQLDelight's generated query mapper shape, not real complexity
@@ -152,10 +154,22 @@ class NpcRepositoryImpl(
         status: NpcStatus,
         description: String,
         race: String,
-        faction: String,
         lifeState: NpcLifeState,
+        nicknames: String,
         portraitThumb: ByteArray?,
-    ) = Npc(id, name, status, lifeState, description, emptyList(), race, faction, portraitThumb?.let { Photo(it) })
+    ) = Npc(
+        id,
+        name,
+        status,
+        lifeState,
+        description,
+        emptyList(),
+        race,
+        portraitThumb?.let {
+            Photo(it)
+        },
+        parseNicknames(nicknames),
+    )
 
     // the by-id row also carries the full jpeg
     @Suppress("LongParameterList")
@@ -165,10 +179,10 @@ class NpcRepositoryImpl(
         status: NpcStatus,
         description: String,
         race: String,
-        faction: String,
         lifeState: NpcLifeState,
+        nicknames: String,
         portraitThumb: ByteArray?,
         portrait: ByteArray?,
-    ) = toDomain(id, name, status, description, race, faction, lifeState, portraitThumb)
+    ) = toDomain(id, name, status, description, race, lifeState, nicknames, portraitThumb)
         .copy(portrait = portraitThumb?.let { Photo(it, portrait) })
 }

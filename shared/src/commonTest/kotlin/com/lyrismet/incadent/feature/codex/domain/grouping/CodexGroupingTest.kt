@@ -14,7 +14,6 @@ class CodexGroupingTest {
         CodexGroupLabels(
             noRegionForQuest = "Без региона",
             noPlace = "Место не указано",
-            noFaction = "Без фракции",
             noGiver = "Неизвестно от кого",
             giverPrefix = "От:",
             topLevel = "Верхний уровень",
@@ -46,7 +45,7 @@ class CodexGroupingTest {
     fun `npcs group by the region of their place with the no-place group last`() {
         val npcs =
             listOf(
-                npc(1, "Анна", NpcStatus.FRIEND, locationIds = listOf(castle.id), faction = "Гильдия"),
+                npc(1, "Анна", NpcStatus.FRIEND, locationIds = listOf(castle.id)),
                 npc(2, "Борис", NpcStatus.ENEMY, locationIds = listOf(mill.id), race = "Человек"),
                 npc(3, "Вера", NpcStatus.NEUTRAL),
                 npc(4, "Глеб", NpcStatus.FRIEND, NpcLifeState.DEAD, locationIds = listOf(castle.id)),
@@ -61,17 +60,17 @@ class CodexGroupingTest {
     }
 
     @Test
-    fun `a region npc subtitle names the place and the faction or race`() {
+    fun `a region npc subtitle names the place and the race`() {
         val npcs =
             listOf(
-                npc(1, "Анна", locationIds = listOf(castle.id), faction = "Гильдия", race = "Эльф"),
+                npc(1, "Анна", locationIds = listOf(castle.id), race = "Эльф"),
                 npc(2, "Борис", locationIds = listOf(mill.id), race = "Человек"),
                 npc(3, "Вера"),
             )
 
         val items = groupNpcs(npcs, places, NpcGroupBy.REGION, labels).flatMap { it.items }
 
-        assertEquals("▲ Замок · Гильдия", items.first { it.entity.name == "Анна" }.subtitle)
+        assertEquals("▲ Замок · Эльф", items.first { it.entity.name == "Анна" }.subtitle)
         assertEquals("▲ Мельница · Человек", items.first { it.entity.name == "Борис" }.subtitle)
         assertNull(items.first { it.entity.name == "Вера" }.subtitle)
     }
@@ -91,22 +90,6 @@ class CodexGroupingTest {
         assertEquals(listOf("ДРУГ", "ВРАГ", "НЕЙТРАЛ"), groups.map { it.title })
         assertEquals(listOf("Анна", "Глеб"), groups[0].items.map { it.entity.name })
         assertTrue(groups.flatMap { it.items }.all { it.subtitle == null })
-    }
-
-    @Test
-    fun `npcs group by faction with the no-faction group last`() {
-        val npcs =
-            listOf(
-                npc(1, "Анна", faction = "Гильдия"),
-                npc(2, "Борис", faction = "Орден"),
-                npc(3, "Вера", faction = "—"),
-                npc(4, "Глеб", faction = "Гильдия"),
-            )
-
-        val groups = groupNpcs(npcs, places, NpcGroupBy.FACTION, labels)
-
-        assertEquals(listOf("ГИЛЬДИЯ", "ОРДЕН", "БЕЗ ФРАКЦИИ"), groups.map { it.title })
-        assertEquals(listOf("Анна", "Глеб"), groups[0].items.map { it.entity.name })
     }
 
     @Test

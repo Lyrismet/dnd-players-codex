@@ -28,7 +28,6 @@ private val monk =
         description = "Монах",
         locationIds = listOf(tavern.id),
         race = "Человек",
-        faction = "Орден",
     )
 
 private val npcs = listOf(monk)
@@ -114,6 +113,15 @@ class CodexSearchMatchingTest {
         assertFalse(bard.matchesQuery("полурослик"))
         assertFalse(bard.matchesQuery("даня"))
         assertFalse(bard.matchesQuery("карманник"))
+    }
+
+    @Test
+    fun `every record type is found by a nickname`() {
+        assertTrue(monk.copy(nicknames = listOf("Седой")).matchesQuery("седой", regions))
+        assertTrue(errand.copy(nicknames = listOf("Ржавый")).matchesQuery("ржавый", regions))
+        assertTrue(tavern.copy(nicknames = listOf("Пьяница")).matchesQuery("пьяница", regions))
+        assertTrue(bard.copy(nicknames = listOf("Тень")).matchesQuery("тень"))
+        assertFalse(monk.matchesQuery("седой", regions))
     }
 
     @Test

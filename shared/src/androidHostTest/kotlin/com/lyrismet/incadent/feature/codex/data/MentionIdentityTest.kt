@@ -35,7 +35,7 @@ class MentionIdentityTest {
     private fun npc(
         id: Long,
         name: String,
-    ) = Npc(id, name, NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), "", "")
+    ) = Npc(id, name, NpcStatus.NEUTRAL, NpcLifeState.ALIVE, "", emptyList(), "")
 
     private suspend fun index(): MentionIndex =
         MentionIndex(

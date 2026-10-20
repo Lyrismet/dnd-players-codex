@@ -7,7 +7,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 
-// the query arrives trimmed from the presenter, an empty query matches every entry and a search only reads titles
+// the query arrives trimmed from the presenter, an empty query matches every entry, only titles and nicknames are read
 private inline fun matchesAnyTitle(
     query: String,
     titles: () -> List<String>,
@@ -20,16 +20,16 @@ private inline fun matchesAnyTitle(
 internal fun Npc.matchesQuery(
     query: String,
     regions: CodexRegions,
-): Boolean = matchesAnyTitle(query) { listOf(name) + regions.placeNamesOfNpc(this) }
+): Boolean = matchesAnyTitle(query) { listOf(name) + nicknames + regions.placeNamesOfNpc(this) }
 
 internal fun Quest.matchesQuery(
     query: String,
     regions: CodexRegions,
-): Boolean = matchesAnyTitle(query) { listOf(title) + regions.placeNamesOfQuest(this) }
+): Boolean = matchesAnyTitle(query) { listOf(title) + nicknames + regions.placeNamesOfQuest(this) }
 
 internal fun Location.matchesQuery(
     query: String,
     regions: CodexRegions,
-): Boolean = matchesAnyTitle(query) { listOf(name) + regions.placeNamesOfLocation(this) }
+): Boolean = matchesAnyTitle(query) { listOf(name) + nicknames + regions.placeNamesOfLocation(this) }
 
-internal fun PartyMember.matchesQuery(query: String): Boolean = matchesAnyTitle(query) { listOf(name) }
+internal fun PartyMember.matchesQuery(query: String): Boolean = matchesAnyTitle(query) { listOf(name) + nicknames }

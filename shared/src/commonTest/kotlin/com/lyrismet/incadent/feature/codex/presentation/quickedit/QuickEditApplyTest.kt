@@ -23,7 +23,6 @@ class QuickEditApplyTest {
             description = "",
             locationIds = emptyList(),
             race = "Человек",
-            faction = "Орден",
         )
 
     private val member =
@@ -44,10 +43,21 @@ class QuickEditApplyTest {
 
     @Test
     fun `a text edit writes its field and leaves the rest of the npc alone`() {
-        val edited = npc.withQuickEdit(QuickEditField.FACTION, QuickEditValue.Text("Гильдия"))
+        val edited = npc.withQuickEdit(QuickEditField.RACE, QuickEditValue.Text("Гильдия"))
 
-        assertEquals("Гильдия", edited?.faction)
+        assertEquals("Гильдия", edited?.race)
         assertEquals(npc.name, edited?.name)
+    }
+
+    @Test
+    fun `a nicknames edit is parsed from the comma separated text`() {
+        val edited = npc.withQuickEdit(QuickEditField.NICKNAMES, QuickEditValue.Text(" Седой , Монах "))
+
+        assertEquals(listOf("Седой", "Монах"), edited?.nicknames)
+        assertEquals(
+            listOf("Тень"),
+            member.withQuickEdit(QuickEditField.NICKNAMES, QuickEditValue.Text("Тень"))?.nicknames,
+        )
     }
 
     @Test
@@ -55,7 +65,6 @@ class QuickEditApplyTest {
         val edited = npc.withQuickEdit(QuickEditField.RACE, QuickEditValue.Text("  эльф "))
 
         assertEquals("Эльф", edited?.race)
-        assertEquals("Гильдия", npc.withQuickEdit(QuickEditField.FACTION, QuickEditValue.Text("гильдия"))?.faction)
         assertEquals(
             "Воин",
             member.withQuickEdit(QuickEditField.CHARACTER_CLASS, QuickEditValue.Text("воин"))?.characterClass,

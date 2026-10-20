@@ -163,6 +163,7 @@ private fun NpcSummaryBody(
     EntityFactsGrid(npc.facts, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelationGroups(npc.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(npc.name, npc.relatedNotes, actions.onRelatedNoteClicked)
+    EntityDeleteButton(npc.ref, actions)
 }
 
 @Composable
@@ -196,6 +197,7 @@ private fun LocationSummaryBody(
     EntityFactsGrid(location.facts, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelationGroups(location.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(location.name, location.relatedNotes, actions.onRelatedNoteClicked)
+    EntityDeleteButton(location.ref, actions)
 }
 
 @Composable
@@ -232,6 +234,7 @@ private fun QuestSummaryBody(
     EntityFactsGrid(quest.facts, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelationGroups(quest.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(quest.title, quest.relatedNotes, actions.onRelatedNoteClicked)
+    EntityDeleteButton(quest.ref, actions)
 }
 
 private val HeaderButtonSize = 36.dp

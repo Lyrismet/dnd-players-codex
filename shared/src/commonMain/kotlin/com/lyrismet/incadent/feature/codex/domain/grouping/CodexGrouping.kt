@@ -31,7 +31,6 @@ fun <T, R> CodexGroup<T>.map(transform: (T) -> R): CodexGroup<R> =
 data class CodexGroupLabels(
     val noRegionForQuest: String,
     val noPlace: String,
-    val noFaction: String,
     val noGiver: String,
     val giverPrefix: String,
     val topLevel: String,
@@ -61,7 +60,6 @@ fun groupNpcs(
                     .ifEmpty { listOf(null.toSectionKey(labels.noPlace)) }
             }
         NpcGroupBy.RELATION -> rows.toSections { it.entity.status.toSectionKey(labels.npcStatus) }
-        NpcGroupBy.FACTION -> rows.toSections { it.entity.faction.toSectionKey(labels.noFaction) }
     }
 }
 

@@ -245,7 +245,6 @@ class EntitySheetInteractionsTest {
         description = "",
         locationIds = emptyList(),
         race = "",
-        faction = "",
     )
 
     private fun quest(

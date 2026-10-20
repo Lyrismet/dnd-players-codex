@@ -20,7 +20,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-private val gromm = Npc(1, "Громм", NpcStatus.FRIEND, NpcLifeState.ALIVE, "", emptyList(), "", "")
+private val gromm = Npc(1, "Громм", NpcStatus.FRIEND, NpcLifeState.ALIVE, "", emptyList(), "")
 private val grommMention = MentionEntity.NpcMention(1, "Громм", NpcStatus.FRIEND, NpcLifeState.ALIVE)
 private val labels = EntityKind.entries.associateWith { it.name }
 

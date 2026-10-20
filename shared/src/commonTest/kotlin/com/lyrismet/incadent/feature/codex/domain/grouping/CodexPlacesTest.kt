@@ -189,7 +189,6 @@ internal fun npc(
     lifeState: NpcLifeState = NpcLifeState.ALIVE,
     locationIds: List<Long> = emptyList(),
     race: String = "",
-    faction: String = "",
 ) = Npc(
     id = id,
     name = name,
@@ -198,7 +197,6 @@ internal fun npc(
     description = "",
     locationIds = locationIds,
     race = race,
-    faction = faction,
 )
 
 internal fun quest(

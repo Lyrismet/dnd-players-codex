@@ -34,7 +34,7 @@ class CodexDeletionPlannerPhotoTest {
     fun `undoing an npc delete brings back the full picture not just the thumbnail`() =
         runTest {
             val stored =
-                Npc(1, "Громм", NpcStatus.FRIEND, NpcLifeState.ALIVE, "", emptyList(), "", "", Photo(thumb, full))
+                Npc(1, "Громм", NpcStatus.FRIEND, NpcLifeState.ALIVE, "", emptyList(), "", Photo(thumb, full))
             val npcs = FakeNpcRepository(stored)
             val planner = planner(npcs = npcs)
             val plan =

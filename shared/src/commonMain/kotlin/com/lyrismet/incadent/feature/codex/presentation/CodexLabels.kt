@@ -19,10 +19,8 @@ import dndplayerscodex.shared.generated.resources.codex_entry_type_location
 import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_type_party
 import dndplayerscodex.shared.generated.resources.codex_entry_type_quest
-import dndplayerscodex.shared.generated.resources.codex_group_faction
 import dndplayerscodex.shared.generated.resources.codex_group_giver
 import dndplayerscodex.shared.generated.resources.codex_group_giver_prefix
-import dndplayerscodex.shared.generated.resources.codex_group_no_faction
 import dndplayerscodex.shared.generated.resources.codex_group_no_giver
 import dndplayerscodex.shared.generated.resources.codex_group_no_place
 import dndplayerscodex.shared.generated.resources.codex_group_no_region_quest
@@ -84,7 +82,6 @@ private fun groupedLabels(
             CodexGroupLabels(
                 noRegionForQuest = stringResource(Res.string.codex_group_no_region_quest),
                 noPlace = stringResource(Res.string.codex_group_no_place),
-                noFaction = stringResource(Res.string.codex_group_no_faction),
                 noGiver = stringResource(Res.string.codex_group_no_giver),
                 giverPrefix = stringResource(Res.string.codex_group_giver_prefix),
                 topLevel = stringResource(Res.string.codex_group_top_level),
@@ -97,7 +94,6 @@ private fun groupedLabels(
                     mapOf(
                         NpcGroupBy.REGION to stringResource(Res.string.codex_group_region),
                         NpcGroupBy.RELATION to stringResource(Res.string.codex_group_relation),
-                        NpcGroupBy.FACTION to stringResource(Res.string.codex_group_faction),
                         NpcGroupBy.NONE to stringResource(Res.string.codex_group_none),
                     ),
                 quest =

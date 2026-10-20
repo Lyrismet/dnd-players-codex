@@ -46,6 +46,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
+import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummarySheetContent
@@ -74,7 +75,11 @@ fun SessionDetailUi(
     state.tagSheet?.let { sheet -> SessionDetailTagsSheet(sheet, state.eventSink) }
     state.deletedMentionSheet?.let { sheet -> DeletedMentionSheet(sheet, state.eventSink) }
     state.entryForm?.let { form ->
-        CodexEntryFormSheet(form, state.toast) { event -> state.eventSink(SessionDetailEvent.EntryForm(event)) }
+        CodexEntryFormSheet(
+            form,
+            state.toast,
+            density = FormDensity.Compact,
+        ) { event -> state.eventSink(SessionDetailEvent.EntryForm(event)) }
     }
     state.phraseSheet?.let { sheet ->
         PhraseSnippetsSheet(sheet) { event -> state.eventSink(SessionDetailEvent.PhraseSheet(event)) }

@@ -57,7 +57,6 @@ private val ragnar =
         description = "Кузнец",
         locationIds = listOf(2),
         race = "Дварф",
-        faction = "Гильдия",
     )
 private val lira =
     PartyMember(
@@ -138,7 +137,7 @@ class EntitySummaryTest {
         val summary = buildEntitySummary(EntityRef.Npc(1), lookup()) as EntitySummaryItem.NpcSummary
 
         assertEquals("Рагнар", summary.name)
-        assertEquals("Дварф · Гильдия", summary.subtitle)
+        assertEquals("Дварф", summary.subtitle)
         assertEquals(3, summary.facts.size)
         val shown = summary.groups.filter { it.items.isNotEmpty() }
         assertEquals(1, shown.size)
@@ -162,8 +161,8 @@ class EntitySummaryTest {
         val summary = buildEntitySummary(EntityRef.Quest(3), lookup()) as EntitySummaryItem.QuestSummary
 
         assertEquals("Меч", summary.title)
-        // giver, reward and location - swordQuest has no location, so that row is a dash
-        assertEquals(3, summary.facts.size)
+        // giver, reward, location and nicknames - swordQuest has no location, so that row is a dash
+        assertEquals(4, summary.facts.size)
         assertEquals(FactValue.Text(""), summary.facts.last().value)
     }
 
