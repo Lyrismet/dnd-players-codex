@@ -11,8 +11,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
@@ -178,6 +176,7 @@ private fun PartyIdentityFields(
         placeholder = stringResource(Res.string.codex_entry_placeholder_party_name),
         required = true,
     )
+    NicknamesField(form, eventSink)
     // a player character's "вы" flag stands in for the player's name, so the field only shows for everyone else
     if (!form.partyIsPlayerCharacter) {
         CodexEntryTextField(
@@ -260,6 +259,7 @@ private fun QuestEntryFields(
         placeholder = stringResource(Res.string.codex_entry_placeholder_quest_name),
         required = true,
     )
+    NicknamesField(form, eventSink)
     FormChipPicker(
         label = stringResource(Res.string.codex_entry_label_giver),
         options = form.npcOptions,
@@ -308,6 +308,7 @@ private fun LocationEntryFields(
         placeholder = stringResource(Res.string.codex_entry_placeholder_location_name),
         required = true,
     )
+    NicknamesField(form, eventSink)
     if (form.hasParentCandidates) {
         FormPickField(
             label = stringResource(Res.string.codex_entry_label_parent),
@@ -351,11 +352,7 @@ private fun CodexEntryTypeSwitch(
     )
 }
 
-/**
- * the create/edit sheet with the place select and the "save changes?" prompt over it - shown by the codex and by the
- * session screen, which opens it prefilled for a mention whose record is gone. [toast] is the quick-add confirmation.
- * [density] picks between every field in line and the rarely filled ones folded under "more".
- */
+/** the create/edit sheet with the place and "save changes?" prompts over it, [density] picks the npc layout */
 @Composable
 internal fun CodexEntryFormSheet(
     form: CodexEntryFormState,

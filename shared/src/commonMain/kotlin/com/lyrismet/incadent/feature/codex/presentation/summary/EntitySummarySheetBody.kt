@@ -456,7 +456,9 @@ internal fun EntityFactsGrid(
     quick: QuickEditSheet? = null,
     modifier: Modifier = Modifier,
 ) {
-    if (facts.isEmpty()) return
+    // a read-only card has nothing to hold on to, so an empty nicknames row would only be noise
+    val shown = if (quick == null) facts.filterNot { it.isEmptyNicknames() } else facts
+    if (shown.isEmpty()) return
     // mockup - font-size 14px on the facts card, 6px vertical padding, 1px BorderSubtle, 14px radius
     val factTextStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Medium)
     Column(
@@ -466,6 +468,9 @@ internal fun EntityFactsGrid(
                 .appCard(shape = AppShapes.Card, background = AppPalette.Background)
                 .padding(vertical = 6.dp),
     ) {
-        facts.forEach { fact -> FactLine(fact, factTextStyle, onEntityRefClicked, quick) }
+        shown.forEach { fact -> FactLine(fact, factTextStyle, onEntityRefClicked, quick) }
     }
 }
+
+private fun FactRow.isEmptyNicknames(): Boolean =
+    edit == QuickEditField.NICKNAMES && (value as? FactValue.Text)?.text.isNullOrBlank()

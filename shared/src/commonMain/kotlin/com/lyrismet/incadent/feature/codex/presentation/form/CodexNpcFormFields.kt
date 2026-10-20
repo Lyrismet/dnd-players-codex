@@ -17,10 +17,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_no
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_race
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * the npc form - [FormDensity.Full] keeps every field in its own place, [FormDensity.Compact] leaves the name, the
- * relation and the notes and folds the rest under "more"
- */
+/** the npc form, [FormDensity.Compact] folds the rarely filled fields under "more" */
 @Composable
 internal fun NpcEntryFields(
     form: CodexEntryFormState,
@@ -35,6 +32,7 @@ internal fun NpcEntryFields(
             NpcRelationField(form, eventSink)
             NpcLifeField(form, eventSink)
             NpcPlacesField(form, eventSink)
+            NicknamesField(form, eventSink)
             NpcNotesField(form, eventSink)
         }
         FormDensity.Compact -> {
@@ -44,12 +42,17 @@ internal fun NpcEntryFields(
             // the details open by themselves when the npc being edited already has something in them
             FormDetails(
                 summary = npcDetailsSummary(form),
-                startsOpen = form.portrait != null || form.race.isNotBlank() || form.npcPlaces.isNotEmpty(),
+                startsOpen =
+                    form.portrait != null ||
+                        form.race.isNotBlank() ||
+                        form.nicknames.isNotBlank() ||
+                        form.npcPlaces.isNotEmpty(),
             ) {
                 PortraitField(form, eventSink)
                 NpcRaceField(form, eventSink)
                 NpcLifeField(form, eventSink)
                 NpcPlacesField(form, eventSink)
+                NicknamesField(form, eventSink)
             }
         }
     }

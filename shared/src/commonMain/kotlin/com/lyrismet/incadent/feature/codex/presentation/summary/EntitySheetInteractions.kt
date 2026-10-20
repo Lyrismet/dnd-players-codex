@@ -57,6 +57,12 @@ class EntitySheetInteractions(
         selectedRef.value = previous
     }
 
+    // a deleted card leaves the stack, and the sheet steps back when it was the open one
+    fun onEntityRemoved(ref: EntityRef) {
+        history.value = history.value.filter { it != ref }
+        if (selectedRef.value == ref) onDismissed()
+    }
+
     fun onNpcStatusSelected(
         scope: CoroutineScope,
         npcId: Long,

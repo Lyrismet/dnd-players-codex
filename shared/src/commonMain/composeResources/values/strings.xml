@@ -138,8 +138,10 @@
     <string name="codex_entry_label_name_location">Название</string>
     <string name="codex_entry_more">Подробнее</string>
     <string name="codex_entry_more_close">Свернуть</string>
-    <string name="codex_entry_more_hint_npc">Портрет, раса, состояние, где встретить</string>
+    <string name="codex_entry_more_hint_npc">Портрет, раса, состояние, где встретить, прозвища</string>
     <string name="codex_entry_summary_portrait">портрет</string>
+    <string name="codex_entry_label_nicknames">Прозвища</string>
+    <string name="codex_entry_placeholder_nicknames">Седой, Монах</string>
     <string name="codex_entry_label_race">Раса</string>
     <string name="codex_entry_label_relationship">Отношение</string>
     <string name="codex_entry_label_where_to_meet">Где встретить</string>

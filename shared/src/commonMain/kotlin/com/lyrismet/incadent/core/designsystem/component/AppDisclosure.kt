@@ -19,10 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 
-/**
- * a dashed "more" card - gold title, grey [summary] of what is inside while it is closed and a chevron. It shows or
- * hides [content] under it, the caller owns the expanded flag.
- */
+/** a dashed "more" card with a grey [summary] while closed, the caller owns the expanded flag */
 @Composable
 fun AppDisclosure(
     title: String,

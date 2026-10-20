@@ -199,6 +199,7 @@ class CodexEntryFormController private constructor(
                 CodexEntryField.NAME -> current.copy(name = text)
                 CodexEntryField.DESCRIPTION -> current.copy(description = text)
                 CodexEntryField.RACE -> current.copy(race = text)
+                CodexEntryField.NICKNAMES -> current.copy(nicknames = text)
                 CodexEntryField.REWARD -> current.copy(reward = text)
                 CodexEntryField.PARTY_CLASS -> current.copy(party = current.party.copy(characterClass = text))
                 CodexEntryField.PARTY_PLAYER -> current.copy(party = current.party.copy(player = text))
@@ -455,6 +456,7 @@ class CodexEntryFormController private constructor(
             cover = current.cover,
             photoCrop = current.photoCrop,
             race = current.race,
+            nicknames = current.nicknames,
             reward = current.reward,
             npcStatusOptions =
                 NpcStatus.entries.map { status ->

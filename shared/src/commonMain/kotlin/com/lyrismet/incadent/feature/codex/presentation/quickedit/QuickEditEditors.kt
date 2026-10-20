@@ -92,7 +92,7 @@ fun InlineFieldEditor(
     modifier: Modifier = Modifier,
 ) {
     var value by remember { mutableStateOf(TextFieldValue(draft, editorCaretAtEnd(draft))) }
-    val maxLength = if (kind == InlineInputKind.MULTILINE) TextLimits.NOTE else TextLimits.LINE
+    val maxLength = kind.maxLength()
     val isArea = kind == InlineInputKind.MULTILINE
     EditorFrame(modifier) {
         EditorHeader(label) {
@@ -222,10 +222,17 @@ private fun EditorHeader(
     }
 }
 
+private fun InlineInputKind.maxLength(): Int =
+    when (this) {
+        InlineInputKind.MULTILINE -> TextLimits.NOTE
+        InlineInputKind.LIST -> TextLimits.NICKNAMES
+        InlineInputKind.TITLE, InlineInputKind.TEXT, InlineInputKind.NUMBER -> TextLimits.LINE
+    }
+
 private fun inputHeight(kind: InlineInputKind): Modifier =
     when (kind) {
         InlineInputKind.TITLE -> Modifier.height(38.dp)
-        InlineInputKind.TEXT, InlineInputKind.NUMBER -> Modifier.height(36.dp)
+        InlineInputKind.TEXT, InlineInputKind.LIST, InlineInputKind.NUMBER -> Modifier.height(36.dp)
         InlineInputKind.MULTILINE -> Modifier
     }
 
@@ -240,7 +247,7 @@ private fun inputTextStyle(kind: InlineInputKind) =
                 fontWeight = FontWeight.SemiBold,
                 color = AppPalette.TextHeading,
             )
-        InlineInputKind.TEXT, InlineInputKind.NUMBER ->
+        InlineInputKind.TEXT, InlineInputKind.LIST, InlineInputKind.NUMBER ->
             MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Large, color = AppPalette.TextPrimary)
         InlineInputKind.MULTILINE ->
             MaterialTheme.typography.bodyLarge.copy(
@@ -255,7 +262,7 @@ private fun inputKeyboardOptions(kind: InlineInputKind): KeyboardOptions =
         InlineInputKind.NUMBER -> KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done)
         InlineInputKind.MULTILINE ->
             KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Default)
-        InlineInputKind.TITLE, InlineInputKind.TEXT ->
+        InlineInputKind.TITLE, InlineInputKind.TEXT, InlineInputKind.LIST ->
             KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done)
     }
 

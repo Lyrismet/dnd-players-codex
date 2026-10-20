@@ -28,6 +28,7 @@ data class CodexEntryFormState(
     // the photo waiting in the crop window over the form
     val photoCrop: PhotoCropDraft? = null,
     val race: String = "",
+    val nicknames: String = "",
     val reward: String = "",
     val npcStatusOptions: List<FormChipOption<NpcStatus>> = emptyList(),
     val npcLifeOptions: List<FormChipOption<NpcLifeState>> = emptyList(),
@@ -65,6 +66,7 @@ enum class CodexEntryField {
     NAME,
     DESCRIPTION,
     RACE,
+    NICKNAMES,
     REWARD,
     PARTY_CLASS,
     PARTY_PLAYER,

@@ -138,8 +138,10 @@
     <string name="codex_entry_label_name_location">Name</string>
     <string name="codex_entry_more">More details</string>
     <string name="codex_entry_more_close">Collapse</string>
-    <string name="codex_entry_more_hint_npc">Portrait, race, condition, where to meet</string>
+    <string name="codex_entry_more_hint_npc">Portrait, race, condition, where to meet, nicknames</string>
     <string name="codex_entry_summary_portrait">portrait</string>
+    <string name="codex_entry_label_nicknames">Nicknames</string>
+    <string name="codex_entry_placeholder_nicknames">Grey, the Monk</string>
     <string name="codex_entry_label_race">Race</string>
     <string name="codex_entry_label_relationship">Relationship</string>
     <string name="codex_entry_label_where_to_meet">Where to find</string>

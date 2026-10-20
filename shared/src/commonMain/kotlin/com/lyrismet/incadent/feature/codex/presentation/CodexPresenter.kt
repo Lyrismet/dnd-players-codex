@@ -545,7 +545,8 @@ class CodexPresenter(
 
 // a deleted card must not come back by itself when the delete is undone
 private fun CodexFields.closeSheetOf(ref: EntityRef) {
-    if (selectedEntityRef.value == ref) selectedEntityRef.value = null
+    if (selectedEntityRef.value == ref) quickEdit.onSheetClosed()
+    entitySheet.onEntityRemoved(ref)
 }
 
 private fun CodexFields.rememberRecentPlaces(ids: List<Long>) {

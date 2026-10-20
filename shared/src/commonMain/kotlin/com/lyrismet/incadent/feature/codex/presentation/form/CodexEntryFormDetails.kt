@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppDisclosure
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
+import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_more
 import dndplayerscodex.shared.generated.resources.codex_entry_more_close
@@ -45,7 +46,10 @@ internal fun npcDetailsSummary(form: CodexEntryFormState): String {
                 .firstOrNull { it.selected && it.value != NpcLifeState.ALIVE }
                 ?.label
                 ?.lowercase(),
-            form.npcPlaces.takeIf { it.isNotEmpty() }?.joinToString(prefix = "▲ ") { it.label },
+            form.npcPlaces.takeIf { it.isNotEmpty() }?.joinToString(
+                prefix = "${MentionGlyph.LOCATION.symbol} ",
+            ) { it.label },
+            form.nicknames.trim().takeIf { it.isNotEmpty() },
         )
     return filled.joinToString(" · ").ifEmpty { stringResource(Res.string.codex_entry_more_hint_npc) }
 }

@@ -34,6 +34,38 @@ class EntitySheetInteractionsTest {
     }
 
     @Test
+    fun `removing the open entity steps back to the one underneath and forgets it`() {
+        val selected = mutableStateOf<EntityRef?>(null)
+        val interactions = interactions(selected = selected)
+        interactions.onEntityClicked(EntityRef.Npc(id = 1))
+        interactions.onEntityClicked(EntityRef.Location(id = 2))
+
+        interactions.onEntityRemoved(EntityRef.Location(id = 2))
+        assertEquals(EntityRef.Npc(id = 1), selected.value)
+
+        interactions.onDismissed()
+        assertNull(selected.value)
+        // nothing is left underneath to reopen when another card closes later
+        interactions.onEntityClicked(EntityRef.Npc(id = 3))
+        interactions.onDismissed()
+        assertNull(selected.value)
+    }
+
+    @Test
+    fun `removing an entity that is only in the history drops it from there`() {
+        val selected = mutableStateOf<EntityRef?>(null)
+        val interactions = interactions(selected = selected)
+        interactions.onEntityClicked(EntityRef.Npc(id = 1))
+        interactions.onEntityClicked(EntityRef.Location(id = 2))
+
+        interactions.onEntityRemoved(EntityRef.Npc(id = 1))
+        assertEquals(EntityRef.Location(id = 2), selected.value)
+
+        interactions.onDismissed()
+        assertNull(selected.value)
+    }
+
+    @Test
     fun `npc status change is written through the repository`() =
         runTest {
             val npcs = FakeNpcRepository(npc(id = 1, status = NpcStatus.NEUTRAL))

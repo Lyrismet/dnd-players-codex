@@ -163,7 +163,9 @@ class EntitySummaryTest {
         assertEquals("Меч", summary.title)
         // giver, reward, location and nicknames - swordQuest has no location, so that row is a dash
         assertEquals(4, summary.facts.size)
-        assertEquals(FactValue.Text(""), summary.facts.last().value)
+        assertEquals(QuickEditField.PLACE, summary.facts[2].edit)
+        assertEquals(FactValue.Text(""), summary.facts[2].value)
+        assertEquals(QuickEditField.NICKNAMES, summary.facts.last().edit)
     }
 
     @Test

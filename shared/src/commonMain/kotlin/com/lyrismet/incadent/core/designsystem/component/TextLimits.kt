@@ -9,6 +9,9 @@ object TextLimits {
     const val SEARCH = 64
     const val PHRASE = 200
 
+    /** the comma separated nicknames of one record */
+    const val NICKNAMES = 96
+
     /** descriptions, party notes and session notes */
     const val NOTE = 2000
 }
