@@ -94,6 +94,7 @@ Each feature under `presentation/<feature>/` is four files — see `feature/sess
 ### Localization
 - User-visible text lives in `composeResources/values{,-en}/strings.xml` (plurals as `<plurals>`); never build a sentence or a plural form in code. A key present in `values` must be present in `values-en`.
 - Dates are formatted with `AppLanguage` (`core/format/DateFormatting.kt`), resolved in composable code with `currentAppLanguage()`. Two keys with the same text are kept apart on purpose when they sit in different screens, so each can be translated on its own.
+- Russian vocabulary, one word per concept: заметка (text in a session) vs запись/карточка (codex entry), упоминание for `@` (тег is only a session tag), место (not локация), отряд (not партия), хиты (not HP), день (inside a session, not встреча), gestures are нажмите/удерживайте/смахните (no тап, касание).
 
 ### Kotlin typing rules
 - Strict, non-nullable-by-default typing. Avoid `Any`, unchecked `as` casts, and `!!` — prefer `as?` with explicit handling, or remove the need for the cast with a `sealed interface`/`sealed class`.
