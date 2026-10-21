@@ -3,6 +3,7 @@ package com.lyrismet.incadent.persistence
 import app.cash.sqldelight.ColumnAdapter
 import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
@@ -13,6 +14,7 @@ import kotlin.enums.enumEntries
 private const val LOG_COMPONENT = "Database"
 
 val npcStatusAdapter = enumColumnAdapter(NpcStatus.NEUTRAL)
+val creatureTypeAdapter = enumColumnAdapter(CreatureType.HUMANOID)
 val npcLifeStateAdapter = enumColumnAdapter(NpcLifeState.ALIVE)
 val partyPresenceAdapter = enumColumnAdapter(PartyPresence.IN)
 val questStatusAdapter = enumColumnAdapter(QuestStatus.ACTIVE)

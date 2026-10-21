@@ -10,6 +10,7 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_place_select_clear
 import dndplayerscodex.shared.generated.resources.codex_place_select_done
 import dndplayerscodex.shared.generated.resources.codex_place_select_empty
+import dndplayerscodex.shared.generated.resources.codex_place_select_empty_hint
 import dndplayerscodex.shared.generated.resources.codex_place_select_multi_hint
 import dndplayerscodex.shared.generated.resources.codex_place_select_search
 import dndplayerscodex.shared.generated.resources.codex_search_create_location
@@ -43,6 +44,7 @@ internal fun PlaceSelectContent(
             title = select.title,
             searchPlaceholder = stringResource(Res.string.codex_place_select_search),
             emptyText = stringResource(Res.string.codex_place_select_empty),
+            emptyHint = stringResource(Res.string.codex_place_select_empty_hint),
             multiHint = stringResource(Res.string.codex_place_select_multi_hint),
             clearLabel =
                 stringResource(

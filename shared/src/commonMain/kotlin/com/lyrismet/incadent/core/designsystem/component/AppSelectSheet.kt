@@ -61,6 +61,8 @@ class AppSelectTexts(
     val title: String,
     val searchPlaceholder: String,
     val emptyText: String,
+    /** shown instead of [emptyText] while the list holds nothing and nothing is typed, says a name creates one */
+    val emptyHint: String? = null,
     /** the quiet "can pick several" note next to the title, multi mode */
     val multiHint: String,
     /** single mode only - the row that clears the value, null hides it */
@@ -154,12 +156,7 @@ fun AppSelectSheetContent(
         ) {
             if (canClear && texts.clearLabel != null) SelectOutlinedButton(texts.clearLabel) { onConfirm(emptySet()) }
             if (rows.isEmpty()) {
-                Text(
-                    texts.emptyText,
-                    fontSize = AppFontSize.Body,
-                    color = AppPalette.TextTertiary,
-                    modifier = Modifier.padding(4.dp),
-                )
+                SelectEmptyText(texts, isListEmpty = options.isEmpty() && query.isBlank(), canCreate = onCreate != null)
             } else {
                 SelectRows(
                     rows = rows,
@@ -235,7 +232,14 @@ private fun SelectRows(
         contentPadding = PaddingValues(horizontal = RowContentGap),
     ) {
         itemsIndexed(rows, key = { _, row -> row.option.id }) { index, row ->
-            if (index > 0) AppDivider(color = AppPalette.SurfacePopover)
+            val group = row.option.group
+            if (group != null &&
+                group != rows.getOrNull(index - 1)?.option?.group
+            ) {
+                SelectGroupHeader(group, isFirst = index == 0)
+            } else if (index > 0) {
+                AppDivider(color = AppPalette.SurfacePopover)
+            }
             SelectListRow(row, multi, leadingGlyph, carriedLabel) { onRowClick(row.option.id) }
         }
     }

@@ -27,6 +27,8 @@ data class SessionDetailState(
     val feed: List<SessionFeedItem> = emptyList(),
     val draft: String = "",
     val draftSelection: TextRange = TextRange.Zero,
+    // the species just inserted that waits for its count to be typed, null otherwise
+    val quantityHint: String? = null,
     val mentionSuggestions: List<MentionDropdownItem> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
     val editingEntryTimeLabel: String? = null,
@@ -117,6 +119,8 @@ sealed interface SessionEntrySegment {
 
     data class Mention(
         val chip: MentionChipItem,
+        // which token of its species this is in the note, tells apart two chips of the same species
+        val occurrence: Int = 0,
     ) : SessionEntrySegment
 
     /** a codex name written without "@" - drawn with a dotted underline and linked or left alone on request */
@@ -270,6 +274,13 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
 
     data class SaveEntryAsPhraseClicked(
         val id: Long,
+    ) : SessionDetailEvent
+
+    /** a species chip was tapped, its card then shows and changes the count of that very chip */
+    data class SpeciesChipClicked(
+        val entryId: Long,
+        val occurrence: Int,
+        val speciesId: Long,
     ) : SessionDetailEvent
 
     /** a "?" tag was tapped */

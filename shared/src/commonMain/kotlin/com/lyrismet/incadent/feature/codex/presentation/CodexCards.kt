@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +29,7 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
 import com.lyrismet.incadent.core.designsystem.component.StatusBadge
@@ -38,11 +40,18 @@ import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
+import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
+import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
+import com.lyrismet.incadent.feature.codex.presentation.style.toShieldStyle
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
+import dndplayerscodex.shared.generated.resources.codex_species_row_seen_format
+import dndplayerscodex.shared.generated.resources.mention_count_in_sessions
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 // the share of the text column left empty beside a cover strip
@@ -128,6 +137,58 @@ internal fun NpcCodexCard(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 2.dp),
         )
+    }
+}
+
+@Composable
+internal fun SpeciesCodexCard(
+    item: SpeciesCodexItem,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    CodexCardRow(
+        onClick = onClick,
+        modifier = modifier,
+        badge = { CodexInitialBadge(MentionGlyph.SPECIES.symbol, SpeciesMentionColor, item.photo) },
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = item.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = AppPalette.TextHeading,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            StatusBadge(text = item.creatureTypeLabel, color = SpeciesMentionColor)
+        }
+        if (item.shields.isNotEmpty()) {
+            FlowRow(
+                modifier = Modifier.padding(top = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                item.shields.forEach { (type, state) ->
+                    AppDamageShield(type.shieldIconPath(), type.shieldColor(), state.toShieldStyle(), width = 22.dp)
+                }
+            }
+        }
+        if (item.seenInSessions > 0) {
+            Text(
+                text =
+                    stringResource(
+                        Res.string.codex_species_row_seen_format,
+                        pluralStringResource(
+                            Res.plurals.mention_count_in_sessions,
+                            item.seenInSessions,
+                            item.seenInSessions,
+                        ),
+                    ),
+                style = MaterialTheme.typography.bodySmall,
+                color = AppPalette.TextTertiary,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
     }
 }
 

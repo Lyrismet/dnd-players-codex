@@ -1,6 +1,6 @@
 package com.lyrismet.incadent.feature.phrases.domain
 
-import com.lyrismet.incadent.feature.mention.domain.plainMentionText
+import com.lyrismet.incadent.feature.mention.domain.displayMentionText
 
 /** one phrase offered above the composer - a pinned snippet (★) or an automatically found frequent one (↻ ×N) */
 data class PhraseOption(
@@ -75,7 +75,7 @@ fun phraseLabel(
 ): String {
     // a trailing "@" is the point of a starter phrase, so it stays in the label
     val trailingAt = if (text.trimEnd().endsWith("@")) " @" else ""
-    val plain = plainMentionText(text).replace("@", "").trim() + trailingAt
+    val plain = displayMentionText(text).replace("@", "").trim() + trailingAt
     return if (maxLength != null && plain.length > maxLength) plain.take(maxLength - 1) + "…" else plain
 }
 

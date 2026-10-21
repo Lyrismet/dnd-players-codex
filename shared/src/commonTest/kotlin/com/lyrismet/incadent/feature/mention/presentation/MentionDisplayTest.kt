@@ -63,4 +63,15 @@ class MentionDisplayTest {
         assertEquals(4, plain.toDisplay(4))
         assertEquals(4, plain.toRaw(4))
     }
+
+    @Test
+    fun `a species token with a count shows the count after the name`() {
+        assertEquals("нашли @Гоблин ×4 в лесу", MentionDisplay("нашли @[Гоблин|s:7|4] в лесу").text)
+    }
+
+    @Test
+    fun `a species token without a count shows the name alone`() {
+        assertEquals("нашли @Гоблин в лесу", MentionDisplay("нашли @[Гоблин|s:7] в лесу").text)
+        assertEquals("нашли @Гоблин в лесу", MentionDisplay("нашли @[Гоблин|s:7|1] в лесу").text)
+    }
 }

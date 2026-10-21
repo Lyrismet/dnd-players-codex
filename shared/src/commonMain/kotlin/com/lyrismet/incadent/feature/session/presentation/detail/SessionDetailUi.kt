@@ -191,7 +191,10 @@ private fun SessionDetailEntitySheet(
     AppBottomSheet(onDismissRequest = { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) }) {
         EntitySummarySheetContent(
             item = entity,
-            actions = entitySheetActions { state.eventSink(SessionDetailEvent.EntitySheet(it)) },
+            actions =
+                entitySheetActions(
+                    speciesNoteEdit = !state.readOnly,
+                ) { state.eventSink(SessionDetailEvent.EntitySheet(it)) },
             onClose = { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
         )
     }
@@ -207,6 +210,7 @@ private fun entryMentionActions(
     onAutoLink = { eventSink(SessionDetailEvent.AutoMentionsLinkClicked(entryId)) },
     onAutoDismiss = { eventSink(SessionDetailEvent.AutoMentionsDismissed(entryId)) },
     onAutoWordClick = { key -> eventSink(SessionDetailEvent.AutoMentionWordClicked(entryId, key)) },
+    onSpeciesClick = { occurrence, id -> eventSink(SessionDetailEvent.SpeciesChipClicked(entryId, occurrence, id)) },
 )
 
 @Composable

@@ -14,6 +14,7 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.FakeLocationRepo
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartyRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeQuestRepository
+import com.lyrismet.incadent.feature.codex.presentation.summary.FakeSpeciesRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -111,5 +112,5 @@ class CodexDeletionPlannerPhotoTest {
         npcs: FakeNpcRepository = FakeNpcRepository(),
         party: FakePartyRepository = FakePartyRepository(),
         locations: FakeLocationRepository = FakeLocationRepository(),
-    ) = CodexDeletionPlanner(npcs, party, FakeQuestRepository(), locations)
+    ) = CodexDeletionPlanner(npcs, party, FakeQuestRepository(), locations, FakeSpeciesRepository())
 }

@@ -6,6 +6,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
 import com.lyrismet.incadent.feature.codex.domain.model.parseNicknames
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
@@ -42,6 +43,7 @@ internal fun Npc.toFields(ref: EntityRef.Npc) =
         npcStatus = status,
         npcLife = lifeState,
         npcLocationIds = locationIds,
+        npcSpeciesId = speciesId,
     )
 
 internal fun PartyMember.toFields(ref: EntityRef.Party) =
@@ -100,6 +102,7 @@ internal fun CodexEntryFormFields.toNpc() =
         race = race.trim().capitalizeFirst(),
         portrait = portrait,
         nicknames = parseNicknames(nicknames),
+        speciesId = npcSpeciesId,
     )
 
 internal fun CodexEntryFormFields.toQuest() =
@@ -120,4 +123,28 @@ internal fun CodexEntryFormFields.toLocation() =
         description = description.trim(),
         parentId = locationParentId,
         cover = cover,
+    )
+
+internal fun Species.toFields(ref: EntityRef.Species) =
+    CodexEntryFormFields(
+        editingRef = ref,
+        originalName = name,
+        type = EntityKind.SPECIES,
+        name = name,
+        description = notes,
+        portrait = photo,
+        nicknames = nicknames.joinNicknames(),
+        speciesType = creatureType,
+        speciesDamage = damage,
+    )
+
+internal fun CodexEntryFormFields.toSpecies() =
+    Species(
+        id = (editingRef as? EntityRef.Species)?.id ?: reviveId,
+        name = name.trim().capitalizeFirst(),
+        creatureType = speciesType,
+        damage = speciesDamage,
+        notes = description.trim(),
+        photo = portrait,
+        nicknames = parseNicknames(nicknames),
     )

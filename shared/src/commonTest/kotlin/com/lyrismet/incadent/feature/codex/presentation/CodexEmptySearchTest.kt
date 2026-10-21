@@ -66,5 +66,22 @@ class CodexEmptySearchTest {
         assertEquals(8, otherSectionMatches(CodexTab.NPC, party = 1, npcs = 2, quests = 3, locations = 4))
         assertEquals(7, otherSectionMatches(CodexTab.QUEST, party = 1, npcs = 2, quests = 3, locations = 4))
         assertEquals(6, otherSectionMatches(CodexTab.LOCATION, party = 1, npcs = 2, quests = 3, locations = 4))
+        assertEquals(
+            15,
+            otherSectionMatches(CodexTab.PARTY, party = 1, npcs = 2, quests = 3, locations = 4, species = 6),
+        )
+        assertEquals(14, otherSectionMatches(CodexTab.NPC, party = 1, npcs = 2, quests = 3, locations = 4, species = 6))
+        assertEquals(
+            10,
+            otherSectionMatches(
+                CodexTab.NPC,
+                party = 1,
+                npcs = 2,
+                quests = 3,
+                locations = 4,
+                species = 6,
+                npcMode = NpcListMode.SPECIES,
+            ),
+        )
     }
 }

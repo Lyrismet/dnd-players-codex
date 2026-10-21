@@ -16,6 +16,7 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.FakeLocationRepo
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartyRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeQuestRepository
+import com.lyrismet.incadent.feature.codex.presentation.summary.FakeSpeciesRepository
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -144,7 +145,13 @@ class QuickEditInteractionsTest {
         private val entitySheet =
             EntitySheetInteractions(
                 selected,
-                CodexRepositories(FakePartyRepository(), npcs, quests, FakeLocationRepository()),
+                CodexRepositories(
+                    FakePartyRepository(),
+                    npcs,
+                    quests,
+                    FakeLocationRepository(),
+                    FakeSpeciesRepository(),
+                ),
                 { _, _ -> },
             )
         val interactions =

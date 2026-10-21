@@ -36,6 +36,7 @@ class CampaignRepositoryImpl(
     private val queries = database.campaignQueries
     private val locationQueries = database.locationQueries
     private val npcQueries = database.npcQueries
+    private val speciesQueries = database.speciesQueries
     private val npcLocationQueries = database.npcLocationQueries
     private val phraseQueries = database.phraseSnippetQueries
 
@@ -125,7 +126,7 @@ class CampaignRepositoryImpl(
             )
         }
 
-    // copies are independent rows - names, descriptions, photos and nesting. Notes, quests and the party stay behind
+    // copies are independent rows, notes, quests and the party stay behind
     private fun copyWorld(
         transfer: CampaignTransfer,
         targetId: String,
@@ -159,6 +160,8 @@ class CampaignRepositoryImpl(
             )
             placeMap[oldId] = locationQueries.lastInsertRowId().executeAsOne()
         }
+        // one copy per species, shared by every copied npc that had it
+        val speciesMap = mutableMapOf<Long, Long>()
         var copiedNpcs = 0
         transfer.npcIds.forEach { oldId ->
             val npc = npcQueries.selectById(oldId).executeAsOneOrNull() ?: return@forEach
@@ -169,6 +172,7 @@ class CampaignRepositoryImpl(
                 npc.race,
                 npc.life_state,
                 npc.nicknames,
+                npc.species_id?.let { copySpecies(it, targetId, speciesMap) },
                 npc.portrait,
                 npc.portrait_thumb,
                 targetId,
@@ -177,10 +181,33 @@ class CampaignRepositoryImpl(
             npcPlaces[oldId].orEmpty().mapNotNull(placeMap::get).forEach { npcLocationQueries.insert(newId, it) }
             copiedNpcs++
         }
+        // the whole bestiary comes along, not only the species a copied npc points at
+        speciesQueries.selectAll(source) { id, _, _, _, _, _, _ -> id }.executeAsList().forEach {
+            copySpecies(it, targetId, speciesMap)
+        }
         if (transfer.copyTags) queries.copyTags(targetId, source)
         if (transfer.copyPhrases) queries.copyPhrases(targetId, source)
         return placeMap.size + copiedNpcs
     }
+
+    private fun copySpecies(
+        oldId: Long,
+        targetId: String,
+        copied: MutableMap<Long, Long>,
+    ): Long? =
+        copied[oldId] ?: speciesQueries.selectById(oldId).executeAsOneOrNull()?.let { full ->
+            speciesQueries.insert(
+                full.name,
+                full.creature_type,
+                full.damage,
+                full.notes,
+                full.nicknames,
+                full.photo,
+                full.photo_thumb,
+                targetId,
+            )
+            speciesQueries.lastInsertRowId().executeAsOne().also { copied[oldId] = it }
+        }
 
     private fun depth(
         id: Long,

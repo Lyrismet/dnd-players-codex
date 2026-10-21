@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.feature.mention.domain
 
+import com.lyrismet.incadent.domain.model.EntityKind
+
 // a name a note can use without "@" - folded once, longest first so a surname form beats the bare name
 internal class AutoName(
     val folded: String,
@@ -8,7 +10,7 @@ internal class AutoName(
 
 internal fun autoNamesOf(index: MentionIndex): List<AutoName> =
     index.uniqueByName
-        .filter { it.name.length >= AUTO_MATCH_MIN_LENGTH }
+        .filter { it.name.length >= AUTO_MATCH_MIN_LENGTH && it.ref.type != EntityKind.SPECIES }
         .map { AutoName(it.name.foldPerChar(), it) }
         .sortedByDescending { it.folded.length }
 
@@ -64,7 +66,7 @@ fun linkAutoMentions(
         .joinToString("") { segment ->
             when (segment) {
                 is MentionSegment.Text -> segment.text
-                is MentionSegment.Mention -> segment.entity.token()
+                is MentionSegment.Mention -> mentionToken(segment.entity.ref, segment.entity.name, segment.quantity)
                 is MentionSegment.AutoMatch ->
                     if (only == null || only.dedupeKey() == segment.entity.dedupeKey()) {
                         segment.entity.token()

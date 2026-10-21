@@ -8,6 +8,7 @@ import com.lyrismet.incadent.db.Party_member
 import com.lyrismet.incadent.db.Quest
 import com.lyrismet.incadent.db.Session_entry
 import com.lyrismet.incadent.db.Session_note
+import com.lyrismet.incadent.db.Species
 
 fun createAppDatabase(driver: SqlDriver): AppDatabase {
     // SQLite ignores every ON DELETE CASCADE in the schema unless this is set per connection
@@ -19,6 +20,7 @@ fun createAppDatabase(driver: SqlDriver): AppDatabase {
         npcAdapter = Npc.Adapter(statusAdapter = npcStatusAdapter, life_stateAdapter = npcLifeStateAdapter),
         party_memberAdapter = Party_member.Adapter(presenceAdapter = partyPresenceAdapter),
         questAdapter = Quest.Adapter(statusAdapter = questStatusAdapter),
+        speciesAdapter = Species.Adapter(creature_typeAdapter = creatureTypeAdapter),
         session_entryAdapter = Session_entry.Adapter(created_atAdapter = localDateTimeAdapter),
         session_noteAdapter =
             Session_note.Adapter(

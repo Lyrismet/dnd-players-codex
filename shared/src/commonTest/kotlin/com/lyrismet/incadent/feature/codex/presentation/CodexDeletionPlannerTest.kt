@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.FakeLocationRepo
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartyRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeQuestRepository
+import com.lyrismet.incadent.feature.codex.presentation.summary.FakeSpeciesRepository
 import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.token
@@ -33,7 +34,13 @@ private fun entry(
 class CodexDeletionPlannerTest {
     private val npcs = FakeNpcRepository(gromm)
     private val planner =
-        CodexDeletionPlanner(npcs, FakePartyRepository(), FakeQuestRepository(), FakeLocationRepository())
+        CodexDeletionPlanner(
+            npcs,
+            FakePartyRepository(),
+            FakeQuestRepository(),
+            FakeLocationRepository(),
+            FakeSpeciesRepository(),
+        )
 
     private fun records(vararg bodies: Pair<Long, String>) =
         CodexRecords(

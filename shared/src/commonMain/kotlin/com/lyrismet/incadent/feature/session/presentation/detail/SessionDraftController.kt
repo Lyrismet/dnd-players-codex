@@ -6,10 +6,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
+import com.lyrismet.incadent.feature.mention.domain.displayMentionText
 import com.lyrismet.incadent.feature.mention.domain.insertMention
 import com.lyrismet.incadent.feature.mention.domain.linkTypedMentions
 import com.lyrismet.incadent.feature.mention.domain.markUnlinkedMentions
-import com.lyrismet.incadent.feature.mention.domain.plainMentionText
+import com.lyrismet.incadent.feature.mention.domain.typedQuantityEdit
 import com.lyrismet.incadent.feature.mention.domain.unmarkUnlinkedMentions
 import com.lyrismet.incadent.feature.phrases.domain.insertPhrase
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
@@ -36,6 +37,11 @@ internal class SessionDraftController(
         text: String,
         selection: TextRange,
     ) {
+        val counted = typedQuantityEdit(draft.value.text, draft.value.selection.end, text)
+        if (counted != null) {
+            draft.value = TextFieldValue(counted.text, TextRange(counted.caret))
+            return
+        }
         val clean = stripBrokenTokens(text)
         draft.value =
             if (clean == text) {
@@ -136,7 +142,7 @@ internal class SessionDraftController(
         if (editingEntryId.value == id) cancelEdit()
         scope.launch {
             entryRepository.delete(id)
-            val plain = plainMentionText(entry.body)
+            val plain = displayMentionText(entry.body)
             val preview = plain.take(ENTRY_PREVIEW_LENGTH)
             val suffix = if (plain.length > ENTRY_PREVIEW_LENGTH) "…" else ""
             undoController.show(undoTitle, "${entry.createdAt.toDisplayTime()} · $preview$suffix") {

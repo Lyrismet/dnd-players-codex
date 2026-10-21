@@ -19,6 +19,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_type_location
 import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_type_party
 import dndplayerscodex.shared.generated.resources.codex_entry_type_quest
+import dndplayerscodex.shared.generated.resources.codex_entry_type_species
 import dndplayerscodex.shared.generated.resources.codex_group_giver
 import dndplayerscodex.shared.generated.resources.codex_group_giver_prefix
 import dndplayerscodex.shared.generated.resources.codex_group_no_giver
@@ -64,6 +65,7 @@ internal fun codexLabels(): CodexLabels {
                 EntityKind.NPC to stringResource(Res.string.codex_entry_type_npc),
                 EntityKind.QUEST to stringResource(Res.string.codex_entry_type_quest),
                 EntityKind.LOCATION to stringResource(Res.string.codex_entry_type_location),
+                EntityKind.SPECIES to stringResource(Res.string.codex_entry_type_species),
             ),
         undoDeletedTitle = stringResource(Res.string.codex_undo_deleted_title),
         grouped = groupedLabels(npcStatusLabels(), questStatusLabels()),

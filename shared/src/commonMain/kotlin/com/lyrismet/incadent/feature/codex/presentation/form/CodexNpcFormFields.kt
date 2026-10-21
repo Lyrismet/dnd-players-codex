@@ -4,17 +4,18 @@ import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
 import com.lyrismet.incadent.core.designsystem.component.FormPickField
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
+import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_label_life
 import dndplayerscodex.shared.generated.resources.codex_entry_label_name_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_label_notes
-import dndplayerscodex.shared.generated.resources.codex_entry_label_race
 import dndplayerscodex.shared.generated.resources.codex_entry_label_relationship
+import dndplayerscodex.shared.generated.resources.codex_entry_label_species
 import dndplayerscodex.shared.generated.resources.codex_entry_label_where_to_meet
 import dndplayerscodex.shared.generated.resources.codex_entry_pick_places_hint
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_notes
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_race
+import dndplayerscodex.shared.generated.resources.codex_species_pick_hint
 import org.jetbrains.compose.resources.stringResource
 
 /** the npc form, [FormDensity.Compact] folds the rarely filled fields under "more" */
@@ -28,7 +29,7 @@ internal fun NpcEntryFields(
         FormDensity.Full -> {
             PortraitField(form, eventSink)
             NpcNameField(form, eventSink)
-            NpcRaceField(form, eventSink)
+            NpcSpeciesField(form, eventSink)
             NpcRelationField(form, eventSink)
             NpcLifeField(form, eventSink)
             NpcPlacesField(form, eventSink)
@@ -45,11 +46,12 @@ internal fun NpcEntryFields(
                 startsOpen =
                     form.portrait != null ||
                         form.race.isNotBlank() ||
+                        form.npcSpecies != null ||
                         form.nicknames.isNotBlank() ||
                         form.npcPlaces.isNotEmpty(),
             ) {
                 PortraitField(form, eventSink)
-                NpcRaceField(form, eventSink)
+                NpcSpeciesField(form, eventSink)
                 NpcLifeField(form, eventSink)
                 NpcPlacesField(form, eventSink)
                 NicknamesField(form, eventSink)
@@ -73,17 +75,20 @@ private fun NpcNameField(
     )
 }
 
+/** the race or species of the npc, picked from the bestiary in a select sheet that also creates one on the spot */
 @Composable
-private fun NpcRaceField(
+private fun NpcSpeciesField(
     form: CodexEntryFormState,
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
-    CodexEntryTextField(
-        label = stringResource(Res.string.codex_entry_label_race),
-        value = form.race,
-        field = CodexEntryField.RACE,
-        eventSink = eventSink,
-        placeholder = stringResource(Res.string.codex_entry_placeholder_npc_race),
+    FormPickField(
+        label = stringResource(Res.string.codex_entry_label_species),
+        // a race typed in an older version shows until a species replaces it
+        placeholder = form.race.ifBlank { stringResource(Res.string.codex_species_pick_hint) },
+        onClick = { eventSink(CodexEntryFormEvent.EntrySpeciesSelectOpened) },
+        title = form.npcSpecies?.name,
+        subtitle = form.npcSpecies?.typeLabel,
+        leadingGlyph = MentionGlyph.SPECIES.symbol,
     )
 }
 

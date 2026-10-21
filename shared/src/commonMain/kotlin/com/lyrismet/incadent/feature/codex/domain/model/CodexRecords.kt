@@ -4,6 +4,7 @@ import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 
 /** every record the codex lists plus the note texts and mention candidates a delete is checked against */
+@Suppress("LongParameterList")
 class CodexRecords(
     val parties: List<PartyMember>,
     val npcs: List<Npc>,
@@ -11,4 +12,5 @@ class CodexRecords(
     val locations: List<Location>,
     val entries: List<SessionEntry> = emptyList(),
     val mentionIndex: MentionIndex = MentionIndex.EMPTY,
+    val species: List<Species> = emptyList(),
 )

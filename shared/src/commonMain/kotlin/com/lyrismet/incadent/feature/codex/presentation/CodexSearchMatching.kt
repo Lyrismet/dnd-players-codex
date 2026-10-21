@@ -6,6 +6,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 
 // the query arrives trimmed from the presenter, an empty query matches every entry, only titles and nicknames are read
 private inline fun matchesAnyTitle(
@@ -16,6 +17,8 @@ private inline fun matchesAnyTitle(
     val folded = query.foldForSearch()
     return titles().any { it.foldForSearch().contains(folded) }
 }
+
+internal fun Species.matchesQuery(query: String): Boolean = matchesAnyTitle(query) { listOf(name) + nicknames }
 
 internal fun Npc.matchesQuery(
     query: String,

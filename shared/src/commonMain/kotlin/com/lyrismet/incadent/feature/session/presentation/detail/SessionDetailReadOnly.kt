@@ -23,6 +23,7 @@ internal fun SessionDetailEvent.writesCampaignData(): Boolean =
         is SessionDetailEvent.PhraseCompletionPicked,
         SessionDetailEvent.PhraseSheetOpened,
         is SessionDetailEvent.DeletedMentionClicked,
+        is SessionDetailEvent.SpeciesChipClicked,
         SessionDetailEvent.DeletedMentionSheetDismissed,
         is SessionDetailEvent.DeletedMentionPickingChanged,
         is SessionDetailEvent.DeletedMentionQueryChanged,

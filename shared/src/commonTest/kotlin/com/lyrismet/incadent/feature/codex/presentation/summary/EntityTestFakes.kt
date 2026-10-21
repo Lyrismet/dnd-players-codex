@@ -4,10 +4,12 @@ import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.Navigator.StateOptions
 import com.slack.circuit.runtime.navigation.NavStackList
@@ -80,6 +82,19 @@ internal class FakeLocationRepository(
     override suspend fun getById(id: Long): Location? = stored(id)
 
     override suspend fun upsert(entity: Location): Long = put(entity)
+
+    override suspend fun delete(id: Long) = remove(id)
+}
+
+internal class FakeSpeciesRepository(
+    vararg initial: Species,
+) : InMemoryStore<Species>(initial.toList(), { it.id }, { species, id -> species.copy(id = id) }),
+    SpeciesRepository {
+    override fun observeAll(): Flow<List<Species>> = observe()
+
+    override suspend fun getById(id: Long): Species? = stored(id)
+
+    override suspend fun upsert(entity: Species): Long = put(entity)
 
     override suspend fun delete(id: Long) = remove(id)
 }

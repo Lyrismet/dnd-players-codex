@@ -5,9 +5,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import com.lyrismet.incadent.feature.mention.domain.TOKEN_REGEX
 import com.lyrismet.incadent.feature.mention.domain.token
-
-private val DISPLAY_TOKEN_REGEX = Regex("@\\[([^\\[\\]|]*)\\|[npql]:\\d+]")
 
 /** one token inside a draft - where it sits in the stored text and in the text the field shows */
 internal class TokenSpan(
@@ -28,10 +27,12 @@ internal class MentionDisplay(
         val found = mutableListOf<TokenSpan>()
         val out = StringBuilder()
         var cursor = 0
-        DISPLAY_TOKEN_REGEX.findAll(raw).forEach { token ->
+        TOKEN_REGEX.findAll(raw).forEach { token ->
             out.append(raw, cursor, token.range.first)
             val displayStart = out.length
             out.append('@').append(token.groupValues[1].replace('_', ' '))
+            val quantity = token.groupValues[4].toIntOrNull()
+            if (quantity != null && quantity > 1) out.append(" ×").append(quantity)
             found += TokenSpan(token.range.first, token.range.last + 1, displayStart, out.length)
             cursor = token.range.last + 1
         }

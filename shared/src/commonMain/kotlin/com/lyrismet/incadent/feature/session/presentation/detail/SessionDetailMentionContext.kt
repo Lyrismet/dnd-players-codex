@@ -6,8 +6,10 @@ import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.presentation.style.LocationMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.PartyMemberColor
+import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.toStatusColor
 import com.lyrismet.incadent.feature.mention.domain.MentionCandidate
 import com.lyrismet.incadent.feature.mention.domain.MentionEntity
@@ -35,6 +37,7 @@ import dndplayerscodex.shared.generated.resources.session_detail_mention_type_lo
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_party
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
+import dndplayerscodex.shared.generated.resources.session_detail_mention_type_species
 import org.jetbrains.compose.resources.stringResource
 
 internal data class MentionContext(
@@ -59,11 +62,14 @@ internal fun buildMentionContext(
     locations: List<Location>,
     quests: List<Quest>,
     parties: List<PartyMember>,
+    species: List<Species>,
     draftText: String,
     sessions: MentionSessionBodies,
 ): MentionContext {
     val mentionEntities =
-        remember(npcs, locations, quests, parties) { mentionEntitiesFrom(npcs, locations, quests, parties) }
+        remember(npcs, locations, quests, parties, species) {
+            mentionEntitiesFrom(npcs, locations, quests, parties, species)
+        }
     val candidates = remember(mentionEntities) { MentionIndex(mentionEntities) }
 
     val typeLabels =
@@ -72,6 +78,7 @@ internal fun buildMentionContext(
             party = stringResource(Res.string.session_detail_mention_type_party),
             location = stringResource(Res.string.session_detail_mention_type_location),
             quest = stringResource(Res.string.session_detail_mention_type_quest),
+            species = stringResource(Res.string.session_detail_mention_type_species),
         )
     val giverNames =
         remember(npcs, quests) {
@@ -188,6 +195,7 @@ internal data class MentionTypeLabels(
     val party: String,
     val location: String,
     val quest: String,
+    val species: String,
 )
 
 internal fun MentionEntity.toSuggestion(
@@ -203,6 +211,8 @@ internal fun MentionEntity.toSuggestion(
             is MentionEntity.QuestMention ->
                 Triple(MentionGlyph.QUEST, status.toStatusColor().foreground, labels.quest)
             is MentionEntity.PartyMention -> Triple(MentionGlyph.PARTY, PartyMemberColor.foreground, labels.party)
+            is MentionEntity.SpeciesMention ->
+                Triple(MentionGlyph.SPECIES, SpeciesMentionColor.foreground, labels.species)
             // a deleted record is never offered by the autocomplete, its candidates come from live records only
             is MentionEntity.DeletedMention -> Triple(MentionGlyph.DELETED, LocationMentionColor.foreground, "")
         }

@@ -12,6 +12,8 @@ data class SelectOption(
     val unavailableNote: String? = null,
     /** options that carry this one along when checked - it then can't be checked on its own */
     val coveredBy: List<SelectCover> = emptyList(),
+    /** the subheading the option is listed under, groups keep the order they first appear in [selectRows]'s options */
+    val group: String? = null,
 )
 
 /** an option that, while checked, carries the options naming it in [SelectOption.coveredBy] */
@@ -46,12 +48,19 @@ fun selectRows(
 ): List<SelectRow> {
     val needle = query.trim()
     val recentRank = recentIds.withIndex().associate { (index, id) -> id to index }
+    val groupRank =
+        options
+            .mapNotNull { it.group }
+            .distinct()
+            .withIndex()
+            .associate { (index, name) -> name to index }
     return options
         .asSequence()
         .filter { it.id !in excludedIds }
         .filter { needle.isEmpty() || it.searchText.contains(needle, ignoreCase = true) }
         .sortedWith(
             compareBy<SelectOption>(
+                { groupRank[it.group] ?: -1 },
                 { if (it.unavailableNote != null) 1 else 0 },
                 { if (floatSelected && needle.isEmpty() && it.id in selectedIds) 0 else 1 },
                 { recentRank[it.id] ?: Int.MAX_VALUE },

@@ -267,6 +267,7 @@ internal class EntryMentionActions(
     val onAutoLink: () -> Unit,
     val onAutoDismiss: () -> Unit,
     val onAutoWordClick: (entityKey: String) -> Unit,
+    val onSpeciesClick: (occurrence: Int, speciesId: Long) -> Unit,
 )
 
 // the "N matches with the codex · Link · No" row under a note - nothing changes until one of the two is tapped
@@ -375,7 +376,13 @@ private fun SessionEntryBody(
                     MentionChip(
                         item = segment.chip,
                         onClick =
-                            segment.chip.entityRef?.let { ref -> { onMentionClick(ref) } }
+                            segment.chip.entityRef?.let { ref ->
+                                if (ref is EntityRef.Species) {
+                                    { mentionActions.onSpeciesClick(segment.occurrence, ref.id) }
+                                } else {
+                                    { onMentionClick(ref) }
+                                }
+                            }
                                 ?: segment.chip.deleted?.let { deleted -> { mentionActions.onDeletedClick(deleted) } },
                         fontSize = AppFontSize.Medium,
                         glyphSize = 7.sp,

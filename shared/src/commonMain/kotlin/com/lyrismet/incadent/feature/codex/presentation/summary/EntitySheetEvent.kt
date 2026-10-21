@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
@@ -32,6 +34,17 @@ sealed interface EntitySheetEvent {
         val status: QuestStatus,
     ) : EntitySheetEvent
 
+    data class SpeciesDamageChanged(
+        val speciesId: Long,
+        val type: DamageType,
+        val state: DamageState,
+    ) : EntitySheetEvent
+
+    /** the card's "в этой заметке" row stepped the count of the tapped chip - only a session screen can act on it */
+    data class SpeciesNoteQuantityStepped(
+        val delta: Int,
+    ) : EntitySheetEvent
+
     data class RelatedNoteClicked(
         val sessionNoteId: Long,
         val entryId: Long,
@@ -47,6 +60,8 @@ fun EntitySheetEvent.writesCampaignData(): Boolean =
         is EntitySheetEvent.NpcLifeSelected,
         is EntitySheetEvent.PartyPresenceSelected,
         is EntitySheetEvent.QuestStatusSelected,
+        is EntitySheetEvent.SpeciesDamageChanged,
+        is EntitySheetEvent.SpeciesNoteQuantityStepped,
         -> true
         is EntitySheetEvent.EntityClicked,
         is EntitySheetEvent.RelatedNoteClicked,
@@ -65,6 +80,15 @@ fun EntitySheetInteractions.onEvent(
         is EntitySheetEvent.NpcLifeSelected -> onNpcLifeSelected(scope, event.npcId, event.lifeState)
         is EntitySheetEvent.PartyPresenceSelected -> onPartyPresenceSelected(scope, event.partyId, event.presence)
         is EntitySheetEvent.QuestStatusSelected -> onQuestStatusSelected(scope, event.questId, event.status)
+        // the session screen takes this one before it gets here, a card opened elsewhere has no note to count in
+        is EntitySheetEvent.SpeciesNoteQuantityStepped -> Unit
+        is EntitySheetEvent.SpeciesDamageChanged ->
+            onSpeciesDamageChanged(
+                scope,
+                event.speciesId,
+                event.type,
+                event.state,
+            )
         is EntitySheetEvent.RelatedNoteClicked -> onRelatedNoteClicked(event.sessionNoteId, event.entryId)
         EntitySheetEvent.Dismissed -> onDismissed()
     }
@@ -77,6 +101,9 @@ fun EntitySheetInteractions.onEvent(
 @Suppress("LongParameterList")
 fun entitySheetActions(
     partyPresence: Boolean = false,
+    speciesDamageEdit: Boolean = false,
+    speciesNoteEdit: Boolean = true,
+    onSpeciesEditClicked: ((EntityRef.Species) -> Unit)? = null,
     onEditClicked: ((EntityRef) -> Unit)? = null,
     onDeleteClicked: ((EntityRef) -> Unit)? = null,
     statusesReadOnly: Boolean = false,
@@ -90,10 +117,29 @@ fun entitySheetActions(
         onQuestStatusSelected = { id, status -> send(EntitySheetEvent.QuestStatusSelected(id, status)) },
         onRelatedNoteClicked = { id, entryId -> send(EntitySheetEvent.RelatedNoteClicked(id, entryId)) },
         onEditClicked = onEditClicked,
+        onSpeciesEditClicked = onSpeciesEditClicked,
         onDeleteClicked = onDeleteClicked,
         onPartyPresenceSelected =
             if (partyPresence) {
                 { id, presence -> send(EntitySheetEvent.PartyPresenceSelected(id, presence)) }
+            } else {
+                null
+            },
+        onSpeciesDamageChanged =
+            if (speciesDamageEdit) {
+                { id, type, state -> send(EntitySheetEvent.SpeciesDamageChanged(id, type, state)) }
+            } else {
+                null
+            },
+        onSpeciesNoteQuantityStep =
+            if (speciesNoteEdit) {
+                (
+                    {
+                        send(
+                            EntitySheetEvent.SpeciesNoteQuantityStepped(it),
+                        )
+                    }
+                )
             } else {
                 null
             },

@@ -88,6 +88,7 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 | `HeaderDivider` | `component/HeaderDivider.kt` | the ornamental short-gold-line + diamond + long-border-line rule under a screen title (built out of `AppDivider` + `Spacer`s). | - |
 | `DiamondOutline` / `DiamondFill` | `component/Diamond.kt` | the rotated square of the design's ornaments, as an outline or filled; `size` is the side before the turn. `DIAMOND_ROTATION_DEGREES` lives there for shapes that turn something else. | `size`, `color`, `strokeWidth` (outline), `modifier` |
 | `Modifier.dashedBorder` | `component/DashedBorder.kt` | dashed rounded-rect border (`Modifier.border` has no dashes): quick-add and phrase pills, cover "add" strips, the select sheet's create row. Dashes are in dp. | `color`, `width`, `cornerRadius`, `dashLength`, `dashGap` |
+| `Modifier.dashedTopRule` | `component/DashedBorder.kt` | dashed line along the top edge of a block: the damage shields legend. Dashes are in dp. | `color`, `width`, `dashLength`, `dashGap` |
 | `Dot` | `component/Dot.kt` | a plain solid circle at a given size/color - filter-chip status dots, the core of `GlowingDot` below, and an outlined circle (pass `color = Color.Transparent` with `borderColor`) like the codex search icon. | `size`, `color`, `borderColor` (optional), `borderWidth` (1dp), `content` (optional, for nesting) |
 | `GlowingDot` | `component/GlowingDot.kt` | a `Dot` with a concentric flat-color glow ring - the "live session" indicator. | `dotSize`, `dotColor`, `glowColor`, `ringWidth` |
 | `FlameSweepEffect` | `component/FlameSweepEffect.kt` | one-shot flame band that sweeps bottom-to-top over its content, with ember particles - the splash logo reveal. Wraps `content` and draws it twice, so keep the content cheap. | `play`, `modifier`, `content` |
@@ -114,6 +115,7 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 | `RadioOptionRow` | `component/RadioOptionRow.kt` | the settings option row - 18px ring with a gold dot when selected, title and description; a selected row is gold-tinted. | `title`, `description`, `selected`, `onClick` |
 | `HoldHintCard` | `component/HoldHint.kt` | the one-time gold hint row under a card header - pin glyph, text and a "Понятно" button. | `text`, `dismissLabel`, `onDismiss` |
 | `HoldTooShortToast` | `component/HoldHint.kt` | the 2 s "hold to edit" nudge in the UndoToast style - the host bumps `trigger` on every too-short press. | `trigger`, `text` |
+| `AppDamageShield` | `component/AppDamageShield.kt` | a heater shield with an SVG-path icon inside and a rim that tells a state: `Plain`, `Immune` (thick white), `Resist` (amber left half), `Vulnerable` (red, cracked), `Unknown` (dashed, dim icon) - the damage types of a species. Knows no domain types, the caller maps its own states and icons onto it. `Previews` in `AppDamageShieldPreviews.kt`. | `iconPath`, `iconColor`, `style` (`ShieldStyle`), `width`, `count` (number beside the shield, null hides it), `crackColor` |
 
 ## Forms
 

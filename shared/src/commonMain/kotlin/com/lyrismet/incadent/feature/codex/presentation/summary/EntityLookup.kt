@@ -6,6 +6,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
@@ -24,6 +25,7 @@ fun entityLookupOf(
     mentionIndex: MentionIndex,
     sessionNumbering: SessionNumbering,
     parties: List<PartyMember>,
+    species: List<Species> = emptyList(),
 ): EntityLookup =
     EntityLookup(
         npcs = npcs,
@@ -39,6 +41,7 @@ fun entityLookupOf(
         sessionEntries = sessionEntries,
         mentionIndex = mentionIndex,
         sessionNumbering = sessionNumbering,
+        species = species,
     )
 
 /** the shared "resolve whatever's tapped" used by every screen that owns a nullable [EntityRef] selection */
@@ -53,6 +56,7 @@ fun selectedEntitySummary(
     mentionIndex: MentionIndex,
     sessionNumbering: SessionNumbering,
     parties: List<PartyMember>,
+    species: List<Species> = emptyList(),
 ): EntitySummaryItem? {
     if (ref == null) return null
     val lookup =
@@ -65,6 +69,7 @@ fun selectedEntitySummary(
             mentionIndex,
             sessionNumbering,
             parties,
+            species,
         )
     return buildEntitySummary(ref, lookup)
 }

@@ -25,6 +25,7 @@ import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
 import com.lyrismet.incadent.feature.codex.presentation.form.rememberPlaceFailureText
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
+import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
 import com.lyrismet.incadent.feature.codex.presentation.summary.onEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhoto
@@ -33,6 +34,7 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.withFullPhoto
 import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.domain.dedupeKey
 import com.lyrismet.incadent.feature.mention.domain.mentionsIn
+import com.lyrismet.incadent.feature.mention.domain.pendingQuantityName
 import com.lyrismet.incadent.feature.mention.domain.plainMentionText
 import com.lyrismet.incadent.feature.mention.presentation.toChipItem
 import com.lyrismet.incadent.feature.phrases.domain.PhraseOption
@@ -93,6 +95,7 @@ private class SessionDetailFields(
     val deleted: DeletedMentionController,
     val create: MentionCreateController,
     val phrases: PhraseSheetController,
+    val speciesNote: SpeciesNoteController,
     val toast: MutableState<String?>,
     val formController: CodexEntryFormController,
 )
@@ -126,6 +129,7 @@ class SessionDetailPresenter(
         val locations by codexRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
         val quests by codexRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val parties by codexRepositories.partyRepository.observeAll().collectAsState(initial = emptyList())
+        val species by codexRepositories.speciesRepository.observeAll().collectAsState(initial = emptyList())
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
@@ -165,7 +169,7 @@ class SessionDetailPresenter(
             remember(currentNote, allSessions, entries, allEntries) {
                 mentionSessionBodies(currentNote, allSessions, entries, allEntries)
             }
-        val mention = buildMentionContext(npcs, locations, quests, parties, draft.value.text, sessionBodies)
+        val mention = buildMentionContext(npcs, locations, quests, parties, species, draft.value.text, sessionBodies)
         // parsing every note is the costly part, so it only reruns when a note or a mention candidate changes
         val noteItems =
             remember(entries, mention.candidates) {
@@ -193,10 +197,11 @@ class SessionDetailPresenter(
                 mention.candidates,
                 numbering,
                 parties,
+                species,
             )
         val fullPhoto =
             rememberFullPhoto(selectedSummary, codexRepositories)
-        val selectedEntity = selectedSummary?.withFullPhoto(fullPhoto)
+        val selectedEntity = fields.speciesNote.withNoteQuantity(selectedSummary?.withFullPhoto(fullPhoto), entries)
 
         val editingEntryTimeLabel =
             editingEntryId.value?.let { id -> entries.find { it.id == id }?.createdAt?.toDisplayTime() }
@@ -260,6 +265,7 @@ class SessionDetailPresenter(
             feed = feed,
             draft = draft.value.text,
             draftSelection = draft.value.selection,
+            quantityHint = pendingQuantityName(draft.value.text, draft.value.selection.end),
             mentionSuggestions = mention.suggestions,
             selectedEntity = selectedEntity,
             editingEntryTimeLabel = editingEntryTimeLabel,
@@ -278,7 +284,7 @@ class SessionDetailPresenter(
             toast = fields.toast.value,
             deletedMentionSheet = fields.deleted.state(mentionData),
             mentionCreateSheet = fields.create.state(mentionData),
-            entryForm = fields.formController.buildState(npcs, locations),
+            entryForm = fields.formController.buildState(npcs, locations, species),
         ) { event ->
             val context = EventContext(currentNote, entries, undoDeletedEntryTitle, phraseSavedToast, scope, readOnly)
             onEvent(event, context, fields, assignedTags, tagSuggestions, mentionData)
@@ -298,6 +304,7 @@ class SessionDetailPresenter(
                 codexRepositories.partyRepository,
                 codexRepositories.questRepository,
                 codexRepositories.locationRepository,
+                codexRepositories.speciesRepository,
                 recentPlaceIds,
                 playerCharacterLevel,
             )
@@ -340,6 +347,7 @@ class SessionDetailPresenter(
                     formController,
                 ) { selectedEntityRef.value = it },
             phrases = remember { PhraseSheetController(phraseSnippetRepository) },
+            speciesNote = SpeciesNoteController(remember(noteId) { mutableStateOf(null) }, sessionEntryRepository),
             toast = remember(noteId) { mutableStateOf(null) },
             formController = formController,
         )
@@ -354,6 +362,25 @@ class SessionDetailPresenter(
         navigator.sessionEntryOpener(),
         entityHistory,
     )
+
+    // a card event that changes which card is open also forgets the chip it came from
+    private fun onEntitySheet(
+        event: EntitySheetEvent,
+        entries: List<SessionEntry>,
+        fields: SessionDetailFields,
+        scope: CoroutineScope,
+    ) {
+        when (event) {
+            is EntitySheetEvent.SpeciesNoteQuantityStepped -> fields.speciesNote.step(scope, entries, event.delta)
+            is EntitySheetEvent.EntityClicked,
+            EntitySheetEvent.Dismissed,
+            -> {
+                fields.speciesNote.clear()
+                fields.entitySheet.onEvent(scope, event)
+            }
+            else -> fields.entitySheet.onEvent(scope, event)
+        }
+    }
 
     // flat circuit event-dispatch table, grows one branch per event variant - not real branching complexity
     @Suppress("CyclomaticComplexMethod", "LongMethod")
@@ -377,7 +404,11 @@ class SessionDetailPresenter(
             is SessionDetailEvent.DraftChanged -> fields.composer.onDraftChanged(event.text, event.selection)
             SessionDetailEvent.InsertMentionTriggerClicked -> fields.composer.insertMentionTrigger()
             is SessionDetailEvent.MentionSuggestionPicked -> fields.composer.pickMention(event.token)
-            is SessionDetailEvent.EntitySheet -> fields.entitySheet.onEvent(scope, event.event)
+            is SessionDetailEvent.EntitySheet -> onEntitySheet(event.event, entries, fields, scope)
+            is SessionDetailEvent.SpeciesChipClicked -> {
+                fields.entitySheet.onEntityClicked(EntityRef.Species(event.speciesId))
+                fields.speciesNote.open(SpeciesNotePoint(event.entryId, event.occurrence, event.speciesId))
+            }
             SessionDetailEvent.SubmitEntryClicked -> fields.composer.submit(scope, entries, mentionData.candidates)
             is SessionDetailEvent.EntryClicked -> {
                 fields.composer.toggleSelected(event.id)

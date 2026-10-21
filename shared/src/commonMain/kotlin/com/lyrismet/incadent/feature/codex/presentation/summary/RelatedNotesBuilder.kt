@@ -14,6 +14,7 @@ private fun EntityRef.matches(entity: MentionEntity): Boolean =
         is EntityRef.Location -> entity is MentionEntity.LocationMention && entity.id == id
         is EntityRef.Quest -> entity is MentionEntity.QuestMention && entity.id == id
         is EntityRef.Party -> entity is MentionEntity.PartyMention && entity.id == id
+        is EntityRef.Species -> entity is MentionEntity.SpeciesMention && entity.id == id
     }
 
 /** every session with at least one note that `@mentions` [ref], newest first, with a snippet and hit count */
