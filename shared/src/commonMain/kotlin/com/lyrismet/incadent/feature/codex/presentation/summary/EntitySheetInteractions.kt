@@ -4,6 +4,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.lyrismet.incadent.feature.codex.domain.grouping.InsideChanges
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
+import com.lyrismet.incadent.feature.codex.domain.grouping.with
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -46,6 +49,7 @@ class EntitySheetInteractions(
     private val npcRepository = repositories.npcRepository
     private val questRepository = repositories.questRepository
     private val locationRepository = repositories.locationRepository
+    private val speciesRepository = repositories.speciesRepository
 
     // opening an entity from inside another one's sheet keeps that one underneath
     fun onEntityClicked(ref: EntityRef) {
@@ -112,6 +116,22 @@ class EntitySheetInteractions(
         }
     }
 
+    fun onSpeciesDamageChanged(
+        scope: CoroutineScope,
+        speciesId: Long,
+        type: DamageType,
+        state: DamageState,
+    ) {
+        scope.launch {
+            entityWriteLock.withLock {
+                speciesRepository
+                    .getById(
+                        speciesId,
+                    )?.let { speciesRepository.upsert(it.copy(damage = it.damage.with(type, state))) }
+            }
+        }
+    }
+
     fun onPartyPresenceSelected(
         scope: CoroutineScope,
         partyId: Long,
@@ -161,6 +181,8 @@ class EntitySheetInteractions(
                             { it.withQuickEdit(field, value) },
                         ) { locationRepository.upsert(it) }
                     }
+                // a species card edits through its own damage grid
+                is EntityRef.Species -> Unit
                 is EntityRef.Party ->
                     commitChange(
                         field,

@@ -7,6 +7,7 @@ internal fun CodexEvent.writesCampaignData(): Boolean =
     when (this) {
         is CodexEvent.EntitySheet -> event.writesCampaignData()
         is CodexEvent.TabSelected,
+        is CodexEvent.NpcModeSelected,
         is CodexEvent.SearchQueryChanged,
         is CodexEvent.GroupBySelected,
         is CodexEvent.PlaceSectionToggled,

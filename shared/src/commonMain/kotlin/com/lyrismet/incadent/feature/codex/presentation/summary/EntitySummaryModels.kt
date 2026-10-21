@@ -3,6 +3,9 @@ package com.lyrismet.incadent.feature.codex.presentation.summary
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -11,6 +14,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.style.DEFAULT_STATUS_GLYPH
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
@@ -37,6 +41,10 @@ sealed interface EntityRef {
     ) : EntityRef
 
     data class Party(
+        override val id: Long,
+    ) : EntityRef
+
+    data class Species(
         override val id: Long,
     ) : EntityRef
 }
@@ -162,6 +170,21 @@ sealed interface EntitySummaryItem {
         val relatedNotes: List<RelatedNoteItem>,
     ) : EntitySummaryItem
 
+    /** a kind of creature - the damage it takes and the sessions it turned up in, no status to pick */
+    data class SpeciesSummary(
+        val ref: EntityRef.Species,
+        val name: String,
+        val creatureType: CreatureType,
+        val notes: String,
+        val emblem: EntityEmblem,
+        val damage: Map<DamageType, DamageState>,
+        val relatedNotes: List<RelatedNoteItem>,
+        // the sessions with a note that mentions it
+        val seenInSessions: Int,
+        // how many the tapped chip stands for, set only on a card opened from a note
+        val noteQuantity: Int? = null,
+    ) : EntitySummaryItem
+
     data class PartySummary(
         val ref: EntityRef.Party,
         val name: String,
@@ -190,4 +213,5 @@ data class EntityLookup(
     val sessionEntries: List<SessionEntry>,
     val mentionIndex: MentionIndex,
     val sessionNumbering: SessionNumbering,
+    val species: List<Species> = emptyList(),
 )

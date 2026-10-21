@@ -133,6 +133,7 @@ internal fun SessionComposer(
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
+            state.quantityHint?.let { QuantityHint(it) }
             ComposerInputCard(
                 state = state,
                 onDraftFocusChanged = { isDraftFocused = it },

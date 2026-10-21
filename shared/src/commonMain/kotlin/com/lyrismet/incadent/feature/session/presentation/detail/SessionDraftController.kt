@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.mention.domain.insertMention
 import com.lyrismet.incadent.feature.mention.domain.linkTypedMentions
 import com.lyrismet.incadent.feature.mention.domain.markUnlinkedMentions
 import com.lyrismet.incadent.feature.mention.domain.plainMentionText
+import com.lyrismet.incadent.feature.mention.domain.typedQuantityEdit
 import com.lyrismet.incadent.feature.mention.domain.unmarkUnlinkedMentions
 import com.lyrismet.incadent.feature.phrases.domain.insertPhrase
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
@@ -36,6 +37,11 @@ internal class SessionDraftController(
         text: String,
         selection: TextRange,
     ) {
+        val counted = typedQuantityEdit(draft.value.text, draft.value.selection.end, text)
+        if (counted != null) {
+            draft.value = TextFieldValue(counted.text, TextRange(counted.caret))
+            return
+        }
         val clean = stripBrokenTokens(text)
         draft.value =
             if (clean == text) {

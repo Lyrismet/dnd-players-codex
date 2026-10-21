@@ -122,7 +122,7 @@ internal fun MentionCreateSheet(
     }
 }
 
-private const val TYPES_PER_ROW = 4
+private const val TYPES_PER_ROW = 5
 
 private fun MentionCreateSheetState.buttonRes(): StringResource =
     when {

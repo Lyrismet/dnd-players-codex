@@ -23,6 +23,7 @@ import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
@@ -34,12 +35,15 @@ import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
+import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
 import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.editingPlace
@@ -55,17 +59,22 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditInter
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditKind
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickPhotoCrop
+import com.lyrismet.incadent.feature.codex.presentation.summary.EntityLookup
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.codex.presentation.summary.buildEntitySummary
+import com.lyrismet.incadent.feature.codex.presentation.summary.creatureTypeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.entityLookupOf
 import com.lyrismet.incadent.feature.codex.presentation.summary.onEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhoto
 import com.lyrismet.incadent.feature.codex.presentation.summary.withFullPhoto
+import com.lyrismet.incadent.feature.mention.domain.MentionBody
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.mentionEntitiesFrom
+import com.lyrismet.incadent.feature.mention.domain.mentionSessionCounts
+import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.feature.session.presentation.route.sessionEntryOpener
@@ -82,6 +91,14 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+
+private fun mentionIndexOf(
+    npcs: List<Npc>,
+    locations: List<Location>,
+    quests: List<Quest>,
+    parties: List<PartyMember>,
+    species: List<Species>,
+) = MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties, species))
 
 /** the presenter's editable-in-place state, bundled so [onEvent] doesn't take one param per field */
 @Suppress("LongParameterList")
@@ -102,6 +119,8 @@ private class CodexFields(
     val collapsedPlaceIds: MutableState<Set<Long>>,
     // the record a delete is waiting on - set while the "notes still mention it" warning is up
     val pendingDelete: MutableState<EntityRef?>,
+    // which list the npc tab shows
+    val npcMode: MutableState<NpcListMode>,
 )
 
 /** result of applying the text search query to every list */
@@ -127,6 +146,7 @@ class CodexPresenter(
     private val partyRepository: PartyRepository,
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
+    private val speciesRepository: SpeciesRepository,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val undoController: UndoController,
@@ -135,19 +155,21 @@ class CodexPresenter(
     private val campaignRepository: CampaignRepository,
 ) : Presenter<CodexState> {
     private val codexRepositories =
-        CodexRepositories(partyRepository, npcRepository, questRepository, locationRepository)
+        CodexRepositories(partyRepository, npcRepository, questRepository, locationRepository, speciesRepository)
     private val deletionPlanner =
         CodexDeletionPlanner(
             npcRepository,
             partyRepository,
             questRepository,
             locationRepository,
+            speciesRepository,
         )
 
     @Composable
     override fun present(): CodexState {
         val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
         val npcs by npcRepository.observeAll().collectAsState(initial = emptyList())
+        val species by speciesRepository.observeAll().collectAsState(initial = emptyList())
         val quests by questRepository.observeAll().collectAsState(initial = emptyList())
         val locations by locationRepository.observeAll().collectAsState(initial = emptyList())
         val sessionNotes by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
@@ -166,32 +188,32 @@ class CodexPresenter(
         ReportFailures(failure, rememberPlaceFailureText()) { fields.toast.value = ToastMessage(it) }
         val formController = rememberFormController(fields, parties)
 
-        val candidates =
-            remember(npcs, locations, quests, parties) {
-                MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties))
-            }
-        val records = CodexRecords(parties, npcs, quests, locations, sessionEntries, candidates)
+        val records = rememberRecords(parties, npcs, quests, locations, sessionEntries, species)
         val search = buildSearchResults(records, fields)
         val party = search.searchedParties.toPartyCodexItems(labels.partyCard)
         val listing = codexListing(search, records, party, fields, labels)
-        val grouped = listing.grouped
-        val emptyKind = listing.emptyKind
-        val formState = formController.buildState(records.npcs, records.locations)
+        val formState = formController.buildState(records.npcs, records.locations, species)
 
         val lookup =
-            entityLookupOf(npcs, locations, quests, sessionNotes, sessionEntries, candidates, numbering, parties)
-        // keyed on the lookup data, so typing in the open editor doesn't re-parse every session entry
-        val selectedRef = fields.selectedEntityRef.value
-        val selectedSummary = remember(selectedRef, lookup) { selectedRef?.let { buildEntitySummary(it, lookup) } }
-        val fullPhoto = rememberFullPhoto(selectedSummary, codexRepositories)
-        val selectedEntity = selectedSummary?.withFullPhoto(fullPhoto)
+            entityLookupOf(
+                npcs,
+                locations,
+                quests,
+                sessionNotes,
+                sessionEntries,
+                records.mentionIndex,
+                numbering,
+                parties,
+                species,
+            )
+        val selectedEntity = selectedEntity(fields.selectedEntityRef.value, lookup)
 
         val isTabSelected = LocalTabSelected.current
         val swipeHintTarget =
             rememberCodexSwipeHintTarget(
                 activeTab = fields.activeTab.value,
                 party = party,
-                grouped = grouped,
+                grouped = listing.grouped,
                 // a hidden tab stays composed in the background, so it must not burn its one-time hint unseen
                 isBlocked = formState != null || selectedEntity != null || !isTabSelected,
             )
@@ -202,13 +224,44 @@ class CodexPresenter(
             formState,
             party,
             records,
-            grouped,
-            emptyKind,
+            listing.grouped,
+            listing.emptyKind,
             selectedEntity,
             labels,
             scope,
             CodexEditContext(editMode, holdHint, undoAction, swipeHintTarget),
         )
+    }
+
+    // the mention candidates are rebuilt only when a record list changes
+    @Composable
+    private fun rememberRecords(
+        parties: List<PartyMember>,
+        npcs: List<Npc>,
+        quests: List<Quest>,
+        locations: List<Location>,
+        entries: List<SessionEntry>,
+        species: List<Species>,
+    ): CodexRecords {
+        val index =
+            remember(
+                npcs,
+                locations,
+                quests,
+                parties,
+                species,
+            ) { mentionIndexOf(npcs, locations, quests, parties, species) }
+        return CodexRecords(parties, npcs, quests, locations, entries, index, species)
+    }
+
+    // keyed on the lookup data, so typing in the open editor doesn't re-parse every session entry
+    @Composable
+    private fun selectedEntity(
+        ref: EntityRef?,
+        lookup: EntityLookup,
+    ): EntitySummaryItem? {
+        val summary = remember(ref, lookup) { ref?.let { buildEntitySummary(it, lookup) } }
+        return summary?.withFullPhoto(rememberFullPhoto(summary, codexRepositories))
     }
 
     @Composable
@@ -221,6 +274,7 @@ class CodexPresenter(
             partyRepository,
             questRepository,
             locationRepository,
+            speciesRepository,
             fields.recentPlaceIds,
             parties.firstOrNull { it.isPlayerCharacter }?.level,
         )
@@ -247,13 +301,14 @@ class CodexPresenter(
             codexEmptyKind(
                 tab,
                 fields.searchQuery.value,
-                own.hasEntriesFor(tab, party),
+                own.hasEntriesFor(tab, party, records.species.any { it.matchesQuery(fields.searchQuery.value.trim()) }),
                 otherSectionMatches(
                     tab,
                     search.searchedParties.size,
                     search.searchedNpcs.size,
                     search.searchedQuests.size,
                     search.searchedLocations.size,
+                    records.species.count { it.matchesQuery(fields.searchQuery.value.trim()) },
                 ),
             )
         val showsOtherSections = emptyKind is CodexEmptyKind.NoMatch && emptyKind.otherMatches > 0
@@ -322,6 +377,7 @@ class CodexPresenter(
         val recentPlaceIds = rememberRetained { mutableStateOf(emptyList<Long>()) }
         val collapsedPlaceIds = rememberRetained { mutableStateOf(emptySet<Long>()) }
         val pendingDelete = rememberRetained { mutableStateOf<EntityRef?>(null) }
+        val npcMode = rememberRetained { mutableStateOf(NpcListMode.NAMED) }
         toast.autoDismiss()
         return CodexFields(
             activeTab,
@@ -336,6 +392,7 @@ class CodexPresenter(
             recentPlaceIds,
             collapsedPlaceIds,
             pendingDelete,
+            npcMode,
         )
     }
 
@@ -367,11 +424,14 @@ class CodexPresenter(
                 CodexTabCounts(
                     party = records.parties.size,
                     npc = records.npcs.size,
+                    species = records.species.size,
                     quest = records.quests.size,
                     location = records.locations.size,
                 ),
             party = party,
             npcs = grouped.npcs,
+            npcMode = fields.npcMode.value,
+            species = speciesItems(records, fields.searchQuery.value.trim()),
             quests = grouped.quests,
             locations = grouped.locations,
             groupBy = grouped.groupBy,
@@ -403,6 +463,28 @@ class CodexPresenter(
                 )
             }
         }
+    }
+
+    // the species rows of the npc tab, each with the number of sessions that mention it
+    @Composable
+    private fun speciesItems(
+        records: CodexRecords,
+        query: String,
+    ): List<SpeciesCodexItem> {
+        val typeLabels = creatureTypeLabels()
+        val seen =
+            remember(records.entries, records.mentionIndex) {
+                val bodies = records.entries.map { MentionBody(it.sessionNoteId, it.body) }
+                mentionSessionCounts(bodies, records.mentionIndex)
+                    .filterKeys { it.type == EntityKind.SPECIES }
+                    .mapKeys { it.key.id }
+            }
+        return remember(
+            records.species,
+            query,
+            typeLabels,
+            seen,
+        ) { records.species.toCodexItems(query, typeLabels, seen) }
     }
 
     // the warning of a delete that notes still mention - null when nothing waits or the record is already gone
@@ -467,6 +549,7 @@ class CodexPresenter(
     ) {
         when (event) {
             is CodexEvent.TabSelected -> fields.activeTab.value = event.tab
+            is CodexEvent.NpcModeSelected -> fields.npcMode.value = event.mode
             is CodexEvent.SearchQueryChanged -> fields.searchQuery.value = event.query
             is CodexEvent.GroupBySelected -> fields.grouping.value = fields.grouping.value.select(event.choice)
             is CodexEvent.EntitySheet -> {
@@ -484,7 +567,11 @@ class CodexPresenter(
             is CodexEvent.QuickPlaceCreated -> onQuickPlaceCreated(event, fields, scope)
             CodexEvent.UndoClicked -> undoController.undo()
             CodexEvent.UndoFollowUpClicked -> undoController.followUp()
-            CodexEvent.AddEntryClicked -> formController.onAddEntryClicked(fields.activeTab.value.toEntryType())
+            CodexEvent.AddEntryClicked -> {
+                val inSpecies = fields.activeTab.value == CodexTab.NPC && fields.npcMode.value == NpcListMode.SPECIES
+                val type = if (inSpecies) EntityKind.SPECIES else fields.activeTab.value.toEntryType()
+                formController.onAddEntryClicked(type)
+            }
             is CodexEvent.EmptyActionClicked -> formController.onAddEntryClicked(event.entryType, event.name)
             is CodexEvent.EditEntryRequested -> formController.onEditEntryRequested(event.ref, scope)
             is CodexEvent.PlaceSectionToggled -> {
@@ -493,12 +580,18 @@ class CodexPresenter(
                     if (event.placeId in folded) folded - event.placeId else folded + event.placeId
             }
             is CodexEvent.EntryForm -> {
+                val created =
+                    formController.creatingType().takeIf {
+                        event.event ==
+                            CodexEntryFormEvent.EntryFormSaveClicked
+                    }
                 val closed =
                     formController.onEvent(event.event, scope, imageCompressor) { name ->
                         fields.toast.value =
                             ToastMessage(getString(Res.string.codex_entry_quick_add_toast_format, name))
                     }
                 if (closed) fields.toast.value = null
+                created?.let { fields.showTabOf(it) }
             }
             is CodexEvent.EntityDeleteRequested -> onEntityDeleteRequested(event.ref, fields, records, labels, scope)
             CodexEvent.EntityDeleteConfirmed ->
@@ -509,6 +602,19 @@ class CodexPresenter(
                 }
             CodexEvent.EntityDeleteCancelled -> fields.pendingDelete.value = null
         }
+    }
+
+    // a record made here is shown where it was filed, so the user sees it appear
+    private fun CodexFields.showTabOf(type: EntityKind) {
+        activeTab.value =
+            when (type) {
+                EntityKind.PARTY -> CodexTab.PARTY
+                EntityKind.NPC, EntityKind.SPECIES -> CodexTab.NPC
+                EntityKind.QUEST -> CodexTab.QUEST
+                EntityKind.LOCATION -> CodexTab.LOCATION
+            }
+        if (type == EntityKind.NPC) npcMode.value = NpcListMode.NAMED
+        if (type == EntityKind.SPECIES) npcMode.value = NpcListMode.SPECIES
     }
 
     // the new place joins what was ticked in the card's select sheet, a single field takes just the new place

@@ -51,6 +51,7 @@ import dndplayerscodex.shared.generated.resources.deleted_mention_type_location
 import dndplayerscodex.shared.generated.resources.deleted_mention_type_npc
 import dndplayerscodex.shared.generated.resources.deleted_mention_type_party
 import dndplayerscodex.shared.generated.resources.deleted_mention_type_quest
+import dndplayerscodex.shared.generated.resources.deleted_mention_type_species
 import dndplayerscodex.shared.generated.resources.mention_count_in_sessions
 import dndplayerscodex.shared.generated.resources.mention_count_notes
 import dndplayerscodex.shared.generated.resources.mention_unlinked_body
@@ -61,6 +62,7 @@ import dndplayerscodex.shared.generated.resources.session_detail_mention_type_lo
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_party
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
+import dndplayerscodex.shared.generated.resources.session_detail_mention_type_species
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -253,6 +255,7 @@ internal fun EntityKind.kindLabelRes(): StringResource =
         EntityKind.PARTY -> Res.string.session_detail_mention_type_party
         EntityKind.QUEST -> Res.string.session_detail_mention_type_quest
         EntityKind.LOCATION -> Res.string.session_detail_mention_type_location
+        EntityKind.SPECIES -> Res.string.session_detail_mention_type_species
     }
 
 private fun EntityKind.typeLabelRes(): StringResource =
@@ -261,4 +264,5 @@ private fun EntityKind.typeLabelRes(): StringResource =
         EntityKind.PARTY -> Res.string.deleted_mention_type_party
         EntityKind.QUEST -> Res.string.deleted_mention_type_quest
         EntityKind.LOCATION -> Res.string.deleted_mention_type_location
+        EntityKind.SPECIES -> Res.string.deleted_mention_type_species
     }

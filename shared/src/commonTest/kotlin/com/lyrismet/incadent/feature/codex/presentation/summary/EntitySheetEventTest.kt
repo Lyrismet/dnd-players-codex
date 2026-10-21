@@ -22,7 +22,13 @@ class EntitySheetEventTest {
     private val interactions =
         EntitySheetInteractions(
             selected,
-            CodexRepositories(FakePartyRepository(), npcs, FakeQuestRepository(), FakeLocationRepository()),
+            CodexRepositories(
+                FakePartyRepository(),
+                npcs,
+                FakeQuestRepository(),
+                FakeLocationRepository(),
+                FakeSpeciesRepository(),
+            ),
             { id, entry -> opened += id to entry },
         )
 

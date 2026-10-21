@@ -95,7 +95,7 @@ fun CodexUi(
                         itemHeight = 36.dp,
                         itemSpacing = 2.dp,
                     )
-                    CodexGroupRow(state, modifier = Modifier.padding(top = 10.dp))
+                    CodexListChoices(state)
                 }
                 Box(modifier = Modifier.weight(1f)) {
                     CodexListArea(state, swipeHint.peekOffsetPx)
@@ -157,6 +157,10 @@ private fun CodexListArea(
     state: CodexState,
     hintPeekOffsetPx: Float,
 ) {
+    if (state.showsSpecies) {
+        CodexSpeciesList(state)
+        return
+    }
     when (val empty = state.emptyState) {
         CodexEmptyState.Hidden -> CodexActiveList(state, hintPeekOffsetPx)
         is CodexEmptyState.OtherSections ->
@@ -167,21 +171,6 @@ private fun CodexListArea(
             )
         else -> CodexEmptyView(state)
     }
-}
-
-// the group row only shows on the tabs that group - the ALL and party tabs have no group choice
-@Composable
-private fun CodexGroupRow(
-    state: CodexState,
-    modifier: Modifier = Modifier,
-) {
-    if (state.groupOptions.isEmpty()) return
-    CodexFilterChipRow(
-        items = state.groupOptions,
-        selected = state.groupBy,
-        onSelected = { state.eventSink(CodexEvent.GroupBySelected(it)) },
-        modifier = modifier,
-    )
 }
 
 @Composable
@@ -221,6 +210,9 @@ private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
     val isQuick = state.editMode == EntityEditMode.QUICK
     return entitySheetActions(
         partyPresence = true,
+        speciesDamageEdit = !state.readOnly,
+        onSpeciesEditClicked =
+            if (state.readOnly) null else { ref -> state.eventSink(CodexEvent.EditEntryRequested(ref)) },
         onEditClicked = if (isQuick) null else { ref -> state.eventSink(CodexEvent.EditEntryRequested(ref)) },
         // the swipe stays the quick way, an archived campaign has nothing to delete
         onDeleteClicked =

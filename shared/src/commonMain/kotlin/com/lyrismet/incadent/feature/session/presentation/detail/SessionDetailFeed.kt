@@ -5,6 +5,7 @@ import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.format.toShortDayMonthUpper
 import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
+import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.domain.MentionSegment
 import com.lyrismet.incadent.feature.mention.domain.autoMatchedEntities
 import com.lyrismet.incadent.feature.mention.domain.dedupeKey
@@ -55,14 +56,23 @@ internal fun SessionEntry.toItem(candidates: MentionIndex): SessionEntryItem {
         id = id,
         timeLabel = createdAt.toDisplayTime(),
         edited = edited,
-        segments = parsed.map { it.toSegment() },
+        segments = parsed.toSegments(),
         autoMatchCount = autoMatchedEntities(parsed).size,
     )
 }
 
-internal fun MentionSegment.toSegment(): SessionEntrySegment =
-    when (this) {
-        is MentionSegment.Text -> SessionEntrySegment.Text(text)
-        is MentionSegment.Mention -> SessionEntrySegment.Mention(entity.toChipItem())
-        is MentionSegment.AutoMatch -> SessionEntrySegment.AutoMatch(text, entity.dedupeKey())
+// a chip knows which of its record's tokens it is, so a card opened from it can change just that count
+internal fun List<MentionSegment>.toSegments(): List<SessionEntrySegment> {
+    val seen = mutableMapOf<MentionRef, Int>()
+    return map { segment ->
+        when (segment) {
+            is MentionSegment.Text -> SessionEntrySegment.Text(segment.text)
+            is MentionSegment.Mention -> {
+                val occurrence = seen[segment.entity.ref] ?: 0
+                seen[segment.entity.ref] = occurrence + 1
+                SessionEntrySegment.Mention(segment.entity.toChipItem().copy(quantity = segment.quantity), occurrence)
+            }
+            is MentionSegment.AutoMatch -> SessionEntrySegment.AutoMatch(segment.text, segment.entity.dedupeKey())
+        }
     }
+}

@@ -5,15 +5,24 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.format.capitalizeFirst
+import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.core.portrait.encodeAsync
 import com.lyrismet.incadent.core.portrait.prepareCropDraftAsync
 import com.lyrismet.incadent.core.portrait.recropDraft
+import com.lyrismet.incadent.core.preferences.AppLanguage
+import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
+import com.lyrismet.incadent.feature.codex.domain.grouping.srdNotAdded
+import com.lyrismet.incadent.feature.codex.domain.grouping.srdSuggestions
+import com.lyrismet.incadent.feature.codex.domain.grouping.with
 import com.lyrismet.incadent.feature.codex.domain.grouping.withRecentPlaces
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -22,14 +31,18 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.quickLocation
 import com.lyrismet.incadent.feature.codex.domain.repository.quickNpc
+import com.lyrismet.incadent.feature.codex.domain.repository.quickSpecies
 import com.lyrismet.incadent.feature.codex.presentation.style.toStatusColor
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
+import com.lyrismet.incadent.feature.codex.presentation.summary.creatureTypeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.npcLifeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.npcStatusLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.partyPresenceLabels
@@ -41,6 +54,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_locati
 import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_party
 import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_quest
+import dndplayerscodex.shared.generated.resources.codex_entry_heading_new_species
 import dndplayerscodex.shared.generated.resources.codex_entry_overline_create
 import dndplayerscodex.shared.generated.resources.codex_entry_overline_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_owner_me
@@ -49,6 +63,8 @@ import dndplayerscodex.shared.generated.resources.codex_entry_save_label_create
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
 import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
+import dndplayerscodex.shared.generated.resources.codex_species_group_own
+import dndplayerscodex.shared.generated.resources.codex_species_group_srd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -64,11 +80,13 @@ class CodexEntryFormController private constructor(
     private val partyRepository: PartyRepository,
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
+    private val speciesRepository: SpeciesRepository,
     private val recentPlaceIds: MutableState<List<Long>>,
     // the level a new party member starts with and the "same as yours" shortcut offers, null without a level
     private val playerCharacterLevel: Int?,
 ) {
-    private val persister = CodexEntryPersister(npcRepository, partyRepository, questRepository, locationRepository)
+    private val persister =
+        CodexEntryPersister(npcRepository, partyRepository, questRepository, locationRepository, speciesRepository)
 
     companion object {
         @Composable
@@ -77,6 +95,7 @@ class CodexEntryFormController private constructor(
             partyRepository: PartyRepository,
             questRepository: QuestRepository,
             locationRepository: LocationRepository,
+            speciesRepository: SpeciesRepository,
             recentPlaceIds: MutableState<List<Long>>,
             playerCharacterLevel: Int?,
         ): CodexEntryFormController {
@@ -91,6 +110,7 @@ class CodexEntryFormController private constructor(
                 partyRepository,
                 questRepository,
                 locationRepository,
+                speciesRepository,
                 recentPlaceIds,
                 playerCharacterLevel,
             )
@@ -118,6 +138,9 @@ class CodexEntryFormController private constructor(
             CodexEntryFormEvent.EntryPhotoCropCancelled -> onPhotoCropCancelled()
             is CodexEntryFormEvent.EntryPhotoRemoved -> onPhotoRemoved(event.slot)
             is CodexEntryFormEvent.EntryNumberChanged -> onNumberChanged(event.field, event.value)
+            is CodexEntryFormEvent.EntryCreatureTypeChanged -> onCreatureTypeChanged(event.type)
+            is CodexEntryFormEvent.EntryDamageChanged -> onDamageChanged(event.type, event.state)
+            is CodexEntryFormEvent.EntrySrdPicked -> onSrdPicked(event.name, event.type)
             is CodexEntryFormEvent.EntryNpcStatusChanged -> onNpcStatusChanged(event.status)
             is CodexEntryFormEvent.EntryNpcLifeChanged -> onNpcLifeChanged(event.lifeState)
             is CodexEntryFormEvent.EntryPartyOwnerChanged -> onPartyOwnerChanged(event.isPlayerCharacter)
@@ -136,6 +159,11 @@ class CodexEntryFormController private constructor(
             is CodexEntryFormEvent.EntryPlacesChosen -> onPlacesChosen(event.ids)
             is CodexEntryFormEvent.EntryPlaceCreated -> onPlaceCreated(scope, event.name, event.checked)
             CodexEntryFormEvent.EntryPlaceSelectClosed -> onPlaceSelectClosed()
+            CodexEntryFormEvent.EntrySpeciesSelectOpened -> onSpeciesSelectToggled(true)
+            is CodexEntryFormEvent.EntrySpeciesChosen -> onSpeciesChosen(event.ids)
+            is CodexEntryFormEvent.EntrySpeciesCreated -> onSpeciesCreated(scope, event.name)
+            is CodexEntryFormEvent.EntrySpeciesSrdChosen -> onSpeciesCreated(scope, event.name, event.type)
+            CodexEntryFormEvent.EntrySpeciesSelectClosed -> onSpeciesSelectToggled(false)
             is CodexEntryFormEvent.EntryQuickAddOpened -> onQuickAddOpened(event.field)
             is CodexEntryFormEvent.EntryQuickAddDraftChanged -> onQuickAddDraftChanged(event.text)
             CodexEntryFormEvent.EntryQuickAddSaveClicked -> onQuickAddSaveClicked(scope, onQuickAdded)
@@ -181,6 +209,7 @@ class CodexEntryFormController private constructor(
                     is EntityRef.Party -> partyRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Npc -> npcRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Quest -> questRepository.getById(ref.id)?.let { it.toFields(ref) }
+                    is EntityRef.Species -> speciesRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Location ->
                         locationRepository.getById(ref.id)?.let { place ->
                             val inside = locationRepository.observeAll().first().filter { it.parentId == ref.id }
@@ -234,6 +263,26 @@ class CodexEntryFormController private constructor(
     fun onPartyLevelFromPlayerClicked() {
         val current = fields.value ?: return
         fields.value = current.copy(party = current.party.copy(level = playerCharacterLevel))
+    }
+
+    fun onDamageChanged(
+        type: DamageType,
+        state: DamageState,
+    ) {
+        val current = fields.value ?: return
+        fields.value = current.copy(speciesDamage = current.speciesDamage.with(type, state))
+    }
+
+    fun onCreatureTypeChanged(type: CreatureType) {
+        fields.value = fields.value?.copy(speciesType = type)
+    }
+
+    // an SRD name fills the name and the type, the rest of the form is left as typed
+    fun onSrdPicked(
+        name: String,
+        type: CreatureType,
+    ) {
+        fields.value = fields.value?.copy(name = name, speciesType = type)
     }
 
     fun onNpcStatusChanged(status: NpcStatus) {
@@ -305,6 +354,31 @@ class CodexEntryFormController private constructor(
                 }
             }
             onCreated(name)
+        }
+    }
+
+    fun onSpeciesSelectToggled(isOpen: Boolean) {
+        fields.value = fields.value?.copy(speciesSelectOpen = isOpen)
+    }
+
+    // an empty list clears the link
+    fun onSpeciesChosen(ids: List<Long>) {
+        val current = fields.value ?: return
+        fields.value = current.copy(npcSpeciesId = ids.firstOrNull(), speciesSelectOpen = false)
+    }
+
+    fun onSpeciesCreated(
+        scope: CoroutineScope,
+        name: String,
+        type: CreatureType = CreatureType.HUMANOID,
+    ) {
+        val current = fields.value ?: return
+        val trimmed = name.trim().capitalizeFirst()
+        if (trimmed.isBlank()) return
+        fields.value = current.copy(speciesSelectOpen = false)
+        scope.launch {
+            val id = speciesRepository.upsert(quickSpecies(trimmed).copy(creatureType = type))
+            fields.value = fields.value?.copy(npcSpeciesId = id)
         }
     }
 
@@ -415,6 +489,9 @@ class CodexEntryFormController private constructor(
         discardPrompt.value = false
     }
 
+    /** the kind of record a save click would create, null while editing or with no name yet */
+    fun creatingType(): EntityKind? = fields.value?.takeIf { it.editingRef == null && it.name.isNotBlank() }?.type
+
     fun onSaveClicked(scope: CoroutineScope) {
         discardPrompt.value = false
         val current = fields.value ?: return
@@ -423,12 +500,38 @@ class CodexEntryFormController private constructor(
         scope.launch { persister.save(current) }
     }
 
+    @Composable
+    private fun speciesSelectState(
+        species: List<Species>,
+        selectedId: Long?,
+        isRussian: Boolean,
+    ): SpeciesSelectState {
+        val ownGroup = stringResource(Res.string.codex_species_group_own)
+        val srdGroup = stringResource(Res.string.codex_species_group_srd)
+        val srd = srdNotAdded(species.map { it.name })
+        return SpeciesSelectState(
+            options =
+                species.map { SelectOption(it.id, it.name, group = ownGroup) } +
+                    srd.map { (id, entry) ->
+                        SelectOption(
+                            id,
+                            entry.name(isRussian),
+                            searchText = "${entry.nameRu} ${entry.nameEn}",
+                            group = srdGroup,
+                        )
+                    },
+            selectedIds = setOfNotNull(selectedId),
+            srd = srd.associate { (id, entry) -> id to SrdSuggestion(entry.name(isRussian), entry.type) },
+        )
+    }
+
     // one assignment per form-state field - a flat mapping, not real complexity
     @Suppress("LongMethod")
     @Composable
     fun buildState(
         npcs: List<Npc>,
         locations: List<Location>,
+        species: List<Species>,
     ): CodexEntryFormState? {
         val current = fields.value ?: return null
         val isEditing = current.editingRef != null
@@ -439,6 +542,8 @@ class CodexEntryFormController private constructor(
         val party = current.party
         val places = PlaceTree(locations)
         val topLevelLabel = stringResource(Res.string.codex_place_top_level_caption)
+        val typeLabels = creatureTypeLabels()
+        val isRussian = currentAppLanguage() == AppLanguage.RUSSIAN
         return CodexEntryFormState(
             overline =
                 stringResource(
@@ -498,6 +603,32 @@ class CodexEntryFormController private constructor(
                 npcs.map { npc ->
                     FormChipOption(npc.id, npc.name, npc.id == current.questGiverId, npc.status.toStatusColor())
                 },
+            speciesDamage = current.speciesDamage,
+            creatureTypeOptions =
+                CreatureType.entries.map {
+                    FormChipOption(it, typeLabels.getValue(it), it == current.speciesType)
+                },
+            npcSpecies =
+                species.find { it.id == current.npcSpeciesId }?.let {
+                    SelectedSpecies(
+                        it.name,
+                        typeLabels.getValue(it.creatureType),
+                    )
+                },
+            speciesSelect =
+                if (current.speciesSelectOpen) {
+                    speciesSelectState(species, current.npcSpeciesId, isRussian)
+                } else {
+                    null
+                },
+            srdSuggestions =
+                if (current.type == EntityKind.SPECIES && !isEditing) {
+                    srdSuggestions(current.name, isRussian).map {
+                        SrdSuggestion(it.name(isRussian), it.type)
+                    }
+                } else {
+                    emptyList()
+                },
             partyClass = party.characterClass,
             partyPlayer = party.player,
             partyIsPlayerCharacter = party.isPlayerCharacter,
@@ -545,6 +676,7 @@ private fun newEntryHeading(type: EntityKind): String =
             EntityKind.NPC -> Res.string.codex_entry_heading_new_npc
             EntityKind.QUEST -> Res.string.codex_entry_heading_new_quest
             EntityKind.LOCATION -> Res.string.codex_entry_heading_new_location
+            EntityKind.SPECIES -> Res.string.codex_entry_heading_new_species
         },
     )
 

@@ -85,6 +85,7 @@ class SessionListPresenter(
         val locations by codexRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
         val quests by codexRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val parties by codexRepositories.partyRepository.observeAll().collectAsState(initial = emptyList())
+        val species by codexRepositories.speciesRepository.observeAll().collectAsState(initial = emptyList())
         val tagsBySession by tagRepository.observeAllSessionTags().collectAsState(initial = emptyMap())
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
@@ -92,7 +93,10 @@ class SessionListPresenter(
         val newSessionTitle = stringResource(Res.string.new_session_default_title)
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
         val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
-        val candidates = MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties))
+        val candidates =
+            remember(npcs, locations, quests, parties, species) {
+                MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties, species))
+            }
         val toast = remember { mutableStateOf<ToastMessage?>(null) }
         toast.autoDismiss()
         val failedText = stringResource(Res.string.error_action_failed)
@@ -137,6 +141,7 @@ class SessionListPresenter(
                 candidates,
                 numbering,
                 parties,
+                species,
             )
         val fullPhoto =
             rememberFullPhoto(selectedSummary, codexRepositories)

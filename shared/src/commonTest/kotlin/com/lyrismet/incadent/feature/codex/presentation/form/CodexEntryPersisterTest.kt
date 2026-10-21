@@ -1,16 +1,21 @@
 package com.lyrismet.incadent.feature.codex.presentation.form
 
 import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeLocationRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartyRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeQuestRepository
+import com.lyrismet.incadent.feature.codex.presentation.summary.FakeSpeciesRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,7 +25,8 @@ class CodexEntryPersisterTest {
     private val party = FakePartyRepository()
     private val quests = FakeQuestRepository()
     private val locations = FakeLocationRepository()
-    private val persister = CodexEntryPersister(npcs, party, quests, locations)
+    private val species = FakeSpeciesRepository()
+    private val persister = CodexEntryPersister(npcs, party, quests, locations, species)
 
     private fun form(
         type: EntityKind,
@@ -56,7 +62,7 @@ class CodexEntryPersisterTest {
             val withNpc = FakeNpcRepository(existing)
             val edit = form(EntityKind.NPC, "новый").copy(editingRef = EntityRef.Npc(5), reviveId = 99)
 
-            CodexEntryPersister(withNpc, party, quests, locations).save(edit)
+            CodexEntryPersister(withNpc, party, quests, locations, species).save(edit)
 
             assertEquals(listOf(5L), withNpc.all.map { it.id })
             assertEquals("Новый", withNpc.stored(5)?.name)
@@ -122,5 +128,50 @@ class CodexEntryPersisterTest {
                 Npc(3, "Громм", NpcStatus.ENEMY, NpcLifeState.DEAD, "кузнец", listOf(1, 2), "Дварф")
 
             assertEquals(original, original.toFields(EntityRef.Npc(3)).toNpc())
+        }
+
+    @Test
+    fun `a species is trimmed capitalized and keeps its type and nicknames`() =
+        runTest {
+            persister.save(
+                form(EntityKind.SPECIES, " гоблин ").copy(
+                    speciesType = CreatureType.FEY,
+                    nicknames = "зелёные, мелкие",
+                    description = " мерзкие ",
+                ),
+            )
+
+            val saved = species.all.single()
+            assertEquals("Гоблин", saved.name)
+            assertEquals(CreatureType.FEY, saved.creatureType)
+            assertEquals(listOf("зелёные", "мелкие"), saved.nicknames)
+            assertEquals("мерзкие", saved.notes)
+            assertEquals(0, npcs.all.size)
+        }
+
+    @Test
+    fun `editing a species leaves the damage the card set`() =
+        runTest {
+            val damage = mapOf(DamageType.FIRE to DamageState.VULNERABILITY)
+            val existing = Species(3, "Скелет", CreatureType.UNDEAD, damage)
+            val edit =
+                form(EntityKind.SPECIES, "скелеты").copy(
+                    editingRef = EntityRef.Species(3),
+                    speciesType = CreatureType.UNDEAD,
+                    speciesDamage = existing.damage,
+                )
+
+            persister.save(edit)
+
+            assertEquals(damage, species.stored(3)?.damage)
+            assertEquals("Скелеты", species.stored(3)?.name)
+        }
+
+    @Test
+    fun `an npc keeps the species it was linked to`() =
+        runTest {
+            persister.save(form(EntityKind.NPC, "грикк").copy(npcSpeciesId = 3))
+
+            assertEquals(3L, npcs.all.single().speciesId)
         }
 }

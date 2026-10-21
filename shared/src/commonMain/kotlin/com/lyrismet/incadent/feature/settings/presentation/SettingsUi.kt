@@ -52,6 +52,8 @@ import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEv
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.settings_about_srd_title
+import dndplayerscodex.shared.generated.resources.settings_about_srd_value
 import dndplayerscodex.shared.generated.resources.settings_all_campaigns_title
 import dndplayerscodex.shared.generated.resources.settings_campaign_name_title
 import dndplayerscodex.shared.generated.resources.settings_hints_desc
@@ -69,6 +71,7 @@ import dndplayerscodex.shared.generated.resources.settings_numbering_roman
 import dndplayerscodex.shared.generated.resources.settings_numbering_title
 import dndplayerscodex.shared.generated.resources.settings_phrases_summary_format
 import dndplayerscodex.shared.generated.resources.settings_phrases_title
+import dndplayerscodex.shared.generated.resources.settings_section_about
 import dndplayerscodex.shared.generated.resources.settings_section_app
 import dndplayerscodex.shared.generated.resources.settings_section_campaign
 import dndplayerscodex.shared.generated.resources.settings_section_diary
@@ -132,6 +135,7 @@ fun SettingsUi(
                         onRenameClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.RenameClicked)) },
                         onAllCampaignsClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.LibraryOpened)) },
                     )
+                    AboutSection()
                 }
             }
         }
@@ -239,6 +243,16 @@ private fun CampaignSection(
         InfoRow(
             title = stringResource(Res.string.settings_storage_title),
             value = stringResource(Res.string.settings_storage_value),
+        )
+    }
+}
+
+@Composable
+private fun AboutSection() {
+    SettingsGroup(overline = stringResource(Res.string.settings_section_about), topSpacing = 12.dp) {
+        InfoRow(
+            title = stringResource(Res.string.settings_about_srd_title),
+            value = stringResource(Res.string.settings_about_srd_value),
         )
     }
 }

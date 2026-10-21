@@ -34,8 +34,10 @@ import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.presentation.style.LocationMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.PartyMemberColor
+import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.toStatusColor
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.mention.domain.DeletedMention
@@ -59,6 +61,7 @@ enum class MentionGlyph(
     LOCATION("▲"),
     QUEST("◆"),
     PARTY("■"),
+    SPECIES("○"),
 
     /** the "?" of a mention whose record was deleted from the codex */
     DELETED("?"),
@@ -70,6 +73,7 @@ fun EntityKind.mentionGlyph(): MentionGlyph =
         EntityKind.PARTY -> MentionGlyph.PARTY
         EntityKind.QUEST -> MentionGlyph.QUEST
         EntityKind.LOCATION -> MentionGlyph.LOCATION
+        EntityKind.SPECIES -> MentionGlyph.SPECIES
     }
 
 /** pre-formatted for direct rendering - built once per presenter from a [MentionEntity], never touched by the Ui */
@@ -82,6 +86,8 @@ data class MentionChipItem(
     val entityRef: EntityRef? = null,
     // set only on the "?" tag of a deleted record - the snapshot that tag opens the "not in the codex" sheet with
     val deleted: DeletedMention? = null,
+    // how many a species chip stands for, shown as "×N" from two
+    val quantity: Int = 1,
 )
 
 fun MentionEntity.toChipItem(): MentionChipItem =
@@ -114,6 +120,15 @@ fun MentionEntity.toChipItem(): MentionChipItem =
                 entityRef = EntityRef.Quest(id),
             )
 
+        is MentionEntity.SpeciesMention ->
+            MentionChipItem(
+                stableId = dedupeKey(),
+                glyph = MentionGlyph.SPECIES,
+                label = name,
+                color = SpeciesMentionColor,
+                entityRef = EntityRef.Species(id),
+            )
+
         is MentionEntity.PartyMention ->
             MentionChipItem(
                 stableId = dedupeKey(),
@@ -138,6 +153,8 @@ fun Npc.toMentionChip(): MentionChipItem = MentionEntity.NpcMention(id, name, st
 fun Location.toMentionChip(): MentionChipItem = MentionEntity.LocationMention(id, name).toChipItem()
 
 fun PartyMember.toMentionChip(): MentionChipItem = MentionEntity.PartyMention(id, name).toChipItem()
+
+fun Species.toMentionChip(): MentionChipItem = MentionEntity.SpeciesMention(id, name).toChipItem()
 
 fun Quest.toMentionChip(): MentionChipItem = MentionEntity.QuestMention(id, title, status).toChipItem()
 
@@ -180,6 +197,15 @@ fun MentionChip(
             color = item.color.foreground,
             textDecoration = if (item.strikeThrough) TextDecoration.LineThrough else TextDecoration.None,
         )
+        if (item.quantity > 1) {
+            Text(
+                text = "×${item.quantity}",
+                fontSize = fontSize,
+                lineHeight = fontSize * lineHeightFactor,
+                fontWeight = FontWeight.SemiBold,
+                color = item.color.foreground,
+            )
+        }
     }
 }
 

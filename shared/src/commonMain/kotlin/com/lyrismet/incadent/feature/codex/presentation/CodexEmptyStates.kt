@@ -23,6 +23,7 @@ import dndplayerscodex.shared.generated.resources.codex_search_create_location
 import dndplayerscodex.shared.generated.resources.codex_search_create_npc
 import dndplayerscodex.shared.generated.resources.codex_search_create_party
 import dndplayerscodex.shared.generated.resources.codex_search_create_quest
+import dndplayerscodex.shared.generated.resources.codex_search_create_species
 import dndplayerscodex.shared.generated.resources.codex_search_empty_reset
 import dndplayerscodex.shared.generated.resources.codex_search_empty_text
 import dndplayerscodex.shared.generated.resources.codex_search_empty_title
@@ -154,4 +155,5 @@ private fun EntityKind.searchCreateButton(): StringResource =
         EntityKind.NPC -> Res.string.codex_search_create_npc
         EntityKind.QUEST -> Res.string.codex_search_create_quest
         EntityKind.LOCATION -> Res.string.codex_search_create_location
+        EntityKind.SPECIES -> Res.string.codex_search_create_species
     }

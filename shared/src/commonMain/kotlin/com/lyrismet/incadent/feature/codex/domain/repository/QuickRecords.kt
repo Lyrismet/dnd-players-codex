@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.codex.domain.repository
 
 import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -9,6 +10,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 
 // free-text fields stay blank, lists and sheets render the dash themselves
 fun quickNpc(name: String) =
@@ -23,6 +25,8 @@ fun quickNpc(name: String) =
     )
 
 fun quickLocation(name: String) = Location(id = 0, name = name, description = "")
+
+fun quickSpecies(name: String) = Species(id = 0, name = name, creatureType = CreatureType.HUMANOID)
 
 private fun quickQuest(name: String) =
     Quest(id = 0, title = name, status = QuestStatus.ACTIVE, reward = "", givenByNpcId = null, locationId = null)
@@ -52,6 +56,7 @@ suspend fun CodexRepositories.createNamed(
         EntityKind.PARTY -> partyRepository.upsert(quickPartyMember(name))
         EntityKind.QUEST -> questRepository.upsert(quickQuest(name))
         EntityKind.LOCATION -> locationRepository.upsert(quickLocation(name))
+        EntityKind.SPECIES -> speciesRepository.upsert(quickSpecies(name))
     }
 
 suspend fun CodexRepositories.deleteRecord(
@@ -63,5 +68,6 @@ suspend fun CodexRepositories.deleteRecord(
         EntityKind.PARTY -> partyRepository.delete(id)
         EntityKind.QUEST -> questRepository.delete(id)
         EntityKind.LOCATION -> locationRepository.delete(id)
+        EntityKind.SPECIES -> speciesRepository.delete(id)
     }
 }

@@ -31,8 +31,8 @@ internal data class OpenMentionCreate(
     val unlinked: DeletedMention? = null,
 )
 
-// the kinds a mention can name - a species joins them with the bestiary
-private val CREATE_KINDS = listOf(EntityKind.NPC, EntityKind.QUEST, EntityKind.LOCATION, EntityKind.PARTY)
+private val CREATE_KINDS =
+    listOf(EntityKind.NPC, EntityKind.QUEST, EntityKind.LOCATION, EntityKind.PARTY, EntityKind.SPECIES)
 
 /** turns a typed name into a codex record and a mention of it, with an Undo that takes both back */
 @Suppress("LongParameterList")
@@ -136,4 +136,5 @@ private fun MentionRef.toEntityRef(): EntityRef =
         EntityKind.PARTY -> EntityRef.Party(id)
         EntityKind.QUEST -> EntityRef.Quest(id)
         EntityKind.LOCATION -> EntityRef.Location(id)
+        EntityKind.SPECIES -> EntityRef.Species(id)
     }

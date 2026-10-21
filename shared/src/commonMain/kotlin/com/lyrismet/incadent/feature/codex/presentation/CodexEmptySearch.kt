@@ -51,20 +51,22 @@ internal fun codexEmptyKind(
     }
 }
 
-/** how many entries a search finds in the tabs other than [tab] - the "Все" tab already holds every match */
+/** how many entries a search finds in the other tabs, the species sit in the npc tab so only the rest count them */
+@Suppress("LongParameterList")
 internal fun otherSectionMatches(
     tab: CodexTab,
     party: Int,
     npcs: Int,
     quests: Int,
     locations: Int,
+    species: Int = 0,
 ): Int =
     when (tab) {
         CodexTab.ALL -> 0
-        CodexTab.PARTY -> npcs + quests + locations
+        CodexTab.PARTY -> npcs + species + quests + locations
         CodexTab.NPC -> party + quests + locations
-        CodexTab.QUEST -> party + npcs + locations
-        CodexTab.LOCATION -> party + npcs + quests
+        CodexTab.QUEST -> party + npcs + species + locations
+        CodexTab.LOCATION -> party + npcs + species + quests
     }
 
 // mirrors the mockup's openNew() - "Все" falls back to NPC, every other tab keeps its own type

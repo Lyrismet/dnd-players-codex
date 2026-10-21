@@ -2,8 +2,9 @@ package com.lyrismet.incadent.feature.mention.domain
 
 import com.lyrismet.incadent.domain.model.EntityKind
 
-// "@[Name|n:12]" - the name is only what a tag shows once its record is gone, the kind letter and id decide who it is
-internal val TOKEN_REGEX = Regex("@\\[([^\\[\\]|]*)\\|([npql]):(\\d+)]")
+// "@[Name|n:12]" or "@[Name|s:7|4]" - the name shows once its record is gone, the kind letter and id decide who it is,
+// the optional last number is how many
+internal val TOKEN_REGEX = Regex("@\\[([^\\[\\]|]*)\\|([npqls]):(\\d+)(?:\\|(\\d+))?]")
 
 private fun EntityKind.code(): Char =
     when (this) {
@@ -11,6 +12,7 @@ private fun EntityKind.code(): Char =
         EntityKind.PARTY -> 'p'
         EntityKind.LOCATION -> 'l'
         EntityKind.QUEST -> 'q'
+        EntityKind.SPECIES -> 's'
     }
 
 private fun Char.toMentionType(): EntityKind =
@@ -18,15 +20,21 @@ private fun Char.toMentionType(): EntityKind =
         'n' -> EntityKind.NPC
         'p' -> EntityKind.PARTY
         'l' -> EntityKind.LOCATION
+        's' -> EntityKind.SPECIES
         else -> EntityKind.QUEST
     }
 
 internal const val NAME_GROUP = 1
 private const val KIND_GROUP = 2
 private const val ID_GROUP = 3
+private const val QUANTITY_GROUP = 4
 
 internal fun MatchResult.toRef() =
     MentionRef(groupValues[KIND_GROUP].single().toMentionType(), groupValues[ID_GROUP].toLong())
+
+/** how many a species token stands for, 1 when the token carries no number */
+internal fun MatchResult.quantity(): Int =
+    groupValues[QUANTITY_GROUP].toIntOrNull()?.coerceIn(1, MAX_MENTION_QUANTITY) ?: 1
 
 // no spaces inside a token, so a note's words still split cleanly when phrases are cut out of it
 private val TOKEN_NAME_BREAKS = Regex("[\\[\\]|\\s]+")
@@ -37,7 +45,11 @@ internal fun MatchResult.tokenName(): String = groupValues[NAME_GROUP].replace('
 fun mentionToken(
     ref: MentionRef,
     name: String,
-): String = "@[${name.replace(TOKEN_NAME_BREAKS, "_")}|${ref.type.code()}:${ref.id}]"
+    quantity: Int = 1,
+): String {
+    val count = if (quantity > 1) "|${quantity.coerceAtMost(MAX_MENTION_QUANTITY)}" else ""
+    return "@[${name.replace(TOKEN_NAME_BREAKS, "_")}|${ref.type.code()}:${ref.id}$count]"
+}
 
 fun MentionEntity.token(): String = mentionToken(ref, name)
 
@@ -82,29 +94,3 @@ fun unlinkMentionIn(
     body: String,
     from: MentionRef,
 ): String = TOKEN_REGEX.replace(body) { if (it.toRef() == from) it.tokenName() else it.value }
-
-// what is left of a token after an edit cut into it
-private val TOKEN_FRAGMENT_REGEX = Regex("@\\[[^\\[\\]@]*?\\|[npql]:\\d*]?")
-
-/** the draft without any half deleted token, so an edit inside a tag removes the tag instead of corrupting it */
-fun withoutBrokenTokens(text: String): String {
-    if ("@[" !in text) return text
-    val out = StringBuilder()
-    var i = 0
-    while (i < text.length) {
-        if (!text.startsWith("@[", i)) {
-            out.append(text[i])
-            i++
-            continue
-        }
-        val whole = TOKEN_REGEX.matchAt(text, i)
-        if (whole != null) {
-            out.append(whole.value)
-            i += whole.value.length
-        } else {
-            // a cut token goes whole, a stray "@[" alone loses just its two characters
-            i += TOKEN_FRAGMENT_REGEX.matchAt(text, i)?.value?.length ?: 2
-        }
-    }
-    return out.toString()
-}

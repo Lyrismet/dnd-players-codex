@@ -13,6 +13,8 @@ data class Npc(
     val race: String,
     val portrait: Photo? = null,
     val nicknames: List<String> = emptyList(),
+    // the kind of creature the npc is, null when it is none of the known species
+    val speciesId: Long? = null,
 )
 
 /** the party's relation to this npc - independent of whether the npc is still alive */

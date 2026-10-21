@@ -207,6 +207,7 @@ private fun entryMentionActions(
     onAutoLink = { eventSink(SessionDetailEvent.AutoMentionsLinkClicked(entryId)) },
     onAutoDismiss = { eventSink(SessionDetailEvent.AutoMentionsDismissed(entryId)) },
     onAutoWordClick = { key -> eventSink(SessionDetailEvent.AutoMentionWordClicked(entryId, key)) },
+    onSpeciesClick = { occurrence, id -> eventSink(SessionDetailEvent.SpeciesChipClicked(entryId, occurrence, id)) },
 )
 
 @Composable

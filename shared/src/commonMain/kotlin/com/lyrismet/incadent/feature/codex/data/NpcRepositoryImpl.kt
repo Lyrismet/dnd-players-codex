@@ -63,6 +63,7 @@ class NpcRepositoryImpl(
                             entity.race,
                             entity.lifeState,
                             entity.nicknames.joinNicknames(),
+                            entity.speciesId,
                             entity.id,
                         )
                         writePortrait(entity.id, entity.portrait, stored.portrait)
@@ -85,6 +86,7 @@ class NpcRepositoryImpl(
                 npc.race,
                 npc.lifeState,
                 npc.nicknames.joinNicknames(),
+                npc.speciesId,
                 npc.portrait?.full,
                 npc.portrait?.thumb,
                 current.requireId(),
@@ -98,6 +100,7 @@ class NpcRepositoryImpl(
             npc.race,
             npc.lifeState,
             npc.nicknames.joinNicknames(),
+            npc.speciesId,
             npc.portrait?.full,
             npc.portrait?.thumb,
             current.requireId(),
@@ -141,9 +144,10 @@ class NpcRepositoryImpl(
         race: String,
         lifeState: NpcLifeState,
         nicknames: String,
+        speciesId: Long?,
         portraitThumb: ByteArray?,
         locationIds: String,
-    ) = toDomain(id, name, status, description, race, lifeState, nicknames, portraitThumb)
+    ) = toDomain(id, name, status, description, race, lifeState, nicknames, speciesId, portraitThumb)
         .copy(locationIds = locationIds.split(',').mapNotNull { it.toLongOrNull() })
 
     // one param per npc table column - dictated by SQLDelight's generated query mapper shape, not real complexity
@@ -156,6 +160,7 @@ class NpcRepositoryImpl(
         race: String,
         lifeState: NpcLifeState,
         nicknames: String,
+        speciesId: Long?,
         portraitThumb: ByteArray?,
     ) = Npc(
         id,
@@ -169,6 +174,7 @@ class NpcRepositoryImpl(
             Photo(it)
         },
         parseNicknames(nicknames),
+        speciesId,
     )
 
     // the by-id row also carries the full jpeg
@@ -181,8 +187,9 @@ class NpcRepositoryImpl(
         race: String,
         lifeState: NpcLifeState,
         nicknames: String,
+        speciesId: Long?,
         portraitThumb: ByteArray?,
         portrait: ByteArray?,
-    ) = toDomain(id, name, status, description, race, lifeState, nicknames, portraitThumb)
+    ) = toDomain(id, name, status, description, race, lifeState, nicknames, speciesId, portraitThumb)
         .copy(portrait = portraitThumb?.let { Photo(it, portrait) })
 }

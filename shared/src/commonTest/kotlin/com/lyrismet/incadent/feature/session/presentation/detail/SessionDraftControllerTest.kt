@@ -186,4 +186,29 @@ class SessionDraftControllerTest {
 
             assertEquals("ждали  там", composer.draft.value.text)
         }
+
+    @Test
+    fun `a digit typed after a picked species becomes its count`() =
+        runTest {
+            val composer = controller()
+            composer.draft.value = TextFieldValue("@")
+            composer.pickMention("@[Гоблин|s:7]")
+
+            composer.onDraftChanged("@[Гоблин|s:7] 4", TextRange(15))
+
+            assertEquals("@[Гоблин|s:7|4] ", composer.draft.value.text)
+            assertEquals(TextRange(composer.draft.value.text.length - 1), composer.draft.value.selection)
+        }
+
+    @Test
+    fun `a letter typed after a picked species is plain text`() =
+        runTest {
+            val composer = controller()
+            composer.draft.value = TextFieldValue("@")
+            composer.pickMention("@[Гоблин|s:7]")
+
+            composer.onDraftChanged("@[Гоблин|s:7] и", TextRange(15))
+
+            assertEquals("@[Гоблин|s:7] и", composer.draft.value.text)
+        }
 }

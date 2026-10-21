@@ -8,6 +8,10 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.Species
+
+/** the most of one kind a token can stand for, a typo cannot make a crowd of millions */
+const val MAX_MENTION_QUANTITY = 999
 
 /** one record a note can mention, told apart by kind and id so records sharing a name stay separate */
 data class MentionRef(
@@ -52,6 +56,14 @@ sealed interface MentionEntity {
         override val ref: MentionRef get() = MentionRef(EntityKind.PARTY, id)
     }
 
+    /** a kind of creature, mentioned with a count - never found in plain text, so its common name is not underlined */
+    data class SpeciesMention(
+        val id: Long,
+        override val name: String,
+    ) : MentionEntity {
+        override val ref: MentionRef get() = MentionRef(EntityKind.SPECIES, id)
+    }
+
     /** a record that is gone from the codex but still mentioned by notes - drawn as a "?" tag, named by its token */
     data class DeletedMention(
         val id: Long,
@@ -67,11 +79,13 @@ fun mentionEntitiesFrom(
     locations: List<Location>,
     quests: List<Quest>,
     parties: List<PartyMember> = emptyList(),
+    species: List<Species> = emptyList(),
 ): List<MentionEntity> =
     npcs.map { MentionEntity.NpcMention(it.id, it.name, it.status, it.lifeState) } +
         parties.map { MentionEntity.PartyMention(it.id, it.name) } +
         locations.map { MentionEntity.LocationMention(it.id, it.name) } +
-        quests.map { MentionEntity.QuestMention(it.id, it.title, it.status) }
+        quests.map { MentionEntity.QuestMention(it.id, it.title, it.status) } +
+        species.map { MentionEntity.SpeciesMention(it.id, it.name) }
 
 /** every record a note can mention right now, looked up by [MentionRef] - names are never used to find a record */
 class MentionIndex(
@@ -113,6 +127,7 @@ sealed interface MentionSegment {
 
     data class Mention(
         val entity: MentionEntity,
+        val quantity: Int = 1,
     ) : MentionSegment
 
     /** a codex name written as a whole word without "@" - only produced when auto matching is asked for */
@@ -133,7 +148,7 @@ fun parseMentions(
     var cursor = 0
     TOKEN_REGEX.findAll(text).forEach { token ->
         segments += plainSegments(text.substring(cursor, token.range.first), autoNames)
-        segments += MentionSegment.Mention(index.resolve(token.toRef(), token.tokenName()))
+        segments += MentionSegment.Mention(index.resolve(token.toRef(), token.tokenName()), token.quantity())
         cursor = token.range.last + 1
     }
     segments += plainSegments(text.substring(cursor), autoNames)

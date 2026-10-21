@@ -41,7 +41,8 @@ internal fun npcDetailsSummary(form: CodexEntryFormState): String {
     val filled =
         listOfNotNull(
             stringResource(Res.string.codex_entry_summary_portrait).takeIf { form.portrait != null },
-            form.race.trim().takeIf { it.isNotEmpty() },
+            form.npcSpecies?.let { "${MentionGlyph.SPECIES.symbol} ${it.name}" }
+                ?: form.race.trim().takeIf { it.isNotEmpty() },
             form.npcLifeOptions
                 .firstOrNull { it.selected && it.value != NpcLifeState.ALIVE }
                 ?.label

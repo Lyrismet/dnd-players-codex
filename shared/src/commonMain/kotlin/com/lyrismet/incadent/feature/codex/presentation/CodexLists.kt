@@ -15,8 +15,11 @@ import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
+import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
+import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.codex_all_species
 import dndplayerscodex.shared.generated.resources.codex_tab_location
 import dndplayerscodex.shared.generated.resources.codex_tab_npc
 import dndplayerscodex.shared.generated.resources.codex_tab_party
@@ -27,7 +30,7 @@ private val LIST_CONTENT_PADDING = PaddingValues(start = 16.dp, top = 2.dp, end 
 
 // every codex list shares the padding and the 8dp rhythm
 @Composable
-private fun CodexLazyColumn(
+internal fun CodexLazyColumn(
     modifier: Modifier,
     content: LazyListScope.() -> Unit,
 ) {
@@ -163,11 +166,13 @@ internal fun CodexAllList(
     val locations = state.locations.flatMap { it.items }
     // the first section that has entries sits closer to the top, resolved by what comes before it
     val npcFirst = state.party.isEmpty()
-    val questFirst = npcFirst && npcs.isEmpty()
+    val speciesFirst = npcFirst && npcs.isEmpty()
+    val questFirst = speciesFirst && state.species.isEmpty()
     val locationFirst = questFirst && quests.isEmpty()
     // resolved here, not inside the lazy content block, which is not a composable context
     val partyTitle = stringResource(Res.string.codex_tab_party)
     val npcTitle = stringResource(Res.string.codex_tab_npc)
+    val speciesTitle = stringResource(Res.string.codex_all_species)
     val questTitle = stringResource(Res.string.codex_tab_quest)
     val locationTitle = stringResource(Res.string.codex_tab_location)
     CodexLazyColumn(modifier) {
@@ -177,6 +182,16 @@ internal fun CodexAllList(
         }
         codexSection(npcTitle, npcs, npcFirst, key = { "npc_${it.id}" }) {
             CodexNpcEntry(state, it, hintPeekOffsetPx)
+        }
+        codexSection(speciesTitle, state.species, speciesFirst, key = { "species_${it.id}" }) { species ->
+            SpeciesCodexCard(
+                item = species,
+                onClick = {
+                    state.eventSink(
+                        CodexEvent.EntitySheet(EntitySheetEvent.EntityClicked(EntityRef.Species(species.id))),
+                    )
+                },
+            )
         }
         codexSection(questTitle, quests, questFirst, key = { "quest_${it.id}" }) {
             CodexQuestEntry(state, it, hintPeekOffsetPx)

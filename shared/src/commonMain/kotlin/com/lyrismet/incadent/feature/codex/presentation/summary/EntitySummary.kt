@@ -12,15 +12,19 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.style.DEFAULT_STATUS_GLYPH
 import com.lyrismet.incadent.feature.codex.presentation.style.LocationMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.PartyMemberColor
+import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.toStatusColor
 import com.lyrismet.incadent.feature.codex.presentation.style.toStatusGlyph
+import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
+import com.lyrismet.incadent.feature.mention.presentation.toChipItem
 import com.lyrismet.incadent.feature.mention.presentation.toMentionChip
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
@@ -37,6 +41,7 @@ import dndplayerscodex.shared.generated.resources.entity_sheet_location_parent_l
 import dndplayerscodex.shared.generated.resources.entity_sheet_nicknames_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_location_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_race_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_npc_species_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_class_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_hp_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_level_label
@@ -54,6 +59,7 @@ fun buildEntitySummary(
         is EntityRef.Location -> lookup.locations.find { it.id == ref.id }?.let { buildLocationSummary(it, lookup) }
         is EntityRef.Quest -> lookup.quests.find { it.id == ref.id }?.let { buildQuestSummary(it, lookup) }
         is EntityRef.Party -> lookup.parties.find { it.id == ref.id }?.let { buildPartySummary(it, lookup) }
+        is EntityRef.Species -> lookup.species.find { it.id == ref.id }?.let { buildSpeciesSummary(it, lookup) }
     }
 
 private fun buildNpcSummary(
@@ -80,7 +86,7 @@ private fun buildNpcSummary(
                 isMonochrome = isDead,
                 hasPortraitSlot = true,
             ),
-        subtitle = npc.race,
+        subtitle = lookup.species.find { it.id == npc.speciesId }?.name ?: npc.race,
         statusOptions =
             statusOptions(NpcStatus.entries, npc.status, lookup.npcStatusLabels, NpcStatus::toStatusGlyph) { status ->
                 status.toStatusColor()
@@ -94,16 +100,7 @@ private fun buildNpcSummary(
             ) { life ->
                 life.toStatusColor()
             },
-        facts =
-            listOf(
-                FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(npc.race), QuickEditField.RACE),
-                nicknamesFact(npc.nicknames),
-                FactRow(
-                    Res.string.entity_sheet_npc_location_label,
-                    FactValue.Links(places.map { it.toMentionChip() }),
-                    QuickEditField.PLACE,
-                ),
-            ),
+        facts = npcFacts(npc, places, lookup),
         groups =
             listOf(
                 RelationGroup(
@@ -115,6 +112,50 @@ private fun buildNpcSummary(
                 ),
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Npc(npc.id), lookup),
+    )
+}
+
+private fun npcFacts(
+    npc: Npc,
+    places: List<Location>,
+    lookup: EntityLookup,
+): List<FactRow> =
+    listOf(
+        lookup.species.find { it.id == npc.speciesId }?.let {
+            FactRow(
+                Res.string.entity_sheet_npc_species_label,
+                FactValue.Link(MentionEntity.SpeciesMention(it.id, it.name).toChipItem()),
+            )
+        } ?: FactRow(Res.string.entity_sheet_npc_species_label, FactValue.Text(npc.race), QuickEditField.RACE),
+        nicknamesFact(npc.nicknames),
+        FactRow(
+            Res.string.entity_sheet_npc_location_label,
+            FactValue.Links(places.map { it.toMentionChip() }),
+            QuickEditField.PLACE,
+        ),
+    )
+
+private fun buildSpeciesSummary(
+    species: Species,
+    lookup: EntityLookup,
+): EntitySummaryItem.SpeciesSummary {
+    val relatedNotes = buildRelatedNotes(EntityRef.Species(species.id), lookup)
+    return EntitySummaryItem.SpeciesSummary(
+        ref = EntityRef.Species(species.id),
+        name = species.name,
+        creatureType = species.creatureType,
+        notes = species.notes,
+        emblem =
+            EntityEmblem(
+                text = MentionGlyph.SPECIES.symbol,
+                shape = EntityEmblemShape.CIRCLE,
+                color = SpeciesMentionColor,
+                portrait = species.photo,
+                hasPortraitSlot = true,
+            ),
+        damage = species.damage,
+        relatedNotes = relatedNotes,
+        seenInSessions = relatedNotes.size,
     )
 }
 

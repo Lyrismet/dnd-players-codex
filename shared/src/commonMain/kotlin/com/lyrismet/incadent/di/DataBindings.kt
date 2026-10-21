@@ -8,6 +8,7 @@ import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.lyrismet.incadent.persistence.DatabaseDriverFactory
 import com.lyrismet.incadent.persistence.createAppDatabase
 import dev.zacsweers.metro.AppScope
@@ -34,7 +35,9 @@ object DataBindings {
         npcRepository: NpcRepository,
         questRepository: QuestRepository,
         locationRepository: LocationRepository,
-    ): CodexRepositories = CodexRepositories(partyRepository, npcRepository, questRepository, locationRepository)
+        speciesRepository: SpeciesRepository,
+    ): CodexRepositories =
+        CodexRepositories(partyRepository, npcRepository, questRepository, locationRepository, speciesRepository)
 
     @Provides
     @SingleIn(AppScope::class)

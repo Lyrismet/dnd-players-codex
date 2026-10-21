@@ -41,9 +41,11 @@ internal class CodexGroupedLists(
 internal fun CodexGroupedLists.hasEntriesFor(
     tab: CodexTab,
     party: List<PartyCodexItem>,
+    hasSpecies: Boolean = false,
 ): Boolean =
     when (tab) {
-        CodexTab.ALL -> party.isNotEmpty() || npcs.isNotEmpty() || quests.isNotEmpty() || locations.isNotEmpty()
+        CodexTab.ALL ->
+            party.isNotEmpty() || npcs.isNotEmpty() || hasSpecies || quests.isNotEmpty() || locations.isNotEmpty()
         CodexTab.PARTY -> party.isNotEmpty()
         CodexTab.NPC -> npcs.isNotEmpty()
         CodexTab.QUEST -> quests.isNotEmpty()
@@ -96,7 +98,14 @@ internal fun codexGroupedLists(
         groupQuests(search.searchedQuests, records.npcs, records.locations, questBy, labels.titles, regions)
     return CodexGroupedLists(
         npcs =
-            groupNpcs(search.searchedNpcs, records.locations, npcBy, labels.titles, regions).map { group ->
+            groupNpcs(
+                search.searchedNpcs,
+                records.locations,
+                npcBy,
+                labels.titles,
+                regions,
+                records.species,
+            ).map { group ->
                 group.map { row -> row.entity.toCodexItem(labels.titles.npcStatus, labels.npcLife, row.subtitle) }
             },
         quests =

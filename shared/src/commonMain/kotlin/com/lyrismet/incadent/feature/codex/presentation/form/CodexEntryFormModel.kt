@@ -7,6 +7,9 @@ import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
@@ -43,6 +46,14 @@ data class CodexEntryFormState(
     // non-null while the select sheet is open over the form
     val placeSelect: PlaceSelectState? = null,
     val npcOptions: List<FormChipOption<Long>> = emptyList(),
+    val speciesDamage: Map<DamageType, DamageState> = emptyMap(),
+    val creatureTypeOptions: List<FormChipOption<CreatureType>> = emptyList(),
+    // the species the npc is linked to, shown on its field row
+    val npcSpecies: SelectedSpecies? = null,
+    // non-null while the species select sheet is open over the form
+    val speciesSelect: SpeciesSelectState? = null,
+    // the SRD names that match the species name typed so far
+    val srdSuggestions: List<SrdSuggestion> = emptyList(),
     val partyClass: String = "",
     val partyPlayer: String = "",
     val partyIsPlayerCharacter: Boolean = false,
@@ -75,6 +86,12 @@ enum class CodexEntryField {
 
 enum class CodexEntryNumberField { PARTY_LEVEL, PARTY_HP_MAX }
 
+/** the species picked on the npc form, shown with its creature type under the name */
+data class SelectedSpecies(
+    val name: String,
+    val typeLabel: String,
+)
+
 /** a place picked on a form field, shown with the path above it */
 data class SelectedPlace(
     val name: String,
@@ -105,6 +122,20 @@ data class PlaceSelectState(
 
 enum class CodexEntryChipField { QUEST_GIVER }
 
+/** the species select sheet's content, one species at most */
+data class SpeciesSelectState(
+    val options: List<SelectOption>,
+    val selectedIds: Set<Long>,
+    // the built-in names among the options, by their negative option id
+    val srd: Map<Long, SrdSuggestion> = emptyMap(),
+)
+
+/** an SRD name offered under the species name field */
+data class SrdSuggestion(
+    val name: String,
+    val type: CreatureType,
+)
+
 /** the events of the create/edit form sheet - the codex and the session screen both host that sheet */
 sealed interface CodexEntryFormEvent {
     data class EntryTypeChanged(
@@ -133,6 +164,20 @@ sealed interface CodexEntryFormEvent {
 
     data class EntryPhotoRemoved(
         val slot: PhotoSlot,
+    ) : CodexEntryFormEvent
+
+    data class EntryCreatureTypeChanged(
+        val type: CreatureType,
+    ) : CodexEntryFormEvent
+
+    data class EntryDamageChanged(
+        val type: DamageType,
+        val state: DamageState,
+    ) : CodexEntryFormEvent
+
+    data class EntrySrdPicked(
+        val name: String,
+        val type: CreatureType,
     ) : CodexEntryFormEvent
 
     data class EntryNpcStatusChanged(
@@ -172,6 +217,23 @@ sealed interface CodexEntryFormEvent {
     ) : CodexEntryFormEvent
 
     data object EntryPlaceSelectClosed : CodexEntryFormEvent
+
+    data object EntrySpeciesSelectOpened : CodexEntryFormEvent
+
+    data class EntrySpeciesChosen(
+        val ids: List<Long>,
+    ) : CodexEntryFormEvent
+
+    data class EntrySpeciesSrdChosen(
+        val name: String,
+        val type: CreatureType,
+    ) : CodexEntryFormEvent
+
+    data class EntrySpeciesCreated(
+        val name: String,
+    ) : CodexEntryFormEvent
+
+    data object EntrySpeciesSelectClosed : CodexEntryFormEvent
 
     data class EntryQuestStatusChanged(
         val status: QuestStatus,

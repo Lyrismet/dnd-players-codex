@@ -94,4 +94,15 @@ class SelectListTest {
         assertEquals(setOf(1L), pickedIds(options + hall, setOf(1L, 6L)))
         assertEquals(setOf(6L), pickedIds(options + hall, setOf(6L)))
     }
+
+    @Test
+    fun `groups keep the order they first appear in`() {
+        val grouped =
+            listOf(
+                SelectOption(1, "Яга", group = "Ваши"),
+                SelectOption(-1, "Аболет", group = "SRD"),
+                SelectOption(2, "Бука", group = "Ваши"),
+            )
+        assertEquals(listOf(2L, 1L, -1L), ids(selectRows(grouped, "", emptySet())))
+    }
 }

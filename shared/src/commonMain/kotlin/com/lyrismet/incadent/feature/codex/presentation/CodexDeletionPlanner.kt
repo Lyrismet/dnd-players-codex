@@ -6,10 +6,12 @@ import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.mention.domain.MentionBody
 import com.lyrismet.incadent.feature.mention.domain.MentionEntity
@@ -33,6 +35,7 @@ internal class CodexDeletionPlanner(
     private val partyRepository: PartyRepository,
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
+    private val speciesRepository: SpeciesRepository,
 ) {
     /** the delete/restore of [ref] - undo puts the record back under its old id, so tokens in notes find it */
     fun planFor(
@@ -71,6 +74,7 @@ internal class CodexDeletionPlanner(
             is EntityRef.Npc -> npcPlan(ref.id, records, labels)
             is EntityRef.Quest -> questPlan(ref.id, records, labels)
             is EntityRef.Location -> locationPlan(ref.id, records, labels)
+            is EntityRef.Species -> speciesPlan(ref.id, records, labels)
         }
 
     private fun partyPlan(
@@ -126,6 +130,30 @@ internal class CodexDeletionPlanner(
                 subtitle = "${labels.getValue(EntityKind.QUEST)} · ${quest.title}",
                 delete = { questRepository.delete(id) },
                 restore = { questRepository.upsert(quest) },
+            )
+        }
+
+    private fun speciesPlan(
+        id: Long,
+        records: CodexRecords,
+        labels: Map<EntityKind, String>,
+    ): CodexDeletionPlan? =
+        records.species.find { it.id == id }?.let { species ->
+            // deleting a species unlinks its npcs, undo links them again
+            val npcIds = records.npcs.filter { it.speciesId == id }.map { it.id }
+            var stored: Species? = null
+            CodexDeletionPlan(
+                subtitle = "${labels.getValue(EntityKind.SPECIES)} · ${species.name}",
+                delete = {
+                    stored = speciesRepository.getById(id)
+                    speciesRepository.delete(id)
+                },
+                restore = {
+                    val newId = speciesRepository.upsert(stored ?: species)
+                    npcIds.forEach { npcId ->
+                        npcRepository.getById(npcId)?.let { npcRepository.upsert(it.copy(speciesId = newId)) }
+                    }
+                },
             )
         }
 
@@ -195,5 +223,9 @@ private fun mentionedAs(
         is EntityRef.Location ->
             records.locations.find { it.id == ref.id }?.let {
                 MentionedRecord(MentionEntity.LocationMention(it.id, it.name), EntityKind.LOCATION)
+            }
+        is EntityRef.Species ->
+            records.species.find { it.id == ref.id }?.let {
+                MentionedRecord(MentionEntity.SpeciesMention(it.id, it.name), EntityKind.SPECIES)
             }
     }

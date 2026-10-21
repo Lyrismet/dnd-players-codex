@@ -18,6 +18,7 @@ class QuickRecordsTest {
             NpcRepositoryImpl(db.database, db.current),
             QuestRepositoryImpl(db.database, db.current),
             LocationRepositoryImpl(db.database, db.current),
+            SpeciesRepositoryImpl(db.database, db.current),
         )
 
     @Test
@@ -54,11 +55,20 @@ class QuickRecordsTest {
                     .map { it.name },
             )
 
+            assertEquals(
+                listOf("Новичок"),
+                repositories.speciesRepository
+                    .observeAll()
+                    .first()
+                    .map { it.name },
+            )
+
             ids.forEach { (kind, id) -> repositories.deleteRecord(kind, id) }
 
             assertEquals(emptyList(), repositories.npcRepository.observeAll().first())
             assertEquals(emptyList(), repositories.questRepository.observeAll().first())
             assertEquals(emptyList(), repositories.locationRepository.observeAll().first())
             assertEquals(emptyList(), repositories.partyRepository.observeAll().first())
+            assertEquals(emptyList(), repositories.speciesRepository.observeAll().first())
         }
 }

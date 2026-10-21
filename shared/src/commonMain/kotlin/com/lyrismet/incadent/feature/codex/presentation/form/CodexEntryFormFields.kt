@@ -3,6 +3,9 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
@@ -38,6 +41,10 @@ internal data class CodexEntryFormFields(
     val npcStatus: NpcStatus = NpcStatus.NEUTRAL,
     val npcLife: NpcLifeState = NpcLifeState.ALIVE,
     val npcLocationIds: List<Long> = emptyList(),
+    val npcSpeciesId: Long? = null,
+    val speciesType: CreatureType = CreatureType.HUMANOID,
+    // not edited in the form, kept so saving a species leaves what the card's grid set
+    val speciesDamage: Map<DamageType, DamageState> = emptyMap(),
     val reward: String = "",
     val questGiverId: Long? = null,
     val questLocationId: Long? = null,
@@ -50,6 +57,8 @@ internal data class CodexEntryFormFields(
     val party: PartyFormFields = PartyFormFields(),
     // null means the select sheet is closed - see onPlaceFieldOpened
     val placeSelectField: CodexEntryPlaceField? = null,
+    // true while the species select sheet is open
+    val speciesSelectOpen: Boolean = false,
     // null means no "+ New X" quick-add input is open - see onQuickAddOpened
     val quickAddField: CodexEntryChipField? = null,
     val quickAddDraft: String = "",
@@ -64,6 +73,7 @@ internal data class CodexEntryFormFields(
     private fun comparable(baseline: CodexEntryFormFields): CodexEntryFormFields =
         copy(
             placeSelectField = baseline.placeSelectField,
+            speciesSelectOpen = baseline.speciesSelectOpen,
             quickAddField = baseline.quickAddField,
             quickAddDraft = baseline.quickAddDraft,
             photoCrop = baseline.photoCrop,

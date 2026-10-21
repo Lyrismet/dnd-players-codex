@@ -74,6 +74,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_type_location
 import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_type_party
 import dndplayerscodex.shared.generated.resources.codex_entry_type_quest
+import dndplayerscodex.shared.generated.resources.codex_entry_type_species
 import org.jetbrains.compose.resources.stringResource
 
 private val CloseButtonSize = 40.dp
@@ -137,6 +138,7 @@ private fun CodexEntryFormContent(
             EntityKind.NPC -> NpcEntryFields(form, eventSink, density)
             EntityKind.QUEST -> QuestEntryFields(form, eventSink)
             EntityKind.LOCATION -> LocationEntryFields(form, eventSink)
+            EntityKind.SPECIES -> SpeciesEntryFields(form, eventSink)
         }
         Text(
             stringResource(Res.string.codex_entry_required_note),
@@ -348,6 +350,7 @@ private fun CodexEntryTypeSwitch(
         listOf(
             SegmentedTab(EntityKind.PARTY, stringResource(Res.string.codex_entry_type_party)),
             SegmentedTab(EntityKind.NPC, stringResource(Res.string.codex_entry_type_npc)),
+            SegmentedTab(EntityKind.SPECIES, stringResource(Res.string.codex_entry_type_species)),
             SegmentedTab(EntityKind.QUEST, stringResource(Res.string.codex_entry_type_quest)),
             SegmentedTab(EntityKind.LOCATION, stringResource(Res.string.codex_entry_type_location)),
         )
@@ -400,6 +403,15 @@ internal fun CodexEntryFormSheet(
             onChosen = { eventSink(CodexEntryFormEvent.EntryPlacesChosen(it)) },
             onCreated = { name, checked -> eventSink(CodexEntryFormEvent.EntryPlaceCreated(name, checked)) },
             onDismiss = { eventSink(CodexEntryFormEvent.EntryPlaceSelectClosed) },
+        )
+    }
+    form.speciesSelect?.let { select ->
+        SpeciesSelectSheet(
+            select = select,
+            onChosen = { eventSink(CodexEntryFormEvent.EntrySpeciesChosen(it)) },
+            onSrdChosen = { eventSink(CodexEntryFormEvent.EntrySpeciesSrdChosen(it.name, it.type)) },
+            onCreated = { eventSink(CodexEntryFormEvent.EntrySpeciesCreated(it)) },
+            onDismiss = { eventSink(CodexEntryFormEvent.EntrySpeciesSelectClosed) },
         )
     }
     if (form.isDiscardPromptVisible) CodexEntryDiscardDialog(eventSink)

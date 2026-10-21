@@ -11,6 +11,8 @@ import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroupBy
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
@@ -36,9 +38,16 @@ enum class CodexTab {
     LOCATION,
 }
 
+/** what the npc tab lists - the named characters or the kinds of creature */
+enum class NpcListMode {
+    NAMED,
+    SPECIES,
+}
+
 data class CodexTabCounts(
     val party: Int = 0,
     val npc: Int = 0,
+    val species: Int = 0,
     val quest: Int = 0,
     val location: Int = 0,
 )
@@ -54,6 +63,17 @@ data class NpcCodexItem(
     val statusLabel: String,
     val statusColor: StatusColor,
     val subtitle: String,
+)
+
+data class SpeciesCodexItem(
+    val id: Long,
+    val name: String,
+    val creatureTypeLabel: String,
+    val photo: Photo?,
+    // the types worth a shield, strongest first
+    val shields: List<Pair<DamageType, DamageState>>,
+    // 0 when no note mentions the species yet
+    val seenInSessions: Int,
 )
 
 /** the tag a dead npc's card shows next to its name - null for a living npc */
@@ -167,6 +187,8 @@ data class CodexState(
     val tabCounts: CodexTabCounts = CodexTabCounts(),
     val party: List<PartyCodexItem> = emptyList(),
     val npcs: List<CodexGroup<NpcCodexItem>> = emptyList(),
+    val npcMode: NpcListMode = NpcListMode.NAMED,
+    val species: List<SpeciesCodexItem> = emptyList(),
     val quests: List<CodexGroup<QuestCodexItem>> = emptyList(),
     val locations: List<CodexGroup<LocationCodexItem>> = emptyList(),
     val groupBy: CodexGroupBy? = null,
@@ -202,6 +224,10 @@ data class CodexDeleteWarning(
 sealed interface CodexEvent : CircuitUiEvent {
     data class TabSelected(
         val tab: CodexTab,
+    ) : CodexEvent
+
+    data class NpcModeSelected(
+        val mode: NpcListMode,
     ) : CodexEvent
 
     data class SearchQueryChanged(

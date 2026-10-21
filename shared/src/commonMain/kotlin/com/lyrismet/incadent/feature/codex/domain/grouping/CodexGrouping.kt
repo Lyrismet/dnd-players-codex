@@ -5,6 +5,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 
 /** one titled section of a list - a null [title] is the ungrouped "as a list" view */
 data class CodexGroup<T>(
@@ -38,17 +39,16 @@ data class CodexGroupLabels(
     val questStatus: Map<QuestStatus, String>,
 )
 
+@Suppress("LongParameterList")
 fun groupNpcs(
     npcs: List<Npc>,
     locations: List<Location>,
     by: NpcGroupBy,
     labels: CodexGroupLabels,
     regions: CodexRegions = CodexRegions(npcs, locations),
+    species: List<Species> = emptyList(),
 ): List<CodexGroup<CodexGroupItem<Npc>>> {
-    val rows =
-        sortNpcs(npcs).map { npc ->
-            CodexGroupItem(npc, subtitle = if (by == NpcGroupBy.REGION) placeLine(npc, locations) else null)
-        }
+    val rows = sortNpcs(npcs).map { npc -> CodexGroupItem(npc, subtitle = npcSubtitle(npc, locations, species)) }
     return when (by) {
         NpcGroupBy.NONE -> rows.asUngrouped()
         // an npc met at several places shows up under each of their regions

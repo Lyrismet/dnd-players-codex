@@ -104,6 +104,7 @@ fun EntitySummarySheetContent(
                     is EntitySummaryItem.LocationSummary -> LocationSummaryBody(item, actions, onClose)
                     is EntitySummaryItem.QuestSummary -> QuestSummaryBody(item, actions, onClose)
                     is EntitySummaryItem.PartySummary -> PartySummaryBody(item, actions, onClose)
+                    is EntitySummaryItem.SpeciesSummary -> SpeciesSummaryBody(item, actions, onClose)
                 }
             }
         }
