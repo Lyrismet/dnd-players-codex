@@ -2,8 +2,7 @@ package com.lyrismet.incadent.feature.mention.domain
 
 import com.lyrismet.incadent.domain.model.EntityKind
 
-// "@[Name|n:12]" or "@[Name|s:7|4]" - the name shows once its record is gone, the kind letter and id decide who it is,
-// the optional last number is how many
+// the name shows once its record is gone, the kind letter and id decide who it is, the optional last number is how many
 internal val TOKEN_REGEX = Regex("@\\[([^\\[\\]|]*)\\|([npqls]):(\\d+)(?:\\|(\\d+))?]")
 
 private fun EntityKind.code(): Char =
@@ -32,9 +31,13 @@ private const val QUANTITY_GROUP = 4
 internal fun MatchResult.toRef() =
     MentionRef(groupValues[KIND_GROUP].single().toMentionType(), groupValues[ID_GROUP].toLong())
 
-/** how many a species token stands for, 1 when the token carries no number */
+/** how many a species token stands for, 1 for any other kind or when the token carries no number */
 internal fun MatchResult.quantity(): Int =
-    groupValues[QUANTITY_GROUP].toIntOrNull()?.coerceIn(1, MAX_MENTION_QUANTITY) ?: 1
+    if (toRef().type != EntityKind.SPECIES) {
+        1
+    } else {
+        groupValues[QUANTITY_GROUP].toIntOrNull()?.coerceIn(1, MAX_MENTION_QUANTITY) ?: 1
+    }
 
 // no spaces inside a token, so a note's words still split cleanly when phrases are cut out of it
 private val TOKEN_NAME_BREAKS = Regex("[\\[\\]|\\s]+")
@@ -47,7 +50,14 @@ fun mentionToken(
     name: String,
     quantity: Int = 1,
 ): String {
-    val count = if (quantity > 1) "|${quantity.coerceAtMost(MAX_MENTION_QUANTITY)}" else ""
+    val count =
+        if (ref.type == EntityKind.SPECIES &&
+            quantity > 1
+        ) {
+            "|${quantity.coerceAtMost(MAX_MENTION_QUANTITY)}"
+        } else {
+            ""
+        }
     return "@[${name.replace(TOKEN_NAME_BREAKS, "_")}|${ref.type.code()}:${ref.id}$count]"
 }
 
@@ -93,4 +103,4 @@ fun relinkMentionIn(
 fun unlinkMentionIn(
     body: String,
     from: MentionRef,
-): String = TOKEN_REGEX.replace(body) { if (it.toRef() == from) it.tokenName() else it.value }
+): String = TOKEN_REGEX.replace(body) { if (it.toRef() == from) it.tokenName() + it.countSuffix() else it.value }

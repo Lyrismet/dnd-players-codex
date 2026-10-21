@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -162,9 +163,10 @@ internal fun SpeciesCodexCard(
             StatusBadge(text = item.creatureTypeLabel, color = SpeciesMentionColor)
         }
         if (item.shields.isNotEmpty()) {
-            Row(
+            FlowRow(
                 modifier = Modifier.padding(top = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 item.shields.forEach { (type, state) ->
                     AppDamageShield(type.shieldIconPath(), type.shieldColor(), state.toShieldStyle(), width = 22.dp)

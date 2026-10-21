@@ -181,6 +181,10 @@ class CampaignRepositoryImpl(
             npcPlaces[oldId].orEmpty().mapNotNull(placeMap::get).forEach { npcLocationQueries.insert(newId, it) }
             copiedNpcs++
         }
+        // the whole bestiary comes along, not only the species a copied npc points at
+        speciesQueries.selectAll(source) { id, _, _, _, _, _, _ -> id }.executeAsList().forEach {
+            copySpecies(it, targetId, speciesMap)
+        }
         if (transfer.copyTags) queries.copyTags(targetId, source)
         if (transfer.copyPhrases) queries.copyPhrases(targetId, source)
         return placeMap.size + copiedNpcs

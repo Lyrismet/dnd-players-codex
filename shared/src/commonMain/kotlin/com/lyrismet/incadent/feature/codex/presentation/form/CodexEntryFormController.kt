@@ -66,6 +66,8 @@ import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
 import dndplayerscodex.shared.generated.resources.codex_species_group_own
 import dndplayerscodex.shared.generated.resources.codex_species_group_srd
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -76,6 +78,7 @@ class CodexEntryFormController private constructor(
     private val fields: MutableState<CodexEntryFormFields?>,
     private val baseline: MutableState<CodexEntryFormFields?>,
     private val discardPrompt: MutableState<Boolean>,
+    private val pendingSpeciesState: MutableState<Deferred<Long>?>,
     private val npcRepository: NpcRepository,
     private val partyRepository: PartyRepository,
     private val questRepository: QuestRepository,
@@ -87,6 +90,13 @@ class CodexEntryFormController private constructor(
 ) {
     private val persister =
         CodexEntryPersister(npcRepository, partyRepository, questRepository, locationRepository, speciesRepository)
+
+    // the species a select sheet just created, still being written when the form is saved
+    private var pendingSpecies: Deferred<Long>?
+        get() = pendingSpeciesState.value
+        set(value) {
+            pendingSpeciesState.value = value
+        }
 
     companion object {
         @Composable
@@ -102,10 +112,12 @@ class CodexEntryFormController private constructor(
             val fields = rememberRetained { mutableStateOf<CodexEntryFormFields?>(null) }
             val baseline = rememberRetained { mutableStateOf<CodexEntryFormFields?>(null) }
             val discardPrompt = rememberRetained { mutableStateOf(false) }
+            val pendingSpecies = rememberRetained { mutableStateOf<Deferred<Long>?>(null) }
             return CodexEntryFormController(
                 fields,
                 baseline,
                 discardPrompt,
+                pendingSpecies,
                 npcRepository,
                 partyRepository,
                 questRepository,
@@ -364,6 +376,7 @@ class CodexEntryFormController private constructor(
     // an empty list clears the link
     fun onSpeciesChosen(ids: List<Long>) {
         val current = fields.value ?: return
+        pendingSpecies = null
         fields.value = current.copy(npcSpeciesId = ids.firstOrNull(), speciesSelectOpen = false)
     }
 
@@ -376,9 +389,14 @@ class CodexEntryFormController private constructor(
         val trimmed = name.trim().capitalizeFirst()
         if (trimmed.isBlank()) return
         fields.value = current.copy(speciesSelectOpen = false)
+        val created = scope.async { speciesRepository.upsert(quickSpecies(trimmed).copy(creatureType = type)) }
+        pendingSpecies = created
         scope.launch {
-            val id = speciesRepository.upsert(quickSpecies(trimmed).copy(creatureType = type))
-            fields.value = fields.value?.copy(npcSpeciesId = id)
+            val id = created.await()
+            if (pendingSpecies === created) {
+                pendingSpecies = null
+                fields.value = fields.value?.copy(npcSpeciesId = id)
+            }
         }
     }
 
@@ -472,6 +490,7 @@ class CodexEntryFormController private constructor(
     }
 
     fun onClosed() {
+        pendingSpecies = null
         fields.value = null
         baseline.value = null
         discardPrompt.value = false
@@ -496,8 +515,9 @@ class CodexEntryFormController private constructor(
         discardPrompt.value = false
         val current = fields.value ?: return
         if (current.name.isBlank()) return
+        val created = pendingSpecies
         onClosed()
-        scope.launch { persister.save(current) }
+        scope.launch { persister.save(created?.let { current.copy(npcSpeciesId = it.await()) } ?: current) }
     }
 
     @Composable

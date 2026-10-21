@@ -48,7 +48,10 @@ fun groupNpcs(
     regions: CodexRegions = CodexRegions(npcs, locations),
     species: List<Species> = emptyList(),
 ): List<CodexGroup<CodexGroupItem<Npc>>> {
-    val rows = sortNpcs(npcs).map { npc -> CodexGroupItem(npc, subtitle = npcSubtitle(npc, locations, species)) }
+    val rows =
+        sortNpcs(npcs).map { npc ->
+            CodexGroupItem(npc, subtitle = npcSubtitle(npc, locations, species, withPlaces = by == NpcGroupBy.REGION))
+        }
     return when (by) {
         NpcGroupBy.NONE -> rows.asUngrouped()
         // an npc met at several places shows up under each of their regions

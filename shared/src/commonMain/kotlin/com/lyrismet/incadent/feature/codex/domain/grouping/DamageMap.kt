@@ -14,11 +14,11 @@ fun Map<DamageType, DamageState>.with(
     state: DamageState,
 ): Map<DamageType, DamageState> = if (state == DamageState.UNKNOWN) this - type else this + (type to state)
 
-/** the types worth a shield: vulnerability, then immunity, then resistance, each in the catalog order */
+/** the types worth a shield, vulnerability first then immunity then resistance, each in the catalog order */
 fun Map<DamageType, DamageState>.shields(): List<Pair<DamageType, DamageState>> =
     SHIELD_ORDER.flatMap { state -> DamageType.entries.filter { stateOf(it) == state }.map { it to state } }
 
-/** "FIRE:IMMUNITY,COLD:RESISTANCE" - what a column stores */
+/** the damage map as the text a column stores, one type and state pair per entry */
 fun Map<DamageType, DamageState>.encodeDamage(): String =
     DamageType.entries
         .filter { stateOf(it) != DamageState.UNKNOWN }

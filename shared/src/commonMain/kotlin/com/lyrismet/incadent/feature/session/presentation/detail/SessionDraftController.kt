@@ -6,10 +6,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
+import com.lyrismet.incadent.feature.mention.domain.displayMentionText
 import com.lyrismet.incadent.feature.mention.domain.insertMention
 import com.lyrismet.incadent.feature.mention.domain.linkTypedMentions
 import com.lyrismet.incadent.feature.mention.domain.markUnlinkedMentions
-import com.lyrismet.incadent.feature.mention.domain.plainMentionText
 import com.lyrismet.incadent.feature.mention.domain.typedQuantityEdit
 import com.lyrismet.incadent.feature.mention.domain.unmarkUnlinkedMentions
 import com.lyrismet.incadent.feature.phrases.domain.insertPhrase
@@ -142,7 +142,7 @@ internal class SessionDraftController(
         if (editingEntryId.value == id) cancelEdit()
         scope.launch {
             entryRepository.delete(id)
-            val plain = plainMentionText(entry.body)
+            val plain = displayMentionText(entry.body)
             val preview = plain.take(ENTRY_PREVIEW_LENGTH)
             val suffix = if (plain.length > ENTRY_PREVIEW_LENGTH) "…" else ""
             undoController.show(undoTitle, "${entry.createdAt.toDisplayTime()} · $preview$suffix") {

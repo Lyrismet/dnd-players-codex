@@ -22,7 +22,7 @@ import dndplayerscodex.shared.generated.resources.codex_srd_attribution
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_damage_title
 import org.jetbrains.compose.resources.stringResource
 
-/** the species form: name with SRD hints, creature type, photo and notes */
+/** the species form with name and SRD hints, creature type, photo and notes */
 @Composable
 internal fun SpeciesEntryFields(
     form: CodexEntryFormState,

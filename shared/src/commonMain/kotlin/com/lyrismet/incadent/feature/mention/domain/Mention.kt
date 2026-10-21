@@ -101,13 +101,14 @@ class MentionIndex(
         fallbackName: String,
     ): MentionEntity = byRef[ref] ?: MentionEntity.DeletedMention(ref.id, fallbackName, ref.type)
 
-    // names only one record carries, longest first - a shared name cannot be told apart in plain text
+    // names only one record carries, longest first - a species never makes another record's name ambiguous
     internal val uniqueByName: List<MentionEntity> by lazy {
         entities
             .groupBy { it.name.foldPerChar() }
             .values
-            .mapNotNull { it.singleOrNull() }
-            .sortedByDescending { it.name.length }
+            .mapNotNull { group ->
+                group.singleOrNull() ?: group.singleOrNull { it !is MentionEntity.SpeciesMention }
+            }.sortedByDescending { it.name.length }
     }
 
     private val foldedNames: Set<String> by lazy { entities.mapTo(mutableSetOf()) { it.name.foldPerChar() } }

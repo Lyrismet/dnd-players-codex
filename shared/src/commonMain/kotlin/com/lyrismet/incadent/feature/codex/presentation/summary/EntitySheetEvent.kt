@@ -102,6 +102,7 @@ fun EntitySheetInteractions.onEvent(
 fun entitySheetActions(
     partyPresence: Boolean = false,
     speciesDamageEdit: Boolean = false,
+    speciesNoteEdit: Boolean = true,
     onSpeciesEditClicked: ((EntityRef.Species) -> Unit)? = null,
     onEditClicked: ((EntityRef) -> Unit)? = null,
     onDeleteClicked: ((EntityRef) -> Unit)? = null,
@@ -130,7 +131,18 @@ fun entitySheetActions(
             } else {
                 null
             },
-        onSpeciesNoteQuantityStep = { send(EntitySheetEvent.SpeciesNoteQuantityStepped(it)) },
+        onSpeciesNoteQuantityStep =
+            if (speciesNoteEdit) {
+                (
+                    {
+                        send(
+                            EntitySheetEvent.SpeciesNoteQuantityStepped(it),
+                        )
+                    }
+                )
+            } else {
+                null
+            },
         statusesReadOnly = statusesReadOnly,
         quickEdit = quickEdit,
     )

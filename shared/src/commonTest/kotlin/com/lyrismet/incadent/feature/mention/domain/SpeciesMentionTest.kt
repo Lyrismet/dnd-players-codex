@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.feature.mention.domain
 
 import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
+import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -69,6 +71,32 @@ class SpeciesMentionTest {
     @Test
     fun `a whole species token with a number survives the broken token cleanup`() {
         assertEquals("a @[Гоблин|s:7|4] b", withoutBrokenTokens("a @[Гоблин|s:7|4] b"))
+    }
+
+    @Test
+    fun `a species sharing a name does not hide the npc from auto matching`() {
+        val npc = MentionEntity.NpcMention(1, "Гоблин", NpcStatus.NEUTRAL, NpcLifeState.ALIVE)
+        val shared = MentionIndex(listOf(npc, goblin))
+        assertEquals(listOf<MentionEntity>(npc), shared.uniqueByName)
+    }
+
+    @Test
+    fun `a count is dropped when a species token is relinked to another kind`() {
+        val npc = MentionEntity.NpcMention(1, "Гоблин", NpcStatus.NEUTRAL, NpcLifeState.ALIVE)
+        assertEquals("@[Гоблин|n:1]", relinkMentionIn("@[Гоблин|s:7|4]", goblin.ref, npc))
+        assertEquals("@[Гоблин|s:7|4]", relinkMentionIn("@[Гоблин|s:7|4]", goblin.ref, goblin))
+    }
+
+    @Test
+    fun `a count on a token that is not a species is ignored`() {
+        val segment = parseMentions("@[Рагнар|n:1|9]", MentionIndex.EMPTY).single()
+        assertEquals(1, (segment as MentionSegment.Mention).quantity)
+    }
+
+    @Test
+    fun `display text keeps the count and plain text drops it`() {
+        assertEquals("Встретили Гоблин ×4 тут", displayMentionText("Встретили @[Гоблин|s:7|4] тут"))
+        assertEquals("Встретили Гоблин тут", plainMentionText("Встретили @[Гоблин|s:7|4] тут"))
     }
 }
 

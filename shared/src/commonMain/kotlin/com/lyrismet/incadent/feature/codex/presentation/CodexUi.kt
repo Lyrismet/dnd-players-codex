@@ -242,7 +242,7 @@ private fun codexTabItems(state: CodexState): List<SegmentedTab<CodexTab>> =
         SegmentedTab(
             CodexTab.ALL,
             stringResource(Res.string.codex_filter_all),
-            state.tabCounts.party + state.tabCounts.npc + state.tabCounts.quest + state.tabCounts.location,
+            with(state.tabCounts) { party + npc + species + quest + location },
         ),
         SegmentedTab(CodexTab.PARTY, stringResource(Res.string.codex_tab_party), state.tabCounts.party),
         SegmentedTab(CodexTab.NPC, stringResource(Res.string.codex_tab_npc), state.tabCounts.npc),

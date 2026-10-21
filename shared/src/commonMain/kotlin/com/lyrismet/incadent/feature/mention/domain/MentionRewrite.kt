@@ -49,11 +49,10 @@ fun relinkMentionIn(
     toName: String,
 ): String =
     TOKEN_REGEX.replace(body) {
-        if (it.toRef() ==
-            from
-        ) {
-            mentionToken(toRef, toName, it.quantity())
-        } else {
-            it.value
-        }
+        if (it.toRef() == from) mentionToken(toRef, toName, it.quantity()) else it.value
     }
+
+/** the note text with every species count kept as "name ×N" - for what the user reads back, not for keyword rules */
+fun displayMentionText(body: String): String = TOKEN_REGEX.replace(body) { it.tokenName() + it.countSuffix() }
+
+internal fun MatchResult.countSuffix(): String = quantity().let { if (it > 1) " ×$it" else "" }

@@ -46,8 +46,6 @@ object SrdCatalog {
     val species: List<SrdSpecies> =
         listOf(
             SrdSpecies("Аболет", "Aboleth", CreatureType.ABERRATION),
-            SrdSpecies("Бехолдер", "Beholder", CreatureType.ABERRATION),
-            SrdSpecies("Иллитид", "Mind Flayer", CreatureType.ABERRATION),
             SrdSpecies("Летучая мышь", "Bat", CreatureType.BEAST),
             SrdSpecies("Чёрный медведь", "Black Bear", CreatureType.BEAST),
             SrdSpecies("Бурый медведь", "Brown Bear", CreatureType.BEAST),
@@ -75,7 +73,6 @@ object SrdCatalog {
             SrdSpecies("Земляной элементаль", "Earth Elemental", CreatureType.ELEMENTAL),
             SrdSpecies("Водный элементаль", "Water Elemental", CreatureType.ELEMENTAL),
             SrdSpecies("Горгулья", "Gargoyle", CreatureType.ELEMENTAL),
-            SrdSpecies("Пикси", "Pixie", CreatureType.FEY),
             SrdSpecies("Спрайт", "Sprite", CreatureType.FEY),
             SrdSpecies("Дриада", "Dryad", CreatureType.FEY),
             SrdSpecies("Сатир", "Satyr", CreatureType.FEY),

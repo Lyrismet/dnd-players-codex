@@ -46,6 +46,12 @@ class NpcRepositoryImpl(
     override suspend fun upsert(entity: Npc): Long =
         withContext(Dispatchers.Default) {
             database.transactionWithResult {
+                // a species deleted since the npc was read would break the foreign key, so the link is dropped
+                val speciesId =
+                    entity.speciesId?.takeIf {
+                        database.speciesQueries.selectById(it).executeAsOneOrNull() !=
+                            null
+                    }
                 val stored =
                     if (entity.id ==
                         0L
@@ -63,13 +69,13 @@ class NpcRepositoryImpl(
                             entity.race,
                             entity.lifeState,
                             entity.nicknames.joinNicknames(),
-                            entity.speciesId,
+                            speciesId,
                             entity.id,
                         )
                         writePortrait(entity.id, entity.portrait, stored.portrait)
                         entity.id
                     } else {
-                        insert(entity)
+                        insert(entity.copy(speciesId = speciesId))
                     }
                 writeLocations(id, entity.locationIds)
                 id

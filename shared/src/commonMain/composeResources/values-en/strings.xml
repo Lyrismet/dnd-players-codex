@@ -567,6 +567,9 @@
     <string name="codex_entry_placeholder_species_notes">Habits, weaknesses, how they were beaten…</string>
     <string name="codex_entry_label_species">Race / species</string>
     <string name="codex_species_pick_hint">Pick a race or species</string>
+    <string name="codex_species_select_empty">Nothing found</string>
+    <string name="codex_species_select_multi_hint">several allowed</string>
+    <string name="codex_species_select_done">Done · %1$d</string>
     <string name="codex_species_select_search">Find or create a species</string>
     <string name="codex_species_group_own">Your species</string>
     <string name="codex_species_group_srd">From SRD 5.1</string>

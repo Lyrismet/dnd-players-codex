@@ -591,6 +591,9 @@
     <string name="codex_entry_placeholder_species_notes">Повадки, слабости, как с ними справились…</string>
     <string name="codex_entry_label_species">Раса / вид</string>
     <string name="codex_species_pick_hint">Выберите расу или вид</string>
+    <string name="codex_species_select_empty">Ничего не найдено</string>
+    <string name="codex_species_select_multi_hint">можно несколько</string>
+    <string name="codex_species_select_done">Готово · %1$d</string>
     <string name="codex_species_select_search">Найти или создать вид</string>
     <string name="codex_species_group_own">Ваши виды</string>
     <string name="codex_species_group_srd">Из SRD 5.1</string>

@@ -24,10 +24,7 @@ fun pendingQuantityName(
         ?.get(1)
         ?.replace('_', ' ')
 
-/**
- * turns the digit typed behind a species token into its count. The first digit follows the space the picker left,
- * the next ones follow the token, so "12" reads as twelve. Null when the change is not such a digit.
- */
+/** turns the digit typed behind a species token into its count, null when the change is not such a digit */
 fun typedQuantityEdit(
     previous: String,
     previousCaret: Int,

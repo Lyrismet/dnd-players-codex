@@ -66,7 +66,7 @@ fun linkAutoMentions(
         .joinToString("") { segment ->
             when (segment) {
                 is MentionSegment.Text -> segment.text
-                is MentionSegment.Mention -> segment.entity.token()
+                is MentionSegment.Mention -> mentionToken(segment.entity.ref, segment.entity.name, segment.quantity)
                 is MentionSegment.AutoMatch ->
                     if (only == null || only.dedupeKey() == segment.entity.dedupeKey()) {
                         segment.entity.token()

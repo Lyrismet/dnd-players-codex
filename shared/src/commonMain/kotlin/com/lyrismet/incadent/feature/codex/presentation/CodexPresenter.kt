@@ -121,7 +121,9 @@ private class CodexFields(
     val pendingDelete: MutableState<EntityRef?>,
     // which list the npc tab shows
     val npcMode: MutableState<NpcListMode>,
-)
+) {
+    val showsSpecies: Boolean get() = activeTab.value == CodexTab.NPC && npcMode.value == NpcListMode.SPECIES
+}
 
 /** result of applying the text search query to every list */
 internal data class CodexSearchResults(
@@ -215,7 +217,7 @@ class CodexPresenter(
                 party = party,
                 grouped = listing.grouped,
                 // a hidden tab stays composed in the background, so it must not burn its one-time hint unseen
-                isBlocked = formState != null || selectedEntity != null || !isTabSelected,
+                isBlocked = formState != null || selectedEntity != null || !isTabSelected || fields.showsSpecies,
             )
 
         return buildCodexState(
@@ -297,18 +299,20 @@ class CodexPresenter(
                 labels.grouped,
                 fields.collapsedPlaceIds.value,
             )
+        val speciesMatches = records.species.count { it.matchesQuery(fields.searchQuery.value.trim()) }
         val emptyKind =
             codexEmptyKind(
                 tab,
                 fields.searchQuery.value,
-                own.hasEntriesFor(tab, party, records.species.any { it.matchesQuery(fields.searchQuery.value.trim()) }),
+                if (fields.showsSpecies) speciesMatches > 0 else own.hasEntriesFor(tab, party, speciesMatches > 0),
                 otherSectionMatches(
                     tab,
                     search.searchedParties.size,
                     search.searchedNpcs.size,
                     search.searchedQuests.size,
                     search.searchedLocations.size,
-                    records.species.count { it.matchesQuery(fields.searchQuery.value.trim()) },
+                    speciesMatches,
+                    fields.npcMode.value,
                 ),
             )
         val showsOtherSections = emptyKind is CodexEmptyKind.NoMatch && emptyKind.otherMatches > 0
@@ -431,7 +435,12 @@ class CodexPresenter(
             party = party,
             npcs = grouped.npcs,
             npcMode = fields.npcMode.value,
-            species = speciesItems(records, fields.searchQuery.value.trim()),
+            species =
+                speciesItems(
+                    records,
+                    fields.searchQuery.value.trim(),
+                    isShown = activeTab == CodexTab.ALL || fields.showsSpecies,
+                ),
             quests = grouped.quests,
             locations = grouped.locations,
             groupBy = grouped.groupBy,
@@ -470,10 +479,13 @@ class CodexPresenter(
     private fun speciesItems(
         records: CodexRecords,
         query: String,
+        isShown: Boolean,
     ): List<SpeciesCodexItem> {
         val typeLabels = creatureTypeLabels()
         val seen =
-            remember(records.entries, records.mentionIndex) {
+            remember(records.entries, records.mentionIndex, isShown) {
+                // parsing every note is only worth it while the species rows can be seen
+                if (!isShown) return@remember emptyMap()
                 val bodies = records.entries.map { MentionBody(it.sessionNoteId, it.body) }
                 mentionSessionCounts(bodies, records.mentionIndex)
                     .filterKeys { it.type == EntityKind.SPECIES }
@@ -568,8 +580,7 @@ class CodexPresenter(
             CodexEvent.UndoClicked -> undoController.undo()
             CodexEvent.UndoFollowUpClicked -> undoController.followUp()
             CodexEvent.AddEntryClicked -> {
-                val inSpecies = fields.activeTab.value == CodexTab.NPC && fields.npcMode.value == NpcListMode.SPECIES
-                val type = if (inSpecies) EntityKind.SPECIES else fields.activeTab.value.toEntryType()
+                val type = if (fields.showsSpecies) EntityKind.SPECIES else fields.activeTab.value.toEntryType()
                 formController.onAddEntryClicked(type)
             }
             is CodexEvent.EmptyActionClicked -> formController.onAddEntryClicked(event.entryType, event.name)

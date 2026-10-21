@@ -50,12 +50,12 @@ private val VulnerableRim = Color(0xFFE5534B)
 private val UnknownRim = AppPalette.BorderHover
 private val UnknownIcon = AppPalette.TextSecondary
 
+// the icon paths are a fixed set, so each is parsed once for every shield that draws it
+private val parsedPaths = mutableMapOf<String, Path>()
+
 private fun parse(data: String): Path = PathParser().parsePathString(data).toPath()
 
-/**
- * a damage shield: a heater shield with [iconPath] (an SVG path on a 24 dp grid) inside, the rim telling the [style].
- * [count] draws a number to the right, [crackColor] is the shield's backdrop the vulnerable crack is cut out with.
- */
+/** a heater shield with [iconPath] inside, the rim telling the [style] and [count] drawn to the right */
 @Composable
 fun AppDamageShield(
     iconPath: String,
@@ -66,7 +66,8 @@ fun AppDamageShield(
     count: Int? = null,
     crackColor: Color = AppPalette.Surface,
 ) {
-    val icon = remember(iconPath) { if (iconPath.isBlank()) null else parse(iconPath) }
+    val icon =
+        remember(iconPath) { if (iconPath.isBlank()) null else parsedPaths.getOrPut(iconPath) { parse(iconPath) } }
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,

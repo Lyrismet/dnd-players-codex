@@ -191,7 +191,10 @@ private fun SessionDetailEntitySheet(
     AppBottomSheet(onDismissRequest = { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) }) {
         EntitySummarySheetContent(
             item = entity,
-            actions = entitySheetActions { state.eventSink(SessionDetailEvent.EntitySheet(it)) },
+            actions =
+                entitySheetActions(
+                    speciesNoteEdit = !state.readOnly,
+                ) { state.eventSink(SessionDetailEvent.EntitySheet(it)) },
             onClose = { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
         )
     }

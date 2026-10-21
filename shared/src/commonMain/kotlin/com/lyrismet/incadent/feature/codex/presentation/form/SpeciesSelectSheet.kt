@@ -7,11 +7,11 @@ import com.lyrismet.incadent.core.designsystem.component.AppSelectTexts
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_label_species
-import dndplayerscodex.shared.generated.resources.codex_place_select_done
-import dndplayerscodex.shared.generated.resources.codex_place_select_empty
-import dndplayerscodex.shared.generated.resources.codex_place_select_multi_hint
 import dndplayerscodex.shared.generated.resources.codex_species_select_clear
 import dndplayerscodex.shared.generated.resources.codex_species_select_create
+import dndplayerscodex.shared.generated.resources.codex_species_select_done
+import dndplayerscodex.shared.generated.resources.codex_species_select_empty
+import dndplayerscodex.shared.generated.resources.codex_species_select_multi_hint
 import dndplayerscodex.shared.generated.resources.codex_species_select_search
 import org.jetbrains.compose.resources.stringResource
 
@@ -28,10 +28,10 @@ internal fun SpeciesSelectSheet(
         AppSelectTexts(
             title = stringResource(Res.string.codex_entry_label_species),
             searchPlaceholder = stringResource(Res.string.codex_species_select_search),
-            emptyText = stringResource(Res.string.codex_place_select_empty),
-            multiHint = stringResource(Res.string.codex_place_select_multi_hint),
+            emptyText = stringResource(Res.string.codex_species_select_empty),
+            multiHint = stringResource(Res.string.codex_species_select_multi_hint),
             clearLabel = stringResource(Res.string.codex_species_select_clear),
-            doneLabel = { count -> stringResource(Res.string.codex_place_select_done, count) },
+            doneLabel = { count -> stringResource(Res.string.codex_species_select_done, count) },
             createLabel = { query -> stringResource(Res.string.codex_species_select_create, query) },
         )
     AppBottomSheet(onDismissRequest = onDismiss) {

@@ -41,4 +41,22 @@ class CampaignCopySpeciesTest {
             assertEquals(null, links["Одиночка"])
             assertNotNull(links["Крик"])
         }
+
+    @Test
+    fun `species no npc points at are copied too`() =
+        runTest {
+            species.upsert(quickSpecies("Волк"))
+            species.upsert(quickSpecies("Гоблин"))
+
+            campaigns.create("Копия", CampaignTransfer(TestDatabase.FIRST_CAMPAIGN))
+
+            assertEquals(
+                listOf("Волк", "Гоблин"),
+                species
+                    .observeAll()
+                    .first()
+                    .map { it.name }
+                    .sorted(),
+            )
+        }
 }
