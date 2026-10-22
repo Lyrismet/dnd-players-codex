@@ -122,6 +122,7 @@ internal fun AppTabHost(
     swipeHintReplayController: SwipeHintReplayController,
     tabs: AppTabsState,
     onExit: () -> Unit,
+    combatRound: Int?,
 ) {
     val pendingUndo by undoController.current.collectAsState()
     val selectedTab = tabs.selectedTab
@@ -170,7 +171,7 @@ internal fun AppTabHost(
         }
         BottomTabBar(
             modifier = Modifier.onSizeChanged { tabBarHeightPx = it.height },
-            tabs = appTabBarItems(),
+            tabs = appTabBarItems(combatRound),
             selectedIndex = tabs.selectedTabIndex.value,
             onTabSelected = { index -> onTabTapped(tabs, index) },
         )
@@ -255,10 +256,13 @@ private fun TabBackstackHost(
 }
 
 @Composable
-private fun appTabBarItems(): List<BottomTabBarItem> =
+private fun appTabBarItems(combatRound: Int?): List<BottomTabBarItem> =
     listOf(
         BottomTabBarItem(stringResource(Res.string.bottom_tab_sessions)) { tint -> SessionsTabIcon(tint) },
         BottomTabBarItem(stringResource(Res.string.bottom_tab_codex)) { tint -> CodexTabIcon(tint) },
-        BottomTabBarItem(stringResource(Res.string.bottom_tab_combat)) { tint -> CombatTabIcon(tint) },
+        BottomTabBarItem(
+            stringResource(Res.string.bottom_tab_combat),
+            combatRound?.toString(),
+        ) { tint -> CombatTabIcon(tint) },
         BottomTabBarItem(stringResource(Res.string.bottom_tab_settings)) { tint -> SettingsTabIcon(tint) },
     )

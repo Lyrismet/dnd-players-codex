@@ -10,13 +10,11 @@ data class EnemyChip(
     val several: Boolean,
 )
 
-private val ROMAN_SUFFIX = Regex("\\s+[IVXLC]+$")
-
 /** the enemies of a combat grouped by name without the autonumber, in the order they first appear */
 fun List<Combatant>.enemyChips(): List<EnemyChip> {
     val groups = linkedMapOf<String, Pair<Int, Boolean>>()
     filter { it.side == CombatSide.ENEMY }.forEach { enemy ->
-        val base = enemy.name.replace(ROMAN_SUFFIX, "")
+        val base = enemy.name.baseName()
         val (count, several) = groups[base] ?: (0 to false)
         groups[base] = (count + 1) to (several || base != enemy.name || count >= 1)
     }

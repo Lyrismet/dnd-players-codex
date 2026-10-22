@@ -3,8 +3,8 @@ package com.lyrismet.incadent.feature.combat.domain.repository
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
-import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDateTime
 
@@ -31,22 +31,50 @@ interface CombatRepository {
         event: CombatEvent,
     ): Long
 
-    suspend fun removeEvent(eventId: Long)
+    suspend fun removeCombatant(combatantId: Long)
 
-    suspend fun setState(
+    suspend fun setTempHp(
         combatantId: Long,
-        state: CombatState,
+        tempHp: Int,
     )
 
-    suspend fun setDeathSaves(
+    suspend fun renameCombatant(
         combatantId: Long,
-        successes: Int,
-        failures: Int,
+        name: String,
     )
 
-    suspend fun setRound(
+    /** the preparation is over, the fight starts at [startedAt] with the first participant to move */
+    suspend fun start(
+        combatId: Long,
+        startedAt: LocalDateTime,
+    )
+
+    suspend fun setTurn(
         combatId: Long,
         round: Int,
+        turn: Int,
+    )
+
+    /** writes every field a fight can change on [combatant], the sides and the sources stay as they were */
+    suspend fun updateCombatant(combatant: Combatant)
+
+    suspend fun setTurnOrder(
+        combatantId: Long,
+        order: Int?,
+    )
+
+    suspend fun clearTurnOrders(combatId: Long)
+
+    /** a damage term whose resistance was named after the blow gets its new effect and the hit points it really took */
+    suspend fun updateTerm(
+        eventId: Long,
+        amount: Int,
+        effect: HitEffect,
+    )
+
+    suspend fun attachToSession(
+        combatId: Long,
+        sessionNoteId: Long?,
     )
 
     suspend fun finish(

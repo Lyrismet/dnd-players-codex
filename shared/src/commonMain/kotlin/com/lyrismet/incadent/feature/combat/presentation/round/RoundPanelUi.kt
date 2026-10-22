@@ -1,0 +1,425 @@
+package com.lyrismet.incadent.feature.combat.presentation.round
+
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
+import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
+import com.lyrismet.incadent.core.designsystem.component.Dot
+import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
+import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
+import com.lyrismet.incadent.core.designsystem.component.appCard
+import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.combat_calc_mode_damage
+import dndplayerscodex.shared.generated.resources.combat_calc_mode_heal
+import dndplayerscodex.shared.generated.resources.combat_calc_mode_temp
+import dndplayerscodex.shared.generated.resources.combat_panel_capture
+import dndplayerscodex.shared.generated.resources.combat_panel_captured
+import dndplayerscodex.shared.generated.resources.combat_panel_died
+import dndplayerscodex.shared.generated.resources.combat_panel_died_note
+import dndplayerscodex.shared.generated.resources.combat_panel_mark_auto
+import dndplayerscodex.shared.generated.resources.combat_panel_mark_title
+import dndplayerscodex.shared.generated.resources.combat_panel_saves_failure
+import dndplayerscodex.shared.generated.resources.combat_panel_saves_hint
+import dndplayerscodex.shared.generated.resources.combat_panel_saves_success
+import dndplayerscodex.shared.generated.resources.combat_panel_saves_title
+import dndplayerscodex.shared.generated.resources.combat_panel_stand_up
+import dndplayerscodex.shared.generated.resources.combat_panel_tab_actions
+import dndplayerscodex.shared.generated.resources.combat_panel_tab_conditions
+import dndplayerscodex.shared.generated.resources.combat_panel_tab_more
+import dndplayerscodex.shared.generated.resources.combat_panel_undo
+import org.jetbrains.compose.resources.stringResource
+
+private val LineHeight20 = 20.sp
+private const val SAVE_PIPS = 3
+private val PanelShape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+
+@Composable
+internal fun RoundPanelUi(
+    panel: RoundPanel,
+    tab: PanelTab,
+    maxHeight: Dp,
+    send: (CombatRoundEvent) -> Unit,
+) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(max = maxHeight)
+                .appCard(
+                    shape = PanelShape,
+                    background = AppPalette.Surface,
+                    border = AppPalette.Gold.copy(alpha = 0.35f),
+                ).verticalScroll(rememberScrollState())
+                .padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        PanelHeader(panel, send)
+        AppSegmentedTabs(
+            tabs =
+                listOf(
+                    SegmentedTab(PanelTab.ACTIONS, stringResource(Res.string.combat_panel_tab_actions)),
+                    SegmentedTab(PanelTab.CONDITIONS, stringResource(Res.string.combat_panel_tab_conditions)),
+                    SegmentedTab(PanelTab.MORE, stringResource(Res.string.combat_panel_tab_more)),
+                ),
+            selected = tab,
+            onSelected = { send(CombatRoundEvent.TabSelected(it)) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        when (tab) {
+            PanelTab.ACTIONS -> ActionsTab(panel, send)
+            PanelTab.CONDITIONS -> ConditionsTab(panel, send)
+            PanelTab.MORE -> MoreTab(panel, send)
+        }
+    }
+}
+
+@Composable
+private fun PanelHeader(
+    panel: RoundPanel,
+    send: (CombatRoundEvent) -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+        Column(modifier = Modifier.weight(1f)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Dot(size = 6.dp, color = RoundColors.side(panel.side))
+                Text(
+                    text = panel.sideLabel,
+                    color = RoundColors.side(panel.side),
+                    fontSize = AppFontSize.Tiny,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.4.sp,
+                    maxLines = 1,
+                )
+            }
+            Text(
+                text = panel.name,
+                style = MaterialTheme.typography.headlineMedium,
+                color = AppPalette.TextHeading,
+                maxLines = 1,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            panel.hp?.let { hp ->
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    modifier = Modifier.clickable { send(CombatRoundEvent.SetHpOpened) },
+                ) {
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(hp.current, color = AppPalette.TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                        Text(" / ${hp.max}", color = AppPalette.TextTertiary, fontSize = AppFontSize.MediumPlus)
+                    }
+                    Text(
+                        hp.caption,
+                        color = AppPalette.TextTertiary,
+                        fontSize = AppFontSize.Caption,
+                        lineHeight = LineHeight20,
+                    )
+                }
+            }
+            panel.wound?.let { wound ->
+                Text(
+                    wound.label,
+                    color = RoundColors.wound(wound.tone),
+                    fontSize = AppFontSize.Heading,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    wound.source,
+                    color = AppPalette.TextMuted,
+                    fontSize = AppFontSize.Caption,
+                    lineHeight = LineHeight20,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionsTab(
+    panel: RoundPanel,
+    send: (CombatRoundEvent) -> Unit,
+) {
+    panel.marks?.let { MarksBlock(it, panel.sayLine, send) }
+    panel.saves?.let { SavesBlock(it, send) }
+    panel.down?.let { DownButtons(it, send) }
+    if (panel.died) DiedNote(send)
+    CalcButtons(panel, send)
+}
+
+@Composable
+private fun MarksBlock(
+    marks: List<MarkOption>,
+    sayLine: String,
+    send: (CombatRoundEvent) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        FormFieldLabel(stringResource(Res.string.combat_panel_mark_title))
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .appCard(
+                        shape = AppShapes.Field,
+                        background = AppPalette.Background,
+                        border = AppPalette.BorderSubtle,
+                    ).padding(3.dp),
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            marks.forEach { mark ->
+                val tint = RoundColors.wound(mark.tone)
+                Text(
+                    text = mark.label,
+                    color = if (mark.selected) tint else AppPalette.TextSecondary,
+                    fontSize = AppFontSize.Caption,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    textAlign = TextAlign.Center,
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .defaultMinSize(minHeight = 32.dp)
+                            .appCard(
+                                shape = AppShapes.Small,
+                                background = if (mark.selected) AppPalette.SurfacePopover else Color.Transparent,
+                                border = if (mark.selected) tint else null,
+                                onClick = { send(CombatRoundEvent.MarkSelected(mark.state)) },
+                            ).padding(top = 7.dp),
+                )
+            }
+        }
+        Text(sayLine, color = AppPalette.TextDescription, fontSize = AppFontSize.Small, lineHeight = LineHeight20)
+        Text(
+            stringResource(Res.string.combat_panel_mark_auto),
+            color = AppPalette.TextTertiary,
+            fontSize = AppFontSize.Caption,
+            lineHeight = LineHeight20,
+        )
+    }
+}
+
+@Composable
+private fun SavesBlock(
+    saves: SavesState,
+    send: (CombatRoundEvent) -> Unit,
+) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .appCard(
+                    shape = AppShapes.Field,
+                    background = RoundColors.Failure.copy(alpha = 0.07f),
+                    border = RoundColors.Failure.copy(alpha = 0.4f),
+                ).padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(
+                stringResource(Res.string.combat_panel_saves_title),
+                color = AppPalette.MaroonBright,
+                fontSize = AppFontSize.Tiny,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 1.4.sp,
+            )
+            Text(
+                stringResource(Res.string.combat_panel_saves_hint),
+                color = AppPalette.TextSecondary,
+                fontSize = AppFontSize.Caption,
+            )
+        }
+        SaveRow(stringResource(Res.string.combat_panel_saves_success), saves.successes, RoundColors.Success) {
+            send(CombatRoundEvent.SaveToggled(SaveKind.SUCCESS, it))
+        }
+        SaveRow(stringResource(Res.string.combat_panel_saves_failure), saves.failures, RoundColors.Failure) {
+            send(CombatRoundEvent.SaveToggled(SaveKind.FAILURE, it))
+        }
+    }
+}
+
+@Composable
+private fun SaveRow(
+    label: String,
+    filled: Int,
+    color: Color,
+    onToggle: (Int) -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            label,
+            color = AppPalette.TextDescription,
+            fontSize = AppFontSize.Body,
+            modifier = Modifier.size(width = 70.dp, height = 20.dp),
+        )
+        repeat(SAVE_PIPS) { index ->
+            Box(
+                modifier =
+                    Modifier
+                        .size(40.dp)
+                        .border(2.dp, color, CircleShape)
+                        .appCard(
+                            CircleShape,
+                            if (index <
+                                filled
+                            ) {
+                                color
+                            } else {
+                                Color.Transparent
+                            },
+                            null,
+                            onClick = { onToggle(index) },
+                        ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun DownButtons(
+    down: DownState,
+    send: (CombatRoundEvent) -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        if (down.canStandUp) {
+            DownButton(
+                text = stringResource(Res.string.combat_panel_stand_up),
+                color = AppPalette.EmeraldBright,
+                fill = AppPalette.Emerald.copy(alpha = 0.12f),
+                border = AppPalette.Emerald.copy(alpha = 0.5f),
+                modifier = Modifier.weight(1f),
+            ) { send(CombatRoundEvent.StandUp) }
+        }
+        if (down.canCapture) {
+            DownButton(
+                text =
+                    stringResource(
+                        if (down.captured) Res.string.combat_panel_captured else Res.string.combat_panel_capture,
+                    ),
+                color = if (down.captured) AppPalette.Azure else AppPalette.TextDescription,
+                fill = if (down.captured) AppPalette.Azure.copy(alpha = 0.14f) else Color.Transparent,
+                border = if (down.captured) AppPalette.Azure.copy(alpha = 0.5f) else AppPalette.BorderHover,
+                modifier = Modifier.weight(1f),
+            ) { send(CombatRoundEvent.CaptureToggled) }
+        }
+        if (down.canDie) {
+            DownButton(
+                text = stringResource(Res.string.combat_panel_died),
+                color = AppPalette.TextMuted,
+                fill = Color.Transparent,
+                border = AppPalette.BorderHover,
+                modifier = Modifier.weight(1f),
+            ) { send(CombatRoundEvent.DiedToggled) }
+        }
+    }
+}
+
+@Composable
+private fun DownButton(
+    text: String,
+    color: Color,
+    fill: Color,
+    border: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier =
+            modifier
+                .defaultMinSize(minHeight = 48.dp)
+                .appCard(shape = AppShapes.Field, background = fill, border = border, onClick = onClick)
+                .padding(horizontal = 6.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, color = color, fontSize = AppFontSize.Medium, fontWeight = FontWeight.Bold, maxLines = 1)
+    }
+}
+
+@Composable
+private fun DiedNote(send: (CombatRoundEvent) -> Unit) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .appCard(shape = AppShapes.Field, background = AppPalette.Background, border = AppPalette.Border)
+                .padding(start = 12.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            stringResource(Res.string.combat_panel_died_note),
+            color = AppPalette.TextDescription,
+            fontSize = AppFontSize.BodyPlus,
+            lineHeight = LineHeight20,
+            modifier = Modifier.weight(1f),
+        )
+        AppButton(
+            text = stringResource(Res.string.combat_panel_undo),
+            onClick = { send(CombatRoundEvent.DiedToggled) },
+            variant = ButtonVariant.Ghost,
+        )
+    }
+}
+
+/** the three ways into the calculator: damage, healing and, for those with counted hit points, temporary ones */
+@Composable
+private fun CalcButtons(
+    panel: RoundPanel,
+    send: (CombatRoundEvent) -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        panel.calcModes.forEach { mode ->
+            val (tint, label) =
+                when (mode) {
+                    CalcMode.DAMAGE -> AppPalette.MaroonBright to stringResource(Res.string.combat_calc_mode_damage)
+                    CalcMode.HEAL -> AppPalette.EmeraldBright to stringResource(Res.string.combat_calc_mode_heal)
+                    CalcMode.TEMP -> AppPalette.Azure to stringResource(Res.string.combat_calc_mode_temp)
+                }
+            Box(
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .defaultMinSize(minHeight = 50.dp)
+                        .appCard(
+                            shape = AppShapes.Field,
+                            background = tint.copy(alpha = 0.12f),
+                            border = tint.copy(alpha = 0.5f),
+                            onClick = { send(CombatRoundEvent.Calc(CalcEvent.Opened(mode))) },
+                        ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(label, color = tint, fontSize = AppFontSize.Medium, fontWeight = FontWeight.Bold, maxLines = 1)
+            }
+        }
+    }
+    Text(panel.sourceNote, color = AppPalette.TextTertiary, fontSize = AppFontSize.Caption, lineHeight = LineHeight20)
+}

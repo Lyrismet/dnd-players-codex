@@ -20,6 +20,7 @@ data class CombatListState(
     val campaignSheet: CampaignSheetState = CampaignSheetState.Hidden,
     val groups: List<CombatGroupItem> = emptyList(),
     val footer: CombatFooter = CombatFooter.Hidden,
+    val resetConfirmVisible: Boolean = false,
     val toast: ToastMessage? = null,
     val eventSink: (CombatListEvent) -> Unit = {},
 ) : CircuitUiState
@@ -56,6 +57,10 @@ sealed interface CombatListEvent : CircuitUiEvent {
     data object ContinueClicked : CombatListEvent
 
     data object ResetClicked : CombatListEvent
+
+    data object ResetConfirmed : CombatListEvent
+
+    data object ResetDismissed : CombatListEvent
 
     data class CampaignSheet(
         val event: CampaignSheetEvent,

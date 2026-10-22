@@ -9,10 +9,13 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
+import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
+import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import kotlinx.datetime.LocalDateTime
@@ -29,10 +32,25 @@ val campaignStatusAdapter = enumColumnAdapter(CampaignStatus.LIVE)
 val combatOutcomeAdapter = enumColumnAdapter(CombatOutcome.INTERRUPTED)
 val combatPhaseAdapter = enumColumnAdapter(CombatPhase.FINISHED)
 val combatSideAdapter = enumColumnAdapter(CombatSide.ENEMY)
+val combatStanceAdapter = enumColumnAdapter(CombatStance.ENEMY)
 val combatStateAdapter = enumColumnAdapter(CombatState.WHOLE)
 val combatEventKindAdapter = enumColumnAdapter(CombatEventKind.DAMAGE)
+val hitScaleAdapter = enumColumnAdapter(HitScale.ONE)
 val hitEffectAdapter = enumColumnAdapter(HitEffect.FULL)
 val damageTypeAdapter = enumColumnAdapter(DamageType.BLUDGEONING)
+
+// a condition this build does not know is left out of the set instead of failing the row
+val combatConditionsAdapter =
+    object : ColumnAdapter<Set<CombatCondition>, String> {
+        override fun decode(databaseValue: String): Set<CombatCondition> =
+            databaseValue
+                .split(',')
+                .mapNotNull { name ->
+                    CombatCondition.entries.firstOrNull { it.name == name }
+                }.toSet()
+
+        override fun encode(value: Set<CombatCondition>): String = value.joinToString(",") { it.name }
+    }
 
 private val FALLBACK_DATE_TIME = LocalDateTime.parse("1970-01-01T00:00")
 

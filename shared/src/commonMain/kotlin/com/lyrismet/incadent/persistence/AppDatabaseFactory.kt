@@ -26,13 +26,20 @@ fun createAppDatabase(driver: SqlDriver): AppDatabase {
                 started_atAdapter = localDateTimeAdapter,
                 outcomeAdapter = combatOutcomeAdapter,
             ),
-        combatantAdapter = Combatant.Adapter(sideAdapter = combatSideAdapter, stateAdapter = combatStateAdapter),
+        combatantAdapter =
+            Combatant.Adapter(
+                sideAdapter = combatSideAdapter,
+                stateAdapter = combatStateAdapter,
+                stanceAdapter = combatStanceAdapter,
+                conditionsAdapter = combatConditionsAdapter,
+            ),
         combat_eventAdapter =
             Combat_event.Adapter(
                 kindAdapter = combatEventKindAdapter,
                 damage_typeAdapter = damageTypeAdapter,
                 effectAdapter = hitEffectAdapter,
                 stateAdapter = combatStateAdapter,
+                scaleAdapter = hitScaleAdapter,
             ),
         npcAdapter = Npc.Adapter(statusAdapter = npcStatusAdapter, life_stateAdapter = npcLifeStateAdapter),
         party_memberAdapter = Party_member.Adapter(presenceAdapter = partyPresenceAdapter),

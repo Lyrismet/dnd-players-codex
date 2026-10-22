@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.combat.data
 
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
+import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
@@ -62,17 +63,33 @@ class CombatRepositoryTest {
                 combatId,
                 CombatEvent(0, 1, CombatEventKind.DAMAGE, null, targetId, 7, DamageType.FIRE, HitEffect.HALF, null),
             )
-            repository.setState(targetId, CombatState.BLOODIED)
-            repository.setDeathSaves(targetId, 2, 1)
-            repository.setRound(combatId, 3)
+            val stored =
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .single()
+            repository.updateCombatant(
+                stored.copy(
+                    state = CombatState.BLOODIED,
+                    deathSuccesses = 2,
+                    deathFailures = 1,
+                    conditions = setOf(CombatCondition.PRONE),
+                    note = "хромает",
+                ),
+            )
+            repository.setTurn(combatId, 3, 1)
             repository.finish(combatId, CombatOutcome.RETREAT)
 
             val combat = assertNotNull(repository.observe(combatId).first())
             assertEquals(3, combat.round)
             assertEquals(CombatOutcome.RETREAT, combat.outcome)
             assertEquals(CombatPhase.FINISHED, combat.phase)
+            assertEquals(1, combat.turn)
             val member = combat.combatants.single()
             assertEquals(CombatState.BLOODIED, member.state)
+            assertEquals(setOf(CombatCondition.PRONE), member.conditions)
+            assertEquals("хромает", member.note)
             assertEquals(2, member.deathSuccesses)
             val event = combat.events.single()
             assertEquals(DamageType.FIRE, event.damageType)
@@ -95,19 +112,31 @@ class CombatRepositoryTest {
         }
 
     @Test
-    fun `removing an event keeps the combatant`() =
+    fun `a damage term keeps its raw number and can be recounted`() =
         runTest {
             val combatId = repository.create(null, STARTED_AT)
             val targetId = repository.addCombatant(combatId, goblin())
-            val eventId =
-                repository.addEvent(
-                    combatId,
-                    CombatEvent(0, 1, CombatEventKind.DAMAGE, null, targetId, 4, null, HitEffect.FULL, null),
+            val event =
+                CombatEvent(
+                    0,
+                    1,
+                    CombatEventKind.DAMAGE,
+                    null,
+                    targetId,
+                    12,
+                    DamageType.FIRE,
+                    HitEffect.FULL,
+                    null,
+                    hit = 1,
+                    raw = 12,
                 )
-            repository.removeEvent(eventId)
-            val combat = assertNotNull(repository.observe(combatId).first())
-            assertTrue(combat.events.isEmpty())
-            assertEquals(1, combat.combatants.size)
+            val eventId = repository.addEvent(combatId, event)
+            repository.updateTerm(eventId, 6, HitEffect.HALF)
+            val stored = assertNotNull(repository.observe(combatId).first()).events.single()
+            assertEquals(12, stored.raw)
+            assertEquals(6, stored.amount)
+            assertEquals(HitEffect.HALF, stored.effect)
+            assertEquals(1, stored.hit)
         }
 
     @Test

@@ -1,4 +1,5 @@
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType;
+import com.lyrismet.incadent.feature.combat.domain.damage.HitScale;
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind;
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState;
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect;
@@ -13,7 +14,12 @@ CREATE TABLE combat_event (
     amount INTEGER NOT NULL,
     damage_type TEXT AS DamageType,
     effect TEXT AS HitEffect NOT NULL,
-    state TEXT AS CombatState
+    state TEXT AS CombatState,
+    detail TEXT,
+    turn INTEGER NOT NULL DEFAULT 0,
+    hit INTEGER NOT NULL DEFAULT 0,
+    raw INTEGER NOT NULL DEFAULT 0,
+    scale TEXT AS HitScale NOT NULL
 );
 
 CREATE INDEX combat_event_combat_id ON combat_event(combat_id);
@@ -28,11 +34,12 @@ WHERE combat.campaign_id = ?
 ORDER BY combat_event.id;
 
 insert:
-INSERT INTO combat_event(combat_id, round, kind, source_id, target_id, amount, damage_type, effect, state)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO combat_event(combat_id, round, kind, source_id, target_id, amount, damage_type, effect, state, detail, turn, hit, raw, scale)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
-deleteById:
-DELETE FROM combat_event WHERE id = ?;
+updateTerm:
+UPDATE combat_event SET amount = ?, effect = ? WHERE id = ?;
+
 
 lastInsertRowId:
 SELECT last_insert_rowid();

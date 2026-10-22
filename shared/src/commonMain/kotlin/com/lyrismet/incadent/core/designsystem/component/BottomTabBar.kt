@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
@@ -65,11 +66,37 @@ fun BottomTabBar(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(5.dp),
                     ) {
-                        tab.icon(tint)
+                        Box {
+                            tab.icon(tint)
+                            tab.badge?.let {
+                                TabBadge(
+                                    it,
+                                    Modifier.align(Alignment.TopEnd).offset(x = 10.dp, y = (-4).dp),
+                                )
+                            }
+                        }
                         Text(text = tab.label, style = MaterialTheme.typography.labelMedium, color = tint)
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun TabBadge(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = AppPalette.TextHeading,
+        modifier =
+            modifier
+                .defaultMinSize(minWidth = 16.dp, minHeight = 16.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(AppPalette.Maroon)
+                .padding(horizontal = 4.dp),
+    )
 }

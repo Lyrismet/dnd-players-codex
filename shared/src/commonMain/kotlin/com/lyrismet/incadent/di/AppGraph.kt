@@ -7,6 +7,7 @@ import com.lyrismet.incadent.core.preferences.LanguageRepository
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
+import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.persistence.DatabaseDriverFactory
 import com.russhwolf.settings.ObservableSettings
 import com.slack.circuit.foundation.Circuit
@@ -21,6 +22,7 @@ interface AppGraph {
     val languageRepository: LanguageRepository
     val appPreferencesRepository: AppPreferencesRepository
     val campaignRepository: CampaignRepository
+    val combatRepository: CombatRepository
     val undoController: UndoController
     val importSource: ImportSource
     val swipeHintReplayController: SwipeHintReplayController

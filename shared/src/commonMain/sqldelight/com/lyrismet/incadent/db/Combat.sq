@@ -8,6 +8,7 @@ CREATE TABLE combat (
     phase TEXT AS CombatPhase NOT NULL,
     started_at TEXT AS LocalDateTime NOT NULL,
     round INTEGER NOT NULL DEFAULT 1,
+    turn INTEGER NOT NULL DEFAULT 0,
     outcome TEXT AS CombatOutcome,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
 );
@@ -23,8 +24,15 @@ SELECT * FROM combat WHERE id = ? AND campaign_id = ?;
 insert:
 INSERT INTO combat(session_note_id, phase, started_at, round, campaign_id) VALUES (?, 'PREPARING', ?, 1, ?);
 
-updateRound:
-UPDATE combat SET round = ? WHERE id = ?;
+
+updateTurn:
+UPDATE combat SET round = ?, turn = ? WHERE id = ?;
+
+start:
+UPDATE combat SET phase = 'ONGOING', started_at = ?, round = 1, turn = 0 WHERE id = ?;
+
+updateSession:
+UPDATE combat SET session_note_id = ? WHERE id = ?;
 
 updateOutcome:
 UPDATE combat SET outcome = ?, phase = 'FINISHED' WHERE id = ?;

@@ -1,5 +1,8 @@
+import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition;
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide;
+import com.lyrismet.incadent.feature.combat.domain.model.CombatStance;
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState;
+import kotlin.collections.Set;
 
 CREATE TABLE combatant (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -13,7 +16,17 @@ CREATE TABLE combatant (
     state TEXT AS CombatState NOT NULL,
     joined_round INTEGER NOT NULL DEFAULT 1,
     death_successes INTEGER NOT NULL DEFAULT 0,
-    death_failures INTEGER NOT NULL DEFAULT 0
+    death_failures INTEGER NOT NULL DEFAULT 0,
+    temp_hp INTEGER NOT NULL DEFAULT 0,
+    turn_order INTEGER,
+    stance TEXT AS CombatStance NOT NULL,
+    captured INTEGER NOT NULL DEFAULT 0,
+    dead INTEGER NOT NULL DEFAULT 0,
+    conditions TEXT AS Set<CombatCondition> NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    reaction_available INTEGER NOT NULL DEFAULT 1,
+    hp_current INTEGER,
+    hp_max INTEGER
 );
 
 CREATE INDEX combatant_combat_id ON combatant(combat_id);
@@ -28,14 +41,30 @@ WHERE combat.campaign_id = ?
 ORDER BY combatant.id;
 
 insert:
-INSERT INTO combatant(combat_id, name, side, npc_id, species_id, party_member_id, entered_whole, state, joined_round, death_successes, death_failures)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO combatant(combat_id, name, side, npc_id, species_id, party_member_id, entered_whole, state, joined_round, death_successes, death_failures, temp_hp, turn_order, stance, captured, dead, conditions, note, reaction_available, hp_current, hp_max)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
-updateState:
-UPDATE combatant SET state = ? WHERE id = ?;
+updateMember:
+UPDATE combatant
+SET name = ?, entered_whole = ?, state = ?, death_successes = ?, death_failures = ?, temp_hp = ?, turn_order = ?, stance = ?, captured = ?, dead = ?, conditions = ?, note = ?, reaction_available = ?, hp_current = ?, hp_max = ?
+WHERE id = ?;
 
-updateDeathSaves:
-UPDATE combatant SET death_successes = ?, death_failures = ? WHERE id = ?;
+updateTurnOrder:
+UPDATE combatant SET turn_order = ? WHERE id = ?;
+
+clearTurnOrders:
+UPDATE combatant SET turn_order = NULL WHERE combat_id = ?;
+
+updateTempHp:
+UPDATE combatant SET temp_hp = ? WHERE id = ?;
+
+updateName:
+UPDATE combatant SET name = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM combatant WHERE id = ?;
+
+
 
 lastInsertRowId:
 SELECT last_insert_rowid();

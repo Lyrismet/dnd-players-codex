@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.combat.presentation.list
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.CircuitContext
@@ -22,8 +23,10 @@ import dev.zacsweers.metro.Provides
 
 @Inject
 @ContributesIntoSet(AppScope::class)
+@Suppress("LongParameterList")
 class CombatListPresenterFactory(
     private val combatRepository: CombatRepository,
+    private val codexRepositories: CodexRepositories,
     private val sessionNoteRepository: SessionNoteRepository,
     private val campaignRepository: CampaignRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
@@ -37,7 +40,9 @@ class CombatListPresenterFactory(
         when (screen) {
             is CombatListScreen ->
                 CombatListPresenter(
+                    navigator,
                     combatRepository,
+                    codexRepositories,
                     sessionNoteRepository,
                     campaignRepository,
                     appPreferencesRepository,

@@ -9,8 +9,8 @@ import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
-import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -92,6 +92,16 @@ class CombatRepositoryImpl(
                     joined_round = combatant.joinedRound.toLong(),
                     death_successes = combatant.deathSuccesses.toLong(),
                     death_failures = combatant.deathFailures.toLong(),
+                    temp_hp = combatant.tempHp.toLong(),
+                    turn_order = combatant.turnOrder?.toLong(),
+                    stance = combatant.stance,
+                    captured = if (combatant.captured) 1L else 0L,
+                    dead = if (combatant.dead) 1L else 0L,
+                    conditions = combatant.conditions,
+                    note = combatant.note,
+                    reaction_available = if (combatant.reactionAvailable) 1L else 0L,
+                    hp_current = combatant.hpCurrent?.toLong(),
+                    hp_max = combatant.hpMax?.toLong(),
                 )
                 combatants.lastInsertRowId().executeAsOne()
             }
@@ -113,37 +123,96 @@ class CombatRepositoryImpl(
                     damage_type = event.damageType,
                     effect = event.effect,
                     state = event.state,
+                    detail = event.detail,
+                    turn = event.turn.toLong(),
+                    hit = event.hit.toLong(),
+                    raw = event.raw.toLong(),
+                    scale = event.scale,
                 )
                 events.lastInsertRowId().executeAsOne()
             }
         }
 
-    override suspend fun removeEvent(eventId: Long) {
-        withContext(Dispatchers.Default) { events.deleteById(eventId) }
+    override suspend fun removeCombatant(combatantId: Long) {
+        withContext(Dispatchers.Default) { combatants.deleteById(combatantId) }
     }
 
-    override suspend fun setState(
+    override suspend fun setTempHp(
         combatantId: Long,
-        state: CombatState,
+        tempHp: Int,
     ) {
-        withContext(Dispatchers.Default) { combatants.updateState(state, combatantId) }
+        withContext(Dispatchers.Default) { combatants.updateTempHp(tempHp.toLong(), combatantId) }
     }
 
-    override suspend fun setDeathSaves(
+    override suspend fun renameCombatant(
         combatantId: Long,
-        successes: Int,
-        failures: Int,
+        name: String,
     ) {
+        withContext(Dispatchers.Default) { combatants.updateName(name, combatantId) }
+    }
+
+    override suspend fun updateTerm(
+        eventId: Long,
+        amount: Int,
+        effect: HitEffect,
+    ) {
+        withContext(Dispatchers.Default) { events.updateTerm(amount.toLong(), effect, eventId) }
+    }
+
+    override suspend fun start(
+        combatId: Long,
+        startedAt: LocalDateTime,
+    ) {
+        withContext(Dispatchers.Default) { combats.start(startedAt, combatId) }
+    }
+
+    override suspend fun setTurn(
+        combatId: Long,
+        round: Int,
+        turn: Int,
+    ) {
+        withContext(Dispatchers.Default) { combats.updateTurn(round.toLong(), turn.toLong(), combatId) }
+    }
+
+    override suspend fun updateCombatant(combatant: Combatant) {
         withContext(Dispatchers.Default) {
-            combatants.updateDeathSaves(successes.toLong(), failures.toLong(), combatantId)
+            combatants.updateMember(
+                name = combatant.name,
+                entered_whole = if (combatant.enteredWhole) 1L else 0L,
+                state = combatant.state,
+                death_successes = combatant.deathSuccesses.toLong(),
+                death_failures = combatant.deathFailures.toLong(),
+                temp_hp = combatant.tempHp.toLong(),
+                turn_order = combatant.turnOrder?.toLong(),
+                stance = combatant.stance,
+                captured = if (combatant.captured) 1L else 0L,
+                dead = if (combatant.dead) 1L else 0L,
+                conditions = combatant.conditions,
+                note = combatant.note,
+                reaction_available = if (combatant.reactionAvailable) 1L else 0L,
+                hp_current = combatant.hpCurrent?.toLong(),
+                hp_max = combatant.hpMax?.toLong(),
+                id = combatant.id,
+            )
         }
     }
 
-    override suspend fun setRound(
-        combatId: Long,
-        round: Int,
+    override suspend fun setTurnOrder(
+        combatantId: Long,
+        order: Int?,
     ) {
-        withContext(Dispatchers.Default) { combats.updateRound(round.toLong(), combatId) }
+        withContext(Dispatchers.Default) { combatants.updateTurnOrder(order?.toLong(), combatantId) }
+    }
+
+    override suspend fun clearTurnOrders(combatId: Long) {
+        withContext(Dispatchers.Default) { combatants.clearTurnOrders(combatId) }
+    }
+
+    override suspend fun attachToSession(
+        combatId: Long,
+        sessionNoteId: Long?,
+    ) {
+        withContext(Dispatchers.Default) { combats.updateSession(sessionNoteId, combatId) }
     }
 
     override suspend fun finish(

@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -45,6 +46,8 @@ fun NumberPadSheet(
     onApply: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    // a row under the header, e.g. the mode switch of a pad that edits two numbers
+    modes: (@Composable () -> Unit)? = null,
 ) {
     Column(
         modifier =
@@ -56,6 +59,7 @@ fun NumberPadSheet(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         NumberPadHeader(overline, title, onClose)
+        modes?.invoke()
         NumberPadResultBlock(expr, result, rangeHint)
         NumberPadKeyGrid(onDigit, onBackspace, onClear)
         FormPrimaryButton(text = applyLabel, onClick = onApply, enabled = applyEnabled)
@@ -137,12 +141,25 @@ private data class NumberPadKey(
     val emphasized: Boolean = false,
 )
 
+/**
+ * the four-column grid of digits, with a gold backspace and, in the second row, a "C" that clears or - when [onPlus]
+ * is given - a "+" that starts the next term of a sum, which is the layout of the damage calculator
+ */
 @Composable
-private fun NumberPadKeyGrid(
+fun NumberPadKeyGrid(
     onDigit: (Int) -> Unit,
     onBackspace: () -> Unit,
     onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+    onPlus: (() -> Unit)? = null,
+    keyHeight: Dp = KeyHeight,
 ) {
+    val lastOfSecond =
+        if (onPlus != null) {
+            NumberPadKey(label = "+", onClick = onPlus, emphasized = true)
+        } else {
+            NumberPadKey(label = "C", onClick = onClear, emphasized = true)
+        }
     val rows =
         listOf(
             listOf(
@@ -155,7 +172,7 @@ private fun NumberPadKeyGrid(
                 NumberPadKey(label = "4", onClick = { onDigit(4) }),
                 NumberPadKey(label = "5", onClick = { onDigit(5) }),
                 NumberPadKey(label = "6", onClick = { onDigit(6) }),
-                NumberPadKey(label = "C", onClick = onClear, emphasized = true),
+                lastOfSecond,
             ),
             listOf(
                 NumberPadKey(label = "1", onClick = { onDigit(1) }),
@@ -164,10 +181,10 @@ private fun NumberPadKeyGrid(
                 NumberPadKey(label = "0", onClick = { onDigit(0) }),
             ),
         )
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         rows.forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                row.forEach { key -> NumberPadKeyButton(key, modifier = Modifier.weight(1f)) }
+                row.forEach { key -> NumberPadKeyButton(key, keyHeight, modifier = Modifier.weight(1f)) }
             }
         }
     }
@@ -176,6 +193,7 @@ private fun NumberPadKeyGrid(
 @Composable
 private fun NumberPadKeyButton(
     key: NumberPadKey,
+    height: Dp,
     modifier: Modifier = Modifier,
 ) {
     val background = if (key.emphasized) AppPalette.Surface else AppPalette.SurfacePopover
@@ -184,7 +202,7 @@ private fun NumberPadKeyButton(
     Box(
         modifier =
             modifier
-                .height(KeyHeight)
+                .height(height)
                 .appCard(shape = KeyShape, background = background, border = border, onClick = key.onClick),
         contentAlignment = Alignment.Center,
     ) {

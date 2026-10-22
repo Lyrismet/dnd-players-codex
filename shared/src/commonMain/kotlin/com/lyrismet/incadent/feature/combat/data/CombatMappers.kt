@@ -17,6 +17,7 @@ internal fun CombatRow.toDomain(
         phase = phase,
         startedAt = started_at,
         round = round.toInt(),
+        turn = turn.toInt(),
         outcome = outcome,
         combatants = combatants,
         events = events,
@@ -35,6 +36,16 @@ internal fun CombatantRow.toDomain(): Combatant =
         joinedRound = joined_round.toInt(),
         deathSuccesses = death_successes.toInt(),
         deathFailures = death_failures.toInt(),
+        tempHp = temp_hp.toInt(),
+        turnOrder = turn_order?.toInt(),
+        stance = stance,
+        captured = captured != 0L,
+        dead = dead != 0L,
+        conditions = conditions,
+        note = note,
+        reactionAvailable = reaction_available != 0L,
+        hpCurrent = hp_current?.toInt(),
+        hpMax = hp_max?.toInt(),
     )
 
 internal fun CombatEventRow.toDomain(): CombatEvent =
@@ -48,4 +59,9 @@ internal fun CombatEventRow.toDomain(): CombatEvent =
         damageType = damage_type,
         effect = effect,
         state = state,
+        detail = detail,
+        turn = turn.toInt(),
+        hit = hit.toInt(),
+        raw = raw.toInt(),
+        scale = scale,
     )
