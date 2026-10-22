@@ -1,6 +1,6 @@
 package com.lyrismet.incadent.feature.session.presentation.list
 
-import com.lyrismet.incadent.core.file.ExchangeRequests
+import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
@@ -35,7 +35,7 @@ class SessionListPresenterFactory(
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val campaignRepository: CampaignRepository,
-    private val exchangeRequests: ExchangeRequests,
+    private val importSource: ImportSource,
     private val imageCompressor: ImageCompressor,
 ) : Presenter.Factory {
     override fun create(
@@ -54,7 +54,7 @@ class SessionListPresenterFactory(
                     undoController,
                     appPreferencesRepository,
                     campaignRepository,
-                    exchangeRequests,
+                    importSource,
                     imageCompressor,
                 )
             else -> null

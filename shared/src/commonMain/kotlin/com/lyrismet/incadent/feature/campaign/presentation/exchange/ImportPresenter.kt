@@ -9,8 +9,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import com.lyrismet.incadent.core.file.ExchangeRequest
-import com.lyrismet.incadent.core.file.ExchangeRequests
+import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
@@ -34,16 +33,15 @@ private const val LOG_COMPONENT = "Import"
 class ImportPresenter(
     private val repository: CampaignExchangeRepository,
     private val campaigns: CampaignRepository,
-    private val requests: ExchangeRequests,
+    private val source: ImportSource,
     private val navigator: Navigator,
 ) : Presenter<ImportState> {
     // one flat merge of the import's steps and events, splitting it would only move the vars around
     @Suppress("CyclomaticComplexMethod", "LongMethod")
     @Composable
     override fun present(): ImportState {
-        // the file to import lives in the request, a file picked inside the sheet replaces it there too
-        val request by requests.pending.collectAsState()
-        val origin = (request as? ExchangeRequest.Import)?.origin
+        // a file picked inside the sheet replaces the one waiting in the source
+        val origin = source.file.collectAsState().value
         val current by campaigns.observeCurrent().collectAsState(initial = null)
         var contents by remember(origin) { mutableStateOf<ImportContents?>(null) }
         var step by remember(origin) { mutableStateOf<ImportStep>(ImportStep.Reading) }
@@ -90,7 +88,7 @@ class ImportPresenter(
         val replaceNow = duplicates.map { it.ref }.filter { it in replacing }.toSet()
 
         fun importNow() {
-            val source = origin ?: return
+            val picked = origin ?: return
             val target =
                 if (destination == ImportDestination.NEW) {
                     ImportTarget.NewCampaign(untitled)
@@ -110,10 +108,10 @@ class ImportPresenter(
             scope.launch {
                 step =
                     attempt({ ImportStep.Failed(it) }) {
-                        val result = repository.import(source, import)
+                        val result = repository.import(picked, import)
                         if (target is ImportTarget.NewCampaign) {
                             // the switch rebuilds the whole app, so the sheet goes with it
-                            requests.clear()
+                            source.clear()
                             campaigns.open(result.campaignId)
                         }
                         ImportStep.Done(result.records)
@@ -143,7 +141,7 @@ class ImportPresenter(
             importCount = if (conflicts == ConflictMode.SKIP) newCount + replaceNow.size else pickedRecords,
         ) { event ->
             when (event) {
-                is ImportEvent.FilePicked -> requests.request(ExchangeRequest.Import(event.origin))
+                is ImportEvent.FilePicked -> source.offer(event.origin)
                 is ImportEvent.DestinationSelected -> destination = event.destination
                 ImportEvent.PreviewNext ->
                     if (destination == ImportDestination.NEW || current == null) {
@@ -172,13 +170,13 @@ class ImportPresenter(
                         // the write cannot be taken back half way, the sheet stays until it is over
                         ImportStep.Working -> Unit
                         else -> {
-                            requests.clear()
+                            source.clear()
                             navigator.pop()
                         }
                     }
                 ImportEvent.LeaveCancelled -> leavePrompt = false
                 ImportEvent.Closed -> {
-                    requests.clear()
+                    source.clear()
                     navigator.pop()
                 }
             }

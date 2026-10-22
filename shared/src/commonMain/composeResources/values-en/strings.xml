@@ -619,8 +619,6 @@
     <string name="exchange_share">Share file</string>
     <string name="exchange_save">Save to device</string>
     <string name="exchange_done">Done</string>
-    <string name="exchange_saved_toast">File saved</string>
-    <string name="exchange_save_failed">Could not save the file</string>
     <string name="exchange_size_kb">%1$s KB</string>
     <string name="exchange_size_mb">%1$s MB</string>
     <string name="exchange_import_reading">Reading the file…</string>

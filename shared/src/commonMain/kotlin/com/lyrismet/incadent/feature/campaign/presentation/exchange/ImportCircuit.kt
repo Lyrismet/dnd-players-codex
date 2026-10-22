@@ -1,6 +1,6 @@
 package com.lyrismet.incadent.feature.campaign.presentation.exchange
 
-import com.lyrismet.incadent.core.file.ExchangeRequests
+import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignExchangeRepository
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.slack.circuit.runtime.CircuitContext
@@ -23,7 +23,7 @@ import dev.zacsweers.metro.Provides
 class ImportPresenterFactory(
     private val repository: CampaignExchangeRepository,
     private val campaigns: CampaignRepository,
-    private val requests: ExchangeRequests,
+    private val source: ImportSource,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -31,7 +31,7 @@ class ImportPresenterFactory(
         context: CircuitContext,
     ): Presenter<*>? =
         when (screen) {
-            is ImportScreen -> ImportPresenter(repository, campaigns, requests, navigator)
+            is ImportScreen -> ImportPresenter(repository, campaigns, source, navigator)
             else -> null
         }
 }

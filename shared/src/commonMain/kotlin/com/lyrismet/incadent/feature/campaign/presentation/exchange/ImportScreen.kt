@@ -9,7 +9,7 @@ import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
 import kotlinx.serialization.Serializable
 
-/** the file waiting in [com.lyrismet.incadent.core.file.ExchangeRequests] is what this screen imports */
+/** the file waiting in [com.lyrismet.incadent.core.file.ImportSource] is what this screen imports */
 @Serializable
 data object ImportScreen : Screen
 

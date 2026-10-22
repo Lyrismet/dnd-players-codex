@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.lyrismet.incadent.core.file.ExchangeRequest
 import com.lyrismet.incadent.core.file.sharedFileOrigin
 
 class MainActivity : ComponentActivity() {
@@ -34,7 +33,7 @@ class MainActivity : ComponentActivity() {
     // a campaign file tapped in another app or shared to this one goes to the import sheet
     private fun openSharedFile(intent: Intent?) {
         val origin = intent?.sharedFileOrigin(this) ?: return
-        (application as IncadentApplication).graph.exchangeRequests.request(ExchangeRequest.Import(origin))
+        (application as IncadentApplication).graph.importSource.offer(origin)
         // the same intent must not open the file again when the activity is recreated
         setIntent(Intent(Intent.ACTION_MAIN))
     }

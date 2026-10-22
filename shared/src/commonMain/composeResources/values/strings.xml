@@ -647,8 +647,6 @@
     <string name="exchange_share">Поделиться файлом</string>
     <string name="exchange_save">Сохранить на устройство</string>
     <string name="exchange_done">Готово</string>
-    <string name="exchange_saved_toast">Файл сохранён</string>
-    <string name="exchange_save_failed">Не удалось сохранить файл</string>
     <string name="exchange_size_kb">%1$s КБ</string>
     <string name="exchange_size_mb">%1$s МБ</string>
     <string name="exchange_import_reading">Читаю файл…</string>

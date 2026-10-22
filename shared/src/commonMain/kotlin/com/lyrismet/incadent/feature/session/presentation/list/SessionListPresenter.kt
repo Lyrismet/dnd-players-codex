@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
-import com.lyrismet.incadent.core.file.ExchangeRequests
+import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.localization.currentAppLanguage
@@ -81,7 +81,7 @@ class SessionListPresenter(
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val campaignRepository: CampaignRepository,
-    private val exchangeRequests: ExchangeRequests,
+    private val importSource: ImportSource,
     private val imageCompressor: ImageCompressor,
 ) : Presenter<SessionListState> {
     // one collection per source the screen reads plus the rename wiring - a flat merge, not real complexity
@@ -111,7 +111,7 @@ class SessionListPresenter(
         val failedText = stringResource(Res.string.error_action_failed)
         val scope = rememberGuardedScope { toast.value = ToastMessage(failedText) }
         val campaignHost =
-            rememberCampaignSheetHost(campaignRepository, exchangeRequests) { text -> toast.value = ToastMessage(text) }
+            rememberCampaignSheetHost(campaignRepository, importSource) { text -> toast.value = ToastMessage(text) }
         val campaignArchived = campaignHost.current?.status == CampaignStatus.ARCHIVED
         val entriesBySession = allEntries.groupBy { it.sessionNoteId }
 
