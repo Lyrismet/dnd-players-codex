@@ -278,7 +278,27 @@
     <string name="bottom_tab_codex">Codex</string>
     <string name="bottom_tab_combat">Combat</string>
     <string name="bottom_tab_settings">Settings</string>
-    <string name="combat_tab_placeholder">Combat is coming soon</string>
+    <string name="combat_list_title">Combats</string>
+    <string name="combat_list_session_group">SESSION %1$s · %2$s</string>
+    <string name="combat_list_empty">No past combats yet. The results of every combat are saved to the session and show up here.</string>
+    <string name="combat_list_start">Start combat</string>
+    <string name="combat_list_continue">Continue preparation</string>
+    <string name="combat_list_prep_overline">PREPARATION</string>
+    <string name="combat_list_reset">Reset</string>
+    <string name="combat_list_target_session">The results go to session %1$s</string>
+    <string name="combat_list_target_new">The results go to a new session</string>
+    <string name="combat_list_prep_enemies">Enemies: %1$s</string>
+    <string name="combat_list_prep_no_enemies">No enemies picked</string>
+    <string name="combat_list_prep_with_allies">%1$s · allies: %2$d</string>
+    <string name="combat_list_row_meta">%1$s · %2$s</string>
+    <plurals name="combat_list_rounds">
+        <item quantity="one">%1$d round</item>
+        <item quantity="other">%1$d rounds</item>
+    </plurals>
+    <string name="combat_outcome_victory">Victory</string>
+    <string name="combat_outcome_retreat">Retreated</string>
+    <string name="combat_outcome_peace">Peace</string>
+    <string name="combat_outcome_interrupted">Interrupted</string>
     <!-- settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_section_app">APP</string>

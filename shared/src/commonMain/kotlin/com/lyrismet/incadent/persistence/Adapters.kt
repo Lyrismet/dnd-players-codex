@@ -4,10 +4,17 @@ import app.cash.sqldelight.ColumnAdapter
 import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
+import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
+import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
+import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
+import com.lyrismet.incadent.feature.combat.domain.model.CombatState
+import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import kotlinx.datetime.LocalDateTime
 import kotlin.enums.enumEntries
 
@@ -19,6 +26,13 @@ val npcLifeStateAdapter = enumColumnAdapter(NpcLifeState.ALIVE)
 val partyPresenceAdapter = enumColumnAdapter(PartyPresence.IN)
 val questStatusAdapter = enumColumnAdapter(QuestStatus.ACTIVE)
 val campaignStatusAdapter = enumColumnAdapter(CampaignStatus.LIVE)
+val combatOutcomeAdapter = enumColumnAdapter(CombatOutcome.INTERRUPTED)
+val combatPhaseAdapter = enumColumnAdapter(CombatPhase.FINISHED)
+val combatSideAdapter = enumColumnAdapter(CombatSide.ENEMY)
+val combatStateAdapter = enumColumnAdapter(CombatState.WHOLE)
+val combatEventKindAdapter = enumColumnAdapter(CombatEventKind.DAMAGE)
+val hitEffectAdapter = enumColumnAdapter(HitEffect.FULL)
+val damageTypeAdapter = enumColumnAdapter(DamageType.BLUDGEONING)
 
 private val FALLBACK_DATE_TIME = LocalDateTime.parse("1970-01-01T00:00")
 

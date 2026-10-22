@@ -290,7 +290,29 @@
     <string name="bottom_tab_codex">Кодекс</string>
     <string name="bottom_tab_combat">Бой</string>
     <string name="bottom_tab_settings">Настройки</string>
-    <string name="combat_tab_placeholder">Бой скоро появится здесь</string>
+    <string name="combat_list_title">Бои</string>
+    <string name="combat_list_session_group">СЕССИЯ %1$s · %2$s</string>
+    <string name="combat_list_empty">Прошлых боёв пока нет. Итоги каждого боя сохраняются в сессию и появятся здесь.</string>
+    <string name="combat_list_start">Начать бой</string>
+    <string name="combat_list_continue">Продолжить подготовку</string>
+    <string name="combat_list_prep_overline">ПОДГОТОВКА</string>
+    <string name="combat_list_reset">Сбросить</string>
+    <string name="combat_list_target_session">Итоги попадут в сессию %1$s</string>
+    <string name="combat_list_target_new">Итоги попадут в новую сессию</string>
+    <string name="combat_list_prep_enemies">Противники: %1$s</string>
+    <string name="combat_list_prep_no_enemies">Противники не выбраны</string>
+    <string name="combat_list_prep_with_allies">%1$s · союзники: %2$d</string>
+    <string name="combat_list_row_meta">%1$s · %2$s</string>
+    <plurals name="combat_list_rounds">
+        <item quantity="one">%1$d раунд</item>
+        <item quantity="few">%1$d раунда</item>
+        <item quantity="many">%1$d раундов</item>
+        <item quantity="other">%1$d раунда</item>
+    </plurals>
+    <string name="combat_outcome_victory">Победа</string>
+    <string name="combat_outcome_retreat">Отступили</string>
+    <string name="combat_outcome_peace">Мир</string>
+    <string name="combat_outcome_interrupted">Прервано</string>
     <!-- settings -->
     <string name="settings_title">Настройки</string>
     <string name="settings_section_app">ПРИЛОЖЕНИЕ</string>
