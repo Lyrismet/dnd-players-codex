@@ -1,7 +1,9 @@
 package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
+import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 
 /** how a field takes its value - text and numbers are typed in, links and choices are tapped */
 sealed interface QuickEditKind {
@@ -12,6 +14,9 @@ sealed interface QuickEditKind {
     ) : QuickEditKind
 
     data object Link : QuickEditKind
+
+    /** one species picked in the select sheet over the card, the answer is a link to it */
+    data object Species : QuickEditKind
 
     /** one or several places picked in the select sheet - whether it is several depends on the entity */
     data object Places : QuickEditKind
@@ -34,11 +39,13 @@ enum class QuickEditField(
     DESCRIPTION(QuickEditKind.Text),
     NICKNAMES(QuickEditKind.Text),
     RACE(QuickEditKind.Text),
+    SPECIES(QuickEditKind.Species),
     CHARACTER_CLASS(QuickEditKind.Text),
     PLAYER_NAME(QuickEditKind.Text),
     REWARD(QuickEditKind.Text),
     LEVEL(QuickEditKind.Number(PartyStatRanges.level)),
     HP_MAX(QuickEditKind.Number(PartyStatRanges.hpMax)),
+    HIT_POINTS(QuickEditKind.Number(SPECIES_HIT_POINTS_RANGE)),
     GIVER(QuickEditKind.Link),
     PLACE(QuickEditKind.Places),
     PARENT(QuickEditKind.Places),
@@ -54,6 +61,9 @@ enum class QuickEditField(
     PRESENCE(QuickEditKind.Choice),
     PORTRAIT(QuickEditKind.Photo),
 
+    /** the 5e creature type of a species, picked from the list of types */
+    CREATURE_TYPE(QuickEditKind.Choice),
+
     /** the wide picture at the top of a place's card */
     COVER(QuickEditKind.Photo),
 
@@ -66,6 +76,9 @@ enum class QuickEditField(
     /** the quests set at a place - each one is a quest whose place is this one */
     PLACE_QUESTS(QuickEditKind.Relations),
 }
+
+/** true for a field that is edited in a select sheet over the card, the line itself stays as it is meanwhile */
+val QuickEditField.editsInSheet: Boolean get() = kind is QuickEditKind.Places || kind == QuickEditKind.Species
 
 /** the typed-in or tapped value of one [QuickEditField], always matching that field's [QuickEditKind] */
 sealed interface QuickEditValue {
@@ -86,6 +99,10 @@ sealed interface QuickEditValue {
     /** null unlinks the field - "Не указано" */
     data class Link(
         val id: Long?,
+    ) : QuickEditValue
+
+    data class Creature(
+        val type: CreatureType,
     ) : QuickEditValue
 
     /** null removes the photo */
@@ -109,6 +126,7 @@ fun quickEditValueFromDraft(
                 trimmed.toIntOrNull()?.let { QuickEditValue.Number(it.coerceIn(kind.range)) }
             }
         QuickEditKind.Link,
+        QuickEditKind.Species,
         QuickEditKind.Places,
         QuickEditKind.Choice,
         QuickEditKind.Photo,

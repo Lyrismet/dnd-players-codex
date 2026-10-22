@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.di
 
+import com.lyrismet.incadent.core.file.FileStorage
 import com.lyrismet.incadent.core.preferences.SettingsFactory
 import com.lyrismet.incadent.persistence.DatabaseDriverFactory
 import dev.zacsweers.metro.createGraphFactory
@@ -8,4 +9,6 @@ import dev.zacsweers.metro.createGraphFactory
 fun createAppGraph(
     databaseDriverFactory: DatabaseDriverFactory,
     settingsFactory: SettingsFactory,
-): AppGraph = createGraphFactory<AppGraph.Factory>().create(settingsFactory.createSettings(), databaseDriverFactory)
+    fileStorage: FileStorage,
+): AppGraph =
+    createGraphFactory<AppGraph.Factory>().create(settingsFactory.createSettings(), databaseDriverFactory, fileStorage)

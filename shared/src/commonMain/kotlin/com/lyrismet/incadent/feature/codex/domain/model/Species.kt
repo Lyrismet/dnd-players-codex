@@ -12,7 +12,12 @@ data class Species(
     val notes: String = "",
     val photo: Photo? = null,
     val nicknames: List<String> = emptyList(),
+    // known by the player from somewhere, not filled in by a fight - null while nobody knows it
+    val hitPoints: Int? = null,
 )
+
+/** the hit points a species can be given */
+val SPECIES_HIT_POINTS_RANGE = 1..999
 
 /** the 5e creature types - the one list the form, the card and the list read */
 enum class CreatureType {

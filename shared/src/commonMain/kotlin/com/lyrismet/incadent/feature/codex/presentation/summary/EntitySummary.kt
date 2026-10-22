@@ -125,8 +125,9 @@ private fun npcFacts(
             FactRow(
                 Res.string.entity_sheet_npc_species_label,
                 FactValue.Link(MentionEntity.SpeciesMention(it.id, it.name).toChipItem()),
+                QuickEditField.SPECIES,
             )
-        } ?: FactRow(Res.string.entity_sheet_npc_species_label, FactValue.Text(npc.race), QuickEditField.RACE),
+        } ?: FactRow(Res.string.entity_sheet_npc_species_label, FactValue.Text(npc.race), QuickEditField.SPECIES),
         nicknamesFact(npc.nicknames),
         FactRow(
             Res.string.entity_sheet_npc_location_label,
@@ -156,6 +157,8 @@ private fun buildSpeciesSummary(
         damage = species.damage,
         relatedNotes = relatedNotes,
         seenInSessions = relatedNotes.size,
+        nicknames = species.nicknames,
+        hitPoints = species.hitPoints,
     )
 }
 
@@ -329,7 +332,7 @@ private fun <T> statusOptions(
         StatusOption(value, labels.getValue(value), colorOf(value), value == current, glyphOf(value))
     }
 
-private fun nicknamesFact(nicknames: List<String>) =
+internal fun nicknamesFact(nicknames: List<String>) =
     FactRow(
         Res.string.entity_sheet_nicknames_label,
         FactValue.Text(nicknames.joinNicknames()),

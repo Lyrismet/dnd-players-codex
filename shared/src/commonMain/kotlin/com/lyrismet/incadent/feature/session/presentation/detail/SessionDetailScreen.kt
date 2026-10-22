@@ -5,6 +5,8 @@ import androidx.compose.ui.text.TextRange
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditState
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.mention.domain.DeletedMention
@@ -31,6 +33,8 @@ data class SessionDetailState(
     val quantityHint: String? = null,
     val mentionSuggestions: List<MentionDropdownItem> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
+    // the in-place editing of the open entity card
+    val quickEdit: QuickEditState = QuickEditState(),
     val editingEntryTimeLabel: String? = null,
     val selectedEntryId: Long? = null,
     val isTitleEditing: Boolean = false,
@@ -214,6 +218,11 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     /** a tap or change on the entity card that opens over this screen */
     data class EntitySheet(
         val event: EntitySheetEvent,
+    ) : SessionDetailEvent
+
+    /** an in-place edit on the entity card that opens over this screen */
+    data class QuickEdit(
+        val event: QuickEditUiEvent,
     ) : SessionDetailEvent
 
     data object SubmitEntryClicked : SessionDetailEvent

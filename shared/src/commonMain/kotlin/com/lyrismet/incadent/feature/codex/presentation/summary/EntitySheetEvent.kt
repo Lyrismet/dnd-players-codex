@@ -103,7 +103,6 @@ fun entitySheetActions(
     partyPresence: Boolean = false,
     speciesDamageEdit: Boolean = false,
     speciesNoteEdit: Boolean = true,
-    onSpeciesEditClicked: ((EntityRef.Species) -> Unit)? = null,
     onEditClicked: ((EntityRef) -> Unit)? = null,
     onDeleteClicked: ((EntityRef) -> Unit)? = null,
     statusesReadOnly: Boolean = false,
@@ -117,7 +116,6 @@ fun entitySheetActions(
         onQuestStatusSelected = { id, status -> send(EntitySheetEvent.QuestStatusSelected(id, status)) },
         onRelatedNoteClicked = { id, entryId -> send(EntitySheetEvent.RelatedNoteClicked(id, entryId)) },
         onEditClicked = onEditClicked,
-        onSpeciesEditClicked = onSpeciesEditClicked,
         onDeleteClicked = onDeleteClicked,
         onPartyPresenceSelected =
             if (partyPresence) {

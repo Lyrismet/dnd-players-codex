@@ -23,6 +23,11 @@ object AppText {
         @Composable @ReadOnlyComposable
         get() = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Body, lineHeight = 18.sp)
 
+    /** the small note under a card or a list - 12.5 on a 17 line */
+    val footnote: TextStyle
+        @Composable @ReadOnlyComposable
+        get() = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.CaptionPlus, lineHeight = 17.sp)
+
     /** "изм.", tab-bar and tip lines - 11 regular */
     val caption: TextStyle
         @Composable @ReadOnlyComposable

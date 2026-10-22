@@ -5,6 +5,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.language.LanguageSheetController
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.preferences.LanguageRepository
@@ -17,12 +18,13 @@ import com.slack.circuit.runtime.presenter.Presenter
 class CampaignLibraryPresenter(
     private val campaignRepository: CampaignRepository,
     private val languageRepository: LanguageRepository,
+    private val importSource: ImportSource,
 ) : Presenter<CampaignLibraryScreenState> {
     @Composable
     override fun present(): CampaignLibraryScreenState {
         val toast = remember { mutableStateOf<String?>(null) }
         toast.autoDismiss()
-        val host = rememberCampaignSheetHost(campaignRepository) { text -> toast.value = text }
+        val host = rememberCampaignSheetHost(campaignRepository, importSource) { text -> toast.value = text }
         val language by languageRepository.observeLanguage().collectAsState(initial = AppLanguage.RUSSIAN)
         val languageSheet = remember { LanguageSheetController(languageRepository) }
         return CampaignLibraryScreenState(

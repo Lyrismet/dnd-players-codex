@@ -53,6 +53,26 @@ internal fun CodexNpcModeSwitch(
 }
 
 @Composable
+internal fun SpeciesRow(
+    species: SpeciesCodexItem,
+    eventSink: (CodexEvent) -> Unit,
+    swipeEditEnabled: Boolean,
+) {
+    CodexDeletableRow(
+        ref = EntityRef.Species(species.id),
+        eventSink = eventSink,
+        swipeEditEnabled = swipeEditEnabled,
+    ) {
+        SpeciesCodexCard(
+            item = species,
+            onClick = {
+                eventSink(CodexEvent.EntitySheet(EntitySheetEvent.EntityClicked(EntityRef.Species(species.id))))
+            },
+        )
+    }
+}
+
+@Composable
 internal fun CodexSpeciesList(
     state: CodexState,
     modifier: Modifier = Modifier,
@@ -61,14 +81,7 @@ internal fun CodexSpeciesList(
         state.species.isNotEmpty() ->
             CodexLazyColumn(modifier) {
                 items(state.species, key = { it.id }) { species ->
-                    SpeciesCodexCard(
-                        item = species,
-                        onClick = {
-                            state.eventSink(
-                                CodexEvent.EntitySheet(EntitySheetEvent.EntityClicked(EntityRef.Species(species.id))),
-                            )
-                        },
-                    )
+                    SpeciesRow(species, state.eventSink, state.swipeEditEnabled)
                 }
             }
         state.tabCounts.species == 0 ->

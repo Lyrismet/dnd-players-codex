@@ -11,12 +11,9 @@ internal fun CodexEvent.writesCampaignData(): Boolean =
         is CodexEvent.SearchQueryChanged,
         is CodexEvent.GroupBySelected,
         is CodexEvent.PlaceSectionToggled,
-        CodexEvent.UndoClicked,
-        CodexEvent.UndoFollowUpClicked,
         CodexEvent.EntityDeleteCancelled,
         -> false
         is CodexEvent.QuickEdit,
-        is CodexEvent.QuickPlaceCreated,
         CodexEvent.AddEntryClicked,
         is CodexEvent.EmptyActionClicked,
         is CodexEvent.EditEntryRequested,

@@ -5,7 +5,7 @@ import com.lyrismet.incadent.domain.model.EntityKind
 // the name shows once its record is gone, the kind letter and id decide who it is, the optional last number is how many
 internal val TOKEN_REGEX = Regex("@\\[([^\\[\\]|]*)\\|([npqls]):(\\d+)(?:\\|(\\d+))?]")
 
-private fun EntityKind.code(): Char =
+internal fun EntityKind.code(): Char =
     when (this) {
         EntityKind.NPC -> 'n'
         EntityKind.PARTY -> 'p'
@@ -26,7 +26,7 @@ private fun Char.toMentionType(): EntityKind =
 internal const val NAME_GROUP = 1
 private const val KIND_GROUP = 2
 private const val ID_GROUP = 3
-private const val QUANTITY_GROUP = 4
+internal const val QUANTITY_GROUP = 4
 
 internal fun MatchResult.toRef() =
     MentionRef(groupValues[KIND_GROUP].single().toMentionType(), groupValues[ID_GROUP].toLong())

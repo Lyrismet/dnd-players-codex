@@ -16,15 +16,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import com.lyrismet.incadent.core.designsystem.AppTheme
+import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.localization.AppEnvironment
 import com.lyrismet.incadent.core.localization.customAppLocale
+import com.lyrismet.incadent.core.navigation.LocalOverlayNavigator
+import com.lyrismet.incadent.core.navigation.OverlayNavigator
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.di.AppGraph
 import com.lyrismet.incadent.feature.campaign.presentation.CampaignLibraryScreen
+import com.lyrismet.incadent.feature.campaign.presentation.exchange.ImportScreen
 import com.lyrismet.incadent.feature.mention.presentation.LocalMentionStyle
 import com.slack.circuit.foundation.CircuitCompositionLocals
 import com.slack.circuit.foundation.CircuitContent
+import com.slack.circuit.foundation.NavEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlin.time.Duration.Companion.milliseconds
@@ -66,9 +71,14 @@ fun App(
     CircuitCompositionLocals(graph.circuit) {
         key(currentCampaignId) {
             val tabs = rememberAppTabsState()
+            // the export and import sheets, a new campaign rebuilds this block and closes them with it
+            val overlay = remember { OverlayNavigator() }
 
             AppEnvironment {
-                CompositionLocalProvider(LocalMentionStyle provides mentionStyle) {
+                CompositionLocalProvider(
+                    LocalMentionStyle provides mentionStyle,
+                    LocalOverlayNavigator provides overlay,
+                ) {
                     AppTheme {
                         Box(modifier = Modifier.fillMaxSize()) {
                             when {
@@ -76,6 +86,7 @@ fun App(
                                     AppTabHost(graph.undoController, graph.swipeHintReplayController, tabs, onExit)
                                 campaigns != null -> CircuitContent(CampaignLibraryScreen)
                             }
+                            ExchangeOverlay(overlay, graph.importSource)
                             if (splashPhase != SplashPhase.GONE) {
                                 val splashAlpha by animateFloatAsState(
                                     targetValue = if (splashPhase == SplashPhase.VISIBLE) 1f else 0f,
@@ -89,4 +100,18 @@ fun App(
             }
         }
     }
+}
+
+/** the screens opened over the app, and the import sheet for a file that arrives from outside or from a picker */
+@Composable
+private fun ExchangeOverlay(
+    overlay: OverlayNavigator,
+    importSource: ImportSource,
+) {
+    val file by importSource.file.collectAsState()
+    LaunchedEffect(file) {
+        if (file != null && overlay.top != ImportScreen) overlay.goTo(ImportScreen)
+    }
+    val open = overlay.top ?: return
+    key(open) { CircuitContent(open, onNavEvent = { if (it is NavEvent.Pop) overlay.pop() }) }
 }

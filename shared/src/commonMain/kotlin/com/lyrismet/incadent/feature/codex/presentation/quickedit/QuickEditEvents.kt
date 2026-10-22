@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.PhotoSlot
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 
 /** the field whose editor is open and what it currently holds - at most one editor is open at a time */
 data class InlineEdit(
@@ -34,12 +35,34 @@ sealed interface QuickEditUiEvent {
         val ids: List<Long>,
     ) : QuickEditUiEvent
 
+    /** a type of the open creature type editor was tapped */
+    data class CreatureTypeChosen(
+        val type: CreatureType,
+    ) : QuickEditUiEvent
+
     /** a candidate of the open relation editor was tapped - the editor stays open for the next one */
     data class RelationToggled(
         val id: Long,
     ) : QuickEditUiEvent
 
     data object HoldHintDismissed : QuickEditUiEvent
+
+    /** the place select sheet's "+ create" row, [checked] are the ids ticked so far */
+    data class PlaceCreated(
+        val name: String,
+        val checked: List<Long>,
+    ) : QuickEditUiEvent
+
+    /** a species made on the spot in the select sheet, the card's species points to it */
+    data class SpeciesCreated(
+        val name: String,
+        val type: CreatureType,
+    ) : QuickEditUiEvent
+
+    /** the undo bar the card carries over its bottom edge */
+    data object UndoClicked : QuickEditUiEvent
+
+    data object UndoFollowUpClicked : QuickEditUiEvent
 
     /** the raw picked image - the presenter shrinks it and opens the crop window on it */
     class PhotoPicked(

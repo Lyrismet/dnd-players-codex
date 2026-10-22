@@ -43,10 +43,20 @@ class QuickEditApplyTest {
 
     @Test
     fun `a text edit writes its field and leaves the rest of the npc alone`() {
-        val edited = npc.withQuickEdit(QuickEditField.RACE, QuickEditValue.Text("Гильдия"))
+        val edited = npc.withQuickEdit(QuickEditField.DESCRIPTION, QuickEditValue.Text("Гильдия"))
 
-        assertEquals("Гильдия", edited?.race)
+        assertEquals("Гильдия", edited?.description)
         assertEquals(npc.name, edited?.name)
+    }
+
+    @Test
+    fun `a species edit links the npc to the species and a null link clears it`() {
+        val linked = npc.withQuickEdit(QuickEditField.SPECIES, QuickEditValue.Link(7))
+
+        assertEquals(7L, linked?.speciesId)
+        assertNull(linked?.withQuickEdit(QuickEditField.SPECIES, QuickEditValue.Link(null))?.speciesId)
+        assertNull(npc.withQuickEdit(QuickEditField.RACE, QuickEditValue.Text("Эльф")))
+        assertNull(member.withQuickEdit(QuickEditField.SPECIES, QuickEditValue.Link(7)))
     }
 
     @Test
@@ -59,7 +69,7 @@ class QuickEditApplyTest {
 
     @Test
     fun `names and short labels are trimmed and capitalized but the description is kept as typed`() {
-        val edited = npc.withQuickEdit(QuickEditField.RACE, QuickEditValue.Text("  эльф "))
+        val edited = member.withQuickEdit(QuickEditField.RACE, QuickEditValue.Text("  эльф "))
 
         assertEquals("Эльф", edited?.race)
         assertEquals(

@@ -50,6 +50,7 @@ import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
+import com.lyrismet.incadent.feature.campaign.presentation.sheet.rememberImportPicker
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.settings_about_srd_title
@@ -91,6 +92,7 @@ fun SettingsUi(
     modifier: Modifier = Modifier,
 ) {
     val sink = state.eventSink
+    val pickFile = rememberImportPicker { sink(SettingsEvent.CampaignSheet(it)) }
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(modifier = Modifier.fillMaxSize()) { contentPadding ->
             Column(
@@ -112,6 +114,10 @@ fun SettingsUi(
                     AppSection(language = state.language, onLanguageClick = {
                         sink(SettingsEvent.LanguageSheet(LanguageSheetEvent.Opened))
                     })
+                    DataSection(
+                        onExportClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.ExportCurrentClicked)) },
+                        onImportClick = pickFile,
+                    )
                     DiarySection(
                         numbering = state.numbering,
                         mentionStyle = state.mentionStyle,

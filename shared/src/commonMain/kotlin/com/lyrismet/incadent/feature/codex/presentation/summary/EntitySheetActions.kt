@@ -18,8 +18,6 @@ data class EntitySummarySheetActions(
     val onQuestStatusSelected: (questId: Long, status: QuestStatus) -> Unit,
     val onRelatedNoteClicked: (sessionNoteId: Long, entryId: Long) -> Unit,
     val onEditClicked: ((EntityRef) -> Unit)? = null,
-    // a species has no fields to edit in place, so its pen opens the form in both edit modes
-    val onSpeciesEditClicked: ((EntityRef.Species) -> Unit)? = null,
     // null hides the delete button - only an editable codex card offers it
     val onDeleteClicked: ((EntityRef) -> Unit)? = null,
     // null hides the presence picker - only the codex manages party membership

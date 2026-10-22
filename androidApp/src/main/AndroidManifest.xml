@@ -11,6 +11,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:exported="true"
+            android:launchMode="singleTop"
             android:name=".MainActivity"
             android:theme="@style/Theme.App.Starting"
             android:windowSoftInputMode="adjustResize">
@@ -18,6 +19,41 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- a campaign file tapped in a messenger or a file manager -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="application/json" />
+            </intent-filter>
+            <!-- some apps hand the file over as plain bytes, so only the name decides there and the file is checked again on open -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:mimeType="application/octet-stream" />
+                <data android:pathPattern=".*\\.incadent\\.json" />
+                <data android:pathPattern=".*\\..*\\.incadent\\.json" />
+                <data android:pathPattern=".*\\..*\\..*\\.incadent\\.json" />
+            </intent-filter>
+            <!-- the share sheet of another app -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="application/json" />
             </intent-filter>
         </activity>
 

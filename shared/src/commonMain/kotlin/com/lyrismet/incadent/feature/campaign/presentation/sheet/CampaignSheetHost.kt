@@ -7,13 +7,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
+import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.format.toShortDisplayDate
 import com.lyrismet.incadent.core.localization.currentAppLanguage
+import com.lyrismet.incadent.core.navigation.LocalOverlayNavigator
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.feature.campaign.domain.model.Campaign
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.campaign.domain.model.TransferCandidates
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
+import com.lyrismet.incadent.feature.campaign.presentation.exchange.ExportScreen
+import com.slack.circuit.runtime.GoToNavigator
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.campaign_items_tab_format
 import dndplayerscodex.shared.generated.resources.campaign_last_new
@@ -75,6 +79,7 @@ private val NoCandidates = TransferCandidates(emptyList(), emptyList())
 @Composable
 fun rememberCampaignSheetHost(
     repository: CampaignRepository,
+    importSource: ImportSource,
     showToast: (String) -> Unit,
 ): CampaignSheetHost {
     val campaigns by repository.observeAll().collectAsState(initial = emptyList())
@@ -82,6 +87,7 @@ fun rememberCampaignSheetHost(
     var dialog by remember { mutableStateOf<HostDialog>(HostDialog.Hidden) }
     val failedText = stringResource(Res.string.error_action_failed)
     val scope = rememberGuardedScope { showToast(failedText) }
+    val overlay = LocalOverlayNavigator.current
 
     val create = dialog as? HostDialog.Create
     val sourceId = create?.draft?.sourceId?.takeIf { create.draft.sameWorld }
@@ -118,6 +124,8 @@ fun rememberCampaignSheetHost(
                 current = current,
                 candidates = effectiveCandidates,
                 repository = repository,
+                importSource = importSource,
+                overlay = overlay,
                 scope = scope,
                 showToast = showToast,
             )
@@ -127,13 +135,15 @@ fun rememberCampaignSheetHost(
 }
 
 // returns the dialog to show next, or null when the event changes nothing on screen
-@Suppress("LongParameterList", "CyclomaticComplexMethod")
+@Suppress("LongParameterList", "CyclomaticComplexMethod", "LongMethod")
 private fun reduce(
     event: CampaignSheetEvent,
     dialog: HostDialog,
     current: Campaign?,
     candidates: TransferCandidates,
     repository: CampaignRepository,
+    importSource: ImportSource,
+    overlay: GoToNavigator,
     scope: CoroutineScope,
     showToast: (String) -> Unit,
 ): HostDialog? {
@@ -163,6 +173,18 @@ private fun reduce(
                 }
                 HostDialog.Hidden
             }
+        }
+        is CampaignSheetEvent.ExportClicked -> {
+            overlay.goTo(ExportScreen(event.id))
+            HostDialog.Hidden
+        }
+        CampaignSheetEvent.ExportCurrentClicked -> {
+            current?.let { overlay.goTo(ExportScreen(it.id)) }
+            HostDialog.Hidden
+        }
+        is CampaignSheetEvent.FilePicked -> {
+            importSource.offer(event.origin)
+            HostDialog.Hidden
         }
         CampaignSheetEvent.FinishClicked -> HostDialog.Finish
         CampaignSheetEvent.ArchiveConfirmed -> {

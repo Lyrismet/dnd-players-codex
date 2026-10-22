@@ -4,9 +4,14 @@ import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSelectSheetContent
 import com.lyrismet.incadent.core.designsystem.component.AppSelectTexts
+import com.lyrismet.incadent.core.selectlist.SelectOption
+import com.lyrismet.incadent.feature.codex.domain.grouping.srdNotAdded
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_label_species
+import dndplayerscodex.shared.generated.resources.codex_species_group_own
+import dndplayerscodex.shared.generated.resources.codex_species_group_srd
 import dndplayerscodex.shared.generated.resources.codex_species_select_clear
 import dndplayerscodex.shared.generated.resources.codex_species_select_create
 import dndplayerscodex.shared.generated.resources.codex_species_select_done
@@ -48,4 +53,30 @@ internal fun SpeciesSelectSheet(
             onCreate = { name, _ -> onCreated(name) },
         )
     }
+}
+
+/** the species the sheet offers - the ones in the bestiary, then the built-in names not added yet */
+@Composable
+internal fun speciesSelectState(
+    species: List<Species>,
+    selectedId: Long?,
+    isRussian: Boolean,
+): SpeciesSelectState {
+    val ownGroup = stringResource(Res.string.codex_species_group_own)
+    val srdGroup = stringResource(Res.string.codex_species_group_srd)
+    val srd = srdNotAdded(species.map { it.name })
+    return SpeciesSelectState(
+        options =
+            species.map { SelectOption(it.id, it.name, group = ownGroup) } +
+                srd.map { (id, entry) ->
+                    SelectOption(
+                        id,
+                        entry.name(isRussian),
+                        searchText = "${entry.nameRu} ${entry.nameEn}",
+                        group = srdGroup,
+                    )
+                },
+        selectedIds = setOfNotNull(selectedId),
+        srd = srd.associate { (id, entry) -> id to SrdSuggestion(entry.name(isRussian), entry.type) },
+    )
 }

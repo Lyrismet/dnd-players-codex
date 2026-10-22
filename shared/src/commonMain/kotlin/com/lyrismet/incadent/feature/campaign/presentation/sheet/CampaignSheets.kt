@@ -1,15 +1,22 @@
 package com.lyrismet.incadent.feature.campaign.presentation.sheet
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
+import com.lyrismet.incadent.core.designsystem.component.ButtonSize
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
+import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.SelectCreateRow
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSections
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetState
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.campaign_import_from_file
 import dndplayerscodex.shared.generated.resources.campaign_new
 import dndplayerscodex.shared.generated.resources.campaign_sheet_title
 import org.jetbrains.compose.resources.stringResource
@@ -52,10 +59,19 @@ private fun CampaignLibrarySheet(
                 onOpen = { onEvent(CampaignSheetEvent.CampaignClicked(it)) },
                 onRename = { onEvent(CampaignSheetEvent.RenameClicked) },
                 onFinish = { onEvent(CampaignSheetEvent.FinishClicked) },
+                onExport = { onEvent(CampaignSheetEvent.ExportClicked(it)) },
             )
             SelectCreateRow(
                 text = stringResource(Res.string.campaign_new),
                 onClick = { onEvent(CampaignSheetEvent.NewCampaignClicked) },
+            )
+            AppButton(
+                text = stringResource(Res.string.campaign_import_from_file),
+                onClick = rememberImportPicker(onEvent),
+                modifier = Modifier.fillMaxWidth(),
+                tone = ButtonTone.Neutral,
+                variant = ButtonVariant.Ghost,
+                size = ButtonSize.Large,
             )
         }
     }

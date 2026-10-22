@@ -1,6 +1,9 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import androidx.compose.runtime.Composable
+import com.lyrismet.incadent.core.format.orDash
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
+import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_type_species
 import dndplayerscodex.shared.generated.resources.codex_species_seen_format
@@ -17,6 +20,10 @@ internal fun SpeciesSummaryBody(
     onClose: () -> Unit,
 ) {
     val creatureType = creatureTypeLabels().getValue(species.creatureType)
+    val creatureOptions =
+        creatureTypeLabels().map { (type, label) ->
+            StatusOption(type, label, SpeciesMentionColor, isSelected = type == species.creatureType)
+        }
     val seen =
         if (species.seenInSessions > 0) {
             stringResource(
@@ -37,18 +44,30 @@ internal fun SpeciesSummaryBody(
         title = species.name,
         subtitle = seen,
         onClose = onClose,
-        onEditClicked = actions.onSpeciesEditClicked?.let { edit -> { edit(species.ref) } },
+        onEditClicked = actions.onEditClicked?.let { edit -> { edit(species.ref) } },
+        quick = actions.quickEdit,
     )
     species.noteQuantity?.let { SpeciesNoteQuantityRow(it, actions.onSpeciesNoteQuantityStep) }
-    EntityDescription(species.notes, null)
-    // the hit points come only from fights, so the row stays a dash until the combat feature records some
+    EntityDescription(species.notes, actions.quickEdit)
+    // the hit points are known from a fight or from the player, a dash until one of them says
     EntityFactsGrid(
         facts =
             listOf(
-                FactRow(Res.string.entity_sheet_species_creature_type_label, FactValue.Text(creatureType)),
-                FactRow(Res.string.entity_sheet_species_hp_label, FactValue.Text("")),
+                FactRow(
+                    Res.string.entity_sheet_species_creature_type_label,
+                    FactValue.Text(creatureType),
+                    QuickEditField.CREATURE_TYPE,
+                    creatureOptions = creatureOptions,
+                ),
+                nicknamesFact(species.nicknames),
+                FactRow(
+                    Res.string.entity_sheet_species_hp_label,
+                    FactValue.Text(species.hitPoints.orDash()),
+                    QuickEditField.HIT_POINTS,
+                ),
             ),
         onEntityRefClicked = actions.onEntityRefClicked,
+        quick = actions.quickEdit,
     )
     SpeciesDamageSection(
         damage = species.damage,

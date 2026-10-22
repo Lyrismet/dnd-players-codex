@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.feature.campaign.presentation.sheet
 
+import com.lyrismet.incadent.core.file.FileOrigin
+
 /** one campaign as the library card shows it - every label is already formatted */
 data class CampaignCardItem(
     val id: String,
@@ -147,4 +149,16 @@ sealed interface CampaignSheetEvent {
     ) : CampaignSheetEvent
 
     data object AllToggled : CampaignSheetEvent
+
+    data class ExportClicked(
+        val id: String,
+    ) : CampaignSheetEvent
+
+    /** exports the open campaign, what Settings and the delete dialog offer */
+    data object ExportCurrentClicked : CampaignSheetEvent
+
+    /** a file the person picked to import, or one the system handed to the app */
+    data class FilePicked(
+        val origin: FileOrigin,
+    ) : CampaignSheetEvent
 }

@@ -13,10 +13,8 @@ import com.lyrismet.incadent.core.portrait.encodeAsync
 import com.lyrismet.incadent.core.portrait.prepareCropDraftAsync
 import com.lyrismet.incadent.core.portrait.recropDraft
 import com.lyrismet.incadent.core.preferences.AppLanguage
-import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
-import com.lyrismet.incadent.feature.codex.domain.grouping.srdNotAdded
 import com.lyrismet.incadent.feature.codex.domain.grouping.srdSuggestions
 import com.lyrismet.incadent.feature.codex.domain.grouping.with
 import com.lyrismet.incadent.feature.codex.domain.grouping.withRecentPlaces
@@ -31,6 +29,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
@@ -63,8 +62,6 @@ import dndplayerscodex.shared.generated.resources.codex_entry_save_label_create
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
 import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
-import dndplayerscodex.shared.generated.resources.codex_species_group_own
-import dndplayerscodex.shared.generated.resources.codex_species_group_srd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -264,12 +261,12 @@ class CodexEntryFormController private constructor(
         val current = fields.value ?: return
         val party = current.party
         val clamped = value?.coerceAtMost(field.range().last)
-        val updated =
+        fields.value =
             when (field) {
-                CodexEntryNumberField.PARTY_LEVEL -> party.copy(level = clamped)
-                CodexEntryNumberField.PARTY_HP_MAX -> party.copy(hpMax = clamped)
+                CodexEntryNumberField.PARTY_LEVEL -> current.copy(party = party.copy(level = clamped))
+                CodexEntryNumberField.PARTY_HP_MAX -> current.copy(party = party.copy(hpMax = clamped))
+                CodexEntryNumberField.SPECIES_HIT_POINTS -> current.copy(speciesHitPoints = clamped)
             }
-        fields.value = current.copy(party = updated)
     }
 
     fun onPartyLevelFromPlayerClicked() {
@@ -520,31 +517,6 @@ class CodexEntryFormController private constructor(
         scope.launch { persister.save(created?.let { current.copy(npcSpeciesId = it.await()) } ?: current) }
     }
 
-    @Composable
-    private fun speciesSelectState(
-        species: List<Species>,
-        selectedId: Long?,
-        isRussian: Boolean,
-    ): SpeciesSelectState {
-        val ownGroup = stringResource(Res.string.codex_species_group_own)
-        val srdGroup = stringResource(Res.string.codex_species_group_srd)
-        val srd = srdNotAdded(species.map { it.name })
-        return SpeciesSelectState(
-            options =
-                species.map { SelectOption(it.id, it.name, group = ownGroup) } +
-                    srd.map { (id, entry) ->
-                        SelectOption(
-                            id,
-                            entry.name(isRussian),
-                            searchText = "${entry.nameRu} ${entry.nameEn}",
-                            group = srdGroup,
-                        )
-                    },
-            selectedIds = setOfNotNull(selectedId),
-            srd = srd.associate { (id, entry) -> id to SrdSuggestion(entry.name(isRussian), entry.type) },
-        )
-    }
-
     // one assignment per form-state field - a flat mapping, not real complexity
     @Suppress("LongMethod")
     @Composable
@@ -624,6 +596,7 @@ class CodexEntryFormController private constructor(
                     FormChipOption(npc.id, npc.name, npc.id == current.questGiverId, npc.status.toStatusColor())
                 },
             speciesDamage = current.speciesDamage,
+            speciesHitPoints = current.speciesHitPoints,
             creatureTypeOptions =
                 CreatureType.entries.map {
                     FormChipOption(it, typeLabels.getValue(it), it == current.speciesType)
@@ -686,6 +659,7 @@ private fun CodexEntryNumberField.range(): IntRange =
     when (this) {
         CodexEntryNumberField.PARTY_LEVEL -> PartyStatRanges.level
         CodexEntryNumberField.PARTY_HP_MAX -> PartyStatRanges.hpMax
+        CodexEntryNumberField.SPECIES_HIT_POINTS -> SPECIES_HIT_POINTS_RANGE
     }
 
 @Composable

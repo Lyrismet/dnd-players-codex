@@ -6,6 +6,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
+import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
 import com.lyrismet.incadent.feature.codex.domain.model.parseNicknames
@@ -136,6 +137,7 @@ internal fun Species.toFields(ref: EntityRef.Species) =
         nicknames = nicknames.joinNicknames(),
         speciesType = creatureType,
         speciesDamage = damage,
+        speciesHitPoints = hitPoints,
     )
 
 internal fun CodexEntryFormFields.toSpecies() =
@@ -147,4 +149,5 @@ internal fun CodexEntryFormFields.toSpecies() =
         notes = description.trim(),
         photo = portrait,
         nicknames = parseNicknames(nicknames),
+        hitPoints = speciesHitPoints?.coerceIn(SPECIES_HIT_POINTS_RANGE),
     )

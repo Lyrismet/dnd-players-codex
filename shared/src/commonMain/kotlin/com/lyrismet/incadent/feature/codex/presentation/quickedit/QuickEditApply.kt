@@ -8,16 +8,16 @@ import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.clampedToRanges
 import com.lyrismet.incadent.feature.codex.domain.model.parseNicknames
 
-private fun QuickEditValue.text(): String? = (this as? QuickEditValue.Text)?.text
+internal fun QuickEditValue.text(): String? = (this as? QuickEditValue.Text)?.text
 
 // names and short labels are saved trimmed with a capital first letter, same as the entry form does
-private val QuickEditValue.name: String? get() = text()?.trim()?.capitalizeFirst()
+internal val QuickEditValue.name: String? get() = text()?.trim()?.capitalizeFirst()
 
 private fun QuickEditValue.number(): QuickEditValue.Number? = this as? QuickEditValue.Number
 
 private fun QuickEditValue.places(): QuickEditValue.Places? = this as? QuickEditValue.Places
 
-private fun QuickEditValue.picture(): QuickEditValue.Picture? = this as? QuickEditValue.Picture
+internal fun QuickEditValue.picture(): QuickEditValue.Picture? = this as? QuickEditValue.Picture
 
 private fun QuickEditValue.link(): QuickEditValue.Link? = this as? QuickEditValue.Link
 
@@ -31,7 +31,7 @@ fun Npc.withQuickEdit(
         QuickEditField.NAME -> value.name?.let { copy(name = it) }
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
         QuickEditField.NICKNAMES -> value.text()?.let { copy(nicknames = parseNicknames(it)) }
-        QuickEditField.RACE -> value.name?.let { copy(race = it) }
+        QuickEditField.SPECIES -> value.link()?.let { copy(speciesId = it.id) }
         QuickEditField.PLACE -> value.places()?.let { copy(locationIds = it.ids) }
         QuickEditField.PORTRAIT -> value.picture()?.let { copy(portrait = it.photo) }
         else -> null

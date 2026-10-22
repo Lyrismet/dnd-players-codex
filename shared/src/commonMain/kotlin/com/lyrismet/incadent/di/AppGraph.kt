@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.di
 
+import com.lyrismet.incadent.core.file.FileStorage
+import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.LanguageRepository
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
@@ -20,6 +22,7 @@ interface AppGraph {
     val appPreferencesRepository: AppPreferencesRepository
     val campaignRepository: CampaignRepository
     val undoController: UndoController
+    val importSource: ImportSource
     val swipeHintReplayController: SwipeHintReplayController
 
     @DependencyGraph.Factory
@@ -27,6 +30,7 @@ interface AppGraph {
         fun create(
             @Provides settings: ObservableSettings,
             @Provides databaseDriverFactory: DatabaseDriverFactory,
+            @Provides fileStorage: FileStorage,
         ): AppGraph
     }
 }

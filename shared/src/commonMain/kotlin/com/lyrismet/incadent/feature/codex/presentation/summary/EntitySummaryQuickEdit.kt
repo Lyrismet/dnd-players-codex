@@ -26,11 +26,13 @@ import com.lyrismet.incadent.core.designsystem.component.HoldHintCard
 import com.lyrismet.incadent.core.designsystem.component.HoldToEditField
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.orDash
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.CreatureTypeEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineFieldEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.LinkOptionEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditKind
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.editsInSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.inputKind
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.FactRow
@@ -117,9 +119,9 @@ internal fun FactLine(
     quick: QuickEditSheet?,
 ) {
     val field = fact.edit
-    // a place field is edited in the select sheet, so the line itself stays as it is while that sheet is open
+    // a place or species field is edited in a select sheet, so the line stays as it is while that sheet is open
     val editing =
-        quick?.inlineEdit?.takeIf { field != null && it.field == field && field.kind !is QuickEditKind.Places }
+        quick?.inlineEdit?.takeIf { field != null && it.field == field && !field.editsInSheet }
     when {
         quick == null || field == null ->
             Box(Modifier.padding(horizontal = 14.dp, vertical = 4.dp)) {
@@ -176,6 +178,7 @@ private fun FactEditor(
                     selectedId = (fact.value as? FactValue.Link)?.chip?.entityRef?.id,
                     onEvent = quick.onEvent,
                 )
+            QuickEditKind.Choice -> CreatureTypeEditor(label, fact.creatureOptions, quick.onEvent)
             else ->
                 InlineFieldEditor(
                     label = label,

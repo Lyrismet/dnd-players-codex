@@ -61,5 +61,13 @@ UPDATE npc SET portrait = ?, portrait_thumb = ? WHERE id = ?;
 deleteById:
 DELETE FROM npc WHERE id = ?;
 
+-- the stored jpeg sizes, what an export estimates its file from
+selectPhotoSizes:
+SELECT id, COALESCE(length(portrait), 0) AS size FROM npc WHERE campaign_id = ?;
+
+-- one stored jpeg, so an export reads a photo at a time without the other columns
+selectPhoto:
+SELECT portrait FROM npc WHERE id = ?;
+
 lastInsertRowId:
 SELECT last_insert_rowid();

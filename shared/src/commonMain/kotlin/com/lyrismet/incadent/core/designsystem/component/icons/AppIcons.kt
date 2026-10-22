@@ -51,8 +51,42 @@ private fun deleteIcon(): ImageVector =
             fill = SolidColor(Color.Black),
         ).build()
 
+// the check mark, a short stroke into a long one
+private fun checkIcon(): ImageVector =
+    ImageVector
+        .Builder(
+            name = "Check",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = ICON_VIEWPORT,
+            viewportHeight = ICON_VIEWPORT,
+        ).addPath(
+            pathData = addPathNodes("M9,16.2L4.8,12l-1.4,1.4L9,19L21,7l-1.4,-1.4z"),
+            fill = SolidColor(Color.Black),
+        ).build()
+
+// the cross, two strokes through the middle
+private fun closeIcon(): ImageVector =
+    ImageVector
+        .Builder(
+            name = "Close",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = ICON_VIEWPORT,
+            viewportHeight = ICON_VIEWPORT,
+        ).addPath(
+            pathData =
+                addPathNodes(
+                    "M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59" +
+                        "L13.41,12z",
+                ),
+            fill = SolidColor(Color.Black),
+        ).build()
+
 /** glyphs reused across 2+ features - one place to see, and if needed swap, every reference */
 object AppIcons {
     val Edit: ImageVector = quillIcon()
     val Delete: ImageVector = deleteIcon()
+    val Check: ImageVector = checkIcon()
+    val Close: ImageVector = closeIcon()
 }

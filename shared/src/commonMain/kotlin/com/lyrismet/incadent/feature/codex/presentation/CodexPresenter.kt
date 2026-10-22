@@ -8,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.errors.ReportFailures
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
-import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
@@ -29,7 +28,6 @@ import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignReposito
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroupingSelection
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexRegions
-import com.lyrismet.incadent.feature.codex.domain.grouping.withRecentPlaces
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
@@ -45,20 +43,12 @@ import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
-import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectState
-import com.lyrismet.incadent.feature.codex.presentation.form.editingPlace
-import com.lyrismet.incadent.feature.codex.presentation.form.placeFieldTitle
-import com.lyrismet.incadent.feature.codex.presentation.form.placeSelectState
-import com.lyrismet.incadent.feature.codex.presentation.form.quickPlaceField
-import com.lyrismet.incadent.feature.codex.presentation.form.quickPlaceTarget
 import com.lyrismet.incadent.feature.codex.presentation.form.rememberPlaceFailureText
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineEdit
-import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditInteractions
-import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditKind
-import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickPhotoCrop
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.rememberEntityChangeReporter
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityLookup
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
@@ -83,14 +73,9 @@ import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_toast_format
-import dndplayerscodex.shared.generated.resources.entity_sheet_move_into
-import dndplayerscodex.shared.generated.resources.place_move_from
-import dndplayerscodex.shared.generated.resources.place_move_here
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.resources.stringResource
 
 private fun mentionIndexOf(
     npcs: List<Npc>,
@@ -186,7 +171,7 @@ class CodexPresenter(
         val scope = rememberGuardedScope { failure.value = it }
         val labels = codexLabels()
 
-        val fields = rememberFields(labels)
+        val fields = rememberFields(rememberEntityChangeReporter(undoController))
         ReportFailures(failure, rememberPlaceFailureText()) { fields.toast.value = ToastMessage(it) }
         val formController = rememberFormController(fields, parties)
 
@@ -348,7 +333,7 @@ class CodexPresenter(
 
     // the sheet and the in-place editor share one selection - every committed change is offered to the undo toast
     @Composable
-    private fun rememberFields(labels: CodexLabels): CodexFields {
+    private fun rememberFields(reportChange: suspend (EntityChange) -> Unit): CodexFields {
         // rememberRetained not remember - state must survive push/pop navigation, not just recomposition
         val activeTab = rememberRetained { mutableStateOf(CodexTab.ALL) }
         val searchQuery = rememberRetained { mutableStateOf("") }
@@ -363,22 +348,23 @@ class CodexPresenter(
                 codexRepositories,
                 navigator.sessionEntryOpener(),
                 entityHistory,
-                onChanged = { change ->
-                    val title =
-                        if (change.field == QuickEditField.MOVE) {
-                            labels.fieldTitles.getValue(change.field)
-                        } else {
-                            labels.fieldTitles.getValue(change.field) + labels.changedSuffix
-                        }
-                    undoController.show(title, change.subtitle(), change.restore)
-                },
+                onChanged = reportChange,
             )
+        val recentPlaceIds = rememberRetained { mutableStateOf(emptyList<Long>()) }
         val quickEdit =
-            QuickEditInteractions(inlineEdit, photoCrop, selectedEntityRef, entitySheet, imageCompressor) {
+            QuickEditInteractions(
+                inlineEdit,
+                photoCrop,
+                selectedEntityRef,
+                entitySheet,
+                imageCompressor,
+                recentPlaceIds,
+                codexRepositories,
+                undoController,
+            ) {
                 appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
             }
         val toast = rememberRetained { mutableStateOf<ToastMessage?>(null) }
-        val recentPlaceIds = rememberRetained { mutableStateOf(emptyList<Long>()) }
         val collapsedPlaceIds = rememberRetained { mutableStateOf(emptySet<Long>()) }
         val pendingDelete = rememberRetained { mutableStateOf<EntityRef?>(null) }
         val npcMode = rememberRetained { mutableStateOf(NpcListMode.NAMED) }
@@ -416,7 +402,6 @@ class CodexPresenter(
         scope: CoroutineScope,
         context: CodexEditContext,
     ): CodexState {
-        val inlineEdit = fields.inlineEdit.value
         val activeTab = fields.activeTab.value
         val campaign by campaignRepository.observeCurrent().collectAsState(initial = null)
         val readOnly = campaign?.status == CampaignStatus.ARCHIVED
@@ -448,14 +433,13 @@ class CodexPresenter(
             emptyState = codexEmptyState(emptyKind, activeTab),
             activeSheet = codexActiveSheet(formState, selectedEntity),
             editMode = context.editMode,
-            inlineEdit = inlineEdit,
-            photoCrop = fields.photoCrop.value?.draft,
-            quickPlaceSelect = quickPlaceSelectState(inlineEdit, fields, records),
-            holdTipVisible =
-                context.editMode == EntityEditMode.QUICK &&
-                    context.holdHint == HoldHintState.PENDING &&
-                    inlineEdit == null,
-            undoAction = context.undoAction,
+            quick =
+                fields.quickEdit.state(
+                    records,
+                    holdTipAllowed =
+                        context.editMode == EntityEditMode.QUICK && context.holdHint == HoldHintState.PENDING,
+                    undoAction = context.undoAction,
+                ),
             swipeHintTarget = context.swipeHintTarget,
             swipeHintDirection = codexSwipeHintDirection(context.editMode),
             toast = fields.toast.value,
@@ -509,29 +493,6 @@ class CodexPresenter(
         return CodexDeleteWarning(ref, plan.name, plan.mentionHits.notes, plan.mentionHits.sessions)
     }
 
-    // the select sheet of a place field held on the card - null when no place field is being edited
-    @Composable
-    private fun quickPlaceSelectState(
-        inlineEdit: InlineEdit?,
-        fields: CodexFields,
-        records: CodexRecords,
-    ): PlaceSelectState? {
-        val isPlaceEdit = inlineEdit != null && inlineEdit.field.kind is QuickEditKind.Places
-        val moveTitle = stringResource(Res.string.entity_sheet_move_into)
-        val ref = fields.selectedEntityRef.value
-        val target = if (isPlaceEdit && inlineEdit != null) quickPlaceTarget(ref, inlineEdit.field, records) else null
-        return target?.let { (field, selectedIds) ->
-            placeSelectState(
-                field = field,
-                title = moveTitle.takeIf { inlineEdit?.field == QuickEditField.MOVE } ?: placeFieldTitle(field),
-                locations = records.locations,
-                selectedIds = selectedIds,
-                editing = editingPlace(ref, records.locations),
-                recentIds = fields.recentPlaceIds.value,
-            )
-        }
-    }
-
     private fun buildSearchResults(
         records: CodexRecords,
         fields: CodexFields,
@@ -571,14 +532,7 @@ class CodexPresenter(
                 }
                 fields.entitySheet.onEvent(scope, event.event)
             }
-            is CodexEvent.QuickEdit -> {
-                val answer = event.event
-                if (answer is QuickEditUiEvent.PlacesChosen) fields.rememberRecentPlaces(answer.ids)
-                fields.quickEdit.onEvent(scope, answer)
-            }
-            is CodexEvent.QuickPlaceCreated -> onQuickPlaceCreated(event, fields, scope)
-            CodexEvent.UndoClicked -> undoController.undo()
-            CodexEvent.UndoFollowUpClicked -> undoController.followUp()
+            is CodexEvent.QuickEdit -> fields.quickEdit.onEvent(scope, event.event)
             CodexEvent.AddEntryClicked -> {
                 val type = if (fields.showsSpecies) EntityKind.SPECIES else fields.activeTab.value.toEntryType()
                 formController.onAddEntryClicked(type)
@@ -628,24 +582,6 @@ class CodexPresenter(
         if (type == EntityKind.SPECIES) npcMode.value = NpcListMode.SPECIES
     }
 
-    // the new place joins what was ticked in the card's select sheet, a single field takes just the new place
-    private fun onQuickPlaceCreated(
-        event: CodexEvent.QuickPlaceCreated,
-        fields: CodexFields,
-        scope: CoroutineScope,
-    ) {
-        val name = event.name.trim().capitalizeFirst()
-        if (name.isBlank()) return
-        val held = fields.inlineEdit.value?.field ?: return
-        val isMulti = quickPlaceField(fields.selectedEntityRef.value, held)?.isMulti == true
-        scope.launch {
-            val id = locationRepository.upsert(Location(id = 0, name = name, description = ""))
-            val ids = if (isMulti) event.checked + id else listOf(id)
-            fields.rememberRecentPlaces(listOf(id))
-            fields.quickEdit.onEvent(scope, QuickEditUiEvent.PlacesChosen(ids))
-        }
-    }
-
     // a record notes still mention asks first, anything else goes straight away
     private fun onEntityDeleteRequested(
         ref: EntityRef,
@@ -682,10 +618,6 @@ class CodexPresenter(
 private fun CodexFields.closeSheetOf(ref: EntityRef) {
     if (selectedEntityRef.value == ref) quickEdit.onSheetClosed()
     entitySheet.onEntityRemoved(ref)
-}
-
-private fun CodexFields.rememberRecentPlaces(ids: List<Long>) {
-    recentPlaceIds.value = recentPlaceIds.value.withRecentPlaces(ids)
 }
 
 /** the edit preferences and the undo toast the screen state is assembled from */
@@ -742,13 +674,3 @@ private fun codexActiveSheet(
         selectedEntity != null -> CodexSheet.EntityView(selectedEntity)
         else -> null
     }
-
-// the places a change moved are told as a sentence, any other change is told by the name of its record
-private suspend fun EntityChange.subtitle(): String {
-    val places = moved?.takeIf { it.count > 0 } ?: return entityName
-    return if (places.fromName != null) {
-        getPluralString(Res.plurals.place_move_from, places.count, places.count, places.fromName)
-    } else {
-        getPluralString(Res.plurals.place_move_here, places.count, places.count)
-    }
-}

@@ -7,6 +7,7 @@ CREATE TABLE species (
     damage TEXT NOT NULL DEFAULT '',
     notes TEXT NOT NULL DEFAULT '',
     nicknames TEXT NOT NULL DEFAULT '',
+    hit_points INTEGER,
     photo BLOB,
     photo_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
@@ -16,24 +17,30 @@ CREATE INDEX species_campaign_id ON species(campaign_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT id, name, creature_type, damage, notes, nicknames, photo_thumb FROM species WHERE campaign_id = ? ORDER BY name;
+SELECT id, name, creature_type, damage, notes, nicknames, hit_points, photo_thumb FROM species WHERE campaign_id = ? ORDER BY name;
 
 selectById:
-SELECT id, name, creature_type, damage, notes, nicknames, photo_thumb, photo FROM species WHERE id = ?;
+SELECT id, name, creature_type, damage, notes, nicknames, hit_points, photo_thumb, photo FROM species WHERE id = ?;
 
 insert:
-INSERT INTO species(name, creature_type, damage, notes, nicknames, photo, photo_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO species(name, creature_type, damage, notes, nicknames, hit_points, photo, photo_thumb, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO species(id, name, creature_type, damage, notes, nicknames, photo, photo_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO species(id, name, creature_type, damage, notes, nicknames, hit_points, photo, photo_thumb, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE species
-SET name = ?, creature_type = ?, damage = ?, notes = ?, nicknames = ?
+SET name = ?, creature_type = ?, damage = ?, notes = ?, nicknames = ?, hit_points = ?
+WHERE id = ?;
+
+-- an import leaves the hit points alone when the file does not know them, an older file never does
+updateImported:
+UPDATE species
+SET name = ?, creature_type = ?, damage = ?, notes = ?, nicknames = ?, hit_points = COALESCE(?, hit_points)
 WHERE id = ?;
 
 setPhoto:
@@ -41,6 +48,14 @@ UPDATE species SET photo = ?, photo_thumb = ? WHERE id = ?;
 
 deleteById:
 DELETE FROM species WHERE id = ?;
+
+-- the stored jpeg sizes, what an export estimates its file from
+selectPhotoSizes:
+SELECT id, COALESCE(length(photo), 0) AS size FROM species WHERE campaign_id = ?;
+
+-- one stored jpeg, so an export reads a photo at a time without the other columns
+selectPhoto:
+SELECT photo FROM species WHERE id = ?;
 
 lastInsertRowId:
 SELECT last_insert_rowid();
