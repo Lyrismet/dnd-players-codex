@@ -22,13 +22,16 @@ sealed interface ExchangeRequest {
 @SingleIn(AppScope::class)
 class ExchangeRequests {
     private val state = MutableStateFlow<ExchangeRequest?>(null)
+    private var queued: ExchangeRequest? = null
     val pending: StateFlow<ExchangeRequest?> = state
 
+    // an open sheet is never replaced, the newest request waits for it to close
     fun request(request: ExchangeRequest) {
-        state.value = request
+        if (state.value == null) state.value = request else queued = request
     }
 
     fun clear() {
-        state.value = null
+        state.value = queued
+        queued = null
     }
 }

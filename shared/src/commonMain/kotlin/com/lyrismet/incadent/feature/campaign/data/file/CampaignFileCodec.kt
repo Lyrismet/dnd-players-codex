@@ -12,6 +12,7 @@ import kotlinx.serialization.json.Json
 // a main photo is at most about 90 KB, in base64 and with room to spare it still fits well under this
 internal const val MAX_LINE_CHARS = 1_000_000
 internal const val MAX_RECORDS = 200_000
+private const val BOM = "\uFEFF"
 
 internal val FileJson =
     Json {
@@ -80,7 +81,7 @@ class CampaignFileReader private constructor(
                 } catch (_: LineTooLongException) {
                     ""
                 }
-            val header = parseHeader(first)
+            val header = parseHeader(first.removePrefix(BOM))
             header.problem()?.let { throw ImportFailedException(it) }
             return CampaignFileReader(source, requireNotNull(header), first.length.toLong())
         }

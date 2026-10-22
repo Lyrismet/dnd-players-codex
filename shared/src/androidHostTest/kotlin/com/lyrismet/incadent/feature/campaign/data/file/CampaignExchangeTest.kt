@@ -11,6 +11,7 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ImportError
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportFailedException
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportRequest
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportTarget
+import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordSelection
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -399,6 +400,35 @@ class CampaignExchangeTest {
                 .single()
                 .nicknames,
         )
+    }
+
+    @Test
+    fun `a replaced npc keeps its places when the file places did not come along`() {
+        seed()
+        val bob =
+            database.npcQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+        val before = database.npcLocationQueries.selectByNpc(bob.id).executeAsList()
+        val file = MemoryFile()
+        CampaignFileWriter(file).run {
+            writeHeader(FileHeader(FILE_FORMAT, FILE_VERSION, "World", false, 2, 0))
+            write(FileRecord.Place(id = 1, name = "Elsewhere", description = "", parentId = null))
+            write(FileRecord.Npc(id = 1, name = "Bob", status = NpcStatus.FRIEND, placeIds = listOf(1)))
+        }
+
+        importer.import(
+            origin(file),
+            ImportRequest(
+                ImportTarget.Existing(source),
+                ConflictMode.SKIP,
+                scope = RecordScope(emptySet(), emptySet(), setOf(1L), emptySet(), emptySet(), emptySet()),
+                replace = setOf(ExchangeRef(ExchangeKind.NPC, 1)),
+            ),
+        )
+
+        assertEquals(before, database.npcLocationQueries.selectByNpc(bob.id).executeAsList())
     }
 
     @Test

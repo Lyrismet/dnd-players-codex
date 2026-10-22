@@ -353,8 +353,11 @@ internal class CampaignImporter(
                 link(record.speciesId, speciesMap, current.species_id),
                 id,
             )
+            val places = record.placeIds.mapNotNull(placeMap::get)
+            // places the file names but did not bring along leave the current ones alone, like link() does
+            if (places.isEmpty() && record.placeIds.isNotEmpty()) return
             database.npcLocationQueries.deleteByNpc(id)
-            record.placeIds.mapNotNull(placeMap::get).forEach { database.npcLocationQueries.insert(id, it) }
+            places.forEach { database.npcLocationQueries.insert(id, it) }
         }
 
         private fun overwriteQuest(

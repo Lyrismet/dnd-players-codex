@@ -178,6 +178,8 @@ class QuickEditInteractions(
         val isMulti = quickPlaceField(selectedRef.value, held)?.isMulti == true
         scope.launch {
             val id = locationRepository.upsert(Location(id = 0, name = name, description = ""))
+            // the editor closed while the place was saved, so nothing would hold it
+            if (inlineEdit.value == null) return@launch locationRepository.delete(id)
             recentPlaceIds.value = recentPlaceIds.value.withRecentPlaces(listOf(id))
             commitChosen(scope, QuickEditValue.Places(if (isMulti) event.checked + id else listOf(id)))
         }

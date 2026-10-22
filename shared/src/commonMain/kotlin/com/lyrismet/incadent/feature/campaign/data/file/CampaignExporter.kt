@@ -103,7 +103,7 @@ class CampaignExporter(
         val catalog = catalog(campaignId)
         val scope = selection.resolve(catalog.graph)
         val counter = CountingSink()
-        write(campaignId, catalog.campaignName, selection.copy(photos = false), counter)
+        write(campaignId, catalog, selection.copy(photos = false), counter)
         val sizes =
             placeQueries
                 .selectPhotoSizes(campaignId)
@@ -136,19 +136,35 @@ class CampaignExporter(
         campaignName: String,
         selection: RecordSelection,
         sink: FileSink,
+    ) = write(campaignId, catalog(campaignId).copy(campaignName = campaignName), selection, sink)
+
+    private fun write(
+        campaignId: String,
+        catalog: ExchangeCatalog,
+        selection: RecordSelection,
+        sink: FileSink,
     ) {
-        val catalog = catalog(campaignId)
         val scope = selection.resolve(catalog.graph)
         val ids = FileIds(scope, catalog.graph)
         val writer = CampaignFileWriter(sink)
         val records = scope.places.size + scope.npcs.size + scope.quests.size + scope.species.size + scope.party.size
-        writer.writeHeader(
-            FileHeader(FILE_FORMAT, FILE_VERSION, campaignName, selection.photos, records, scope.sessions.size),
-        )
-        writeEntities(campaignId, selection, scope, ids, writer)
-        writeSessions(campaignId, scope, ids, writer)
-        if (selection.photos) writePhotos(scope, ids, writer)
-        sink.close()
+        try {
+            writer.writeHeader(
+                FileHeader(
+                    FILE_FORMAT,
+                    FILE_VERSION,
+                    catalog.campaignName,
+                    selection.photos,
+                    records,
+                    scope.sessions.size,
+                ),
+            )
+            writeEntities(campaignId, selection, scope, ids, writer)
+            writeSessions(campaignId, scope, ids, writer)
+            if (selection.photos) writePhotos(scope, ids, writer)
+        } finally {
+            sink.close()
+        }
     }
 
     private fun writeEntities(

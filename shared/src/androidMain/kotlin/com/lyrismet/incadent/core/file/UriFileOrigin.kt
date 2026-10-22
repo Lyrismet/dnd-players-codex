@@ -12,7 +12,8 @@ class UriFileOrigin(
     private val context: Context,
     private val uri: Uri,
 ) : FileOrigin {
-    override val name: String = queryColumn(OpenableColumns.DISPLAY_NAME) { it.getString(0) }.orEmpty()
+    // asked on first use, a slow provider must not stall the main thread when the file arrives
+    override val name: String by lazy { queryColumn(OpenableColumns.DISPLAY_NAME) { it.getString(0) }.orEmpty() }
 
     override fun open(): FileSource {
         val size = queryColumn(OpenableColumns.SIZE) { if (it.isNull(0)) null else it.getLong(0) }

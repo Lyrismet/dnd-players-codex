@@ -17,8 +17,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val graph = (application as IncadentApplication).graph
-        // a recreated activity must not open the same file again
-        if (savedInstanceState == null) openSharedFile(intent)
+        // a recreated activity or a relaunch from recents must not open the same file again
+        val fromHistory = intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0
+        if (savedInstanceState == null && !fromHistory) openSharedFile(intent)
 
         setContent {
             App(graph, onExit = { finish() })

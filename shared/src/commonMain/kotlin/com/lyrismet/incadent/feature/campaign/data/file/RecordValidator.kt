@@ -2,12 +2,15 @@ package com.lyrismet.incadent.feature.campaign.data.file
 
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportError
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportFailedException
+import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
+import com.lyrismet.incadent.feature.mention.domain.mentionRefsIn
 
 // far above what the forms allow (see TextLimits), so a real export always fits and a stuffed field never does
 private const val MAX_SHORT_CHARS = 200
 private const val MAX_NICKNAMES_CHARS = 1_000
 private const val MAX_LONG_CHARS = 20_000
 private const val MAX_LINKS = 10_000
+private const val MAX_HP_WITHOUT_MAX = 999
 
 /** checks that records arrive in the file's fixed order and only point at ones already seen, nothing is trusted */
 class RecordValidator {
@@ -60,7 +63,7 @@ class RecordValidator {
                 is FileRecord.Tag -> fits(MAX_SHORT_CHARS, record.name)
                 is FileRecord.Phrase -> fits(MAX_LONG_CHARS, record.text)
                 is FileRecord.Session -> record.fits()
-                is FileRecord.Entry -> fits(MAX_LONG_CHARS, record.body)
+                is FileRecord.Entry -> fits(MAX_LONG_CHARS, record.body) && record.body.hasReadableTokens()
                 is FileRecord.Photo -> true
             },
         )
@@ -115,7 +118,14 @@ private fun FileRecord.Npc.fits() =
 private fun FileRecord.Quest.fits() = fits(MAX_SHORT_CHARS, title, reward) && fits(MAX_LONG_CHARS, description)
 
 private fun FileRecord.Party.fits() =
-    fits(MAX_SHORT_CHARS, name, characterClass, race, playerName) && fits(MAX_LONG_CHARS, description)
+    fits(MAX_SHORT_CHARS, name, characterClass, race, playerName) &&
+        fits(MAX_LONG_CHARS, description) &&
+        (level == null || level in PartyStatRanges.level) &&
+        (hpMax == null || hpMax in PartyStatRanges.hpMax) &&
+        (hpCurrent == null || hpCurrent in 0..(hpMax ?: MAX_HP_WITHOUT_MAX))
 
 private fun FileRecord.Session.fits() =
     fits(MAX_SHORT_CHARS, title) && tags.size <= MAX_LINKS && tags.all { it.length <= MAX_SHORT_CHARS }
+
+// a token with an id beyond a Long makes the mention parser throw, which would not read as a bad file
+private fun String.hasReadableTokens(): Boolean = runCatching { mentionRefsIn(this) }.isSuccess
