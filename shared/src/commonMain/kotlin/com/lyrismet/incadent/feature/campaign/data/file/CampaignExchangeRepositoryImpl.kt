@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class CampaignExchangeRepositoryImpl(
-    private val database: AppDatabase,
+    database: AppDatabase,
     compressor: ImageCompressor,
 ) : CampaignExchangeRepository {
     private val exporter = CampaignExporter(database)
@@ -43,14 +43,7 @@ class CampaignExchangeRepositoryImpl(
         campaignId: String,
         selection: RecordSelection,
         sink: FileSink,
-    ) = withContext(Dispatchers.Default) {
-        val name =
-            database.campaignQueries
-                .selectName(campaignId)
-                .executeAsOneOrNull()
-                .orEmpty()
-        exporter.write(campaignId, name, selection, sink)
-    }
+    ) = withContext(Dispatchers.Default) { exporter.write(campaignId, selection, sink) }
 
     override suspend fun readContents(origin: FileOrigin): ImportContents =
         withContext(Dispatchers.Default) { readImportContents(origin) }

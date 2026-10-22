@@ -16,20 +16,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.PillSize
 import com.lyrismet.incadent.core.designsystem.component.SelectCheckbox
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.bleedHorizontally
 import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.exchange_items_all
@@ -156,7 +155,7 @@ fun ExchangePickSection(
         Text(
             text = stringResource(Res.string.exchange_pick_footnote),
             color = AppPalette.TextSecondary,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.CaptionPlus, lineHeight = 17.sp),
+            style = AppText.footnote,
         )
     }
 }
@@ -197,13 +196,6 @@ private fun PickTabs(
 }
 
 private val SHEET_INSET = 20.dp
-
-private fun Modifier.bleedHorizontally(inset: Dp): Modifier =
-    layout { measurable, constraints ->
-        val extra = inset.roundToPx()
-        val placeable = measurable.measure(constraints.copy(minWidth = 0, maxWidth = constraints.maxWidth + extra * 2))
-        layout(constraints.maxWidth, placeable.height) { placeable.place(-extra, 0) }
-    }
 
 @Composable
 private fun PickRowItem(

@@ -58,7 +58,9 @@ data class RecordScope(
     val quests: Set<Long>,
     val species: Set<Long>,
     val party: Set<Long>,
-)
+) {
+    val recordCount: Int get() = places.size + npcs.size + quests.size + species.size + party.size
+}
 
 /** what the preview of a file shows */
 data class ImportContents(

@@ -50,9 +50,9 @@ data class ExchangePick(
 ) {
     val scope: RecordScope = selection.resolve(graph)
 
-    val recordCount: Int =
-        scope.places.size + scope.npcs.size + scope.quests.size + scope.species.size + scope.party.size
+    val recordCount: Int = scope.recordCount
     val sessionCount: Int = scope.sessions.size
+    val isEmpty: Boolean get() = recordCount + sessionCount == 0
 
     fun tabCounts(): List<PickTabCount> =
         ExchangeTab.entries.map { PickTabCount(it, scope.idsOf(it).size, options.itemsOf(it).size) }

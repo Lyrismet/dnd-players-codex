@@ -4,6 +4,7 @@ private const val NEWLINE = '\n'.code.toByte()
 private const val CARRIAGE_RETURN = '\r'.code.toByte()
 private const val CHUNK_BYTES = 64 * 1024
 private const val INITIAL_LINE_BYTES = 1024
+private const val WRITE_CHUNK_BYTES = 64 * 1024
 
 /** a [FileSource] over any byte reader, [read] fills the buffer and returns how many bytes it got, -1 at the end */
 class LineReaderSource(
@@ -53,12 +54,33 @@ class LineReaderSource(
     override fun close() = onClose()
 }
 
-/** a [FileSink] over any byte writer, one line per call with a newline after it */
+/** a [FileSink] over any byte writer, one line per call with a newline after it, handed on in chunks */
 class LineWriterSink(
     private val write: (ByteArray) -> Unit,
     private val onClose: () -> Unit = {},
 ) : FileSink {
-    override fun writeLine(line: String) = write("$line\n".encodeToByteArray())
+    private val buffer = ByteArray(WRITE_CHUNK_BYTES)
+    private var size = 0
 
-    override fun close() = onClose()
+    override fun writeLine(line: String) {
+        val bytes = line.encodeToByteArray()
+        if (size + bytes.size + 1 > buffer.size) flush()
+        if (bytes.size + 1 > buffer.size) {
+            write(bytes + NEWLINE)
+            return
+        }
+        bytes.copyInto(buffer, size)
+        size += bytes.size
+        buffer[size++] = NEWLINE
+    }
+
+    private fun flush() {
+        if (size > 0) write(buffer.copyOf(size))
+        size = 0
+    }
+
+    override fun close() {
+        flush()
+        onClose()
+    }
 }

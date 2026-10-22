@@ -14,6 +14,9 @@ internal const val MAX_LINE_CHARS = 1_000_000
 internal const val MAX_RECORDS = 200_000
 private const val BOM = "\uFEFF"
 
+// how the writer starts a photo line, the discriminator comes first
+private const val PHOTO_LINE_START = "{\"t\":\"photo\""
+
 internal val FileJson =
     Json {
         classDiscriminator = "t"
@@ -40,13 +43,13 @@ class CampaignFileReader private constructor(
     private val validator = RecordValidator()
     private var count = 0
 
-    /** the next record or null at the end of the file */
-    fun nextRecord(): FileRecord? {
+    /** the next record or null at the end of the file, [skipPhotos] passes photo lines on without decoding them */
+    fun nextRecord(skipPhotos: Boolean = false): FileRecord? {
         while (true) {
             val line = readLimited() ?: return null
-            if (line.isBlank()) continue
-            if (++count > MAX_RECORDS) throw ImportFailedException(ImportError.TooLarge)
-            return decode(line).also(validator::accept)
+            val skipped = line.isBlank() || (skipPhotos && line.startsWith(PHOTO_LINE_START))
+            if (!line.isBlank() && ++count > MAX_RECORDS) throw ImportFailedException(ImportError.TooLarge)
+            if (!skipped) return decode(line).also(validator::accept)
         }
     }
 

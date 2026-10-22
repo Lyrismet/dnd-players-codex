@@ -62,7 +62,7 @@ class CampaignRepositoryImpl(
             val id = Uuid.random().toString()
             val copied =
                 database.transactionWithResult {
-                    queries.insert(id, name.trim(), CampaignStatus.LIVE, now(), now())
+                    queries.insertLive(name.trim(), id)
                     starterPhrases.forEach { phraseQueries.insert(it, id) }
                     if (transfer == null) 0 else copyWorld(transfer, id)
                 }

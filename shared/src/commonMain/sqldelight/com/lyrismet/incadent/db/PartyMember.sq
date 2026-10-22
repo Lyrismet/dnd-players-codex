@@ -63,5 +63,9 @@ DELETE FROM party_member WHERE id = ?;
 selectPhotoSizes:
 SELECT id, COALESCE(length(portrait), 0) AS size FROM party_member WHERE campaign_id = ?;
 
+-- one stored jpeg, so an export reads a photo at a time without the other columns
+selectPhoto:
+SELECT portrait FROM party_member WHERE id = ?;
+
 lastInsertRowId:
 SELECT last_insert_rowid();

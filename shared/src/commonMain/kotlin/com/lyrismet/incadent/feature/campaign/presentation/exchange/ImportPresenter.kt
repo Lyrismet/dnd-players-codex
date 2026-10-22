@@ -87,7 +87,7 @@ class ImportPresenter(
         val pickedRecords = taking?.recordCount ?: 0
         val newCount = pickedRecords - duplicates.size
         // a replace ticked for a record that is no longer picked or no longer a duplicate does not count
-        val replaced = duplicates.count { it.ref in replacing }
+        val replaceNow = duplicates.map { it.ref }.filter { it in replacing }.toSet()
 
         fun importNow() {
             val source = origin ?: return
@@ -104,7 +104,7 @@ class ImportPresenter(
                     conflicts = conflicts,
                     selection = if (partial) taking?.selection?.copy(photos = photos) else null,
                     scope = if (partial) taking?.scope else null,
-                    replace = if (partial) duplicates.map { it.ref }.filter { it in replacing }.toSet() else emptySet(),
+                    replace = if (partial) replaceNow else emptySet(),
                 )
             step = ImportStep.Working
             scope.launch {
@@ -137,10 +137,10 @@ class ImportPresenter(
             photos = photos,
             conflicts = conflicts,
             duplicates = duplicates,
-            replacing = duplicates.map { it.ref }.filter { it in replacing }.toSet(),
+            replacing = replaceNow,
             newCount = newCount,
             leavePromptVisible = leavePrompt,
-            importCount = if (conflicts == ConflictMode.SKIP) newCount + replaced else pickedRecords,
+            importCount = if (conflicts == ConflictMode.SKIP) newCount + replaceNow.size else pickedRecords,
         ) { event ->
             when (event) {
                 is ImportEvent.FilePicked -> requests.request(ExchangeRequest.Import(event.origin))
@@ -155,7 +155,7 @@ class ImportPresenter(
                 is ImportEvent.Pick -> pick = pick?.reduce(event.event)
                 ImportEvent.PhotosToggled -> photos = !photos
                 ImportEvent.ItemsNext ->
-                    if (pickedRecords + (taking?.sessionCount ?: 0) > 0) {
+                    if (taking?.isEmpty == false) {
                         if (duplicates.isEmpty()) importNow() else step = ImportStep.Match
                     }
                 is ImportEvent.ConflictsSelected -> conflicts = event.mode

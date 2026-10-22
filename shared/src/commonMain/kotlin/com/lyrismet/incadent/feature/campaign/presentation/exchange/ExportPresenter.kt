@@ -75,7 +75,7 @@ class ExportPresenter(
             sessionCount = active?.sessionCount ?: 0,
             photos = photos,
             estimate = estimate,
-            canExport = loaded != null && (whole || (active?.let { it.recordCount + it.sessionCount } ?: 0) > 0),
+            canExport = loaded != null && (whole || active?.isEmpty == false),
             file = file,
             toast = toast.value,
         ) { event ->

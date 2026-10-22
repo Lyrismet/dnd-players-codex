@@ -46,5 +46,9 @@ DELETE FROM species WHERE id = ?;
 selectPhotoSizes:
 SELECT id, COALESCE(length(photo), 0) AS size FROM species WHERE campaign_id = ?;
 
+-- one stored jpeg, so an export reads a photo at a time without the other columns
+selectPhoto:
+SELECT photo FROM species WHERE id = ?;
+
 lastInsertRowId:
 SELECT last_insert_rowid();

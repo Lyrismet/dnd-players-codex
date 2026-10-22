@@ -3,10 +3,8 @@ package com.lyrismet.incadent.feature.campaign.data.file
 import com.lyrismet.incadent.core.file.FileOrigin
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.exchange.withKnownMentionsOnly
-import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeGraph
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeItem
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
-import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeOptions
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportContents
 import com.lyrismet.incadent.feature.mention.domain.mentionRefsIn
@@ -17,15 +15,16 @@ internal fun readImportContents(origin: FileOrigin): ImportContents {
     try {
         val reader = CampaignFileReader.open(source)
         val collector = ContentsCollector()
-        while (true) collector.add(reader.nextRecord() ?: break)
-        val options = collector.options()
+        while (true) collector.add(reader.nextRecord(skipPhotos = true) ?: break)
+        val rows = collector.rows()
+        val options = rows.options()
         return ImportContents(
             fileName = origin.name,
             campaignName = reader.header.name,
             bytes = source.sizeOrNull ?: 0L,
             withPhotos = reader.header.withPhotos,
             options = options,
-            graph = collector.graph().withKnownMentionsOnly(options),
+            graph = rows.graph().withKnownMentionsOnly(options),
         )
     } finally {
         source.close()
@@ -61,39 +60,15 @@ private class ContentsCollector {
         mentionRefsIn(entry.body).forEach { found.add(ExchangeRef(it.type.toExchangeKind(), it.id)) }
     }
 
-    fun options(): ExchangeOptions {
-        val placesById = places.associateBy { it.id }
-
-        fun path(parentId: Long?): String =
-            generateSequence(parentId?.let(placesById::get)) { it.parentId?.let(placesById::get) }
-                .toList()
-                .reversed()
-                .joinToString(" › ") { it.name }
-        return ExchangeOptions(
-            sessions = sessions.map { ExchangeItem(it.id, it.title, it.date.date.toString()) },
-            places = places.map { ExchangeItem(it.id, it.name, path(it.parentId)) },
-            npcs =
-                npcs.map { npc ->
-                    ExchangeItem(
-                        npc.id,
-                        npc.name,
-                        npc.placeIds.mapNotNull(placesById::get).joinToString(", ") { it.name },
-                    )
-                },
-            quests = quests.map { ExchangeItem(it.id, it.title) },
+    fun rows() =
+        ExchangeRows(
+            sessions = sessions.map { SessionRow(it.id, it.title, it.date.date.toString()) },
+            places = places.map { PlaceRow(it.id, it.name, it.parentId) },
+            npcs = npcs.map { NpcRow(it.id, it.name, it.speciesId, it.placeIds) },
+            quests = quests.map { QuestRow(it.id, it.title, it.giverNpcId, it.placeId) },
             species = species.map { ExchangeItem(it.id, it.name) },
             party = party.map { ExchangeItem(it.id, it.name) },
-        )
-    }
-
-    fun graph() =
-        ExchangeGraph(
-            placeParent = places.associate { it.id to it.parentId },
-            npcSpecies = npcs.associate { it.id to it.speciesId },
-            npcPlaces = npcs.associate { it.id to it.placeIds },
-            questGiver = quests.associate { it.id to it.giverNpcId },
-            questPlace = quests.associate { it.id to it.placeId },
-            sessionMentions = mentions,
+            mentions = mentions,
         )
 }
 

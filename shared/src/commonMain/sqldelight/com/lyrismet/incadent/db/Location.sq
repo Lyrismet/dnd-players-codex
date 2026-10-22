@@ -50,5 +50,9 @@ DELETE FROM location WHERE id = ?;
 selectPhotoSizes:
 SELECT id, COALESCE(length(cover), 0) AS size FROM location WHERE campaign_id = ?;
 
+-- one stored jpeg, so an export reads a photo at a time without the other columns
+selectPhoto:
+SELECT cover FROM location WHERE id = ?;
+
 lastInsertRowId:
 SELECT last_insert_rowid();

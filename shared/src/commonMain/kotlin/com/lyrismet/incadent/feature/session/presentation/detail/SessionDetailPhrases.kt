@@ -17,16 +17,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.bleedHorizontally
 import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.phrase_completion_frequent_meta_format
@@ -181,11 +180,3 @@ internal fun PhraseCompletionsContent(
         }
     }
 }
-
-// lets a scrolling row run to the edges of a padded parent while its first and last item still sit at the padding
-private fun Modifier.bleedHorizontally(amount: Dp): Modifier =
-    layout { measurable, constraints ->
-        val bleedPx = amount.roundToPx()
-        val placeable = measurable.measure(constraints.copy(maxWidth = constraints.maxWidth + bleedPx * 2))
-        layout(constraints.maxWidth, placeable.height) { placeable.place(-bleedPx, 0) }
-    }

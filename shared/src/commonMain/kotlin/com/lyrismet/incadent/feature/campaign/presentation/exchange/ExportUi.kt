@@ -13,10 +13,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppLoader
@@ -117,7 +117,7 @@ private fun ExportBody(state: ExportState) {
     Text(
         text = stringResource(Res.string.exchange_photos_footnote),
         color = AppPalette.TextSecondary,
-        style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.CaptionPlus, lineHeight = 17.sp),
+        style = AppText.footnote,
     )
     if (state.tooLarge) {
         Text(

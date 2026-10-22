@@ -95,7 +95,10 @@ class CampaignExchangeTest {
     }
 
     private fun export(selection: RecordSelection): MemoryFile =
-        MemoryFile().also { CampaignExporter(database).write(source, "World", selection, it) }
+        MemoryFile().also {
+            database.campaignQueries.rename("World", source)
+            CampaignExporter(database).write(source, selection, it)
+        }
 
     private fun allOf(): RecordSelection {
         val options = CampaignExporter(database).catalog(source).options

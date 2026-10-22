@@ -56,6 +56,7 @@ class LineStreamsTest {
         val sink = LineWriterSink({ out.append(it.decodeToString()) })
         sink.writeLine("a")
         sink.writeLine("б")
+        sink.close()
         assertEquals("a\nб\n", out.toString())
     }
 }
