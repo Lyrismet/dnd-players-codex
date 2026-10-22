@@ -2,14 +2,18 @@ package com.lyrismet.incadent.feature.campaign.presentation.sheet
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDialog
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
@@ -17,6 +21,7 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
+import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetState
 import dndplayerscodex.shared.generated.resources.Res
@@ -24,6 +29,8 @@ import dndplayerscodex.shared.generated.resources.action_cancel
 import dndplayerscodex.shared.generated.resources.action_delete
 import dndplayerscodex.shared.generated.resources.campaign_create_name_label
 import dndplayerscodex.shared.generated.resources.campaign_delete_body
+import dndplayerscodex.shared.generated.resources.campaign_delete_export_button
+import dndplayerscodex.shared.generated.resources.campaign_delete_export_hint
 import dndplayerscodex.shared.generated.resources.campaign_delete_title
 import dndplayerscodex.shared.generated.resources.campaign_finish_archive
 import dndplayerscodex.shared.generated.resources.campaign_finish_body
@@ -85,6 +92,28 @@ internal fun CampaignDeleteDialog(
             color = AppPalette.TextHeading,
         )
         DialogBody(stringResource(Res.string.campaign_delete_body))
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .appCard(AppShapes.Field, AppPalette.Gold.copy(alpha = 0.08f), AppPalette.Gold.copy(alpha = 0.4f))
+                    .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = stringResource(Res.string.campaign_delete_export_hint),
+                modifier = Modifier.weight(1f),
+                color = AppPalette.TextDescription,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            AppButton(
+                text = stringResource(Res.string.campaign_delete_export_button),
+                onClick = { onEvent(CampaignSheetEvent.ExportCurrentClicked) },
+                tone = ButtonTone.Gold,
+                size = ButtonSize.Medium,
+            )
+        }
         FormTextField(
             label = stringResource(Res.string.campaign_create_name_label),
             value = sheet.typed,

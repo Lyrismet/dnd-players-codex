@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.settings.presentation
 
+import com.lyrismet.incadent.core.file.ExchangeRequests
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.LanguageRepository
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
@@ -23,6 +24,7 @@ import dev.zacsweers.metro.Provides
 
 @Inject
 @ContributesIntoSet(AppScope::class)
+@Suppress("LongParameterList")
 class SettingsPresenterFactory(
     private val languageRepository: LanguageRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
@@ -30,6 +32,7 @@ class SettingsPresenterFactory(
     private val phraseSnippetRepository: PhraseSnippetRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val campaignRepository: CampaignRepository,
+    private val exchangeRequests: ExchangeRequests,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -45,6 +48,7 @@ class SettingsPresenterFactory(
                     phraseSnippetRepository,
                     sessionEntryRepository,
                     campaignRepository,
+                    exchangeRequests,
                 )
             else -> null
         }

@@ -27,12 +27,14 @@ import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppChevron
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
+import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignCardItem
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignLibraryState
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.campaign_action_export
 import dndplayerscodex.shared.generated.resources.campaign_action_finish
 import dndplayerscodex.shared.generated.resources.campaign_action_rename
 import dndplayerscodex.shared.generated.resources.campaign_badge_archive
@@ -56,6 +58,7 @@ fun CampaignSections(
     modifier: Modifier = Modifier,
     onRename: (() -> Unit)? = null,
     onFinish: (() -> Unit)? = null,
+    onExport: ((String) -> Unit)? = null,
     showEmptyLiveHint: Boolean = false,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -67,9 +70,9 @@ fun CampaignSections(
             )
             library.live.forEach { item ->
                 if (item.isCurrent && (onRename != null || onFinish != null)) {
-                    CurrentCampaignCard(item, onRename, onFinish)
+                    CurrentCampaignCard(item, onRename, onFinish, onExport)
                 } else {
-                    CampaignRow(item, onClick = { onOpen(item.id) })
+                    CampaignRow(item, onClick = { onOpen(item.id) }, onExport = onExport)
                 }
             }
         } else if (showEmptyLiveHint) {
@@ -90,7 +93,7 @@ fun CampaignSections(
                 color = AppPalette.TextSecondary,
                 topPadding = 8.dp,
             )
-            library.archived.forEach { item -> CampaignRow(item, onClick = { onOpen(item.id) }) }
+            library.archived.forEach { item -> CampaignRow(item, onClick = { onOpen(item.id) }, onExport = onExport) }
         }
     }
 }
@@ -100,6 +103,7 @@ private fun CurrentCampaignCard(
     item: CampaignCardItem,
     onRename: (() -> Unit)?,
     onFinish: (() -> Unit)?,
+    onExport: ((String) -> Unit)?,
 ) {
     Column(
         modifier =
@@ -139,6 +143,15 @@ private fun CurrentCampaignCard(
                     size = ButtonSize.Medium,
                 )
             }
+            if (onExport != null) {
+                AppButton(
+                    text = stringResource(Res.string.campaign_action_export),
+                    onClick = { onExport(item.id) },
+                    modifier = Modifier.weight(1f),
+                    tone = ButtonTone.Neutral,
+                    size = ButtonSize.Medium,
+                )
+            }
         }
     }
 }
@@ -147,6 +160,7 @@ private fun CurrentCampaignCard(
 private fun CampaignRow(
     item: CampaignCardItem,
     onClick: () -> Unit,
+    onExport: ((String) -> Unit)?,
 ) {
     Row(
         modifier =
@@ -168,6 +182,14 @@ private fun CampaignRow(
             nameColor = if (item.isArchived) AppPalette.TextDescription else AppPalette.TextHeading,
             modifier = Modifier.weight(1f),
         )
+        if (onExport != null) {
+            AppButton(
+                text = stringResource(Res.string.campaign_action_export),
+                onClick = { onExport(item.id) },
+                tone = ButtonTone.Neutral,
+                variant = ButtonVariant.Ghost,
+            )
+        }
         if (item.isArchived) {
             val badge =
                 stringResource(

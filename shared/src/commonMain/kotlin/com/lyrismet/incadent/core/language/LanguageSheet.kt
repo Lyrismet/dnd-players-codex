@@ -1,8 +1,6 @@
 package com.lyrismet.incadent.core.language
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,11 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,13 +25,13 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
-import com.lyrismet.incadent.core.designsystem.component.AppListRow
+import com.lyrismet.incadent.core.designsystem.component.AppIconListRow
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
-import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.RadioDot
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.parchmentStrokeIcon
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.settings_language_empty
@@ -59,51 +52,17 @@ internal fun LanguageRow(
     current: String,
     onClick: () -> Unit,
 ) {
-    AppListRow(
-        title = title,
-        subtitle = description,
-        value = current,
-        onClick = onClick,
-        minHeight = 56.dp,
-        titleLineHeight = 20.sp,
-        subtitleLineHeight = 16.sp,
-        leading = {
-            IconBadge(
-                size = 32.dp,
-                shape = AppShapes.Tile,
-                background = AppPalette.SurfacePopover,
-                border = AppPalette.Border,
-            ) {
-                Image(imageVector = GlobeIcon, contentDescription = null)
-            }
-        },
-    )
+    AppIconListRow(title = title, subtitle = description, value = current, icon = GlobeIcon, onClick = onClick)
 }
 
 // the mockup's globe - a circle, the equator and a meridian lens, 1.6 strokes on a 24 grid
 internal val GlobeIcon: ImageVector =
-    ImageVector
-        .Builder(
-            name = "Globe",
-            defaultWidth = 17.dp,
-            defaultHeight = 17.dp,
-            viewportWidth = 24f,
-            viewportHeight = 24f,
-        ).apply {
-            listOf(
-                "M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0z",
-                "M3 12h18",
-                "M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z",
-            ).forEach { path ->
-                addPath(
-                    pathData = addPathNodes(path),
-                    stroke = SolidColor(AppPalette.Parchment),
-                    strokeLineWidth = 1.6f,
-                    strokeLineCap = StrokeCap.Round,
-                    strokeLineJoin = StrokeJoin.Round,
-                )
-            }
-        }.build()
+    parchmentStrokeIcon(
+        "Globe",
+        "M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0z",
+        "M3 12h18",
+        "M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z",
+    )
 
 /** the app's languages in a searchable sheet - the list is [AppLanguage.entries], so a new one shows up alone */
 @Composable

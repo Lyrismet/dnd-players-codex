@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.campaign.presentation
 
+import com.lyrismet.incadent.core.file.ExchangeRequests
 import com.lyrismet.incadent.core.preferences.LanguageRepository
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.slack.circuit.runtime.CircuitContext
@@ -22,6 +23,7 @@ import dev.zacsweers.metro.Provides
 class CampaignLibraryPresenterFactory(
     private val campaignRepository: CampaignRepository,
     private val languageRepository: LanguageRepository,
+    private val exchangeRequests: ExchangeRequests,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -29,7 +31,12 @@ class CampaignLibraryPresenterFactory(
         context: CircuitContext,
     ): Presenter<*>? =
         when (screen) {
-            is CampaignLibraryScreen -> CampaignLibraryPresenter(campaignRepository, languageRepository)
+            is CampaignLibraryScreen ->
+                CampaignLibraryPresenter(
+                    campaignRepository,
+                    languageRepository,
+                    exchangeRequests,
+                )
             else -> null
         }
 }

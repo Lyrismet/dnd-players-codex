@@ -16,15 +16,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import com.lyrismet.incadent.core.designsystem.AppTheme
+import com.lyrismet.incadent.core.file.ExchangeRequest
+import com.lyrismet.incadent.core.file.ExchangeRequests
 import com.lyrismet.incadent.core.localization.AppEnvironment
 import com.lyrismet.incadent.core.localization.customAppLocale
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.di.AppGraph
 import com.lyrismet.incadent.feature.campaign.presentation.CampaignLibraryScreen
+import com.lyrismet.incadent.feature.campaign.presentation.exchange.ExportScreen
+import com.lyrismet.incadent.feature.campaign.presentation.exchange.ImportScreen
 import com.lyrismet.incadent.feature.mention.presentation.LocalMentionStyle
 import com.slack.circuit.foundation.CircuitCompositionLocals
 import com.slack.circuit.foundation.CircuitContent
+import com.slack.circuit.foundation.NavEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlin.time.Duration.Companion.milliseconds
@@ -76,6 +81,7 @@ fun App(
                                     AppTabHost(graph.undoController, graph.swipeHintReplayController, tabs, onExit)
                                 campaigns != null -> CircuitContent(CampaignLibraryScreen)
                             }
+                            ExchangeOverlay(graph.exchangeRequests)
                             if (splashPhase != SplashPhase.GONE) {
                                 val splashAlpha by animateFloatAsState(
                                     targetValue = if (splashPhase == SplashPhase.VISIBLE) 1f else 0f,
@@ -89,4 +95,17 @@ fun App(
             }
         }
     }
+}
+
+/** the export or import someone asked for, drawn over whatever is open and gone when its sheet closes */
+@Composable
+private fun ExchangeOverlay(requests: ExchangeRequests) {
+    val request by requests.pending.collectAsState()
+    val open = request ?: return
+    val screen =
+        when (open) {
+            is ExchangeRequest.Export -> ExportScreen(open.campaignId)
+            is ExchangeRequest.Import -> ImportScreen
+        }
+    key(open) { CircuitContent(screen, onNavEvent = { if (it is NavEvent.Pop) requests.clear() }) }
 }

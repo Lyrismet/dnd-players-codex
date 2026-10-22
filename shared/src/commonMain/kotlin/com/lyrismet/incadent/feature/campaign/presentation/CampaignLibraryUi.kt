@@ -26,10 +26,14 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppListCard
 import com.lyrismet.incadent.core.designsystem.component.AppListRow
 import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.ButtonSize
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
+import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.DiamondOutline
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.HeaderDivider
@@ -45,7 +49,9 @@ import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSections
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
+import com.lyrismet.incadent.feature.campaign.presentation.sheet.rememberImportPicker
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.campaign_import_from_file
 import dndplayerscodex.shared.generated.resources.campaign_library_title
 import dndplayerscodex.shared.generated.resources.campaign_new
 import dndplayerscodex.shared.generated.resources.campaign_onboarding_codex_text
@@ -93,6 +99,14 @@ fun CampaignLibraryUi(
                         text = stringResource(Res.string.campaign_new),
                         onClick = { sink(CampaignSheetEvent.NewCampaignClicked) },
                     )
+                    AppButton(
+                        text = stringResource(Res.string.campaign_import_from_file),
+                        onClick = rememberImportPicker(sink),
+                        modifier = Modifier.fillMaxWidth(),
+                        tone = ButtonTone.Neutral,
+                        variant = ButtonVariant.Ghost,
+                        size = ButtonSize.Large,
+                    )
                 }
             }
             AppToast(
@@ -128,6 +142,7 @@ private fun LibraryBody(
     CampaignSections(
         library = state.library,
         onOpen = { sink(CampaignSheetEvent.CampaignClicked(it)) },
+        onExport = { sink(CampaignSheetEvent.ExportClicked(it)) },
         modifier = Modifier.padding(horizontal = 16.dp),
         showEmptyLiveHint = true,
     )

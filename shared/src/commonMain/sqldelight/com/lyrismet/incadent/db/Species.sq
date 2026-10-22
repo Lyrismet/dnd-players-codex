@@ -42,5 +42,9 @@ UPDATE species SET photo = ?, photo_thumb = ? WHERE id = ?;
 deleteById:
 DELETE FROM species WHERE id = ?;
 
+-- the stored jpeg sizes, what an export estimates its file from
+selectPhotoSizes:
+SELECT id, COALESCE(length(photo), 0) AS size FROM species WHERE campaign_id = ?;
+
 lastInsertRowId:
 SELECT last_insert_rowid();

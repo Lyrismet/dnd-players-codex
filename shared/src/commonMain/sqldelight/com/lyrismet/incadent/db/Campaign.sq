@@ -49,3 +49,6 @@ INSERT OR IGNORE INTO tag(name, campaign_id) SELECT name, ? FROM tag WHERE campa
 
 copyPhrases:
 INSERT OR IGNORE INTO phrase_snippet(text, campaign_id) SELECT text, ? FROM phrase_snippet WHERE campaign_id = ?;
+
+selectName:
+SELECT name FROM campaign WHERE id = ?;

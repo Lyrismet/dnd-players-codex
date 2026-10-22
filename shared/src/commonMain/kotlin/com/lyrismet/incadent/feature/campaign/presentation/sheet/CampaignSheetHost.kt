@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
+import com.lyrismet.incadent.core.file.ExchangeRequest
+import com.lyrismet.incadent.core.file.ExchangeRequests
 import com.lyrismet.incadent.core.format.toShortDisplayDate
 import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.preferences.AppLanguage
@@ -75,6 +77,7 @@ private val NoCandidates = TransferCandidates(emptyList(), emptyList())
 @Composable
 fun rememberCampaignSheetHost(
     repository: CampaignRepository,
+    exchangeRequests: ExchangeRequests,
     showToast: (String) -> Unit,
 ): CampaignSheetHost {
     val campaigns by repository.observeAll().collectAsState(initial = emptyList())
@@ -118,6 +121,7 @@ fun rememberCampaignSheetHost(
                 current = current,
                 candidates = effectiveCandidates,
                 repository = repository,
+                exchangeRequests = exchangeRequests,
                 scope = scope,
                 showToast = showToast,
             )
@@ -127,13 +131,14 @@ fun rememberCampaignSheetHost(
 }
 
 // returns the dialog to show next, or null when the event changes nothing on screen
-@Suppress("LongParameterList", "CyclomaticComplexMethod")
+@Suppress("LongParameterList", "CyclomaticComplexMethod", "LongMethod")
 private fun reduce(
     event: CampaignSheetEvent,
     dialog: HostDialog,
     current: Campaign?,
     candidates: TransferCandidates,
     repository: CampaignRepository,
+    exchangeRequests: ExchangeRequests,
     scope: CoroutineScope,
     showToast: (String) -> Unit,
 ): HostDialog? {
@@ -163,6 +168,18 @@ private fun reduce(
                 }
                 HostDialog.Hidden
             }
+        }
+        is CampaignSheetEvent.ExportClicked -> {
+            exchangeRequests.request(ExchangeRequest.Export(event.id))
+            HostDialog.Hidden
+        }
+        CampaignSheetEvent.ExportCurrentClicked -> {
+            current?.let { exchangeRequests.request(ExchangeRequest.Export(it.id)) }
+            HostDialog.Hidden
+        }
+        is CampaignSheetEvent.FilePicked -> {
+            exchangeRequests.request(ExchangeRequest.Import(event.origin))
+            HostDialog.Hidden
         }
         CampaignSheetEvent.FinishClicked -> HostDialog.Finish
         CampaignSheetEvent.ArchiveConfirmed -> {

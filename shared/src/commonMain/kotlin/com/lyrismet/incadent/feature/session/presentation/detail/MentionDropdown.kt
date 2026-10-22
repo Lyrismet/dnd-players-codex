@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
@@ -80,6 +81,7 @@ private fun MentionDropdownEntry(
             Text(
                 suggestion.name,
                 fontSize = AppFontSize.Medium,
+                lineHeight = 20.sp,
                 color = AppPalette.TextPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -94,13 +96,19 @@ private fun MentionDropdownEntry(
                 Text(
                     detail,
                     fontSize = AppFontSize.Caption,
+                    lineHeight = 16.sp,
                     color = AppPalette.TextSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
         }
-        Text(suggestion.typeLabel, fontSize = AppFontSize.Caption, color = AppPalette.TextSecondary)
+        Text(
+            suggestion.typeLabel,
+            fontSize = AppFontSize.Caption,
+            lineHeight = 16.sp,
+            color = AppPalette.TextSecondary,
+        )
     }
 }
 
@@ -112,6 +120,7 @@ private fun MentionDropdownCreate(
     Text(
         stringResource(Res.string.mention_create_row_format, name),
         fontSize = AppFontSize.Medium,
+        lineHeight = 20.sp,
         color = AppPalette.GoldBright,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,

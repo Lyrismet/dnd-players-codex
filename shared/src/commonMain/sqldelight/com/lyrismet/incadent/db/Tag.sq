@@ -11,5 +11,8 @@ SELECT id, name FROM tag WHERE campaign_id = ? ORDER BY id ASC;
 insert:
 INSERT OR IGNORE INTO tag(name, campaign_id) VALUES (?, ?);
 
+selectIdByName:
+SELECT id FROM tag WHERE name = ? AND campaign_id = ?;
+
 lastInsertRowId:
 SELECT last_insert_rowid();

@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
+import com.lyrismet.incadent.core.file.ExchangeRequests
 import com.lyrismet.incadent.core.language.LanguageSheet
 import com.lyrismet.incadent.core.language.LanguageSheetController
 import com.lyrismet.incadent.core.preferences.AppLanguage
@@ -30,6 +31,7 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.error_action_failed
 import org.jetbrains.compose.resources.stringResource
 
+@Suppress("LongParameterList")
 class SettingsPresenter(
     private val languageRepository: LanguageRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
@@ -37,6 +39,7 @@ class SettingsPresenter(
     private val phraseSnippetRepository: PhraseSnippetRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val campaignRepository: CampaignRepository,
+    private val exchangeRequests: ExchangeRequests,
 ) : Presenter<SettingsState> {
     @Composable
     override fun present(): SettingsState {
@@ -51,7 +54,8 @@ class SettingsPresenter(
         val toast = remember { mutableStateOf<String?>(null) }
         toast.autoDismiss()
         val failedText = stringResource(Res.string.error_action_failed)
-        val campaignHost = rememberCampaignSheetHost(campaignRepository) { text -> toast.value = text }
+        val campaignHost =
+            rememberCampaignSheetHost(campaignRepository, exchangeRequests) { text -> toast.value = text }
         val languageSheet = remember { LanguageSheetController(languageRepository) }
         val pinnedPhrases by phraseSnippetRepository.observeAll().collectAsState(initial = emptyList())
         val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())

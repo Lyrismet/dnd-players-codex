@@ -30,6 +30,7 @@ fun AppSearchField(
     textSize: TextUnit = AppFontSize.Medium,
     background: Color = AppPalette.Surface,
     clearEndInset: Dp = 4.dp,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     AppTextInput(
         value = query,
@@ -41,12 +42,18 @@ fun AppSearchField(
                 textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = textSize, lineHeight = textSize * 1.3f),
                 chrome = AppInputChrome(background = background),
                 height = height,
-                contentPadding = PaddingValues(start = 12.dp, end = if (query.isEmpty()) 12.dp else clearEndInset),
+                contentPadding =
+                    PaddingValues(
+                        start = 12.dp,
+                        end = if (query.isEmpty() || trailingContent != null) 12.dp else clearEndInset,
+                    ),
             ),
         maxLength = TextLimits.SEARCH,
         leading = { SearchIcon() },
         trailing =
-            if (query.isEmpty()) {
+            if (trailingContent != null) {
+                trailingContent
+            } else if (query.isEmpty()) {
                 null
             } else {
                 {
