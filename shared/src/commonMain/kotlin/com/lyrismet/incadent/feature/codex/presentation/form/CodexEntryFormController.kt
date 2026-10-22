@@ -13,10 +13,8 @@ import com.lyrismet.incadent.core.portrait.encodeAsync
 import com.lyrismet.incadent.core.portrait.prepareCropDraftAsync
 import com.lyrismet.incadent.core.portrait.recropDraft
 import com.lyrismet.incadent.core.preferences.AppLanguage
-import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
-import com.lyrismet.incadent.feature.codex.domain.grouping.srdNotAdded
 import com.lyrismet.incadent.feature.codex.domain.grouping.srdSuggestions
 import com.lyrismet.incadent.feature.codex.domain.grouping.with
 import com.lyrismet.incadent.feature.codex.domain.grouping.withRecentPlaces
@@ -63,8 +61,6 @@ import dndplayerscodex.shared.generated.resources.codex_entry_save_label_create
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
 import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
-import dndplayerscodex.shared.generated.resources.codex_species_group_own
-import dndplayerscodex.shared.generated.resources.codex_species_group_srd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -518,31 +514,6 @@ class CodexEntryFormController private constructor(
         val created = pendingSpecies
         onClosed()
         scope.launch { persister.save(created?.let { current.copy(npcSpeciesId = it.await()) } ?: current) }
-    }
-
-    @Composable
-    private fun speciesSelectState(
-        species: List<Species>,
-        selectedId: Long?,
-        isRussian: Boolean,
-    ): SpeciesSelectState {
-        val ownGroup = stringResource(Res.string.codex_species_group_own)
-        val srdGroup = stringResource(Res.string.codex_species_group_srd)
-        val srd = srdNotAdded(species.map { it.name })
-        return SpeciesSelectState(
-            options =
-                species.map { SelectOption(it.id, it.name, group = ownGroup) } +
-                    srd.map { (id, entry) ->
-                        SelectOption(
-                            id,
-                            entry.name(isRussian),
-                            searchText = "${entry.nameRu} ${entry.nameEn}",
-                            group = srdGroup,
-                        )
-                    },
-            selectedIds = setOfNotNull(selectedId),
-            srd = srd.associate { (id, entry) -> id to SrdSuggestion(entry.name(isRussian), entry.type) },
-        )
     }
 
     // one assignment per form-state field - a flat mapping, not real complexity

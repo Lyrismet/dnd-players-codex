@@ -125,8 +125,9 @@ private fun npcFacts(
             FactRow(
                 Res.string.entity_sheet_npc_species_label,
                 FactValue.Link(MentionEntity.SpeciesMention(it.id, it.name).toChipItem()),
+                QuickEditField.SPECIES,
             )
-        } ?: FactRow(Res.string.entity_sheet_npc_species_label, FactValue.Text(npc.race), QuickEditField.RACE),
+        } ?: FactRow(Res.string.entity_sheet_npc_species_label, FactValue.Text(npc.race), QuickEditField.SPECIES),
         nicknamesFact(npc.nicknames),
         FactRow(
             Res.string.entity_sheet_npc_location_label,

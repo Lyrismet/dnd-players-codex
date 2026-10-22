@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.file.FileSink
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.exchange.resolve
+import com.lyrismet.incadent.feature.campaign.domain.exchange.withKnownMentionsOnly
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeGraph
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeItem
@@ -91,7 +92,7 @@ class CampaignExporter(
                 .selectName(campaignId)
                 .executeAsOneOrNull()
                 .orEmpty()
-        return ExchangeCatalog(name, options, graph)
+        return ExchangeCatalog(name, options, graph.withKnownMentionsOnly(options))
     }
 
     /** a dry run of the file without photos for its text size, and the stored photo sizes for the rest */

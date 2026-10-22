@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.campaign.presentation.exchange
 
 import com.lyrismet.incadent.core.file.FileOrigin
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportError
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
@@ -59,11 +60,20 @@ data class ImportState(
     val photos: Boolean = true,
     val conflicts: ConflictMode = ConflictMode.SKIP,
     val duplicates: List<ImportDuplicate> = emptyList(),
+    // the duplicates the file's version overwrites, the rest keep what the campaign has
+    val replacing: Set<ExchangeRef> = emptySet(),
     val newCount: Int = 0,
     val importCount: Int = 0,
+    val leavePromptVisible: Boolean = false,
     val eventSink: (ImportEvent) -> Unit = {},
 ) : CircuitUiState {
     val canTakeSelection: Boolean get() = pickRecordCount + pickSessionCount > 0
+
+    // a pick or a replace list in the making, or a write under way: a swipe down must not throw it away
+    val guardsClosing: Boolean get() =
+        step == ImportStep.Items ||
+            step == ImportStep.Match ||
+            step == ImportStep.Working
 }
 
 sealed interface ImportEvent : CircuitUiEvent {
@@ -85,6 +95,14 @@ sealed interface ImportEvent : CircuitUiEvent {
 
     data object ItemsNext : ImportEvent
 
+    data class ReplaceToggled(
+        val ref: ExchangeRef,
+    ) : ImportEvent
+
+    data class ReplaceAll(
+        val replace: Boolean,
+    ) : ImportEvent
+
     data class ConflictsSelected(
         val mode: ConflictMode,
     ) : ImportEvent
@@ -92,6 +110,12 @@ sealed interface ImportEvent : CircuitUiEvent {
     data object ImportConfirmed : ImportEvent
 
     data object Back : ImportEvent
+
+    /** the cross, a swipe down, a tap on the scrim or the back key - may ask first */
+    data object CloseRequested : ImportEvent
+
+    /** "stay" in the prompt that asks before the pick is thrown away */
+    data object LeaveCancelled : ImportEvent
 
     data object Closed : ImportEvent
 }

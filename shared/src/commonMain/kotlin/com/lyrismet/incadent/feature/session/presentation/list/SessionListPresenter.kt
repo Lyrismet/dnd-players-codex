@@ -11,8 +11,10 @@ import com.lyrismet.incadent.core.format.toDisplayDate
 import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
+import com.lyrismet.incadent.core.preferences.HoldHintState
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.core.preferences.SwipeHintState
 import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
@@ -24,8 +26,12 @@ import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignReposito
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetState
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.rememberCampaignSheetHost
+import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditInteractions
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.rememberEntityChangeReporter
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
+import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
 import com.lyrismet.incadent.feature.codex.presentation.summary.onEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhoto
@@ -76,6 +82,7 @@ class SessionListPresenter(
     private val appPreferencesRepository: AppPreferencesRepository,
     private val campaignRepository: CampaignRepository,
     private val exchangeRequests: ExchangeRequests,
+    private val imageCompressor: ImageCompressor,
 ) : Presenter<SessionListState> {
     // one collection per source the screen reads plus the rename wiring - a flat merge, not real complexity
     @Suppress("LongMethod")
@@ -131,7 +138,23 @@ class SessionListPresenter(
                 codexRepositories,
                 navigator.sessionEntryOpener(),
                 entityHistory,
+                onChanged = rememberEntityChangeReporter(undoController),
             )
+        val quickEdit =
+            QuickEditInteractions(
+                remember { mutableStateOf(null) },
+                remember { mutableStateOf(null) },
+                selectedEntityRef,
+                entitySheet,
+                imageCompressor,
+                remember { mutableStateOf(emptyList()) },
+                codexRepositories,
+                undoController,
+            ) {
+                appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
+            }
+        val holdHint by appPreferencesRepository.observeHoldHintState().collectAsState(initial = HoldHintState.SEEN)
+        val undoAction by undoController.current.collectAsState()
         val selectedSummary =
             selectedEntitySummary(
                 selectedEntityRef.value,
@@ -175,6 +198,18 @@ class SessionListPresenter(
             liveSession = liveSession,
             sessions = archiveItems,
             selectedEntity = selectedEntity,
+            quickEdit =
+                quickEdit.state(
+                    CodexRecords(
+                        parties = parties,
+                        npcs = npcs,
+                        quests = quests,
+                        locations = locations,
+                        species = species,
+                    ),
+                    holdTipAllowed = holdHint == HoldHintState.PENDING,
+                    undoAction = undoAction,
+                ),
             toast = toast.value,
             swipeHintTarget = swipeHintTarget,
         ) { event ->
@@ -185,6 +220,7 @@ class SessionListPresenter(
                 undoDeletedTitle,
                 sessions,
                 entitySheet,
+                quickEdit,
                 numbering,
                 campaignHost.onEvent,
                 campaignArchived,
@@ -231,6 +267,7 @@ class SessionListPresenter(
         undoDeletedTitle: String,
         sessions: List<SessionNote>,
         entitySheet: EntitySheetInteractions,
+        quickEdit: QuickEditInteractions,
         numbering: SessionNumbering,
         onCampaignEvent: (CampaignSheetEvent) -> Unit,
         campaignArchived: Boolean,
@@ -252,8 +289,13 @@ class SessionListPresenter(
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
             is SessionListEvent.DeleteSessionClicked ->
                 if (!campaignArchived) onDeleteSessionClicked(event.id, sessions, undoDeletedTitle, scope, numbering)
-            is SessionListEvent.EntitySheet ->
+            is SessionListEvent.EntitySheet -> {
+                if (event.event is EntitySheetEvent.EntityClicked || event.event == EntitySheetEvent.Dismissed) {
+                    quickEdit.onSheetClosed()
+                }
                 if (!campaignArchived || !event.event.writesCampaignData()) entitySheet.onEvent(scope, event.event)
+            }
+            is SessionListEvent.QuickEdit -> if (!campaignArchived) quickEdit.onEvent(scope, event.event)
             is SessionListEvent.CampaignSheet -> onCampaignEvent(event.event)
         }
     }

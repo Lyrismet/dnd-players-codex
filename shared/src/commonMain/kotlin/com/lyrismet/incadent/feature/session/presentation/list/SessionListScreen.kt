@@ -4,6 +4,8 @@ import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetState
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditState
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
@@ -24,6 +26,8 @@ data class SessionListState(
     val liveSession: LiveSessionItem? = null,
     val sessions: List<SessionListItem> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
+    // the in-place editing of the open entity card
+    val quickEdit: QuickEditState = QuickEditState(),
     val toast: ToastMessage? = null,
     // the archive row the one-time swipe-to-delete hint peeks on - always delete-only, sessions have no swipe-edit
     val swipeHintTarget: SwipeHintTarget<Long>? = null,
@@ -69,6 +73,11 @@ sealed interface SessionListEvent : CircuitUiEvent {
     /** a tap or change on the entity card that opens over this screen */
     data class EntitySheet(
         val event: EntitySheetEvent,
+    ) : SessionListEvent
+
+    /** an in-place edit on the entity card that opens over this screen */
+    data class QuickEdit(
+        val event: QuickEditUiEvent,
     ) : SessionListEvent
 
     data class CampaignSheet(

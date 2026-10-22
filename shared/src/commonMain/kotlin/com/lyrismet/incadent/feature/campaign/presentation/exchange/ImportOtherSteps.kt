@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,7 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
+import com.lyrismet.incadent.core.designsystem.component.SelectCheckbox
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
@@ -53,9 +55,12 @@ import dndplayerscodex.shared.generated.resources.exchange_kind_species
 import dndplayerscodex.shared.generated.resources.exchange_match_copy
 import dndplayerscodex.shared.generated.resources.exchange_match_copy_note
 import dndplayerscodex.shared.generated.resources.exchange_match_counts
+import dndplayerscodex.shared.generated.resources.exchange_match_keep_all
 import dndplayerscodex.shared.generated.resources.exchange_match_label
+import dndplayerscodex.shared.generated.resources.exchange_match_replace_all
 import dndplayerscodex.shared.generated.resources.exchange_match_row_copy
-import dndplayerscodex.shared.generated.resources.exchange_match_row_skip
+import dndplayerscodex.shared.generated.resources.exchange_match_row_keep
+import dndplayerscodex.shared.generated.resources.exchange_match_row_replace
 import dndplayerscodex.shared.generated.resources.exchange_match_skip
 import dndplayerscodex.shared.generated.resources.exchange_match_skip_note
 import dndplayerscodex.shared.generated.resources.exchange_tab_sessions
@@ -115,6 +120,7 @@ private fun failureTexts(failure: ImportFailure): Pair<StringResource, StringRes
 @Composable
 internal fun MatchStep(state: ImportState) {
     val sink = state.eventSink
+    val copies = state.conflicts == ConflictMode.COPY
     FormFieldLabel(stringResource(Res.string.exchange_match_label))
     Text(
         text = stringResource(Res.string.exchange_match_counts, state.newCount, state.duplicates.size),
@@ -130,26 +136,28 @@ internal fun MatchStep(state: ImportState) {
         selected = state.conflicts,
         onSelected = { sink(ImportEvent.ConflictsSelected(it)) },
     )
-    Column(
-        modifier = Modifier.heightIn(max = 260.dp).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        state.duplicates.forEach { duplicate -> DuplicateRow(duplicate, state.conflicts) }
-    }
     Text(
         text =
             stringResource(
-                if (state.conflicts ==
-                    ConflictMode.SKIP
-                ) {
-                    Res.string.exchange_match_skip_note
-                } else {
-                    Res.string.exchange_match_copy_note
-                },
+                if (copies) Res.string.exchange_match_copy_note else Res.string.exchange_match_skip_note,
             ),
         color = AppPalette.TextSecondary,
         style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.CaptionPlus),
     )
+    if (!copies) ReplaceAllLink(state)
+    Column(
+        modifier = Modifier.heightIn(max = 260.dp).verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        state.duplicates.forEach { duplicate ->
+            DuplicateRow(
+                duplicate = duplicate,
+                copies = copies,
+                replace = duplicate.ref in state.replacing,
+                onToggle = { sink(ImportEvent.ReplaceToggled(duplicate.ref)) },
+            )
+        }
+    }
     FormPrimaryButton(
         text = stringResource(Res.string.exchange_import_button_count, state.importCount),
         onClick = { sink(ImportEvent.ImportConfirmed) },
@@ -157,39 +165,66 @@ internal fun MatchStep(state: ImportState) {
     BackLink { sink(ImportEvent.Back) }
 }
 
+// one tap flips every duplicate, so a file that is the newer version of the whole campaign needs no ticking by hand
+@Composable
+private fun ReplaceAllLink(state: ImportState) {
+    val all = state.replacing.size == state.duplicates.size
+    Text(
+        text =
+            stringResource(
+                if (all) Res.string.exchange_match_keep_all else Res.string.exchange_match_replace_all,
+            ),
+        modifier =
+            Modifier
+                .appCard(AppShapes.Control, Color.Transparent, null, onClick = {
+                    state.eventSink(ImportEvent.ReplaceAll(!all))
+                })
+                .padding(vertical = 4.dp),
+        color = AppPalette.Gold,
+        style = MaterialTheme.typography.bodyMedium,
+    )
+}
+
 @Composable
 private fun DuplicateRow(
     duplicate: ImportDuplicate,
-    mode: ConflictMode,
+    copies: Boolean,
+    replace: Boolean,
+    onToggle: () -> Unit,
 ) {
     val kind = stringResource(duplicate.kind.label())
-    Column(
+    val status =
+        when {
+            copies -> Res.string.exchange_match_row_copy
+            replace -> Res.string.exchange_match_row_replace
+            else -> Res.string.exchange_match_row_keep
+        }
+    Row(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .appCard(AppShapes.Field, AppPalette.Background, AppPalette.BorderSubtle)
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+                .appCard(
+                    AppShapes.Field,
+                    AppPalette.Background,
+                    if (replace && !copies) AppPalette.Gold else AppPalette.BorderSubtle,
+                    onClick = onToggle.takeIf { !copies },
+                ).padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = if (mode == ConflictMode.COPY) "${duplicate.name} (2)" else duplicate.name,
-            color = AppPalette.TextPrimary,
-            style = MaterialTheme.typography.titleSmall,
-        )
-        Text(
-            text =
-                stringResource(
-                    if (mode ==
-                        ConflictMode.COPY
-                    ) {
-                        Res.string.exchange_match_row_copy
-                    } else {
-                        Res.string.exchange_match_row_skip
-                    },
-                    kind,
-                ),
-            color = AppPalette.TextSecondary,
-            style = MaterialTheme.typography.bodySmall,
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (copies) "${duplicate.name} (2)" else duplicate.name,
+                color = AppPalette.TextPrimary,
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                text = stringResource(status, kind),
+                color = AppPalette.TextSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        if (!copies) SelectCheckbox(checked = replace)
     }
 }
 

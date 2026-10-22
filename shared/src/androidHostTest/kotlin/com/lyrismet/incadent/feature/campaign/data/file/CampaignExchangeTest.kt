@@ -5,6 +5,8 @@ import com.lyrismet.incadent.core.file.FileSource
 import com.lyrismet.incadent.core.file.MemoryFile
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportError
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportFailedException
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportRequest
@@ -310,6 +312,90 @@ class CampaignExchangeTest {
                 .executeAsList()
                 .map { it.body }
         assertTrue(bodies.all { "@[Bob|n:$before]" in it })
+    }
+
+    @Test
+    fun `a ticked match takes the version of the file and an unticked one keeps its own`() {
+        seed()
+        val file = export(allOf())
+        val bob =
+            database.npcQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+        database.npcQueries.update("Bob", NpcStatus.ENEMY, "edited", "orc", NpcLifeState.DEAD, "", null, bob.id)
+        val quest =
+            database.questQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+        database.questQueries.update("Find", QuestStatus.COMPLETED, "edited", null, null, "", quest.id)
+        val fileBob = readImportContents(origin(file)).options.npcs.single { it.name == "Bob" }
+
+        val result =
+            importer.import(
+                origin(file),
+                ImportRequest(
+                    ImportTarget.Existing(source),
+                    ConflictMode.SKIP,
+                    replace = setOf(ExchangeRef(ExchangeKind.NPC, fileBob.id)),
+                ),
+            )
+
+        val replaced =
+            database.npcQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+        assertEquals(bob.id, replaced.id)
+        assertEquals(NpcStatus.FRIEND, replaced.status)
+        assertEquals("d", replaced.description)
+        assertEquals(NpcLifeState.ALIVE, replaced.life_state)
+        assertEquals(
+            "edited",
+            database.questQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+                .reward,
+        )
+        assertEquals(1, result.records)
+    }
+
+    @Test
+    fun `a replaced place never lands inside its own child`() {
+        seed()
+        val file = export(allOf())
+        val town =
+            database.locationQueries
+                .selectAll(source)
+                .executeAsList()
+                .single { it.name == "Town" }
+        val inn =
+            database.locationQueries
+                .selectAll(source)
+                .executeAsList()
+                .single { it.name == "Inn" }
+        // the campaign now keeps the town inside the inn, the file has it the other way round
+        database.locationQueries.setParent(null, inn.id)
+        database.locationQueries.setParent(inn.id, town.id)
+        val fileInn = readImportContents(origin(file)).options.places.single { it.name == "Inn" }
+
+        importer.import(
+            origin(file),
+            ImportRequest(
+                ImportTarget.Existing(source),
+                ConflictMode.SKIP,
+                replace = setOf(ExchangeRef(ExchangeKind.PLACE, fileInn.id)),
+            ),
+        )
+
+        val parents =
+            database.locationQueries
+                .selectAll(source)
+                .executeAsList()
+                .associate { it.name to it.parent_id }
+        assertTrue(parents["Town"] == inn.id && parents["Inn"] == null)
     }
 
     @Test

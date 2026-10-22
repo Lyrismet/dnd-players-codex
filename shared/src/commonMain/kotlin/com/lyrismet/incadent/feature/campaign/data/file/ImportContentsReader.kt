@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.campaign.data.file
 
 import com.lyrismet.incadent.core.file.FileOrigin
 import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.campaign.domain.exchange.withKnownMentionsOnly
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeGraph
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeItem
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
@@ -17,13 +18,14 @@ internal fun readImportContents(origin: FileOrigin): ImportContents {
         val reader = CampaignFileReader.open(source)
         val collector = ContentsCollector()
         while (true) collector.add(reader.nextRecord() ?: break)
+        val options = collector.options()
         return ImportContents(
             fileName = origin.name,
             campaignName = reader.header.name,
             bytes = source.sizeOrNull ?: 0L,
             withPhotos = reader.header.withPhotos,
-            options = collector.options(),
-            graph = collector.graph(),
+            options = options,
+            graph = collector.graph().withKnownMentionsOnly(options),
         )
     } finally {
         source.close()

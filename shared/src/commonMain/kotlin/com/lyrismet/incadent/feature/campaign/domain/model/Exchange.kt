@@ -81,7 +81,10 @@ sealed interface ImportTarget {
     ) : ImportTarget
 }
 
-/** what happens to a record of the file that has the same name and kind as one already there */
+/**
+ * what happens to a record of the file that has the same name and kind as one already there: [SKIP] keeps the one
+ * there (or replaces it, for the records named in [ImportRequest.replace]), [COPY] writes the file's under "(2)"
+ */
 enum class ConflictMode { SKIP, COPY }
 
 data class ImportRequest(
@@ -90,6 +93,8 @@ data class ImportRequest(
     val selection: RecordSelection? = null,
     /** what [selection] comes to once its dependencies are added, null takes the whole file */
     val scope: RecordScope? = null,
+    /** the records of the file (kind and the file's own id) that overwrite the same-named record already there */
+    val replace: Set<ExchangeRef> = emptySet(),
 )
 
 data class ImportResult(

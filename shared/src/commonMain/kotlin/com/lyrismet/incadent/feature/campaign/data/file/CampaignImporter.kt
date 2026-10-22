@@ -8,6 +8,8 @@ import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.exchange.nameKey
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportError
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportFailedException
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportRequest
@@ -26,6 +28,7 @@ private const val MAX_PHOTO_SIDE_PX = 4000
 private const val DEFAULT_CAMPAIGN_NAME = "Incadent"
 private const val MAX_NAME_CHARS = 80
 private const val COPY_SUFFIX = " (2)"
+private const val MAX_PLACE_DEPTH = 1000
 
 /** writes the records of a file into the database, every id of the file is replaced and every note token follows */
 @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
@@ -102,27 +105,12 @@ internal class CampaignImporter(
                         it.id
                 },
             )
-        private val placesByName =
-            namesOf(
-                database.locationQueries.selectAll(campaignId).executeAsList().map {
-                    it.name to
-                        it.id
-                },
-            )
-        private val npcsByName =
-            namesOf(
-                database.npcQueries.selectAll(campaignId).executeAsList().map {
-                    it.name to
-                        it.id
-                },
-            )
-        private val questsByName =
-            namesOf(
-                database.questQueries.selectAll(campaignId).executeAsList().map {
-                    it.title to
-                        it.id
-                },
-            )
+        private val existingPlaces = database.locationQueries.selectAll(campaignId).executeAsList()
+        private val placesByName = namesOf(existingPlaces.map { it.name to it.id })
+        private val existingNpcs = database.npcQueries.selectAll(campaignId).executeAsList()
+        private val npcsByName = namesOf(existingNpcs.map { it.name to it.id })
+        private val existingQuests = database.questQueries.selectAll(campaignId).executeAsList()
+        private val questsByName = namesOf(existingQuests.map { it.title to it.id })
         private val existingParty = database.partyMemberQueries.selectAll(campaignId).executeAsList()
         private val partyByName = namesOf(existingParty.map { it.name to it.id })
         private var playerTaken = existingParty.any { it.is_player_character }
@@ -169,11 +157,23 @@ internal class CampaignImporter(
                     id in set()
             }
 
-        // a matched record is reused or copied under "(2)", the file's own id then points at the one that was used
+        // a matched record is kept or overwritten, the file's own id then points at the one that was used
         private fun matched(
+            ref: ExchangeRef,
+            owner: PhotoOwner?,
             byName: Map<String, Long>,
             name: String,
-        ): Long? = byName[name.nameKey()]?.takeIf { !copies }
+            overwrite: (Long) -> Unit,
+        ): Long? {
+            val existing = byName[name.nameKey()]?.takeIf { !copies } ?: return null
+            if (ref in request.replace) {
+                overwrite(existing)
+                records++
+                // the photo of the file replaces the one there, a file without one leaves it alone
+                owner?.let { fresh += it to ref.id }
+            }
+            return existing
+        }
 
         private fun nameForInsert(
             byName: Map<String, Long>,
@@ -182,7 +182,16 @@ internal class CampaignImporter(
 
         private fun addSpecies(record: FileRecord.Species) {
             speciesMap[record.id] =
-                matched(speciesByName, record.name) ?: run {
+                matched(ExchangeRef(ExchangeKind.SPECIES, record.id), PhotoOwner.SPECIES, speciesByName, record.name) {
+                    database.speciesQueries.update(
+                        record.name,
+                        record.creatureType,
+                        record.damage,
+                        record.notes,
+                        record.nicknames,
+                        it,
+                    )
+                } ?: run {
                     val queries = database.speciesQueries
                     queries.insert(
                         nameForInsert(speciesByName, record.name),
@@ -202,7 +211,9 @@ internal class CampaignImporter(
 
         private fun addPlace(record: FileRecord.Place) {
             placeMap[record.id] =
-                matched(placesByName, record.name) ?: run {
+                matched(ExchangeRef(ExchangeKind.PLACE, record.id), PhotoOwner.PLACE, placesByName, record.name) {
+                    overwritePlace(it, record)
+                } ?: run {
                     val queries = database.locationQueries
                     queries.insert(
                         nameForInsert(placesByName, record.name),
@@ -220,7 +231,9 @@ internal class CampaignImporter(
 
         private fun addNpc(record: FileRecord.Npc) {
             npcMap[record.id] =
-                matched(npcsByName, record.name) ?: run {
+                matched(ExchangeRef(ExchangeKind.NPC, record.id), PhotoOwner.NPC, npcsByName, record.name) {
+                    overwriteNpc(it, record)
+                } ?: run {
                     val queries = database.npcQueries
                     queries.insert(
                         nameForInsert(npcsByName, record.name),
@@ -244,7 +257,9 @@ internal class CampaignImporter(
 
         private fun addQuest(record: FileRecord.Quest) {
             questMap[record.id] =
-                matched(questsByName, record.title) ?: run {
+                matched(ExchangeRef(ExchangeKind.QUEST, record.id), null, questsByName, record.title) {
+                    overwriteQuest(it, record)
+                } ?: run {
                     val queries = database.questQueries
                     queries.insert(
                         nameForInsert(questsByName, record.title),
@@ -262,7 +277,9 @@ internal class CampaignImporter(
 
         private fun addParty(record: FileRecord.Party) {
             partyMap[record.id] =
-                matched(partyByName, record.name) ?: run {
+                matched(ExchangeRef(ExchangeKind.PARTY, record.id), PhotoOwner.PARTY, partyByName, record.name) {
+                    overwriteParty(it, record)
+                } ?: run {
                     val queries = database.partyMemberQueries
                     val isPlayer = record.isPlayerCharacter && !playerTaken
                     playerTaken = playerTaken || isPlayer
@@ -285,6 +302,92 @@ internal class CampaignImporter(
                     fresh += PhotoOwner.PARTY to record.id
                     queries.lastInsertRowId().executeAsOne()
                 }
+        }
+
+        // a link the file does not give (or one that would loop the places) keeps what the record has now
+        private fun overwritePlace(
+            id: Long,
+            record: FileRecord.Place,
+        ) {
+            val current = existingPlaces.first { it.id == id }
+            val parent = record.parentId?.let(placeMap::get)?.takeIf { !insideOf(it, id) }
+            database.locationQueries.update(record.name, record.description, parent ?: current.parent_id, id)
+        }
+
+        // true when [place] is [ancestor] or sits somewhere below it
+        private fun insideOf(
+            place: Long,
+            ancestor: Long,
+        ): Boolean {
+            var step: Long? = place
+            var guard = 0
+            while (step != null && step != ancestor && guard++ < MAX_PLACE_DEPTH) {
+                step =
+                    database.locationQueries
+                        .selectParentId(step)
+                        .executeAsOneOrNull()
+                        ?.parent_id
+            }
+            return step == ancestor
+        }
+
+        private fun overwriteNpc(
+            id: Long,
+            record: FileRecord.Npc,
+        ) {
+            val current = existingNpcs.first { it.id == id }
+            database.npcQueries.update(
+                record.name,
+                record.status,
+                record.description,
+                record.race,
+                record.lifeState,
+                record.nicknames,
+                record.speciesId?.let(speciesMap::get) ?: current.species_id,
+                id,
+            )
+            val places = record.placeIds.mapNotNull(placeMap::get)
+            if (places.isNotEmpty()) {
+                database.npcLocationQueries.deleteByNpc(id)
+                places.forEach { database.npcLocationQueries.insert(id, it) }
+            }
+        }
+
+        private fun overwriteQuest(
+            id: Long,
+            record: FileRecord.Quest,
+        ) {
+            val current = existingQuests.first { it.id == id }
+            database.questQueries.update(
+                record.title,
+                record.status,
+                record.reward,
+                record.giverNpcId?.let(npcMap::get) ?: current.given_by_npc_id,
+                record.placeId?.let(placeMap::get) ?: current.location_id,
+                record.description,
+                id,
+            )
+        }
+
+        // who plays the character and whether they are in the scene stay as the campaign has them
+        private fun overwriteParty(
+            id: Long,
+            record: FileRecord.Party,
+        ) {
+            val current = existingParty.first { it.id == id }
+            database.partyMemberQueries.update(
+                record.name,
+                record.characterClass,
+                record.race,
+                record.level?.toLong(),
+                current.player_name,
+                current.is_player_character,
+                current.presence,
+                record.hpMax?.toLong(),
+                record.hpCurrent?.toLong(),
+                record.description,
+                id,
+            )
         }
 
         private fun addSession(record: FileRecord.Session) {

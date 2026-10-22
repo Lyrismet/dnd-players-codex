@@ -15,6 +15,7 @@ fun QuickEditField.inputKind(): InlineInputKind =
                 else -> InlineInputKind.TEXT
             }
         QuickEditKind.Link,
+        QuickEditKind.Species,
         QuickEditKind.Places,
         QuickEditKind.Choice,
         QuickEditKind.Photo,

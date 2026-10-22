@@ -1,12 +1,10 @@
 package com.lyrismet.incadent.feature.codex.presentation
 
 import com.lyrismet.incadent.core.designsystem.StatusColor
-import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.core.toast.ToastMessage
-import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
@@ -16,8 +14,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
-import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectState
-import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineEdit
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditState
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
@@ -196,14 +193,8 @@ data class CodexState(
     val emptyState: CodexEmptyState = CodexEmptyState.Hidden,
     val activeSheet: CodexSheet? = null,
     val editMode: EntityEditMode = EntityEditMode.QUICK,
-    // the field editor open inside the entity card, if any - quick mode only
-    val inlineEdit: InlineEdit? = null,
-    // the photo waiting in the crop window of the open card, quick mode only
-    val photoCrop: PhotoCropDraft? = null,
-    // the select sheet of a place field being held on the card, quick mode only
-    val quickPlaceSelect: PlaceSelectState? = null,
-    val holdTipVisible: Boolean = false,
-    val undoAction: UndoAction? = null,
+    // the in-place editing of the open card, quick mode only
+    val quick: QuickEditState = QuickEditState(),
     // the row the one-time swipe hint peeks on, and the direction captured when it started - see core/swipehint
     val swipeHintTarget: SwipeHintTarget<EntityRef>? = null,
     val swipeHintDirection: SwipeHintDirection = SwipeHintDirection.DELETE_ONLY,
@@ -262,12 +253,6 @@ sealed interface CodexEvent : CircuitUiEvent {
         val ref: EntityRef,
     ) : CodexEvent
 
-    /** the card's own place select sheet asked for a new place, [checked] are the ids ticked so far */
-    data class QuickPlaceCreated(
-        val name: String,
-        val checked: List<Long>,
-    ) : CodexEvent
-
     /** a place section's header was tapped - the section folds or unfolds */
     data class PlaceSectionToggled(
         val placeId: Long,
@@ -276,10 +261,6 @@ sealed interface CodexEvent : CircuitUiEvent {
     data class QuickEdit(
         val event: QuickEditUiEvent,
     ) : CodexEvent
-
-    data object UndoClicked : CodexEvent
-
-    data object UndoFollowUpClicked : CodexEvent
 
     /** a change inside the create/edit form sheet that opens over this screen */
     data class EntryForm(

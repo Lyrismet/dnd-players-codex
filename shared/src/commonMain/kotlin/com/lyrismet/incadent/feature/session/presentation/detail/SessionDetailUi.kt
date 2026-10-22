@@ -40,16 +40,17 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityCardSheet
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.asSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
-import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummarySheetContent
 import com.lyrismet.incadent.feature.codex.presentation.summary.entitySheetActions
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
 import dndplayerscodex.shared.generated.resources.Res
@@ -188,16 +189,18 @@ private fun SessionDetailEntitySheet(
     state: SessionDetailState,
     entity: EntitySummaryItem,
 ) {
-    AppBottomSheet(onDismissRequest = { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) }) {
-        EntitySummarySheetContent(
-            item = entity,
-            actions =
-                entitySheetActions(
-                    speciesNoteEdit = !state.readOnly,
-                ) { state.eventSink(SessionDetailEvent.EntitySheet(it)) },
-            onClose = { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
-        )
-    }
+    val onQuickEvent = { event: QuickEditUiEvent -> state.eventSink(SessionDetailEvent.QuickEdit(event)) }
+    EntityCardSheet(
+        item = entity,
+        actions =
+            entitySheetActions(
+                speciesNoteEdit = !state.readOnly,
+                quickEdit = if (state.readOnly) null else state.quickEdit.asSheet(onQuickEvent),
+            ) { state.eventSink(SessionDetailEvent.EntitySheet(it)) },
+        quick = state.quickEdit,
+        onQuickEvent = onQuickEvent,
+        onDismiss = { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
+    )
 }
 
 private const val FOCUS_SCROLL_OFFSET_DP = 72

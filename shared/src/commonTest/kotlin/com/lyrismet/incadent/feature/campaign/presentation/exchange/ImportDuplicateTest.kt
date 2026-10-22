@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.campaign.presentation.exchange
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeItem
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeOptions
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,7 +24,7 @@ class ImportDuplicateTest {
     fun `the same name and kind is a duplicate whatever the case`() {
         val existing = ExchangeOptions(npcs = listOf(ExchangeItem(9, "  bob ")))
         assertEquals(
-            listOf(ImportDuplicate("Bob", ExchangeKind.NPC)),
+            listOf(ImportDuplicate("Bob", ExchangeRef(ExchangeKind.NPC, 1))),
             findDuplicates(scope(npcs = setOf(1, 2)), file, existing),
         )
     }

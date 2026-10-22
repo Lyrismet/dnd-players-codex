@@ -31,7 +31,7 @@ fun Npc.withQuickEdit(
         QuickEditField.NAME -> value.name?.let { copy(name = it) }
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
         QuickEditField.NICKNAMES -> value.text()?.let { copy(nicknames = parseNicknames(it)) }
-        QuickEditField.RACE -> value.name?.let { copy(race = it) }
+        QuickEditField.SPECIES -> value.link()?.let { copy(speciesId = it.id) }
         QuickEditField.PLACE -> value.places()?.let { copy(locationIds = it.ids) }
         QuickEditField.PORTRAIT -> value.picture()?.let { copy(portrait = it.photo) }
         else -> null

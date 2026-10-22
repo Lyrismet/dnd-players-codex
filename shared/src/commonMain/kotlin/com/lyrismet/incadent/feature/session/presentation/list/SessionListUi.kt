@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
-import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
@@ -51,9 +50,11 @@ import com.lyrismet.incadent.feature.campaign.presentation.sheet.AppArchiveBanne
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSwitcherPill
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityCardSheet
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.asSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
-import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummarySheetContent
 import com.lyrismet.incadent.feature.codex.presentation.summary.entitySheetActions
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import com.lyrismet.incadent.feature.session.domain.tags.sessionTagLabel
@@ -111,15 +112,17 @@ fun SessionListUi(
     CampaignSheets(state.campaignSheet) { event -> state.eventSink(SessionListEvent.CampaignSheet(event)) }
 
     state.selectedEntity?.let { entity ->
-        AppBottomSheet(
-            onDismissRequest = { state.eventSink(SessionListEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
-        ) {
-            EntitySummarySheetContent(
-                item = entity,
-                actions = entitySheetActions { state.eventSink(SessionListEvent.EntitySheet(it)) },
-                onClose = { state.eventSink(SessionListEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
-            )
-        }
+        val onQuickEvent = { event: QuickEditUiEvent -> state.eventSink(SessionListEvent.QuickEdit(event)) }
+        EntityCardSheet(
+            item = entity,
+            actions =
+                entitySheetActions(
+                    quickEdit = if (state.campaignArchived) null else state.quickEdit.asSheet(onQuickEvent),
+                ) { state.eventSink(SessionListEvent.EntitySheet(it)) },
+            quick = state.quickEdit,
+            onQuickEvent = onQuickEvent,
+            onDismiss = { state.eventSink(SessionListEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
+        )
     }
 }
 

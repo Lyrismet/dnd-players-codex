@@ -19,8 +19,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.AppToast
-import com.lyrismet.incadent.core.designsystem.component.ButtonTone
-import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
+import com.lyrismet.incadent.core.designsystem.component.DiscardChangesDialog
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
 import com.lyrismet.incadent.core.designsystem.component.FormFieldAction
 import com.lyrismet.incadent.core.designsystem.component.FormPickField
@@ -28,16 +27,12 @@ import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.QuickAddOutsideTapHost
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
-import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_discard_back
-import dndplayerscodex.shared.generated.resources.codex_entry_discard_leave
 import dndplayerscodex.shared.generated.resources.codex_entry_discard_text
-import dndplayerscodex.shared.generated.resources.codex_entry_discard_title
 import dndplayerscodex.shared.generated.resources.codex_entry_label_class
 import dndplayerscodex.shared.generated.resources.codex_entry_label_description
 import dndplayerscodex.shared.generated.resources.codex_entry_label_giver
@@ -420,17 +415,9 @@ internal fun CodexEntryFormSheet(
 @Composable
 private fun CodexEntryDiscardDialog(eventSink: (CodexEntryFormEvent) -> Unit) {
     // only two ways out - leave without saving or go back to the form, saving stays the form button's job
-    ConfirmationDialog(
-        title = stringResource(Res.string.codex_entry_discard_title),
+    DiscardChangesDialog(
         text = stringResource(Res.string.codex_entry_discard_text),
-        onConfirm = { eventSink(CodexEntryFormEvent.EntryFormDiscardPromptDismissed) },
-        onDismiss = { eventSink(CodexEntryFormEvent.EntryFormClosed) },
-        confirmLabel = stringResource(Res.string.codex_entry_discard_back),
-        dismissLabel = stringResource(Res.string.codex_entry_discard_leave),
-        confirmTone = ButtonTone.Gold,
-        icon = AppIcons.Edit,
-        accent = AppPalette.Gold,
-        accentBright = AppPalette.GoldBright,
-        onDismissRequest = { eventSink(CodexEntryFormEvent.EntryFormDiscardPromptDismissed) },
+        onStay = { eventSink(CodexEntryFormEvent.EntryFormDiscardPromptDismissed) },
+        onLeave = { eventSink(CodexEntryFormEvent.EntryFormClosed) },
     )
 }

@@ -14,6 +14,7 @@ import com.lyrismet.incadent.core.file.ExchangeRequests
 import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportContents
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportFailedException
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportRequest
@@ -59,6 +60,8 @@ class ImportPresenter(
         var destination by remember(origin) { mutableStateOf(ImportDestination.NEW) }
         var photos by remember(origin) { mutableStateOf(true) }
         var conflicts by remember(origin) { mutableStateOf(ConflictMode.SKIP) }
+        var leavePrompt by remember(origin) { mutableStateOf(false) }
+        var replacing by remember(origin) { mutableStateOf(emptySet<ExchangeRef>()) }
         var pick by remember(contents) { mutableStateOf(contents?.let { ExchangePick.handPick(it.options, it.graph) }) }
         val scope = rememberCoroutineScope()
 
@@ -83,6 +86,8 @@ class ImportPresenter(
         val view = remember(taking) { taking?.toView() }
         val pickedRecords = taking?.recordCount ?: 0
         val newCount = pickedRecords - duplicates.size
+        // a replace ticked for a record that is no longer picked or no longer a duplicate does not count
+        val replaced = duplicates.count { it.ref in replacing }
 
         fun importNow() {
             val source = origin ?: return
@@ -99,6 +104,7 @@ class ImportPresenter(
                     conflicts = conflicts,
                     selection = if (partial) taking?.selection?.copy(photos = photos) else null,
                     scope = if (partial) taking?.scope else null,
+                    replace = if (partial) duplicates.map { it.ref }.filter { it in replacing }.toSet() else emptySet(),
                 )
             step = ImportStep.Working
             scope.launch {
@@ -131,8 +137,10 @@ class ImportPresenter(
             photos = photos,
             conflicts = conflicts,
             duplicates = duplicates,
+            replacing = duplicates.map { it.ref }.filter { it in replacing }.toSet(),
             newCount = newCount,
-            importCount = if (conflicts == ConflictMode.SKIP) newCount else pickedRecords,
+            leavePromptVisible = leavePrompt,
+            importCount = if (conflicts == ConflictMode.SKIP) newCount + replaced else pickedRecords,
         ) { event ->
             when (event) {
                 is ImportEvent.FilePicked -> requests.request(ExchangeRequest.Import(event.origin))
@@ -151,8 +159,24 @@ class ImportPresenter(
                         if (duplicates.isEmpty()) importNow() else step = ImportStep.Match
                     }
                 is ImportEvent.ConflictsSelected -> conflicts = event.mode
+                is ImportEvent.ReplaceToggled ->
+                    replacing = if (event.ref in replacing) replacing - event.ref else replacing + event.ref
+                is ImportEvent.ReplaceAll ->
+                    replacing =
+                        if (event.replace) duplicates.map { it.ref }.toSet() else emptySet()
                 ImportEvent.ImportConfirmed -> importNow()
                 ImportEvent.Back -> step = if (step == ImportStep.Match) ImportStep.Items else ImportStep.Preview
+                ImportEvent.CloseRequested ->
+                    when (step) {
+                        ImportStep.Items, ImportStep.Match -> leavePrompt = true
+                        // the write cannot be taken back half way, the sheet stays until it is over
+                        ImportStep.Working -> Unit
+                        else -> {
+                            requests.clear()
+                            navigator.pop()
+                        }
+                    }
+                ImportEvent.LeaveCancelled -> leavePrompt = false
                 ImportEvent.Closed -> {
                     requests.clear()
                     navigator.pop()

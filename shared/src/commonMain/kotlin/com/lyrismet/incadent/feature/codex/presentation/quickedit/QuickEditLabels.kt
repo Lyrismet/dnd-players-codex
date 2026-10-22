@@ -14,6 +14,7 @@ import dndplayerscodex.shared.generated.resources.entity_sheet_life_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_location_parent_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_nicknames_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_race_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_npc_species_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_class_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_hp_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_level_label
@@ -35,6 +36,7 @@ fun rememberQuickEditFieldTitles(): Map<QuickEditField, String> =
         QuickEditField.DESCRIPTION to stringResource(Res.string.quick_edit_label_description),
         QuickEditField.NICKNAMES to stringResource(Res.string.entity_sheet_nicknames_label),
         QuickEditField.RACE to stringResource(Res.string.entity_sheet_npc_race_label),
+        QuickEditField.SPECIES to stringResource(Res.string.entity_sheet_npc_species_label),
         QuickEditField.CHARACTER_CLASS to stringResource(Res.string.entity_sheet_party_class_label),
         QuickEditField.PLAYER_NAME to stringResource(Res.string.entity_sheet_party_player_label),
         QuickEditField.REWARD to stringResource(Res.string.codex_quest_reward_label),

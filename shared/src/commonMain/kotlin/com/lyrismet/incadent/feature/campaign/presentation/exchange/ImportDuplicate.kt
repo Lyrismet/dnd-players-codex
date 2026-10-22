@@ -4,13 +4,16 @@ import com.lyrismet.incadent.feature.campaign.domain.exchange.nameKey
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeItem
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeOptions
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 
 /** a record of the file that has the same name and kind as one already in the campaign it goes into */
 data class ImportDuplicate(
     val name: String,
-    val kind: ExchangeKind,
-)
+    val ref: ExchangeRef,
+) {
+    val kind: ExchangeKind get() = ref.kind
+}
 
 /** the records of [scope] (listed in [file]) that [existing] already has under the same name, case and edges ignored */
 fun findDuplicates(
@@ -25,7 +28,10 @@ fun findDuplicates(
         there: List<ExchangeItem>,
     ): List<ImportDuplicate> {
         val names = there.map { it.name.nameKey() }.toSet()
-        return incoming.filter { it.id in ids && it.name.nameKey() in names }.map { ImportDuplicate(it.name, kind) }
+        return incoming
+            .filter {
+                it.id in ids && it.name.nameKey() in names
+            }.map { ImportDuplicate(it.name, ExchangeRef(kind, it.id)) }
     }
     return matches(ExchangeKind.PLACE, scope.places, file.places, existing.places) +
         matches(ExchangeKind.NPC, scope.npcs, file.npcs, existing.npcs) +

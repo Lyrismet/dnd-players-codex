@@ -16,14 +16,19 @@ import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
+import com.lyrismet.incadent.core.preferences.HoldHintState
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
+import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
 import com.lyrismet.incadent.feature.codex.presentation.form.rememberPlaceFailureText
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditInteractions
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.rememberEntityChangeReporter
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
@@ -98,6 +103,7 @@ private class SessionDetailFields(
     val speciesNote: SpeciesNoteController,
     val toast: MutableState<String?>,
     val formController: CodexEntryFormController,
+    val quickEdit: QuickEditInteractions,
 )
 
 @Suppress("LongParameterList")
@@ -135,13 +141,19 @@ class SessionDetailPresenter(
             .collectAsState(initial = SessionNumbering.ROMAN)
         val pinnedPhrases by phraseSnippetRepository.observeAll().collectAsState(initial = emptyList())
         val frequentPhrases = rememberFrequentPhrases(allEntries)
+        val holdHint by appPreferencesRepository.observeHoldHintState().collectAsState(initial = HoldHintState.SEEN)
+        val undoAction by undoController.current.collectAsState()
         val failure = remember { mutableStateOf<Throwable?>(null) }
         val scope = rememberGuardedScope { failure.value = it }
 
         val currentNote = allSessions.find { it.id == screen.sessionNoteId }
         val numberLabel = allSessions.sessionNumberLabels(numbering)[screen.sessionNoteId]
 
-        val fields = rememberFields(parties.firstOrNull { it.isPlayerCharacter }?.level)
+        val fields =
+            rememberFields(
+                parties.firstOrNull { it.isPlayerCharacter }?.level,
+                rememberEntityChangeReporter(undoController),
+            )
         val highlightedEntryId = remember { mutableStateOf(screen.focusEntryId) }
         LaunchedEffect(highlightedEntryId.value) {
             if (highlightedEntryId.value != null) {
@@ -268,6 +280,18 @@ class SessionDetailPresenter(
             quantityHint = pendingQuantityName(draft.value.text, draft.value.selection.end),
             mentionSuggestions = mention.suggestions,
             selectedEntity = selectedEntity,
+            quickEdit =
+                fields.quickEdit.state(
+                    CodexRecords(
+                        parties = parties,
+                        npcs = npcs,
+                        quests = quests,
+                        locations = locations,
+                        species = species,
+                    ),
+                    holdTipAllowed = holdHint == HoldHintState.PENDING,
+                    undoAction = undoAction,
+                ),
             editingEntryTimeLabel = editingEntryTimeLabel,
             selectedEntryId = selectedEntryId.value,
             isTitleEditing = fields.titleEditing.value,
@@ -293,10 +317,12 @@ class SessionDetailPresenter(
 
     // edited locally so live Flow re-emissions from other screens don't clobber in-progress typing
     @Composable
-    private fun rememberFields(playerCharacterLevel: Int?): SessionDetailFields {
+    private fun rememberFields(
+        playerCharacterLevel: Int?,
+        reportChange: suspend (EntityChange) -> Unit,
+    ): SessionDetailFields {
         val noteId = screen.sessionNoteId
         val selectedEntityRef = remember(noteId) { mutableStateOf<EntityRef?>(null) }
-        val entityHistory = remember(noteId) { mutableStateOf(emptyList<EntityRef>()) }
         val recentPlaceIds = remember { mutableStateOf(emptyList<Long>()) }
         val formController =
             CodexEntryFormController.rememberController(
@@ -309,11 +335,12 @@ class SessionDetailPresenter(
                 playerCharacterLevel,
             )
         val draft = remember(noteId) { mutableStateOf(TextFieldValue("")) }
+        val entitySheet = entitySheetInteractions(noteId, selectedEntityRef, reportChange)
         return SessionDetailFields(
             titleField = remember(noteId) { mutableStateOf(null) },
             titleEditing = remember(noteId) { mutableStateOf(false) },
             selectedEntityRef = selectedEntityRef,
-            entitySheet = entitySheetInteractions(selectedEntityRef, entityHistory),
+            entitySheet = entitySheet,
             composer =
                 SessionDraftController(
                     noteId,
@@ -350,17 +377,40 @@ class SessionDetailPresenter(
             speciesNote = SpeciesNoteController(remember(noteId) { mutableStateOf(null) }, sessionEntryRepository),
             toast = remember(noteId) { mutableStateOf(null) },
             formController = formController,
+            quickEdit = quickEditInteractions(noteId, selectedEntityRef, entitySheet, recentPlaceIds),
         )
     }
 
-    private fun entitySheetInteractions(
+    @Composable
+    private fun quickEditInteractions(
+        noteId: Long,
         selectedEntityRef: MutableState<EntityRef?>,
-        entityHistory: MutableState<List<EntityRef>>,
+        entitySheet: EntitySheetInteractions,
+        recentPlaceIds: MutableState<List<Long>>,
+    ) = QuickEditInteractions(
+        remember(noteId) { mutableStateOf(null) },
+        remember(noteId) { mutableStateOf(null) },
+        selectedEntityRef,
+        entitySheet,
+        imageCompressor,
+        recentPlaceIds,
+        codexRepositories,
+        undoController,
+    ) {
+        appPreferencesRepository.setHoldHintState(HoldHintState.SEEN)
+    }
+
+    @Composable
+    private fun entitySheetInteractions(
+        noteId: Long,
+        selectedEntityRef: MutableState<EntityRef?>,
+        reportChange: suspend (EntityChange) -> Unit,
     ) = EntitySheetInteractions(
         selectedEntityRef,
         codexRepositories,
         navigator.sessionEntryOpener(),
-        entityHistory,
+        remember(noteId) { mutableStateOf(emptyList()) },
+        onChanged = reportChange,
     )
 
     // a card event that changes which card is open also forgets the chip it came from
@@ -376,6 +426,7 @@ class SessionDetailPresenter(
             EntitySheetEvent.Dismissed,
             -> {
                 fields.speciesNote.clear()
+                fields.quickEdit.onSheetClosed()
                 fields.entitySheet.onEvent(scope, event)
             }
             else -> fields.entitySheet.onEvent(scope, event)
@@ -405,6 +456,7 @@ class SessionDetailPresenter(
             SessionDetailEvent.InsertMentionTriggerClicked -> fields.composer.insertMentionTrigger()
             is SessionDetailEvent.MentionSuggestionPicked -> fields.composer.pickMention(event.token)
             is SessionDetailEvent.EntitySheet -> onEntitySheet(event.event, entries, fields, scope)
+            is SessionDetailEvent.QuickEdit -> fields.quickEdit.onEvent(scope, event.event)
             is SessionDetailEvent.SpeciesChipClicked -> {
                 fields.entitySheet.onEntityClicked(EntityRef.Species(event.speciesId))
                 fields.speciesNote.open(SpeciesNotePoint(event.entryId, event.occurrence, event.speciesId))

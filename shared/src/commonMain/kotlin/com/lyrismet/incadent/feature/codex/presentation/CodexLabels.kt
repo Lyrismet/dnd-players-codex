@@ -8,8 +8,6 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.NpcGroupBy
 import com.lyrismet.incadent.feature.codex.domain.grouping.QuestGroupBy
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
-import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
-import com.lyrismet.incadent.feature.codex.presentation.quickedit.rememberQuickEditFieldTitles
 import com.lyrismet.incadent.feature.codex.presentation.summary.npcLifeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.npcStatusLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.partyPresenceLabels
@@ -35,7 +33,6 @@ import dndplayerscodex.shared.generated.resources.codex_party_card_hp
 import dndplayerscodex.shared.generated.resources.codex_party_card_player_prefix
 import dndplayerscodex.shared.generated.resources.codex_party_card_you
 import dndplayerscodex.shared.generated.resources.codex_undo_deleted_title
-import dndplayerscodex.shared.generated.resources.quick_edit_changed_suffix
 import org.jetbrains.compose.resources.stringResource
 
 /** the labels the codex screen resolves from resources, collected once per composition */
@@ -44,8 +41,6 @@ internal class CodexLabels(
     val entityType: Map<EntityKind, String>,
     val undoDeletedTitle: String,
     val grouped: CodexGroupedLabels,
-    val fieldTitles: Map<QuickEditField, String>,
-    val changedSuffix: String,
 )
 
 @Composable
@@ -69,8 +64,6 @@ internal fun codexLabels(): CodexLabels {
             ),
         undoDeletedTitle = stringResource(Res.string.codex_undo_deleted_title),
         grouped = groupedLabels(npcStatusLabels(), questStatusLabels()),
-        fieldTitles = rememberQuickEditFieldTitles(),
-        changedSuffix = stringResource(Res.string.quick_edit_changed_suffix),
     )
 }
 

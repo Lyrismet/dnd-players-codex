@@ -13,6 +13,9 @@ sealed interface QuickEditKind {
 
     data object Link : QuickEditKind
 
+    /** one species picked in the select sheet over the card, the answer is a link to it */
+    data object Species : QuickEditKind
+
     /** one or several places picked in the select sheet - whether it is several depends on the entity */
     data object Places : QuickEditKind
 
@@ -34,6 +37,7 @@ enum class QuickEditField(
     DESCRIPTION(QuickEditKind.Text),
     NICKNAMES(QuickEditKind.Text),
     RACE(QuickEditKind.Text),
+    SPECIES(QuickEditKind.Species),
     CHARACTER_CLASS(QuickEditKind.Text),
     PLAYER_NAME(QuickEditKind.Text),
     REWARD(QuickEditKind.Text),
@@ -66,6 +70,9 @@ enum class QuickEditField(
     /** the quests set at a place - each one is a quest whose place is this one */
     PLACE_QUESTS(QuickEditKind.Relations),
 }
+
+/** true for a field that is edited in a select sheet over the card, the line itself stays as it is meanwhile */
+val QuickEditField.editsInSheet: Boolean get() = kind is QuickEditKind.Places || kind == QuickEditKind.Species
 
 /** the typed-in or tapped value of one [QuickEditField], always matching that field's [QuickEditKind] */
 sealed interface QuickEditValue {
@@ -109,6 +116,7 @@ fun quickEditValueFromDraft(
                 trimmed.toIntOrNull()?.let { QuickEditValue.Number(it.coerceIn(kind.range)) }
             }
         QuickEditKind.Link,
+        QuickEditKind.Species,
         QuickEditKind.Places,
         QuickEditKind.Choice,
         QuickEditKind.Photo,

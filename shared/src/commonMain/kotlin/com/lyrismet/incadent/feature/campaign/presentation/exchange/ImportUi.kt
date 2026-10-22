@@ -13,6 +13,7 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
+import com.lyrismet.incadent.core.designsystem.component.DiscardChangesDialog
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.RadioOptionRow
@@ -24,6 +25,7 @@ import dndplayerscodex.shared.generated.resources.exchange_dest_add_hint
 import dndplayerscodex.shared.generated.resources.exchange_dest_label
 import dndplayerscodex.shared.generated.resources.exchange_dest_new
 import dndplayerscodex.shared.generated.resources.exchange_dest_new_hint
+import dndplayerscodex.shared.generated.resources.exchange_discard_text
 import dndplayerscodex.shared.generated.resources.exchange_error_title
 import dndplayerscodex.shared.generated.resources.exchange_import_campaign_title
 import dndplayerscodex.shared.generated.resources.exchange_import_campaign_untitled
@@ -53,12 +55,17 @@ fun ImportUi(
 ) {
     val sink = state.eventSink
     val pickFile = rememberFilePicker { sink(ImportEvent.FilePicked(it)) }
-    AppBottomSheet(onDismissRequest = { sink(ImportEvent.Closed) }, modifier = modifier) {
+    AppBottomSheet(
+        onDismissRequest = { sink(ImportEvent.CloseRequested) },
+        modifier = modifier,
+        // the sheet stays up under the prompt instead of hiding first
+        onDismissBlocked = if (state.guardsClosing) ({ sink(ImportEvent.CloseRequested) }) else null,
+    ) {
         AppSheetColumn(spacing = 12.dp, scroll = true) {
             AppSheetHeader(
                 overline = stringResource(Res.string.exchange_import_overline),
                 title = stepTitle(state),
-                onClose = { sink(ImportEvent.Closed) },
+                onClose = { sink(ImportEvent.CloseRequested) },
             )
             when (val step = state.step) {
                 ImportStep.Reading, ImportStep.Working -> Note(stringResource(Res.string.exchange_import_reading))
@@ -69,6 +76,13 @@ fun ImportUi(
                 is ImportStep.Done -> DoneStep(step.records) { sink(ImportEvent.Closed) }
             }
         }
+    }
+    if (state.leavePromptVisible) {
+        DiscardChangesDialog(
+            text = stringResource(Res.string.exchange_discard_text),
+            onStay = { sink(ImportEvent.LeaveCancelled) },
+            onLeave = { sink(ImportEvent.Closed) },
+        )
     }
 }
 

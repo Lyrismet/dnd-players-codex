@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
-import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
@@ -18,19 +17,16 @@ import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
-import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
-import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectSheet
-import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityCardSheet
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.asSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummarySheetActions
-import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummarySheetContent
-import com.lyrismet.incadent.feature.codex.presentation.summary.QuickEditSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.entitySheetActions
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_add_entry_button
@@ -178,31 +174,13 @@ private fun CodexEntitySheet(
     state: CodexState,
     entity: EntitySummaryItem,
 ) {
-    AppBottomSheet(onDismissRequest = { state.eventSink(CodexEvent.EntitySheet(EntitySheetEvent.Dismissed)) }) {
-        Box {
-            EntitySummarySheetContent(
-                item = entity,
-                actions = entitySheetActions(state),
-                onClose = { state.eventSink(CodexEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
-            )
-            // the sheet covers the app-level undo toast, so the card carries its own copy above the bottom edge
-            UndoToast(
-                action = state.undoAction,
-                onUndo = { state.eventSink(CodexEvent.UndoClicked) },
-                onFollowUp = { state.eventSink(CodexEvent.UndoFollowUpClicked) },
-                modifier = floatingBarAnchor(),
-            )
-        }
-    }
-    // a sheet of its own over the card, so dismissing it leaves the card open
-    state.quickPlaceSelect?.let { select ->
-        PlaceSelectSheet(
-            select = select,
-            onChosen = { state.eventSink(CodexEvent.QuickEdit(QuickEditUiEvent.PlacesChosen(it))) },
-            onCreated = { name, checked -> state.eventSink(CodexEvent.QuickPlaceCreated(name, checked)) },
-            onDismiss = { state.eventSink(CodexEvent.QuickEdit(QuickEditUiEvent.EditCancelled)) },
-        )
-    }
+    EntityCardSheet(
+        item = entity,
+        actions = entitySheetActions(state),
+        quick = state.quick,
+        onQuickEvent = { state.eventSink(CodexEvent.QuickEdit(it)) },
+        onDismiss = { state.eventSink(CodexEvent.EntitySheet(EntitySheetEvent.Dismissed)) },
+    )
 }
 
 // quick mode edits in place and keeps the pen out of the header, form mode is read-only and offers the pen instead
@@ -224,17 +202,9 @@ private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
                 }
             },
         statusesReadOnly = !isQuick,
-        quickEdit = if (isQuick) quickEditSheet(state) else null,
+        quickEdit = if (isQuick) state.quick.asSheet { state.eventSink(CodexEvent.QuickEdit(it)) } else null,
     ) { state.eventSink(CodexEvent.EntitySheet(it)) }
 }
-
-private fun quickEditSheet(state: CodexState): QuickEditSheet =
-    QuickEditSheet(
-        inlineEdit = state.inlineEdit,
-        photoCrop = state.photoCrop,
-        holdTipVisible = state.holdTipVisible,
-        onEvent = { event -> state.eventSink(CodexEvent.QuickEdit(event)) },
-    )
 
 @Composable
 private fun codexTabItems(state: CodexState): List<SegmentedTab<CodexTab>> =
