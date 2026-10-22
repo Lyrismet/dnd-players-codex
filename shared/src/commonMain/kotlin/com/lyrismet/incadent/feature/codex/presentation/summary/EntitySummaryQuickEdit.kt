@@ -26,6 +26,7 @@ import com.lyrismet.incadent.core.designsystem.component.HoldHintCard
 import com.lyrismet.incadent.core.designsystem.component.HoldToEditField
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.orDash
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.CreatureTypeEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineFieldEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.LinkOptionEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
@@ -177,6 +178,7 @@ private fun FactEditor(
                     selectedId = (fact.value as? FactValue.Link)?.chip?.entityRef?.id,
                     onEvent = quick.onEvent,
                 )
+            QuickEditKind.Choice -> CreatureTypeEditor(label, fact.creatureOptions, quick.onEvent)
             else ->
                 InlineFieldEditor(
                     label = label,

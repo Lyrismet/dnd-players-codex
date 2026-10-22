@@ -22,6 +22,8 @@ import dndplayerscodex.shared.generated.resources.entity_sheet_party_player_labe
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_presence_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_quest_location_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_relation_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_species_creature_type_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_species_hp_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_status_label
 import dndplayerscodex.shared.generated.resources.place_moved_title
 import dndplayerscodex.shared.generated.resources.quick_edit_label_description
@@ -42,6 +44,7 @@ fun rememberQuickEditFieldTitles(): Map<QuickEditField, String> =
         QuickEditField.REWARD to stringResource(Res.string.codex_quest_reward_label),
         QuickEditField.LEVEL to stringResource(Res.string.entity_sheet_party_level_label),
         QuickEditField.HP_MAX to stringResource(Res.string.entity_sheet_party_hp_label),
+        QuickEditField.HIT_POINTS to stringResource(Res.string.entity_sheet_species_hp_label),
         QuickEditField.GIVER to stringResource(Res.string.codex_quest_given_by_label),
         QuickEditField.PLACE to stringResource(Res.string.entity_sheet_quest_location_label),
         QuickEditField.PARENT to stringResource(Res.string.entity_sheet_location_parent_label),
@@ -51,6 +54,7 @@ fun rememberQuickEditFieldTitles(): Map<QuickEditField, String> =
         QuickEditField.LIFE to stringResource(Res.string.entity_sheet_life_label),
         QuickEditField.QUEST_STATUS to stringResource(Res.string.entity_sheet_status_label),
         QuickEditField.PRESENCE to stringResource(Res.string.entity_sheet_party_presence_label),
+        QuickEditField.CREATURE_TYPE to stringResource(Res.string.entity_sheet_species_creature_type_label),
         QuickEditField.PORTRAIT to stringResource(Res.string.codex_entry_label_portrait),
         QuickEditField.COVER to stringResource(Res.string.codex_entry_label_cover),
         QuickEditField.GIVEN_QUESTS to stringResource(Res.string.entity_sheet_group_npc_quests_given),

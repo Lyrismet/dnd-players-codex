@@ -86,6 +86,8 @@ data class FactRow(
     val edit: QuickEditField? = null,
     // the entities a link fact can be re-pointed at - only read when [edit] is a link field
     val linkOptions: List<MentionChipItem> = emptyList(),
+    // the types a creature type fact can be switched to - only read when [edit] is [QuickEditField.CREATURE_TYPE]
+    val creatureOptions: List<StatusOption<CreatureType>> = emptyList(),
 )
 
 /** one candidate of an editable relation group, ticked when it is linked to the card's entity right now */
@@ -183,6 +185,8 @@ sealed interface EntitySummaryItem {
         val seenInSessions: Int,
         // how many the tapped chip stands for, set only on a card opened from a note
         val noteQuantity: Int? = null,
+        val nicknames: List<String> = emptyList(),
+        val hitPoints: Int? = null,
     ) : EntitySummaryItem
 
     data class PartySummary(

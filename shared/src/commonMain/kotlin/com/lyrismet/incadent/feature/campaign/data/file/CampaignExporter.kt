@@ -166,7 +166,15 @@ class CampaignExporter(
     ) {
         snapshot.species.filter { it.id in scope.species }.forEach {
             writer.write(
-                FileRecord.Species(ids.species(it.id), it.name, it.creature_type, it.damage, it.notes, it.nicknames),
+                FileRecord.Species(
+                    ids.species(it.id),
+                    it.name,
+                    it.creature_type,
+                    it.damage,
+                    it.notes,
+                    it.nicknames,
+                    it.hit_points?.toInt(),
+                ),
             )
         }
         val depth = scope.places.associateWith(ids::placeDepth)

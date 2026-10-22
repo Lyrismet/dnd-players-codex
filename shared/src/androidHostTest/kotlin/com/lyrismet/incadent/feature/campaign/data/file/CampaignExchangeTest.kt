@@ -49,7 +49,7 @@ class CampaignExchangeTest {
     private var npcId: Long = 0L
 
     private fun seed() {
-        database.speciesQueries.insert("Wolf", CreatureType.BEAST, "bite", "", "", jpeg, byteArrayOf(1), source)
+        database.speciesQueries.insert("Wolf", CreatureType.BEAST, "bite", "", "", 25L, jpeg, byteArrayOf(1), source)
         val speciesId = database.speciesQueries.lastInsertRowId().executeAsOne()
         database.locationQueries.insert("Town", "big", null, jpeg, byteArrayOf(1), source)
         val town = database.locationQueries.lastInsertRowId().executeAsOne()
@@ -135,13 +135,9 @@ class CampaignExchangeTest {
         assertEquals("Bob", npc.name)
         assertEquals(NpcStatus.FRIEND, npc.status)
         assertNotNull(npc.species_id)
-        assertEquals(
-            "Wolf",
-            database.speciesQueries
-                .selectById(npc.species_id!!)
-                .executeAsOne()
-                .name,
-        )
+        val wolf = database.speciesQueries.selectById(npc.species_id!!).executeAsOne()
+        assertEquals("Wolf", wolf.name)
+        assertEquals(25L, wolf.hit_points)
         val places =
             database.locationQueries
                 .selectAll(target)
@@ -364,6 +360,32 @@ class CampaignExchangeTest {
                 .reward,
         )
         assertEquals(1, result.records)
+    }
+
+    @Test
+    fun `a replaced species keeps its hit points when the file has none and takes new ones`() {
+        seed()
+        val ref = setOf(ExchangeRef(ExchangeKind.SPECIES, 1))
+
+        fun replaceWith(hitPoints: Int?): Long? {
+            val file = MemoryFile()
+            CampaignFileWriter(file).run {
+                writeHeader(FileHeader(FILE_FORMAT, FILE_VERSION, "World", false, 1, 0))
+                write(FileRecord.Species(1, "Wolf", CreatureType.BEAST, hitPoints = hitPoints))
+            }
+            importer.import(
+                origin(file),
+                ImportRequest(ImportTarget.Existing(source), ConflictMode.SKIP, replace = ref),
+            )
+            return database.speciesQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+                .hit_points
+        }
+
+        assertEquals(25L, replaceWith(null))
+        assertEquals(40L, replaceWith(40))
     }
 
     @Test

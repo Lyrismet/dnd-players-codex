@@ -48,6 +48,19 @@ class CampaignFileCodecTest {
     }
 
     @Test
+    fun `a species line from before hit points reads with none`() {
+        val file =
+            MemoryFile(
+                listOf(
+                    """{"format":"$FILE_FORMAT","version":$FILE_VERSION,"name":"World"}""",
+                    """{"t":"species","id":1,"name":"Wolf","creatureType":"BEAST"}""",
+                ),
+            )
+
+        assertEquals(listOf<FileRecord>(FileRecord.Species(1, "Wolf", CreatureType.BEAST)), readAll(file))
+    }
+
+    @Test
     fun `the header is read before any record`() {
         val reader = CampaignFileReader.open(fileOf())
         assertEquals("World", reader.header.name)

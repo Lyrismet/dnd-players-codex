@@ -157,6 +157,8 @@ private fun buildSpeciesSummary(
         damage = species.damage,
         relatedNotes = relatedNotes,
         seenInSessions = relatedNotes.size,
+        nicknames = species.nicknames,
+        hitPoints = species.hitPoints,
     )
 }
 
@@ -330,7 +332,7 @@ private fun <T> statusOptions(
         StatusOption(value, labels.getValue(value), colorOf(value), value == current, glyphOf(value))
     }
 
-private fun nicknamesFact(nicknames: List<String>) =
+internal fun nicknamesFact(nicknames: List<String>) =
     FactRow(
         Res.string.entity_sheet_nicknames_label,
         FactValue.Text(nicknames.joinNicknames()),

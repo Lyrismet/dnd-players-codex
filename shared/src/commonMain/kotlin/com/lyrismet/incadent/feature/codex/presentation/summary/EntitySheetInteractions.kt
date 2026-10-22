@@ -15,6 +15,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.MovedPlaces
@@ -181,8 +182,13 @@ class EntitySheetInteractions(
                             { it.withQuickEdit(field, value) },
                         ) { locationRepository.upsert(it) }
                     }
-                // a species card edits through its own damage grid
-                is EntityRef.Species -> Unit
+                is EntityRef.Species ->
+                    commitChange(
+                        field,
+                        { speciesRepository.getById(ref.id) },
+                        Species::name,
+                        { it.withQuickEdit(field, value) },
+                    ) { speciesRepository.upsert(it) }
                 is EntityRef.Party ->
                     commitChange(
                         field,

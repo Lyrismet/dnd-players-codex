@@ -202,12 +202,13 @@ internal class CampaignImporter(
         private fun addSpecies(record: FileRecord.Species) {
             speciesMap[record.id] =
                 matched(ExchangeRef(ExchangeKind.SPECIES, record.id), PhotoOwner.SPECIES, speciesByName, record.name) {
-                    database.speciesQueries.update(
+                    database.speciesQueries.updateImported(
                         record.name,
                         record.creatureType,
                         record.damage,
                         record.notes,
                         record.nicknames,
+                        record.hitPoints?.toLong(),
                         it,
                     )
                 } ?: run {
@@ -218,6 +219,7 @@ internal class CampaignImporter(
                         record.damage,
                         record.notes,
                         record.nicknames,
+                        record.hitPoints?.toLong(),
                         null,
                         null,
                         campaignId,

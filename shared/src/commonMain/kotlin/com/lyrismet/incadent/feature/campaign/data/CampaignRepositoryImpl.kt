@@ -182,7 +182,7 @@ class CampaignRepositoryImpl(
             copiedNpcs++
         }
         // the whole bestiary comes along, not only the species a copied npc points at
-        speciesQueries.selectAll(source) { id, _, _, _, _, _, _ -> id }.executeAsList().forEach {
+        speciesQueries.selectAll(source) { id, _, _, _, _, _, _, _ -> id }.executeAsList().forEach {
             copySpecies(it, targetId, speciesMap)
         }
         if (transfer.copyTags) queries.copyTags(targetId, source)
@@ -202,6 +202,7 @@ class CampaignRepositoryImpl(
                 full.damage,
                 full.notes,
                 full.nicknames,
+                full.hit_points,
                 full.photo,
                 full.photo_thumb,
                 targetId,

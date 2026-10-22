@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.campaign.data.file
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportError
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportFailedException
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
+import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 import com.lyrismet.incadent.feature.mention.domain.mentionRefsIn
 
 // far above what the forms allow (see TextLimits), so a real export always fits and a stuffed field never does
@@ -105,7 +106,10 @@ private fun fits(
 ): Boolean = texts.all { it.length <= limit }
 
 private fun FileRecord.Species.fits() =
-    fits(MAX_SHORT_CHARS, name) && fits(MAX_LONG_CHARS, notes, damage) && fits(MAX_NICKNAMES_CHARS, nicknames)
+    fits(MAX_SHORT_CHARS, name) &&
+        fits(MAX_LONG_CHARS, notes, damage) &&
+        fits(MAX_NICKNAMES_CHARS, nicknames) &&
+        (hitPoints == null || hitPoints in SPECIES_HIT_POINTS_RANGE)
 
 private fun FileRecord.Place.fits() = fits(MAX_SHORT_CHARS, name) && fits(MAX_LONG_CHARS, description)
 

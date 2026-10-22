@@ -29,6 +29,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
@@ -260,12 +261,12 @@ class CodexEntryFormController private constructor(
         val current = fields.value ?: return
         val party = current.party
         val clamped = value?.coerceAtMost(field.range().last)
-        val updated =
+        fields.value =
             when (field) {
-                CodexEntryNumberField.PARTY_LEVEL -> party.copy(level = clamped)
-                CodexEntryNumberField.PARTY_HP_MAX -> party.copy(hpMax = clamped)
+                CodexEntryNumberField.PARTY_LEVEL -> current.copy(party = party.copy(level = clamped))
+                CodexEntryNumberField.PARTY_HP_MAX -> current.copy(party = party.copy(hpMax = clamped))
+                CodexEntryNumberField.SPECIES_HIT_POINTS -> current.copy(speciesHitPoints = clamped)
             }
-        fields.value = current.copy(party = updated)
     }
 
     fun onPartyLevelFromPlayerClicked() {
@@ -595,6 +596,7 @@ class CodexEntryFormController private constructor(
                     FormChipOption(npc.id, npc.name, npc.id == current.questGiverId, npc.status.toStatusColor())
                 },
             speciesDamage = current.speciesDamage,
+            speciesHitPoints = current.speciesHitPoints,
             creatureTypeOptions =
                 CreatureType.entries.map {
                     FormChipOption(it, typeLabels.getValue(it), it == current.speciesType)
@@ -657,6 +659,7 @@ private fun CodexEntryNumberField.range(): IntRange =
     when (this) {
         CodexEntryNumberField.PARTY_LEVEL -> PartyStatRanges.level
         CodexEntryNumberField.PARTY_HP_MAX -> PartyStatRanges.hpMax
+        CodexEntryNumberField.SPECIES_HIT_POINTS -> SPECIES_HIT_POINTS_RANGE
     }
 
 @Composable

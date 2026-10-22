@@ -52,6 +52,7 @@ class SpeciesRepositoryImpl(
                         entity.damage.encodeDamage(),
                         entity.notes,
                         entity.nicknames.joinNicknames(),
+                        entity.hitPoints?.toLong(),
                         entity.id,
                     )
                     writePhoto(entity.id, entity.photo, stored.photo)
@@ -71,6 +72,7 @@ class SpeciesRepositoryImpl(
                 species.damage.encodeDamage(),
                 species.notes,
                 species.nicknames.joinNicknames(),
+                species.hitPoints?.toLong(),
                 species.photo?.full,
                 species.photo?.thumb,
                 current.requireId(),
@@ -83,6 +85,7 @@ class SpeciesRepositoryImpl(
             species.damage.encodeDamage(),
             species.notes,
             species.nicknames.joinNicknames(),
+            species.hitPoints?.toLong(),
             species.photo?.full,
             species.photo?.thumb,
             current.requireId(),
@@ -117,6 +120,7 @@ class SpeciesRepositoryImpl(
         damage: String,
         notes: String,
         nicknames: String,
+        hitPoints: Long?,
         photoThumb: ByteArray?,
     ) = Species(
         id,
@@ -128,6 +132,7 @@ class SpeciesRepositoryImpl(
             Photo(it)
         },
         parseNicknames(nicknames),
+        hitPoints?.toInt(),
     )
 
     // the by-id row also carries the full jpeg
@@ -139,8 +144,9 @@ class SpeciesRepositoryImpl(
         damage: String,
         notes: String,
         nicknames: String,
+        hitPoints: Long?,
         photoThumb: ByteArray?,
         photo: ByteArray?,
-    ) = toDomain(id, name, creatureType, damage, notes, nicknames, photoThumb)
+    ) = toDomain(id, name, creatureType, damage, notes, nicknames, hitPoints, photoThumb)
         .copy(photo = photoThumb?.let { Photo(it, photo) })
 }

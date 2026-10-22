@@ -15,8 +15,6 @@ import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
-import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
-import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_all_species
@@ -184,14 +182,7 @@ internal fun CodexAllList(
             CodexNpcEntry(state, it, hintPeekOffsetPx)
         }
         codexSection(speciesTitle, state.species, speciesFirst, key = { "species_${it.id}" }) { species ->
-            SpeciesCodexCard(
-                item = species,
-                onClick = {
-                    state.eventSink(
-                        CodexEvent.EntitySheet(EntitySheetEvent.EntityClicked(EntityRef.Species(species.id))),
-                    )
-                },
-            )
+            SpeciesRow(species, state.eventSink, state.swipeEditEnabled)
         }
         codexSection(questTitle, quests, questFirst, key = { "quest_${it.id}" }) {
             CodexQuestEntry(state, it, hintPeekOffsetPx)

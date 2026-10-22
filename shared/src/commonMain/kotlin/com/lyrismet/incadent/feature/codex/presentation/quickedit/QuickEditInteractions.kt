@@ -127,6 +127,8 @@ class QuickEditInteractions(
         }
     }
 
+    // flat event dispatch table, grows one branch per event variant - not real branching complexity
+    @Suppress("CyclomaticComplexMethod")
     fun onEvent(
         scope: CoroutineScope,
         event: QuickEditUiEvent,
@@ -137,6 +139,7 @@ class QuickEditInteractions(
             QuickEditUiEvent.EditCancelled -> inlineEdit.value = null
             QuickEditUiEvent.EditSaved -> saveDraft(scope)
             is QuickEditUiEvent.LinkChosen -> commitChosen(scope, QuickEditValue.Link(event.id))
+            is QuickEditUiEvent.CreatureTypeChosen -> commitChosen(scope, QuickEditValue.Creature(event.type))
             is QuickEditUiEvent.PlacesChosen -> {
                 recentPlaceIds.value = recentPlaceIds.value.withRecentPlaces(event.ids)
                 commitChosen(scope, QuickEditValue.Places(event.ids))

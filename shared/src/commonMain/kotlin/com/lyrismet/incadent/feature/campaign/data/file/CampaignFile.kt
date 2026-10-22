@@ -38,6 +38,7 @@ sealed interface FileRecord {
         val damage: String = "",
         val notes: String = "",
         val nicknames: String = "",
+        val hitPoints: Int? = null,
     ) : FileRecord
 
     @Serializable

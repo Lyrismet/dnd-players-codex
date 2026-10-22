@@ -1,7 +1,9 @@
 package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
+import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 
 /** how a field takes its value - text and numbers are typed in, links and choices are tapped */
 sealed interface QuickEditKind {
@@ -43,6 +45,7 @@ enum class QuickEditField(
     REWARD(QuickEditKind.Text),
     LEVEL(QuickEditKind.Number(PartyStatRanges.level)),
     HP_MAX(QuickEditKind.Number(PartyStatRanges.hpMax)),
+    HIT_POINTS(QuickEditKind.Number(SPECIES_HIT_POINTS_RANGE)),
     GIVER(QuickEditKind.Link),
     PLACE(QuickEditKind.Places),
     PARENT(QuickEditKind.Places),
@@ -57,6 +60,9 @@ enum class QuickEditField(
     QUEST_STATUS(QuickEditKind.Choice),
     PRESENCE(QuickEditKind.Choice),
     PORTRAIT(QuickEditKind.Photo),
+
+    /** the 5e creature type of a species, picked from the list of types */
+    CREATURE_TYPE(QuickEditKind.Choice),
 
     /** the wide picture at the top of a place's card */
     COVER(QuickEditKind.Photo),
@@ -93,6 +99,10 @@ sealed interface QuickEditValue {
     /** null unlinks the field - "Не указано" */
     data class Link(
         val id: Long?,
+    ) : QuickEditValue
+
+    data class Creature(
+        val type: CreatureType,
     ) : QuickEditValue
 
     /** null removes the photo */

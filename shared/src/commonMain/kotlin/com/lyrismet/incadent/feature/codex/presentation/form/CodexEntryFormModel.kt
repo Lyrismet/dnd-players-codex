@@ -47,6 +47,7 @@ data class CodexEntryFormState(
     val placeSelect: PlaceSelectState? = null,
     val npcOptions: List<FormChipOption<Long>> = emptyList(),
     val speciesDamage: Map<DamageType, DamageState> = emptyMap(),
+    val speciesHitPoints: Int? = null,
     val creatureTypeOptions: List<FormChipOption<CreatureType>> = emptyList(),
     // the species the npc is linked to, shown on its field row
     val npcSpecies: SelectedSpecies? = null,
@@ -84,7 +85,7 @@ enum class CodexEntryField {
     PARTY_PLAYER,
 }
 
-enum class CodexEntryNumberField { PARTY_LEVEL, PARTY_HP_MAX }
+enum class CodexEntryNumberField { PARTY_LEVEL, PARTY_HP_MAX, SPECIES_HIT_POINTS }
 
 /** the species picked on the npc form, shown with its creature type under the name */
 data class SelectedSpecies(
