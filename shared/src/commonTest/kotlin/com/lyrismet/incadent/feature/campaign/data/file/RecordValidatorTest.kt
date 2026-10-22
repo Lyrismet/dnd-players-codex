@@ -63,4 +63,27 @@ class RecordValidatorTest {
     fun `sections out of order are rejected`() {
         rejects(FileRecord.Session(1, "A", date), FileRecord.Place(1, "Town"))
     }
+
+    @Test
+    fun `a field far longer than a form allows rejects the file`() {
+        val name = "x".repeat(201)
+        val note = "x".repeat(20_001)
+        rejects(FileRecord.Place(1, name))
+        rejects(FileRecord.Place(1, "Town", description = note))
+        rejects(FileRecord.Npc(1, "Bob", NpcStatus.NEUTRAL, race = name))
+        rejects(FileRecord.Npc(1, "Bob", NpcStatus.NEUTRAL, nicknames = "x".repeat(1_001)))
+        rejects(FileRecord.Tag(name))
+        rejects(FileRecord.Session(1, "A", date), FileRecord.Entry(1, date, note))
+        rejects(FileRecord.Session(1, "A", date, tags = listOf(name)))
+    }
+
+    @Test
+    fun `fields at the limit still pass`() {
+        accepts(
+            FileRecord.Place(1, "x".repeat(200), description = "x".repeat(20_000)),
+            FileRecord.Npc(1, "Bob", NpcStatus.NEUTRAL, nicknames = "x".repeat(1_000)),
+            FileRecord.Session(1, "A", date),
+            FileRecord.Entry(1, date, "x".repeat(20_000)),
+        )
+    }
 }

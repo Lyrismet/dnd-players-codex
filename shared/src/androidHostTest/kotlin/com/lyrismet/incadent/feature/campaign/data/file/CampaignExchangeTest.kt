@@ -363,6 +363,45 @@ class CampaignExchangeTest {
     }
 
     @Test
+    fun `a replaced npc loses the places and the nickname the file does not have`() {
+        seed()
+        val bob =
+            database.npcQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+        val bare = MemoryFile()
+        CampaignFileWriter(bare).run {
+            writeHeader(FileHeader(FILE_FORMAT, FILE_VERSION, "World", false, 1, 0))
+            write(FileRecord.Npc(id = 1, name = "Bob", status = NpcStatus.FRIEND))
+        }
+
+        importer.import(
+            origin(bare),
+            ImportRequest(
+                ImportTarget.Existing(source),
+                ConflictMode.SKIP,
+                replace = setOf(ExchangeRef(ExchangeKind.NPC, 1)),
+            ),
+        )
+
+        assertTrue(
+            database.npcLocationQueries
+                .selectByNpc(bob.id)
+                .executeAsList()
+                .isEmpty(),
+        )
+        assertEquals(
+            "",
+            database.npcQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+                .nicknames,
+        )
+    }
+
+    @Test
     fun `a replaced place never lands inside its own child`() {
         seed()
         val file = export(allOf())

@@ -30,6 +30,13 @@ private const val MAX_NAME_CHARS = 80
 private const val COPY_SUFFIX = " (2)"
 private const val MAX_PLACE_DEPTH = 1000
 
+// a link the file leaves empty is cleared too, only one that cannot be followed keeps what the record has now
+private fun link(
+    fileId: Long?,
+    map: Map<Long, Long>,
+    current: Long?,
+): Long? = if (fileId == null) null else map[fileId] ?: current
+
 /** writes the records of a file into the database, every id of the file is replaced and every note token follows */
 @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 internal class CampaignImporter(
@@ -304,14 +311,14 @@ internal class CampaignImporter(
                 }
         }
 
-        // a link the file does not give (or one that would loop the places) keeps what the record has now
         private fun overwritePlace(
             id: Long,
             record: FileRecord.Place,
         ) {
             val current = existingPlaces.first { it.id == id }
-            val parent = record.parentId?.let(placeMap::get)?.takeIf { !insideOf(it, id) }
-            database.locationQueries.update(record.name, record.description, parent ?: current.parent_id, id)
+            // a parent that would loop the places is not followed
+            val parent = link(record.parentId, placeMap, current.parent_id)?.takeIf { !insideOf(it, id) }
+            database.locationQueries.update(record.name, record.description, parent, id)
         }
 
         // true when [place] is [ancestor] or sits somewhere below it
@@ -343,14 +350,11 @@ internal class CampaignImporter(
                 record.race,
                 record.lifeState,
                 record.nicknames,
-                record.speciesId?.let(speciesMap::get) ?: current.species_id,
+                link(record.speciesId, speciesMap, current.species_id),
                 id,
             )
-            val places = record.placeIds.mapNotNull(placeMap::get)
-            if (places.isNotEmpty()) {
-                database.npcLocationQueries.deleteByNpc(id)
-                places.forEach { database.npcLocationQueries.insert(id, it) }
-            }
+            database.npcLocationQueries.deleteByNpc(id)
+            record.placeIds.mapNotNull(placeMap::get).forEach { database.npcLocationQueries.insert(id, it) }
         }
 
         private fun overwriteQuest(
@@ -362,8 +366,8 @@ internal class CampaignImporter(
                 record.title,
                 record.status,
                 record.reward,
-                record.giverNpcId?.let(npcMap::get) ?: current.given_by_npc_id,
-                record.placeId?.let(placeMap::get) ?: current.location_id,
+                link(record.giverNpcId, npcMap, current.given_by_npc_id),
+                link(record.placeId, placeMap, current.location_id),
                 record.description,
                 id,
             )

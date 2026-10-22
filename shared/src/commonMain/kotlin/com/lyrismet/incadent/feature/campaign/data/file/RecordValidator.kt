@@ -3,6 +3,12 @@ package com.lyrismet.incadent.feature.campaign.data.file
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportError
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportFailedException
 
+// far above what the forms allow (see TextLimits), so a real export always fits and a stuffed field never does
+private const val MAX_SHORT_CHARS = 200
+private const val MAX_NICKNAMES_CHARS = 1_000
+private const val MAX_LONG_CHARS = 20_000
+private const val MAX_LINKS = 10_000
+
 /** checks that records arrive in the file's fixed order and only point at ones already seen, nothing is trusted */
 class RecordValidator {
     private var rank = 0
@@ -17,6 +23,7 @@ class RecordValidator {
         val next = record.rank()
         must(next >= rank)
         rank = next
+        checkLengths(record)
         when (record) {
             is FileRecord.Species -> must(species.add(record.id))
             is FileRecord.Place -> {
@@ -39,6 +46,24 @@ class RecordValidator {
             is FileRecord.Photo -> must(record.ownerId in owners(record.owner))
             is FileRecord.Tag, is FileRecord.Phrase -> Unit
         }
+    }
+
+    // a file is never shorter than a form allows, but it can be stuffed to bloat the database
+    private fun checkLengths(record: FileRecord) {
+        must(
+            when (record) {
+                is FileRecord.Species -> record.fits()
+                is FileRecord.Place -> record.fits()
+                is FileRecord.Npc -> record.fits()
+                is FileRecord.Quest -> record.fits()
+                is FileRecord.Party -> record.fits()
+                is FileRecord.Tag -> fits(MAX_SHORT_CHARS, record.name)
+                is FileRecord.Phrase -> fits(MAX_LONG_CHARS, record.text)
+                is FileRecord.Session -> record.fits()
+                is FileRecord.Entry -> fits(MAX_LONG_CHARS, record.body)
+                is FileRecord.Photo -> true
+            },
+        )
     }
 
     private fun owners(owner: PhotoOwner): Set<Long> =
@@ -70,3 +95,27 @@ private fun FileRecord.rank(): Int =
         is FileRecord.Entry -> Section.ENTRY
         is FileRecord.Photo -> Section.PHOTO
     }.ordinal
+
+private fun fits(
+    limit: Int,
+    vararg texts: String,
+): Boolean = texts.all { it.length <= limit }
+
+private fun FileRecord.Species.fits() =
+    fits(MAX_SHORT_CHARS, name) && fits(MAX_LONG_CHARS, notes, damage) && fits(MAX_NICKNAMES_CHARS, nicknames)
+
+private fun FileRecord.Place.fits() = fits(MAX_SHORT_CHARS, name) && fits(MAX_LONG_CHARS, description)
+
+private fun FileRecord.Npc.fits() =
+    fits(MAX_SHORT_CHARS, name, race) &&
+        fits(MAX_LONG_CHARS, description) &&
+        fits(MAX_NICKNAMES_CHARS, nicknames) &&
+        placeIds.size <= MAX_LINKS
+
+private fun FileRecord.Quest.fits() = fits(MAX_SHORT_CHARS, title, reward) && fits(MAX_LONG_CHARS, description)
+
+private fun FileRecord.Party.fits() =
+    fits(MAX_SHORT_CHARS, name, characterClass, race, playerName) && fits(MAX_LONG_CHARS, description)
+
+private fun FileRecord.Session.fits() =
+    fits(MAX_SHORT_CHARS, title) && tags.size <= MAX_LINKS && tags.all { it.length <= MAX_SHORT_CHARS }
