@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.campaign.presentation.exchange
 
+import com.lyrismet.incadent.core.designsystem.component.StatusKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
 import com.lyrismet.incadent.feature.campaign.domain.model.MAX_FILE_BYTES
 import com.slack.circuit.runtime.CircuitUiEvent
@@ -20,6 +21,12 @@ data class ExportedFile(
     val delivery: ExportDelivery,
 )
 
+/** how the delivery the person asked for is going, shown as a mark inside its own button */
+data class DeliveryStatus(
+    val delivery: ExportDelivery,
+    val kind: StatusKind,
+)
+
 data class ExportState(
     val loaded: Boolean = false,
     val writing: Boolean = false,
@@ -32,7 +39,7 @@ data class ExportState(
     val estimate: ExportEstimate? = null,
     val canExport: Boolean = false,
     val file: ExportedFile? = null,
-    val toast: String? = null,
+    val status: DeliveryStatus? = null,
     val eventSink: (ExportEvent) -> Unit = {},
 ) : CircuitUiState {
     /** the file is over what an import accepts, so the person is told to leave the photos out */

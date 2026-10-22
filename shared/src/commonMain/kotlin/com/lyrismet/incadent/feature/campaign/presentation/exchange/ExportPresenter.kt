@@ -1,27 +1,24 @@
 package com.lyrismet.incadent.feature.campaign.presentation.exchange
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.lyrismet.incadent.core.designsystem.component.StatusKind
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.file.FileStorage
-import com.lyrismet.incadent.core.toast.autoDismiss
+import com.lyrismet.incadent.core.toast.TOAST_DURATION_MS
 import com.lyrismet.incadent.feature.campaign.domain.exchange.exportFileName
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignExchangeRepository
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.error_action_failed
-import dndplayerscodex.shared.generated.resources.exchange_save_failed
-import dndplayerscodex.shared.generated.resources.exchange_saved_toast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 
 // a run of quick ticks only measures the last pick
 private const val ESTIMATE_DEBOUNCE_MILLIS = 200L
@@ -42,15 +39,19 @@ class ExportPresenter(
         var photos by remember { mutableStateOf(true) }
         var writing by remember { mutableStateOf(false) }
         var file by remember { mutableStateOf<ExportedFile?>(null) }
-        val toast = remember { mutableStateOf<String?>(null) }
-        toast.autoDismiss()
-        val failedText = stringResource(Res.string.error_action_failed)
-        val savedText = stringResource(Res.string.exchange_saved_toast)
-        val saveFailedText = stringResource(Res.string.exchange_save_failed)
+        var status by remember { mutableStateOf<DeliveryStatus?>(null) }
+        var delivering by remember { mutableStateOf(ExportDelivery.SHARE) }
+        // a finished mark fades out on its own, the spinner stays until the work is over
+        LaunchedEffect(status) {
+            if (status?.kind != StatusKind.Working && status != null) {
+                delay(TOAST_DURATION_MS)
+                status = null
+            }
+        }
         val scope =
             rememberGuardedScope {
                 writing = false
-                toast.value = failedText
+                status = DeliveryStatus(delivering, StatusKind.Failure)
             }
 
         val loaded = catalog
@@ -77,7 +78,7 @@ class ExportPresenter(
             estimate = estimate,
             canExport = loaded != null && (whole || active?.isEmpty == false),
             file = file,
-            toast = toast.value,
+            status = status,
         ) { event ->
             when (event) {
                 is ExportEvent.WholeSelected -> whole = event.whole
@@ -86,6 +87,8 @@ class ExportPresenter(
                 is ExportEvent.DeliverClicked ->
                     if (measured != null && loaded != null && !writing) {
                         writing = true
+                        delivering = event.delivery
+                        status = DeliveryStatus(event.delivery, StatusKind.Working)
                         scope.launch {
                             val fileName = exportFileName(loaded.campaignName)
                             repository.export(
@@ -99,7 +102,11 @@ class ExportPresenter(
                     }
                 is ExportEvent.Delivered -> {
                     file = null
-                    event.saved?.let { toast.value = if (it) savedText else saveFailedText }
+                    // a share or a cancelled dialog has no outcome to show
+                    status =
+                        event.saved?.let {
+                            DeliveryStatus(ExportDelivery.SAVE, if (it) StatusKind.Success else StatusKind.Failure)
+                        }
                 }
                 ExportEvent.Closed -> navigator.pop()
             }

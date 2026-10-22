@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.campaign.presentation.exchange
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
@@ -23,14 +25,12 @@ import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
-import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
-import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
+import com.lyrismet.incadent.core.designsystem.component.StatusMark
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.file.rememberFileSharing
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.exchange_export_overline
@@ -83,7 +83,6 @@ fun ExportUi(
                 ExportBody(state)
             }
         }
-        AppToast(text = state.toast, modifier = floatingBarAnchor())
     }
 }
 
@@ -127,10 +126,14 @@ private fun ExportBody(state: ExportState) {
         )
     }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        FormPrimaryButton(
+        AppButton(
             text = stringResource(Res.string.exchange_share),
             onClick = { sink(ExportEvent.DeliverClicked(ExportDelivery.SHARE)) },
+            modifier = Modifier.fillMaxWidth(),
+            variant = ButtonVariant.Solid,
+            size = ButtonSize.Primary,
             enabled = state.canGo,
+            leading = deliveryMark(state.status, ExportDelivery.SHARE),
         )
         AppButton(
             text = stringResource(Res.string.exchange_save),
@@ -141,9 +144,21 @@ private fun ExportBody(state: ExportState) {
             size = ButtonSize.Primary,
             enabled = state.canGo,
             contentColor = AppPalette.TextPrimary,
+            leading = deliveryMark(state.status, ExportDelivery.SAVE),
         )
     }
 }
+
+// the mark sits in the button of the delivery it belongs to
+private fun deliveryMark(
+    status: DeliveryStatus?,
+    delivery: ExportDelivery,
+): (
+    @Composable RowScope.(
+        Color,
+    ) -> Unit
+)? =
+    status?.takeIf { it.delivery == delivery }?.let { current -> { StatusMark(current.kind) } }
 
 @Composable
 internal fun ExchangeSummary(
