@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -9,13 +10,18 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -63,15 +69,15 @@ internal fun TargetsBlock(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(
-            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 28.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             FormFieldLabel(calc.targetsHeader, Modifier.weight(1f))
-            calc.reaction?.let { ReactionChip(it) { emit(CalcEvent.ReactionToggled(it.memberId)) } }
         }
         if (calc.rowMode) {
-            calc.targets.forEach { TargetRow(it, emit) }
-        } else {
+            calc.targets.forEach { TargetRow(it, calc.reaction?.takeIf { r -> r.memberId == it.id }, emit) }
+        } else if (calc.targets.isNotEmpty()) {
             TargetChips(calc, emit)
         }
         if (calc.offTargets.isNotEmpty()) {
@@ -104,20 +110,48 @@ private fun ReactionChip(
     onClick: () -> Unit,
 ) {
     val tint = if (reaction.available) RoundColors.Reaction else AppPalette.TextTertiary
-    Text(
-        text = "⚡ ${reaction.label}",
-        color = tint,
-        fontSize = AppFontSize.Small,
-        fontWeight = FontWeight.SemiBold,
+    Row(
         modifier =
             Modifier
+                .height(28.dp)
                 .appCard(
                     shape = AppShapes.Pill,
                     background = if (reaction.available) tint.copy(alpha = 0.12f) else Color.Transparent,
                     border = if (reaction.available) tint.copy(alpha = 0.55f) else AppPalette.Border,
                     onClick = onClick,
-                ).padding(horizontal = 9.dp, vertical = 5.dp),
-    )
+                ).padding(start = 6.dp, end = 9.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        ReactionIcon(tint)
+        Text(
+            text = reaction.label,
+            color = tint,
+            fontSize = AppFontSize.Small,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+        )
+    }
+}
+
+/** a circle with a bolt in it, drawn on the 24 unit grid of the mockup */
+@Composable
+private fun ReactionIcon(color: Color) {
+    Canvas(modifier = Modifier.size(14.dp)) {
+        val unit = size.width / 24f
+        drawCircle(color, radius = 9.5f * unit, style = Stroke(width = 2.4f * unit))
+        val bolt =
+            Path().apply {
+                moveTo(13f * unit, 6.5f * unit)
+                lineTo(8.5f * unit, 13f * unit)
+                lineTo(12f * unit, 13f * unit)
+                lineTo(11f * unit, 17.5f * unit)
+                lineTo(15.5f * unit, 11f * unit)
+                lineTo(12f * unit, 11f * unit)
+                close()
+            }
+        drawPath(bolt, color, style = Stroke(width = 2.2f * unit, join = StrokeJoin.Round))
+    }
 }
 
 @Composable
@@ -153,6 +187,9 @@ private fun TargetChips(
                     Text(target.name, color = tint, fontSize = AppFontSize.BodyPlus, fontWeight = FontWeight.SemiBold)
                     target.shield?.let { Shield(it, 16.dp) }
                     ScaleBadge(target)
+                    calc.reaction?.takeIf { it.memberId == target.id }?.let { rx ->
+                        ReactionChip(rx) { emit(CalcEvent.ReactionToggled(rx.memberId)) }
+                    }
                     target.result?.let {
                         Text(
                             it,
@@ -200,6 +237,7 @@ private fun ScaleBadge(target: CalcTarget) {
 @Composable
 private fun TargetRow(
     target: CalcTarget,
+    reaction: CalcReaction?,
     emit: (CalcEvent) -> Unit,
 ) {
     val tint = RoundColors.side(target.side)
@@ -232,6 +270,7 @@ private fun TargetRow(
                     )
                     target.shield?.let { Shield(it, 16.dp) }
                     ScaleBadge(target)
+                    reaction?.let { ReactionChip(it) { emit(CalcEvent.ReactionToggled(it.memberId)) } }
                 }
                 PartsLine(target.parts)
             }

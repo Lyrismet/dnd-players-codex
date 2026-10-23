@@ -73,6 +73,7 @@ class CampaignExchangeTest {
             NpcLifeState.ALIVE,
             "bobby",
             speciesId,
+            "",
             jpeg,
             byteArrayOf(1),
             source,
@@ -272,7 +273,19 @@ class CampaignExchangeTest {
     @Test
     fun `a ticked session brings what it mentions and nothing else`() {
         seed()
-        database.npcQueries.insert("Other", NpcStatus.NEUTRAL, "", "", NpcLifeState.ALIVE, "", null, null, null, source)
+        database.npcQueries.insert(
+            "Other",
+            NpcStatus.NEUTRAL,
+            "",
+            "",
+            NpcLifeState.ALIVE,
+            "",
+            null,
+            "",
+            null,
+            null,
+            source,
+        )
         val sessionId =
             database.sessionNoteQueries
                 .selectAll(source)
@@ -333,7 +346,7 @@ class CampaignExchangeTest {
                 .selectAll(source)
                 .executeAsList()
                 .single()
-        database.npcQueries.update("Bob", NpcStatus.ENEMY, "edited", "orc", NpcLifeState.DEAD, "", null, bob.id)
+        database.npcQueries.update("Bob", NpcStatus.ENEMY, "edited", "orc", NpcLifeState.DEAD, "", null, "", bob.id)
         val quest =
             database.questQueries
                 .selectAll(source)

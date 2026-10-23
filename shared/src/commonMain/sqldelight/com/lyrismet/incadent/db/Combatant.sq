@@ -74,6 +74,9 @@ UPDATE combatant SET turn_order = NULL WHERE combat_id = ?;
 updateTempHp:
 UPDATE combatant SET temp_hp = ? WHERE id = ?;
 
+updateNpc:
+UPDATE combatant SET npc_id = ?, name = ? WHERE id = ?;
+
 updateName:
 UPDATE combatant SET name = ? WHERE id = ?;
 

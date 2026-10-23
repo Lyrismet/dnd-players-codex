@@ -8,7 +8,7 @@ data class Species(
     val name: String,
     val creatureType: CreatureType,
     // only the types that are known, a type missing here is [DamageState.UNKNOWN]
-    val damage: Map<DamageType, DamageState> = emptyMap(),
+    val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
     val notes: String = "",
     val photo: Photo? = null,
     val nicknames: List<String> = emptyList(),

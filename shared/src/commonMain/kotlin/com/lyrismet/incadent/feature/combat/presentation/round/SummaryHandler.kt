@@ -15,7 +15,7 @@ import org.jetbrains.compose.resources.getString
 internal class SummaryHandler(
     private val editor: RoundEditor,
     private val summary: MutableState<SummaryDraft?>,
-    private val learner: SpeciesLearner,
+    private val learner: VulnerabilityLearner,
 ) {
     fun onEvent(
         event: SummaryEvent,
@@ -52,7 +52,7 @@ internal class SummaryHandler(
             val previous = term.effect
             val revert: suspend () -> Unit = { editor.fresh()?.let { editor.damage.correct(it, term.id, previous) } }
             if (record && species != null && type != null) {
-                learner.record(species.id, type, event.effect.toDamageState(), note, revert)
+                learner.record(editor.combatId, target, species.id, type, event.effect.toDamageState(), note, revert)
             } else {
                 learner.offerUndo(note, revert)
             }

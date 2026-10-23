@@ -295,6 +295,7 @@ class CodexPresenter(
             speciesRepository,
             fields.recentPlaceIds,
             parties.firstOrNull { it.isPlayerCharacter }?.level,
+            parties.any { it.isPlayerCharacter },
         )
 
     // what the active tab lists and its empty state - a tab with no hits lists the other tabs' matches instead

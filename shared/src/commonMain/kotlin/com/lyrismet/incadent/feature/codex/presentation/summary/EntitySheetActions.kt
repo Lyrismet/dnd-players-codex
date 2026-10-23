@@ -25,7 +25,11 @@ data class EntitySummarySheetActions(
     // null hides the way back of a fallen character - only the codex brings one back
     val onPartyRevived: ((partyId: Long) -> Unit)? = null,
     // null keeps a species' damage read-only - only the codex marks what the party has noticed
-    val onSpeciesDamageChanged: ((speciesId: Long, type: DamageType, state: DamageState) -> Unit)? = null,
+    val onSpeciesVulnerabilityChanged: ((speciesId: Long, type: DamageType, state: DamageState) -> Unit)? = null,
+    // null keeps an npc's vulnerabilities read-only - only the codex marks them
+    val onNpcVulnerabilityChanged: ((npcId: Long, type: DamageType, state: DamageState) -> Unit)? = null,
+    // closes the editing, [before] is what the npc had when it opened so the change can be taken back
+    val onNpcVulnerabilitiesEdited: ((npcId: Long, before: Map<DamageType, DamageState>) -> Unit)? = null,
     // steps the count of the chip the card was opened from, the row only shows when the card knows that count
     val onSpeciesNoteQuantityStep: ((delta: Int) -> Unit)? = null,
     // true shows the status pickers as plain badges - the form-mode card is read-only

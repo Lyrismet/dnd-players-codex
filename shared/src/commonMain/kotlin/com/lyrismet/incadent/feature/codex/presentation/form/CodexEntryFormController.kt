@@ -86,6 +86,8 @@ class CodexEntryFormController private constructor(
     private val recentPlaceIds: MutableState<List<Long>>,
     // the level a new party member starts with and the "same as yours" shortcut offers, null without a level
     private val playerCharacterLevel: Int?,
+    // the first character a campaign gets is the player's own, so the form opens on the owner tab for it
+    private val hasPlayerCharacter: Boolean,
 ) {
     private val persister =
         CodexEntryPersister(npcRepository, partyRepository, questRepository, locationRepository, speciesRepository)
@@ -107,6 +109,7 @@ class CodexEntryFormController private constructor(
             speciesRepository: SpeciesRepository,
             recentPlaceIds: MutableState<List<Long>>,
             playerCharacterLevel: Int?,
+            hasPlayerCharacter: Boolean,
         ): CodexEntryFormController {
             val fields = rememberRetained { mutableStateOf<CodexEntryFormFields?>(null) }
             val baseline = rememberRetained { mutableStateOf<CodexEntryFormFields?>(null) }
@@ -124,6 +127,7 @@ class CodexEntryFormController private constructor(
                 speciesRepository,
                 recentPlaceIds,
                 playerCharacterLevel,
+                hasPlayerCharacter,
             )
         }
     }
@@ -151,7 +155,7 @@ class CodexEntryFormController private constructor(
             is CodexEntryFormEvent.EntryPhotoRemoved -> onPhotoRemoved(event.slot)
             is CodexEntryFormEvent.EntryNumberChanged -> onNumberChanged(event.field, event.value)
             is CodexEntryFormEvent.EntryCreatureTypeChanged -> onCreatureTypeChanged(event.type)
-            is CodexEntryFormEvent.EntryDamageChanged -> onDamageChanged(event.type, event.state)
+            is CodexEntryFormEvent.EntryVulnerabilityChanged -> onVulnerabilityChanged(event.type, event.state)
             is CodexEntryFormEvent.EntrySrdPicked -> onSrdPicked(event.name, event.type)
             is CodexEntryFormEvent.EntryNpcStatusChanged -> onNpcStatusChanged(event.status)
             is CodexEntryFormEvent.EntryNpcLifeChanged -> onNpcLifeChanged(event.lifeState)
@@ -207,7 +211,7 @@ class CodexEntryFormController private constructor(
     // a new party member starts at the player character's level, when that is known
     private fun withDefaults(form: CodexEntryFormFields): CodexEntryFormFields =
         if (form.type == EntityKind.PARTY && form.editingRef == null && form.party.level == null) {
-            form.copy(party = form.party.copy(level = playerCharacterLevel))
+            form.copy(party = form.party.copy(level = playerCharacterLevel, isPlayerCharacter = !hasPlayerCharacter))
         } else {
             form
         }
@@ -284,12 +288,12 @@ class CodexEntryFormController private constructor(
         fields.value = current.copy(party = current.party.copy(level = playerCharacterLevel))
     }
 
-    fun onDamageChanged(
+    fun onVulnerabilityChanged(
         type: DamageType,
         state: DamageState,
     ) {
         val current = fields.value ?: return
-        fields.value = current.copy(speciesDamage = current.speciesDamage.with(type, state))
+        fields.value = current.copy(vulnerabilities = current.vulnerabilities.with(type, state))
     }
 
     fun onCreatureTypeChanged(type: CreatureType) {
@@ -619,7 +623,9 @@ class CodexEntryFormController private constructor(
                 npcs.map { npc ->
                     FormChipOption(npc.id, npc.name, npc.id == current.questGiverId, npc.status.toStatusColor())
                 },
-            speciesDamage = current.speciesDamage,
+            vulnerabilities = current.vulnerabilities,
+            npcSpeciesVulnerabilities =
+                species.find { it.id == current.npcSpeciesId }?.vulnerabilities.orEmpty(),
             speciesHitPoints = current.speciesHitPoints,
             creatureTypeOptions =
                 CreatureType.entries.map {

@@ -57,6 +57,7 @@ enum class QuickEditField(
     MOVE(QuickEditKind.Places),
     RELATION(QuickEditKind.Choice),
     LIFE(QuickEditKind.Choice),
+    VULNERABILITIES(QuickEditKind.Choice),
     QUEST_STATUS(QuickEditKind.Choice),
     PRESENCE(QuickEditKind.Choice),
     PORTRAIT(QuickEditKind.Photo),

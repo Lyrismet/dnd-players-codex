@@ -158,12 +158,12 @@ class CodexEntryPersisterTest {
                 form(EntityKind.SPECIES, "скелеты").copy(
                     editingRef = EntityRef.Species(3),
                     speciesType = CreatureType.UNDEAD,
-                    speciesDamage = existing.damage,
+                    vulnerabilities = existing.vulnerabilities,
                 )
 
             persister.save(edit)
 
-            assertEquals(damage, species.stored(3)?.damage)
+            assertEquals(damage, species.stored(3)?.vulnerabilities)
             assertEquals("Скелеты", species.stored(3)?.name)
         }
 

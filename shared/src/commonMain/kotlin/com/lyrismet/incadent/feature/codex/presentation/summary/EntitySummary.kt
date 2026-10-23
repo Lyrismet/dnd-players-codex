@@ -113,6 +113,10 @@ private fun buildNpcSummary(
                 ),
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Npc(npc.id), lookup),
+        vulnerabilities =
+            lookup.species.find { it.id == npc.speciesId }.let { species ->
+                NpcVulnerabilities(npc.vulnerabilities, species?.vulnerabilities.orEmpty(), species?.name)
+            },
     )
 }
 
@@ -155,7 +159,7 @@ private fun buildSpeciesSummary(
                 portrait = species.photo,
                 hasPortraitSlot = true,
             ),
-        damage = species.damage,
+        vulnerabilities = species.vulnerabilities,
         relatedNotes = relatedNotes,
         seenInSessions = relatedNotes.size,
         nicknames = species.nicknames,

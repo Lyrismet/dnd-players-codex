@@ -1,13 +1,16 @@
 package com.lyrismet.incadent.feature.combat.domain.repository
 
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
+import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDateTime
 
+@Suppress("TooManyFunctions")
 interface CombatRepository {
     fun observeAll(): Flow<List<Combat>>
 
@@ -36,6 +39,27 @@ interface CombatRepository {
     suspend fun setTempHp(
         combatantId: Long,
         tempHp: Int,
+    )
+
+    /** the participant becomes the named npc, the species it was made of stays on it */
+    suspend fun linkNpc(
+        combatantId: Long,
+        npcId: Long?,
+        name: String,
+    )
+
+    fun observeLearned(combatId: Long): Flow<List<LearnedVulnerability>>
+
+    /** the first [LearnedVulnerability.previous] seen for a species and type in this fight is the one kept */
+    suspend fun addLearned(
+        combatId: Long,
+        learned: LearnedVulnerability,
+    )
+
+    suspend fun removeLearned(
+        combatId: Long,
+        speciesId: Long,
+        type: DamageType,
     )
 
     suspend fun renameCombatant(

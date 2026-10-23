@@ -42,7 +42,7 @@ import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.NumberPadSheet
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.feature.codex.presentation.summary.DamageGridEditor
+import com.lyrismet.incadent.feature.codex.presentation.summary.VulnerabilityGridEditor
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpPadState
 import dndplayerscodex.shared.generated.resources.Res
@@ -53,7 +53,7 @@ import dndplayerscodex.shared.generated.resources.combat_panel_full_title
 import dndplayerscodex.shared.generated.resources.combat_panel_remove
 import dndplayerscodex.shared.generated.resources.combat_panel_set_hp
 import dndplayerscodex.shared.generated.resources.combat_panel_side_title
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_damage_title
+import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -124,6 +124,7 @@ internal fun MoreTab(
     send: (CombatRoundEvent) -> Unit,
 ) {
     val more = panel.more
+    more.naming?.let { NamingField(it, send) }
     more.stances?.let { stances ->
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             FormFieldLabel(stringResource(Res.string.combat_panel_side_title))
@@ -149,10 +150,22 @@ internal fun MoreTab(
             variant = ButtonVariant.Ghost,
         )
     }
-    more.damage?.let { damage ->
+    if (more.vulnerabilitiesCaption.isNotEmpty() || more.vulnerabilities != null) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            FormFieldLabel(stringResource(Res.string.entity_sheet_species_damage_title).uppercase())
-            DamageGridEditor(damage, { type, state -> send(CombatRoundEvent.DamageChanged(type, state)) })
+            if (more.vulnerabilities != null) {
+                FormFieldLabel(stringResource(Res.string.entity_sheet_species_vulnerabilities_title).uppercase())
+            }
+            if (more.vulnerabilitiesCaption.isNotEmpty()) {
+                Text(
+                    more.vulnerabilitiesCaption,
+                    color = AppPalette.TextTertiary,
+                    fontSize = AppFontSize.Caption,
+                    lineHeight = AppLineHeight.Row,
+                )
+            }
+            more.vulnerabilities?.let {
+                VulnerabilityGridEditor(it, { type, state -> send(CombatRoundEvent.VulnerabilityChanged(type, state)) })
+            }
         }
     }
     NoteField(panel.id, more.note, more.notePlaceholder) { send(CombatRoundEvent.NoteChanged(it)) }

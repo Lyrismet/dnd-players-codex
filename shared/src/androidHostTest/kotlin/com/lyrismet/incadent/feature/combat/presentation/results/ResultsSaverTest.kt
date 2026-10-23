@@ -144,7 +144,7 @@ class ResultsSaverTest {
                 DamageState.RESISTANCE,
                 codex.speciesRepository
                     .getById(speciesId)
-                    ?.damage
+                    ?.vulnerabilities
                     ?.get(DamageType.FIRE),
             )
             assertEquals(NpcLifeState.DEAD, codex.npcRepository.getById(npcId)?.lifeState)
@@ -155,7 +155,7 @@ class ResultsSaverTest {
             assertNull(
                 codex.speciesRepository
                     .getById(speciesId)
-                    ?.damage
+                    ?.vulnerabilities
                     ?.get(DamageType.FIRE),
             )
             assertEquals(NpcLifeState.ALIVE, codex.npcRepository.getById(npcId)?.lifeState)

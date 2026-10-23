@@ -209,7 +209,7 @@ internal class CampaignImporter(
                     database.speciesQueries.updateImported(
                         record.name,
                         record.creatureType,
-                        record.damage,
+                        record.vulnerabilities,
                         record.notes,
                         record.nicknames,
                         record.hitPoints?.toLong(),
@@ -220,7 +220,7 @@ internal class CampaignImporter(
                     queries.insert(
                         nameForInsert(speciesByName, record.name),
                         record.creatureType,
-                        record.damage,
+                        record.vulnerabilities,
                         record.notes,
                         record.nicknames,
                         record.hitPoints?.toLong(),
@@ -267,6 +267,7 @@ internal class CampaignImporter(
                         record.lifeState,
                         record.nicknames,
                         record.speciesId?.let(speciesMap::get),
+                        record.vulnerabilities,
                         null,
                         null,
                         campaignId,
@@ -363,6 +364,7 @@ internal class CampaignImporter(
                 record.lifeState,
                 record.nicknames,
                 link(record.speciesId, speciesMap, current.species_id),
+                record.vulnerabilities,
                 id,
             )
             val places = record.placeIds.mapNotNull(placeMap::get)

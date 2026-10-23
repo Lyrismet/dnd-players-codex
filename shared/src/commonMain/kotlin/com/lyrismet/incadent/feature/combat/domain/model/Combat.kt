@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.combat.domain.model
 
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
 import kotlinx.datetime.LocalDateTime
@@ -106,4 +107,11 @@ data class CombatEvent(
     // the number as typed, before the master's words about the hit and the target's resistance
     val raw: Int = 0,
     val scale: HitScale = HitScale.ONE,
+)
+
+/** a resistance a fight wrote into a species, [previous] is what the species had before, null when it had nothing */
+data class LearnedVulnerability(
+    val speciesId: Long,
+    val type: DamageType,
+    val previous: DamageState?,
 )

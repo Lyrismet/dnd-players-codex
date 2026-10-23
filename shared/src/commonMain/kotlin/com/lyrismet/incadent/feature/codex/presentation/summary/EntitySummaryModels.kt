@@ -144,6 +144,7 @@ sealed interface EntitySummaryItem {
         val facts: List<FactRow>,
         val groups: List<RelationGroup>,
         val relatedNotes: List<RelatedNoteItem>,
+        val vulnerabilities: NpcVulnerabilities = NpcVulnerabilities(),
     ) : EntitySummaryItem
 
     data class LocationSummary(
@@ -181,7 +182,7 @@ sealed interface EntitySummaryItem {
         val creatureType: CreatureType,
         val notes: String,
         val emblem: EntityEmblem,
-        val damage: Map<DamageType, DamageState>,
+        val vulnerabilities: Map<DamageType, DamageState>,
         val relatedNotes: List<RelatedNoteItem>,
         // the sessions with a note that mentions it
         val seenInSessions: Int,
@@ -236,4 +237,11 @@ data class EntityLookup(
     val sessionNumbering: SessionNumbering,
     val species: List<Species> = emptyList(),
     val facts: CombatFacts = CombatFacts.EMPTY,
+)
+
+/** what an npc has of its own and what its species gives it, the card shows both and tells them apart */
+data class NpcVulnerabilities(
+    val own: Map<DamageType, DamageState> = emptyMap(),
+    val fromSpecies: Map<DamageType, DamageState> = emptyMap(),
+    val speciesName: String? = null,
 )

@@ -15,8 +15,10 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 const val FILE_FORMAT = "incadent"
 
@@ -38,6 +40,7 @@ data class FileHeader(
  * one line of a file after the header - ids are the file's own numbers, one range per kind, never database ids,
  * and a record only points at ones written above it
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 sealed interface FileRecord {
     @Serializable
@@ -46,7 +49,8 @@ sealed interface FileRecord {
         val id: Long,
         val name: String,
         val creatureType: CreatureType,
-        val damage: String = "",
+        @JsonNames("damage")
+        val vulnerabilities: String = "",
         val notes: String = "",
         val nicknames: String = "",
         val hitPoints: Int? = null,
@@ -72,6 +76,7 @@ sealed interface FileRecord {
         val lifeState: NpcLifeState = NpcLifeState.ALIVE,
         val nicknames: String = "",
         val speciesId: Long? = null,
+        val vulnerabilities: String = "",
         val placeIds: List<Long> = emptyList(),
     ) : FileRecord
 

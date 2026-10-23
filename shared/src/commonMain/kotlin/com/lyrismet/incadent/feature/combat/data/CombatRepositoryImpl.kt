@@ -6,11 +6,14 @@ import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
+import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -19,6 +22,7 @@ import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 import com.lyrismet.incadent.db.Combat as CombatRow
@@ -26,6 +30,7 @@ import com.lyrismet.incadent.db.Combat as CombatRow
 @Inject
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
+@Suppress("TooManyFunctions")
 class CombatRepositoryImpl(
     database: AppDatabase,
     private val current: CurrentCampaign,
@@ -33,6 +38,7 @@ class CombatRepositoryImpl(
     private val combats = database.combatQueries
     private val combatants = database.combatantQueries
     private val events = database.combatEventQueries
+    private val learned = database.combatLearnedQueries
 
     override fun observeAll(): Flow<List<Combat>> =
         current.observe { campaignId ->
@@ -142,6 +148,49 @@ class CombatRepositoryImpl(
         tempHp: Int,
     ) {
         withContext(Dispatchers.Default) { combatants.updateTempHp(tempHp.toLong(), combatantId) }
+    }
+
+    override suspend fun linkNpc(
+        combatantId: Long,
+        npcId: Long?,
+        name: String,
+    ) {
+        withContext(Dispatchers.Default) { combatants.updateNpc(npcId, name, combatantId) }
+    }
+
+    override fun observeLearned(combatId: Long): Flow<List<LearnedVulnerability>> =
+        learned
+            .selectByCombat(combatId)
+            .asFlow()
+            .mapToList(Dispatchers.Default)
+            .map { rows ->
+                rows.mapNotNull { row ->
+                    val type = DamageType.entries.firstOrNull { it.name == row.damage_type } ?: return@mapNotNull null
+                    val previous = DamageState.entries.firstOrNull { it.name == row.previous_state }
+                    LearnedVulnerability(row.species_id, type, previous)
+                }
+            }
+
+    override suspend fun addLearned(
+        combatId: Long,
+        learned: LearnedVulnerability,
+    ) {
+        withContext(Dispatchers.Default) {
+            this@CombatRepositoryImpl.learned.insertIfNew(
+                combatId,
+                learned.speciesId,
+                learned.type.name,
+                learned.previous?.name,
+            )
+        }
+    }
+
+    override suspend fun removeLearned(
+        combatId: Long,
+        speciesId: Long,
+        type: DamageType,
+    ) {
+        withContext(Dispatchers.Default) { learned.deleteOne(combatId, speciesId, type.name) }
     }
 
     override suspend fun renameCombatant(

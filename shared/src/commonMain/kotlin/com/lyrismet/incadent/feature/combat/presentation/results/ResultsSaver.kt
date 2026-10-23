@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.combat.presentation.results
 
+import com.lyrismet.incadent.feature.codex.domain.grouping.with
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
@@ -103,19 +104,16 @@ internal class ResultsSaver(
             is CodexItem.Resistance -> {
                 val guess = item.guess
                 val before = codex.speciesRepository.getById(guess.speciesId) ?: return
-                codex.speciesRepository.upsert(before.copy(damage = before.damage + (guess.type to guess.state)))
+                codex.speciesRepository.upsert(
+                    before.copy(
+                        vulnerabilities =
+                            before.vulnerabilities + (guess.type to guess.state),
+                    ),
+                )
                 rollbacks += {
                     codex.speciesRepository.getById(guess.speciesId)?.let { current ->
-                        val old = before.damage[guess.type]
-                        val restored =
-                            if (old ==
-                                null
-                            ) {
-                                current.damage - guess.type
-                            } else {
-                                current.damage + (guess.type to old)
-                            }
-                        codex.speciesRepository.upsert(current.copy(damage = restored))
+                        val restored = current.vulnerabilities.with(guess.type, before.vulnerabilities[guess.type])
+                        codex.speciesRepository.upsert(current.copy(vulnerabilities = restored))
                     }
                 }
             }

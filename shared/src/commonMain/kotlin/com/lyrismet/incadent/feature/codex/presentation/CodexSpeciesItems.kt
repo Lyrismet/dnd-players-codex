@@ -17,7 +17,7 @@ internal fun List<Species>.toCodexItems(
             name = species.name,
             creatureTypeLabel = creatureTypeLabels.getValue(species.creatureType),
             photo = species.photo,
-            shields = species.damage.shields(),
+            shields = species.vulnerabilities.shields(),
             seenInSessions = seenBySpecies[species.id] ?: 0,
             fights = fightsBySpecies[species.id] ?: 0,
         )

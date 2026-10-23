@@ -256,9 +256,9 @@ private fun CampaignSection(
 @Composable
 private fun AboutSection() {
     SettingsGroup(overline = stringResource(Res.string.settings_section_about), topSpacing = 12.dp) {
-        InfoRow(
+        AppListRow(
             title = stringResource(Res.string.settings_about_srd_title),
-            value = stringResource(Res.string.settings_about_srd_value),
+            subtitle = stringResource(Res.string.settings_about_srd_value),
         )
     }
 }

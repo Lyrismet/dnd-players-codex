@@ -6,8 +6,8 @@ import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
-import com.lyrismet.incadent.feature.codex.domain.grouping.decodeDamage
-import com.lyrismet.incadent.feature.codex.domain.grouping.encodeDamage
+import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
+import com.lyrismet.incadent.feature.codex.domain.grouping.encodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
@@ -49,7 +49,7 @@ class SpeciesRepositoryImpl(
                     queries.update(
                         entity.name,
                         entity.creatureType,
-                        entity.damage.encodeDamage(),
+                        entity.vulnerabilities.encodeVulnerabilities(),
                         entity.notes,
                         entity.nicknames.joinNicknames(),
                         entity.hitPoints?.toLong(),
@@ -69,7 +69,7 @@ class SpeciesRepositoryImpl(
                 species.id,
                 species.name,
                 species.creatureType,
-                species.damage.encodeDamage(),
+                species.vulnerabilities.encodeVulnerabilities(),
                 species.notes,
                 species.nicknames.joinNicknames(),
                 species.hitPoints?.toLong(),
@@ -82,7 +82,7 @@ class SpeciesRepositoryImpl(
         queries.insert(
             species.name,
             species.creatureType,
-            species.damage.encodeDamage(),
+            species.vulnerabilities.encodeVulnerabilities(),
             species.notes,
             species.nicknames.joinNicknames(),
             species.hitPoints?.toLong(),
@@ -117,7 +117,7 @@ class SpeciesRepositoryImpl(
         id: Long,
         name: String,
         creatureType: CreatureType,
-        damage: String,
+        vulnerabilities: String,
         notes: String,
         nicknames: String,
         hitPoints: Long?,
@@ -126,7 +126,7 @@ class SpeciesRepositoryImpl(
         id,
         name,
         creatureType,
-        decodeDamage(damage),
+        decodeVulnerabilities(vulnerabilities),
         notes,
         photoThumb?.let {
             Photo(it)
@@ -141,12 +141,12 @@ class SpeciesRepositoryImpl(
         id: Long,
         name: String,
         creatureType: CreatureType,
-        damage: String,
+        vulnerabilities: String,
         notes: String,
         nicknames: String,
         hitPoints: Long?,
         photoThumb: ByteArray?,
         photo: ByteArray?,
-    ) = toDomain(id, name, creatureType, damage, notes, nicknames, hitPoints, photoThumb)
+    ) = toDomain(id, name, creatureType, vulnerabilities, notes, nicknames, hitPoints, photoThumb)
         .copy(photo = photoThumb?.let { Photo(it, photo) })
 }

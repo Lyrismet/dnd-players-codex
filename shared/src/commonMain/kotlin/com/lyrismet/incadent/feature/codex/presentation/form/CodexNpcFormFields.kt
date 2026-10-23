@@ -3,6 +3,8 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
 import com.lyrismet.incadent.core.designsystem.component.FormPickField
+import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilities
+import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilityEditor
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
@@ -34,6 +36,7 @@ internal fun NpcEntryFields(
             NpcLifeField(form, eventSink)
             NpcPlacesField(form, eventSink)
             NicknamesField(form, eventSink)
+            NpcVulnerabilitiesField(form, eventSink)
             NpcNotesField(form, eventSink)
         }
         FormDensity.Compact -> {
@@ -48,13 +51,15 @@ internal fun NpcEntryFields(
                         form.race.isNotBlank() ||
                         form.npcSpecies != null ||
                         form.nicknames.isNotBlank() ||
-                        form.npcPlaces.isNotEmpty(),
+                        form.npcPlaces.isNotEmpty() ||
+                        form.vulnerabilities.isNotEmpty(),
             ) {
                 PortraitField(form, eventSink)
                 NpcSpeciesField(form, eventSink)
                 NpcLifeField(form, eventSink)
                 NpcPlacesField(form, eventSink)
                 NicknamesField(form, eventSink)
+                NpcVulnerabilitiesField(form, eventSink)
             }
         }
     }
@@ -129,6 +134,23 @@ private fun NpcPlacesField(
             form.npcPlaces.takeIf { it.isNotEmpty() }?.let { places ->
                 { places.forEach { MentionChip(item = it, onClick = null) } }
             },
+    )
+}
+
+@Composable
+private fun NpcVulnerabilitiesField(
+    form: CodexEntryFormState,
+    eventSink: (CodexEntryFormEvent) -> Unit,
+) {
+    NpcVulnerabilityEditor(
+        vulnerabilities =
+            NpcVulnerabilities(
+                form.vulnerabilities,
+                form.npcSpeciesVulnerabilities,
+                form.npcSpecies?.name,
+            ),
+        onChange = { type, state -> eventSink(CodexEntryFormEvent.EntryVulnerabilityChanged(type, state)) },
+        onDone = null,
     )
 }
 

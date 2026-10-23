@@ -35,7 +35,7 @@ internal class FoeSearchController(
     private val search: MutableState<SearchDraft?>,
     private val adder: FoeAdder,
     // opens the codex form for a side, with the typed name
-    private val onCreate: (CombatSide, String) -> Unit,
+    private val onCreate: (CombatSide, String, Boolean) -> Unit,
 ) {
     fun onEvent(
         event: CombatPrepEvent.SearchEvent,
@@ -64,7 +64,8 @@ internal class FoeSearchController(
     ) {
         when (event) {
             CombatPrepEvent.TempAdded -> adder.add(side, MemberSource(null, null, name))
-            CombatPrepEvent.CreateRequested -> onCreate(side, name)
+            CombatPrepEvent.CreateRequested -> onCreate(side, name, false)
+            CombatPrepEvent.CreateSpeciesRequested -> onCreate(side, name, true)
         }
     }
 

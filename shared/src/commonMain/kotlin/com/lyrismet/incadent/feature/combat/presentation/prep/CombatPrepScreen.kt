@@ -179,8 +179,11 @@ sealed interface CombatPrepEvent : CircuitUiEvent {
     /** the typed name goes in as a member of this fight only */
     data object TempAdded : TypedNameEvent
 
-    /** the typed name goes to the codex form, which makes a record of it */
+    /** the typed name goes to the codex form as an npc */
     data object CreateRequested : TypedNameEvent
+
+    /** the typed name goes to the codex form as a species for several alike */
+    data object CreateSpeciesRequested : TypedNameEvent
 
     data object SearchClosed : SearchEvent
 

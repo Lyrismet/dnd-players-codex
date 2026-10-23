@@ -37,7 +37,8 @@ internal fun calcState(
     round: Int,
 ): CalcState {
     val damage = draft.mode == CalcMode.DAMAGE
-    val targets = ctx.ordered.filter { it.id in draft.targets }
+    val actor = actorOf(draft, ctx)
+    val targets = ctx.ordered.filter { it.id in draft.targets }.inTargetOrder(actor, draft.mode, ctx.ownIds)
     val terms = parseTerms(draft.expr.raw, draft.termTypes)
     val sum = terms.sumOf { it.amount }
     val rowMode = damage && (targets.size == 1 || draft.collapsed)
@@ -54,9 +55,10 @@ internal fun calcState(
         targetsHeader = targetsHeader(targets.size),
         reaction = if (damage) reactionOf(targets, ctx) else null,
         targets = items,
-        offTargets = offTargetsOf(draft, ctx),
+        offTargets = offTargetsOf(draft, ctx, actor),
         rowMode = rowMode,
-        selectedTarget = if (!rowMode) items.firstOrNull { it.selected } else null,
+        // the scale and resistance panel is for damage only
+        selectedTarget = if (damage && !rowMode) items.firstOrNull { it.selected } else null,
         typeHeader = typeHeader(draft),
         typeLabel = typeLabel(draft),
         types = DamageType.entries.map { TypeChip(it, it == currentType(draft)) },
@@ -84,8 +86,12 @@ private fun modesFor(targets: List<Combatant>): List<CalcMode> =
 private fun offTargetsOf(
     draft: CalcDraft,
     ctx: CalcContext,
+    actor: Combatant?,
 ): List<OffTarget> =
-    ctx.ordered.filter { it.id !in draft.targets && !it.isDown() && !it.dead }.map { OffTarget(it.id, it.name) }
+    ctx.ordered
+        .filter { it.id !in draft.targets && !it.isDown() && !it.dead }
+        .inTargetOrder(actor, draft.mode, ctx.ownIds)
+        .map { OffTarget(it.id, it.name) }
 
 private fun canApply(
     mode: CalcMode,

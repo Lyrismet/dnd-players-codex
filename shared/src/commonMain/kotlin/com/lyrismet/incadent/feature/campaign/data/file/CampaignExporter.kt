@@ -175,7 +175,7 @@ class CampaignExporter(
                     ids.species(it.id),
                     it.name,
                     it.creature_type,
-                    it.damage,
+                    it.vulnerabilities,
                     it.notes,
                     it.nicknames,
                     it.hit_points?.toInt(),
@@ -208,6 +208,7 @@ class CampaignExporter(
                     lifeState = npc.life_state,
                     nicknames = npc.nicknames,
                     speciesId = npc.species_id?.let(ids::species),
+                    vulnerabilities = npc.vulnerabilities,
                     placeIds =
                         npc.location_ids
                             .toIdList()

@@ -27,8 +27,10 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
+import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
+import com.lyrismet.incadent.feature.combat.domain.round.NpcPromotion
 import com.lyrismet.incadent.feature.combat.domain.round.formatElapsed
 import com.lyrismet.incadent.feature.combat.domain.round.hostileCount
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
@@ -45,8 +47,6 @@ import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteReposi
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_recorded_sub
-import dndplayerscodex.shared.generated.resources.combat_calc_recorded_title
 import dndplayerscodex.shared.generated.resources.combat_damage_state_immunity
 import dndplayerscodex.shared.generated.resources.combat_damage_state_normal
 import dndplayerscodex.shared.generated.resources.combat_damage_state_resistance
@@ -69,7 +69,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
-import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -86,6 +85,7 @@ private class RoundData(
     val party: List<PartyMember>,
     val liveBodies: List<String>,
     val seen: Map<Long, List<SpeciesHitObservation>>,
+    val learned: List<LearnedVulnerability>,
     val now: Instant,
 )
 
@@ -107,7 +107,8 @@ private fun CombatRoundPresenter.rememberData(): RoundData {
         }
     }
     val seen by hitObservationRepository.observeAll().collectAsState(initial = emptyMap())
-    return RoundData(combat, sessions, npcs, species, party, entries.map { it.body }, seen, now)
+    val learned by combatRepository.observeLearned(combatId).collectAsState(initial = emptyList())
+    return RoundData(combat, sessions, npcs, species, party, entries.map { it.body }, seen, learned, now)
 }
 
 /** the states of the sheets and the panel, they live as long as the screen does */
@@ -120,6 +121,8 @@ private class RoundDrafts(
     val search: MutableState<SearchDraft?>,
     val calc: MutableState<CalcDraft?>,
     val summary: MutableState<SummaryDraft?>,
+    val naming: MutableState<NameDraft?>,
+    val promotion: MutableState<PromotionDraft?>,
 )
 
 @Composable
@@ -132,10 +135,12 @@ private fun rememberDrafts() =
         search = remember { mutableStateOf(null) },
         calc = remember { mutableStateOf(null) },
         summary = remember { mutableStateOf(null) },
+        naming = remember { mutableStateOf(null) },
+        promotion = remember { mutableStateOf(null) },
     )
 
 /** the words the messages of the fight are made of, resolved once */
-private class RoundWords(
+internal class RoundWords(
     val typeNames: Map<DamageType, String>,
     val stateTitles: Map<DamageState, String>,
     val effectWords: Map<HitEffect, String>,
@@ -167,29 +172,6 @@ private fun rememberWords(): RoundWords {
                 HitEffect.DOUBLE to vulnerability,
             ),
     )
-}
-
-/** writes a damage state picked in the panel into the bestiary card of the chosen participant's species */
-private fun recordDamage(
-    editor: RoundEditor,
-    learner: SpeciesLearner,
-    event: CombatRoundEvent.DamageChanged,
-    species: Species?,
-    words: RoundWords,
-) {
-    if (species == null) return
-    editor.edit {
-        val note =
-            UndoNote(
-                getString(
-                    Res.string.combat_calc_recorded_title,
-                    words.stateTitles.getValue(event.state),
-                    words.typeNames.getValue(event.type),
-                ),
-                getString(Res.string.combat_calc_recorded_sub, species.name),
-            )
-        learner.record(species.id, event.type, event.state, note)
-    }
 }
 
 /** the species each participant is made of, directly or through its npc */
@@ -249,7 +231,13 @@ class CombatRoundPresenter(
                 scope.launch { block() }
             }
         val form = rememberRoundForm(codexRepositories, editor, imageCompressor, data.party, data.npcs, data.species)
-        val learner = SpeciesLearner(codexRepositories.speciesRepository, undoController)
+        val learner =
+            VulnerabilityLearner(
+                codexRepositories.speciesRepository,
+                codexRepositories.npcRepository,
+                combatRepository,
+                undoController,
+            )
         val handler =
             RoundHandler(
                 editor,
@@ -262,6 +250,17 @@ class CombatRoundPresenter(
                 form,
                 scope,
             )
+        val namingHandler =
+            NamingHandler(
+                editor,
+                drafts.selected,
+                drafts.naming,
+                drafts.promotion,
+                NpcPromotion(combatRepository, codexRepositories.npcRepository, codexRepositories.speciesRepository),
+                combatRepository,
+                undoController,
+            )
+        val namingSnapshot = NamingSnapshot(data.species)
         val calcHandler = CalcHandler(editor, drafts.calc, learner)
         val summaryHandler = SummaryHandler(editor, drafts.summary, learner)
         val ownIds =
@@ -271,7 +270,7 @@ class CombatRoundPresenter(
                 }.map { it.id }
                 .toSet()
         val speciesOf = speciesOfMembers(ordered, data.npcs, data.species)
-        val resistances = speciesOf.mapValues { it.value.damage }
+        val resistances = resistancesOf(ordered, data.npcs, speciesOf)
         val snapshot = RoundSnapshot(drafts.selected.value, ownIds)
         val calcSnapshot = CalcSnapshot(ordered, mover?.id, resistances, speciesOf, words.typeNames, words.stateTitles)
         val summarySnapshot = SummarySnapshot(speciesOf, words.typeNames, words.effectWords)
@@ -283,8 +282,21 @@ class CombatRoundPresenter(
             when (event) {
                 is CombatRoundEvent.Calc -> calcHandler.onEvent(event.event, calcSnapshot, drafts.selected.value)
                 is CombatRoundEvent.Summary -> summaryHandler.onEvent(event.event, summarySnapshot)
-                is CombatRoundEvent.DamageChanged ->
-                    recordDamage(editor, learner, event, speciesOf[drafts.selected.value], words)
+                is CombatRoundEvent.NameChanged,
+                is CombatRoundEvent.NameChosen,
+                is CombatRoundEvent.PromotionScopeChanged,
+                CombatRoundEvent.PromotionConfirmed,
+                CombatRoundEvent.PromotionRejected,
+                -> namingHandler.onEvent(event, namingSnapshot)
+                is CombatRoundEvent.VulnerabilityChanged ->
+                    recordVulnerability(
+                        editor,
+                        learner,
+                        event,
+                        drafts.selected.value,
+                        speciesOf[drafts.selected.value],
+                        words,
+                    )
                 else -> handler.onEvent(event, snapshot, nameOf)
             }
         }
@@ -309,12 +321,51 @@ private class RoundView(
 )
 
 @Composable
+private fun RoundView.panelOf(
+    member: Combatant,
+    drafts: RoundDrafts,
+    kinds: Map<Long, String>,
+    seenByMember: Map<Long, List<SpeciesHitObservation>>,
+    typeNames: Map<DamageType, String>,
+): RoundPanel {
+    val typed =
+        drafts.naming.value
+            ?.takeIf { it.memberId == member.id }
+            ?.text
+            .orEmpty()
+    return roundPanel(
+        current,
+        member,
+        roleOf(member, data.party, kinds.getValue(member.id)),
+        mover?.name.orEmpty(),
+        seenByMember[member.id].orEmpty(),
+        PanelKin(
+            species = speciesOf[member.id],
+            npc = member.npcId?.let { id -> data.npcs.firstOrNull { it.id == id } },
+            vulnerabilities = resistances[member.id].orEmpty(),
+            naming = namingState(current, member, typed, data.npcs, data.species, data.learned, typeNames),
+        ),
+    )
+}
+
+@Composable
+private fun RoundView.promotionOf(
+    draft: PromotionDraft,
+    typeNames: Map<DamageType, String>,
+): PromotionSheet? {
+    val member = current.combatants.firstOrNull { it.id == draft.trace.memberId }
+    val npc = data.npcs.firstOrNull { it.id == draft.trace.npcId }
+    return promotionSheet(draft, current, npc, data.species.firstOrNull { it.id == member?.speciesId }, typeNames)
+}
+
+@Composable
 private fun RoundView.render(
     drafts: RoundDrafts,
     toast: ToastMessage?,
     sink: (CombatRoundEvent) -> Unit,
 ): CombatRoundState {
     val kinds = memberKinds(ordered)
+    val typeNames = damageTypeLabels().mapValues { it.value.lowercase() }
     val seenByMember = speciesOf.mapValues { (_, species) -> data.seen[species.id].orEmpty() }
     val chosen = ordered.firstOrNull { it.id == drafts.selected.value }
     val hostile = ordered.hostileCount()
@@ -330,17 +381,7 @@ private fun RoundView.render(
         hostile = hostileText(hostile),
         allClear = hostile == 0,
         rows = roundRows(current, ordered, mover?.id, drafts.selected.value, data.party, kinds, seenByMember),
-        panel =
-            chosen?.let {
-                roundPanel(
-                    current,
-                    it,
-                    roleOf(it, data.party, kinds.getValue(it.id)),
-                    mover?.name.orEmpty(),
-                    seenByMember[it.id].orEmpty(),
-                    speciesOf[it.id],
-                )
-            },
+        panel = chosen?.let { panelOf(it, drafts, kinds, seenByMember, typeNames) },
         tab = drafts.tab.value,
         menuOpen = drafts.menuOpen.value,
         search =
@@ -355,6 +396,7 @@ private fun RoundView.render(
                 )
             },
         hpPad = hpPadState(drafts.hpPad.value, ordered),
+        promotion = drafts.promotion.value?.let { promotionOf(it, typeNames) },
         entryForm = form.state,
         formKinds = form.kinds,
         calc = drafts.calc.value?.let { calcState(it, calcContext, current.round) },

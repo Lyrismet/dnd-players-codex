@@ -162,6 +162,14 @@ private fun NpcSummaryBody(
     }
     EntityDescription(npc.description, actions.quickEdit)
     EntityFactsGrid(npc.facts, actions.onEntityRefClicked, actions.quickEdit)
+    NpcVulnerabilitySection(
+        vulnerabilities = npc.vulnerabilities,
+        onChange =
+            actions.onNpcVulnerabilityChanged?.let { changed ->
+                { type, state -> changed(npc.ref.id, type, state) }
+            },
+        onEdited = actions.onNpcVulnerabilitiesEdited?.let { edited -> { before -> edited(npc.ref.id, before) } },
+    )
     EntityRelationGroups(npc.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(npc.name, npc.relatedNotes, actions.onRelatedNoteClicked)
     EntityDeleteButton(npc.ref, actions)

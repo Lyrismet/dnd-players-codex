@@ -6,6 +6,8 @@ import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
+import com.lyrismet.incadent.feature.codex.domain.grouping.encodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
@@ -70,6 +72,7 @@ class NpcRepositoryImpl(
                             entity.lifeState,
                             entity.nicknames.joinNicknames(),
                             speciesId,
+                            entity.vulnerabilities.encodeVulnerabilities(),
                             entity.id,
                         )
                         writePortrait(entity.id, entity.portrait, stored.portrait)
@@ -93,6 +96,7 @@ class NpcRepositoryImpl(
                 npc.lifeState,
                 npc.nicknames.joinNicknames(),
                 npc.speciesId,
+                npc.vulnerabilities.encodeVulnerabilities(),
                 npc.portrait?.full,
                 npc.portrait?.thumb,
                 current.requireId(),
@@ -107,6 +111,7 @@ class NpcRepositoryImpl(
             npc.lifeState,
             npc.nicknames.joinNicknames(),
             npc.speciesId,
+            npc.vulnerabilities.encodeVulnerabilities(),
             npc.portrait?.full,
             npc.portrait?.thumb,
             current.requireId(),
@@ -151,9 +156,10 @@ class NpcRepositoryImpl(
         lifeState: NpcLifeState,
         nicknames: String,
         speciesId: Long?,
+        vulnerabilities: String,
         portraitThumb: ByteArray?,
         locationIds: String,
-    ) = toDomain(id, name, status, description, race, lifeState, nicknames, speciesId, portraitThumb)
+    ) = toDomain(id, name, status, description, race, lifeState, nicknames, speciesId, vulnerabilities, portraitThumb)
         .copy(locationIds = locationIds.split(',').mapNotNull { it.toLongOrNull() })
 
     // one param per npc table column - dictated by SQLDelight's generated query mapper shape, not real complexity
@@ -167,6 +173,7 @@ class NpcRepositoryImpl(
         lifeState: NpcLifeState,
         nicknames: String,
         speciesId: Long?,
+        vulnerabilities: String,
         portraitThumb: ByteArray?,
     ) = Npc(
         id,
@@ -181,6 +188,7 @@ class NpcRepositoryImpl(
         },
         parseNicknames(nicknames),
         speciesId,
+        decodeVulnerabilities(vulnerabilities),
     )
 
     // the by-id row also carries the full jpeg
@@ -194,8 +202,9 @@ class NpcRepositoryImpl(
         lifeState: NpcLifeState,
         nicknames: String,
         speciesId: Long?,
+        vulnerabilities: String,
         portraitThumb: ByteArray?,
         portrait: ByteArray?,
-    ) = toDomain(id, name, status, description, race, lifeState, nicknames, speciesId, portraitThumb)
+    ) = toDomain(id, name, status, description, race, lifeState, nicknames, speciesId, vulnerabilities, portraitThumb)
         .copy(portrait = portraitThumb?.let { Photo(it, portrait) })
 }

@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
@@ -43,11 +44,11 @@ import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
 import com.lyrismet.incadent.feature.codex.presentation.style.toShieldStyle
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_damage_done
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_damage_empty
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_damage_hint
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_damage_tip_format
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_damage_title
+import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_done
+import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_empty
+import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_hint
+import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_tip_format
+import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_title
 import org.jetbrains.compose.resources.stringResource
 
 private const val GRID_COLUMNS = 3
@@ -56,19 +57,19 @@ private val LegendStates = listOf(DamageState.VULNERABILITY, DamageState.IMMUNIT
 
 /** the "сопротивления" block of a species card - its shields, and with [onChange] a hold turns them into the grid */
 @Composable
-internal fun SpeciesDamageSection(
-    damage: Map<DamageType, DamageState>,
+internal fun SpeciesVulnerabilitySection(
+    vulnerabilities: Map<DamageType, DamageState>,
     onChange: ((DamageType, DamageState) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     var editing by remember { mutableStateOf(false) }
-    val title = stringResource(Res.string.entity_sheet_species_damage_title).uppercase()
+    val title = stringResource(Res.string.entity_sheet_species_vulnerabilities_title).uppercase()
     if (editing && onChange != null) {
         Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             FormFieldLabel(text = title, fontSize = AppFontSize.Caption)
-            DamageGridEditor(damage, onChange)
+            VulnerabilityGridEditor(vulnerabilities, onChange)
             Text(
-                stringResource(Res.string.entity_sheet_species_damage_done),
+                stringResource(Res.string.entity_sheet_species_vulnerabilities_done),
                 modifier = Modifier.heightIn(min = 40.dp).clickable { editing = false },
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = AppPalette.Gold,
@@ -79,7 +80,7 @@ internal fun SpeciesDamageSection(
     val shields: @Composable () -> Unit = {
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             FormFieldLabel(text = title, fontSize = AppFontSize.Caption)
-            DamageShieldsView(damage)
+            DamageShieldsView(vulnerabilities)
         }
     }
     Box(modifier = modifier) {
@@ -93,11 +94,11 @@ internal fun SpeciesDamageSection(
 
 /** the shields a species has marks for, a tap on one names it, or a hint to edit when there are none */
 @Composable
-private fun DamageShieldsView(damage: Map<DamageType, DamageState>) {
-    val marks = damage.shields()
+private fun DamageShieldsView(vulnerabilities: Map<DamageType, DamageState>) {
+    val marks = vulnerabilities.shields()
     if (marks.isEmpty()) {
         Text(
-            stringResource(Res.string.entity_sheet_species_damage_empty),
+            stringResource(Res.string.entity_sheet_species_vulnerabilities_empty),
             style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Body),
             color = AppPalette.TextSecondary,
         )
@@ -124,9 +125,9 @@ private fun DamageShieldsView(damage: Map<DamageType, DamageState>) {
         tipped?.let { type ->
             Text(
                 stringResource(
-                    Res.string.entity_sheet_species_damage_tip_format,
+                    Res.string.entity_sheet_species_vulnerabilities_tip_format,
                     typeLabels.getValue(type),
-                    stateLabels.getValue(damage.stateOf(type)).lowercase(),
+                    stateLabels.getValue(vulnerabilities.stateOf(type)).lowercase(),
                 ),
                 style =
                     MaterialTheme.typography.bodyMedium.copy(
@@ -166,10 +167,10 @@ private fun ShieldLegend() {
     }
 }
 
-/** all damage types as a grid, a tap on one opens the five states below it */
+/** all vulnerabilities types as a grid, a tap on one opens the five states below it */
 @Composable
-internal fun DamageGridEditor(
-    damage: Map<DamageType, DamageState>,
+internal fun VulnerabilityGridEditor(
+    vulnerabilities: Map<DamageType, DamageState>,
     onChange: (DamageType, DamageState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -183,7 +184,7 @@ internal fun DamageGridEditor(
                     DamageTile(
                         label = typeLabels.getValue(type),
                         type = type,
-                        state = damage.stateOf(type),
+                        state = vulnerabilities.stateOf(type),
                         isOpen = open == type,
                         onClick = { open = if (open == type) null else type },
                         modifier = Modifier.weight(1f),
@@ -196,7 +197,7 @@ internal fun DamageGridEditor(
                 DamageStatePicker(
                     type = type,
                     title = typeLabels.getValue(type),
-                    current = damage.stateOf(type),
+                    current = vulnerabilities.stateOf(type),
                     labels = stateLabels,
                     onPick = {
                         onChange(type, it)
@@ -206,7 +207,7 @@ internal fun DamageGridEditor(
             }
         }
         Text(
-            stringResource(Res.string.entity_sheet_species_damage_hint),
+            stringResource(Res.string.entity_sheet_species_vulnerabilities_hint),
             style = MaterialTheme.typography.labelMedium.copy(fontSize = AppFontSize.Caption),
             color = AppPalette.TextTertiary,
         )
@@ -294,6 +295,7 @@ private fun DamageStatePicker(
                     Text(
                         labels.getValue(state),
                         fontSize = AppFontSize.Body,
+                        lineHeight = AppLineHeight.Row,
                         fontWeight = FontWeight.Medium,
                         color = if (isCurrent) AppPalette.TextHeading else AppPalette.TextPrimary,
                     )

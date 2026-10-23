@@ -44,6 +44,7 @@ internal fun rememberRoundForm(
             codexRepositories.speciesRepository,
             remember { mutableStateOf(emptyList()) },
             party.firstOrNull { it.isPlayerCharacter }?.level,
+            party.any { it.isPlayerCharacter },
         )
     val host = FoeFormHost(controller, target, editor, imageCompressor)
     return RoundForm(host, controller.buildState(npcs, locations, species), host.kinds())

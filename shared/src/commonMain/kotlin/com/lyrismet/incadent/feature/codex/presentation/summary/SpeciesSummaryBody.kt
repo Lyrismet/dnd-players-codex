@@ -56,10 +56,10 @@ internal fun SpeciesSummaryBody(
         onEntityRefClicked = actions.onEntityRefClicked,
         quick = actions.quickEdit,
     )
-    SpeciesDamageSection(
-        damage = species.damage,
+    SpeciesVulnerabilitySection(
+        vulnerabilities = species.vulnerabilities,
         onChange =
-            actions.onSpeciesDamageChanged?.let { changed ->
+            actions.onSpeciesVulnerabilityChanged?.let { changed ->
                 { type, state -> changed(species.ref.id, type, state) }
             },
     )

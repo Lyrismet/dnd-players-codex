@@ -60,7 +60,7 @@ private fun guessesFor(
                     .distinct()
                     .singleOrNull()
                     ?.toState()
-            val known = species.damage[type]
+            val known = species.vulnerabilities[type]
             if (state == null || (known != null && known != DamageState.UNKNOWN)) {
                 null
             } else {

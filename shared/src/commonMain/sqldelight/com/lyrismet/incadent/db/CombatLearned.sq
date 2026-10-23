@@ -1,0 +1,18 @@
+-- what a fight wrote into a species' resistances, the old state is kept so a named npc can take it over
+CREATE TABLE combat_learned (
+    combat_id INTEGER NOT NULL REFERENCES combat(id) ON DELETE CASCADE,
+    species_id INTEGER NOT NULL REFERENCES species(id) ON DELETE CASCADE,
+    damage_type TEXT NOT NULL,
+    previous_state TEXT,
+    PRIMARY KEY (combat_id, species_id, damage_type)
+);
+
+selectByCombat:
+SELECT species_id, damage_type, previous_state FROM combat_learned WHERE combat_id = ?;
+
+-- the first state a fight saw stays, a later tap on the same type does not replace it
+insertIfNew:
+INSERT OR IGNORE INTO combat_learned(combat_id, species_id, damage_type, previous_state) VALUES (?, ?, ?, ?);
+
+deleteOne:
+DELETE FROM combat_learned WHERE combat_id = ? AND species_id = ? AND damage_type = ?;

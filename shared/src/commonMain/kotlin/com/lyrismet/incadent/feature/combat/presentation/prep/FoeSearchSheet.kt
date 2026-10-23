@@ -34,9 +34,11 @@ import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_prep_create_codex
 import dndplayerscodex.shared.generated.resources.combat_prep_create_hint_ally
 import dndplayerscodex.shared.generated.resources.combat_prep_create_hint_enemy
+import dndplayerscodex.shared.generated.resources.combat_prep_create_npc
+import dndplayerscodex.shared.generated.resources.combat_prep_create_species
+import dndplayerscodex.shared.generated.resources.combat_prep_create_species_hint
 import dndplayerscodex.shared.generated.resources.combat_prep_done
 import dndplayerscodex.shared.generated.resources.combat_prep_done_count
 import dndplayerscodex.shared.generated.resources.combat_prep_empty_ally
@@ -47,7 +49,6 @@ import dndplayerscodex.shared.generated.resources.combat_prep_no_match_ally
 import dndplayerscodex.shared.generated.resources.combat_prep_no_match_enemy
 import dndplayerscodex.shared.generated.resources.combat_prep_search_ally
 import dndplayerscodex.shared.generated.resources.combat_prep_search_enemy
-import dndplayerscodex.shared.generated.resources.combat_prep_search_hint
 import dndplayerscodex.shared.generated.resources.combat_prep_sheet_allies
 import dndplayerscodex.shared.generated.resources.combat_prep_sheet_enemies
 import dndplayerscodex.shared.generated.resources.combat_prep_sheet_overline
@@ -96,12 +97,6 @@ internal fun FoeSearchSheet(
                 height = 48.dp,
                 textSize = AppFontSize.MediumPlus,
                 background = AppPalette.Background,
-            )
-            Text(
-                text = stringResource(Res.string.combat_prep_search_hint),
-                color = AppPalette.TextSecondary,
-                fontSize = AppFontSize.Small,
-                lineHeight = AppLineHeight.Row,
             )
             if (search.rows.isEmpty()) SearchNote(enemy, hasQuery = search.query.isNotBlank())
             if (search.rows.isNotEmpty()) FoeRowsCard(search.rows, accent, search.reinforcement, onEvent)
@@ -256,13 +251,19 @@ private fun CreateOptions(
 ) {
     Column(modifier = Modifier.fillMaxWidth().appCard(background = AppPalette.Background).padding(horizontal = 12.dp)) {
         CreateOption(
-            title = stringResource(Res.string.combat_prep_create_codex, name),
+            title = stringResource(Res.string.combat_prep_create_npc, name),
             hint =
                 stringResource(
                     if (enemy) Res.string.combat_prep_create_hint_enemy else Res.string.combat_prep_create_hint_ally,
                 ),
             titleColor = AppPalette.GoldBright,
         ) { onEvent(CombatPrepEvent.CreateRequested) }
+        AppDivider(color = AppPalette.SurfacePopover)
+        CreateOption(
+            title = stringResource(Res.string.combat_prep_create_species, name),
+            hint = stringResource(Res.string.combat_prep_create_species_hint, name.lowercase()),
+            titleColor = AppPalette.GoldBright,
+        ) { onEvent(CombatPrepEvent.CreateSpeciesRequested) }
         AppDivider(color = AppPalette.SurfacePopover)
         CreateOption(
             title = stringResource(Res.string.combat_prep_temp, name),

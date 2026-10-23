@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
+import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import com.lyrismet.incadent.feature.combat.presentation.prep.CombatPrepEvent
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeSearchState
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpPadState
@@ -58,6 +59,7 @@ data class CombatRoundState(
     // the codex form of a reinforcement made on the spot, [formKinds] are the types it offers
     val entryForm: CodexEntryFormState? = null,
     val formKinds: List<EntityKind> = emptyList(),
+    val promotion: PromotionSheet? = null,
     val toast: ToastMessage? = null,
     val eventSink: (CombatRoundEvent) -> Unit = {},
 ) : CircuitUiState
@@ -186,7 +188,11 @@ data class PanelMore(
     val note: String,
     val notePlaceholder: String,
     // the bestiary damage of the kind this participant is made of, null when it has none to edit
-    val damage: Map<DamageType, DamageState>?,
+    val vulnerabilities: Map<DamageType, DamageState>?,
+    // under the grid: where a change goes, or why there is no grid
+    val vulnerabilitiesCaption: String,
+    // set for a participant that can still be given a name of the codex
+    val naming: NamingState?,
 )
 
 data class StanceOption(
@@ -225,7 +231,24 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
         val id: Long,
     ) : CombatRoundEvent
 
-    data class DamageChanged(
+    data class NameChanged(
+        val text: String,
+    ) : CombatRoundEvent
+
+    data class NameChosen(
+        val choice: NameChoice,
+    ) : CombatRoundEvent
+
+    data class PromotionScopeChanged(
+        val type: DamageType,
+        val onlyNpc: Boolean,
+    ) : CombatRoundEvent
+
+    data object PromotionConfirmed : CombatRoundEvent
+
+    data object PromotionRejected : CombatRoundEvent
+
+    data class VulnerabilityChanged(
         val type: DamageType,
         val state: DamageState,
     ) : CombatRoundEvent

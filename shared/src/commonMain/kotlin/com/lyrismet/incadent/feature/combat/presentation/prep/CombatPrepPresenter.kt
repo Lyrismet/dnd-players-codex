@@ -77,6 +77,7 @@ class CombatPrepPresenter(
                 codexRepositories.speciesRepository,
                 remember { mutableStateOf(emptyList()) },
                 party.firstOrNull { it.isPlayerCharacter }?.level,
+                everyone.any { it.isPlayerCharacter },
             )
         val hpPad = remember { mutableStateOf<HpPadDraft?>(null) }
         val exitConfirmVisible = remember { mutableStateOf(false) }

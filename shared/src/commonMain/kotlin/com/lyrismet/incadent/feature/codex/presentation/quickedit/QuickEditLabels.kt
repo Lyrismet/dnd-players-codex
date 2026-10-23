@@ -15,6 +15,7 @@ import dndplayerscodex.shared.generated.resources.entity_sheet_location_parent_l
 import dndplayerscodex.shared.generated.resources.entity_sheet_nicknames_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_race_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_species_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_class_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_hp_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_level_label
@@ -51,6 +52,7 @@ fun rememberQuickEditFieldTitles(): Map<QuickEditField, String> =
         QuickEditField.MOVE to stringResource(Res.string.place_moved_title),
         QuickEditField.INSIDE to stringResource(Res.string.entity_sheet_group_location_inside),
         QuickEditField.RELATION to stringResource(Res.string.entity_sheet_relation_label),
+        QuickEditField.VULNERABILITIES to stringResource(Res.string.entity_sheet_npc_vulnerabilities_label),
         QuickEditField.LIFE to stringResource(Res.string.entity_sheet_life_label),
         QuickEditField.QUEST_STATUS to stringResource(Res.string.entity_sheet_status_label),
         QuickEditField.PRESENCE to stringResource(Res.string.entity_sheet_party_presence_label),

@@ -1,11 +1,13 @@
 package com.lyrismet.incadent.feature.combat.domain.preparation
 
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
+import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,6 +74,56 @@ internal class FakeCombatRepository : CombatRepository {
             combats.value.map { c ->
                 c.copy(combatants = c.combatants.map { if (it.id == combatantId) it.copy(tempHp = tempHp) else it })
             }
+    }
+
+    private val learnedRows = MutableStateFlow<Map<Long, List<LearnedVulnerability>>>(emptyMap())
+
+    override suspend fun linkNpc(
+        combatantId: Long,
+        npcId: Long?,
+        name: String,
+    ) {
+        combats.value =
+            combats.value.map { c ->
+                c.copy(
+                    combatants =
+                        c.combatants.map {
+                            if (it.id ==
+                                combatantId
+                            ) {
+                                it.copy(npcId = npcId, name = name)
+                            } else {
+                                it
+                            }
+                        },
+                )
+            }
+    }
+
+    override fun observeLearned(combatId: Long): Flow<List<LearnedVulnerability>> =
+        learnedRows.map { it[combatId].orEmpty() }
+
+    override suspend fun addLearned(
+        combatId: Long,
+        learned: LearnedVulnerability,
+    ) {
+        val rows = learnedRows.value[combatId].orEmpty()
+        if (rows.none { it.speciesId == learned.speciesId && it.type == learned.type }) {
+            learnedRows.value = learnedRows.value + (combatId to rows + learned)
+        }
+    }
+
+    override suspend fun removeLearned(
+        combatId: Long,
+        speciesId: Long,
+        type: DamageType,
+    ) {
+        learnedRows.value =
+            learnedRows.value +
+            (
+                combatId to
+                    learnedRows.value[combatId].orEmpty().filterNot { it.speciesId == speciesId && it.type == type }
+            )
     }
 
     override suspend fun renameCombatant(

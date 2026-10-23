@@ -161,6 +161,7 @@ class SessionDetailPresenter(
         val fields =
             rememberFields(
                 parties.firstOrNull { it.isPlayerCharacter }?.level,
+                parties.any { it.isPlayerCharacter },
                 rememberEntityChangeReporter(undoController),
             )
         val highlightedEntryId = remember { mutableStateOf(screen.focusEntryId) }
@@ -340,9 +341,11 @@ class SessionDetailPresenter(
     }
 
     // edited locally so live Flow re-emissions from other screens don't clobber in-progress typing
+    @Suppress("LongMethod")
     @Composable
     private fun rememberFields(
         playerCharacterLevel: Int?,
+        hasPlayerCharacter: Boolean,
         reportChange: suspend (EntityChange) -> Unit,
     ): SessionDetailFields {
         val noteId = screen.sessionNoteId
@@ -357,6 +360,7 @@ class SessionDetailPresenter(
                 codexRepositories.speciesRepository,
                 recentPlaceIds,
                 playerCharacterLevel,
+                hasPlayerCharacter,
             )
         val draft = remember(noteId) { mutableStateOf(TextFieldValue("")) }
         val entitySheet = entitySheetInteractions(noteId, selectedEntityRef, reportChange)

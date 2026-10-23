@@ -11,7 +11,7 @@ import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
-import com.lyrismet.incadent.feature.codex.presentation.summary.DamageGridEditor
+import com.lyrismet.incadent.feature.codex.presentation.summary.VulnerabilityGridEditor
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_label_creature_type
 import dndplayerscodex.shared.generated.resources.codex_entry_label_name_species
@@ -20,8 +20,8 @@ import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_specie
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_species_notes
 import dndplayerscodex.shared.generated.resources.codex_entry_srd_label
 import dndplayerscodex.shared.generated.resources.codex_srd_attribution
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_damage_title
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_hp_label
+import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_title
 import org.jetbrains.compose.resources.stringResource
 
 /** the species form with name and SRD hints, creature type, photo and notes */
@@ -55,10 +55,10 @@ internal fun SpeciesEntryFields(
         onClick = { eventSink(CodexEntryFormEvent.EntryCreatureTypeChanged(it)) },
     )
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        FormFieldLabel(stringResource(Res.string.entity_sheet_species_damage_title).uppercase())
-        DamageGridEditor(
-            damage = form.speciesDamage,
-            onChange = { type, state -> eventSink(CodexEntryFormEvent.EntryDamageChanged(type, state)) },
+        FormFieldLabel(stringResource(Res.string.entity_sheet_species_vulnerabilities_title).uppercase())
+        VulnerabilityGridEditor(
+            vulnerabilities = form.vulnerabilities,
+            onChange = { type, state -> eventSink(CodexEntryFormEvent.EntryVulnerabilityChanged(type, state)) },
         )
     }
     CodexEntryNumberField(

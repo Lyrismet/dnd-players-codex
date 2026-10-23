@@ -97,14 +97,15 @@ fun CombatRoundUi(
     }
     state.calc?.let { CalcSheet(it, send) }
     state.summary?.let { SummarySheet(it, send) }
+    state.promotion?.let { PromotionSheetUi(it, send) }
 }
 
 @Composable
 private fun RoundHeader(state: CombatRoundState) {
     val send = state.eventSink
-    Column(modifier = Modifier.fillMaxWidth().padding(start = 20.dp, top = 6.dp, end = 20.dp, bottom = 10.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 10.dp)) {
         Row(
-            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 32.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).defaultMinSize(minHeight = 32.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -123,7 +124,7 @@ private fun RoundHeader(state: CombatRoundState) {
             }
         }
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 20.dp, top = 2.dp, end = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -134,7 +135,7 @@ private fun RoundHeader(state: CombatRoundState) {
             )
             state.roundDamage?.let { SummaryButton(it) { send(CombatRoundEvent.Summary(SummaryEvent.Opened)) } }
         }
-        TurnCard(state, Modifier.padding(top = 10.dp))
+        TurnCard(state, Modifier.padding(start = 12.dp, top = 10.dp, end = 12.dp))
     }
 }
 

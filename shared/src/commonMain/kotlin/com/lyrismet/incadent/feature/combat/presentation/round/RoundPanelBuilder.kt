@@ -1,6 +1,9 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.runtime.Composable
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
+import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.combat.domain.forecast.HitForecast
 import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
@@ -29,6 +32,10 @@ import dndplayerscodex.shared.generated.resources.combat_panel_source
 import dndplayerscodex.shared.generated.resources.combat_panel_source_note
 import dndplayerscodex.shared.generated.resources.combat_panel_stance_npc
 import dndplayerscodex.shared.generated.resources.combat_panel_stance_plain
+import dndplayerscodex.shared.generated.resources.combat_panel_vuln_none
+import dndplayerscodex.shared.generated.resources.combat_panel_vuln_npc
+import dndplayerscodex.shared.generated.resources.combat_panel_vuln_npc_species
+import dndplayerscodex.shared.generated.resources.combat_panel_vuln_species
 import dndplayerscodex.shared.generated.resources.combat_round_no_damage
 import dndplayerscodex.shared.generated.resources.combat_wound_say_line
 import dndplayerscodex.shared.generated.resources.combat_wound_since
@@ -42,7 +49,7 @@ internal fun roundPanel(
     role: String,
     moverName: String,
     seen: List<SpeciesHitObservation>,
-    species: Species?,
+    kin: PanelKin,
 ): RoundPanel {
     val tracked = member.isTracked()
     val dying = member.isDying()
@@ -71,7 +78,7 @@ internal fun roundPanel(
             },
         died = member.dead,
         conditions = conditionGroups(member),
-        more = panelMore(member, tracked, party, species),
+        more = panelMore(member, tracked, party, kin),
         calcModes = if (tracked) CalcMode.entries.toList() else listOf(CalcMode.DAMAGE, CalcMode.HEAL),
         sourceNote = stringResource(Res.string.combat_panel_source_note, moverName),
     )
@@ -171,7 +178,7 @@ private fun panelMore(
     member: Combatant,
     tracked: Boolean,
     party: Boolean,
-    species: Species?,
+    kin: PanelKin,
 ): PanelMore {
     val enemy = member.side == CombatSide.ENEMY
     return PanelMore(
@@ -194,6 +201,29 @@ private fun panelMore(
             stringResource(
                 if (party) Res.string.combat_panel_note_party else Res.string.combat_panel_note_foe,
             ),
-        damage = species?.takeIf { !party }?.damage,
+        vulnerabilities = kin.vulnerabilities.takeIf { !party && (kin.species != null || kin.npc != null) },
+        vulnerabilitiesCaption = if (party) "" else vulnerabilitiesCaption(kin),
+        naming = kin.naming,
     )
+}
+
+/** what a participant is made of in the codex, the vulnerabilities it has now and the naming it still offers */
+internal class PanelKin(
+    val species: Species?,
+    val npc: Npc?,
+    val vulnerabilities: Map<DamageType, DamageState>,
+    val naming: NamingState?,
+)
+
+@Composable
+private fun vulnerabilitiesCaption(kin: PanelKin): String {
+    val species = kin.species
+    val npc = kin.npc
+    return when {
+        npc != null && species != null ->
+            stringResource(Res.string.combat_panel_vuln_npc_species, species.name, npc.name)
+        npc != null -> stringResource(Res.string.combat_panel_vuln_npc, npc.name)
+        species != null -> stringResource(Res.string.combat_panel_vuln_species, species.name)
+        else -> stringResource(Res.string.combat_panel_vuln_none)
+    }
 }

@@ -31,7 +31,7 @@ internal class CalcSnapshot(
 internal class CalcHandler(
     private val editor: RoundEditor,
     private val calc: MutableState<CalcDraft?>,
-    private val learner: SpeciesLearner,
+    private val learner: VulnerabilityLearner,
 ) {
     fun onEvent(
         event: CalcEvent,
@@ -192,11 +192,8 @@ internal class CalcHandler(
         snapshot: CalcSnapshot,
     ) {
         val plan = planQuick(draft, snapshot) ?: return
-        val name =
-            snapshot.ordered
-                .firstOrNull { it.id == plan.targetId }
-                ?.name
-                .orEmpty()
+        val member = snapshot.ordered.firstOrNull { it.id == plan.targetId } ?: return
+        val name = member.name
         editor.edit {
             val note =
                 UndoNote(
@@ -207,7 +204,7 @@ internal class CalcHandler(
                     ),
                     getString(Res.string.combat_calc_recorded_sub, name),
                 )
-            learner.record(plan.species.id, plan.type, plan.state, note)
+            learner.record(editor.combatId, member, plan.species.id, plan.type, plan.state, note)
         }
         val sameKind =
             draft.targets.filter {

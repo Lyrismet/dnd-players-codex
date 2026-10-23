@@ -179,7 +179,7 @@ internal class PrepActions(
     search: MutableState<SearchDraft?>,
     private val hpPad: MutableState<HpPadDraft?>,
     private val exitConfirmVisible: MutableState<Boolean>,
-    onCreate: (CombatSide, String) -> Unit,
+    onCreate: (CombatSide, String, Boolean) -> Unit,
 ) {
     private val searchController = FoeSearchController(search, editor, onCreate)
 

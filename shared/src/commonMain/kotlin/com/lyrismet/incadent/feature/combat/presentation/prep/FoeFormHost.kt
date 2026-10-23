@@ -20,8 +20,13 @@ internal class FoeFormHost(
     fun open(
         side: CombatSide,
         name: String = "",
+        asSpecies: Boolean = false,
     ) {
         target.value = side
+        if (asSpecies && side != CombatSide.PARTY) {
+            controller.onAddEntryClicked(EntityKind.SPECIES, name)
+            return
+        }
         when (side) {
             CombatSide.PARTY -> controller.onAddEntryClicked(EntityKind.PARTY, name)
             CombatSide.ENEMY -> controller.onAddEntryClicked(EntityKind.NPC, name, npcStatus = NpcStatus.ENEMY)
