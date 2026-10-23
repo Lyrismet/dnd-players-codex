@@ -4,13 +4,9 @@ import androidx.compose.runtime.MutableState
 import com.lyrismet.incadent.core.calc.CalcExpression
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
-import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
-import com.lyrismet.incadent.feature.codex.domain.repository.createNamed
-import com.lyrismet.incadent.feature.codex.domain.repository.quickNpc
-import com.lyrismet.incadent.feature.codex.domain.repository.quickSpecies
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.preparation.CombatPreparation
@@ -26,15 +22,11 @@ import com.lyrismet.incadent.feature.combat.domain.round.startReadiness
 import com.lyrismet.incadent.feature.combat.domain.round.toggledTurnOrder
 import com.lyrismet.incadent.feature.combat.presentation.round.CombatRoundScreen
 import com.slack.circuit.runtime.Navigator
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_prep_toast_npc_created
-import dndplayerscodex.shared.generated.resources.combat_prep_toast_species_created
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.jetbrains.compose.resources.getString
 import kotlin.time.Clock
 
 /** what the event handlers need to know of the screen at the moment of the event */
@@ -56,7 +48,6 @@ internal class PrepEditor(
     private val combatRepository: CombatRepository,
     private val codexRepositories: CodexRepositories,
     private val lock: Mutex,
-    private val showToast: (String) -> Unit,
     private val launch: (suspend () -> Unit) -> Unit,
 ) : FoeAdder {
     private val preparation = CombatPreparation(combatRepository)
@@ -94,39 +85,25 @@ internal class PrepEditor(
         }
     }
 
-    override fun createNpc(
+    override fun addSaved(
         side: CombatSide,
-        name: String,
-    ) = edit { combat ->
-        val status = if (side == CombatSide.ENEMY) NpcStatus.ENEMY else NpcStatus.FRIEND
-        val id = codexRepositories.npcRepository.upsert(quickNpc(name).copy(status = status))
-        preparation.add(combat, side, MemberSource(id, null, name))
-        showToast(getString(Res.string.combat_prep_toast_npc_created, name))
-    }
-
-    override fun createSpecies(
-        side: CombatSide,
-        name: String,
-    ) = edit { combat ->
-        val id = codexRepositories.speciesRepository.upsert(quickSpecies(name))
-        preparation.add(combat, side, MemberSource(null, id, name))
-        showToast(getString(Res.string.combat_prep_toast_species_created, name))
-    }
-
-    /** a new codex record that joins the fight at once */
-    fun createQuick(
-        kind: QuickKind,
-        name: String,
+        kind: EntityKind,
+        id: Long,
     ) = edit { combat ->
         when (kind) {
-            QuickKind.PARTY -> {
-                val id = codexRepositories.createNamed(EntityKind.PARTY, name)
-                preparation.setPartyIncluded(combat, PartySeat(id, name), included = true)
-            }
-            QuickKind.ENEMY -> {
-                val id = codexRepositories.npcRepository.upsert(quickNpc(name).copy(status = NpcStatus.ENEMY))
-                preparation.add(combat, CombatSide.ENEMY, MemberSource(id, null, name))
-            }
+            EntityKind.NPC ->
+                codexRepositories.npcRepository.getById(id)?.let {
+                    preparation.add(combat, side, MemberSource(id, null, it.name))
+                }
+            EntityKind.SPECIES ->
+                codexRepositories.speciesRepository.getById(id)?.let {
+                    preparation.add(combat, side, MemberSource(null, id, it.name))
+                }
+            EntityKind.PARTY ->
+                codexRepositories.partyRepository.getById(id)?.let {
+                    preparation.setPartyIncluded(combat, PartySeat(id, it.name), included = true)
+                }
+            EntityKind.QUEST, EntityKind.LOCATION -> Unit
         }
     }
 
@@ -196,20 +173,15 @@ internal data class HpPadDraft(
     val expr: CalcExpression = CalcExpression(),
 )
 
-internal data class QuickDraft(
-    val kind: QuickKind,
-    val name: String = "",
-)
-
 internal class PrepActions(
     private val editor: PrepEditor,
     private val navigator: Navigator,
     search: MutableState<SearchDraft?>,
-    private val quick: MutableState<QuickDraft?>,
     private val hpPad: MutableState<HpPadDraft?>,
     private val exitConfirmVisible: MutableState<Boolean>,
+    onCreate: (CombatSide, String) -> Unit,
 ) {
-    private val searchController = FoeSearchController(search, editor)
+    private val searchController = FoeSearchController(search, editor, onCreate)
 
     fun onMember(
         event: CombatPrepEvent.MemberEvent,
@@ -235,20 +207,6 @@ internal class PrepActions(
         event: CombatPrepEvent.SearchEvent,
         snapshot: PrepSnapshot,
     ) = searchController.onEvent(event, snapshot::nameOf)
-
-    fun onQuick(event: CombatPrepEvent.QuickEvent) {
-        val draft = quick.value
-        when (event) {
-            is CombatPrepEvent.QuickOpened -> quick.value = QuickDraft(event.kind)
-            is CombatPrepEvent.QuickNameChanged -> quick.value = draft?.copy(name = event.name)
-            CombatPrepEvent.QuickClosed -> quick.value = null
-            CombatPrepEvent.QuickConfirmed ->
-                draft?.takeIf { it.name.isNotBlank() }?.let {
-                    quick.value = null
-                    editor.createQuick(it.kind, it.name.trim())
-                }
-        }
-    }
 
     fun onHp(
         event: CombatPrepEvent.HpEvent,

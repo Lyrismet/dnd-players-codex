@@ -52,6 +52,10 @@ sealed interface CombatFooter {
 }
 
 sealed interface CombatListEvent : CircuitUiEvent {
+    data class CombatTapped(
+        val id: Long,
+    ) : CombatListEvent
+
     data object StartClicked : CombatListEvent
 
     data object ContinueClicked : CombatListEvent

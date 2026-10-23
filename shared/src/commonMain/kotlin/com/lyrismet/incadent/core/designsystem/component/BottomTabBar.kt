@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.centeredLine
 
 /** persistent 4-column bottom navigation bar - gold top indicator on the active tab, muted icon+label otherwise */
 @Composable
@@ -88,15 +89,19 @@ private fun TabBadge(
     text: String,
     modifier: Modifier = Modifier,
 ) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelSmall,
-        color = AppPalette.TextHeading,
+    Box(
         modifier =
             modifier
                 .defaultMinSize(minWidth = 16.dp, minHeight = 16.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(AppPalette.Maroon)
                 .padding(horizontal = 4.dp),
-    )
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall.centeredLine(),
+            color = AppPalette.TextHeading,
+        )
+    }
 }

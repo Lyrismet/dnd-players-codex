@@ -26,6 +26,7 @@ import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import com.lyrismet.incadent.feature.mention.presentation.toChipItem
 import com.lyrismet.incadent.feature.mention.presentation.toMentionChip
+import com.lyrismet.incadent.feature.session.domain.sessionNumberLabels
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
@@ -159,6 +160,25 @@ private fun buildSpeciesSummary(
         seenInSessions = relatedNotes.size,
         nicknames = species.nicknames,
         hitPoints = species.hitPoints,
+        fights = lookup.facts.species[species.id]?.fights ?: 0,
+        hitRange = lookup.facts.species[species.id]?.hitRange,
+    )
+}
+
+private fun fallOf(
+    member: PartyMember,
+    lookup: EntityLookup,
+): PartyFall {
+    val fall = member.fellCombatId?.let { lookup.facts.falls[it] }
+    val chronicle = lookup.facts.party[member.id]
+    val labels = lookup.sessionNotes.sessionNumberLabels(lookup.sessionNumbering)
+    return PartyFall(
+        sessionNoteId = fall?.sessionNoteId,
+        sessionLabel = fall?.sessionNoteId?.let(labels::get),
+        foes = fall?.foes.orEmpty().joinToString(", ") { it.name + if (it.count > 1) " ×${it.count}" else "" },
+        sessions = chronicle?.sessions ?: 0,
+        fights = chronicle?.fights ?: 0,
+        damage = chronicle?.damage ?: 0,
     )
 }
 
@@ -210,6 +230,7 @@ private fun buildPartySummary(
                 ),
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Party(member.id), lookup),
+        fall = if (member.fallen) fallOf(member, lookup) else null,
     )
 }
 

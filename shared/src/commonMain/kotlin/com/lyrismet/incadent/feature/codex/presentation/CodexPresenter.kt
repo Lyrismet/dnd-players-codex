@@ -60,22 +60,28 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.entityLookupOf
 import com.lyrismet.incadent.feature.codex.presentation.summary.onEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhoto
 import com.lyrismet.incadent.feature.codex.presentation.summary.withFullPhoto
+import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
+import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
 import com.lyrismet.incadent.feature.mention.domain.MentionBody
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.mentionEntitiesFrom
 import com.lyrismet.incadent.feature.mention.domain.mentionSessionCounts
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
+import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
+import com.lyrismet.incadent.feature.session.domain.sessionNumberLabels
 import com.lyrismet.incadent.feature.session.presentation.route.sessionEntryOpener
 import com.slack.circuit.retained.rememberRetained
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_toast_format
+import dndplayerscodex.shared.generated.resources.codex_party_fell_session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 
 private fun mentionIndexOf(
     npcs: List<Npc>,
@@ -134,6 +140,7 @@ class CodexPresenter(
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
     private val speciesRepository: SpeciesRepository,
+    private val combatFactsSource: CombatFactsSource,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val undoController: UndoController,
@@ -177,32 +184,21 @@ class CodexPresenter(
 
         val records = rememberRecords(parties, npcs, quests, locations, sessionEntries, species)
         val search = buildSearchResults(records, fields)
-        val party = search.searchedParties.toPartyCodexItems(labels.partyCard)
+        val party = search.searchedParties.toPartyCodexItems(labels.partyCard, fellIn(records, sessionNotes, numbering))
         val listing = codexListing(search, records, party, fields, labels)
         val formState = formController.buildState(records.npcs, records.locations, species)
 
-        val lookup =
-            entityLookupOf(
-                npcs,
-                locations,
-                quests,
-                sessionNotes,
-                sessionEntries,
-                records.mentionIndex,
-                numbering,
-                parties,
-                species,
-            )
+        val lookup = lookupOf(records, sessionNotes, numbering)
         val selectedEntity = selectedEntity(fields.selectedEntityRef.value, lookup)
 
-        val isTabSelected = LocalTabSelected.current
         val swipeHintTarget =
             rememberCodexSwipeHintTarget(
                 activeTab = fields.activeTab.value,
                 party = party,
                 grouped = listing.grouped,
                 // a hidden tab stays composed in the background, so it must not burn its one-time hint unseen
-                isBlocked = formState != null || selectedEntity != null || !isTabSelected || fields.showsSpecies,
+                isBlocked =
+                    formState != null || selectedEntity != null || !LocalTabSelected.current || fields.showsSpecies,
             )
 
         return buildCodexState(
@@ -220,6 +216,40 @@ class CodexPresenter(
         )
     }
 
+    // the session each fallen character fell in, by their id
+    @Composable
+    private fun fellIn(
+        records: CodexRecords,
+        sessionNotes: List<SessionNote>,
+        numbering: SessionNumbering,
+    ): Map<Long, String> {
+        val numbers = sessionNotes.sessionNumberLabels(numbering)
+        return records.parties
+            .filter { it.fallen }
+            .mapNotNull { member ->
+                val session = member.fellCombatId?.let { records.facts.falls[it] }?.sessionNoteId
+                numbers[session]?.let { member.id to stringResource(Res.string.codex_party_fell_session, it) }
+            }.toMap()
+    }
+
+    @Composable
+    private fun lookupOf(
+        records: CodexRecords,
+        sessionNotes: List<SessionNote>,
+        numbering: SessionNumbering,
+    ) = entityLookupOf(
+        records.npcs,
+        records.locations,
+        records.quests,
+        sessionNotes,
+        records.entries,
+        records.mentionIndex,
+        numbering,
+        records.parties,
+        records.species,
+        records.facts,
+    )
+
     // the mention candidates are rebuilt only when a record list changes
     @Composable
     private fun rememberRecords(
@@ -230,6 +260,7 @@ class CodexPresenter(
         entries: List<SessionEntry>,
         species: List<Species>,
     ): CodexRecords {
+        val facts by combatFactsSource.observe().collectAsState(initial = CombatFacts.EMPTY)
         val index =
             remember(
                 npcs,
@@ -238,7 +269,7 @@ class CodexPresenter(
                 parties,
                 species,
             ) { mentionIndexOf(npcs, locations, quests, parties, species) }
-        return CodexRecords(parties, npcs, quests, locations, entries, index, species)
+        return CodexRecords(parties, npcs, quests, locations, entries, index, species, facts)
     }
 
     // keyed on the lookup data, so typing in the open editor doesn't re-parse every session entry
@@ -480,7 +511,8 @@ class CodexPresenter(
             query,
             typeLabels,
             seen,
-        ) { records.species.toCodexItems(query, typeLabels, seen) }
+            records.facts,
+        ) { records.species.toCodexItems(query, typeLabels, seen, records.facts.species.mapValues { it.value.fights }) }
     }
 
     // the warning of a delete that notes still mention - null when nothing waits or the record is already gone

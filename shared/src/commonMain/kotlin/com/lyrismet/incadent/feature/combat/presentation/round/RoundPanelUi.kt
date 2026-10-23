@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,6 +31,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
@@ -38,6 +41,8 @@ import com.lyrismet.incadent.core.designsystem.component.Dot
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.icons.CalculatorIcon
+import com.lyrismet.incadent.core.designsystem.component.sheetTopEdge
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.combat_calc_mode_damage
 import dndplayerscodex.shared.generated.resources.combat_calc_mode_heal
@@ -59,9 +64,14 @@ import dndplayerscodex.shared.generated.resources.combat_panel_tab_more
 import dndplayerscodex.shared.generated.resources.combat_panel_undo
 import org.jetbrains.compose.resources.stringResource
 
-private val LineHeight20 = 20.sp
 private const val SAVE_PIPS = 3
-private val PanelShape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+private const val DAMAGE_FILL_ALPHA = 0.18f
+private const val DAMAGE_BORDER_ALPHA = 0.6f
+private const val SOFT_FILL_ALPHA = 0.12f
+private const val SOFT_BORDER_ALPHA = 0.45f
+private val TempBase = Color(0xFF6EA0E6)
+private val PANEL_RADIUS = 20.dp
+private val PanelShape = RoundedCornerShape(topStart = PANEL_RADIUS, topEnd = PANEL_RADIUS)
 
 @Composable
 internal fun RoundPanelUi(
@@ -75,11 +85,10 @@ internal fun RoundPanelUi(
             Modifier
                 .fillMaxWidth()
                 .heightIn(max = maxHeight)
-                .appCard(
-                    shape = PanelShape,
-                    background = AppPalette.Surface,
-                    border = AppPalette.Gold.copy(alpha = 0.35f),
-                ).verticalScroll(rememberScrollState())
+                .clip(PanelShape)
+                .background(AppPalette.Surface)
+                .sheetTopEdge(PANEL_RADIUS)
+                .verticalScroll(rememberScrollState())
                 .padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -143,7 +152,7 @@ private fun PanelHeader(
                         hp.caption,
                         color = AppPalette.TextTertiary,
                         fontSize = AppFontSize.Caption,
-                        lineHeight = LineHeight20,
+                        lineHeight = AppLineHeight.Row,
                     )
                 }
             }
@@ -158,7 +167,7 @@ private fun PanelHeader(
                     wound.source,
                     color = AppPalette.TextMuted,
                     fontSize = AppFontSize.Caption,
-                    lineHeight = LineHeight20,
+                    lineHeight = AppLineHeight.Row,
                 )
             }
         }
@@ -198,13 +207,7 @@ private fun MarksBlock(
         ) {
             marks.forEach { mark ->
                 val tint = RoundColors.wound(mark.tone)
-                Text(
-                    text = mark.label,
-                    color = if (mark.selected) tint else AppPalette.TextSecondary,
-                    fontSize = AppFontSize.Caption,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    textAlign = TextAlign.Center,
+                Box(
                     modifier =
                         Modifier
                             .weight(1f)
@@ -214,16 +217,26 @@ private fun MarksBlock(
                                 background = if (mark.selected) AppPalette.SurfacePopover else Color.Transparent,
                                 border = if (mark.selected) tint else null,
                                 onClick = { send(CombatRoundEvent.MarkSelected(mark.state)) },
-                            ).padding(top = 7.dp),
-                )
+                            ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = mark.label,
+                        color = if (mark.selected) tint else AppPalette.TextSecondary,
+                        fontSize = AppFontSize.Caption,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
-        Text(sayLine, color = AppPalette.TextDescription, fontSize = AppFontSize.Small, lineHeight = LineHeight20)
+        Text(sayLine, color = AppPalette.TextDescription, fontSize = AppFontSize.Small, lineHeight = AppLineHeight.Row)
         Text(
             stringResource(Res.string.combat_panel_mark_auto),
             color = AppPalette.TextTertiary,
             fontSize = AppFontSize.Caption,
-            lineHeight = LineHeight20,
+            lineHeight = AppLineHeight.Row,
         )
     }
 }
@@ -379,7 +392,7 @@ private fun DiedNote(send: (CombatRoundEvent) -> Unit) {
             stringResource(Res.string.combat_panel_died_note),
             color = AppPalette.TextDescription,
             fontSize = AppFontSize.BodyPlus,
-            lineHeight = LineHeight20,
+            lineHeight = AppLineHeight.Row,
             modifier = Modifier.weight(1f),
         )
         AppButton(
@@ -398,28 +411,74 @@ private fun CalcButtons(
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         panel.calcModes.forEach { mode ->
-            val (tint, label) =
-                when (mode) {
-                    CalcMode.DAMAGE -> AppPalette.MaroonBright to stringResource(Res.string.combat_calc_mode_damage)
-                    CalcMode.HEAL -> AppPalette.EmeraldBright to stringResource(Res.string.combat_calc_mode_heal)
-                    CalcMode.TEMP -> AppPalette.Azure to stringResource(Res.string.combat_calc_mode_temp)
-                }
-            Box(
+            val look = calcLook(mode)
+            Row(
                 modifier =
                     Modifier
                         .weight(1f)
                         .defaultMinSize(minHeight = 50.dp)
                         .appCard(
                             shape = AppShapes.Field,
-                            background = tint.copy(alpha = 0.12f),
-                            border = tint.copy(alpha = 0.5f),
+                            background = look.base.copy(alpha = look.fillAlpha),
+                            border = look.base.copy(alpha = look.borderAlpha),
                             onClick = { send(CombatRoundEvent.Calc(CalcEvent.Opened(mode))) },
-                        ),
-                contentAlignment = Alignment.Center,
+                        ).padding(horizontal = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(label, color = tint, fontSize = AppFontSize.Medium, fontWeight = FontWeight.Bold, maxLines = 1)
+                CalculatorIcon(tint = look.text, width = 13.dp, height = 16.dp)
+                Text(
+                    look.label,
+                    color = look.text,
+                    fontSize = AppFontSize.Medium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                )
             }
         }
     }
-    Text(panel.sourceNote, color = AppPalette.TextTertiary, fontSize = AppFontSize.Caption, lineHeight = LineHeight20)
+    Text(
+        panel.sourceNote,
+        color = AppPalette.TextTertiary,
+        fontSize = AppFontSize.Caption,
+        lineHeight = AppLineHeight.Row,
+    )
 }
+
+@Composable
+private fun calcLook(mode: CalcMode): CalcLook =
+    when (mode) {
+        CalcMode.DAMAGE ->
+            CalcLook(
+                stringResource(Res.string.combat_calc_mode_damage),
+                AppPalette.MaroonBright,
+                AppPalette.Maroon,
+                DAMAGE_FILL_ALPHA,
+                DAMAGE_BORDER_ALPHA,
+            )
+        CalcMode.HEAL ->
+            CalcLook(
+                stringResource(Res.string.combat_calc_mode_heal),
+                AppPalette.EmeraldBright,
+                AppPalette.Emerald,
+                SOFT_FILL_ALPHA,
+                SOFT_BORDER_ALPHA,
+            )
+        CalcMode.TEMP ->
+            CalcLook(
+                stringResource(Res.string.combat_calc_mode_temp),
+                AppPalette.Azure,
+                TempBase,
+                SOFT_FILL_ALPHA,
+                SOFT_BORDER_ALPHA,
+            )
+    }
+
+/** one calculator button: its words, the text tint and the base colour its fill and edge come from */
+private class CalcLook(
+    val label: String,
+    val text: Color,
+    val base: Color,
+    val fillAlpha: Float,
+    val borderAlpha: Float,
+)

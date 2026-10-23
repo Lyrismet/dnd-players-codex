@@ -80,6 +80,7 @@ interface CombatRepository {
     suspend fun finish(
         combatId: Long,
         outcome: CombatOutcome,
+        finishedAt: LocalDateTime,
     )
 
     suspend fun delete(combatId: Long)

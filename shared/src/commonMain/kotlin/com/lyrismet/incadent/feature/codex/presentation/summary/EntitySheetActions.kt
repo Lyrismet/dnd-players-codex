@@ -22,6 +22,8 @@ data class EntitySummarySheetActions(
     val onDeleteClicked: ((EntityRef) -> Unit)? = null,
     // null hides the presence picker - only the codex manages party membership
     val onPartyPresenceSelected: ((partyId: Long, presence: PartyPresence) -> Unit)? = null,
+    // null hides the way back of a fallen character - only the codex brings one back
+    val onPartyRevived: ((partyId: Long) -> Unit)? = null,
     // null keeps a species' damage read-only - only the codex marks what the party has noticed
     val onSpeciesDamageChanged: ((speciesId: Long, type: DamageType, state: DamageState) -> Unit)? = null,
     // steps the count of the chip the card was opened from, the row only shows when the card knows that count

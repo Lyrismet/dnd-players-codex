@@ -7,9 +7,9 @@ import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 import com.lyrismet.incadent.feature.mention.domain.mentionRefsIn
 
 // far above what the forms allow (see TextLimits), so a real export always fits and a stuffed field never does
-private const val MAX_SHORT_CHARS = 200
+internal const val MAX_SHORT_CHARS = 200
 private const val MAX_NICKNAMES_CHARS = 1_000
-private const val MAX_LONG_CHARS = 20_000
+internal const val MAX_LONG_CHARS = 20_000
 private const val MAX_LINKS = 10_000
 private const val MAX_HP_WITHOUT_MAX = 999
 
@@ -22,6 +22,7 @@ class RecordValidator {
     private val quests = mutableSetOf<Long>()
     private val party = mutableSetOf<Long>()
     private val sessions = mutableSetOf<Long>()
+    private val fights = FightRules(species, npcs, party, sessions)
 
     fun accept(record: FileRecord) {
         val next = record.rank()
@@ -34,22 +35,27 @@ class RecordValidator {
                 must(record.parentId == null || record.parentId in places)
                 must(places.add(record.id))
             }
-            is FileRecord.Npc -> {
-                must(record.speciesId == null || record.speciesId in species)
-                must(record.placeIds.all { it in places })
-                must(npcs.add(record.id))
-            }
-            is FileRecord.Quest -> {
-                must(record.giverNpcId == null || record.giverNpcId in npcs)
-                must(record.placeId == null || record.placeId in places)
-                must(quests.add(record.id))
-            }
+            is FileRecord.Npc -> checkNpc(record)
+            is FileRecord.Quest -> checkQuest(record)
             is FileRecord.Party -> must(party.add(record.id))
             is FileRecord.Session -> must(sessions.add(record.id))
             is FileRecord.Entry -> must(record.sessionId in sessions)
+            is FightRecord -> must(fights.accept(record))
             is FileRecord.Photo -> must(record.ownerId in owners(record.owner))
             is FileRecord.Tag, is FileRecord.Phrase -> Unit
         }
+    }
+
+    private fun checkNpc(record: FileRecord.Npc) {
+        must(record.speciesId == null || record.speciesId in species)
+        must(record.placeIds.all { it in places })
+        must(npcs.add(record.id))
+    }
+
+    private fun checkQuest(record: FileRecord.Quest) {
+        must(record.giverNpcId == null || record.giverNpcId in npcs)
+        must(record.placeId == null || record.placeId in places)
+        must(quests.add(record.id))
     }
 
     // a file is never shorter than a form allows, but it can be stuffed to bloat the database
@@ -65,6 +71,7 @@ class RecordValidator {
                 is FileRecord.Phrase -> fits(MAX_LONG_CHARS, record.text)
                 is FileRecord.Session -> record.fits()
                 is FileRecord.Entry -> fits(MAX_LONG_CHARS, record.body) && record.body.hasReadableTokens()
+                is FightRecord -> fights.fits(record)
                 is FileRecord.Photo -> true
             },
         )
@@ -84,7 +91,7 @@ class RecordValidator {
 }
 
 // a place's parent, an npc's species and places, a quest's npc and place all sit in sections above them
-private enum class Section { SPECIES, PLACE, NPC, QUEST, PARTY, TAG, PHRASE, SESSION, ENTRY, PHOTO }
+private enum class Section { SPECIES, PLACE, NPC, QUEST, PARTY, TAG, PHRASE, SESSION, ENTRY, FIGHT, PHOTO }
 
 private fun FileRecord.rank(): Int =
     when (this) {
@@ -97,6 +104,7 @@ private fun FileRecord.rank(): Int =
         is FileRecord.Phrase -> Section.PHRASE
         is FileRecord.Session -> Section.SESSION
         is FileRecord.Entry -> Section.ENTRY
+        is FightRecord -> Section.FIGHT
         is FileRecord.Photo -> Section.PHOTO
     }.ordinal
 

@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.combat.presentation.prep
 
 import androidx.compose.runtime.MutableState
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.preparation.MemberSource
 
@@ -21,14 +22,11 @@ internal interface FoeAdder {
         source: MemberSource,
     )
 
-    fun createNpc(
+    /** a record made in the codex form for [side], it joins the fight at once */
+    fun addSaved(
         side: CombatSide,
-        name: String,
-    )
-
-    fun createSpecies(
-        side: CombatSide,
-        name: String,
+        kind: EntityKind,
+        id: Long,
     )
 }
 
@@ -36,6 +34,8 @@ internal interface FoeAdder {
 internal class FoeSearchController(
     private val search: MutableState<SearchDraft?>,
     private val adder: FoeAdder,
+    // opens the codex form for a side, with the typed name
+    private val onCreate: (CombatSide, String) -> Unit,
 ) {
     fun onEvent(
         event: CombatPrepEvent.SearchEvent,
@@ -64,8 +64,7 @@ internal class FoeSearchController(
     ) {
         when (event) {
             CombatPrepEvent.TempAdded -> adder.add(side, MemberSource(null, null, name))
-            CombatPrepEvent.NpcCreated -> adder.createNpc(side, name)
-            CombatPrepEvent.SpeciesCreated -> adder.createSpecies(side, name)
+            CombatPrepEvent.CreateRequested -> onCreate(side, name)
         }
     }
 

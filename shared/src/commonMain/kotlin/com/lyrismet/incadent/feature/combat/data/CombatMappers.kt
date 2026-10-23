@@ -21,6 +21,7 @@ internal fun CombatRow.toDomain(
         outcome = outcome,
         combatants = combatants,
         events = events,
+        finishedAt = finished_at,
     )
 
 internal fun CombatantRow.toDomain(): Combatant =

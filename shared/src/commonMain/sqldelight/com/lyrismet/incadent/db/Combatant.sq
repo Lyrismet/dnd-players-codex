@@ -31,6 +31,22 @@ CREATE TABLE combatant (
 
 CREATE INDEX combatant_combat_id ON combatant(combat_id);
 
+-- a record deleted from the codex leaves the preparations that picked it, a fight under way keeps its fighters
+CREATE TRIGGER combatant_npc_deleted BEFORE DELETE ON npc
+BEGIN
+    DELETE FROM combatant WHERE npc_id = old.id AND combat_id IN (SELECT id FROM combat WHERE phase = 'PREPARING');
+END;
+
+CREATE TRIGGER combatant_species_deleted BEFORE DELETE ON species
+BEGIN
+    DELETE FROM combatant WHERE species_id = old.id AND combat_id IN (SELECT id FROM combat WHERE phase = 'PREPARING');
+END;
+
+CREATE TRIGGER combatant_party_deleted BEFORE DELETE ON party_member
+BEGIN
+    DELETE FROM combatant WHERE party_member_id = old.id AND combat_id IN (SELECT id FROM combat WHERE phase = 'PREPARING');
+END;
+
 selectByCombat:
 SELECT * FROM combatant WHERE combat_id = ? ORDER BY id;
 

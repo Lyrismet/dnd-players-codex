@@ -51,6 +51,7 @@ private class ContentsCollector {
             is FileRecord.Session -> sessions += record
             is FileRecord.Tag, is FileRecord.Phrase -> Unit
             is FileRecord.Entry -> addMentions(record)
+            is FightRecord -> Unit
             is FileRecord.Photo -> Unit
         }
     }

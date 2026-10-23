@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
@@ -18,14 +19,16 @@ import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.codex.presentation.summary.damageStateLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.damageTypeLabels
+import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
-import com.lyrismet.incadent.feature.combat.domain.round.autoOutcome
+import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
 import com.lyrismet.incadent.feature.combat.domain.round.formatElapsed
 import com.lyrismet.incadent.feature.combat.domain.round.hostileCount
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
@@ -42,6 +45,8 @@ import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteReposi
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.combat_calc_recorded_sub
+import dndplayerscodex.shared.generated.resources.combat_calc_recorded_title
 import dndplayerscodex.shared.generated.resources.combat_damage_state_immunity
 import dndplayerscodex.shared.generated.resources.combat_damage_state_normal
 import dndplayerscodex.shared.generated.resources.combat_damage_state_resistance
@@ -64,6 +69,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -79,6 +85,7 @@ private class RoundData(
     val species: List<Species>,
     val party: List<PartyMember>,
     val liveBodies: List<String>,
+    val seen: Map<Long, List<SpeciesHitObservation>>,
     val now: Instant,
 )
 
@@ -99,7 +106,8 @@ private fun CombatRoundPresenter.rememberData(): RoundData {
             delay(TICK_MILLIS)
         }
     }
-    return RoundData(combat, sessions, npcs, species, party, entries.map { it.body }, now)
+    val seen by hitObservationRepository.observeAll().collectAsState(initial = emptyMap())
+    return RoundData(combat, sessions, npcs, species, party, entries.map { it.body }, seen, now)
 }
 
 /** the states of the sheets and the panel, they live as long as the screen does */
@@ -108,7 +116,6 @@ private class RoundDrafts(
     val selected: MutableState<Long?>,
     val tab: MutableState<PanelTab>,
     val menuOpen: MutableState<Boolean>,
-    val endConfirm: MutableState<EndConfirm?>,
     val hpPad: MutableState<RoundHpDraft?>,
     val search: MutableState<SearchDraft?>,
     val calc: MutableState<CalcDraft?>,
@@ -121,7 +128,6 @@ private fun rememberDrafts() =
         selected = remember { mutableStateOf(null) },
         tab = remember { mutableStateOf(PanelTab.ACTIONS) },
         menuOpen = remember { mutableStateOf(false) },
-        endConfirm = remember { mutableStateOf(null) },
         hpPad = remember { mutableStateOf(null) },
         search = remember { mutableStateOf(null) },
         calc = remember { mutableStateOf(null) },
@@ -142,6 +148,7 @@ private fun rememberWords(): RoundWords {
     val immunity = stringResource(Res.string.combat_damage_state_immunity)
     val vulnerability = stringResource(Res.string.combat_damage_state_vulnerability)
     val normal = stringResource(Res.string.combat_damage_state_normal)
+    val unknown = damageStateLabels().getValue(DamageState.UNKNOWN)
     return RoundWords(
         typeNames = types,
         stateTitles =
@@ -150,6 +157,7 @@ private fun rememberWords(): RoundWords {
                 DamageState.IMMUNITY to immunity.replaceFirstChar { it.uppercase() },
                 DamageState.VULNERABILITY to vulnerability.replaceFirstChar { it.uppercase() },
                 DamageState.NORMAL to normal.replaceFirstChar { it.uppercase() },
+                DamageState.UNKNOWN to unknown.replaceFirstChar { it.uppercase() },
             ),
         effectWords =
             mapOf(
@@ -159,6 +167,29 @@ private fun rememberWords(): RoundWords {
                 HitEffect.DOUBLE to vulnerability,
             ),
     )
+}
+
+/** writes a damage state picked in the panel into the bestiary card of the chosen participant's species */
+private fun recordDamage(
+    editor: RoundEditor,
+    learner: SpeciesLearner,
+    event: CombatRoundEvent.DamageChanged,
+    species: Species?,
+    words: RoundWords,
+) {
+    if (species == null) return
+    editor.edit {
+        val note =
+            UndoNote(
+                getString(
+                    Res.string.combat_calc_recorded_title,
+                    words.stateTitles.getValue(event.state),
+                    words.typeNames.getValue(event.type),
+                ),
+                getString(Res.string.combat_calc_recorded_sub, species.name),
+            )
+        learner.record(species.id, event.type, event.state, note)
+    }
 }
 
 /** the species each participant is made of, directly or through its npc */
@@ -181,6 +212,8 @@ class CombatRoundPresenter(
     internal val sessionNoteRepository: SessionNoteRepository,
     internal val sessionEntryRepository: SessionEntryRepository,
     internal val codexRepositories: CodexRepositories,
+    internal val hitObservationRepository: HitObservationRepository,
+    private val imageCompressor: ImageCompressor,
     private val undoController: UndoController,
 ) : Presenter<CombatRoundState> {
     private val editLock = Mutex()
@@ -209,12 +242,13 @@ class CombatRoundPresenter(
         }
 
         val editor =
-            RoundEditor(combatId, combatRepository, codexRepositories, sessionNoteRepository, editLock, {
+            RoundEditor(combatId, combatRepository, codexRepositories, editLock, undoController, {
                 toast.value =
                     ToastMessage(it)
             }) { block ->
                 scope.launch { block() }
             }
+        val form = rememberRoundForm(codexRepositories, editor, imageCompressor, data.party, data.npcs, data.species)
         val learner = SpeciesLearner(codexRepositories.speciesRepository, undoController)
         val handler =
             RoundHandler(
@@ -223,9 +257,10 @@ class CombatRoundPresenter(
                 drafts.selected,
                 drafts.tab,
                 drafts.menuOpen,
-                drafts.endConfirm,
                 drafts.hpPad,
                 drafts.search,
+                form,
+                scope,
             )
         val calcHandler = CalcHandler(editor, drafts.calc, learner)
         val summaryHandler = SummaryHandler(editor, drafts.summary, learner)
@@ -237,7 +272,7 @@ class CombatRoundPresenter(
                 .toSet()
         val speciesOf = speciesOfMembers(ordered, data.npcs, data.species)
         val resistances = speciesOf.mapValues { it.value.damage }
-        val snapshot = RoundSnapshot(drafts.selected.value, ownIds, autoOutcome(ordered))
+        val snapshot = RoundSnapshot(drafts.selected.value, ownIds)
         val calcSnapshot = CalcSnapshot(ordered, mover?.id, resistances, speciesOf, words.typeNames, words.stateTitles)
         val summarySnapshot = SummarySnapshot(speciesOf, words.typeNames, words.effectWords)
         val nameOf = { key: String ->
@@ -248,12 +283,14 @@ class CombatRoundPresenter(
             when (event) {
                 is CombatRoundEvent.Calc -> calcHandler.onEvent(event.event, calcSnapshot, drafts.selected.value)
                 is CombatRoundEvent.Summary -> summaryHandler.onEvent(event.event, summarySnapshot)
+                is CombatRoundEvent.DamageChanged ->
+                    recordDamage(editor, learner, event, speciesOf[drafts.selected.value], words)
                 else -> handler.onEvent(event, snapshot, nameOf)
             }
         }
 
         if (current == null) return CombatRoundState(eventSink = sink)
-        val view = RoundView(data, current, ordered, mover, ownIds, speciesOf, resistances)
+        val view = RoundView(data, current, ordered, mover, ownIds, speciesOf, resistances, form)
         return view.render(drafts, toast.value, sink)
     }
 }
@@ -268,6 +305,7 @@ private class RoundView(
     val ownIds: Set<Long>,
     val speciesOf: Map<Long, Species>,
     val resistances: Map<Long, Map<DamageType, DamageState>>,
+    val form: RoundForm,
 )
 
 @Composable
@@ -277,6 +315,7 @@ private fun RoundView.render(
     sink: (CombatRoundEvent) -> Unit,
 ): CombatRoundState {
     val kinds = memberKinds(ordered)
+    val seenByMember = speciesOf.mapValues { (_, species) -> data.seen[species.id].orEmpty() }
     val chosen = ordered.firstOrNull { it.id == drafts.selected.value }
     val hostile = ordered.hostileCount()
     val learners = speciesOf.filterKeys { id -> ordered.any { it.id == id && it.side != CombatSide.PARTY } }.keys
@@ -290,7 +329,7 @@ private fun RoundView.render(
         currentName = mover?.name.orEmpty(),
         hostile = hostileText(hostile),
         allClear = hostile == 0,
-        rows = roundRows(current, ordered, mover?.id, drafts.selected.value, data.party, kinds),
+        rows = roundRows(current, ordered, mover?.id, drafts.selected.value, data.party, kinds, seenByMember),
         panel =
             chosen?.let {
                 roundPanel(
@@ -298,6 +337,8 @@ private fun RoundView.render(
                     it,
                     roleOf(it, data.party, kinds.getValue(it.id)),
                     mover?.name.orEmpty(),
+                    seenByMember[it.id].orEmpty(),
+                    speciesOf[it.id],
                 )
             },
         tab = drafts.tab.value,
@@ -314,10 +355,11 @@ private fun RoundView.render(
                 )
             },
         hpPad = hpPadState(drafts.hpPad.value, ordered),
+        entryForm = form.state,
+        formKinds = form.kinds,
         calc = drafts.calc.value?.let { calcState(it, calcContext, current.round) },
         summary = drafts.summary.value?.let { summaryState(it, current, learners) },
         roundDamage = roundDamage(current),
-        endConfirm = drafts.endConfirm.value,
         toast = toast,
         eventSink = sink,
     )

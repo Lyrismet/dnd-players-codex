@@ -71,6 +71,14 @@ internal class FakePartyRepository(
     override suspend fun upsert(entity: PartyMember): Long = put(entity)
 
     override suspend fun delete(id: Long) = remove(id)
+
+    override suspend fun setFallen(
+        id: Long,
+        fallen: Boolean,
+        combatId: Long?,
+    ) {
+        stored(id)?.let { put(it.copy(fallen = fallen, fellCombatId = combatId.takeIf { fallen })) }
+    }
 }
 
 internal class FakeLocationRepository(

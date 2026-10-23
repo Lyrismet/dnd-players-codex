@@ -218,8 +218,9 @@ class CombatRepositoryImpl(
     override suspend fun finish(
         combatId: Long,
         outcome: CombatOutcome,
+        finishedAt: LocalDateTime,
     ) {
-        withContext(Dispatchers.Default) { combats.updateOutcome(outcome, combatId) }
+        withContext(Dispatchers.Default) { combats.updateOutcome(outcome, finishedAt, combatId) }
     }
 
     override suspend fun delete(combatId: Long) {

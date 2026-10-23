@@ -10,6 +10,10 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
+import com.lyrismet.incadent.feature.combat.domain.grouping.EnemyChip
+import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
+import com.lyrismet.incadent.feature.combat.domain.results.Fall
+import com.lyrismet.incadent.feature.combat.domain.results.PartyCombatFacts
 import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.mentionEntitiesFrom
@@ -19,6 +23,7 @@ import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import kotlinx.datetime.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -286,5 +291,31 @@ class EntitySummaryTest {
     @Test
     fun `buildEntitySummary returns null for an unknown party member`() {
         assertNull(buildEntitySummary(EntityRef.Party(99), lookup()))
+    }
+
+    @Test
+    fun `buildEntitySummary for a fallen party member carries the fall and the chronicle`() {
+        val fallen = lira.copy(fallen = true, fellCombatId = 9)
+        val facts =
+            CombatFacts(
+                species = emptyMap(),
+                party = mapOf(7L to PartyCombatFacts(sessions = 2, fights = 3, damage = 41)),
+                falls = mapOf(9L to Fall(100, listOf(EnemyChip("Гоблин", 3, several = true)))),
+            )
+        val summary =
+            buildEntitySummary(EntityRef.Party(7), lookup(parties = listOf(fallen)).copy(facts = facts))
+                as EntitySummaryItem.PartySummary
+
+        val fall = assertNotNull(summary.fall)
+        assertEquals(100L, fall.sessionNoteId)
+        assertEquals("I", fall.sessionLabel)
+        assertEquals("Гоблин ×3", fall.foes)
+        assertEquals(Triple(2, 3, 41), Triple(fall.sessions, fall.fights, fall.damage))
+    }
+
+    @Test
+    fun `buildEntitySummary for a living party member has no fall`() {
+        val summary = buildEntitySummary(EntityRef.Party(7), lookup()) as EntitySummaryItem.PartySummary
+        assertNull(summary.fall)
     }
 }

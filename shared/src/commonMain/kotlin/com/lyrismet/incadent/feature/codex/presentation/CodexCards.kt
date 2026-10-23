@@ -44,14 +44,12 @@ import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColo
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
 import com.lyrismet.incadent.feature.codex.presentation.style.toShieldStyle
+import com.lyrismet.incadent.feature.codex.presentation.summary.speciesSeenLine
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
-import dndplayerscodex.shared.generated.resources.codex_species_row_seen_format
-import dndplayerscodex.shared.generated.resources.mention_count_in_sessions
-import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 // the share of the text column left empty beside a cover strip
@@ -158,7 +156,7 @@ internal fun SpeciesCodexCard(
                 color = AppPalette.TextHeading,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false),
+                modifier = Modifier.weight(1f),
             )
             StatusBadge(text = item.creatureTypeLabel, color = SpeciesMentionColor)
         }
@@ -173,17 +171,10 @@ internal fun SpeciesCodexCard(
                 }
             }
         }
-        if (item.seenInSessions > 0) {
+        val seen = speciesSeenLine(item.seenInSessions, item.fights)
+        if (seen.isNotEmpty()) {
             Text(
-                text =
-                    stringResource(
-                        Res.string.codex_species_row_seen_format,
-                        pluralStringResource(
-                            Res.plurals.mention_count_in_sessions,
-                            item.seenInSessions,
-                            item.seenInSessions,
-                        ),
-                    ),
+                text = seen,
                 style = MaterialTheme.typography.bodySmall,
                 color = AppPalette.TextTertiary,
                 modifier = Modifier.padding(top = 4.dp),
@@ -210,6 +201,7 @@ internal fun PartyCodexCard(
                 color = AppPalette.TextHeading,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                textDecoration = if (item.fallen) TextDecoration.LineThrough else TextDecoration.None,
                 modifier = Modifier.weight(1f),
             )
             StatusBadge(text = item.presenceLabel, color = item.presenceColor)

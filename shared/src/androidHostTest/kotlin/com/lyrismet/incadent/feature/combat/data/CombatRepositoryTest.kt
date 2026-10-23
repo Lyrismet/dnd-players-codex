@@ -79,7 +79,7 @@ class CombatRepositoryTest {
                 ),
             )
             repository.setTurn(combatId, 3, 1)
-            repository.finish(combatId, CombatOutcome.RETREAT)
+            repository.finish(combatId, CombatOutcome.RETREAT, STARTED_AT)
 
             val combat = assertNotNull(repository.observe(combatId).first())
             assertEquals(3, combat.round)

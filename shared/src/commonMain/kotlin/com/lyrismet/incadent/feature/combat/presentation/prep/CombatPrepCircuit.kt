@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.combat.presentation.prep
 
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
@@ -29,6 +30,7 @@ class CombatPrepPresenterFactory(
     private val sessionEntryRepository: SessionEntryRepository,
     private val codexRepositories: CodexRepositories,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val imageCompressor: ImageCompressor,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -45,6 +47,7 @@ class CombatPrepPresenterFactory(
                     sessionEntryRepository,
                     codexRepositories,
                     appPreferencesRepository,
+                    imageCompressor,
                 )
             else -> null
         }

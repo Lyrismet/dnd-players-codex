@@ -61,12 +61,14 @@ import dndplayerscodex.shared.generated.resources.codex_entry_owner_other
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_create
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
+import dndplayerscodex.shared.generated.resources.codex_party_default_class
 import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 // one entry point per form action - splitting them across classes would only forward the same calls
@@ -135,6 +137,7 @@ class CodexEntryFormController private constructor(
         event: CodexEntryFormEvent,
         scope: CoroutineScope,
         imageCompressor: ImageCompressor,
+        onSaved: suspend (EntityKind, Long) -> Unit = { _, _ -> },
         onQuickAdded: suspend (String) -> Unit,
     ): Boolean {
         var isClosed = false
@@ -156,7 +159,7 @@ class CodexEntryFormController private constructor(
             is CodexEntryFormEvent.EntryPartyPresenceChanged -> onPartyPresenceChanged(event.presence)
             is CodexEntryFormEvent.EntryQuestStatusChanged -> onQuestStatusChanged(event.status)
             is CodexEntryFormEvent.EntryChipToggled -> onChipToggled(event.field, event.id)
-            CodexEntryFormEvent.EntryFormSaveClicked -> onSaveClicked(scope)
+            CodexEntryFormEvent.EntryFormSaveClicked -> onSaveClicked(scope, onSaved)
             CodexEntryFormEvent.EntryFormClosed -> {
                 onClosed()
                 isClosed = true
@@ -186,10 +189,17 @@ class CodexEntryFormController private constructor(
         defaultType: EntityKind,
         initialName: String = "",
         reviveId: Long = 0,
+        npcStatus: NpcStatus = NpcStatus.NEUTRAL,
     ) {
         open(
             withDefaults(
-                CodexEntryFormFields(editingRef = null, type = defaultType, name = initialName, reviveId = reviveId),
+                CodexEntryFormFields(
+                    editingRef = null,
+                    type = defaultType,
+                    name = initialName,
+                    reviveId = reviveId,
+                    npcStatus = npcStatus,
+                ),
             ),
         )
     }
@@ -508,14 +518,28 @@ class CodexEntryFormController private constructor(
     /** the kind of record a save click would create, null while editing or with no name yet */
     fun creatingType(): EntityKind? = fields.value?.takeIf { it.editingRef == null && it.name.isNotBlank() }?.type
 
-    fun onSaveClicked(scope: CoroutineScope) {
+    fun onSaveClicked(
+        scope: CoroutineScope,
+        onSaved: suspend (EntityKind, Long) -> Unit = { _, _ -> },
+    ) {
         discardPrompt.value = false
         val current = fields.value ?: return
         if (current.name.isBlank()) return
         val created = pendingSpecies
         onClosed()
-        scope.launch { persister.save(created?.let { current.copy(npcSpeciesId = it.await()) } ?: current) }
+        scope.launch {
+            val form = created?.let { current.copy(npcSpeciesId = it.await()) } ?: current
+            onSaved(form.type, persister.save(form.withDefaultClass()))
+        }
     }
+
+    // a new character with no class is an adventurer
+    private suspend fun CodexEntryFormFields.withDefaultClass(): CodexEntryFormFields =
+        if (type == EntityKind.PARTY && editingRef == null && party.characterClass.isBlank()) {
+            copy(party = party.copy(characterClass = getString(Res.string.codex_party_default_class)))
+        } else {
+            this
+        }
 
     // one assignment per form-state field - a flat mapping, not real complexity
     @Suppress("LongMethod")

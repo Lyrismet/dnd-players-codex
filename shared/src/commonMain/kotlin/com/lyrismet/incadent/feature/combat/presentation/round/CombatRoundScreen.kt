@@ -1,8 +1,12 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
 import com.lyrismet.incadent.core.toast.ToastMessage
+import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
+import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
+import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
-import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
@@ -51,18 +55,15 @@ data class CombatRoundState(
     val summary: SummaryState? = null,
     // the damage of the current round for the header button, none while nothing was dealt in the fight
     val roundDamage: RoundDamage? = null,
-    val endConfirm: EndConfirm? = null,
+    // the codex form of a reinforcement made on the spot, [formKinds] are the types it offers
+    val entryForm: CodexEntryFormState? = null,
+    val formKinds: List<EntityKind> = emptyList(),
     val toast: ToastMessage? = null,
     val eventSink: (CombatRoundEvent) -> Unit = {},
 ) : CircuitUiState
 
 data class RoundDamage(
     val current: String?,
-)
-
-data class EndConfirm(
-    val kind: EndKind,
-    val outcome: CombatOutcome,
 )
 
 data class RoundRow(
@@ -184,6 +185,8 @@ data class PanelMore(
     val canSetHp: Boolean,
     val note: String,
     val notePlaceholder: String,
+    // the bestiary damage of the kind this participant is made of, null when it has none to edit
+    val damage: Map<DamageType, DamageState>?,
 )
 
 data class StanceOption(
@@ -206,6 +209,10 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
         val event: CombatPrepEvent.SearchEvent,
     ) : CombatRoundEvent
 
+    data class EntryForm(
+        val event: CodexEntryFormEvent,
+    ) : CombatRoundEvent
+
     data class RowTapped(
         val id: Long,
     ) : CombatRoundEvent
@@ -218,6 +225,11 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
         val id: Long,
     ) : CombatRoundEvent
 
+    data class DamageChanged(
+        val type: DamageType,
+        val state: DamageState,
+    ) : CombatRoundEvent
+
     data object NextTurn : CombatRoundEvent
 
     data object MenuToggled : CombatRoundEvent
@@ -225,10 +237,6 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
     data class EndRequested(
         val kind: EndKind,
     ) : CombatRoundEvent
-
-    data object EndConfirmed : CombatRoundEvent
-
-    data object EndDismissed : CombatRoundEvent
 
     data class ReinforcementOpened(
         val ally: Boolean,

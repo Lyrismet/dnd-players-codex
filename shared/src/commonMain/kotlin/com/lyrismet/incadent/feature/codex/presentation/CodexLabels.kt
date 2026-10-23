@@ -32,6 +32,7 @@ import dndplayerscodex.shared.generated.resources.codex_group_tree
 import dndplayerscodex.shared.generated.resources.codex_party_card_hp
 import dndplayerscodex.shared.generated.resources.codex_party_card_player_prefix
 import dndplayerscodex.shared.generated.resources.codex_party_card_you
+import dndplayerscodex.shared.generated.resources.codex_party_fallen_word
 import dndplayerscodex.shared.generated.resources.codex_undo_deleted_title
 import org.jetbrains.compose.resources.stringResource
 
@@ -53,6 +54,7 @@ internal fun codexLabels(): CodexLabels {
                 you = stringResource(Res.string.codex_party_card_you),
                 playerPrefix = stringResource(Res.string.codex_party_card_player_prefix),
                 hpShort = stringResource(Res.string.codex_party_card_hp),
+                fallen = stringResource(Res.string.codex_party_fallen_word),
             ),
         entityType =
             mapOf(

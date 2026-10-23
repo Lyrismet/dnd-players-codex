@@ -20,3 +20,15 @@ fun List<Combatant>.enemyChips(): List<EnemyChip> {
     }
     return groups.map { (name, group) -> EnemyChip(name, group.first, group.second) }
 }
+
+/** the enemy chips as one line, a group carries its count ("Скелет-лучник ×2") */
+fun List<Combatant>.enemyTitle(): String =
+    enemyChips().joinToString(", ") {
+        if (it.count >
+            1
+        ) {
+            "${it.name} ×${it.count}"
+        } else {
+            it.name
+        }
+    }

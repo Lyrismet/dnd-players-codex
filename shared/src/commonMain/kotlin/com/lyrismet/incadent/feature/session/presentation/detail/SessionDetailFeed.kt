@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.format.toShortDayMonthUpper
 import com.lyrismet.incadent.core.localization.currentAppLanguage
+import com.lyrismet.incadent.feature.combat.presentation.summary.CombatCardItem
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.domain.MentionSegment
@@ -15,24 +16,38 @@ import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_meeting_separator_format
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 
-/** groups [entries] under a "ВСТРЕЧА N" separator per calendar day, only when the session spans more than one */
+/** a note or a fight on the line of time, whichever the feed puts next */
+private data class FeedSlot(
+    val at: LocalDateTime,
+    val note: SessionEntryItem?,
+    val card: CombatCardItem?,
+)
+
+/** notes and [cards] under a "ВСТРЕЧА N" separator per calendar day, only when the session spans several */
 @Composable
 internal fun buildFeed(
     entries: List<SessionEntry>,
+    cards: List<CombatCardItem>,
     sessionStartDay: LocalDate?,
     noteItems: Map<Long, SessionEntryItem>,
 ): List<SessionFeedItem> {
-    if (entries.isEmpty()) return emptyList()
+    val slots =
+        (
+            entries.map { FeedSlot(it.createdAt, noteItems[it.id], null) } +
+                cards.map { FeedSlot(it.finishedAt, null, it) }
+        ).sortedBy { it.at }
+    if (slots.isEmpty()) return emptyList()
     val language = currentAppLanguage()
-    val distinctDays = (listOfNotNull(sessionStartDay) + entries.map { it.createdAt.date }).distinct().sorted()
+    val distinctDays = (listOfNotNull(sessionStartDay) + slots.map { it.at.date }).distinct().sorted()
     val isMultiDay = distinctDays.size > 1
 
     val feed = mutableListOf<SessionFeedItem>()
     var lastDay: LocalDate? = null
-    for (entry in entries) {
-        val day = entry.createdAt.date
+    for (slot in slots) {
+        val day = slot.at.date
         if (isMultiDay && day != lastDay) {
             val meetingNumber = distinctDays.indexOf(day) + 1
             val label =
@@ -44,7 +59,8 @@ internal fun buildFeed(
             feed += SessionFeedItem.DaySeparator(key = "sep-$day", label = label)
             lastDay = day
         }
-        noteItems[entry.id]?.let { feed += SessionFeedItem.Note(it) }
+        slot.note?.let { feed += SessionFeedItem.Note(it) }
+        slot.card?.let { feed += SessionFeedItem.Combat(it) }
     }
     return feed
 }

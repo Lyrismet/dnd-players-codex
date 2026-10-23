@@ -38,6 +38,8 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhot
 import com.lyrismet.incadent.feature.codex.presentation.summary.selectedEntitySummary
 import com.lyrismet.incadent.feature.codex.presentation.summary.withFullPhoto
 import com.lyrismet.incadent.feature.codex.presentation.summary.writesCampaignData
+import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
+import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.mentionEntitiesFrom
 import com.lyrismet.incadent.feature.mention.domain.mentionsIn
@@ -76,6 +78,7 @@ class SessionListPresenter(
     private val navigator: Navigator,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
+    private val combatFactsSource: CombatFactsSource,
     private val codexRepositories: CodexRepositories,
     private val tagRepository: TagRepository,
     private val undoController: UndoController,
@@ -95,6 +98,7 @@ class SessionListPresenter(
         val quests by codexRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val parties by codexRepositories.partyRepository.observeAll().collectAsState(initial = emptyList())
         val species by codexRepositories.speciesRepository.observeAll().collectAsState(initial = emptyList())
+        val facts by combatFactsSource.observe().collectAsState(initial = CombatFacts.EMPTY)
         val tagsBySession by tagRepository.observeAllSessionTags().collectAsState(initial = emptyMap())
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
@@ -167,6 +171,7 @@ class SessionListPresenter(
                 numbering,
                 parties,
                 species,
+                facts,
             )
         val fullPhoto =
             rememberFullPhoto(selectedSummary, codexRepositories)

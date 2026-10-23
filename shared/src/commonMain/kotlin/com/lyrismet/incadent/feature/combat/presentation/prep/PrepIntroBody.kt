@@ -26,10 +26,12 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppTitleSubtitle
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.DiamondOutline
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.combat_prep_intro_add
 import dndplayerscodex.shared.generated.resources.combat_prep_intro_foe
@@ -37,8 +39,6 @@ import dndplayerscodex.shared.generated.resources.combat_prep_intro_party
 import dndplayerscodex.shared.generated.resources.combat_prep_intro_text
 import dndplayerscodex.shared.generated.resources.combat_prep_intro_title
 import org.jetbrains.compose.resources.stringResource
-
-private val StepLineHeight = 20.sp
 
 /** the preparation before the codex has a party member and an enemy: what is missing and where to add it */
 @Composable
@@ -85,11 +85,11 @@ internal fun PrepIntroBody(
                     .padding(horizontal = 14.dp, vertical = 2.dp),
         ) {
             IntroStep(1, stringResource(Res.string.combat_prep_intro_party), intro.partySub, intro.partyDone) {
-                onEvent(CombatPrepEvent.QuickOpened(QuickKind.PARTY))
+                onEvent(CombatPrepEvent.CreateOpened(CombatSide.PARTY))
             }
             AppDivider(color = AppPalette.BorderSubtle)
             IntroStep(2, stringResource(Res.string.combat_prep_intro_foe), intro.foeSub, intro.foeDone) {
-                onEvent(CombatPrepEvent.QuickOpened(QuickKind.ENEMY))
+                onEvent(CombatPrepEvent.CreateOpened(CombatSide.ENEMY))
             }
         }
     }
@@ -129,16 +129,7 @@ private fun IntroStep(
                 fontWeight = FontWeight.Bold,
             )
         }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                title,
-                color = AppPalette.TextPrimary,
-                fontSize = AppFontSize.MediumPlus,
-                lineHeight = StepLineHeight,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(sub, color = AppPalette.TextSecondary, fontSize = AppFontSize.Small, lineHeight = StepLineHeight)
-        }
+        AppTitleSubtitle(title = title, subtitle = sub, modifier = Modifier.weight(1f))
         if (!done) {
             AppButton(
                 text = stringResource(Res.string.combat_prep_intro_add),

@@ -29,6 +29,7 @@ internal fun SessionDetailEvent.writesCampaignData(): Boolean =
         is SessionDetailEvent.DeletedMentionQueryChanged,
         SessionDetailEvent.TitleEditFinished,
         SessionDetailEvent.OutsideTapped,
+        SessionDetailEvent.CombatDeleteDismissed,
         -> false
         is SessionDetailEvent.QuickEdit,
         is SessionDetailEvent.TitleChanged,
@@ -36,6 +37,8 @@ internal fun SessionDetailEvent.writesCampaignData(): Boolean =
         SessionDetailEvent.SubmitEntryClicked,
         is SessionDetailEvent.EditEntryClicked,
         is SessionDetailEvent.DeleteEntryClicked,
+        is SessionDetailEvent.CombatDeleteClicked,
+        SessionDetailEvent.CombatDeleteConfirmed,
         SessionDetailEvent.EndSessionClicked,
         SessionDetailEvent.ResumeSessionClicked,
         is SessionDetailEvent.TagToggled,

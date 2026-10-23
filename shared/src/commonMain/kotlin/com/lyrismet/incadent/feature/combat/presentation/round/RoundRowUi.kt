@@ -1,10 +1,5 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,8 +26,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.Dot
@@ -43,12 +38,9 @@ import dndplayerscodex.shared.generated.resources.combat_round_add_ally
 import dndplayerscodex.shared.generated.resources.combat_round_add_enemy
 import org.jetbrains.compose.resources.stringResource
 
-private val LineHeight20 = 20.sp
 private const val DIMMED_ALPHA = 0.5f
 private const val SAVE_PIPS = 3
 private val BadgeFill = Color(0xFF23252F)
-private const val PULSE_LOW = 0.45f
-private const val PULSE_MILLIS = 900
 
 @Composable
 internal fun RoundList(
@@ -109,7 +101,7 @@ private fun RoundRowCard(
     ) {
         TurnBadge(row)
         Column(modifier = Modifier.weight(1f)) {
-            RowTitle(row, send)
+            RowTitle(row)
             RowBars(row)
             if (row.chips.isNotEmpty()) RowChips(row.chips)
         }
@@ -137,17 +129,14 @@ private fun TurnBadge(row: RoundRow) {
 }
 
 @Composable
-private fun RowTitle(
-    row: RoundRow,
-    send: (CombatRoundEvent) -> Unit,
-) {
+private fun RowTitle(row: RoundRow) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
         Dot(size = 6.dp, color = RoundColors.side(row.side))
         Text(
             text = row.name,
             color = AppPalette.TextPrimary,
             fontSize = AppFontSize.MediumPlus,
-            lineHeight = LineHeight20,
+            lineHeight = AppLineHeight.Row,
             fontWeight = FontWeight.SemiBold,
             textDecoration = if (row.struck) TextDecoration.LineThrough else TextDecoration.None,
             maxLines = 1,
@@ -160,42 +149,12 @@ private fun RowTitle(
             text = row.role,
             color = AppPalette.TextTertiary,
             fontSize = AppFontSize.Small,
-            lineHeight = LineHeight20,
+            lineHeight = AppLineHeight.Row,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f, fill = false),
         )
-        row.reaction?.let { ReactionButton(it) { send(CombatRoundEvent.ReactionToggled(row.id)) } }
     }
-}
-
-@Composable
-private fun ReactionButton(
-    reaction: RowReaction,
-    onClick: () -> Unit,
-) {
-    val pulse by rememberInfiniteTransition().animateFloat(
-        initialValue = PULSE_LOW,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(durationMillis = PULSE_MILLIS), RepeatMode.Reverse),
-    )
-    val tint = if (reaction.available) RoundColors.Reaction else AppPalette.RadioIdle
-    Text(
-        text = "⚡",
-        color = tint,
-        fontSize = AppFontSize.Body,
-        textAlign = TextAlign.Center,
-        modifier =
-            Modifier
-                .alpha(if (reaction.pulsing) pulse else 1f)
-                .size(28.dp)
-                .appCard(
-                    shape = AppShapes.Small,
-                    background = if (reaction.available) tint.copy(alpha = 0.16f) else Color.Transparent,
-                    border = tint.copy(alpha = 0.6f),
-                    onClick = onClick,
-                ).padding(top = 4.dp),
-    )
 }
 
 @Composable

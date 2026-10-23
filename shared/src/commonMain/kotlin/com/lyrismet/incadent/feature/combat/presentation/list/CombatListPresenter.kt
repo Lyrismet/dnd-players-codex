@@ -30,6 +30,7 @@ import com.lyrismet.incadent.feature.combat.domain.preparation.PartySeat
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.presentation.combatSessionTarget
 import com.lyrismet.incadent.feature.combat.presentation.prep.CombatPrepScreen
+import com.lyrismet.incadent.feature.combat.presentation.results.CombatResultsScreen
 import com.lyrismet.incadent.feature.combat.presentation.round.CombatRoundScreen
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
@@ -115,6 +116,8 @@ class CombatListPresenter(
                             navigator.goTo(CombatPrepScreen(id))
                         }
                     }
+                is CombatListEvent.CombatTapped ->
+                    navigator.goTo(CombatResultsScreen(event.id, readOnly = true))
                 CombatListEvent.ResetClicked -> resetConfirmVisible = true
                 CombatListEvent.ResetConfirmed -> {
                     resetConfirmVisible = false
@@ -184,6 +187,6 @@ private fun EnemyChip.label(): String =
 private fun now(): LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 
 private fun List<PartyMember>.toSeats(): List<PartySeat> =
-    filter { it.presence == PartyPresence.IN }.map { PartySeat(it.id, it.name) }
+    filter { it.presence == PartyPresence.IN && !it.fallen }.map { PartySeat(it.id, it.name) }
 
 private fun EnemyChip.summary(): String = name + if (count > 1) " ×$count" else ""

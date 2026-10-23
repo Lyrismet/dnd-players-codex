@@ -5,12 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -18,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -31,14 +33,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
+import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
 import com.lyrismet.incadent.core.designsystem.component.AppStepper
+import com.lyrismet.incadent.core.designsystem.component.AppTitleSubtitle
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.DiscardChangesDialog
 import com.lyrismet.incadent.core.designsystem.component.Dot
@@ -48,6 +52,9 @@ import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
+import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
+import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
+import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.combat_prep_add_ally
 import dndplayerscodex.shared.generated.resources.combat_prep_add_enemy
@@ -63,7 +70,6 @@ import dndplayerscodex.shared.generated.resources.combat_prep_title
 import org.jetbrains.compose.resources.stringResource
 
 private const val UNCHECKED_ALPHA = 0.55f
-private val TitleLineHeight = 20.sp
 private val PartyRowBorder = Color(0x736EA0E6)
 private val AllyDot = AppPalette.Emerald
 private val EnemyDot = Color(0xFFC0443F)
@@ -90,7 +96,11 @@ fun CombatPrepUi(
         }
     }
     state.search?.let { FoeSearchSheet(it, state.eventSink) }
-    state.quickCreate?.let { QuickCreateSheet(it, state.eventSink) }
+    state.entryForm?.let { form ->
+        CodexEntryFormSheet(form, toast = null, density = FormDensity.Compact, kinds = state.formKinds) {
+            state.eventSink(CombatPrepEvent.EntryForm(it))
+        }
+    }
     state.hpPad?.let { HpPadSheet(it, state.eventSink) }
     if (state.exitConfirmVisible) {
         DiscardChangesDialog(
@@ -109,7 +119,11 @@ private fun PrepHeader(state: CombatPrepState) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            SectionOverline(text = stringResource(Res.string.combat_prep_overline), color = AppPalette.MaroonBright)
+            SectionOverline(
+                text = stringResource(Res.string.combat_prep_overline),
+                color = AppPalette.MaroonBright,
+                modifier = Modifier.weight(1f),
+            )
             IconBadge(
                 size = 44.dp,
                 background = Color.Transparent,
@@ -123,7 +137,6 @@ private fun PrepHeader(state: CombatPrepState) {
             text = stringResource(Res.string.combat_prep_title),
             style = MaterialTheme.typography.displayLarge,
             color = AppPalette.TextHeading,
-            modifier = Modifier.padding(top = 4.dp),
         )
         if (state.intro == null) {
             Text(
@@ -135,7 +148,7 @@ private fun PrepHeader(state: CombatPrepState) {
                 style =
                     MaterialTheme.typography.bodySmall.copy(
                         fontSize = AppFontSize.Body,
-                        lineHeight = TitleLineHeight,
+                        lineHeight = AppLineHeight.Row,
                     ),
                 color = AppPalette.TextSecondary,
                 modifier = Modifier.padding(top = 2.dp),
@@ -169,16 +182,19 @@ private fun PrepBody(
             }
         }
         state.allies.forEach { row -> MemberRow(row, AllyDot, PrepSide.ALLY, send) }
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
             AddButton(
                 text = stringResource(Res.string.combat_prep_add_party),
                 color = AppPalette.GoldBright,
-                modifier = Modifier.weight(1f),
-            ) { send(CombatPrepEvent.QuickOpened(QuickKind.PARTY)) }
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+            ) { send(CombatPrepEvent.CreateOpened(CombatSide.PARTY)) }
             AddButton(
                 text = stringResource(Res.string.combat_prep_add_ally),
                 color = AppPalette.EmeraldBright,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).fillMaxHeight(),
             ) { send(CombatPrepEvent.SearchOpened(PrepSide.ALLY)) }
         }
         SectionLabel(
@@ -191,6 +207,7 @@ private fun PrepBody(
         AddEnemyButton(
             stringResource(Res.string.combat_prep_add_enemy),
         ) { send(CombatPrepEvent.SearchOpened(PrepSide.ENEMY)) }
+        state.order?.let { PrepOrderSection(it, send) }
     }
 }
 
@@ -204,8 +221,14 @@ private fun SectionLabel(
     Row(
         modifier = modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        SectionOverline(text = text, color = AppPalette.TextTertiary, style = OverlineStyle.Field)
+        SectionOverline(
+            text = text,
+            color = AppPalette.TextTertiary,
+            style = OverlineStyle.Field,
+            modifier = Modifier.weight(1f),
+        )
         Text(text = count, color = countColor, fontSize = AppFontSize.Small)
     }
 }
@@ -231,29 +254,9 @@ private fun PartyRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Checkbox(row.included)
+        AppCheckBox(row.included, accent = AppPalette.Azure)
         RowTitle(row.name, row.sub, Modifier.weight(1f))
         row.hp?.let { HpButton(it, onHp) }
-    }
-}
-
-@Composable
-private fun Checkbox(checked: Boolean) {
-    val shape = RoundedCornerShape(6.dp)
-    Box(
-        modifier =
-            Modifier
-                .size(22.dp)
-                .then(
-                    if (checked) {
-                        Modifier.appCard(shape, AppPalette.Azure, AppPalette.Azure, 1.5.dp)
-                    } else {
-                        Modifier.border(1.5.dp, AppPalette.RadioIdle, shape)
-                    },
-                ),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (checked) Text("✓", color = AppPalette.Background, fontSize = AppFontSize.Body, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -275,8 +278,16 @@ private fun HpButton(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(hp.value, color = AppPalette.TextPrimary, fontSize = AppFontSize.Medium, fontWeight = FontWeight.Bold)
-        Text(hp.caption, color = AppPalette.Azure, fontSize = AppFontSize.Tiny, fontWeight = FontWeight.SemiBold)
+        Text(
+            hp.value,
+            style = AppText.rowTitle.copy(fontSize = AppFontSize.Medium, fontWeight = FontWeight.Bold),
+            color = AppPalette.TextPrimary,
+        )
+        Text(
+            hp.caption,
+            style = AppText.rowNote.copy(fontSize = AppFontSize.Tiny, fontWeight = FontWeight.SemiBold),
+            color = AppPalette.Azure,
+        )
     }
 }
 
@@ -318,29 +329,7 @@ internal fun RowTitle(
     name: String,
     sub: String,
     modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier) {
-        Text(
-            text = name,
-            color = AppPalette.TextPrimary,
-            fontSize = AppFontSize.MediumPlus,
-            lineHeight = TitleLineHeight,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        if (sub.isNotBlank()) {
-            Text(
-                text = sub,
-                color = AppPalette.TextSecondary,
-                fontSize = AppFontSize.Small,
-                lineHeight = TitleLineHeight,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
-}
+) = AppTitleSubtitle(title = name, subtitle = sub, modifier = modifier)
 
 @Composable
 internal fun AddButton(

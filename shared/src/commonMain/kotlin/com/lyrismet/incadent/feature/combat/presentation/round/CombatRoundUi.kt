@@ -32,32 +32,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.centeredLine
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
-import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
-import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
+import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
+import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
 import com.lyrismet.incadent.feature.combat.presentation.prep.CombatPrepEvent
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeSearchSheet
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_end_confirm
-import dndplayerscodex.shared.generated.resources.combat_end_keep
-import dndplayerscodex.shared.generated.resources.combat_end_text
-import dndplayerscodex.shared.generated.resources.combat_end_title
-import dndplayerscodex.shared.generated.resources.combat_outcome_interrupted
-import dndplayerscodex.shared.generated.resources.combat_outcome_peace
-import dndplayerscodex.shared.generated.resources.combat_outcome_retreat
-import dndplayerscodex.shared.generated.resources.combat_outcome_victory
 import dndplayerscodex.shared.generated.resources.combat_round_all_clear
 import dndplayerscodex.shared.generated.resources.combat_round_current
 import dndplayerscodex.shared.generated.resources.combat_round_end
@@ -67,13 +60,9 @@ import dndplayerscodex.shared.generated.resources.combat_round_stop
 import dndplayerscodex.shared.generated.resources.combat_round_stop_hint
 import dndplayerscodex.shared.generated.resources.combat_round_sum_up
 import dndplayerscodex.shared.generated.resources.combat_round_title
-import dndplayerscodex.shared.generated.resources.combat_stop_confirm
-import dndplayerscodex.shared.generated.resources.combat_stop_title
 import dndplayerscodex.shared.generated.resources.combat_summary_button
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-private val LineHeight20 = 20.sp
 private const val PANEL_SHARE = 0.58f
 private const val MENU_OFFSET_Y = 120
 
@@ -101,9 +90,13 @@ fun CombatRoundUi(
         ) { event -> if (event is CombatPrepEvent.SearchEvent) send(CombatRoundEvent.Search(event)) }
     }
     state.hpPad?.let { RoundHpPad(it, send) }
+    state.entryForm?.let { form ->
+        CodexEntryFormSheet(form, toast = null, density = FormDensity.Compact, kinds = state.formKinds) {
+            send(CombatRoundEvent.EntryForm(it))
+        }
+    }
     state.calc?.let { CalcSheet(it, send) }
     state.summary?.let { SummarySheet(it, send) }
-    state.endConfirm?.let { EndDialog(it, send) }
 }
 
 @Composable
@@ -118,6 +111,7 @@ private fun RoundHeader(state: CombatRoundState) {
             SectionOverline(
                 text = stringResource(Res.string.combat_round_overline, state.timer),
                 color = AppPalette.MaroonBright,
+                modifier = Modifier.weight(1f),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 AppButton(
@@ -193,14 +187,14 @@ private fun MenuCard(onStop: () -> Unit) {
             stringResource(Res.string.combat_round_stop),
             color = AppPalette.MaroonBright,
             fontSize = AppFontSize.Medium,
-            lineHeight = LineHeight20,
+            lineHeight = AppLineHeight.Row,
             fontWeight = FontWeight.SemiBold,
         )
         Text(
             stringResource(Res.string.combat_round_stop_hint),
             color = AppPalette.TextSecondary,
             fontSize = AppFontSize.Caption,
-            lineHeight = LineHeight20,
+            lineHeight = AppLineHeight.Row,
         )
     }
 }
@@ -224,7 +218,7 @@ private fun TurnCard(
                 text = stringResource(Res.string.combat_round_current, state.currentName),
                 color = AppPalette.GoldBright,
                 fontSize = AppFontSize.MediumPlus,
-                lineHeight = LineHeight20,
+                lineHeight = AppLineHeight.Row,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -233,7 +227,7 @@ private fun TurnCard(
                 state.hostile,
                 color = AppPalette.TextSecondary,
                 fontSize = AppFontSize.Small,
-                lineHeight = LineHeight20,
+                lineHeight = AppLineHeight.Row,
             )
         }
         AppButton(
@@ -265,7 +259,7 @@ private fun AllClearBanner(onSumUp: () -> Unit) {
             stringResource(Res.string.combat_round_all_clear),
             color = AppPalette.EmeraldBright,
             fontSize = AppFontSize.Body,
-            lineHeight = LineHeight20,
+            lineHeight = AppLineHeight.Row,
             modifier = Modifier.weight(1f),
         )
         AppButton(
@@ -276,30 +270,6 @@ private fun AllClearBanner(onSumUp: () -> Unit) {
         )
     }
 }
-
-@Composable
-private fun EndDialog(
-    confirm: EndConfirm,
-    send: (CombatRoundEvent) -> Unit,
-) {
-    val stop = confirm.kind == EndKind.STOP
-    ConfirmationDialog(
-        title = stringResource(if (stop) Res.string.combat_stop_title else Res.string.combat_end_title),
-        text = stringResource(Res.string.combat_end_text, stringResource(confirm.outcome.label())),
-        onConfirm = { send(CombatRoundEvent.EndConfirmed) },
-        onDismiss = { send(CombatRoundEvent.EndDismissed) },
-        confirmLabel = stringResource(if (stop) Res.string.combat_stop_confirm else Res.string.combat_end_confirm),
-        dismissLabel = stringResource(Res.string.combat_end_keep),
-    )
-}
-
-private fun CombatOutcome.label(): StringResource =
-    when (this) {
-        CombatOutcome.VICTORY -> Res.string.combat_outcome_victory
-        CombatOutcome.RETREAT -> Res.string.combat_outcome_retreat
-        CombatOutcome.PEACE -> Res.string.combat_outcome_peace
-        CombatOutcome.INTERRUPTED -> Res.string.combat_outcome_interrupted
-    }
 
 @Composable
 private fun SummaryButton(
@@ -322,15 +292,19 @@ private fun SummaryButton(
         Text(
             stringResource(Res.string.combat_summary_button),
             color = AppPalette.TextDescription,
-            fontSize = AppFontSize.SmallPlus,
-            fontWeight = FontWeight.SemiBold,
+            style =
+                MaterialTheme.typography.labelMedium
+                    .copy(fontSize = AppFontSize.SmallPlus, fontWeight = FontWeight.SemiBold)
+                    .centeredLine(),
         )
         damage.current?.let {
             Text(
                 it,
                 color = AppPalette.MaroonBright,
-                fontSize = AppFontSize.Small,
-                fontWeight = FontWeight.Bold,
+                style =
+                    MaterialTheme.typography.labelMedium
+                        .copy(fontSize = AppFontSize.Small, fontWeight = FontWeight.Bold)
+                        .centeredLine(),
                 modifier =
                     Modifier
                         .appCard(

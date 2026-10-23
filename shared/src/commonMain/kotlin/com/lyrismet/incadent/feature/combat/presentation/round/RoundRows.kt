@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.combat.domain.forecast.HitForecast
+import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
@@ -45,6 +46,7 @@ internal fun roundRows(
     selectedId: Long?,
     party: List<PartyMember>,
     kinds: Map<Long, String>,
+    seen: Map<Long, List<SpeciesHitObservation>>,
 ): List<RoundRow> {
     val current = ordered.firstOrNull { it.id == currentId }
     return ordered.map { member ->
@@ -58,6 +60,7 @@ internal fun roundRows(
             current,
             party,
             kinds.getValue(member.id),
+            seen[member.id].orEmpty(),
         )
     }
 }
@@ -73,10 +76,11 @@ private fun roundRow(
     current: Combatant?,
     party: List<PartyMember>,
     kind: String,
+    seen: List<SpeciesHitObservation>,
 ): RoundRow {
     val down = member.isDown()
     val tracked = member.isTracked()
-    val forecast = combat.forecast(member)
+    val forecast = combat.forecast(member, seen)
     val taken = combat.damageTaken(member)
     val word = woundWord(member)
     val caption =

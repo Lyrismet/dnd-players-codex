@@ -149,6 +149,7 @@ private fun popupOf(
     return SummaryPopup(
         title = stringResource(Res.string.combat_summary_pop_title, typeName, target.name),
         eventId = event.id,
+        type = event.damageType,
         options =
             listOf(
                 SummaryOption(

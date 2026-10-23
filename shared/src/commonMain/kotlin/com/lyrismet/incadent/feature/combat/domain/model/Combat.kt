@@ -52,6 +52,8 @@ data class Combat(
     val outcome: CombatOutcome?,
     val combatants: List<Combatant>,
     val events: List<CombatEvent>,
+    // when the results were saved, none while the fight is not over
+    val finishedAt: LocalDateTime? = null,
 )
 
 data class Combatant(

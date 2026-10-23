@@ -6,11 +6,8 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_type_species
-import dndplayerscodex.shared.generated.resources.codex_species_seen_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_creature_type_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_hp_label
-import dndplayerscodex.shared.generated.resources.mention_count_in_sessions
-import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -24,19 +21,7 @@ internal fun SpeciesSummaryBody(
         creatureTypeLabels().map { (type, label) ->
             StatusOption(type, label, SpeciesMentionColor, isSelected = type == species.creatureType)
         }
-    val seen =
-        if (species.seenInSessions > 0) {
-            stringResource(
-                Res.string.codex_species_seen_format,
-                pluralStringResource(
-                    Res.plurals.mention_count_in_sessions,
-                    species.seenInSessions,
-                    species.seenInSessions,
-                ),
-            )
-        } else {
-            ""
-        }
+    val seen = speciesSeenCardLine(species.seenInSessions, species.fights)
     EntityHeader(
         emblem = species.emblem,
         overlineTypeLabel = stringResource(Res.string.codex_entry_type_species),
@@ -62,7 +47,9 @@ internal fun SpeciesSummaryBody(
                 nicknamesFact(species.nicknames),
                 FactRow(
                     Res.string.entity_sheet_species_hp_label,
-                    FactValue.Text(species.hitPoints.orDash()),
+                    FactValue.Text(
+                        species.hitPoints?.toString() ?: species.hitRange?.let { "≈ ${it.text()}" }.orDash(),
+                    ),
                     QuickEditField.HIT_POINTS,
                 ),
             ),

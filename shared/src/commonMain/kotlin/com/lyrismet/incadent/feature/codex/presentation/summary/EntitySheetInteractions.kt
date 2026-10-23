@@ -148,6 +148,14 @@ class EntitySheetInteractions(
         }
     }
 
+    // a fallen character is back in the party, the sheet shows them alive when the record changes
+    fun onPartyRevived(
+        scope: CoroutineScope,
+        partyId: Long,
+    ) {
+        scope.launch { entityWriteLock.withLock { partyRepository.setFallen(partyId, false) } }
+    }
+
     /** writes one typed or tapped field - an unknown field for the entity type is silently ignored */
     fun onQuickEdit(
         scope: CoroutineScope,

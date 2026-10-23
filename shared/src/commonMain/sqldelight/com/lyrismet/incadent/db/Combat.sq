@@ -10,6 +10,7 @@ CREATE TABLE combat (
     round INTEGER NOT NULL DEFAULT 1,
     turn INTEGER NOT NULL DEFAULT 0,
     outcome TEXT AS CombatOutcome,
+    finished_at TEXT AS LocalDateTime,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
 );
 
@@ -25,6 +26,11 @@ insert:
 INSERT INTO combat(session_note_id, phase, started_at, round, campaign_id) VALUES (?, 'PREPARING', ?, 1, ?);
 
 
+-- an imported fight comes in already finished
+insertFinished:
+INSERT INTO combat(session_note_id, phase, started_at, round, turn, outcome, finished_at, campaign_id)
+VALUES (?, 'FINISHED', ?, ?, ?, ?, ?, ?);
+
 updateTurn:
 UPDATE combat SET round = ?, turn = ? WHERE id = ?;
 
@@ -35,7 +41,7 @@ updateSession:
 UPDATE combat SET session_note_id = ? WHERE id = ?;
 
 updateOutcome:
-UPDATE combat SET outcome = ?, phase = 'FINISHED' WHERE id = ?;
+UPDATE combat SET outcome = ?, finished_at = ?, phase = 'FINISHED' WHERE id = ?;
 
 deleteById:
 DELETE FROM combat WHERE id = ? AND campaign_id = ?;

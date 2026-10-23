@@ -1,7 +1,9 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.runtime.Composable
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.combat.domain.forecast.HitForecast
+import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
@@ -39,6 +41,8 @@ internal fun roundPanel(
     member: Combatant,
     role: String,
     moverName: String,
+    seen: List<SpeciesHitObservation>,
+    species: Species?,
 ): RoundPanel {
     val tracked = member.isTracked()
     val dying = member.isDying()
@@ -50,7 +54,7 @@ internal fun roundPanel(
         sideLabel = sideLabel(member, role),
         side = member.rowSide(),
         hp = if (tracked) panelHp(member) else null,
-        wound = if (tracked) null else panelWound(combat, member),
+        wound = if (tracked) null else panelWound(combat, member, seen),
         marks = if (!tracked && !member.dead) markOptions(member) else null,
         sayLine = if (!tracked) sayLine(member) else "",
         saves = if (dying) SavesState(member.deathSuccesses, member.deathFailures) else null,
@@ -67,7 +71,7 @@ internal fun roundPanel(
             },
         died = member.dead,
         conditions = conditionGroups(member),
-        more = panelMore(member, tracked, party),
+        more = panelMore(member, tracked, party, species),
         calcModes = if (tracked) CalcMode.entries.toList() else listOf(CalcMode.DAMAGE, CalcMode.HEAL),
         sourceNote = stringResource(Res.string.combat_panel_source_note, moverName),
     )
@@ -106,6 +110,7 @@ private fun panelHp(member: Combatant): PanelHp {
 private fun panelWound(
     combat: Combat,
     member: Combatant,
+    seen: List<SpeciesHitObservation>,
 ): PanelWound {
     val word = woundWord(member)
     val mark = combat.markAt(member)
@@ -118,7 +123,7 @@ private fun panelWound(
             word.first
         }
     val taken = combat.damageTaken(member)
-    val forecast = combat.forecast(member)
+    val forecast = combat.forecast(member, seen)
     val sources =
         listOfNotNull(
             if (taken > 0) tookText(taken) else stringResource(Res.string.combat_round_no_damage),
@@ -166,6 +171,7 @@ private fun panelMore(
     member: Combatant,
     tracked: Boolean,
     party: Boolean,
+    species: Species?,
 ): PanelMore {
     val enemy = member.side == CombatSide.ENEMY
     return PanelMore(
@@ -188,5 +194,6 @@ private fun panelMore(
             stringResource(
                 if (party) Res.string.combat_panel_note_party else Res.string.combat_panel_note_foe,
             ),
+        damage = species?.takeIf { !party }?.damage,
     )
 }

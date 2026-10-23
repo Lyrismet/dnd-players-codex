@@ -1,11 +1,10 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
+import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
-import com.lyrismet.incadent.feature.codex.domain.repository.quickNpc
-import com.lyrismet.incadent.feature.codex.domain.repository.quickSpecies
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
-import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
@@ -17,12 +16,10 @@ import com.lyrismet.incadent.feature.combat.domain.round.TurnPosition
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
 import com.lyrismet.incadent.feature.combat.domain.round.nextTurn
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeAdder
-import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_prep_toast_npc_created
-import dndplayerscodex.shared.generated.resources.combat_prep_toast_species_created
 import dndplayerscodex.shared.generated.resources.combat_round_toast_joined
 import dndplayerscodex.shared.generated.resources.combat_round_toast_removed
+import dndplayerscodex.shared.generated.resources.combat_round_undo_removed
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -34,8 +31,8 @@ internal class RoundEditor(
     val combatId: Long,
     private val combatRepository: CombatRepository,
     private val codexRepositories: CodexRepositories,
-    private val sessionNoteRepository: SessionNoteRepository,
     private val lock: Mutex,
+    private val undo: UndoController,
     private val showToast: (String) -> Unit,
     private val launch: (suspend () -> Unit) -> Unit,
 ) : FoeAdder {
@@ -68,8 +65,11 @@ internal class RoundEditor(
         id: Long,
         onRemoved: () -> Unit,
     ) = withMember(id) { combat, member ->
-        actions.remove(combat, member)
-        showToast(getString(Res.string.combat_round_toast_removed, member.name))
+        val removed = actions.remove(combat, member) ?: return@withMember
+        undo.show(
+            getString(Res.string.combat_round_toast_removed, member.name),
+            getString(Res.string.combat_round_undo_removed),
+        ) { lock.withLock { fresh()?.let { actions.restore(removed, it) } } }
         onRemoved()
     }
 
@@ -88,19 +88,6 @@ internal class RoundEditor(
             }
         val npc = member.npcId?.let { codexRepositories.npcRepository.getById(it) }
         if (npc != null && status != null) codexRepositories.npcRepository.upsert(npc.copy(status = status))
-    }
-
-    /** the fight is over: it goes under the running session when there is one and closes with [outcome] */
-    fun finish(
-        outcome: CombatOutcome,
-        onDone: () -> Unit,
-    ) {
-        launch {
-            val live = sessionNoteRepository.observeAll().first().firstOrNull { it.isLive }
-            if (live != null) combatRepository.attachToSession(combatId, live.id)
-            combatRepository.finish(combatId, outcome)
-            onDone()
-        }
     }
 
     private fun reinforce(
@@ -133,24 +120,20 @@ internal class RoundEditor(
         source: MemberSource,
     ) = Unit
 
-    override fun createNpc(
+    override fun addSaved(
         side: CombatSide,
-        name: String,
+        kind: EntityKind,
+        id: Long,
     ) = edit { combat ->
-        val status = if (side == CombatSide.ENEMY) NpcStatus.ENEMY else NpcStatus.FRIEND
-        val id = codexRepositories.npcRepository.upsert(quickNpc(name).copy(status = status))
-        if (actions.reinforce(combat, side, MemberSource(id, null, name))) {
-            showToast(getString(Res.string.combat_prep_toast_npc_created, name))
-        }
-    }
-
-    override fun createSpecies(
-        side: CombatSide,
-        name: String,
-    ) = edit { combat ->
-        val id = codexRepositories.speciesRepository.upsert(quickSpecies(name))
-        if (actions.reinforce(combat, side, MemberSource(null, id, name))) {
-            showToast(getString(Res.string.combat_prep_toast_species_created, name))
+        val source =
+            when (kind) {
+                EntityKind.NPC -> codexRepositories.npcRepository.getById(id)?.let { MemberSource(id, null, it.name) }
+                EntityKind.SPECIES ->
+                    codexRepositories.speciesRepository.getById(id)?.let { MemberSource(null, id, it.name) }
+                else -> null
+            }
+        if (source != null && actions.reinforce(combat, side, source)) {
+            showToast(getString(Res.string.combat_round_toast_joined, source.baseName))
         }
     }
 }

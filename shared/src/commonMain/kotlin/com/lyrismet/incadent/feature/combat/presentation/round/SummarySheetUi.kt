@@ -4,7 +4,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -26,13 +25,16 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
+import com.lyrismet.incadent.core.designsystem.component.AppDamageGlyph
 import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
+import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
-import com.lyrismet.incadent.core.designsystem.component.ShieldStyle
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
@@ -44,7 +46,6 @@ import dndplayerscodex.shared.generated.resources.combat_summary_hint
 import dndplayerscodex.shared.generated.resources.combat_summary_overline
 import org.jetbrains.compose.resources.stringResource
 
-private val LineHeight20 = 20.sp
 private val ResistanceText = Color(0xFFF6CC72)
 private val ImmunityText = Color(0xFFF1F3F7)
 private val VulnerabilityText = Color(0xFFF59A93)
@@ -76,7 +77,7 @@ internal fun SummarySheet(
                 stringResource(Res.string.combat_summary_hint),
                 color = AppPalette.TextSecondary,
                 fontSize = AppFontSize.Small,
-                lineHeight = LineHeight20,
+                lineHeight = AppLineHeight.Row,
             )
             if (summary.targets.isEmpty()) {
                 Text(
@@ -147,7 +148,7 @@ private fun SummaryTargetCard(
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 target.name,
@@ -176,11 +177,17 @@ private fun SummaryHitRow(
     summary: SummaryState,
     emit: (SummaryEvent) -> Unit,
 ) {
+    AppDivider(color = AppPalette.SurfacePopover)
     Column(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(hit.source, color = AppPalette.TextSecondary, fontSize = AppFontSize.Caption, lineHeight = LineHeight20)
+        Text(
+            hit.source,
+            color = AppPalette.TextSecondary,
+            fontSize = AppFontSize.Caption,
+            lineHeight = AppLineHeight.Row,
+        )
         Row(verticalAlignment = Alignment.CenterVertically) {
             FlowRow(
                 modifier = Modifier.weight(1f),
@@ -252,7 +259,7 @@ private fun TermButton(
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        chip.type?.let { AppDamageShield(it.shieldIconPath(), it.shieldColor(), ShieldStyle.Plain, width = 14.dp) }
+        chip.type?.let { AppDamageGlyph(it.shieldIconPath(), it.shieldColor()) }
         chip.old?.let {
             Text(
                 it,
@@ -268,6 +275,7 @@ private fun TermButton(
                 chip.type?.shieldColor() ?: AppPalette.TextMuted,
                 chip.effect.shieldStyle(),
                 width = 14.dp,
+                crackColor = AppPalette.Background,
             )
         }
     }
@@ -297,41 +305,45 @@ private fun PopupCard(
             fontSize = AppFontSize.Caption,
             modifier = Modifier.padding(start = 10.dp, top = 4.dp, bottom = 6.dp),
         )
-        popup.options.forEach { option ->
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .defaultMinSize(minHeight = 42.dp)
-                        .appCard(
-                            shape = AppShapes.Small,
-                            background =
-                                if (option.selected) {
-                                    AppPalette.Gold.copy(
-                                        alpha = 0.12f,
-                                    )
-                                } else {
-                                    Color.Transparent
-                                },
-                            border = null,
-                            onClick = { emit(SummaryEvent.EffectSelected(popup.eventId, option.effect)) },
-                        ).padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (option.effect !=
-                    HitEffect.FULL
-                ) {
-                    AppDamageShield("", AppPalette.TextMuted, option.effect.shieldStyle(), width = 14.dp)
-                }
-                Text(
-                    text = option.label + if (option.selected) " ✓" else "",
-                    color = optionColor(option.effect),
-                    fontSize = AppFontSize.Body,
-                )
-            }
-        }
+        popup.options.forEach { option -> PopupOption(option, popup, emit) }
         if (canRecord) RecordRow(summary, emit)
+    }
+}
+
+@Composable
+private fun PopupOption(
+    option: SummaryOption,
+    popup: SummaryPopup,
+    emit: (SummaryEvent) -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 42.dp)
+                .appCard(
+                    shape = AppShapes.Small,
+                    background = if (option.selected) AppPalette.Gold.copy(alpha = 0.12f) else Color.Transparent,
+                    border = null,
+                    onClick = { emit(SummaryEvent.EffectSelected(popup.eventId, option.effect)) },
+                ).padding(horizontal = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (option.effect != HitEffect.FULL) {
+            AppDamageShield(
+                popup.type?.shieldIconPath().orEmpty(),
+                popup.type?.shieldColor() ?: AppPalette.TextMuted,
+                option.effect.shieldStyle(),
+                width = 14.dp,
+                crackColor = AppPalette.SurfacePopover,
+            )
+        }
+        Text(
+            text = option.label + if (option.selected) " ✓" else "",
+            color = optionColor(option.effect),
+            fontSize = AppFontSize.Body,
+        )
     }
 }
 
@@ -348,39 +360,20 @@ private fun RecordRow(
     summary: SummaryState,
     emit: (SummaryEvent) -> Unit,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp)
-                .clickable { emit(SummaryEvent.RecordToggled) }
-                .defaultMinSize(minHeight = 42.dp)
-                .padding(horizontal = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+        AppDivider(color = AppPalette.BorderPopover)
+        Row(
             modifier =
                 Modifier
-                    .size(20.dp)
-                    .then(
-                        if (summary.record) {
-                            Modifier.appCard(RoundedCornerShape(6.dp), AppPalette.Gold, AppPalette.Gold, 1.5.dp)
-                        } else {
-                            Modifier.border(1.5.dp, AppPalette.RadioIdle, RoundedCornerShape(6.dp))
-                        },
-                    ),
-            contentAlignment = Alignment.Center,
+                    .fillMaxWidth()
+                    .clickable { emit(SummaryEvent.RecordToggled) }
+                    .defaultMinSize(minHeight = 42.dp)
+                    .padding(horizontal = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (summary.record) {
-                Text(
-                    "✓",
-                    color = AppPalette.Background,
-                    fontSize = AppFontSize.Small,
-                    fontWeight = FontWeight.ExtraBold,
-                )
-            }
+            AppCheckBox(summary.record)
+            Text(summary.recordLabel, color = AppPalette.TextPrimary, fontSize = AppFontSize.SmallPlus)
         }
-        Text(summary.recordLabel, color = AppPalette.TextPrimary, fontSize = AppFontSize.SmallPlus)
     }
 }

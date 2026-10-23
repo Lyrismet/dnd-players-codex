@@ -1,6 +1,10 @@
 package com.lyrismet.incadent.feature.combat.presentation.prep
 
 import com.lyrismet.incadent.core.toast.ToastMessage
+import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
+import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
+import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -13,8 +17,6 @@ data class CombatPrepScreen(
 
 /** the two sides a record can be put on, the party is its own list */
 enum class PrepSide { ALLY, ENEMY }
-
-enum class QuickKind { PARTY, ENEMY }
 
 enum class HpMode { HP, TEMP }
 
@@ -33,7 +35,9 @@ data class CombatPrepState(
     // what the button under the lists says, none while the intro is shown
     val start: PrepStart? = null,
     val search: FoeSearchState? = null,
-    val quickCreate: QuickCreateState? = null,
+    // the codex form of a fighter made on the spot, [formKinds] are the types it offers
+    val entryForm: CodexEntryFormState? = null,
+    val formKinds: List<EntityKind> = emptyList(),
     val hpPad: HpPadState? = null,
     val exitConfirmVisible: Boolean = false,
     val toast: ToastMessage? = null,
@@ -105,11 +109,6 @@ data class FoeRow(
     val count: Int,
 )
 
-data class QuickCreateState(
-    val kind: QuickKind,
-    val name: String,
-)
-
 /** the keypad of the hit points set before the fight, [expr] and [result] are what the keys typed */
 data class HpPadState(
     val name: String,
@@ -129,7 +128,8 @@ sealed interface CombatPrepEvent : CircuitUiEvent {
 
     sealed interface TypedNameEvent : SearchEvent
 
-    sealed interface QuickEvent : CombatPrepEvent
+    /** the codex form that makes a record which joins the fight at once */
+    sealed interface FormEvent : CombatPrepEvent
 
     sealed interface HpEvent : CombatPrepEvent
 
@@ -179,23 +179,18 @@ sealed interface CombatPrepEvent : CircuitUiEvent {
     /** the typed name goes in as a member of this fight only */
     data object TempAdded : TypedNameEvent
 
-    data object NpcCreated : TypedNameEvent
-
-    data object SpeciesCreated : TypedNameEvent
+    /** the typed name goes to the codex form, which makes a record of it */
+    data object CreateRequested : TypedNameEvent
 
     data object SearchClosed : SearchEvent
 
-    data class QuickOpened(
-        val kind: QuickKind,
-    ) : QuickEvent
+    data class CreateOpened(
+        val side: CombatSide,
+    ) : FormEvent
 
-    data class QuickNameChanged(
-        val name: String,
-    ) : QuickEvent
-
-    data object QuickConfirmed : QuickEvent
-
-    data object QuickClosed : QuickEvent
+    data class EntryForm(
+        val event: CodexEntryFormEvent,
+    ) : FormEvent
 
     data class HpPadOpened(
         val partyMemberId: Long,

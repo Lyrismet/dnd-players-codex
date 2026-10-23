@@ -51,7 +51,17 @@ internal class FakeCombatRepository : CombatRepository {
     }
 
     override suspend fun removeCombatant(combatantId: Long) {
-        combats.value = combats.value.map { c -> c.copy(combatants = c.combatants.filter { it.id != combatantId }) }
+        // the blows it took go with it and the ones it dealt lose their source, like the foreign keys of the table
+        combats.value =
+            combats.value.map { c ->
+                c.copy(
+                    combatants = c.combatants.filter { it.id != combatantId },
+                    events =
+                        c.events
+                            .filter { it.targetId != combatantId }
+                            .map { if (it.sourceId == combatantId) it.copy(sourceId = null) else it },
+                )
+            }
     }
 
     override suspend fun setTempHp(
@@ -146,7 +156,8 @@ internal class FakeCombatRepository : CombatRepository {
     override suspend fun finish(
         combatId: Long,
         outcome: CombatOutcome,
-    ) = Unit
+        finishedAt: LocalDateTime,
+    ) = update(combatId) { it.copy(phase = CombatPhase.FINISHED, outcome = outcome, finishedAt = finishedAt) }
 
     override suspend fun delete(combatId: Long) {
         combats.value = combats.value.filter { it.id != combatId }

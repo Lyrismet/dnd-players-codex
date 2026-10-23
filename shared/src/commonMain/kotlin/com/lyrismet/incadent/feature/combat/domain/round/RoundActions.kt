@@ -176,17 +176,37 @@ class RoundActions(
         repository.updateCombatant(member.copy(hpCurrent = hp.current, hpMax = hp.max))
     }
 
-    /** takes the participant out of the fight, the last one cannot leave */
+    /** takes the participant out of the fight, the last one cannot leave, what it took is kept to put it back */
     suspend fun remove(
         combat: Combat,
         member: Combatant,
-    ) {
+    ): RemovedMember? {
         val ordered = combat.combatants.inTurnOrder()
-        if (ordered.size <= 1) return
         val index = ordered.indexOfFirst { it.id == member.id }
-        if (index < 0) return
+        if (ordered.size <= 1 || index < 0) return null
+        val turn = turnAfterRemoval(combat.turn, index, ordered.size - 1)
         repository.removeCombatant(member.id)
-        repository.setTurn(combat.id, combat.round, turnAfterRemoval(combat.turn, index, ordered.size - 1))
+        repository.setTurn(combat.id, combat.round, turn)
+        return RemovedMember(
+            member = member,
+            blows = combat.events.filter { it.targetId == member.id },
+            round = combat.round,
+            turn = combat.turn,
+            roundAfter = combat.round,
+            turnAfter = turn,
+        )
+    }
+
+    /** puts a removed participant back with the blows it took, the turn only returns if the fight has not moved on */
+    suspend fun restore(
+        removed: RemovedMember,
+        now: Combat,
+    ) {
+        val id = repository.addCombatant(now.id, removed.member)
+        removed.blows.forEach { repository.addEvent(now.id, it.copy(targetId = id)) }
+        if (now.round == removed.roundAfter && now.turn == removed.turnAfter) {
+            repository.setTurn(now.id, removed.round, removed.turn)
+        }
     }
 
     /** the next one to move, the party member whose turn it becomes has the reaction back */
@@ -237,3 +257,13 @@ class RoundActions(
         state: CombatState,
     ): Combat = copy(combatants = combatants.map { if (it.id == member.id) it.copy(state = state) else it })
 }
+
+/** a participant taken out of the fight, what [RoundActions.restore] needs to bring it back */
+class RemovedMember(
+    val member: Combatant,
+    val blows: List<CombatEvent>,
+    val round: Int,
+    val turn: Int,
+    val roundAfter: Int,
+    val turnAfter: Int,
+)

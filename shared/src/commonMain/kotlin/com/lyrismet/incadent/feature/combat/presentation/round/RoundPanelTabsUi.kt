@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,18 +26,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
+import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
+import com.lyrismet.incadent.core.designsystem.component.AppTitleSubtitle
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.NumberPadSheet
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.feature.codex.presentation.summary.DamageGridEditor
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpPadState
 import dndplayerscodex.shared.generated.resources.Res
@@ -47,9 +53,8 @@ import dndplayerscodex.shared.generated.resources.combat_panel_full_title
 import dndplayerscodex.shared.generated.resources.combat_panel_remove
 import dndplayerscodex.shared.generated.resources.combat_panel_set_hp
 import dndplayerscodex.shared.generated.resources.combat_panel_side_title
+import dndplayerscodex.shared.generated.resources.entity_sheet_species_damage_title
 import org.jetbrains.compose.resources.stringResource
-
-private val LineHeight20 = 20.sp
 
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
@@ -132,7 +137,7 @@ internal fun MoreTab(
                 more.stanceHint,
                 color = AppPalette.TextTertiary,
                 fontSize = AppFontSize.Caption,
-                lineHeight = LineHeight20,
+                lineHeight = AppLineHeight.Row,
             )
         }
     }
@@ -143,6 +148,12 @@ internal fun MoreTab(
             onClick = { send(CombatRoundEvent.SetHpOpened) },
             variant = ButtonVariant.Ghost,
         )
+    }
+    more.damage?.let { damage ->
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            FormFieldLabel(stringResource(Res.string.entity_sheet_species_damage_title).uppercase())
+            DamageGridEditor(damage, { type, state -> send(CombatRoundEvent.DamageChanged(type, state)) })
+        }
     }
     NoteField(panel.id, more.note, more.notePlaceholder) { send(CombatRoundEvent.NoteChanged(it)) }
     AppButton(
@@ -172,42 +183,13 @@ private fun FullRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .size(22.dp)
-                    .then(
-                        if (full) {
-                            Modifier.appCard(RoundedCornerShape(6.dp), AppPalette.Gold, AppPalette.Gold, 1.5.dp)
-                        } else {
-                            Modifier.border(1.5.dp, AppPalette.RadioIdle, RoundedCornerShape(6.dp))
-                        },
-                    ),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (full) {
-                Text(
-                    "✓",
-                    color = AppPalette.Background,
-                    fontSize = AppFontSize.Body,
-                    fontWeight = FontWeight.ExtraBold,
-                )
-            }
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                stringResource(Res.string.combat_panel_full_title),
-                color = AppPalette.TextPrimary,
-                fontSize = AppFontSize.Medium,
-                lineHeight = LineHeight20,
-            )
-            Text(
-                stringResource(Res.string.combat_panel_full_hint),
-                color = AppPalette.TextSecondary,
-                fontSize = AppFontSize.Caption,
-                lineHeight = LineHeight20,
-            )
-        }
+        AppCheckBox(full)
+        AppTitleSubtitle(
+            title = stringResource(Res.string.combat_panel_full_title),
+            subtitle = stringResource(Res.string.combat_panel_full_hint),
+            modifier = Modifier.weight(1f),
+            maxLines = 2,
+        )
     }
 }
 
@@ -228,6 +210,7 @@ private fun NoteField(
         },
         modifier = Modifier.fillMaxWidth(),
         placeholder = placeholder,
+        style = AppTextInputStyle(contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)),
         singleLine = false,
         minLines = 2,
     )

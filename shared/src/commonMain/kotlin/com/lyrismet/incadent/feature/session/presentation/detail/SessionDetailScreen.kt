@@ -9,6 +9,7 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditState
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
+import com.lyrismet.incadent.feature.combat.presentation.summary.CombatCardItem
 import com.lyrismet.incadent.feature.mention.domain.DeletedMention
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
@@ -27,6 +28,8 @@ data class SessionDetailState(
     val isLive: Boolean = true,
     val headerMentions: List<MentionChipItem> = emptyList(),
     val feed: List<SessionFeedItem> = emptyList(),
+    // the fight whose delete is waiting for a yes
+    val combatDeleteVisible: Boolean = false,
     val draft: String = "",
     val draftSelection: TextRange = TextRange.Zero,
     // the species just inserted that waits for its count to be typed, null otherwise
@@ -103,6 +106,13 @@ sealed interface SessionFeedItem {
         val entry: SessionEntryItem,
     ) : SessionFeedItem {
         override val key: String get() = "note-${entry.id}"
+    }
+
+    /** a fight saved to the session, it sits among the notes by the time it ended */
+    data class Combat(
+        val card: CombatCardItem,
+    ) : SessionFeedItem {
+        override val key: String get() = "combat-${card.id}"
     }
 }
 
@@ -242,6 +252,14 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     data class DeleteEntryClicked(
         val id: Long,
     ) : SessionDetailEvent
+
+    data class CombatDeleteClicked(
+        val id: Long,
+    ) : SessionDetailEvent
+
+    data object CombatDeleteConfirmed : SessionDetailEvent
+
+    data object CombatDeleteDismissed : SessionDetailEvent
 
     data object EndSessionClicked : SessionDetailEvent
 

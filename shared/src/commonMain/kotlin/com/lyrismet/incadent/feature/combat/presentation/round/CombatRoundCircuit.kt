@@ -1,8 +1,10 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
+import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.CircuitContext
@@ -28,6 +30,8 @@ class CombatRoundPresenterFactory(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val codexRepositories: CodexRepositories,
+    private val hitObservationRepository: HitObservationRepository,
+    private val imageCompressor: ImageCompressor,
     private val undoController: UndoController,
 ) : Presenter.Factory {
     override fun create(
@@ -44,6 +48,8 @@ class CombatRoundPresenterFactory(
                     sessionNoteRepository,
                     sessionEntryRepository,
                     codexRepositories,
+                    hitObservationRepository,
+                    imageCompressor,
                     undoController,
                 )
             else -> null

@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
@@ -41,7 +42,6 @@ import dndplayerscodex.shared.generated.resources.combat_calc_more
 import dndplayerscodex.shared.generated.resources.combat_calc_source_title
 import org.jetbrains.compose.resources.stringResource
 
-private val LineHeight20 = 20.sp
 private val HealOnFill = Color(0xFF0E1A14)
 private val TempOnFill = Color(0xFF10151D)
 private const val DAMAGE_BORDER_ALPHA = 0.6f
@@ -175,7 +175,7 @@ private fun SourceRow(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            FormFieldLabel(stringResource(Res.string.combat_calc_source_title))
+            FormFieldLabel(stringResource(Res.string.combat_calc_source_title), Modifier.weight(1f))
             Text(calc.sourceHint, color = AppPalette.TextSecondary, fontSize = AppFontSize.Caption)
         }
         Row(
@@ -222,7 +222,7 @@ private fun DoneBlock(done: List<DoneHit>) {
                     it.label,
                     color = AppPalette.TextDescription,
                     fontSize = AppFontSize.Body,
-                    lineHeight = LineHeight20,
+                    lineHeight = AppLineHeight.Row,
                     maxLines = 1,
                 )
                 Text(

@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
@@ -42,7 +43,7 @@ internal fun TypeBlock(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            FormFieldLabel(calc.typeHeader)
+            FormFieldLabel(calc.typeHeader, Modifier.weight(1f))
             Text(calc.typeLabel, color = AppPalette.TextSecondary, fontSize = AppFontSize.Caption)
         }
         Row(
@@ -100,7 +101,12 @@ internal fun ResultBlock(
         } else {
             Column(modifier = Modifier.weight(1f)) {
                 calc.preview.forEach {
-                    Text(it, color = AppPalette.TextMuted, fontSize = AppFontSize.SmallPlus, lineHeight = LineHeight20)
+                    Text(
+                        it,
+                        color = AppPalette.TextMuted,
+                        fontSize = AppFontSize.SmallPlus,
+                        lineHeight = AppLineHeight.Row,
+                    )
                 }
             }
         }
@@ -121,8 +127,6 @@ private fun accentTint(mode: CalcMode): Color =
         CalcMode.HEAL -> AppPalette.EmeraldBright
         CalcMode.TEMP -> AppPalette.Azure
     }
-
-private val LineHeight20 = 20.sp
 
 @Composable
 @OptIn(ExperimentalLayoutApi::class)

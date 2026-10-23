@@ -2,14 +2,14 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.runtime.MutableState
 import com.lyrismet.incadent.core.calc.CalcExpression
-import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.round.toggledSaves
-import com.lyrismet.incadent.feature.combat.presentation.list.CombatListScreen
 import com.lyrismet.incadent.feature.combat.presentation.prep.CombatPrepEvent
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeSearchController
 import com.lyrismet.incadent.feature.combat.presentation.prep.PrepSide
 import com.lyrismet.incadent.feature.combat.presentation.prep.SearchDraft
+import com.lyrismet.incadent.feature.combat.presentation.results.CombatResultsScreen
 import com.slack.circuit.runtime.Navigator
+import kotlinx.coroutines.CoroutineScope
 
 /** what the keypad of the hit points has typed for one participant */
 internal data class RoundHpDraft(
@@ -21,7 +21,6 @@ internal data class RoundHpDraft(
 internal class RoundSnapshot(
     val selectedId: Long?,
     val ownIds: Set<Long>,
-    val autoOutcome: CombatOutcome,
 )
 
 @Suppress("LongParameterList")
@@ -31,11 +30,12 @@ internal class RoundHandler(
     private val selected: MutableState<Long?>,
     private val tab: MutableState<PanelTab>,
     private val menuOpen: MutableState<Boolean>,
-    private val endConfirm: MutableState<EndConfirm?>,
     private val hpPad: MutableState<RoundHpDraft?>,
     search: MutableState<SearchDraft?>,
+    private val form: RoundForm,
+    private val scope: CoroutineScope,
 ) {
-    private val searchController = FoeSearchController(search, editor)
+    private val searchController = FoeSearchController(search, editor, form.host::open)
 
     fun onEvent(
         event: CombatRoundEvent,
@@ -44,6 +44,7 @@ internal class RoundHandler(
     ) {
         when (event) {
             is CombatRoundEvent.Search -> searchController.onEvent(event.event, nameOf)
+            is CombatRoundEvent.EntryForm -> form.host.onEvent(event.event, scope)
             is CombatRoundEvent.RowTapped -> selected.value = if (selected.value == event.id) null else event.id
             is CombatRoundEvent.TabSelected -> tab.value = event.tab
             CombatRoundEvent.MenuToggled -> menuOpen.value = !menuOpen.value
@@ -53,9 +54,7 @@ internal class RoundHandler(
                     tab.value = PanelTab.ACTIONS
                     menuOpen.value = false
                 }
-            is CombatRoundEvent.EndRequested -> requestEnd(event.kind, snapshot)
-            CombatRoundEvent.EndConfirmed -> confirmEnd()
-            CombatRoundEvent.EndDismissed -> endConfirm.value = null
+            is CombatRoundEvent.EndRequested -> requestEnd(event.kind)
             is CombatRoundEvent.ReinforcementOpened ->
                 searchController.onEvent(
                     CombatPrepEvent.SearchOpened(if (event.ally) PrepSide.ALLY else PrepSide.ENEMY),
@@ -69,19 +68,9 @@ internal class RoundHandler(
         }
     }
 
-    private fun requestEnd(
-        kind: EndKind,
-        snapshot: RoundSnapshot,
-    ) {
+    private fun requestEnd(kind: EndKind) {
         menuOpen.value = false
-        endConfirm.value =
-            EndConfirm(kind, if (kind == EndKind.STOP) CombatOutcome.INTERRUPTED else snapshot.autoOutcome)
-    }
-
-    private fun confirmEnd() {
-        val confirm = endConfirm.value ?: return
-        endConfirm.value = null
-        editor.finish(confirm.outcome) { navigator.resetRoot(CombatListScreen) }
+        navigator.goTo(CombatResultsScreen(editor.combatId, interrupted = kind == EndKind.STOP))
     }
 
     /** the changes to the chosen participant */

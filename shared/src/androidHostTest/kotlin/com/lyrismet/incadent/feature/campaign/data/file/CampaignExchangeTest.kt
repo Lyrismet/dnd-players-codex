@@ -14,10 +14,20 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ImportTarget
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordSelection
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
+import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
+import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
+import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
+import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
+import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
+import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
+import com.lyrismet.incadent.feature.combat.domain.model.CombatState
+import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.persistence.TestDatabase
 import kotlinx.datetime.LocalDateTime
 import kotlin.io.encoding.Base64
@@ -611,6 +621,177 @@ class CampaignExchangeTest {
                 .selectSummaries { id, _, _, _, _, _, _, _ -> id }
                 .executeAsList()
                 .size,
+        )
+    }
+
+    private fun seedFight(): Long {
+        val session =
+            database.sessionNoteQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+                .id
+        val species =
+            database.speciesQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+                .id
+        database.combatQueries.insertFinished(session, date, 3L, 1L, CombatOutcome.VICTORY, date, source)
+        val combat = database.combatQueries.lastInsertRowId().executeAsOne()
+
+        fun fighter(
+            name: String,
+            side: CombatSide,
+            speciesId: Long?,
+        ): Long {
+            database.combatantQueries.insert(
+                combat,
+                name,
+                side,
+                null,
+                speciesId,
+                null,
+                1L,
+                CombatState.DOWN,
+                1L,
+                0L,
+                0L,
+                0L,
+                null,
+                CombatStance.ENEMY,
+                0L,
+                0L,
+                setOf(CombatCondition.PRONE),
+                "limps",
+                1L,
+                null,
+                null,
+            )
+            return database.combatantQueries.lastInsertRowId().executeAsOne()
+        }
+        val hero = fighter("Hero", CombatSide.PARTY, null)
+        val wolf = fighter("Wolf", CombatSide.ENEMY, species)
+        database.combatEventQueries.insert(
+            combat,
+            1L,
+            CombatEventKind.DAMAGE,
+            hero,
+            wolf,
+            9L,
+            DamageType.SLASHING,
+            HitEffect.HALF,
+            null,
+            null,
+            2L,
+            7L,
+            18L,
+            HitScale.ONE,
+        )
+        database.speciesHitObservationQueries.insert(species, combat, 9L, 1L)
+        return combat
+    }
+
+    @Test
+    fun `a saved fight travels with its session and its links`() {
+        seed()
+        seedFight()
+        val target = importNew(export(allOf())).campaignId
+
+        val combat =
+            database.combatQueries
+                .selectAll(target)
+                .executeAsList()
+                .single()
+        assertEquals(CombatPhase.FINISHED, combat.phase)
+        assertEquals(CombatOutcome.VICTORY, combat.outcome)
+        assertEquals(3L, combat.round)
+        val session =
+            database.sessionNoteQueries
+                .selectAll(target)
+                .executeAsList()
+                .single()
+        assertEquals(session.id, combat.session_note_id)
+        val fighters =
+            database.combatantQueries
+                .selectByCombat(combat.id)
+                .executeAsList()
+                .associateBy { it.name }
+        val newSpecies =
+            database.speciesQueries
+                .selectAll(target)
+                .executeAsList()
+                .single()
+                .id
+        assertEquals(newSpecies, fighters.getValue("Wolf").species_id)
+        assertEquals(setOf(CombatCondition.PRONE), fighters.getValue("Hero").conditions)
+        val blow =
+            database.combatEventQueries
+                .selectByCombat(combat.id)
+                .executeAsList()
+                .single()
+        assertEquals(fighters.getValue("Hero").id, blow.source_id)
+        assertEquals(fighters.getValue("Wolf").id, blow.target_id)
+        assertEquals(HitEffect.HALF, blow.effect)
+        assertEquals(18L, blow.raw)
+        val seen =
+            database.speciesHitObservationQueries
+                .selectByCampaign(target)
+                .executeAsList()
+                .single()
+        assertEquals(newSpecies, seen.species_id)
+        assertEquals(combat.id, seen.combat_id)
+    }
+
+    @Test
+    fun `a fight of a session that was not picked stays behind`() {
+        seed()
+        seedFight()
+        val selection = allOf().copy(sessions = emptySet())
+        val target = importNew(export(selection)).campaignId
+        assertTrue(
+            database.combatQueries
+                .selectAll(target)
+                .executeAsList()
+                .isEmpty(),
+        )
+    }
+
+    @Test
+    fun `a file of the first version without fights is read as before`() {
+        val lines =
+            listOf(
+                """{"format":"incadent","version":1,"name":"Old","records":1,"sessions":0}""",
+                """{"t":"species","id":1,"name":"Wolf","creatureType":"BEAST"}""",
+            )
+        val file = MemoryFile(lines)
+        val target = importNew(file).campaignId
+        assertEquals(
+            listOf("Wolf"),
+            database.speciesQueries
+                .selectAll(target)
+                .executeAsList()
+                .map { it.name },
+        )
+    }
+
+    @Test
+    fun `a fallen character stays fallen through an export and an import`() {
+        seed()
+        val hero =
+            database.partyMemberQueries
+                .selectAll(source)
+                .executeAsList()
+                .single()
+                .id
+        database.partyMemberQueries.setFallen(true, null, hero)
+        val target = importNew(export(allOf())).campaignId
+        assertTrue(
+            database.partyMemberQueries
+                .selectAll(target)
+                .executeAsList()
+                .single()
+                .fallen,
         )
     }
 }

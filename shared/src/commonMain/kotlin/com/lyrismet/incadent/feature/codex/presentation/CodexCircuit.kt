@@ -9,6 +9,7 @@ import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
+import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.CircuitContext
@@ -35,6 +36,7 @@ class CodexPresenterFactory(
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
     private val speciesRepository: SpeciesRepository,
+    private val combatFactsSource: CombatFactsSource,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val undoController: UndoController,
@@ -56,6 +58,7 @@ class CodexPresenterFactory(
                     questRepository,
                     locationRepository,
                     speciesRepository,
+                    combatFactsSource,
                     sessionNoteRepository,
                     sessionEntryRepository,
                     undoController,

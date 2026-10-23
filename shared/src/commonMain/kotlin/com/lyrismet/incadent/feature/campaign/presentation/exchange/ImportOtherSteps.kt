@@ -19,6 +19,7 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
@@ -26,7 +27,6 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
-import com.lyrismet.incadent.core.designsystem.component.SelectCheckbox
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
@@ -224,7 +224,7 @@ private fun DuplicateRow(
                 style = MaterialTheme.typography.bodySmall,
             )
         }
-        if (!copies) SelectCheckbox(checked = replace)
+        if (!copies) AppCheckBox(checked = replace)
     }
 }
 

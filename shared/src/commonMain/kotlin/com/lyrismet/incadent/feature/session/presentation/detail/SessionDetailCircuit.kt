@@ -5,6 +5,8 @@ import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
+import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.phrases.domain.repository.PhraseSnippetRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
@@ -31,6 +33,8 @@ import dev.zacsweers.metro.Provides
 class SessionDetailPresenterFactory(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
+    private val combatRepository: CombatRepository,
+    private val combatFactsSource: CombatFactsSource,
     private val codexRepositories: CodexRepositories,
     private val tagRepository: TagRepository,
     private val undoController: UndoController,
@@ -51,6 +55,8 @@ class SessionDetailPresenterFactory(
                     navigator,
                     sessionNoteRepository,
                     sessionEntryRepository,
+                    combatRepository,
+                    combatFactsSource,
                     codexRepositories,
                     tagRepository,
                     undoController,

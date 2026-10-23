@@ -36,6 +36,10 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.onEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhoto
 import com.lyrismet.incadent.feature.codex.presentation.summary.selectedEntitySummary
 import com.lyrismet.incadent.feature.codex.presentation.summary.withFullPhoto
+import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
+import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
+import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
+import com.lyrismet.incadent.feature.combat.presentation.summary.toCardItem
 import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.domain.dedupeKey
 import com.lyrismet.incadent.feature.mention.domain.mentionsIn
@@ -112,6 +116,8 @@ class SessionDetailPresenter(
     private val navigator: Navigator,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
+    private val combatRepository: CombatRepository,
+    private val combatFactsSource: CombatFactsSource,
     private val codexRepositories: CodexRepositories,
     private val tagRepository: TagRepository,
     private val undoController: UndoController,
@@ -128,6 +134,8 @@ class SessionDetailPresenter(
     override fun present(): SessionDetailState {
         val allSessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
         val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
+        val allCombats by combatRepository.observeAll().collectAsState(initial = emptyList())
+        val combatToDelete = remember(screen.sessionNoteId) { mutableStateOf<Long?>(null) }
         val entries by sessionEntryRepository
             .observeForSession(screen.sessionNoteId)
             .collectAsState(initial = emptyList())
@@ -136,6 +144,7 @@ class SessionDetailPresenter(
         val quests by codexRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val parties by codexRepositories.partyRepository.observeAll().collectAsState(initial = emptyList())
         val species by codexRepositories.speciesRepository.observeAll().collectAsState(initial = emptyList())
+        val facts by combatFactsSource.observe().collectAsState(initial = CombatFacts.EMPTY)
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
@@ -190,7 +199,11 @@ class SessionDetailPresenter(
                         it.toItem(mention.candidates)
                 }
             }
-        val feed = buildFeed(entries, currentNote?.sessionDate?.date, noteItems)
+        val cards =
+            remember(allCombats) {
+                allCombats.filter { it.sessionNoteId == screen.sessionNoteId }.mapNotNull { it.toCardItem() }
+            }
+        val feed = buildFeed(entries, cards, currentNote?.sessionDate?.date, noteItems)
         val focusIndex =
             highlightedEntryId.value?.let { id ->
                 feed.indexOfFirst { it is SessionFeedItem.Note && it.entry.id == id }.takeIf { it >= 0 }
@@ -210,6 +223,7 @@ class SessionDetailPresenter(
                 numbering,
                 parties,
                 species,
+                facts,
             )
         val fullPhoto =
             rememberFullPhoto(selectedSummary, codexRepositories)
@@ -275,6 +289,7 @@ class SessionDetailPresenter(
             isLive = currentNote?.isLive ?: true,
             headerMentions = headerMentions,
             feed = feed,
+            combatDeleteVisible = combatToDelete.value != null,
             draft = draft.value.text,
             draftSelection = draft.value.selection,
             quantityHint = pendingQuantityName(draft.value.text, draft.value.selection.end),
@@ -310,7 +325,16 @@ class SessionDetailPresenter(
             mentionCreateSheet = fields.create.state(mentionData),
             entryForm = fields.formController.buildState(npcs, locations, species),
         ) { event ->
-            val context = EventContext(currentNote, entries, undoDeletedEntryTitle, phraseSavedToast, scope, readOnly)
+            val context =
+                EventContext(
+                    currentNote,
+                    entries,
+                    undoDeletedEntryTitle,
+                    phraseSavedToast,
+                    scope,
+                    readOnly,
+                    combatToDelete,
+                )
             onEvent(event, context, fields, assignedTags, tagSuggestions, mentionData)
         }
     }
@@ -480,6 +504,13 @@ class SessionDetailPresenter(
             SessionDetailEvent.CancelEditEntryClicked -> fields.composer.cancelEdit()
             is SessionDetailEvent.DeleteEntryClicked ->
                 fields.composer.delete(scope, event.id, entries, undoDeletedEntryTitle)
+            is SessionDetailEvent.CombatDeleteClicked -> context.combatToDelete.value = event.id
+            SessionDetailEvent.CombatDeleteDismissed -> context.combatToDelete.value = null
+            SessionDetailEvent.CombatDeleteConfirmed -> {
+                val id = context.combatToDelete.value
+                context.combatToDelete.value = null
+                if (id != null) scope.launch { combatRepository.delete(id) }
+            }
             SessionDetailEvent.EndSessionClicked -> onEndSession(currentNote, scope)
             SessionDetailEvent.ResumeSessionClicked -> onResumeSession(currentNote, scope)
             SessionDetailEvent.TagButtonClicked -> fields.tags.open()
@@ -588,6 +619,7 @@ private data class EventContext(
     val phraseSavedToast: String,
     val scope: CoroutineScope,
     val readOnly: Boolean,
+    val combatToDelete: MutableState<Long?>,
 )
 
 private fun PhraseOption.toItem() =

@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
@@ -33,8 +33,6 @@ import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.combat_calc_add_target
 import org.jetbrains.compose.resources.stringResource
-
-private val LineHeight20 = 20.sp
 
 internal fun HitEffect.shieldStyle(): ShieldStyle =
     when (this) {
@@ -68,7 +66,7 @@ internal fun TargetsBlock(
             modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 28.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            FormFieldLabel(calc.targetsHeader)
+            FormFieldLabel(calc.targetsHeader, Modifier.weight(1f))
             calc.reaction?.let { ReactionChip(it) { emit(CalcEvent.ReactionToggled(it.memberId)) } }
         }
         if (calc.rowMode) {
@@ -228,7 +226,7 @@ private fun TargetRow(
                         target.name,
                         color = tint,
                         fontSize = AppFontSize.BodyPlus,
-                        lineHeight = LineHeight20,
+                        lineHeight = AppLineHeight.Row,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
                     )
@@ -269,7 +267,12 @@ internal fun PartsLine(parts: List<CalcPart>) {
             Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(part.prefix, color = AppPalette.TextMuted, fontSize = AppFontSize.Small)
                 part.type?.let { Shield(CalcShield(it, HitEffect.FULL), 12.dp) }
-                Text(part.text, color = AppPalette.TextMuted, fontSize = AppFontSize.Small, lineHeight = LineHeight20)
+                Text(
+                    part.text,
+                    color = AppPalette.TextMuted,
+                    fontSize = AppFontSize.Small,
+                    lineHeight = AppLineHeight.Row,
+                )
             }
         }
     }

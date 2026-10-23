@@ -2,12 +2,14 @@ package com.lyrismet.incadent.feature.combat.domain.round
 
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
+import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
 import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.feature.combat.domain.preparation.FakeCombatRepository
 import com.lyrismet.incadent.feature.combat.domain.preparation.MemberSource
 import com.lyrismet.incadent.feature.combat.domain.preparation.PartyHp
@@ -135,6 +137,54 @@ class RoundActionsTest {
             repository.setTurn(combat.id, 1, 2)
             actions.remove(repository.get(combat.id), combat.named("Аэлин"))
             assertEquals(1, repository.get(combat.id).turn)
+        }
+
+    @Test
+    fun `a removed one comes back with its state and the blows it took`() =
+        runTest {
+            val combat = fight()
+            val goblin = combat.named("Гоблин I")
+            repository.updateCombatant(
+                goblin.copy(state = CombatState.WOUNDED, note = "хромает", hpCurrent = 4, hpMax = 7),
+            )
+            repository.addEvent(
+                combat.id,
+                CombatEvent(0, 1, CombatEventKind.DAMAGE, null, goblin.id, 3, null, HitEffect.FULL, null),
+            )
+            val removed = actions.remove(repository.get(combat.id), repository.get(combat.id).named("Гоблин I"))
+            assertEquals(0, repository.get(combat.id).events.size)
+            actions.restore(checkNotNull(removed), repository.get(combat.id))
+            val after = repository.get(combat.id)
+            val back = after.named("Гоблин I")
+            assertEquals(CombatState.WOUNDED, back.state)
+            assertEquals("хромает", back.note)
+            assertEquals(4, back.hpCurrent)
+            assertEquals(listOf(back.id), after.events.map { it.targetId })
+        }
+
+    @Test
+    fun `restoring brings the turn back only while the fight stands where the removal left it`() =
+        runTest {
+            val combat = fight()
+            repository.setTurn(combat.id, 1, 2)
+            val removed = checkNotNull(actions.remove(repository.get(combat.id), combat.named("Аэлин")))
+            actions.restore(removed, repository.get(combat.id))
+            assertEquals(2, repository.get(combat.id).turn)
+
+            val again =
+                checkNotNull(actions.remove(repository.get(combat.id), repository.get(combat.id).named("Аэлин")))
+            repository.setTurn(combat.id, 2, 0)
+            actions.restore(again, repository.get(combat.id))
+            assertEquals(0, repository.get(combat.id).turn)
+        }
+
+    @Test
+    fun `the last one cannot be removed so there is nothing to restore`() =
+        runTest {
+            val id = repository.create(null, at)
+            repository.addCombatant(id, newMember("Один", CombatSide.ENEMY, 1))
+            repository.start(id, at)
+            assertEquals(null, actions.remove(repository.get(id), repository.get(id).named("Один")))
         }
 
     @Test

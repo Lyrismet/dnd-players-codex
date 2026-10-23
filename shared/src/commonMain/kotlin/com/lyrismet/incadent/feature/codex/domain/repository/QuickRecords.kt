@@ -26,7 +26,7 @@ fun quickNpc(name: String) =
 
 fun quickLocation(name: String) = Location(id = 0, name = name, description = "")
 
-fun quickSpecies(name: String) = Species(id = 0, name = name, creatureType = CreatureType.HUMANOID)
+fun quickSpecies(name: String) = Species(id = 0, name = name, creatureType = CreatureType.UNSPECIFIED)
 
 private fun quickQuest(name: String) =
     Quest(id = 0, title = name, status = QuestStatus.ACTIVE, reward = "", givenByNpcId = null, locationId = null)

@@ -35,6 +35,9 @@ enum class CreatureType {
     OOZE,
     PLANT,
     UNDEAD,
+
+    /** a species made from a name alone, the card shows that the type is not set */
+    UNSPECIFIED,
 }
 
 /** the 5e damage types, kept apart from the rules system so another preset can bring its own set later */

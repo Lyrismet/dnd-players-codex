@@ -22,10 +22,10 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
+import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.PillSize
-import com.lyrismet.incadent.core.designsystem.component.SelectCheckbox
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.bleedHorizontally
@@ -232,8 +232,8 @@ private fun PickRowItem(
 @Composable
 private fun PickCheckbox(mark: PickMark) {
     when (mark) {
-        PickMark.On -> SelectCheckbox(checked = true)
-        PickMark.Off -> SelectCheckbox(checked = false)
+        PickMark.On -> AppCheckBox(checked = true)
+        PickMark.Off -> AppCheckBox(checked = false)
         PickMark.Pulled ->
             Box(
                 modifier =

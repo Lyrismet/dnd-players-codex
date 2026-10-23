@@ -232,6 +232,7 @@ data class SummaryChip(
 data class SummaryPopup(
     val title: String,
     val eventId: Long,
+    val type: DamageType?,
     val options: List<SummaryOption>,
 )
 

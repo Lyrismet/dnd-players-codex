@@ -29,11 +29,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
-import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
@@ -44,17 +44,12 @@ import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
-import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSwitcherPill
-import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
-import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
-import com.lyrismet.incadent.feature.codex.presentation.style.PartyMemberColor
-import com.lyrismet.incadent.feature.codex.presentation.style.toStatusColor
-import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
+import com.lyrismet.incadent.feature.combat.presentation.summary.OutcomeBadge
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.campaign_switcher_description
 import dndplayerscodex.shared.generated.resources.combat_list_archive_text
@@ -68,14 +63,8 @@ import dndplayerscodex.shared.generated.resources.combat_list_reset_text
 import dndplayerscodex.shared.generated.resources.combat_list_reset_title
 import dndplayerscodex.shared.generated.resources.combat_list_start
 import dndplayerscodex.shared.generated.resources.combat_list_title
-import dndplayerscodex.shared.generated.resources.combat_outcome_interrupted
-import dndplayerscodex.shared.generated.resources.combat_outcome_peace
-import dndplayerscodex.shared.generated.resources.combat_outcome_retreat
-import dndplayerscodex.shared.generated.resources.combat_outcome_victory
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-private val LineHeight20 = 20.sp
 private val GroupLetterSpacing = 0.12.em
 private val RowDivider = Color(0xFF1F2029)
 
@@ -93,7 +82,7 @@ fun CombatListUi(
                 if (state.groups.isEmpty()) {
                     EmptyState(text = stringResource(Res.string.combat_list_empty), modifier = Modifier.weight(1f))
                 } else {
-                    CombatJournal(state.groups, modifier = Modifier.weight(1f))
+                    CombatJournal(state.groups, state.eventSink, modifier = Modifier.weight(1f))
                 }
                 CombatFooterBar(state.footer, state.eventSink)
             }
@@ -135,6 +124,7 @@ private fun CombatListHeader(state: CombatListState) {
 @Composable
 private fun CombatJournal(
     groups: List<CombatGroupItem>,
+    onEvent: (CombatListEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -151,17 +141,28 @@ private fun CombatJournal(
                     modifier = Modifier.padding(start = 4.dp, top = 10.dp, end = 4.dp, bottom = 4.dp),
                 )
             }
-            items(group.rows, key = { it.id }) { row -> CombatRow(row) }
+            items(
+                group.rows,
+                key = { it.id },
+            ) { row -> CombatRow(row) { onEvent(CombatListEvent.CombatTapped(row.id)) } }
         }
     }
 }
 
 @Composable
-private fun CombatRow(row: CombatRowItem) {
+private fun CombatRow(
+    row: CombatRowItem,
+    onClick: () -> Unit,
+) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
         AppDivider(color = RowDivider)
         Row(
-            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 60.dp).padding(vertical = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 60.dp)
+                    .clickable(onClick = onClick)
+                    .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -172,7 +173,7 @@ private fun CombatRow(row: CombatRowItem) {
                         MaterialTheme.typography.bodyLarge.copy(
                             fontSize = AppFontSize.MediumPlus,
                             fontWeight = FontWeight.SemiBold,
-                            lineHeight = LineHeight20,
+                            lineHeight = AppLineHeight.Row,
                         ),
                     color = AppPalette.TextPrimary,
                 )
@@ -181,20 +182,14 @@ private fun CombatRow(row: CombatRowItem) {
                     style =
                         MaterialTheme.typography.bodySmall.copy(
                             fontSize = AppFontSize.Small,
-                            lineHeight = LineHeight20,
+                            lineHeight = AppLineHeight.Row,
                         ),
                     color = AppPalette.TextSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            val color = row.outcome.toStatusColor()
-            TagChip(
-                text = stringResource(row.outcome.label()),
-                foreground = color.foreground,
-                background = color.background,
-                border = color.border,
-            )
+            OutcomeBadge(row.outcome)
         }
     }
 }
@@ -219,7 +214,7 @@ private fun CombatFooterBar(
                         style =
                             MaterialTheme.typography.bodySmall.copy(
                                 fontSize = AppFontSize.Small,
-                                lineHeight = LineHeight20,
+                                lineHeight = AppLineHeight.Row,
                             ),
                         color = AppPalette.TextSecondary,
                         modifier = Modifier.fillMaxWidth(),
@@ -240,7 +235,11 @@ private fun PreparedFooter(
     onEvent: (CombatListEvent) -> Unit,
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-        SectionOverline(text = stringResource(Res.string.combat_list_prep_overline), color = AppPalette.MaroonBright)
+        Text(
+            text = stringResource(Res.string.combat_list_prep_overline),
+            style = AppText.fieldOverline.copy(fontSize = AppFontSize.TinyPlus, fontWeight = FontWeight.Bold),
+            color = AppPalette.MaroonBright,
+        )
         Text(
             text = summary,
             style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.SmallPlus),
@@ -278,22 +277,6 @@ private fun FooterButton(
     )
 }
 
-private fun CombatOutcome.label(): StringResource =
-    when (this) {
-        CombatOutcome.VICTORY -> Res.string.combat_outcome_victory
-        CombatOutcome.RETREAT -> Res.string.combat_outcome_retreat
-        CombatOutcome.PEACE -> Res.string.combat_outcome_peace
-        CombatOutcome.INTERRUPTED -> Res.string.combat_outcome_interrupted
-    }
-
-private fun CombatOutcome.toStatusColor(): StatusColor =
-    when (this) {
-        CombatOutcome.VICTORY -> QuestStatus.COMPLETED.toStatusColor()
-        CombatOutcome.RETREAT -> QuestStatus.ACTIVE.toStatusColor()
-        CombatOutcome.PEACE -> PartyMemberColor
-        CombatOutcome.INTERRUPTED -> NpcStatus.NEUTRAL.toStatusColor()
-    }
-
 @Composable
 private fun ArchiveNote(modifier: Modifier = Modifier) {
     Column(
@@ -315,7 +298,7 @@ private fun ArchiveNote(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.combat_list_archive_text),
             color = AppPalette.TextMuted,
             fontSize = AppFontSize.SmallPlus,
-            lineHeight = LineHeight20,
+            lineHeight = AppLineHeight.Row,
             modifier = Modifier.padding(top = 2.dp),
         )
     }

@@ -36,6 +36,14 @@ class PartyRepositoryImpl(
             queries.selectById(id, ::toDomainFull).executeAsOneOrNull()
         }
 
+    override suspend fun setFallen(
+        id: Long,
+        fallen: Boolean,
+        combatId: Long?,
+    ) {
+        withContext(Dispatchers.Default) { queries.setFallen(fallen, combatId.takeIf { fallen }, id) }
+    }
+
     // the "вы" flag is unique per campaign - saving a player character clears it from everyone else
     override suspend fun upsert(entity: PartyMember): Long =
         withContext(Dispatchers.Default) {
@@ -82,6 +90,8 @@ class PartyRepositoryImpl(
                 hp_max = member.hpMax?.toLong(),
                 hp_current = member.hpCurrent?.toLong(),
                 description = member.description,
+                fallen = member.fallen,
+                fell_combat_id = member.fellCombatId,
                 portrait = member.portrait?.full,
                 portrait_thumb = member.portrait?.thumb,
                 campaign_id = current.requireId(),
@@ -138,6 +148,8 @@ class PartyRepositoryImpl(
         hpMax: Long?,
         hpCurrent: Long?,
         description: String,
+        fallen: Boolean,
+        fellCombatId: Long?,
         portraitThumb: ByteArray?,
     ) = PartyMember(
         id = id,
@@ -152,6 +164,8 @@ class PartyRepositoryImpl(
         hpCurrent = hpCurrent?.toInt(),
         description = description,
         portrait = portraitThumb?.let { Photo(it) },
+        fallen = fallen,
+        fellCombatId = fellCombatId,
     )
 
     // the by-id row also carries the full jpeg
@@ -168,6 +182,8 @@ class PartyRepositoryImpl(
         hpMax: Long?,
         hpCurrent: Long?,
         description: String,
+        fallen: Boolean,
+        fellCombatId: Long?,
         portraitThumb: ByteArray?,
         portrait: ByteArray?,
     ) = toDomain(
@@ -182,6 +198,8 @@ class PartyRepositoryImpl(
         hpMax,
         hpCurrent,
         description,
+        fallen,
+        fellCombatId,
         portraitThumb,
     ).copy(portrait = portraitThumb?.let { Photo(it, portrait) })
 }

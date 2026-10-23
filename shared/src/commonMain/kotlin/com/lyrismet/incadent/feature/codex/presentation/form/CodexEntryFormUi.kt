@@ -82,6 +82,7 @@ internal fun CodexEntryFormUi(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
     density: FormDensity = FormDensity.Full,
+    kinds: List<EntityKind> = EntityKind.entries,
 ) {
     val focusManager = LocalFocusManager.current
     QuickAddOutsideTapHost(
@@ -92,7 +93,7 @@ internal fun CodexEntryFormUi(
         },
         modifier = modifier,
     ) {
-        CodexEntryFormContent(form, eventSink, onClose, density)
+        CodexEntryFormContent(form, eventSink, onClose, density, kinds)
         FormPhotoCropWindow(form, eventSink)
     }
 }
@@ -103,6 +104,7 @@ private fun CodexEntryFormContent(
     eventSink: (CodexEntryFormEvent) -> Unit,
     onClose: () -> Unit,
     density: FormDensity,
+    kinds: List<EntityKind>,
 ) {
     Column(
         modifier =
@@ -122,9 +124,10 @@ private fun CodexEntryFormContent(
             overline = form.overline,
             closeSize = CloseButtonSize,
         )
-        if (!form.isEditing) {
+        if (!form.isEditing && kinds.size > 1) {
             CodexEntryTypeSwitch(
                 selected = form.type,
+                kinds = kinds,
                 onSelected = { eventSink(CodexEntryFormEvent.EntryTypeChanged(it)) },
             )
         }
@@ -338,6 +341,7 @@ private fun LocationEntryFields(
 @Composable
 private fun CodexEntryTypeSwitch(
     selected: EntityKind,
+    kinds: List<EntityKind>,
     onSelected: (EntityKind) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -348,7 +352,7 @@ private fun CodexEntryTypeSwitch(
             SegmentedTab(EntityKind.SPECIES, stringResource(Res.string.codex_entry_type_species)),
             SegmentedTab(EntityKind.QUEST, stringResource(Res.string.codex_entry_type_quest)),
             SegmentedTab(EntityKind.LOCATION, stringResource(Res.string.codex_entry_type_location)),
-        )
+        ).filter { it.value in kinds }
     AppSegmentedTabs(
         tabs = options,
         selected = selected,
@@ -365,6 +369,7 @@ internal fun CodexEntryFormSheet(
     form: CodexEntryFormState,
     toast: String?,
     density: FormDensity = FormDensity.Full,
+    kinds: List<EntityKind> = EntityKind.entries,
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
     AppBottomSheet(
@@ -383,6 +388,7 @@ internal fun CodexEntryFormSheet(
                 eventSink = eventSink,
                 onClose = { eventSink(CodexEntryFormEvent.EntryFormCloseRequested) },
                 density = density,
+                kinds = kinds,
             )
             // the sheet covers the app-level toast, so the quick-add confirmation gets its own copy here
             AppToast(

@@ -25,6 +25,7 @@ fun createAppDatabase(driver: SqlDriver): AppDatabase {
                 phaseAdapter = combatPhaseAdapter,
                 started_atAdapter = localDateTimeAdapter,
                 outcomeAdapter = combatOutcomeAdapter,
+                finished_atAdapter = localDateTimeAdapter,
             ),
         combatantAdapter =
             Combatant.Adapter(

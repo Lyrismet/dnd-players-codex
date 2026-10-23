@@ -29,6 +29,10 @@ sealed interface EntitySheetEvent {
         val presence: PartyPresence,
     ) : EntitySheetEvent
 
+    data class PartyRevived(
+        val partyId: Long,
+    ) : EntitySheetEvent
+
     data class QuestStatusSelected(
         val questId: Long,
         val status: QuestStatus,
@@ -59,6 +63,7 @@ fun EntitySheetEvent.writesCampaignData(): Boolean =
         is EntitySheetEvent.NpcStatusSelected,
         is EntitySheetEvent.NpcLifeSelected,
         is EntitySheetEvent.PartyPresenceSelected,
+        is EntitySheetEvent.PartyRevived,
         is EntitySheetEvent.QuestStatusSelected,
         is EntitySheetEvent.SpeciesDamageChanged,
         is EntitySheetEvent.SpeciesNoteQuantityStepped,
@@ -79,6 +84,7 @@ fun EntitySheetInteractions.onEvent(
         is EntitySheetEvent.NpcStatusSelected -> onNpcStatusSelected(scope, event.npcId, event.status)
         is EntitySheetEvent.NpcLifeSelected -> onNpcLifeSelected(scope, event.npcId, event.lifeState)
         is EntitySheetEvent.PartyPresenceSelected -> onPartyPresenceSelected(scope, event.partyId, event.presence)
+        is EntitySheetEvent.PartyRevived -> onPartyRevived(scope, event.partyId)
         is EntitySheetEvent.QuestStatusSelected -> onQuestStatusSelected(scope, event.questId, event.status)
         // the session screen takes this one before it gets here, a card opened elsewhere has no note to count in
         is EntitySheetEvent.SpeciesNoteQuantityStepped -> Unit
@@ -120,6 +126,12 @@ fun entitySheetActions(
         onPartyPresenceSelected =
             if (partyPresence) {
                 { id, presence -> send(EntitySheetEvent.PartyPresenceSelected(id, presence)) }
+            } else {
+                null
+            },
+        onPartyRevived =
+            if (partyPresence) {
+                { id -> send(EntitySheetEvent.PartyRevived(id)) }
             } else {
                 null
             },

@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.feature.combat.domain.forecast.HitForecast
 import com.lyrismet.incadent.feature.combat.domain.forecast.HitForecastInput
+import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
 import com.lyrismet.incadent.feature.combat.domain.forecast.StateMark
 import com.lyrismet.incadent.feature.combat.domain.forecast.forecastHits
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
@@ -31,13 +32,16 @@ internal fun Combat.markAt(member: Combatant): Int? =
         ?.takeIf { member.state == CombatState.BLOODIED || member.state == CombatState.BARELY_STANDING }
 
 /** what is left of an enemy whose hit points are only guessed: facts first, then the master's words */
-internal fun Combat.forecast(member: Combatant): HitForecast {
+internal fun Combat.forecast(
+    member: Combatant,
+    seen: List<SpeciesHitObservation> = emptyList(),
+): HitForecast {
     if (member.side == CombatSide.PARTY || member.isTracked() || member.isDown()) return HitForecast.Unknown
     val marks =
         events
             .filter { it.targetId == member.id && it.kind == CombatEventKind.STATE && it.state != null }
             .map { StateMark(checkNotNull(it.state), it.amount) }
-    return forecastHits(HitForecastInput(damageTaken(member), member.enteredWhole, marks))
+    return forecastHits(HitForecastInput(damageTaken(member), member.enteredWhole, marks, seen))
 }
 
 @Composable
