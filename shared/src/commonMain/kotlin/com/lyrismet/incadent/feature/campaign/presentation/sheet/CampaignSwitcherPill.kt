@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.feature.campaign.presentation.sheet
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,8 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +23,7 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppTriangle
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.campaign_archive_banner_text
@@ -70,32 +68,9 @@ fun CampaignSwitcherPill(
             style = MaterialTheme.typography.labelSmall,
         )
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Triangle(pointsUp = true, color = tint)
-            Triangle(pointsUp = false, color = tint)
+            AppTriangle(true, tint, Modifier.width(TriangleSize).height(TriangleHeight))
+            AppTriangle(false, tint, Modifier.width(TriangleSize).height(TriangleHeight))
         }
-    }
-}
-
-@Composable
-private fun Triangle(
-    pointsUp: Boolean,
-    color: Color,
-) {
-    Canvas(modifier = Modifier.width(TriangleSize).height(TriangleHeight)) {
-        val path =
-            Path().apply {
-                if (pointsUp) {
-                    moveTo(0f, size.height)
-                    lineTo(size.width, size.height)
-                    lineTo(size.width / 2f, 0f)
-                } else {
-                    moveTo(0f, 0f)
-                    lineTo(size.width, 0f)
-                    lineTo(size.width / 2f, size.height)
-                }
-                close()
-            }
-        drawPath(path, color)
     }
 }
 

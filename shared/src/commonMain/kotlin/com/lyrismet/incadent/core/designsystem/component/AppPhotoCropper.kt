@@ -90,6 +90,17 @@ private const val SHADE_REACH_PX = 10_000f
 
 private fun CropAspect.windowShape(): Shape = if (this == CropAspect.Portrait) PortraitWindowShape else WideWindowShape
 
+/** the crop window's place while the picked photo is decoded */
+@Composable
+fun AppPhotoCropLoading(onCancel: () -> Unit) {
+    if (!LocalTabSelected.current) return
+    Dialog(onDismissRequest = onCancel, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(modifier = Modifier.fillMaxSize().background(CropBackground), contentAlignment = Alignment.Center) {
+            AppLoader()
+        }
+    }
+}
+
 /** the full-screen crop window, "Готово" reports the chosen [CropRect] and nothing is cut here */
 @Composable
 fun AppPhotoCropper(

@@ -30,6 +30,9 @@ CREATE TABLE combatant (
 );
 
 CREATE INDEX combatant_combat_id ON combatant(combat_id);
+CREATE INDEX combatant_npc_id ON combatant(npc_id);
+CREATE INDEX combatant_species_id ON combatant(species_id);
+CREATE INDEX combatant_party_member_id ON combatant(party_member_id);
 
 -- a record deleted from the codex leaves the preparations that picked it, a fight under way keeps its fighters
 CREATE TRIGGER combatant_npc_deleted BEFORE DELETE ON npc

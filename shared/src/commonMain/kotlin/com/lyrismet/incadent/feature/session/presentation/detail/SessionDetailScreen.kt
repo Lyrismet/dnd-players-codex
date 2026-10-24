@@ -35,6 +35,8 @@ data class SessionDetailState(
     val quantityHint: String? = null,
     val mentionSuggestions: List<MentionDropdownItem> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
+    // a card was tapped and its summary is still being built
+    val entityLoading: Boolean = false,
     // the in-place editing of the open entity card
     val quickEdit: QuickEditState = QuickEditState(),
     val editingEntryTimeLabel: String? = null,

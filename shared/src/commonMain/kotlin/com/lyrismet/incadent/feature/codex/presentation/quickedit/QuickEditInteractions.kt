@@ -148,6 +148,7 @@ class QuickEditInteractions(
             is QuickEditUiEvent.SpeciesCreated -> createSpecies(scope, event)
             QuickEditUiEvent.UndoClicked -> undoController.undo()
             QuickEditUiEvent.UndoFollowUpClicked -> undoController.followUp()
+            QuickEditUiEvent.UndoDismissed -> undoController.dismiss()
             is QuickEditUiEvent.RelationToggled -> toggleRelation(scope, event.id)
             QuickEditUiEvent.HoldHintDismissed -> onHoldHintSeen()
             is QuickEditPhotoEvent -> onPhotoEvent(scope, event)

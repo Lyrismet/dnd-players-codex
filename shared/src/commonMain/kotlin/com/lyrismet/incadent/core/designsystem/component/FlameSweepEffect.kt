@@ -58,18 +58,21 @@ fun FlameSweepEffect(
     content: @Composable () -> Unit,
 ) {
     var started by remember { mutableStateOf(false) }
+    var finished by remember { mutableStateOf(false) }
     val progress = remember { Animatable(0f) }
     val embers = remember { emberSeeds() }
     LaunchedEffect(play) {
         if (play && !started) {
             started = true
             progress.animateTo(1f, tween(SWEEP_DURATION_MILLIS, easing = LinearEasing))
+            // the second copy and its offscreen layer are dropped once the sweep is over
+            finished = true
         }
     }
 
     Box(modifier = modifier) {
         content()
-        if (started) {
+        if (started && !finished) {
             Box(
                 modifier =
                     Modifier

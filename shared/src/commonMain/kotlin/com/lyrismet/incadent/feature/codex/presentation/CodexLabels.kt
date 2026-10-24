@@ -37,7 +37,7 @@ import dndplayerscodex.shared.generated.resources.codex_undo_deleted_title
 import org.jetbrains.compose.resources.stringResource
 
 /** the labels the codex screen resolves from resources, collected once per composition */
-internal class CodexLabels(
+internal data class CodexLabels(
     val partyCard: PartyCardLabels,
     val entityType: Map<EntityKind, String>,
     val undoDeletedTitle: String,

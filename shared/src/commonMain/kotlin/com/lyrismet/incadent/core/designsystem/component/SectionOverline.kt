@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,16 +31,20 @@ fun SectionOverline(
     trailingContent: @Composable RowScope.() -> Unit = {},
 ) {
     val baseStyle = MaterialTheme.typography.labelSmall
+    val upperText = remember(text) { text.uppercase() }
+    val textStyle =
+        remember(baseStyle, fontSize, letterSpacing) {
+            baseStyle.copy(
+                fontSize = if (fontSize.isSpecified) fontSize else baseStyle.fontSize,
+                letterSpacing = letterSpacing,
+            )
+        }
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         val tappable = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
         Row(modifier = Modifier.weight(1f).then(tappable), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = text.uppercase(),
-                style =
-                    baseStyle.copy(
-                        fontSize = if (fontSize.isSpecified) fontSize else baseStyle.fontSize,
-                        letterSpacing = letterSpacing,
-                    ),
+                text = upperText,
+                style = textStyle,
                 color = color,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

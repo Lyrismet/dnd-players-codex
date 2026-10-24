@@ -5,8 +5,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.format.capitalizeFirst
-import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
-import com.lyrismet.incadent.core.preferences.FirstRecordHintState
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.core.undo.UndoFollowUp
 import com.lyrismet.incadent.domain.model.EntityKind
@@ -21,7 +19,6 @@ import com.lyrismet.incadent.feature.mention.domain.insertMentionAt
 import com.lyrismet.incadent.feature.mention.domain.mentionToken
 import com.lyrismet.incadent.feature.mention.domain.unlinkedMentionRef
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /** the create sheet that is open - [unlinked] is set when it was opened from the "no record yet" tag sheet */
@@ -41,10 +38,8 @@ internal class MentionCreateController(
     private val draft: MutableState<TextFieldValue>,
     private val codexRepositories: CodexRepositories,
     private val undoController: UndoController,
-    private val appPreferences: AppPreferencesRepository,
     private val mentionActions: SessionMentionActions,
     private val formController: CodexEntryFormController,
-    private val openCard: (EntityRef) -> Unit,
 ) {
     fun start(name: String) {
         open.value = OpenMentionCreate(name.trim(), EntityKind.NPC)
@@ -90,17 +85,10 @@ internal class MentionCreateController(
             val id = codexRepositories.createNamed(current.type, name)
             val ref = MentionRef(current.type, id)
             val revert = placeMention(current.unlinked, ref, name, data)
-            val isFirst = appPreferences.observeFirstRecordHintState().first() == FirstRecordHintState.PENDING
-            if (isFirst) appPreferences.setFirstRecordHintState(FirstRecordHintState.SEEN)
             val entityRef = ref.toEntityRef()
             val followUp =
-                if (isFirst) {
-                    UndoFollowUp(data.titles.created.open) { openCard(entityRef) }
-                } else {
-                    UndoFollowUp(data.titles.created.fill) { formController.onEditEntryRequested(entityRef, scope) }
-                }
-            val title = if (isFirst) data.titles.created.firstTitle else data.titles.created.title
-            undoController.showMade(title, name, followUp) {
+                UndoFollowUp(data.titles.created.fill) { formController.onEditEntryRequested(entityRef, scope) }
+            undoController.showMade(data.titles.created.title, name, followUp) {
                 revert()
                 codexRepositories.deleteRecord(current.type, id)
             }

@@ -21,6 +21,8 @@ enum class PrepSide { ALLY, ENEMY }
 enum class HpMode { HP, TEMP }
 
 data class CombatPrepState(
+    // the fight has not arrived yet
+    val isLoading: Boolean = true,
     // "Итоги попадут в" and the session it names, the session is the accented part
     val targetPrefix: String = "",
     val target: String = "",

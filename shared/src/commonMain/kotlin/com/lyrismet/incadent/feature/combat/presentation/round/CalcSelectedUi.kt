@@ -1,12 +1,9 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,7 +16,7 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppDashedTile
-import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 
 @Composable
@@ -51,39 +48,23 @@ private fun ScaleSelector(
     target: CalcTarget,
     emit: (CalcEvent) -> Unit,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .appCard(
-                    shape = AppShapes.Control,
-                    background = AppPalette.Background,
-                    border = AppPalette.BorderSubtle,
-                ).padding(3.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
-    ) {
-        target.scales.forEach { option ->
-            Box(
-                modifier =
-                    Modifier
-                        .weight(1f)
-                        .defaultMinSize(minHeight = 36.dp)
-                        .appCard(
-                            shape = AppShapes.Small,
-                            background = if (option.selected) AppPalette.SurfaceElevated else Color.Transparent,
-                            border = if (option.selected) AppPalette.RadioIdle else null,
-                            onClick = { emit(CalcEvent.ScaleSelected(target.id, option.scale)) },
-                        ),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    option.label,
-                    color = if (option.selected) AppPalette.TextHeading else AppPalette.TextTertiary,
-                    fontSize = AppFontSize.Body,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        }
+    SegmentedControl(
+        items = target.scales,
+        onSelected = { option -> emit(CalcEvent.ScaleSelected(target.id, option.scale)) },
+        itemBackground = { option -> if (option.selected) AppPalette.SurfaceElevated else Color.Transparent },
+        containerShape = AppShapes.Control,
+        containerBackground = AppPalette.Background,
+        itemShape = AppShapes.Small,
+        itemHeight = 36.dp,
+        contentPadding = 3.dp,
+        itemBorder = { option -> if (option.selected) AppPalette.RadioIdle else Color.Transparent },
+    ) { option ->
+        Text(
+            option.label,
+            color = if (option.selected) AppPalette.TextHeading else AppPalette.TextTertiary,
+            fontSize = AppFontSize.Body,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 

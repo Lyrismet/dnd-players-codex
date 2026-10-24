@@ -58,13 +58,15 @@ fun AppCoverFrame(
                 .background(AppPalette.Background)
                 .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
-        bitmap?.let {
+        if (bitmap != null) {
             Image(
-                bitmap = it,
+                bitmap = bitmap,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
+        } else {
+            AppLoader(size = PhotoLoaderSize, strokeWidth = 2.dp, modifier = Modifier.align(Alignment.Center))
         }
         Box(Modifier.fillMaxSize().border(1.dp, AppPalette.Parchment.copy(alpha = 0.3f), CardCoverShape))
         if (onClick != null) {
@@ -134,13 +136,16 @@ fun AppCoverField(
                 .clickable(onClick = onClick),
     ) {
         if (cover != null) {
-            rememberPhotoBitmapAsync(cover.display)?.let { bitmap ->
+            val bitmap = rememberPhotoBitmapAsync(cover.display)
+            if (bitmap != null) {
                 Image(
                     bitmap = bitmap,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
+            } else {
+                AppLoader(size = PhotoLoaderSize, strokeWidth = 2.dp, modifier = Modifier.align(Alignment.Center))
             }
         } else {
             Column(

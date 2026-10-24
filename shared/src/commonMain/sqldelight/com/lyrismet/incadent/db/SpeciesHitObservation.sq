@@ -7,6 +7,7 @@ CREATE TABLE species_hit_observation (
 );
 
 CREATE INDEX species_hit_observation_species_id ON species_hit_observation(species_id);
+CREATE INDEX species_hit_observation_combat_id ON species_hit_observation(combat_id);
 
 selectByCampaign:
 SELECT species_hit_observation.* FROM species_hit_observation

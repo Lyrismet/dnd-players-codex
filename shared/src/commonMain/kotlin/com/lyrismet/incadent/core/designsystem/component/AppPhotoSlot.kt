@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.portrait.rememberImagePickerLauncher
-import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
+import com.lyrismet.incadent.core.portrait.rememberPhotoBitmapAsync
 import com.lyrismet.incadent.domain.model.Photo
 
 /** one photo and everything a tap leads to, the viewer or the chooser while empty, null [actions] is read-only */
@@ -48,31 +48,34 @@ fun AppPhotoSlot(
         onDismiss = { menuOpen = false },
     )
     if (viewerOpen && photo != null) {
-        val image = rememberPhotoBitmap(photo.display)
-        AppPhotoViewer(
-            image = image,
-            kind = kind,
-            title = title,
-            monochrome = monochrome,
-            actions =
-                actions?.let {
-                    PhotoViewerActions(
-                        onReplace = {
-                            viewerOpen = false
-                            menuOpen = true
-                        },
-                        onCrop = {
-                            viewerOpen = false
-                            it.onCrop()
-                        },
-                        onDelete = {
-                            viewerOpen = false
-                            it.onDelete()
-                        },
-                    )
-                },
-            showEditHint = showEditHint,
-            onClose = { viewerOpen = false },
-        )
+        // the viewer opens once the picture is decoded off the main thread
+        val image = rememberPhotoBitmapAsync(photo.display)
+        image?.let { loaded ->
+            AppPhotoViewer(
+                image = loaded,
+                kind = kind,
+                title = title,
+                monochrome = monochrome,
+                actions =
+                    actions?.let {
+                        PhotoViewerActions(
+                            onReplace = {
+                                viewerOpen = false
+                                menuOpen = true
+                            },
+                            onCrop = {
+                                viewerOpen = false
+                                it.onCrop()
+                            },
+                            onDelete = {
+                                viewerOpen = false
+                                it.onDelete()
+                            },
+                        )
+                    },
+                showEditHint = showEditHint,
+                onClose = { viewerOpen = false },
+            )
+        }
     }
 }

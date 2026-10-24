@@ -88,8 +88,19 @@ class CombatPrepPresenter(
 
         val current = combat
         val rows = prepRows(current, party)
-        val mentioned = mentionedKeys(liveEntries.map { it.body }, npcs, species, party)
-        val searchState = search.value?.let { searchState(it, current, npcs, species, mentioned) }
+        val searchDraft = search.value
+        // the notes are parsed only while the search is open, and again only when a note or a record changes
+        val mentioned =
+            remember(searchDraft != null, liveEntries, npcs, species, party) {
+                if (searchDraft ==
+                    null
+                ) {
+                    emptySet()
+                } else {
+                    mentionedKeys(liveEntries.map { it.body }, npcs, species, party)
+                }
+            }
+        val searchState = searchDraft?.let { searchState(it, current, npcs, species, mentioned) }
         val target = combatSessionTarget(sessions, numbering, withTitle = true)
         val foeCount = npcs.count { it.lifeState == NpcLifeState.ALIVE && it.status == NpcStatus.ENEMY } + species.size
         val intro = prepIntro(party.map { it.name }, foeCount)
@@ -108,6 +119,7 @@ class CombatPrepPresenter(
             )
 
         return CombatPrepState(
+            isLoading = current == null,
             targetPrefix = target.prefix,
             target = target.session,
             intro = intro,

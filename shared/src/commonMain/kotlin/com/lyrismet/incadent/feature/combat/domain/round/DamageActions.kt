@@ -30,11 +30,13 @@ class DamageActions(
         strikes: List<Strike>,
     ) {
         val hitNumber = (combat.events.maxOfOrNull { it.hit } ?: 0) + 1
+        val members = mutableListOf<Combatant>()
+        val told = mutableListOf<CombatEvent>()
         strikes.filter { it.hit.total > 0 }.forEach { strike ->
             val target = strike.target
             val total = strike.hit.total
             val fallen = hurt(target, total)
-            repository.updateCombatant(fallen.member)
+            members += fallen.member
             strike.hit.terms.forEach { planned ->
                 val term = planned.term
                 val event =
@@ -53,22 +55,16 @@ class DamageActions(
                         raw = term.amount,
                         scale = strike.hit.scale,
                     )
-                repository.addEvent(combat.id, event)
+                told += event
             }
-            if (fallen.wentDown) {
-                repository.addEvent(
-                    combat.id,
-                    plain(combat, CombatEventKind.DOWN, target.id, sourceId),
-                )
-            }
+            if (fallen.wentDown) told += plain(combat, CombatEventKind.DOWN, target.id, sourceId)
             if (fallen.wounded) {
                 val taken = combat.damageTakenBy(target) + total
-                repository.addEvent(
-                    combat.id,
-                    plain(combat, CombatEventKind.STATE, target.id, sourceId, taken).copy(state = CombatState.WOUNDED),
-                )
+                told +=
+                    plain(combat, CombatEventKind.STATE, target.id, sourceId, taken).copy(state = CombatState.WOUNDED)
             }
         }
+        if (members.isNotEmpty()) repository.record(combat.id, members, told)
     }
 
     suspend fun heal(
@@ -77,6 +73,8 @@ class DamageActions(
         targets: List<Combatant>,
         amount: Int,
     ) {
+        val members = mutableListOf<Combatant>()
+        val told = mutableListOf<CombatEvent>()
         targets.forEach { target ->
             val wasDown = target.isDown() && !target.dead
             var healed = target
@@ -88,10 +86,11 @@ class DamageActions(
                 done = change.effective
             }
             if (wasDown) healed = healed.standing()
-            repository.updateCombatant(healed)
-            repository.addEvent(combat.id, plain(combat, CombatEventKind.HEAL, target.id, sourceId, done))
-            if (wasDown) repository.addEvent(combat.id, plain(combat, CombatEventKind.UP, target.id, sourceId))
+            members += healed
+            told += plain(combat, CombatEventKind.HEAL, target.id, sourceId, done)
+            if (wasDown) told += plain(combat, CombatEventKind.UP, target.id, sourceId)
         }
+        if (members.isNotEmpty()) repository.record(combat.id, members, told)
     }
 
     /** only for those whose hit points are numbers, the larger of the old and the new number stays */
@@ -101,14 +100,15 @@ class DamageActions(
         targets: List<Combatant>,
         amount: Int,
     ) {
+        val members = mutableListOf<Combatant>()
+        val told = mutableListOf<CombatEvent>()
         targets.filter { it.isTracked() }.forEach { target ->
             val max = checkNotNull(target.hpMax)
             val change = takeTemp(target.hpCurrent ?: max, target.tempHp, amount)
-            repository.updateCombatant(target.copy(tempHp = change.temp))
-            if (change.effective > 0) {
-                repository.addEvent(combat.id, plain(combat, CombatEventKind.TEMP, target.id, sourceId, amount))
-            }
+            members += target.copy(tempHp = change.temp)
+            if (change.effective > 0) told += plain(combat, CombatEventKind.TEMP, target.id, sourceId, amount)
         }
+        if (members.isNotEmpty()) repository.record(combat.id, members, told)
     }
 
     /** the resistance was named after the blow: the term is recounted, the hit points follow by the difference */

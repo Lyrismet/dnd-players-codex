@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -17,6 +21,9 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
+import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
+import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.NumberLabel
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -26,9 +33,12 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_count_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_empty_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_meta_format
+import dndplayerscodex.shared.generated.resources.entity_sheet_related_show_all_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_title
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
+
+private const val COLLAPSED_NOTE_COUNT = 5
 
 @Composable
 internal fun EntityRelatedNotesSection(
@@ -57,9 +67,21 @@ internal fun EntityRelatedNotesSection(
                 color = AppPalette.TextTertiary,
             )
         } else {
+            // a long history is folded to the newest few, every row of it would be composed with the sheet
+            var showAll by remember(relatedNotes.size) { mutableStateOf(false) }
+            val shown = if (showAll) relatedNotes else relatedNotes.take(COLLAPSED_NOTE_COUNT)
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                relatedNotes.forEach { item ->
+                shown.forEach { item ->
                     EntityRelatedNoteRow(item, onClick = { onRelatedNoteClicked(item.sessionNoteId, item.entryId) })
+                }
+                if (shown.size < relatedNotes.size) {
+                    AppButton(
+                        text = stringResource(Res.string.entity_sheet_related_show_all_format, relatedNotes.size),
+                        onClick = { showAll = true },
+                        tone = ButtonTone.Neutral,
+                        variant = ButtonVariant.Ghost,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
         }

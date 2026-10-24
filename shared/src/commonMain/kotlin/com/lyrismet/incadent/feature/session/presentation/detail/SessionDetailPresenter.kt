@@ -33,6 +33,7 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.rememberEntity
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
+import com.lyrismet.incadent.feature.codex.presentation.summary.isEntityLoading
 import com.lyrismet.incadent.feature.codex.presentation.summary.onEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhoto
 import com.lyrismet.incadent.feature.codex.presentation.summary.selectedEntitySummary
@@ -348,6 +349,7 @@ class SessionDetailPresenter(
             quantityHint = pendingQuantityName(draft.value.text, draft.value.selection.end),
             mentionSuggestions = mention.suggestions,
             selectedEntity = selectedEntity,
+            entityLoading = isEntityLoading(selectedEntityRef.value, selectedEntity),
             quickEdit =
                 fields.quickEdit.state(
                     CodexRecords(
@@ -431,10 +433,9 @@ class SessionDetailPresenter(
                     draft,
                     codexRepositories,
                     undoController,
-                    appPreferencesRepository,
                     mentionActions,
                     formController,
-                ) { selectedEntityRef.value = it },
+                ),
             phrases = remember { PhraseSheetController(phraseSnippetRepository) },
             speciesNote = SpeciesNoteController(remember(noteId) { mutableStateOf(null) }, sessionEntryRepository),
             toast = remember(noteId) { mutableStateOf(null) },

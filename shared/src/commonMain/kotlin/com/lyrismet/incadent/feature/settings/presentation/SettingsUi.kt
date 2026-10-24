@@ -19,9 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -36,6 +34,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppListCard
 import com.lyrismet.incadent.core.designsystem.component.AppListRow
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
@@ -327,14 +326,11 @@ private fun CampaignNameRow(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        Box(
-            modifier =
-                Modifier
-                    .size(36.dp)
-                    .clip(AppShapes.Control)
-                    .background(AppPalette.SurfacePopover)
-                    .border(1.dp, AppPalette.Border, AppShapes.Control),
-            contentAlignment = Alignment.Center,
+        IconBadge(
+            size = 36.dp,
+            shape = AppShapes.Control,
+            background = AppPalette.SurfacePopover,
+            border = AppPalette.Border,
         ) {
             Icon(
                 imageVector = AppIcons.Edit,

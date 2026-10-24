@@ -25,8 +25,6 @@ import dndplayerscodex.shared.generated.resources.auto_mention_linked_title
 import dndplayerscodex.shared.generated.resources.deleted_mention_linked_title
 import dndplayerscodex.shared.generated.resources.deleted_mention_text_toast_title
 import dndplayerscodex.shared.generated.resources.mention_created_fill
-import dndplayerscodex.shared.generated.resources.mention_created_first_title
-import dndplayerscodex.shared.generated.resources.mention_created_open
 import dndplayerscodex.shared.generated.resources.mention_created_title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -70,12 +68,10 @@ internal class MentionTitles(
     val created: CreatedTitles,
 )
 
-/** the texts of the bar shown after a record is made from a typed name, the first one worded differently */
+/** the texts of the bar shown after a record is made from a typed name */
 internal class CreatedTitles(
     val title: String,
-    val firstTitle: String,
     val fill: String,
-    val open: String,
 )
 
 /** everything the mention events read - one value instead of one parameter per piece */
@@ -198,9 +194,7 @@ internal fun mentionEventData(
                 created =
                     CreatedTitles(
                         title = stringResource(Res.string.mention_created_title),
-                        firstTitle = stringResource(Res.string.mention_created_first_title),
                         fill = stringResource(Res.string.mention_created_fill),
-                        open = stringResource(Res.string.mention_created_open),
                     ),
             ),
     )

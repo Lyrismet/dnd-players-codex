@@ -14,6 +14,9 @@ CREATE TABLE combat (
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
 );
 
+CREATE INDEX combat_campaign_id ON combat(campaign_id);
+CREATE INDEX combat_session_note_id ON combat(session_note_id);
+
 selectAll:
 SELECT * FROM combat
 WHERE campaign_id = ?

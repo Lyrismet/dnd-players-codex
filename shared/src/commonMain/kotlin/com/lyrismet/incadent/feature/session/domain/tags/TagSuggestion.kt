@@ -179,7 +179,11 @@ private fun firstMatch(
 private fun signalRegex(
     value: String,
     exact: Boolean,
-): Regex {
-    val body = if (exact) "($value)(?![\\p{L}])" else "($value\\p{L}*)"
-    return Regex("(?:^|[^\\p{L}])$body", RegexOption.IGNORE_CASE)
-}
+): Regex =
+    // compiled once per signal, the rules are a fixed list and this runs on every change of a note
+    signalRegexes.getOrPut("$exact:$value") {
+        val body = if (exact) "($value)(?![\\p{L}])" else "($value\\p{L}*)"
+        Regex("(?:^|[^\\p{L}])$body", RegexOption.IGNORE_CASE)
+    }
+
+private val signalRegexes = HashMap<String, Regex>()

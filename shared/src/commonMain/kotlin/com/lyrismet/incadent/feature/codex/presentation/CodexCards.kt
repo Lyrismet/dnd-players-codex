@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.feature.codex.presentation
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,6 +27,7 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.AppTriangle
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
 import com.lyrismet.incadent.core.designsystem.component.StatusBadge
@@ -295,21 +294,6 @@ private fun QuestFactLabel(text: String) {
 // the edge of a top level place's card, a cool tint that sits on the night-sky fill
 private val TopLevelBorder = Color(0x3D96A0E6)
 
-/** the place mark of the badge, drawn instead of typed - the "▲" glyph falls back to a tiny one in some fonts */
-@Composable
-private fun PlaceTriangle() {
-    Canvas(Modifier.size(width = 14.dp, height = 12.dp)) {
-        val path =
-            Path().apply {
-                moveTo(size.width / 2, 0f)
-                lineTo(size.width, size.height)
-                lineTo(0f, size.height)
-                close()
-            }
-        drawPath(path, AppPalette.Parchment)
-    }
-}
-
 @Composable
 internal fun LocationCodexCard(
     item: LocationCodexItem,
@@ -333,7 +317,7 @@ internal fun LocationCodexCard(
                 background = AppPalette.Parchment.copy(alpha = 0.08f),
                 border = AppPalette.Parchment.copy(alpha = 0.3f),
             ) {
-                PlaceTriangle()
+                AppTriangle(true, AppPalette.Parchment, Modifier.size(width = 14.dp, height = 12.dp))
             }
         },
     ) {

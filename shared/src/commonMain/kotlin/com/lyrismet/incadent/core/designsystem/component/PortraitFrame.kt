@@ -50,13 +50,16 @@ fun PortraitFrame(
             contentAlignment = Alignment.Center,
         ) {
             if (portrait != null) {
-                rememberPhotoBitmapAsync(portrait.display)?.let { bitmap ->
+                val bitmap = rememberPhotoBitmapAsync(portrait.display)
+                if (bitmap != null) {
                     Image(
                         bitmap = bitmap,
                         contentDescription = null,
                         modifier = Modifier.matchParentSize(),
                         contentScale = ContentScale.Crop,
                     )
+                } else {
+                    AppLoader(size = PhotoLoaderSize, strokeWidth = 2.dp, modifier = Modifier.align(Alignment.Center))
                 }
             } else {
                 Text(

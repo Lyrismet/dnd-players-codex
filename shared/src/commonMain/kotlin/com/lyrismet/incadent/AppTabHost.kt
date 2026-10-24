@@ -86,7 +86,7 @@ internal class AppTabsState(
 ) {
     val selectedTab: AppTab get() = AppTab.entries[selectedTabIndex.value]
 
-    fun stackOf(tab: AppTab): TabStack? =
+    fun stackOf(tab: AppTab): TabStack =
         when (tab) {
             AppTab.SESSIONS -> sessions
             AppTab.CODEX -> codex
@@ -129,6 +129,9 @@ internal fun AppTabHost(
     var isExitConfirmVisible by remember { mutableStateOf(false) }
     // the tab bar stays put under the keyboard, so the content only lifts by the keyboard height beyond it
     val ime = WindowInsets.ime
+    // plain set, a new entry always arrives with the selected tab changing, which recomposes this anyway
+    val composedTabs = remember { mutableSetOf<AppTab>() }
+    composedTabs += selectedTab
     var tabBarHeightPx by remember { mutableIntStateOf(0) }
 
     // reached only when the selected tab's own back handler passes, i.e. at a tab root
@@ -147,22 +150,19 @@ internal fun AppTabHost(
                     .fillMaxWidth()
                     .liftAboveKeyboard(ime) { tabBarHeightPx },
         ) {
-            Box(modifier = tabContentModifier(selectedTab == AppTab.SESSIONS)) {
-                TabBackstackHost(tabs.sessions, isSelected = selectedTab == AppTab.SESSIONS)
-            }
-            Box(modifier = tabContentModifier(selectedTab == AppTab.CODEX)) {
-                TabBackstackHost(tabs.codex, isSelected = selectedTab == AppTab.CODEX)
-            }
-            Box(modifier = tabContentModifier(selectedTab == AppTab.COMBAT)) {
-                TabBackstackHost(tabs.combat, isSelected = selectedTab == AppTab.COMBAT)
-            }
-            Box(modifier = tabContentModifier(selectedTab == AppTab.SETTINGS)) {
-                TabBackstackHost(tabs.settings, isSelected = selectedTab == AppTab.SETTINGS)
+            AppTab.entries.forEach { tab ->
+                // a tab composes the first time it is shown and then stays, so its nav stack and ui state survive
+                if (tab in composedTabs) {
+                    Box(modifier = tabContentModifier(selectedTab == tab)) {
+                        TabBackstackHost(tabs.stackOf(tab), isSelected = selectedTab == tab)
+                    }
+                }
             }
             UndoToast(
                 action = pendingUndo,
                 onUndo = undoController::undo,
                 onFollowUp = undoController::followUp,
+                onDismiss = undoController::dismiss,
                 modifier = floatingBarAnchor(),
             )
         }
@@ -208,9 +208,9 @@ private fun handleTabRootBack(
 ) {
     val tab = tabs.selectedTab
     val stack = tabs.stackOf(tab)
-    val depth = stack?.backStack?.size ?: 1
+    val depth = stack.backStack.size
     when (resolveBackAction(isOnSessionsTab = tab == AppTab.SESSIONS, activeTabDepth = depth)) {
-        BackAction.Pop -> stack?.navigator?.pop()
+        BackAction.Pop -> stack.navigator.pop()
         BackAction.SwitchToSessions -> tabs.selectedTabIndex.value = AppTab.SESSIONS.ordinal
         BackAction.ConfirmExit -> onExitRequested()
     }
@@ -225,7 +225,7 @@ private fun onTabTapped(
         tabs.selectedTabIndex.value = index
         return
     }
-    val stack = tabs.stackOf(AppTab.entries[index]) ?: return
+    val stack = tabs.stackOf(AppTab.entries[index])
     popToRoot(stack)
 }
 

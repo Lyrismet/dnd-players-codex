@@ -56,9 +56,7 @@
     <string name="mention_create_name_placeholder">Name</string>
     <string name="mention_create_button">Create and mention</string>
     <string name="mention_created_title">Record created</string>
-    <string name="mention_created_first_title">The record is in the Codex now</string>
     <string name="mention_created_fill">Fill in</string>
-    <string name="mention_created_open">Open</string>
     <string name="starter_phrase_arrived">Arrived at @</string>
     <string name="starter_phrase_met">Met @</string>
     <string name="starter_phrase_quest">Took the quest @</string>
@@ -272,6 +270,7 @@
         <item quantity="one">%1$d mention · open session →</item>
         <item quantity="other">%1$d mentions · open session →</item>
     </plurals>
+    <string name="entity_sheet_related_show_all_format">Show all (%1$d)</string>
     <string name="entity_sheet_related_empty_format">Not mentioned anywhere yet. Add @%1$s to a session note.</string>
 
     <string name="bottom_tab_sessions">Sessions</string>

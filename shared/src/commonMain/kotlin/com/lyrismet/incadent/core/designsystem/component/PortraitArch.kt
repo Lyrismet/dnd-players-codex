@@ -59,7 +59,8 @@ fun PortraitArch(
             contentAlignment = Alignment.Center,
         ) {
             if (portrait != null) {
-                rememberPhotoBitmapAsync(portrait.display)?.let { bitmap ->
+                val bitmap = rememberPhotoBitmapAsync(portrait.display)
+                if (bitmap != null) {
                     Image(
                         bitmap = bitmap,
                         contentDescription = null,
@@ -67,6 +68,8 @@ fun PortraitArch(
                         contentScale = ContentScale.Crop,
                         colorFilter = if (monochrome) PortraitGrayscaleFilter else null,
                     )
+                } else {
+                    AppLoader(size = PhotoLoaderSize, strokeWidth = 2.dp, modifier = Modifier.align(Alignment.Center))
                 }
             } else {
                 Text(

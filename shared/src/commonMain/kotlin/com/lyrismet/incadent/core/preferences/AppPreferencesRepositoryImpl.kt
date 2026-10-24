@@ -2,7 +2,6 @@ package com.lyrismet.incadent.core.preferences
 
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.EntityEditMode
-import com.lyrismet.incadent.core.preferences.FirstRecordHintState
 import com.lyrismet.incadent.core.preferences.HoldHintState
 import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.core.preferences.SessionNumbering
@@ -23,7 +22,6 @@ private const val KEY_ENTITY_EDIT_MODE = "entity_edit_mode"
 private const val KEY_HOLD_HINT_STATE = "hold_hint_state"
 private const val KEY_SESSION_LIST_SWIPE_HINT_STATE = "session_list_swipe_hint_state"
 private const val KEY_CODEX_SWIPE_HINT_STATE = "codex_swipe_hint_state"
-private const val KEY_FIRST_RECORD_HINT_STATE = "first_record_hint_state"
 
 @Inject
 @SingleIn(AppScope::class)
@@ -89,15 +87,5 @@ class AppPreferencesRepositoryImpl(
 
     override fun setCodexSwipeHintState(state: SwipeHintState) {
         settings.putString(KEY_CODEX_SWIPE_HINT_STATE, state.tag)
-    }
-
-    @OptIn(ExperimentalSettingsApi::class)
-    override fun observeFirstRecordHintState(): Flow<FirstRecordHintState> =
-        settings.getStringFlow(KEY_FIRST_RECORD_HINT_STATE, FirstRecordHintState.PENDING.tag).map { tag ->
-            FirstRecordHintState.entries.find { it.tag == tag } ?: FirstRecordHintState.PENDING
-        }
-
-    override fun setFirstRecordHintState(state: FirstRecordHintState) {
-        settings.putString(KEY_FIRST_RECORD_HINT_STATE, state.tag)
     }
 }

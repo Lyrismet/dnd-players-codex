@@ -20,7 +20,14 @@ actual class DatabaseDriverFactory(
                 object : AndroidSqliteDriver.Callback(AppDatabase.Schema) {
                     // foreign keys are per connection, a pragma run once would miss the pooled ones
                     override fun onConfigure(db: SupportSQLiteDatabase) {
+                        // the write-ahead log lets reads run beside a write and commits without a journal fsync
+                        db.enableWriteAheadLogging()
                         db.setForeignKeyConstraintsEnabled(true)
+                    }
+
+                    // safe with the write-ahead log, a commit syncs at the checkpoint and not on every write
+                    override fun onOpen(db: SupportSQLiteDatabase) {
+                        db.execSQL("PRAGMA synchronous=NORMAL")
                     }
                 },
         )

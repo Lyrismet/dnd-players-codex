@@ -28,6 +28,7 @@ fun EntityCardSheet(
                 action = quick.undoAction,
                 onUndo = { onQuickEvent(QuickEditUiEvent.UndoClicked) },
                 onFollowUp = { onQuickEvent(QuickEditUiEvent.UndoFollowUpClicked) },
+                onDismiss = { onQuickEvent(QuickEditUiEvent.UndoDismissed) },
                 modifier = floatingBarAnchor(),
             )
         }

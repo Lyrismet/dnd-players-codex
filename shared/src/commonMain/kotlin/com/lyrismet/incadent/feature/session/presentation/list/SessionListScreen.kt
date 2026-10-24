@@ -25,7 +25,11 @@ data class SessionListState(
     val campaignSheet: CampaignSheetState = CampaignSheetState.Hidden,
     val liveSession: LiveSessionItem? = null,
     val sessions: List<SessionListItem> = emptyList(),
+    // the sessions have not arrived yet, so the list must not claim there are none
+    val isLoading: Boolean = true,
     val selectedEntity: EntitySummaryItem? = null,
+    // a card was tapped and its summary is still being built
+    val entityLoading: Boolean = false,
     // the in-place editing of the open entity card
     val quickEdit: QuickEditState = QuickEditState(),
     val toast: ToastMessage? = null,

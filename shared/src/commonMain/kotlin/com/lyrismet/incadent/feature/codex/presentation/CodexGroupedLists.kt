@@ -15,14 +15,14 @@ import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 
 /** the chip labels of each tab's group-by row */
-internal class CodexGroupOptionLabels(
+internal data class CodexGroupOptionLabels(
     val npc: Map<NpcGroupBy, String>,
     val quest: Map<QuestGroupBy, String>,
     val place: Map<LocationGroupBy, String>,
 )
 
 /** every label the grouped lists need - section titles, chip labels and the npc life badge */
-internal class CodexGroupedLabels(
+internal data class CodexGroupedLabels(
     val titles: CodexGroupLabels,
     val options: CodexGroupOptionLabels,
     val npcLife: Map<NpcLifeState, String>,

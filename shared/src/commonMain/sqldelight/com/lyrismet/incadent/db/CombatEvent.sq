@@ -23,6 +23,7 @@ CREATE TABLE combat_event (
 );
 
 CREATE INDEX combat_event_combat_id ON combat_event(combat_id);
+CREATE INDEX combat_event_target_id ON combat_event(target_id);
 
 selectByCombat:
 SELECT * FROM combat_event WHERE combat_id = ? ORDER BY id;

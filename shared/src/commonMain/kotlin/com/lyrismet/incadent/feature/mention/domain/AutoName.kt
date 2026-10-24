@@ -8,8 +8,11 @@ internal class AutoName(
     val entity: MentionEntity,
 )
 
-internal fun autoNamesOf(index: MentionIndex): List<AutoName> =
-    index.uniqueByName
+// built once per index, a note screen parses every note against it
+internal fun autoNamesOf(index: MentionIndex): List<AutoName> = index.autoNames
+
+internal fun buildAutoNames(uniqueByName: List<MentionEntity>): List<AutoName> =
+    uniqueByName
         .filter { it.name.length >= AUTO_MATCH_MIN_LENGTH && it.ref.type != EntityKind.SPECIES }
         .map { AutoName(it.name.foldPerChar(), it) }
         .sortedByDescending { it.folded.length }

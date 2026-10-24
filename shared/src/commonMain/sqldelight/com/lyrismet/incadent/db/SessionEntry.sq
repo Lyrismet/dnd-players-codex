@@ -9,7 +9,8 @@ CREATE TABLE session_entry (
     mention_check INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
-CREATE INDEX session_entry_session_note_id ON session_entry(session_note_id);
+-- the notes of a session come out in time order straight from this index
+CREATE INDEX session_entry_session_note_id ON session_entry(session_note_id, created_at);
 
 selectForSession:
 SELECT * FROM session_entry WHERE session_note_id = ? ORDER BY created_at ASC;

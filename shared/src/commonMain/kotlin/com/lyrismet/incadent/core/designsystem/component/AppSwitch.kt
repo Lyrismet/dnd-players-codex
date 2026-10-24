@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 
@@ -37,6 +38,16 @@ fun AppSwitch(
                 .background(if (checked) AppPalette.Gold else AppPalette.BorderHover, CircleShape)
                 .padding(KnobInset),
     ) {
-        Box(Modifier.offset(x = knobOffset).size(KnobSize).background(Color.White, CircleShape))
+        // read while placing, so the knob sliding does not recompose the switch every frame
+        Box(
+            Modifier
+                .offset {
+                    IntOffset(
+                        knobOffset.roundToPx(),
+                        0,
+                    )
+                }.size(KnobSize)
+                .background(Color.White, CircleShape),
+        )
     }
 }

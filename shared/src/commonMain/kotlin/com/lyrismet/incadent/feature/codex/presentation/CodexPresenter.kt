@@ -5,7 +5,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import com.lyrismet.incadent.core.debounce.rememberDebounced
 import com.lyrismet.incadent.core.errors.ReportFailures
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
@@ -55,10 +57,10 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
-import com.lyrismet.incadent.feature.codex.presentation.summary.buildEntitySummary
 import com.lyrismet.incadent.feature.codex.presentation.summary.creatureTypeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.entityLookupOf
 import com.lyrismet.incadent.feature.codex.presentation.summary.onEvent
+import com.lyrismet.incadent.feature.codex.presentation.summary.rememberEntitySummary
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhoto
 import com.lyrismet.incadent.feature.codex.presentation.summary.withFullPhoto
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
@@ -80,7 +82,9 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_toast_format
 import dndplayerscodex.shared.generated.resources.codex_party_fell_session
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
@@ -160,10 +164,14 @@ class CodexPresenter(
             speciesRepository,
         )
 
+    // one collection per source the screen reads - a flat merge, not real complexity
+    @Suppress("LongMethod")
     @Composable
     override fun present(): CodexState {
-        val parties by partyRepository.observeAll().collectAsState(initial = emptyList())
-        val npcs by npcRepository.observeAll().collectAsState(initial = emptyList())
+        val loadedParties by partyRepository.observeAll().collectAsState(initial = null)
+        val loadedNpcs by npcRepository.observeAll().collectAsState(initial = null)
+        val parties = loadedParties.orEmpty()
+        val npcs = loadedNpcs.orEmpty()
         val species by speciesRepository.observeAll().collectAsState(initial = emptyList())
         val quests by questRepository.observeAll().collectAsState(initial = emptyList())
         val locations by locationRepository.observeAll().collectAsState(initial = emptyList())
@@ -187,8 +195,18 @@ class CodexPresenter(
         // the field shows every keystroke at once, the lists below follow once typing pauses
         val query = rememberDebounced(fields.searchQuery.value.trim()) { it.isEmpty() }
         val search = remember(records, query) { buildSearchResults(records, query) }
-        val party = search.searchedParties.toPartyCodexItems(labels.partyCard, fellIn(records, sessionNotes, numbering))
-        val listing = codexListing(search, records, party, fields, labels, query)
+        val fell = fellIn(records, sessionNotes, numbering)
+        val party =
+            remember(search, labels, fell) { search.searchedParties.toPartyCodexItems(labels.partyCard, fell) }
+        // the lists are rebuilt when what they are made of changes, not on every keystroke of a form or an editor
+        val tab = fields.activeTab.value
+        val grouping = fields.grouping.value
+        val collapsed = fields.collapsedPlaceIds.value
+        val npcMode = fields.npcMode.value
+        val listing =
+            remember(search, records, party, labels, query, tab, grouping, collapsed, npcMode) {
+                codexListing(search, records, party, fields, labels, query)
+            }
         val formState = formController.buildState(records.npcs, records.locations, species)
 
         val lookup = lookupOf(records, sessionNotes, numbering)
@@ -216,6 +234,7 @@ class CodexPresenter(
             labels,
             scope,
             query,
+            loadedParties == null || loadedNpcs == null,
             CodexEditContext(editMode, holdHint, undoAction, swipeHintTarget),
         )
     }
@@ -273,7 +292,9 @@ class CodexPresenter(
                 parties,
                 species,
             ) { mentionIndexOf(npcs, locations, quests, parties, species) }
-        return CodexRecords(parties, npcs, quests, locations, entries, index, species, facts)
+        return remember(parties, npcs, quests, locations, entries, index, species, facts) {
+            CodexRecords(parties, npcs, quests, locations, entries, index, species, facts)
+        }
     }
 
     // keyed on the lookup data, so typing in the open editor doesn't re-parse every session entry
@@ -282,7 +303,7 @@ class CodexPresenter(
         ref: EntityRef?,
         lookup: EntityLookup,
     ): EntitySummaryItem? {
-        val summary = remember(ref, lookup) { ref?.let { buildEntitySummary(it, lookup) } }
+        val summary = rememberEntitySummary(ref, lookup)
         return summary?.withFullPhoto(rememberFullPhoto(summary, codexRepositories))
     }
 
@@ -438,13 +459,23 @@ class CodexPresenter(
         labels: CodexLabels,
         scope: CoroutineScope,
         query: String,
+        isLoading: Boolean,
         context: CodexEditContext,
     ): CodexState {
         val activeTab = fields.activeTab.value
         val campaign by campaignRepository.observeCurrent().collectAsState(initial = null)
         val readOnly = campaign?.status == CampaignStatus.ARCHIVED
+        // one identity for the whole screen, so the rows do not recompose when only the data behind the sink moved
+        val latest =
+            rememberUpdatedState { event: CodexEvent ->
+                if (!(readOnly && event.writesCampaignData())) {
+                    onEvent(event, fields, formController, records, labels, scope)
+                }
+            }
+        val eventSink = remember { { event: CodexEvent -> latest.value(event) } }
         return CodexState(
             readOnly = readOnly,
+            isLoading = isLoading,
             activeTab = activeTab,
             searchQuery = fields.searchQuery.value,
             tabCounts =
@@ -469,7 +500,7 @@ class CodexPresenter(
             groupBy = grouped.groupBy,
             groupOptions = grouped.groupOptions,
             emptyState = codexEmptyState(emptyKind, activeTab),
-            activeSheet = codexActiveSheet(formState, selectedEntity),
+            activeSheet = codexActiveSheet(formState, selectedEntity, fields.selectedEntityRef.value != null),
             editMode = context.editMode,
             quick =
                 fields.quickEdit.state(
@@ -482,18 +513,8 @@ class CodexPresenter(
             swipeHintDirection = codexSwipeHintDirection(context.editMode),
             toast = fields.toast.value,
             deleteWarning = deleteWarning(fields.pendingDelete.value, records, labels),
-        ) { event ->
-            if (!(readOnly && event.writesCampaignData())) {
-                onEvent(
-                    event,
-                    fields,
-                    formController,
-                    records,
-                    labels,
-                    scope,
-                )
-            }
-        }
+            eventSink = eventSink,
+        )
     }
 
     // the species rows of the npc tab, each with the number of sessions that mention it
@@ -504,15 +525,19 @@ class CodexPresenter(
         isShown: Boolean,
     ): List<SpeciesCodexItem> {
         val typeLabels = creatureTypeLabels()
-        val seen =
-            remember(records.entries, records.mentionIndex, isShown) {
-                // parsing every note is only worth it while the species rows can be seen
-                if (!isShown) return@remember emptyMap()
-                val bodies = records.entries.map { MentionBody(it.sessionNoteId, it.body) }
-                mentionSessionCounts(bodies, records.mentionIndex)
-                    .filterKeys { it.type == EntityKind.SPECIES }
-                    .mapKeys { it.key.id }
+        // parsing every note is only worth it while the species rows can be seen, and it runs off the main thread
+        val visible = isShown && LocalTabSelected.current
+        val seen by produceState(emptyMap<Long, Int>(), records.entries, records.mentionIndex, visible) {
+            if (visible) {
+                value =
+                    withContext(Dispatchers.Default) {
+                        val bodies = records.entries.map { MentionBody(it.sessionNoteId, it.body) }
+                        mentionSessionCounts(bodies, records.mentionIndex)
+                            .filterKeys { it.type == EntityKind.SPECIES }
+                            .mapKeys { it.key.id }
+                    }
             }
+        }
         return remember(
             records.species,
             query,
@@ -706,9 +731,11 @@ private fun firstCodexEntityRef(
 private fun codexActiveSheet(
     formState: CodexEntryFormState?,
     selectedEntity: EntitySummaryItem?,
+    entitySelected: Boolean,
 ): CodexSheet? =
     when {
         formState != null -> CodexSheet.EntryForm(formState)
         selectedEntity != null -> CodexSheet.EntityView(selectedEntity)
+        entitySelected -> CodexSheet.EntityLoading
         else -> null
     }

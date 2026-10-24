@@ -54,6 +54,8 @@ fun selectRows(
             .distinct()
             .withIndex()
             .associate { (index, name) -> name to index }
+    // each title is folded once, not again on every comparison of the sort
+    val collation = HashMap<Long, String>()
     return options
         .asSequence()
         .filter { it.id !in excludedIds }
@@ -64,7 +66,7 @@ fun selectRows(
                 { if (it.unavailableNote != null) 1 else 0 },
                 { if (floatSelected && needle.isEmpty() && it.id in selectedIds) 0 else 1 },
                 { recentRank[it.id] ?: Int.MAX_VALUE },
-                { it.title.collationKey() },
+                { collation.getOrPut(it.id) { it.title.collationKey() } },
                 { it.id },
             ),
         ).map { option ->

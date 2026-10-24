@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
@@ -50,6 +51,7 @@ import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityCardSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.asSheet
+import com.lyrismet.incadent.feature.codex.presentation.summary.EntityLoadingSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.codex.presentation.summary.entitySheetActions
@@ -79,6 +81,9 @@ fun SessionDetailUi(
     }
 
     state.selectedEntity?.let { entity -> SessionDetailEntitySheet(state, entity) }
+    if (state.entityLoading) {
+        EntityLoadingSheet { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) }
+    }
     if (state.combatDeleteVisible) {
         ConfirmationDialog(
             title = stringResource(Res.string.combat_results_delete_title),
@@ -110,7 +115,9 @@ private fun ColumnScope.SessionDetailBody(state: SessionDetailState) {
 
     // the toast floats at the feed's bottom edge, so it never covers the composer
     Box(modifier = Modifier.weight(1f)) {
-        if (state.feed.items.isEmpty()) {
+        if (state.feed.items.isEmpty() && state.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { AppLoader() }
+        } else if (state.feed.items.isEmpty()) {
             EmptyState(
                 title = stringResource(Res.string.session_detail_empty_feed),
                 text = stringResource(Res.string.session_detail_empty_feed_hint),

@@ -58,9 +58,7 @@
     <string name="mention_create_name_placeholder">Имя</string>
     <string name="mention_create_button">Создать и упомянуть</string>
     <string name="mention_created_title">Запись создана</string>
-    <string name="mention_created_first_title">Запись появилась в Кодексе</string>
     <string name="mention_created_fill">Заполнить</string>
-    <string name="mention_created_open">Открыть</string>
     <string name="starter_phrase_arrived">Пришли в @</string>
     <string name="starter_phrase_met">Встретили @</string>
     <string name="starter_phrase_quest">Взяли квест @</string>
@@ -284,6 +282,7 @@
         <item quantity="many">%1$d упоминаний · открыть сессию →</item>
         <item quantity="other">%1$d упоминания · открыть сессию →</item>
     </plurals>
+    <string name="entity_sheet_related_show_all_format">Показать все (%1$d)</string>
     <string name="entity_sheet_related_empty_format">Пока нигде не упоминается. Добавьте @%1$s в заметку сессии.</string>
 
     <string name="bottom_tab_sessions">Сессии</string>

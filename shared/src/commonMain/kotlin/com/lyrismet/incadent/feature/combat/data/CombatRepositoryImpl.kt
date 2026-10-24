@@ -22,6 +22,7 @@ import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
@@ -55,7 +56,8 @@ class CombatRepositoryImpl(
                         eventsByCombat[row.id].orEmpty().map { it.toDomain() },
                     )
                 }
-            }
+                // the grouping and the mapping run here, off the thread that collects
+            }.flowOn(Dispatchers.Default)
         }
 
     override fun observe(id: Long): Flow<Combat?> =
@@ -66,7 +68,7 @@ class CombatRepositoryImpl(
                 events.selectByCombat(id).asFlow().mapToList(Dispatchers.Default),
             ) { row: CombatRow?, combatantRows, eventRows ->
                 row?.toDomain(combatantRows.map { it.toDomain() }, eventRows.map { it.toDomain() })
-            }
+            }.flowOn(Dispatchers.Default)
         }
 
     override suspend fun create(
@@ -119,22 +121,7 @@ class CombatRepositoryImpl(
     ): Long =
         withContext(Dispatchers.Default) {
             events.transactionWithResult {
-                events.insert(
-                    combat_id = combatId,
-                    round = event.round.toLong(),
-                    kind = event.kind,
-                    source_id = event.sourceId,
-                    target_id = event.targetId,
-                    amount = event.amount.toLong(),
-                    damage_type = event.damageType,
-                    effect = event.effect,
-                    state = event.state,
-                    detail = event.detail,
-                    turn = event.turn.toLong(),
-                    hit = event.hit.toLong(),
-                    raw = event.raw.toLong(),
-                    scale = event.scale,
-                )
+                writeEvent(combatId, event)
                 events.lastInsertRowId().executeAsOne()
             }
         }
@@ -224,26 +211,64 @@ class CombatRepositoryImpl(
     }
 
     override suspend fun updateCombatant(combatant: Combatant) {
+        withContext(Dispatchers.Default) { writeMember(combatant) }
+    }
+
+    override suspend fun record(
+        combatId: Long,
+        members: List<Combatant>,
+        events: List<CombatEvent>,
+    ) {
         withContext(Dispatchers.Default) {
-            combatants.updateMember(
-                name = combatant.name,
-                entered_whole = if (combatant.enteredWhole) 1L else 0L,
-                state = combatant.state,
-                death_successes = combatant.deathSuccesses.toLong(),
-                death_failures = combatant.deathFailures.toLong(),
-                temp_hp = combatant.tempHp.toLong(),
-                turn_order = combatant.turnOrder?.toLong(),
-                stance = combatant.stance,
-                captured = if (combatant.captured) 1L else 0L,
-                dead = if (combatant.dead) 1L else 0L,
-                conditions = combatant.conditions,
-                note = combatant.note,
-                reaction_available = if (combatant.reactionAvailable) 1L else 0L,
-                hp_current = combatant.hpCurrent?.toLong(),
-                hp_max = combatant.hpMax?.toLong(),
-                id = combatant.id,
-            )
+            // one commit for the whole change, so there is one sync and one round of announcements to the listeners
+            combatants.transaction {
+                members.forEach { writeMember(it) }
+                events.forEach { writeEvent(combatId, it) }
+            }
         }
+    }
+
+    private fun writeMember(combatant: Combatant) {
+        combatants.updateMember(
+            name = combatant.name,
+            entered_whole = if (combatant.enteredWhole) 1L else 0L,
+            state = combatant.state,
+            death_successes = combatant.deathSuccesses.toLong(),
+            death_failures = combatant.deathFailures.toLong(),
+            temp_hp = combatant.tempHp.toLong(),
+            turn_order = combatant.turnOrder?.toLong(),
+            stance = combatant.stance,
+            captured = if (combatant.captured) 1L else 0L,
+            dead = if (combatant.dead) 1L else 0L,
+            conditions = combatant.conditions,
+            note = combatant.note,
+            reaction_available = if (combatant.reactionAvailable) 1L else 0L,
+            hp_current = combatant.hpCurrent?.toLong(),
+            hp_max = combatant.hpMax?.toLong(),
+            id = combatant.id,
+        )
+    }
+
+    private fun writeEvent(
+        combatId: Long,
+        event: CombatEvent,
+    ) {
+        events.insert(
+            combat_id = combatId,
+            round = event.round.toLong(),
+            kind = event.kind,
+            source_id = event.sourceId,
+            target_id = event.targetId,
+            amount = event.amount.toLong(),
+            damage_type = event.damageType,
+            effect = event.effect,
+            state = event.state,
+            detail = event.detail,
+            turn = event.turn.toLong(),
+            hit = event.hit.toLong(),
+            raw = event.raw.toLong(),
+            scale = event.scale,
+        )
     }
 
     override suspend fun setTurnOrder(

@@ -20,6 +20,7 @@ CREATE TABLE party_member (
 );
 
 CREATE INDEX party_member_campaign_id ON party_member(campaign_id);
+CREATE INDEX party_member_fell_combat_id ON party_member(fell_combat_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:

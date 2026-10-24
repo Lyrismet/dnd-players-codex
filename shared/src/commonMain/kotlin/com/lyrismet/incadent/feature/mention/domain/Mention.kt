@@ -111,6 +111,8 @@ class MentionIndex(
             }.sortedByDescending { it.name.length }
     }
 
+    internal val autoNames: List<AutoName> by lazy { buildAutoNames(uniqueByName) }
+
     private val foldedNames: Set<String> by lazy { entities.mapTo(mutableSetOf()) { it.name.foldPerChar() } }
 
     /** whether some live record carries [name], whatever its case */

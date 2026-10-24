@@ -80,9 +80,17 @@ fun selectedEntitySummary(
             species,
             facts,
         )
-    // built off the main thread and only when the ref or the records change, a keystroke elsewhere reuses it
+    return rememberEntitySummary(ref, lookup)
+}
+
+/** the summary of [ref] built off the main thread and only when the ref or the records change, null for no ref */
+@Composable
+fun rememberEntitySummary(
+    ref: EntityRef?,
+    lookup: EntityLookup,
+): EntitySummaryItem? {
     val summary by produceState<EntitySummaryItem?>(null, ref, lookup) {
-        value = withContext(Dispatchers.Default) { buildEntitySummary(ref, lookup) }
+        value = ref?.let { withContext(Dispatchers.Default) { buildEntitySummary(it, lookup) } }
     }
-    return summary
+    return if (ref == null) null else summary
 }

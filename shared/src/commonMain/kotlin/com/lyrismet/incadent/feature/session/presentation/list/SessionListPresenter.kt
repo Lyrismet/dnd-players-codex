@@ -33,6 +33,7 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.rememberEntity
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
+import com.lyrismet.incadent.feature.codex.presentation.summary.isEntityLoading
 import com.lyrismet.incadent.feature.codex.presentation.summary.onEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhoto
 import com.lyrismet.incadent.feature.codex.presentation.summary.selectedEntitySummary
@@ -91,7 +92,8 @@ class SessionListPresenter(
     @Suppress("LongMethod")
     @Composable
     override fun present(): SessionListState {
-        val sessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
+        val loadedSessions by sessionNoteRepository.observeAll().collectAsState(initial = null)
+        val sessions = loadedSessions.orEmpty()
         val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
         val npcs by codexRepositories.npcRepository.observeAll().collectAsState(initial = emptyList())
         val locations by codexRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
@@ -117,7 +119,7 @@ class SessionListPresenter(
         val campaignHost =
             rememberCampaignSheetHost(campaignRepository, importSource) { text -> toast.value = ToastMessage(text) }
         val campaignArchived = campaignHost.current?.status == CampaignStatus.ARCHIVED
-        val entriesBySession = allEntries.groupBy { it.sessionNoteId }
+        val entriesBySession = remember(allEntries) { allEntries.groupBy { it.sessionNoteId } }
 
         val liveNote = sessions.firstOrNull { it.isLive }
         val liveEntriesFlow: Flow<List<SessionEntry>> =
@@ -127,9 +129,14 @@ class SessionListPresenter(
         val liveEntries by liveEntriesFlow.collectAsState(initial = emptyList())
 
         val language = currentAppLanguage()
+        // a session whose notes did not change keeps its mention count, so a saved note re-parses only its own session
+        val mentionCounts = remember(candidates) { HashMap<Long, Pair<List<String>, Int>>() }
         val allItems =
             remember(sessions, numbering, tagsBySession, entriesBySession, candidates, language) {
-                sessions.toListItems(numbering, tagsBySession, entriesBySession, candidates, language)
+                sessions.toListItems(numbering, tagsBySession, entriesBySession, language) { id, bodies ->
+                    mentionCounts[id]?.takeIf { it.first == bodies }?.second
+                        ?: mentionsIn(bodies, candidates).size.also { mentionCounts[id] = bodies to it }
+                }
             }
         val liveItem = liveNote?.let { note -> allItems.first { it.id == note.id } }
         val liveSession = liveItem?.let { item -> buildLiveSession(item, liveEntries, candidates, noNotesLabel) }
@@ -196,6 +203,7 @@ class SessionListPresenter(
             )
 
         return SessionListState(
+            isLoading = loadedSessions == null,
             campaignName = campaignHost.current?.name.orEmpty(),
             campaignArchived = campaignArchived,
             campaignId = campaignHost.current?.id,
@@ -203,6 +211,7 @@ class SessionListPresenter(
             liveSession = liveSession,
             sessions = archiveItems,
             selectedEntity = selectedEntity,
+            entityLoading = isEntityLoading(selectedEntityRef.value, selectedEntity),
             quickEdit =
                 quickEdit.state(
                     CodexRecords(
@@ -342,8 +351,8 @@ class SessionListPresenter(
         numbering: SessionNumbering,
         tagsBySession: Map<Long, List<String>>,
         entriesBySession: Map<Long, List<SessionEntry>>,
-        candidates: MentionIndex,
         language: AppLanguage,
+        mentionCountOf: (sessionId: Long, bodies: List<String>) -> Int,
     ): List<SessionListItem> {
         val numberLabels = sessionNumberLabels(numbering)
         val arabicNumbers = chronologicalIndex()
@@ -359,7 +368,7 @@ class SessionListPresenter(
                 dateLabel = dateLabel,
                 noteCount = entries.size,
                 tags = tagsBySession[note.id].orEmpty(),
-                mentionCount = mentionsIn(bodies, candidates).size,
+                mentionCount = mentionCountOf(note.id, bodies),
             )
         }
     }

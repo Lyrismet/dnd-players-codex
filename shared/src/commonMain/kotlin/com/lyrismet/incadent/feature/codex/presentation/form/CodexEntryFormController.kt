@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.localization.currentAppLanguage
@@ -560,7 +561,7 @@ class CodexEntryFormController private constructor(
         val questLabels = questStatusLabels()
         val partyLabels = partyPresenceLabels()
         val party = current.party
-        val places = PlaceTree(locations)
+        val places = remember(locations) { PlaceTree(locations) }
         val topLevelLabel = stringResource(Res.string.codex_place_top_level_caption)
         val typeLabels = creatureTypeLabels()
         val isRussian = currentAppLanguage() == AppLanguage.RUSSIAN

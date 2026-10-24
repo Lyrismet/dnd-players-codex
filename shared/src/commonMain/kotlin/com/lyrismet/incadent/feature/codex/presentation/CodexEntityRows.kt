@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.lyrismet.incadent.core.designsystem.component.NoPeek
 import com.lyrismet.incadent.core.designsystem.component.SwipeEditAction
 import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.incadent.core.preferences.EntityEditMode
@@ -23,7 +24,7 @@ internal fun CodexDeletableRow(
     eventSink: (CodexEvent) -> Unit,
     swipeEditEnabled: Boolean,
     modifier: Modifier = Modifier,
-    peekOffsetPx: Float = 0f,
+    peekOffsetPx: () -> Float = NoPeek,
     content: @Composable () -> Unit,
 ) {
     SwipeToDeleteRow(
@@ -42,7 +43,7 @@ internal fun PartyRow(
     member: PartyCodexItem,
     eventSink: (CodexEvent) -> Unit,
     swipeEditEnabled: Boolean,
-    peekOffsetPx: Float = 0f,
+    peekOffsetPx: () -> Float = NoPeek,
 ) {
     CodexDeletableRow(
         ref = EntityRef.Party(member.id),
@@ -61,7 +62,7 @@ internal fun NpcRow(
     npc: NpcCodexItem,
     eventSink: (CodexEvent) -> Unit,
     swipeEditEnabled: Boolean,
-    peekOffsetPx: Float = 0f,
+    peekOffsetPx: () -> Float = NoPeek,
 ) {
     CodexDeletableRow(
         ref = EntityRef.Npc(npc.id),
@@ -80,7 +81,7 @@ internal fun QuestRow(
     quest: QuestCodexItem,
     eventSink: (CodexEvent) -> Unit,
     swipeEditEnabled: Boolean,
-    peekOffsetPx: Float = 0f,
+    peekOffsetPx: () -> Float = NoPeek,
 ) {
     CodexDeletableRow(
         ref = EntityRef.Quest(quest.id),
@@ -101,7 +102,7 @@ internal fun LocationRow(
     location: LocationCodexItem,
     eventSink: (CodexEvent) -> Unit,
     swipeEditEnabled: Boolean,
-    peekOffsetPx: Float = 0f,
+    peekOffsetPx: () -> Float = NoPeek,
 ) {
     CodexDeletableRow(
         ref = EntityRef.Location(location.id),
@@ -137,7 +138,7 @@ private fun swipeEditAction(
 internal fun CodexPartyEntry(
     state: CodexState,
     member: PartyCodexItem,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
 ) = PartyRow(
     member = member,
     eventSink = state.eventSink,
@@ -149,7 +150,7 @@ internal fun CodexPartyEntry(
 internal fun CodexNpcEntry(
     state: CodexState,
     npc: NpcCodexItem,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
 ) = NpcRow(
     npc = npc,
     eventSink = state.eventSink,
@@ -161,7 +162,7 @@ internal fun CodexNpcEntry(
 internal fun CodexQuestEntry(
     state: CodexState,
     quest: QuestCodexItem,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
 ) = QuestRow(
     quest = quest,
     eventSink = state.eventSink,
@@ -173,7 +174,7 @@ internal fun CodexQuestEntry(
 internal fun CodexLocationEntry(
     state: CodexState,
     location: LocationCodexItem,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
 ) = LocationRow(
     location = location,
     eventSink = state.eventSink,
@@ -184,5 +185,5 @@ internal fun CodexLocationEntry(
 // only the row the swipe hint targets actually peeks - every other row stays at rest
 internal fun CodexState.peekOffsetPxFor(
     ref: EntityRef,
-    hintPeekOffsetPx: Float,
-): Float = if (swipeHintTarget?.itemId == ref) hintPeekOffsetPx else 0f
+    hintPeekOffsetPx: () -> Float,
+): () -> Float = if (swipeHintTarget?.itemId == ref) hintPeekOffsetPx else NoPeek

@@ -13,6 +13,8 @@ import kotlinx.serialization.Serializable
 data object CombatListScreen : Screen
 
 data class CombatListState(
+    // the fights have not arrived yet, or one is on and the tab is about to open it
+    val isLoading: Boolean = true,
     val campaignName: String = "",
     val campaignId: String? = null,
     // a finished campaign is read-only - no new combat, and the banner offers to resume it
