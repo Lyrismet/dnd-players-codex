@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -22,10 +21,11 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
+import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
+import com.lyrismet.incadent.core.designsystem.component.AppCheckRow
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.PillSize
-import com.lyrismet.incadent.core.designsystem.component.SelectCheckbox
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.bleedHorizontally
@@ -202,17 +202,14 @@ private fun PickRowItem(
     row: PickRow,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 50.dp)
-                .clickable(onClick = onClick)
-                .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    AppCheckRow(
+        checked = row.mark == PickMark.On,
+        onClick = onClick,
+        minHeight = 50.dp,
+        verticalPadding = 4.dp,
+        gap = 10.dp,
+        mark = { PickCheckbox(row.mark) },
     ) {
-        PickCheckbox(row.mark)
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = row.name,
@@ -232,8 +229,8 @@ private fun PickRowItem(
 @Composable
 private fun PickCheckbox(mark: PickMark) {
     when (mark) {
-        PickMark.On -> SelectCheckbox(checked = true)
-        PickMark.Off -> SelectCheckbox(checked = false)
+        PickMark.On -> AppCheckBox(checked = true)
+        PickMark.Off -> AppCheckBox(checked = false)
         PickMark.Pulled ->
             Box(
                 modifier =

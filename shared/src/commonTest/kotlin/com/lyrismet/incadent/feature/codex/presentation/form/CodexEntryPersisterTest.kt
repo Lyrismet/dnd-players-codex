@@ -131,12 +131,11 @@ class CodexEntryPersisterTest {
         }
 
     @Test
-    fun `a species is trimmed capitalized and keeps its type and nicknames`() =
+    fun `a species is trimmed capitalized and keeps its type`() =
         runTest {
             persister.save(
                 form(EntityKind.SPECIES, " гоблин ").copy(
                     speciesType = CreatureType.FEY,
-                    nicknames = "зелёные, мелкие",
                     description = " мерзкие ",
                 ),
             )
@@ -144,7 +143,6 @@ class CodexEntryPersisterTest {
             val saved = species.all.single()
             assertEquals("Гоблин", saved.name)
             assertEquals(CreatureType.FEY, saved.creatureType)
-            assertEquals(listOf("зелёные", "мелкие"), saved.nicknames)
             assertEquals("мерзкие", saved.notes)
             assertEquals(0, npcs.all.size)
         }
@@ -158,12 +156,12 @@ class CodexEntryPersisterTest {
                 form(EntityKind.SPECIES, "скелеты").copy(
                     editingRef = EntityRef.Species(3),
                     speciesType = CreatureType.UNDEAD,
-                    speciesDamage = existing.damage,
+                    vulnerabilities = existing.vulnerabilities,
                 )
 
             persister.save(edit)
 
-            assertEquals(damage, species.stored(3)?.damage)
+            assertEquals(damage, species.stored(3)?.vulnerabilities)
             assertEquals("Скелеты", species.stored(3)?.name)
         }
 

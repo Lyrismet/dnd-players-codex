@@ -42,9 +42,9 @@ internal data class CodexEntryFormFields(
     val npcLife: NpcLifeState = NpcLifeState.ALIVE,
     val npcLocationIds: List<Long> = emptyList(),
     val npcSpeciesId: Long? = null,
-    val speciesType: CreatureType = CreatureType.HUMANOID,
-    // not edited in the form, kept so saving a species leaves what the card's grid set
-    val speciesDamage: Map<DamageType, DamageState> = emptyMap(),
+    val speciesType: CreatureType = CreatureType.UNSPECIFIED,
+    // a species keeps what its card grid set, an npc edits its own shields here
+    val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
     val speciesHitPoints: Int? = null,
     val reward: String = "",
     val questGiverId: Long? = null,

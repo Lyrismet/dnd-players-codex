@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
@@ -52,8 +53,13 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.asSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.codex.presentation.summary.entitySheetActions
+import com.lyrismet.incadent.feature.combat.presentation.summary.CombatFeedCard
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.combat_results_delete_confirm
+import dndplayerscodex.shared.generated.resources.combat_results_delete_keep
+import dndplayerscodex.shared.generated.resources.combat_results_delete_text
+import dndplayerscodex.shared.generated.resources.combat_results_delete_title
 import dndplayerscodex.shared.generated.resources.session_detail_empty_feed
 import dndplayerscodex.shared.generated.resources.session_detail_empty_feed_hint
 import org.jetbrains.compose.resources.stringResource
@@ -73,6 +79,16 @@ fun SessionDetailUi(
     }
 
     state.selectedEntity?.let { entity -> SessionDetailEntitySheet(state, entity) }
+    if (state.combatDeleteVisible) {
+        ConfirmationDialog(
+            title = stringResource(Res.string.combat_results_delete_title),
+            text = stringResource(Res.string.combat_results_delete_text),
+            onConfirm = { state.eventSink(SessionDetailEvent.CombatDeleteConfirmed) },
+            onDismiss = { state.eventSink(SessionDetailEvent.CombatDeleteDismissed) },
+            confirmLabel = stringResource(Res.string.combat_results_delete_confirm),
+            dismissLabel = stringResource(Res.string.combat_results_delete_keep),
+        )
+    }
     state.tagSheet?.let { sheet -> SessionDetailTagsSheet(sheet, state.eventSink) }
     state.deletedMentionSheet?.let { sheet -> DeletedMentionSheet(sheet, state.eventSink) }
     state.mentionCreateSheet?.let { sheet -> MentionCreateSheet(sheet, state.eventSink) }
@@ -134,31 +150,17 @@ private fun SessionFeed(
                     DaySeparatorRow(feedItem.label)
                 }
 
-                is SessionFeedItem.Note -> {
-                    SessionEntryRow(
-                        entry = feedItem.entry,
-                        isSelected = state.selectedEntryId == feedItem.entry.id,
-                        isEditing = state.editingEntryId == feedItem.entry.id,
-                        isHighlighted = state.highlightedEntryId == feedItem.entry.id,
-                        onClick = {
-                            state.eventSink(SessionDetailEvent.EntryClicked(feedItem.entry.id))
-                        },
-                        onEditClick = {
-                            state.eventSink(SessionDetailEvent.EditEntryClicked(feedItem.entry.id))
-                        },
-                        onSavePhraseClick = {
-                            state.eventSink(SessionDetailEvent.SaveEntryAsPhraseClicked(feedItem.entry.id))
-                        },
-                        onDeleteClick = {
-                            state.eventSink(SessionDetailEvent.DeleteEntryClicked(feedItem.entry.id))
-                        },
-                        onMentionClick = { ref ->
-                            state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.EntityClicked(ref)))
-                        },
-                        mentionActions = entryMentionActions(feedItem.entry.id, state.eventSink),
+                is SessionFeedItem.Combat -> {
+                    CombatFeedCard(
+                        item = feedItem.card,
+                        onDelete =
+                            { state.eventSink(SessionDetailEvent.CombatDeleteClicked(feedItem.card.id)) }
+                                .takeUnless { state.readOnly },
                         modifier = Modifier.animateItem(),
                     )
                 }
+
+                is SessionFeedItem.Note -> NoteRow(state, feedItem.entry, Modifier.animateItem())
             }
         }
     }
@@ -182,6 +184,28 @@ private fun SessionFeed(
             listState.animateScrollToItem(state.feed.lastIndex)
         }
     }
+}
+
+@Composable
+private fun NoteRow(
+    state: SessionDetailState,
+    entry: SessionEntryItem,
+    modifier: Modifier,
+) {
+    val send = state.eventSink
+    SessionEntryRow(
+        entry = entry,
+        isSelected = state.selectedEntryId == entry.id,
+        isEditing = state.editingEntryId == entry.id,
+        isHighlighted = state.highlightedEntryId == entry.id,
+        onClick = { send(SessionDetailEvent.EntryClicked(entry.id)) },
+        onEditClick = { send(SessionDetailEvent.EditEntryClicked(entry.id)) },
+        onSavePhraseClick = { send(SessionDetailEvent.SaveEntryAsPhraseClicked(entry.id)) },
+        onDeleteClick = { send(SessionDetailEvent.DeleteEntryClicked(entry.id)) },
+        onMentionClick = { ref -> send(SessionDetailEvent.EntitySheet(EntitySheetEvent.EntityClicked(ref))) },
+        mentionActions = entryMentionActions(entry.id, send),
+        modifier = modifier,
+    )
 }
 
 @Composable

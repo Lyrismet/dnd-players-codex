@@ -29,7 +29,6 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
-import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
 import com.lyrismet.incadent.core.designsystem.component.StatusBadge
@@ -40,18 +39,15 @@ import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
-import com.lyrismet.incadent.feature.codex.presentation.style.toShieldStyle
+import com.lyrismet.incadent.feature.codex.presentation.summary.speciesHitsLine
+import com.lyrismet.incadent.feature.codex.presentation.summary.speciesSeenLine
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
 import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
-import dndplayerscodex.shared.generated.resources.codex_species_row_seen_format
-import dndplayerscodex.shared.generated.resources.mention_count_in_sessions
-import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 // the share of the text column left empty beside a cover strip
@@ -158,7 +154,7 @@ internal fun SpeciesCodexCard(
                 color = AppPalette.TextHeading,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false),
+                modifier = Modifier.weight(1f),
             )
             StatusBadge(text = item.creatureTypeLabel, color = SpeciesMentionColor)
         }
@@ -169,21 +165,16 @@ internal fun SpeciesCodexCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 item.shields.forEach { (type, state) ->
-                    AppDamageShield(type.shieldIconPath(), type.shieldColor(), state.toShieldStyle(), width = 22.dp)
+                    DamageTypeShield(type, state, width = 22.dp)
                 }
             }
         }
-        if (item.seenInSessions > 0) {
+        val seen =
+            listOf(speciesSeenLine(item.seenInSessions, item.fights), speciesHitsLine(item.hitPoints, item.hitRange))
+        val seenLine = seen.filter { it.isNotEmpty() }.joinToString(" · ")
+        if (seenLine.isNotEmpty()) {
             Text(
-                text =
-                    stringResource(
-                        Res.string.codex_species_row_seen_format,
-                        pluralStringResource(
-                            Res.plurals.mention_count_in_sessions,
-                            item.seenInSessions,
-                            item.seenInSessions,
-                        ),
-                    ),
+                text = seenLine,
                 style = MaterialTheme.typography.bodySmall,
                 color = AppPalette.TextTertiary,
                 modifier = Modifier.padding(top = 4.dp),
@@ -210,6 +201,7 @@ internal fun PartyCodexCard(
                 color = AppPalette.TextHeading,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                textDecoration = if (item.fallen) TextDecoration.LineThrough else TextDecoration.None,
                 modifier = Modifier.weight(1f),
             )
             StatusBadge(text = item.presenceLabel, color = item.presenceColor)

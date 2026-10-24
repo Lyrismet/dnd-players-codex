@@ -37,7 +37,7 @@ class SpeciesNoteControllerTest {
             creatureType = CreatureType.HUMANOID,
             notes = "",
             emblem = EntityEmblem("Г", EntityEmblemShape.CIRCLE, SpeciesMentionColor),
-            damage = emptyMap(),
+            vulnerabilities = emptyMap(),
             relatedNotes = emptyList(),
             seenInSessions = 1,
         )

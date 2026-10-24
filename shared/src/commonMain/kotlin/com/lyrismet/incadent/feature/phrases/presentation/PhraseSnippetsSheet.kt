@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -19,11 +18,11 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppRemoveButton
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
-import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseFrequentRow
@@ -122,14 +121,7 @@ private fun PinnedPhraseRow(
             color = AppPalette.TextPrimary,
             modifier = Modifier.weight(1f),
         )
-        IconBadge(
-            size = 40.dp,
-            shape = AppShapes.Control,
-            background = Color.Transparent,
-            onClick = onRemove,
-        ) {
-            Text("✕", fontSize = AppFontSize.Body, color = AppPalette.TextSecondary)
-        }
+        AppRemoveButton(onClick = onRemove)
     }
 }
 

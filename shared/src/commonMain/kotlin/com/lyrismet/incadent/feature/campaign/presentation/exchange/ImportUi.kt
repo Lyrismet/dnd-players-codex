@@ -13,12 +13,16 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
+import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.DiscardChangesDialog
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
+import com.lyrismet.incadent.core.designsystem.component.ImportIcon
 import com.lyrismet.incadent.core.designsystem.component.RadioOptionRow
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.file.rememberFilePicker
+import com.lyrismet.incadent.feature.campaign.domain.model.NewerFile
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.exchange_dest_add
 import dndplayerscodex.shared.generated.resources.exchange_dest_add_hint
@@ -40,6 +44,11 @@ import dndplayerscodex.shared.generated.resources.exchange_import_without_photos
 import dndplayerscodex.shared.generated.resources.exchange_items_from
 import dndplayerscodex.shared.generated.resources.exchange_items_title
 import dndplayerscodex.shared.generated.resources.exchange_match_title
+import dndplayerscodex.shared.generated.resources.exchange_newer_back
+import dndplayerscodex.shared.generated.resources.exchange_newer_continue
+import dndplayerscodex.shared.generated.resources.exchange_newer_skipped
+import dndplayerscodex.shared.generated.resources.exchange_newer_text
+import dndplayerscodex.shared.generated.resources.exchange_newer_title
 import dndplayerscodex.shared.generated.resources.exchange_next
 import dndplayerscodex.shared.generated.resources.exchange_next_format
 import dndplayerscodex.shared.generated.resources.exchange_records_count
@@ -77,6 +86,7 @@ fun ImportUi(
             }
         }
     }
+    state.newerPrompt?.let { NewerFilePrompt(it, sink) }
     if (state.leavePromptVisible) {
         DiscardChangesDialog(
             text = stringResource(Res.string.exchange_discard_text),
@@ -209,4 +219,29 @@ private fun ItemsStep(state: ImportState) {
         enabled = state.canTakeSelection,
     )
     BackLink { sink(ImportEvent.Back) }
+}
+
+@Composable
+private fun NewerFilePrompt(
+    newer: NewerFile,
+    sink: (ImportEvent) -> Unit,
+) {
+    ConfirmationDialog(
+        title = stringResource(Res.string.exchange_newer_title),
+        text =
+            stringResource(Res.string.exchange_newer_text, newer.fileVersion, newer.appVersion) +
+                if (newer.skipped > 0) {
+                    " " + stringResource(Res.string.exchange_newer_skipped, newer.skipped)
+                } else {
+                    ""
+                },
+        onConfirm = { sink(ImportEvent.NewerAnswered(proceed = true)) },
+        onDismiss = { sink(ImportEvent.NewerAnswered(proceed = false)) },
+        confirmLabel = stringResource(Res.string.exchange_newer_continue),
+        dismissLabel = stringResource(Res.string.exchange_newer_back),
+        confirmTone = ButtonTone.Gold,
+        icon = ImportIcon,
+        accent = AppPalette.Gold,
+        accentBright = AppPalette.GoldBright,
+    )
 }

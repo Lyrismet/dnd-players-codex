@@ -8,10 +8,9 @@ data class Species(
     val name: String,
     val creatureType: CreatureType,
     // only the types that are known, a type missing here is [DamageState.UNKNOWN]
-    val damage: Map<DamageType, DamageState> = emptyMap(),
+    val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
     val notes: String = "",
     val photo: Photo? = null,
-    val nicknames: List<String> = emptyList(),
     // known by the player from somewhere, not filled in by a fight - null while nobody knows it
     val hitPoints: Int? = null,
 )
@@ -35,6 +34,9 @@ enum class CreatureType {
     OOZE,
     PLANT,
     UNDEAD,
+
+    /** a species made from a name alone, the card shows that the type is not set */
+    UNSPECIFIED,
 }
 
 /** the 5e damage types, kept apart from the rules system so another preset can bring its own set later */

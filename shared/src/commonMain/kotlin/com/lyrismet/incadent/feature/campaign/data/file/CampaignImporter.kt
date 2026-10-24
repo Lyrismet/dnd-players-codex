@@ -103,6 +103,8 @@ internal class CampaignImporter(
                 EntityKind.SPECIES to speciesMap,
             )
 
+        private val fights = FightImport(database, campaignId, sessionMap, speciesMap, npcMap, partyMap)
+
         // only records written by this import take a photo, a matched one keeps what it has
         private val fresh = mutableSetOf<Pair<PhotoOwner, Long>>()
 
@@ -146,6 +148,7 @@ internal class CampaignImporter(
                 is FileRecord.Phrase -> database.phraseSnippetQueries.insert(record.text, campaignId)
                 is FileRecord.Session -> addSession(record)
                 is FileRecord.Entry -> addEntry(record)
+                is FightRecord -> fights.accept(record)
                 is FileRecord.Photo -> addPhoto(record)
             }
         }
@@ -163,6 +166,7 @@ internal class CampaignImporter(
                 is FileRecord.Phrase -> request.selection?.phrases != false
                 is FileRecord.Photo -> fileHasPhotos && request.selection?.photos != false
                 is FileRecord.Entry -> true
+                is FightRecord -> fights.isWanted(record, scope)
             }
 
         // a matched record is kept or overwritten, the file's own id then points at the one that was used
@@ -205,9 +209,8 @@ internal class CampaignImporter(
                     database.speciesQueries.updateImported(
                         record.name,
                         record.creatureType,
-                        record.damage,
+                        record.vulnerabilities,
                         record.notes,
-                        record.nicknames,
                         record.hitPoints?.toLong(),
                         it,
                     )
@@ -216,9 +219,8 @@ internal class CampaignImporter(
                     queries.insert(
                         nameForInsert(speciesByName, record.name),
                         record.creatureType,
-                        record.damage,
+                        record.vulnerabilities,
                         record.notes,
-                        record.nicknames,
                         record.hitPoints?.toLong(),
                         null,
                         null,
@@ -263,6 +265,7 @@ internal class CampaignImporter(
                         record.lifeState,
                         record.nicknames,
                         record.speciesId?.let(speciesMap::get),
+                        record.vulnerabilities,
                         null,
                         null,
                         campaignId,
@@ -315,7 +318,10 @@ internal class CampaignImporter(
                         null,
                         campaignId,
                     )
-                    inserted(PhotoOwner.PARTY, record.id, queries.lastInsertRowId().executeAsOne())
+                    val id = queries.lastInsertRowId().executeAsOne()
+                    // the fight that felled them is not in the file's party record, so only the fact is kept
+                    if (record.fallen) queries.setFallen(true, null, id)
+                    inserted(PhotoOwner.PARTY, record.id, id)
                 }
         }
 
@@ -356,6 +362,7 @@ internal class CampaignImporter(
                 record.lifeState,
                 record.nicknames,
                 link(record.speciesId, speciesMap, current.species_id),
+                record.vulnerabilities,
                 id,
             )
             val places = record.placeIds.mapNotNull(placeMap::get)

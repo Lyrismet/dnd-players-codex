@@ -59,6 +59,7 @@ class ImportPresenter(
         var photos by remember(origin) { mutableStateOf(true) }
         var conflicts by remember(origin) { mutableStateOf(ConflictMode.SKIP) }
         var leavePrompt by remember(origin) { mutableStateOf(false) }
+        var newerPrompt by remember(origin) { mutableStateOf(false) }
         var replacing by remember(origin) { mutableStateOf(emptySet<ExchangeRef>()) }
         var pick by remember(contents) { mutableStateOf(contents?.let { ExchangePick.handPick(it.options, it.graph) }) }
         val scope = rememberCoroutineScope()
@@ -119,6 +120,15 @@ class ImportPresenter(
             }
         }
 
+        fun proceedFromPreview() {
+            if (destination == ImportDestination.NEW || current == null) {
+                destination = ImportDestination.NEW
+                importNow()
+            } else {
+                step = ImportStep.Items
+            }
+        }
+
         return ImportState(
             step = step,
             fileName = file?.fileName.orEmpty(),
@@ -138,18 +148,17 @@ class ImportPresenter(
             replacing = replaceNow,
             newCount = newCount,
             leavePromptVisible = leavePrompt,
+            newerPrompt = file?.newer.takeIf { newerPrompt },
             importCount = if (conflicts == ConflictMode.SKIP) newCount + replaceNow.size else pickedRecords,
         ) { event ->
             when (event) {
                 is ImportEvent.FilePicked -> source.offer(event.origin)
                 is ImportEvent.DestinationSelected -> destination = event.destination
-                ImportEvent.PreviewNext ->
-                    if (destination == ImportDestination.NEW || current == null) {
-                        destination = ImportDestination.NEW
-                        importNow()
-                    } else {
-                        step = ImportStep.Items
-                    }
+                ImportEvent.PreviewNext -> if (file?.newer != null) newerPrompt = true else proceedFromPreview()
+                is ImportEvent.NewerAnswered -> {
+                    newerPrompt = false
+                    if (event.proceed) proceedFromPreview()
+                }
                 is ImportEvent.Pick -> pick = pick?.reduce(event.event)
                 ImportEvent.PhotosToggled -> photos = !photos
                 ImportEvent.ItemsNext ->

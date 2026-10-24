@@ -2,6 +2,8 @@ package com.lyrismet.incadent.feature.campaign.data.file
 
 import com.lyrismet.incadent.core.file.FileSink
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.db.Combat_event
+import com.lyrismet.incadent.db.Combatant
 import com.lyrismet.incadent.db.SelectAllWithLocations
 import com.lyrismet.incadent.db.Session_entry
 import com.lyrismet.incadent.domain.model.EntityKind
@@ -14,6 +16,8 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordSelection
+import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
+import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.domain.mentionRefsIn
 import com.lyrismet.incadent.feature.mention.domain.remapMentionTokens
@@ -130,6 +134,7 @@ class CampaignExporter(
             )
             writeEntities(snapshot, selection, scope, ids, writer)
             writeSessions(snapshot, scope, ids, writer)
+            writeCombats(snapshot.campaignId, scope, ids, writer)
             if (selection.photos) writePhotos(scope, ids, writer)
         } finally {
             sink.close()
@@ -170,9 +175,8 @@ class CampaignExporter(
                     ids.species(it.id),
                     it.name,
                     it.creature_type,
-                    it.damage,
+                    it.vulnerabilities,
                     it.notes,
-                    it.nicknames,
                     it.hit_points?.toInt(),
                 ),
             )
@@ -203,6 +207,7 @@ class CampaignExporter(
                     lifeState = npc.life_state,
                     nicknames = npc.nicknames,
                     speciesId = npc.species_id?.let(ids::species),
+                    vulnerabilities = npc.vulnerabilities,
                     placeIds =
                         npc.location_ids
                             .toIdList()
@@ -238,6 +243,7 @@ class CampaignExporter(
                     hpMax = it.hp_max?.toInt(),
                     hpCurrent = it.hp_current?.toInt(),
                     description = it.description,
+                    fallen = it.fallen,
                 ),
             )
         }
@@ -265,6 +271,73 @@ class CampaignExporter(
                         body = remapMentionTokens(entry.body) { ids.mapped(it) },
                         edited = entry.edited,
                         mentionCheck = entry.mention_check,
+                    ),
+                )
+            }
+        }
+    }
+
+    // the fights saved to a picked session go with it, a link to a record that is not in the file is left empty
+    private fun writeCombats(
+        campaignId: String,
+        scope: RecordScope,
+        ids: FileIds,
+        writer: CampaignFileWriter,
+    ) {
+        val combats =
+            database.combatQueries
+                .selectAll(campaignId)
+                .executeAsList()
+                .filter { it.phase == CombatPhase.FINISHED && it.session_note_id in scope.sessions }
+                .sortedBy { it.id }
+        if (combats.isEmpty()) return
+        val fighters =
+            database.combatantQueries
+                .selectByCampaign(campaignId)
+                .executeAsList()
+                .groupBy { it.combat_id }
+        val events =
+            database.combatEventQueries
+                .selectByCampaign(campaignId)
+                .executeAsList()
+                .groupBy { it.combat_id }
+        val observations =
+            database.speciesHitObservationQueries
+                .selectByCampaign(campaignId)
+                .executeAsList()
+                .groupBy { it.combat_id }
+        val numbers = combats.withIndex().associate { (index, row) -> row.id to index + 1L }
+        combats.forEach { row ->
+            val sessionId = checkNotNull(row.session_note_id)
+            writer.write(
+                FileRecord.Combat(
+                    id = numbers.getValue(row.id),
+                    sessionId = ids.session(sessionId),
+                    outcome = row.outcome ?: CombatOutcome.INTERRUPTED,
+                    startedAt = row.started_at,
+                    finishedAt = row.finished_at,
+                    rounds = row.round.toInt(),
+                    turn = row.turn.toInt(),
+                ),
+            )
+        }
+        combats.forEach { row ->
+            val members = fighters[row.id].orEmpty().withIndex().associate { (index, it) -> it.id to index + 1L }
+            fighters[row.id].orEmpty().forEach {
+                writer.write(
+                    it.toFighter(numbers.getValue(row.id), members, scope, ids),
+                )
+            }
+            events[row.id].orEmpty().forEach { event ->
+                members[event.target_id]?.let { writer.write(event.toBlow(numbers.getValue(row.id), it, members)) }
+            }
+            observations[row.id].orEmpty().filter { it.species_id in scope.species }.forEach {
+                writer.write(
+                    FileRecord.Observation(
+                        numbers.getValue(row.id),
+                        ids.species(it.species_id),
+                        it.damage.toInt(),
+                        it.died != 0L,
                     ),
                 )
             }
@@ -305,6 +378,55 @@ class CampaignExporter(
         bytes: ByteArray,
     ) = write(FileRecord.Photo(owner, id, Base64.encode(bytes)))
 }
+
+private fun Combatant.toFighter(
+    combat: Long,
+    members: Map<Long, Long>,
+    scope: RecordScope,
+    ids: FileIds,
+) = FileRecord.Fighter(
+    combatId = combat,
+    id = members.getValue(id),
+    name = name,
+    side = side,
+    npcId = npc_id?.takeIf { it in scope.npcs }?.let(ids::npc),
+    speciesId = species_id?.takeIf { it in scope.species }?.let(ids::species),
+    partyId = party_member_id?.takeIf { it in scope.party }?.let(ids::party),
+    enteredWhole = entered_whole != 0L,
+    state = state,
+    joinedRound = joined_round.toInt(),
+    deathSuccesses = death_successes.toInt(),
+    deathFailures = death_failures.toInt(),
+    tempHp = temp_hp.toInt(),
+    stance = stance,
+    captured = captured != 0L,
+    dead = dead != 0L,
+    conditions = conditions.toList(),
+    note = note,
+    hpCurrent = hp_current?.toInt(),
+    hpMax = hp_max?.toInt(),
+)
+
+private fun Combat_event.toBlow(
+    combat: Long,
+    target: Long,
+    members: Map<Long, Long>,
+) = FileRecord.Blow(
+    combatId = combat,
+    round = round.toInt(),
+    kind = kind,
+    sourceId = source_id?.let(members::get),
+    targetId = target,
+    amount = amount.toInt(),
+    damageType = damage_type,
+    effect = effect,
+    state = state,
+    detail = detail,
+    turn = turn.toInt(),
+    hit = hit.toInt(),
+    raw = raw.toInt(),
+    scale = scale,
+)
 
 private fun String.toIdList(): List<Long> = split(',').mapNotNull { it.toLongOrNull() }
 

@@ -34,7 +34,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 // process-wide since the sheet is rebuilt on every composition, so an instance lock would serialize nothing
-private val entityWriteLock = Mutex()
+internal val entityWriteLock = Mutex()
 
 /** the tap/dismiss/change-value/related-note flow every entity-sheet host reuses - [onChanged] feeds the undo toast */
 class EntitySheetInteractions(
@@ -117,7 +117,7 @@ class EntitySheetInteractions(
         }
     }
 
-    fun onSpeciesDamageChanged(
+    fun onSpeciesVulnerabilityChanged(
         scope: CoroutineScope,
         speciesId: Long,
         type: DamageType,
@@ -128,7 +128,46 @@ class EntitySheetInteractions(
                 speciesRepository
                     .getById(
                         speciesId,
-                    )?.let { speciesRepository.upsert(it.copy(damage = it.damage.with(type, state))) }
+                    )?.let { speciesRepository.upsert(it.copy(vulnerabilities = it.vulnerabilities.with(type, state))) }
+            }
+        }
+    }
+
+    fun onNpcVulnerabilityChanged(
+        scope: CoroutineScope,
+        npcId: Long,
+        type: DamageType,
+        state: DamageState,
+    ) {
+        scope.launch {
+            entityWriteLock.withLock {
+                npcRepository
+                    .getById(npcId)
+                    ?.let { npcRepository.upsert(it.copy(vulnerabilities = it.vulnerabilities.with(type, state))) }
+            }
+        }
+    }
+
+    /** reports the whole editing as one change that puts back what the npc had when it began */
+    fun onNpcVulnerabilitiesEdited(
+        scope: CoroutineScope,
+        npcId: Long,
+        before: Map<DamageType, DamageState>,
+    ) {
+        scope.launch {
+            entityWriteLock.withLock {
+                val npc = npcRepository.getById(npcId) ?: return@withLock
+                if (npc.vulnerabilities == before) return@withLock
+                val after = npc.vulnerabilities
+                onChanged(
+                    EntityChange(QuickEditField.VULNERABILITIES, npc.name) {
+                        entityWriteLock.withLock {
+                            npcRepository.getById(npcId)?.takeIf { it.vulnerabilities == after }?.let {
+                                npcRepository.upsert(it.copy(vulnerabilities = before))
+                            }
+                        }
+                    },
+                )
             }
         }
     }
@@ -146,6 +185,14 @@ class EntitySheetInteractions(
                 { it.withPresence(presence) },
             ) { partyRepository.upsert(it) }
         }
+    }
+
+    // a fallen character is back in the party, the sheet shows them alive when the record changes
+    fun onPartyRevived(
+        scope: CoroutineScope,
+        partyId: Long,
+    ) {
+        scope.launch { entityWriteLock.withLock { partyRepository.setFallen(partyId, false) } }
     }
 
     /** writes one typed or tapped field - an unknown field for the entity type is silently ignored */

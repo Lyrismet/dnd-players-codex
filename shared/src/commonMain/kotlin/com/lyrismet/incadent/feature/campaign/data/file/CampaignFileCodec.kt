@@ -43,15 +43,31 @@ class CampaignFileReader private constructor(
     private val validator = RecordValidator()
     private var count = 0
 
+    // a file of a newer version may hold what this one cannot read, such a record is left out instead of failing
+    private val newer = header.version > FILE_VERSION
+
+    /** how many records of a newer file were left out, always 0 for a file of this version or older */
+    var skipped = 0
+        private set
+
     /** the next record or null at the end of the file, [skipPhotos] passes photo lines on without decoding them */
     fun nextRecord(skipPhotos: Boolean = false): FileRecord? {
         while (true) {
             val line = readLimited() ?: return null
             val skipped = line.isBlank() || (skipPhotos && line.startsWith(PHOTO_LINE_START))
             if (!line.isBlank() && ++count > MAX_RECORDS) throw ImportFailedException(ImportError.TooLarge)
-            if (!skipped) return decode(line).also(validator::accept)
+            if (!skipped) accepted(line)?.let { return it }
         }
     }
+
+    private fun accepted(line: String): FileRecord? =
+        try {
+            decode(line).also(validator::accept)
+        } catch (failure: ImportFailedException) {
+            if (!newer || failure.error != ImportError.Malformed) throw failure
+            skipped++
+            null
+        }
 
     // a serialization failure is an illegal argument too, so one catch covers a bad shape and a bad value
     private fun decode(line: String): FileRecord =
@@ -74,7 +90,7 @@ class CampaignFileReader private constructor(
     }
 
     companion object {
-        /** checks the size and the header, so a foreign or too new file is turned away before its body is read */
+        /** checks the size and the header, so a foreign file is turned away before its body is read */
         fun open(source: FileSource): CampaignFileReader {
             if ((source.sizeOrNull ?: 0L) > MAX_FILE_BYTES) throw ImportFailedException(ImportError.TooLarge)
             // a missing or endless first line reads as an empty one, which is no header
@@ -99,7 +115,6 @@ class CampaignFileReader private constructor(
         private fun FileHeader?.problem(): ImportError? =
             when {
                 this == null || mark != FILE_FORMAT -> ImportError.NotIncadent
-                version > FILE_VERSION -> ImportError.NewerVersion
                 version < 1 -> ImportError.Malformed
                 else -> null
             }

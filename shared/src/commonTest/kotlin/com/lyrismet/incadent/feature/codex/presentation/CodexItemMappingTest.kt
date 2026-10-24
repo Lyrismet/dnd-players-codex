@@ -25,6 +25,7 @@ private val partyCardLabels =
         you = "Ваш персонаж",
         playerPrefix = "Игрок:",
         hpShort = "HP",
+        fallen = "Пал",
     )
 
 private val lira =
@@ -237,5 +238,22 @@ class CodexItemMappingTest {
     fun `PartyMember toCodexItems leaves the subtitle blank when no player is set`() {
         val unclaimed = bran.copy(playerName = "")
         assertEquals("", listOf(unclaimed).toPartyCodexItems(partyCardLabels).single().subtitle)
+    }
+
+    @Test
+    fun `PartyMember toCodexItems puts the fallen after the living`() {
+        val items = listOf(lira.copy(fallen = true), bran).toPartyCodexItems(partyCardLabels)
+        assertEquals(listOf("Бран", "Лира"), items.map { it.name })
+        assertEquals(listOf(false, true), items.map { it.fallen })
+    }
+
+    @Test
+    fun `PartyMember toCodexItems names the session a character fell in`() {
+        val item =
+            listOf(
+                lira.copy(fallen = true),
+            ).toPartyCodexItems(partyCardLabels, mapOf(7L to "Сессия XIII")).single()
+        assertEquals("Пал", item.presenceLabel)
+        assertEquals("Пал · Сессия XIII", item.meta)
     }
 }

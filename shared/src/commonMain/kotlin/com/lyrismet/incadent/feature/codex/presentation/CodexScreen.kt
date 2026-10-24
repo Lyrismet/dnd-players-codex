@@ -19,6 +19,7 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEve
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
+import com.lyrismet.incadent.feature.combat.domain.results.HitRange
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -71,6 +72,11 @@ data class SpeciesCodexItem(
     val shields: List<Pair<DamageType, DamageState>>,
     // 0 when no note mentions the species yet
     val seenInSessions: Int,
+    // the saved fights it was in
+    val fights: Int = 0,
+    // known by the player, or what the fights hint at
+    val hitPoints: Int? = null,
+    val hitRange: HitRange? = null,
 )
 
 /** the tag a dead npc's card shows next to its name - null for a living npc */
@@ -85,6 +91,7 @@ data class PartyCardLabels(
     val you: String,
     val playerPrefix: String,
     val hpShort: String,
+    val fallen: String,
 )
 
 data class PartyCodexItem(
@@ -97,6 +104,8 @@ data class PartyCodexItem(
     val presenceColor: StatusColor,
     val subtitle: String,
     val meta: String,
+    // fell in a fight, the card is struck through and listed under "ПАВШИЕ"
+    val fallen: Boolean = false,
 )
 
 data class QuestGiverItem(

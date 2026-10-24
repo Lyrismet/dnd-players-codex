@@ -7,6 +7,7 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeItem
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportContents
+import com.lyrismet.incadent.feature.campaign.domain.model.NewerFile
 import com.lyrismet.incadent.feature.mention.domain.mentionRefsIn
 
 /** reads a whole file once and lists what it holds, nothing is written anywhere */
@@ -25,6 +26,10 @@ internal fun readImportContents(origin: FileOrigin): ImportContents {
             withPhotos = reader.header.withPhotos,
             options = options,
             graph = rows.graph().withKnownMentionsOnly(options),
+            newer =
+                reader.header.version
+                    .takeIf { it > FILE_VERSION }
+                    ?.let { NewerFile(it, FILE_VERSION, reader.skipped) },
         )
     } finally {
         source.close()
@@ -51,6 +56,7 @@ private class ContentsCollector {
             is FileRecord.Session -> sessions += record
             is FileRecord.Tag, is FileRecord.Phrase -> Unit
             is FileRecord.Entry -> addMentions(record)
+            is FightRecord -> Unit
             is FileRecord.Photo -> Unit
         }
     }

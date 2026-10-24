@@ -9,6 +9,7 @@ CREATE TABLE npc (
     life_state TEXT AS NpcLifeState NOT NULL DEFAULT 'ALIVE',
     nicknames TEXT NOT NULL DEFAULT '',
     species_id INTEGER REFERENCES species(id) ON DELETE SET NULL,
+    vulnerabilities TEXT NOT NULL DEFAULT '',
     portrait BLOB,
     portrait_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
@@ -19,7 +20,7 @@ CREATE INDEX npc_species_id ON npc(species_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT id, name, status, description, race, life_state, nicknames, species_id, portrait_thumb
+SELECT id, name, status, description, race, life_state, nicknames, species_id, vulnerabilities, portrait_thumb
 FROM npc
 WHERE campaign_id = ?
 ORDER BY name;
@@ -28,30 +29,30 @@ ORDER BY name;
 selectAllWithLocations:
 SELECT
     npc.id, npc.name, npc.status, npc.description, npc.race, npc.life_state, npc.nicknames,
-    npc.species_id, npc.portrait_thumb,
+    npc.species_id, npc.vulnerabilities, npc.portrait_thumb,
     COALESCE((SELECT group_concat(location_id) FROM npc_location WHERE npc_id = npc.id), '') AS location_ids
 FROM npc
 WHERE campaign_id = ?
 ORDER BY name;
 
 selectById:
-SELECT id, name, status, description, race, life_state, nicknames, species_id, portrait_thumb, portrait
+SELECT id, name, status, description, race, life_state, nicknames, species_id, vulnerabilities, portrait_thumb, portrait
 FROM npc
 WHERE id = ?;
 
 insert:
-INSERT INTO npc(name, status, description, race, life_state, nicknames, species_id, portrait, portrait_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO npc(name, status, description, race, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO npc(id, name, status, description, race, life_state, nicknames, species_id, portrait, portrait_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO npc(id, name, status, description, race, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE npc
-SET name = ?, status = ?, description = ?, race = ?, life_state = ?, nicknames = ?, species_id = ?
+SET name = ?, status = ?, description = ?, race = ?, life_state = ?, nicknames = ?, species_id = ?, vulnerabilities = ?
 WHERE id = ?;
 
 setPortrait:

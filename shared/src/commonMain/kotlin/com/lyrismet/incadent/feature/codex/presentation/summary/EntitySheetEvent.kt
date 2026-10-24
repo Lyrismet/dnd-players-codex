@@ -29,15 +29,30 @@ sealed interface EntitySheetEvent {
         val presence: PartyPresence,
     ) : EntitySheetEvent
 
+    data class PartyRevived(
+        val partyId: Long,
+    ) : EntitySheetEvent
+
     data class QuestStatusSelected(
         val questId: Long,
         val status: QuestStatus,
     ) : EntitySheetEvent
 
-    data class SpeciesDamageChanged(
+    data class SpeciesVulnerabilityChanged(
         val speciesId: Long,
         val type: DamageType,
         val state: DamageState,
+    ) : EntitySheetEvent
+
+    data class NpcVulnerabilityChanged(
+        val npcId: Long,
+        val type: DamageType,
+        val state: DamageState,
+    ) : EntitySheetEvent
+
+    data class NpcVulnerabilitiesEdited(
+        val npcId: Long,
+        val before: Map<DamageType, DamageState>,
     ) : EntitySheetEvent
 
     /** the card's "в этой заметке" row stepped the count of the tapped chip - only a session screen can act on it */
@@ -59,8 +74,11 @@ fun EntitySheetEvent.writesCampaignData(): Boolean =
         is EntitySheetEvent.NpcStatusSelected,
         is EntitySheetEvent.NpcLifeSelected,
         is EntitySheetEvent.PartyPresenceSelected,
+        is EntitySheetEvent.PartyRevived,
         is EntitySheetEvent.QuestStatusSelected,
-        is EntitySheetEvent.SpeciesDamageChanged,
+        is EntitySheetEvent.SpeciesVulnerabilityChanged,
+        is EntitySheetEvent.NpcVulnerabilityChanged,
+        is EntitySheetEvent.NpcVulnerabilitiesEdited,
         is EntitySheetEvent.SpeciesNoteQuantityStepped,
         -> true
         is EntitySheetEvent.EntityClicked,
@@ -79,16 +97,21 @@ fun EntitySheetInteractions.onEvent(
         is EntitySheetEvent.NpcStatusSelected -> onNpcStatusSelected(scope, event.npcId, event.status)
         is EntitySheetEvent.NpcLifeSelected -> onNpcLifeSelected(scope, event.npcId, event.lifeState)
         is EntitySheetEvent.PartyPresenceSelected -> onPartyPresenceSelected(scope, event.partyId, event.presence)
+        is EntitySheetEvent.PartyRevived -> onPartyRevived(scope, event.partyId)
         is EntitySheetEvent.QuestStatusSelected -> onQuestStatusSelected(scope, event.questId, event.status)
         // the session screen takes this one before it gets here, a card opened elsewhere has no note to count in
         is EntitySheetEvent.SpeciesNoteQuantityStepped -> Unit
-        is EntitySheetEvent.SpeciesDamageChanged ->
-            onSpeciesDamageChanged(
+        is EntitySheetEvent.SpeciesVulnerabilityChanged ->
+            onSpeciesVulnerabilityChanged(
                 scope,
                 event.speciesId,
                 event.type,
                 event.state,
             )
+        is EntitySheetEvent.NpcVulnerabilityChanged ->
+            onNpcVulnerabilityChanged(scope, event.npcId, event.type, event.state)
+        is EntitySheetEvent.NpcVulnerabilitiesEdited ->
+            onNpcVulnerabilitiesEdited(scope, event.npcId, event.before)
         is EntitySheetEvent.RelatedNoteClicked -> onRelatedNoteClicked(event.sessionNoteId, event.entryId)
         EntitySheetEvent.Dismissed -> onDismissed()
     }
@@ -101,7 +124,8 @@ fun EntitySheetInteractions.onEvent(
 @Suppress("LongParameterList")
 fun entitySheetActions(
     partyPresence: Boolean = false,
-    speciesDamageEdit: Boolean = false,
+    speciesVulnerabilityEdit: Boolean = false,
+    npcVulnerabilityEdit: Boolean = false,
     speciesNoteEdit: Boolean = true,
     onEditClicked: ((EntityRef) -> Unit)? = null,
     onDeleteClicked: ((EntityRef) -> Unit)? = null,
@@ -123,9 +147,27 @@ fun entitySheetActions(
             } else {
                 null
             },
-        onSpeciesDamageChanged =
-            if (speciesDamageEdit) {
-                { id, type, state -> send(EntitySheetEvent.SpeciesDamageChanged(id, type, state)) }
+        onPartyRevived =
+            if (partyPresence) {
+                { id -> send(EntitySheetEvent.PartyRevived(id)) }
+            } else {
+                null
+            },
+        onSpeciesVulnerabilityChanged =
+            if (speciesVulnerabilityEdit) {
+                { id, type, state -> send(EntitySheetEvent.SpeciesVulnerabilityChanged(id, type, state)) }
+            } else {
+                null
+            },
+        onNpcVulnerabilityChanged =
+            if (npcVulnerabilityEdit) {
+                { id, type, state -> send(EntitySheetEvent.NpcVulnerabilityChanged(id, type, state)) }
+            } else {
+                null
+            },
+        onNpcVulnerabilitiesEdited =
+            if (npcVulnerabilityEdit) {
+                { id, before -> send(EntitySheetEvent.NpcVulnerabilitiesEdited(id, before)) }
             } else {
                 null
             },

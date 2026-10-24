@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.file.FileOrigin
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportError
+import com.lyrismet.incadent.feature.campaign.domain.model.NewerFile
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -65,6 +66,8 @@ data class ImportState(
     val newCount: Int = 0,
     val importCount: Int = 0,
     val leavePromptVisible: Boolean = false,
+    // set while the prompt about a file of a newer version waits for an answer
+    val newerPrompt: NewerFile? = null,
     val eventSink: (ImportEvent) -> Unit = {},
 ) : CircuitUiState {
     val canTakeSelection: Boolean get() = pickRecordCount + pickSessionCount > 0
@@ -86,6 +89,11 @@ sealed interface ImportEvent : CircuitUiEvent {
     ) : ImportEvent
 
     data object PreviewNext : ImportEvent
+
+    /** "continue" or "back" in the prompt about a file of a newer version */
+    data class NewerAnswered(
+        val proceed: Boolean,
+    ) : ImportEvent
 
     data class Pick(
         val event: ExchangePickEvent,

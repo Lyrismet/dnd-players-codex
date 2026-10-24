@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppPhotoCropDraftWindow
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.HoldTooShortToast
@@ -161,7 +162,22 @@ private fun NpcSummaryBody(
         )
     }
     EntityDescription(npc.description, actions.quickEdit)
-    EntityFactsGrid(npc.facts, actions.onEntityRefClicked, actions.quickEdit)
+    EntityFactsGrid(
+        facts = npc.facts,
+        onEntityRefClicked = actions.onEntityRefClicked,
+        quick = actions.quickEdit,
+        footer = {
+            NpcVulnerabilitySection(
+                vulnerabilities = npc.vulnerabilities,
+                onChange =
+                    actions.onNpcVulnerabilityChanged?.let { changed ->
+                        { type, state -> changed(npc.ref.id, type, state) }
+                    },
+                onEdited =
+                    actions.onNpcVulnerabilitiesEdited?.let { edited -> { before -> edited(npc.ref.id, before) } },
+            )
+        },
+    )
     EntityRelationGroups(npc.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(npc.name, npc.relatedNotes, actions.onRelatedNoteClicked)
     EntityDeleteButton(npc.ref, actions)
@@ -462,10 +478,11 @@ internal fun EntityFactsGrid(
     onEntityRefClicked: (EntityRef) -> Unit,
     quick: QuickEditSheet? = null,
     modifier: Modifier = Modifier,
+    footer: (@Composable () -> Unit)? = null,
 ) {
     // a read-only card has nothing to hold on to, so an empty nicknames row would only be noise
     val shown = if (quick == null) facts.filterNot { it.isEmptyNicknames() } else facts
-    if (shown.isEmpty()) return
+    if (shown.isEmpty() && footer == null) return
     // mockup - font-size 14px on the facts card, 6px vertical padding, 1px BorderSubtle, 14px radius
     val factTextStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Medium)
     Column(
@@ -476,6 +493,15 @@ internal fun EntityFactsGrid(
                 .padding(vertical = 6.dp),
     ) {
         shown.forEach { fact -> FactLine(fact, factTextStyle, onEntityRefClicked, quick) }
+        if (footer != null) {
+            if (shown.isNotEmpty()) {
+                AppDivider(
+                    color = AppPalette.BorderSubtle,
+                    modifier = Modifier.padding(vertical = 2.dp),
+                )
+            }
+            footer()
+        }
     }
 }
 

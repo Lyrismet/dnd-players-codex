@@ -18,6 +18,7 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_all_species
+import dndplayerscodex.shared.generated.resources.codex_party_fallen_section
 import dndplayerscodex.shared.generated.resources.codex_tab_location
 import dndplayerscodex.shared.generated.resources.codex_tab_npc
 import dndplayerscodex.shared.generated.resources.codex_tab_party
@@ -105,10 +106,23 @@ internal fun CodexPartyList(
     modifier: Modifier = Modifier,
 ) {
     CodexGroupedList(
-        groups = remember(state.party) { listOf(CodexGroup(title = null, items = state.party)) },
+        groups = rememberPartyGroups(state.party),
         itemKey = { it.id },
         modifier = modifier,
     ) { CodexPartyEntry(state, it, hintPeekOffsetPx) }
+}
+
+// the living members first, the fallen under their own heading
+@Composable
+private fun rememberPartyGroups(party: List<PartyCodexItem>): List<CodexGroup<PartyCodexItem>> {
+    val fallenTitle = stringResource(Res.string.codex_party_fallen_section)
+    return remember(party, fallenTitle) {
+        val (fallen, living) = party.partition { it.fallen }
+        listOfNotNull(
+            CodexGroup(title = null, items = living),
+            fallen.takeIf { it.isNotEmpty() }?.let { CodexGroup(title = fallenTitle, items = it) },
+        )
+    }
 }
 
 @Composable

@@ -17,6 +17,8 @@ import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.style.DEFAULT_STATUS_GLYPH
+import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
+import com.lyrismet.incadent.feature.combat.domain.results.HitRange
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
@@ -142,6 +144,7 @@ sealed interface EntitySummaryItem {
         val facts: List<FactRow>,
         val groups: List<RelationGroup>,
         val relatedNotes: List<RelatedNoteItem>,
+        val vulnerabilities: NpcVulnerabilities = NpcVulnerabilities(),
     ) : EntitySummaryItem
 
     data class LocationSummary(
@@ -179,14 +182,16 @@ sealed interface EntitySummaryItem {
         val creatureType: CreatureType,
         val notes: String,
         val emblem: EntityEmblem,
-        val damage: Map<DamageType, DamageState>,
+        val vulnerabilities: Map<DamageType, DamageState>,
         val relatedNotes: List<RelatedNoteItem>,
         // the sessions with a note that mentions it
         val seenInSessions: Int,
         // how many the tapped chip stands for, set only on a card opened from a note
         val noteQuantity: Int? = null,
-        val nicknames: List<String> = emptyList(),
         val hitPoints: Int? = null,
+        // the saved fights it was in and what they hint about its hit points
+        val fights: Int = 0,
+        val hitRange: HitRange? = null,
     ) : EntitySummaryItem
 
     data class PartySummary(
@@ -199,8 +204,20 @@ sealed interface EntitySummaryItem {
         val presenceOptions: List<StatusOption<PartyPresence>>,
         val facts: List<FactRow>,
         val relatedNotes: List<RelatedNoteItem>,
+        // set for a character who fell, the card then shows the epitaph, the chronicle and the way back
+        val fall: PartyFall? = null,
     ) : EntitySummaryItem
 }
+
+/** how a character fell and what they went through, [sessionLabel] and [foes] are empty when the fight is not known */
+data class PartyFall(
+    val sessionNoteId: Long?,
+    val sessionLabel: String?,
+    val foes: String,
+    val sessions: Int,
+    val fights: Int,
+    val damage: Int,
+)
 
 /** everything [buildEntitySummary] needs to resolve any [EntityRef] - one instance covers a whole screen */
 data class EntityLookup(
@@ -218,4 +235,12 @@ data class EntityLookup(
     val mentionIndex: MentionIndex,
     val sessionNumbering: SessionNumbering,
     val species: List<Species> = emptyList(),
+    val facts: CombatFacts = CombatFacts.EMPTY,
+)
+
+/** what an npc has of its own and what its species gives it, the card shows both and tells them apart */
+data class NpcVulnerabilities(
+    val own: Map<DamageType, DamageState> = emptyMap(),
+    val fromSpecies: Map<DamageType, DamageState> = emptyMap(),
+    val speciesName: String? = null,
 )

@@ -15,6 +15,9 @@ data class PartyMember(
     val hpCurrent: Int?,
     val description: String,
     val portrait: Photo? = null,
+    // fell in a fight and is out of the party until brought back, [fellCombatId] is that fight
+    val fallen: Boolean = false,
+    val fellCombatId: Long? = null,
 )
 
 enum class PartyPresence {

@@ -1,0 +1,362 @@
+package com.lyrismet.incadent.feature.combat.presentation.prep
+
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
+import com.lyrismet.incadent.core.designsystem.AppLineHeight
+import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
+import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
+import com.lyrismet.incadent.core.designsystem.component.AppDashedTile
+import com.lyrismet.incadent.core.designsystem.component.AppStepper
+import com.lyrismet.incadent.core.designsystem.component.AppTitleSubtitle
+import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.DiscardChangesDialog
+import com.lyrismet.incadent.core.designsystem.component.Dot
+import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
+import com.lyrismet.incadent.core.designsystem.component.SectionOverline
+import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
+import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
+import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
+import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
+import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
+import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.combat_prep_add_ally
+import dndplayerscodex.shared.generated.resources.combat_prep_add_enemy
+import dndplayerscodex.shared.generated.resources.combat_prep_add_party
+import dndplayerscodex.shared.generated.resources.combat_prep_enemies_header
+import dndplayerscodex.shared.generated.resources.combat_prep_exit_text
+import dndplayerscodex.shared.generated.resources.combat_prep_less
+import dndplayerscodex.shared.generated.resources.combat_prep_more
+import dndplayerscodex.shared.generated.resources.combat_prep_overline
+import dndplayerscodex.shared.generated.resources.combat_prep_party_count
+import dndplayerscodex.shared.generated.resources.combat_prep_party_header
+import dndplayerscodex.shared.generated.resources.combat_prep_title
+import org.jetbrains.compose.resources.stringResource
+
+private const val UNCHECKED_ALPHA = 0.55f
+private val AllyDot = AppPalette.Emerald
+
+@Composable
+fun CombatPrepUi(
+    state: CombatPrepState,
+    modifier: Modifier = Modifier,
+) {
+    val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    Scaffold(modifier = modifier, contentWindowInsets = contentWindowInsets) { contentPadding ->
+        Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                PrepHeader(state)
+                val intro = state.intro
+                if (intro != null) {
+                    PrepIntroBody(intro, state.eventSink, Modifier.weight(1f))
+                } else {
+                    PrepBody(state, Modifier.weight(1f))
+                    state.start?.let { PrepStartBar(it) { state.eventSink(CombatPrepEvent.StartClicked) } }
+                }
+            }
+            AppToast(text = state.toast?.text, modifier = floatingBarAnchor())
+        }
+    }
+    state.search?.let { FoeSearchSheet(it, state.eventSink) }
+    state.entryForm?.let { form ->
+        CodexEntryFormSheet(form, toast = null, density = FormDensity.Compact, kinds = state.formKinds) {
+            state.eventSink(CombatPrepEvent.EntryForm(it))
+        }
+    }
+    state.hpPad?.let { HpPadSheet(it, state.eventSink) }
+    if (state.exitConfirmVisible) {
+        DiscardChangesDialog(
+            text = stringResource(Res.string.combat_prep_exit_text),
+            onStay = { state.eventSink(CombatPrepEvent.ExitDismissed) },
+            onLeave = { state.eventSink(CombatPrepEvent.ExitConfirmed) },
+        )
+    }
+}
+
+@Composable
+private fun PrepHeader(state: CombatPrepState) {
+    Column(modifier = Modifier.fillMaxWidth().padding(start = 20.dp, top = 6.dp, end = 20.dp, bottom = 12.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 32.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SectionOverline(
+                text = stringResource(Res.string.combat_prep_overline),
+                color = AppPalette.MaroonBright,
+                modifier = Modifier.weight(1f),
+            )
+            SheetCloseButton(
+                onClick = { state.eventSink(CombatPrepEvent.CloseClicked) },
+                modifier = Modifier.offset(x = 10.dp),
+                size = 44.dp,
+                background = Color.Transparent,
+            )
+        }
+        Text(
+            text = stringResource(Res.string.combat_prep_title),
+            style = MaterialTheme.typography.displayLarge,
+            color = AppPalette.TextHeading,
+        )
+        if (state.intro == null) {
+            Text(
+                text =
+                    buildAnnotatedString {
+                        append(state.targetPrefix + " ")
+                        withStyle(SpanStyle(color = AppPalette.GoldBright)) { append(state.target) }
+                    },
+                style =
+                    MaterialTheme.typography.bodySmall.copy(
+                        fontSize = AppFontSize.Body,
+                        lineHeight = AppLineHeight.Row,
+                    ),
+                color = AppPalette.TextSecondary,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PrepBody(
+    state: CombatPrepState,
+    modifier: Modifier = Modifier,
+) {
+    val send = state.eventSink
+    Column(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        SectionLabel(
+            text = stringResource(Res.string.combat_prep_party_header),
+            count = stringResource(Res.string.combat_prep_party_count, state.partyIncluded, state.party.size),
+            countColor = AppPalette.Azure,
+        )
+        state.party.forEach { row ->
+            PrepPartyRow(row, onToggle = { send(CombatPrepEvent.PartyToggled(row.partyMemberId)) }) {
+                send(CombatPrepEvent.HpPadOpened(row.partyMemberId))
+            }
+        }
+        state.allies.forEach { row -> MemberRow(row, AllyDot, PrepSide.ALLY, send) }
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            AddButton(
+                text = stringResource(Res.string.combat_prep_add_party),
+                color = AppPalette.GoldBright,
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+            ) { send(CombatPrepEvent.CreateOpened(CombatSide.PARTY)) }
+            AddButton(
+                text = stringResource(Res.string.combat_prep_add_ally),
+                color = AppPalette.EmeraldBright,
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+            ) { send(CombatPrepEvent.SearchOpened(PrepSide.ALLY)) }
+        }
+        SectionLabel(
+            text = stringResource(Res.string.combat_prep_enemies_header),
+            count = state.enemies.sumOf { it.count }.toString(),
+            countColor = AppPalette.MaroonBright,
+            modifier = Modifier.padding(top = 12.dp),
+        )
+        state.enemies.forEach { row -> MemberRow(row, AppPalette.Enemy, PrepSide.ENEMY, send) }
+        AddEnemyButton(
+            stringResource(Res.string.combat_prep_add_enemy),
+        ) { send(CombatPrepEvent.SearchOpened(PrepSide.ENEMY)) }
+        state.order?.let { PrepOrderSection(it, send) }
+    }
+}
+
+@Composable
+private fun SectionLabel(
+    text: String,
+    count: String,
+    countColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SectionOverline(
+            text = text,
+            color = AppPalette.TextTertiary,
+            style = OverlineStyle.Field,
+            modifier = Modifier.weight(1f),
+        )
+        Text(text = count, color = countColor, fontSize = AppFontSize.Small)
+    }
+}
+
+@Composable
+private fun PrepPartyRow(
+    row: PrepPartyRow,
+    onToggle: () -> Unit,
+    onHp: () -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .alpha(if (row.included) 1f else UNCHECKED_ALPHA)
+                .appCard(
+                    shape = AppShapes.Field,
+                    background = AppPalette.SurfaceVariant,
+                    border = if (row.included) AppPalette.PartyRowBorder else AppPalette.BorderSubtle,
+                    onClick = onToggle,
+                ).defaultMinSize(minHeight = 60.dp)
+                .padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AppCheckBox(row.included, accent = AppPalette.Azure)
+        PrepRowTitle(row.name, row.sub, Modifier.weight(1f))
+        row.hp?.let { HpButton(it, onHp) }
+    }
+}
+
+@Composable
+private fun HpButton(
+    hp: PrepHp,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier =
+            Modifier
+                .defaultMinSize(minWidth = 78.dp, minHeight = 46.dp)
+                .appCard(
+                    shape = AppShapes.Control,
+                    background = AppPalette.Background,
+                    border = AppPalette.Border,
+                    onClick = onClick,
+                ).padding(horizontal = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            hp.value,
+            style = AppText.rowTitle.copy(fontSize = AppFontSize.Medium, fontWeight = FontWeight.Bold),
+            color = AppPalette.TextPrimary,
+        )
+        Text(
+            hp.caption,
+            style = AppText.rowNote.copy(fontSize = AppFontSize.Tiny, fontWeight = FontWeight.SemiBold),
+            color = AppPalette.Azure,
+        )
+    }
+}
+
+@Composable
+private fun MemberRow(
+    row: PrepMemberRow,
+    dot: Color,
+    side: PrepSide,
+    onEvent: (CombatPrepEvent) -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .appCard(
+                    shape = AppShapes.Field,
+                    background = AppPalette.SurfaceVariant,
+                    border = dot.copy(alpha = 0.25f),
+                ).defaultMinSize(minHeight = 60.dp)
+                .padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) { Dot(size = 8.dp, color = dot) }
+        PrepRowTitle(row.name, row.sub, Modifier.weight(1f))
+        AppStepper(
+            count = row.count,
+            onDecrease = { onEvent(CombatPrepEvent.MemberDecreased(side, row.key)) },
+            onIncrease = { onEvent(CombatPrepEvent.MemberIncreased(side, row.key)) },
+            decreaseDescription = stringResource(Res.string.combat_prep_less),
+            increaseDescription = stringResource(Res.string.combat_prep_more),
+            canIncrease = row.canIncrease,
+        )
+    }
+}
+
+@Composable
+internal fun PrepRowTitle(
+    name: String,
+    sub: String,
+    modifier: Modifier = Modifier,
+) = AppTitleSubtitle(title = name, subtitle = sub, modifier = modifier)
+
+@Composable
+internal fun AddButton(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    AppDashedTile(onClick = onClick, modifier = modifier, contentPadding = PaddingValues(horizontal = 10.dp)) {
+        Text("+", color = color, fontSize = AppFontSize.Heading)
+        Text(text, color = color, fontSize = AppFontSize.BodyPlus, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+@Composable
+private fun AddEnemyButton(
+    text: String,
+    onClick: () -> Unit,
+) {
+    AppDashedTile(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        minHeight = 52.dp,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            modifier = Modifier.size(24.dp).appCard(CircleShape, AppPalette.Gold.copy(alpha = 0.14f), null),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("+", color = AppPalette.GoldBright, fontSize = AppFontSize.Heading)
+        }
+        Text(text, color = AppPalette.GoldBright, fontSize = AppFontSize.Medium, fontWeight = FontWeight.SemiBold)
+    }
+}

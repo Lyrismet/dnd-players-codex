@@ -55,6 +55,22 @@ private val parsedPaths = mutableMapOf<String, Path>()
 
 private fun parse(data: String): Path = PathParser().parsePathString(data).toPath()
 
+/** the bare icon of a damage type, a stroked path of the 24 grid */
+@Composable
+fun AppDamageGlyph(
+    iconPath: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    size: Dp = 14.dp,
+) {
+    val icon = remember(iconPath) { parsedPaths.getOrPut(iconPath) { parse(iconPath) } }
+    Canvas(modifier.size(size)) {
+        scale(this.size.width / VIEW_WIDTH, pivot = Offset.Zero) {
+            drawPath(icon, color, style = Stroke(ICON_STROKE, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        }
+    }
+}
+
 /** a heater shield with [iconPath] inside, the rim telling the [style] and [count] drawn to the right */
 @Composable
 fun AppDamageShield(

@@ -44,6 +44,38 @@ object AppPalette {
     // мёртв
     val DeadBackground = Color(0xFF07080A)
 
+    // стороны и состояния боя
+    val Enemy = Color(0xFFC0443F)
+    val Party = Color(0xFF6EA0E6)
+    val PartyRowBorder = Color(0x736EA0E6)
+    val Slate = Color(0xFF94A3B8)
+    val SlateTint = Color(0x1F94A3B8)
+    val Bloodied = Color(0xFFE0794A)
+    val Barely = Color(0xFFE5484D)
+    val Amber = Color(0xFFF0B43C)
+    val AmberOutline = Color(0x8CF0B43C)
+
+    // сопротивление, иммунитет и уязвимость в тексте
+    val ResistanceText = Color(0xFFF6CC72)
+    val ImmunityText = Color(0xFFF1F3F7)
+    val VulnerabilityText = Color(0xFFF59A93)
+
+    // группы состояний: стеснение и ослабление
+    val RestraintChip = Color(0xFFF2B8B8)
+    val RestraintOn = Color(0xFFF6CACA)
+    val WeakeningChip = Color(0xFFCDB6F2)
+    val WeakeningTitle = Color(0xFFBFA3EE)
+    val WeakeningOn = Color(0xFFDCCBF7)
+    val WeakeningTint = Color(0x33966EDC)
+    val WeakeningOnFill = Color(0x3D966EDC)
+    val WeakeningOnBorder = Color(0xB3966EDC)
+
+    // тёмные заливки кнопок и строк боя
+    val RowDivider = Color(0xFF1F2029)
+    val BadgeFill = Color(0xFF23252F)
+    val HealOnFill = Color(0xFF0E1A14)
+    val TempOnFill = Color(0xFF10151D)
+
     // оверлеи и эффекты
     val Scrim = Color(0xFF050508)
     val FlameHot = Color(0xFFFFF3B0)

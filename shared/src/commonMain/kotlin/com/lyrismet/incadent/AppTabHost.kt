@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -32,7 +31,6 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import com.lyrismet.incadent.core.designsystem.component.BottomTabBar
 import com.lyrismet.incadent.core.designsystem.component.BottomTabBarItem
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
-import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.dismissKeyboardOnTap
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
@@ -46,6 +44,7 @@ import com.lyrismet.incadent.core.navigation.resolveBackAction
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.presentation.CodexScreen
+import com.lyrismet.incadent.feature.combat.presentation.list.CombatListScreen
 import com.lyrismet.incadent.feature.session.presentation.list.SessionListScreen
 import com.lyrismet.incadent.feature.settings.presentation.SettingsScreen
 import com.slack.circuit.backstack.SaveableBackStack
@@ -63,7 +62,6 @@ import dndplayerscodex.shared.generated.resources.bottom_tab_codex
 import dndplayerscodex.shared.generated.resources.bottom_tab_combat
 import dndplayerscodex.shared.generated.resources.bottom_tab_sessions
 import dndplayerscodex.shared.generated.resources.bottom_tab_settings
-import dndplayerscodex.shared.generated.resources.combat_tab_placeholder
 import org.jetbrains.compose.resources.stringResource
 
 internal enum class AppTab {
@@ -84,6 +82,7 @@ internal class AppTabsState(
     val selectedTabIndex: MutableState<Int>,
     val sessions: TabStack,
     val codex: TabStack,
+    val combat: TabStack,
     val settings: TabStack,
 ) {
     val selectedTab: AppTab get() = AppTab.entries[selectedTabIndex.value]
@@ -93,7 +92,7 @@ internal class AppTabsState(
             AppTab.SESSIONS -> sessions
             AppTab.CODEX -> codex
             AppTab.SETTINGS -> settings
-            AppTab.COMBAT -> null
+            AppTab.COMBAT -> combat
         }
 }
 
@@ -102,9 +101,10 @@ internal fun rememberAppTabsState(): AppTabsState {
     val selectedTabIndex = rememberSaveable { mutableStateOf(AppTab.SESSIONS.ordinal) }
     val sessions = rememberTabStack(SessionListScreen)
     val codex = rememberTabStack(CodexScreen)
+    val combat = rememberTabStack(CombatListScreen)
     val settings = rememberTabStack(SettingsScreen)
-    return remember(selectedTabIndex, sessions, codex, settings) {
-        AppTabsState(selectedTabIndex, sessions, codex, settings)
+    return remember(selectedTabIndex, sessions, codex, combat, settings) {
+        AppTabsState(selectedTabIndex, sessions, codex, combat, settings)
     }
 }
 
@@ -122,6 +122,7 @@ internal fun AppTabHost(
     swipeHintReplayController: SwipeHintReplayController,
     tabs: AppTabsState,
     onExit: () -> Unit,
+    combatRound: Int?,
 ) {
     val pendingUndo by undoController.current.collectAsState()
     val selectedTab = tabs.selectedTab
@@ -156,7 +157,7 @@ internal fun AppTabHost(
                 TabBackstackHost(tabs.codex, isSelected = selectedTab == AppTab.CODEX)
             }
             Box(modifier = tabContentModifier(selectedTab == AppTab.COMBAT)) {
-                CombatPlaceholder()
+                TabBackstackHost(tabs.combat, isSelected = selectedTab == AppTab.COMBAT)
             }
             Box(modifier = tabContentModifier(selectedTab == AppTab.SETTINGS)) {
                 TabBackstackHost(tabs.settings, isSelected = selectedTab == AppTab.SETTINGS)
@@ -170,7 +171,7 @@ internal fun AppTabHost(
         }
         BottomTabBar(
             modifier = Modifier.onSizeChanged { tabBarHeightPx = it.height },
-            tabs = appTabBarItems(),
+            tabs = appTabBarItems(combatRound),
             selectedIndex = tabs.selectedTabIndex.value,
             onTabSelected = { index -> onTabTapped(tabs, index) },
         )
@@ -255,20 +256,13 @@ private fun TabBackstackHost(
 }
 
 @Composable
-private fun CombatPlaceholder() {
-    Scaffold { contentPadding ->
-        EmptyState(
-            text = stringResource(Res.string.combat_tab_placeholder),
-            modifier = Modifier.padding(contentPadding),
-        )
-    }
-}
-
-@Composable
-private fun appTabBarItems(): List<BottomTabBarItem> =
+private fun appTabBarItems(combatRound: Int?): List<BottomTabBarItem> =
     listOf(
         BottomTabBarItem(stringResource(Res.string.bottom_tab_sessions)) { tint -> SessionsTabIcon(tint) },
         BottomTabBarItem(stringResource(Res.string.bottom_tab_codex)) { tint -> CodexTabIcon(tint) },
-        BottomTabBarItem(stringResource(Res.string.bottom_tab_combat)) { tint -> CombatTabIcon(tint) },
+        BottomTabBarItem(
+            stringResource(Res.string.bottom_tab_combat),
+            combatRound?.toString(),
+        ) { tint -> CombatTabIcon(tint) },
         BottomTabBarItem(stringResource(Res.string.bottom_tab_settings)) { tint -> SettingsTabIcon(tint) },
     )

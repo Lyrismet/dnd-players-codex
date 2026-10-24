@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
@@ -80,24 +81,7 @@ fun AppBottomSheet(
 // Material3's Surface discards an external Modifier.border(), so the gold edge is hand-drawn here instead
 @Composable
 private fun AppBottomSheetDragHandle() {
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(SheetCornerRadius + 4.dp)
-                .drawWithContent {
-                    drawContent()
-                    val radiusPx = SheetCornerRadius.toPx()
-                    val path =
-                        Path().apply {
-                            moveTo(0f, radiusPx)
-                            arcTo(Rect(0f, 0f, radiusPx * 2, radiusPx * 2), 180f, 90f, false)
-                            lineTo(size.width - radiusPx, 0f)
-                            arcTo(Rect(size.width - radiusPx * 2, 0f, size.width, radiusPx * 2), 270f, 90f, false)
-                        }
-                    drawPath(path, color = SheetEdgeColor, style = Stroke(width = 1.5.dp.toPx()))
-                },
-    ) {
+    Box(modifier = Modifier.fillMaxWidth().height(SheetCornerRadius + 4.dp).sheetTopEdge(SheetCornerRadius)) {
         Box(
             modifier =
                 Modifier
@@ -111,14 +95,30 @@ private fun AppBottomSheetDragHandle() {
     }
 }
 
+/** the thin gold edge of a panel docked to the bottom, along the top and round the two top corners only */
+fun Modifier.sheetTopEdge(cornerRadius: Dp): Modifier =
+    drawWithContent {
+        drawContent()
+        val radiusPx = cornerRadius.toPx()
+        val path =
+            Path().apply {
+                moveTo(0f, radiusPx)
+                arcTo(Rect(0f, 0f, radiusPx * 2, radiusPx * 2), 180f, 90f, false)
+                lineTo(size.width - radiusPx, 0f)
+                arcTo(Rect(size.width - radiusPx * 2, 0f, size.width, radiusPx * 2), 270f, 90f, false)
+            }
+        drawPath(path, color = SheetEdgeColor, style = Stroke(width = 1.5.dp.toPx()))
+    }
+
 // raw "✕" glyph, not a Material icon - matches this codebase's existing raw-glyph precedent (MentionGlyph's symbols)
 @Composable
 fun SheetCloseButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Dp = 32.dp,
+    background: Color = AppPalette.BorderSubtle,
 ) {
-    IconBadge(modifier = modifier, size = size, background = AppPalette.BorderSubtle, onClick = onClick) {
+    IconBadge(modifier = modifier, size = size, background = background, onClick = onClick) {
         Text("✕", fontSize = AppFontSize.Body, color = AppPalette.TextMuted)
     }
 }

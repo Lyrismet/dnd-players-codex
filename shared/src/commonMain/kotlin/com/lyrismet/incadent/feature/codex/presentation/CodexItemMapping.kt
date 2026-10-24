@@ -37,18 +37,28 @@ internal fun Npc.toCodexItem(
     )
 }
 
-internal fun List<PartyMember>.toPartyCodexItems(labels: PartyCardLabels): List<PartyCodexItem> =
-    map { member ->
+/** the living first, then the fallen, [fellIn] names the session each fell in */
+internal fun List<PartyMember>.toPartyCodexItems(
+    labels: PartyCardLabels,
+    fellIn: Map<Long, String> = emptyMap(),
+): List<PartyCodexItem> =
+    sortedBy { it.fallen }.map { member ->
         PartyCodexItem(
             id = member.id,
             name = member.name,
             initial = member.name.take(1).uppercase(),
             portrait = member.portrait,
             color = PartyMemberColor,
-            presenceLabel = labels.presence.getValue(member.presence),
-            presenceColor = member.presence.toStatusColor(),
+            presenceLabel = if (member.fallen) labels.fallen else labels.presence.getValue(member.presence),
+            presenceColor = if (member.fallen) NpcLifeState.DEAD.toStatusColor() else member.presence.toStatusColor(),
             subtitle = member.ownerLine(labels),
-            meta = "${labels.hpShort} ${member.hpLine()}",
+            meta =
+                if (member.fallen) {
+                    listOfNotNull(labels.fallen, fellIn[member.id]).joinToString(" · ")
+                } else {
+                    "${labels.hpShort} ${member.hpLine()}"
+                },
+            fallen = member.fallen,
         )
     }
 

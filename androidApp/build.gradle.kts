@@ -40,7 +40,7 @@ android {
                 .get()
                 .toInt()
         versionCode = 1
-        versionName = "0.7"
+        versionName = "0.8"
     }
     packaging {
         resources {

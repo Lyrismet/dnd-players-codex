@@ -188,7 +188,8 @@ private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
     val isQuick = state.editMode == EntityEditMode.QUICK
     return entitySheetActions(
         partyPresence = true,
-        speciesDamageEdit = !state.readOnly,
+        speciesVulnerabilityEdit = !state.readOnly,
+        npcVulnerabilityEdit = !state.readOnly,
         onEditClicked = if (isQuick) null else { ref -> state.eventSink(CodexEvent.EditEntryRequested(ref)) },
         // the swipe stays the quick way, an archived campaign has nothing to delete
         onDeleteClicked =

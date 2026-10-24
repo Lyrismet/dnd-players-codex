@@ -59,7 +59,9 @@ object AppFontSize {
     val EntityTitle = 27.sp
 
     /** screen titles */
+    val Stat = 28.sp
     val Display = 32.sp
+    val StatLarge = 34.sp
     val Hero = 36.sp
     val Number = 46.sp
 }

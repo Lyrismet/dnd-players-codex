@@ -47,10 +47,8 @@ private val ListMaxHeight = 380.dp
 private val SearchHeight = 46.dp
 private val RowMinHeight = 58.dp
 private val RowContentGap = 16.dp
-private val CheckboxSize = 20.dp
 private val ListShape = AppShapes.Card
 private const val INACTIVE_ALPHA = 0.45f
-private const val CARRIED_FILL_ALPHA = 0.3f
 
 // the muted gold of a note saying why an option is not pickable
 private val NoteColor = Color(0xFFB5A887)
@@ -265,7 +263,7 @@ private fun SelectListRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RowContentGap),
     ) {
-        if (multi) SelectCheckbox(row.selected, carried = row.carriedBy != null)
+        if (multi) AppCheckBox(row.selected, carried = row.carriedBy != null)
         if (!multi &&
             leadingGlyph != null
         ) {
@@ -318,38 +316,6 @@ private fun highlighted(row: SelectRow) =
     }
 
 @Composable
-internal fun SelectCheckbox(
-    checked: Boolean,
-    carried: Boolean = false,
-) {
-    val shape = AppShapes.Badge
-    val fill =
-        when {
-            carried -> AppPalette.Gold.copy(alpha = CARRIED_FILL_ALPHA)
-            checked -> AppPalette.Gold
-            else -> null
-        }
-    Box(
-        modifier =
-            Modifier
-                .size(CheckboxSize)
-                .clip(shape)
-                .background(fill ?: Color.Transparent)
-                .border(1.5.dp, fill ?: AppPalette.RadioIdle, shape),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (checked) {
-            Text(
-                "✓",
-                fontSize = AppFontSize.Small,
-                fontWeight = FontWeight.Bold,
-                color = AppPalette.Background,
-            )
-        }
-    }
-}
-
-@Composable
 private fun SelectOutlinedButton(
     text: String,
     onClick: () -> Unit,
@@ -376,15 +342,12 @@ internal fun SelectCreateRow(
     text: String,
     onClick: () -> Unit,
 ) {
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 50.dp)
-                .clip(AppShapes.Card)
-                .dashedBorder(AppPalette.Gold.copy(alpha = 0.6f), cornerRadius = 14.dp)
-                .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
+    AppDashedTile(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        color = AppPalette.Gold.copy(alpha = 0.6f),
+        cornerRadius = 14.dp,
+        minHeight = 50.dp,
     ) {
         Text(text, fontSize = AppFontSize.Medium, fontWeight = FontWeight.SemiBold, color = AppPalette.GoldBright)
     }

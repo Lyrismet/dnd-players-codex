@@ -9,10 +9,8 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 
-private val Slate = Color(0xFF94A3B8)
 private val DeadLifeForeground = Color(0xFFC9CDD4)
 private val DeadLifeBorder = Color(0xFF4A4D5C)
-private val PartyBase = Color(0xFF6EA0E6)
 
 private val Positive =
     statusColor(
@@ -23,7 +21,7 @@ private val Positive =
 private val Negative =
     statusColor(AppPalette.MaroonBright, AppPalette.Maroon.copy(alpha = 0.24f), AppPalette.Maroon.copy(alpha = 0.65f))
 private val Neutral =
-    statusColor(AppPalette.TextMuted, Slate.copy(alpha = 0.12f), Slate.copy(alpha = 0.34f))
+    statusColor(AppPalette.TextMuted, AppPalette.Slate.copy(alpha = 0.12f), AppPalette.Slate.copy(alpha = 0.34f))
 
 fun NpcStatus.toStatusColor(): StatusColor =
     when (this) {
@@ -68,6 +66,6 @@ val LocationMentionColor =
 val PartyMemberColor =
     statusColor(
         foreground = AppPalette.Azure,
-        background = PartyBase.copy(alpha = 0.14f),
-        border = PartyBase.copy(alpha = 0.45f),
+        background = AppPalette.Party.copy(alpha = 0.14f),
+        border = AppPalette.Party.copy(alpha = 0.45f),
     )

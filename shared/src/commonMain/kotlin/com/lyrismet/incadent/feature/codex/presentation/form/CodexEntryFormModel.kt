@@ -46,7 +46,9 @@ data class CodexEntryFormState(
     // non-null while the select sheet is open over the form
     val placeSelect: PlaceSelectState? = null,
     val npcOptions: List<FormChipOption<Long>> = emptyList(),
-    val speciesDamage: Map<DamageType, DamageState> = emptyMap(),
+    val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
+    // what the picked species gives an npc, shown faded under the npc's own
+    val npcSpeciesVulnerabilities: Map<DamageType, DamageState> = emptyMap(),
     val speciesHitPoints: Int? = null,
     val creatureTypeOptions: List<FormChipOption<CreatureType>> = emptyList(),
     // the species the npc is linked to, shown on its field row
@@ -171,7 +173,7 @@ sealed interface CodexEntryFormEvent {
         val type: CreatureType,
     ) : CodexEntryFormEvent
 
-    data class EntryDamageChanged(
+    data class EntryVulnerabilityChanged(
         val type: DamageType,
         val state: DamageState,
     ) : CodexEntryFormEvent

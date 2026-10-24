@@ -26,6 +26,8 @@ import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.di.AppGraph
 import com.lyrismet.incadent.feature.campaign.presentation.CampaignLibraryScreen
 import com.lyrismet.incadent.feature.campaign.presentation.exchange.ImportScreen
+import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
+import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.mention.presentation.LocalMentionStyle
 import com.slack.circuit.foundation.CircuitCompositionLocals
 import com.slack.circuit.foundation.CircuitContent
@@ -83,7 +85,13 @@ fun App(
                         Box(modifier = Modifier.fillMaxSize()) {
                             when {
                                 currentCampaignId != null ->
-                                    AppTabHost(graph.undoController, graph.swipeHintReplayController, tabs, onExit)
+                                    AppTabHost(
+                                        graph.undoController,
+                                        graph.swipeHintReplayController,
+                                        tabs,
+                                        onExit,
+                                        rememberCombatRound(graph.combatRepository),
+                                    )
                                 campaigns != null -> CircuitContent(CampaignLibraryScreen)
                             }
                             ExchangeOverlay(overlay, graph.importSource)
@@ -114,4 +122,13 @@ private fun ExchangeOverlay(
     }
     val open = overlay.top ?: return
     key(open) { CircuitContent(open, onNavEvent = { if (it is NavEvent.Pop) overlay.pop() }) }
+}
+
+/** the round of the fight in progress, shown over the combat tab */
+@Composable
+private fun rememberCombatRound(repository: CombatRepository): Int? {
+    val round by remember(repository) {
+        repository.observeAll().map { combats -> combats.firstOrNull { it.phase == CombatPhase.ONGOING }?.round }
+    }.collectAsState(initial = null)
+    return round
 }

@@ -45,6 +45,7 @@ internal fun Npc.toFields(ref: EntityRef.Npc) =
         npcLife = lifeState,
         npcLocationIds = locationIds,
         npcSpeciesId = speciesId,
+        vulnerabilities = vulnerabilities,
     )
 
 internal fun PartyMember.toFields(ref: EntityRef.Party) =
@@ -104,6 +105,7 @@ internal fun CodexEntryFormFields.toNpc() =
         portrait = portrait,
         nicknames = parseNicknames(nicknames),
         speciesId = npcSpeciesId,
+        vulnerabilities = vulnerabilities,
     )
 
 internal fun CodexEntryFormFields.toQuest() =
@@ -134,9 +136,8 @@ internal fun Species.toFields(ref: EntityRef.Species) =
         name = name,
         description = notes,
         portrait = photo,
-        nicknames = nicknames.joinNicknames(),
         speciesType = creatureType,
-        speciesDamage = damage,
+        vulnerabilities = vulnerabilities,
         speciesHitPoints = hitPoints,
     )
 
@@ -145,9 +146,8 @@ internal fun CodexEntryFormFields.toSpecies() =
         id = (editingRef as? EntityRef.Species)?.id ?: reviveId,
         name = name.trim().capitalizeFirst(),
         creatureType = speciesType,
-        damage = speciesDamage,
+        vulnerabilities = vulnerabilities,
         notes = description.trim(),
         photo = portrait,
-        nicknames = parseNicknames(nicknames),
         hitPoints = speciesHitPoints?.coerceIn(SPECIES_HIT_POINTS_RANGE),
     )

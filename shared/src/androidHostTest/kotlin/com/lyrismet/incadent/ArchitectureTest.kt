@@ -11,6 +11,8 @@ private val SHARED_PRESENTATION: Map<String, Set<String>> =
     mapOf(
         "codex" to setOf("summary", "quickedit", "style", "form"),
         "campaign" to setOf("sheet"),
+        // the saved fight as a card in a session and the outcome badge
+        "combat" to setOf("summary"),
         // navigation keys other screens open
         "session" to setOf("route"),
         // every file of these two is meant to be embedded

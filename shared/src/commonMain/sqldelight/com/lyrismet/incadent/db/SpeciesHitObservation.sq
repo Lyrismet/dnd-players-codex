@@ -1,0 +1,23 @@
+CREATE TABLE species_hit_observation (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    species_id INTEGER NOT NULL REFERENCES species(id) ON DELETE CASCADE,
+    combat_id INTEGER NOT NULL REFERENCES combat(id) ON DELETE CASCADE,
+    damage INTEGER NOT NULL,
+    died INTEGER NOT NULL
+);
+
+CREATE INDEX species_hit_observation_species_id ON species_hit_observation(species_id);
+
+selectByCampaign:
+SELECT species_hit_observation.* FROM species_hit_observation
+JOIN species ON species.id = species_hit_observation.species_id
+WHERE species.campaign_id = ?;
+
+insert:
+INSERT INTO species_hit_observation(species_id, combat_id, damage, died) VALUES (?, ?, ?, ?);
+
+deleteById:
+DELETE FROM species_hit_observation WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

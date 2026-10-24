@@ -4,8 +4,6 @@ package com.lyrismet.incadent.feature.campaign.domain.model
 sealed interface ImportError {
     data object NotIncadent : ImportError
 
-    data object NewerVersion : ImportError
-
     data object TooLarge : ImportError
 
     /** the file carries the mark but its content does not hold together */

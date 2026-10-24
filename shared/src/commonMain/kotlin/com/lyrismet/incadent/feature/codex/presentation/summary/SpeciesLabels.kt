@@ -19,6 +19,7 @@ import dndplayerscodex.shared.generated.resources.creature_type_monstrosity
 import dndplayerscodex.shared.generated.resources.creature_type_ooze
 import dndplayerscodex.shared.generated.resources.creature_type_plant
 import dndplayerscodex.shared.generated.resources.creature_type_undead
+import dndplayerscodex.shared.generated.resources.creature_type_unspecified
 import dndplayerscodex.shared.generated.resources.damage_state_immunity
 import dndplayerscodex.shared.generated.resources.damage_state_normal
 import dndplayerscodex.shared.generated.resources.damage_state_resistance
@@ -57,6 +58,7 @@ fun creatureTypeLabels(): Map<CreatureType, String> =
         CreatureType.OOZE to stringResource(Res.string.creature_type_ooze),
         CreatureType.PLANT to stringResource(Res.string.creature_type_plant),
         CreatureType.UNDEAD to stringResource(Res.string.creature_type_undead),
+        CreatureType.UNSPECIFIED to stringResource(Res.string.creature_type_unspecified),
     )
 
 @Composable
