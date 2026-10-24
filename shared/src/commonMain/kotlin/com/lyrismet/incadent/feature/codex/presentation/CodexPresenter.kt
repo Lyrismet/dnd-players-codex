@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.lyrismet.incadent.core.debounce.rememberDebounced
 import com.lyrismet.incadent.core.errors.ReportFailures
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
@@ -183,9 +184,11 @@ class CodexPresenter(
         val formController = rememberFormController(fields, parties)
 
         val records = rememberRecords(parties, npcs, quests, locations, sessionEntries, species)
-        val search = buildSearchResults(records, fields)
+        // the field shows every keystroke at once, the lists below follow once typing pauses
+        val query = rememberDebounced(fields.searchQuery.value.trim()) { it.isEmpty() }
+        val search = remember(records, query) { buildSearchResults(records, query) }
         val party = search.searchedParties.toPartyCodexItems(labels.partyCard, fellIn(records, sessionNotes, numbering))
-        val listing = codexListing(search, records, party, fields, labels)
+        val listing = codexListing(search, records, party, fields, labels, query)
         val formState = formController.buildState(records.npcs, records.locations, species)
 
         val lookup = lookupOf(records, sessionNotes, numbering)
@@ -212,6 +215,7 @@ class CodexPresenter(
             selectedEntity,
             labels,
             scope,
+            query,
             CodexEditContext(editMode, holdHint, undoAction, swipeHintTarget),
         )
     }
@@ -305,6 +309,7 @@ class CodexPresenter(
         party: List<PartyCodexItem>,
         fields: CodexFields,
         labels: CodexLabels,
+        query: String,
     ): CodexListing {
         val tab = fields.activeTab.value
         val own =
@@ -316,11 +321,11 @@ class CodexPresenter(
                 labels.grouped,
                 fields.collapsedPlaceIds.value,
             )
-        val speciesMatches = records.species.count { it.matchesQuery(fields.searchQuery.value.trim()) }
+        val speciesMatches = records.species.count { it.matchesQuery(query) }
         val emptyKind =
             codexEmptyKind(
                 tab,
-                fields.searchQuery.value,
+                query,
                 if (fields.showsSpecies) speciesMatches > 0 else own.hasEntriesFor(tab, party, speciesMatches > 0),
                 otherSectionMatches(
                     tab,
@@ -432,6 +437,7 @@ class CodexPresenter(
         selectedEntity: EntitySummaryItem?,
         labels: CodexLabels,
         scope: CoroutineScope,
+        query: String,
         context: CodexEditContext,
     ): CodexState {
         val activeTab = fields.activeTab.value
@@ -455,7 +461,7 @@ class CodexPresenter(
             species =
                 speciesItems(
                     records,
-                    fields.searchQuery.value.trim(),
+                    query,
                     isShown = activeTab == CodexTab.ALL || fields.showsSpecies,
                 ),
             quests = grouped.quests,
@@ -528,9 +534,8 @@ class CodexPresenter(
 
     private fun buildSearchResults(
         records: CodexRecords,
-        fields: CodexFields,
+        query: String,
     ): CodexSearchResults {
-        val query = fields.searchQuery.value.trim()
         val npcsById = records.npcs.associateBy { it.id }
         val regions = CodexRegions(records.npcs, records.locations)
         return CodexSearchResults(

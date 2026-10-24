@@ -17,7 +17,7 @@ import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormContr
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.mention.domain.DeletedMention
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
-import com.lyrismet.incadent.feature.mention.domain.insertMention
+import com.lyrismet.incadent.feature.mention.domain.insertMentionAt
 import com.lyrismet.incadent.feature.mention.domain.mentionToken
 import com.lyrismet.incadent.feature.mention.domain.unlinkedMentionRef
 import kotlinx.coroutines.CoroutineScope
@@ -118,8 +118,9 @@ internal class MentionCreateController(
             return mentionActions.relinkAll(MentionRef(unlinked.type, unlinked.id), ref, name, data.allEntries)
         }
         val before = draft.value
-        val text = insertMention(before.text, mentionToken(ref, name))
-        draft.value = TextFieldValue(text, TextRange(text.length))
+        val inserted = insertMentionAt(before.text, mentionToken(ref, name), before.selection.end)
+        val text = inserted.text
+        draft.value = TextFieldValue(text, TextRange(inserted.caret))
         // older notes that already hold this name as a "no record yet" tag now point at the record too
         val relinkOlder = mentionActions.relinkAll(unlinkedMentionRef(name), ref, name, data.allEntries)
         // a draft the player kept typing in after the creation is left as it is

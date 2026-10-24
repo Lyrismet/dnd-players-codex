@@ -8,6 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.text.input.TextFieldValue
 import com.lyrismet.incadent.core.errors.ReportFailures
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
@@ -191,7 +192,17 @@ class SessionDetailPresenter(
             remember(currentNote, allSessions, entries, allEntries) {
                 mentionSessionBodies(currentNote, allSessions, entries, allEntries)
             }
-        val mention = buildMentionContext(npcs, locations, quests, parties, species, draft.value.text, sessionBodies)
+        val mention =
+            buildMentionContext(
+                npcs,
+                locations,
+                quests,
+                parties,
+                species,
+                draft.value.text,
+                draft.value.selection.end,
+                sessionBodies,
+            )
         // parsing every note is the costly part, so it only reruns when a note or a mention candidate changes
         val noteItems =
             remember(entries, mention.candidates) {
@@ -209,8 +220,10 @@ class SessionDetailPresenter(
             highlightedEntryId.value?.let { id ->
                 feed.indexOfFirst { it is SessionFeedItem.Note && it.entry.id == id }.takeIf { it >= 0 }
             }
-        val entryMentions = mentionsIn(entries.map { it.body }, mention.candidates)
-        val headerMentions = entryMentions.map { it.toChipItem() }
+        // like the note items, these only change with a note or a mention candidate, not with the draft
+        val entryMentions =
+            remember(entries, mention.candidates) { mentionsIn(entries.map { it.body }, mention.candidates) }
+        val headerMentions = remember(entryMentions) { entryMentions.map { it.toChipItem() } }
 
         val selectedSummary =
             selectedEntitySummary(
@@ -237,14 +250,17 @@ class SessionDetailPresenter(
 
         val assignedTags by tagRepository.observeTagsFor(screen.sessionNoteId).collectAsState(initial = emptyList())
         val tagCatalog by tagRepository.observeCatalog().collectAsState(initial = emptyList())
-        val mentionedQuestNames = entryMentions.filterIsInstance<MentionEntity.QuestMention>().map { it.name }
+        val tagReasons = tagReasonLabels()
         val tagSuggestions =
-            suggestSessionTags(
-                entries.map { plainMentionText(it.body) },
-                mentionedQuestNames,
-                assignedTags,
-                tagReasonLabels(),
-            ).map { SessionTagSuggestionItem(it.tag, it.reason) }
+            remember(entries, entryMentions, assignedTags, tagReasons) {
+                val mentionedQuestNames = entryMentions.filterIsInstance<MentionEntity.QuestMention>().map { it.name }
+                suggestSessionTags(
+                    entries.map { plainMentionText(it.body) },
+                    mentionedQuestNames,
+                    assignedTags,
+                    tagReasons,
+                ).map { SessionTagSuggestionItem(it.tag, it.reason) }
+            }
         val tagButtonLabel =
             if (assignedTags.isEmpty()) {
                 stringResource(Res.string.session_detail_tag_button_label_empty)
@@ -273,6 +289,7 @@ class SessionDetailPresenter(
         val phraseSavedToast = stringResource(Res.string.session_detail_phrase_saved_toast)
         val mentionData = mentionEventData(mention.candidates, mention.entities, allEntries)
         val phrasePool = remember(pinnedPhrases, frequentPhrases) { phrasePool(pinnedPhrases, frequentPhrases) }
+        val phraseStrip = remember(phrasePool) { phrasePool.take(PHRASE_STRIP_SIZE).map { it.toItem() } }
         val completions =
             if (mention.suggestions.isEmpty()) phraseCompletions(draft.value.text, phrasePool)?.options else null
 
@@ -281,18 +298,53 @@ class SessionDetailPresenter(
         // for that one frame was the cause of a visible flash on every navigation into this screen
         val campaign by campaignRepository.observeCurrent().collectAsState(initial = null)
         val readOnly = campaign?.status == CampaignStatus.ARCHIVED
+        val language = currentAppLanguage()
+        val header =
+            SessionHeaderState(
+                overline = numberLabel?.let { stringResource(Res.string.session_overline_format, it) }.orEmpty(),
+                title = titleText,
+                dateLabel = currentNote?.sessionDate?.toDisplayDate(language).orEmpty(),
+                isLive = currentNote?.isLive ?: true,
+                isTitleEditing = fields.titleEditing.value,
+                headerMentions = headerMentions,
+                tags = assignedTags,
+                tagButtonLabel = tagButtonLabel,
+                tagSuggestionCount = tagSuggestions.size,
+            )
+        val feedState =
+            SessionFeedState(
+                items = feed,
+                readOnly = readOnly,
+                selectedEntryId = selectedEntryId.value,
+                editingEntryId = editingEntryId.value,
+                highlightedEntryId = highlightedEntryId.value,
+                focusIndex = focusIndex,
+            )
+        // the sink keeps one identity for the whole screen, so a keystroke does not recompose every note
+        val latestEvents =
+            rememberUpdatedState { event: SessionDetailEvent ->
+                val context =
+                    EventContext(
+                        currentNote,
+                        entries,
+                        undoDeletedEntryTitle,
+                        phraseSavedToast,
+                        scope,
+                        readOnly,
+                        combatToDelete,
+                    )
+                onEvent(event, context, fields, assignedTags, tagSuggestions, mentionData)
+            }
+        val eventSink = remember { { event: SessionDetailEvent -> latestEvents.value(event) } }
         return SessionDetailState(
             readOnly = readOnly,
             isLoading = currentNote == null,
-            overline = numberLabel?.let { stringResource(Res.string.session_overline_format, it) }.orEmpty(),
-            title = titleText,
-            dateLabel = currentNote?.sessionDate?.toDisplayDate(currentAppLanguage()).orEmpty(),
-            isLive = currentNote?.isLive ?: true,
-            headerMentions = headerMentions,
-            feed = feed,
+            header = header,
+            feed = feedState,
             combatDeleteVisible = combatToDelete.value != null,
             draft = draft.value.text,
             draftSelection = draft.value.selection,
+            draftComposition = draft.value.composition,
             quantityHint = pendingQuantityName(draft.value.text, draft.value.selection.end),
             mentionSuggestions = mention.suggestions,
             selectedEntity = selectedEntity,
@@ -309,35 +361,17 @@ class SessionDetailPresenter(
                     undoAction = undoAction,
                 ),
             editingEntryTimeLabel = editingEntryTimeLabel,
-            selectedEntryId = selectedEntryId.value,
-            isTitleEditing = fields.titleEditing.value,
             editingEntryId = editingEntryId.value,
-            highlightedEntryId = highlightedEntryId.value,
-            focusIndex = focusIndex,
-            tags = assignedTags,
-            tagButtonLabel = tagButtonLabel,
-            tagSuggestionCount = tagSuggestions.size,
             tagSheet = tagSheet,
-            phraseStrip = phrasePool.take(PHRASE_STRIP_SIZE).map { it.toItem() },
+            phraseStrip = phraseStrip,
             phraseCompletions = completions.orEmpty().map { it.toItem() },
             phraseSheet = fields.phrases.sheetState(pinnedPhrases, frequentPhrases),
             toast = fields.toast.value,
             deletedMentionSheet = fields.deleted.state(mentionData),
             mentionCreateSheet = fields.create.state(mentionData),
             entryForm = fields.formController.buildState(npcs, locations, species),
-        ) { event ->
-            val context =
-                EventContext(
-                    currentNote,
-                    entries,
-                    undoDeletedEntryTitle,
-                    phraseSavedToast,
-                    scope,
-                    readOnly,
-                    combatToDelete,
-                )
-            onEvent(event, context, fields, assignedTags, tagSuggestions, mentionData)
-        }
+            eventSink = eventSink,
+        )
     }
 
     // edited locally so live Flow re-emissions from other screens don't clobber in-progress typing
@@ -480,7 +514,12 @@ class SessionDetailPresenter(
         when (event) {
             SessionDetailEvent.BackClicked -> navigator.pop()
             is SessionDetailEvent.TitleChanged -> onTitleChanged(event.title, currentNote, scope, fields.titleField)
-            is SessionDetailEvent.DraftChanged -> fields.composer.onDraftChanged(event.text, event.selection)
+            is SessionDetailEvent.DraftChanged ->
+                fields.composer.onDraftChanged(
+                    event.text,
+                    event.selection,
+                    event.composition,
+                )
             SessionDetailEvent.InsertMentionTriggerClicked -> fields.composer.insertMentionTrigger()
             is SessionDetailEvent.MentionSuggestionPicked -> fields.composer.pickMention(event.token)
             is SessionDetailEvent.EntitySheet -> onEntitySheet(event.event, entries, fields, scope)

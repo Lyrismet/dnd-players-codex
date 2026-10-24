@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.format.foldForSearch
 import com.lyrismet.incadent.core.undo.UndoController
@@ -188,7 +189,7 @@ internal fun mentionEventData(
     MentionEventData(
         candidates = candidates,
         allEntries = allEntries,
-        linkTargets = mentionLinkTargets(entities),
+        linkTargets = remember(entities) { mentionLinkTargets(entities) },
         titles =
             MentionTitles(
                 autoLinked = stringResource(Res.string.auto_mention_linked_title),

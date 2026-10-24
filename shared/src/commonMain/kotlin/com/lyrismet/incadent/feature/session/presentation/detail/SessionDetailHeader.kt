@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,11 +37,13 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -69,54 +74,65 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun SessionDetailHeader(
-    state: SessionDetailState,
+    header: SessionHeaderState,
+    eventSink: (SessionDetailEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // with the keyboard up the header shrinks to the title row, so the notes keep their room
+    val ime = WindowInsets.ime
+    val density = LocalDensity.current
+    val compact by remember { derivedStateOf { ime.getBottom(density) > 0 } }
     Column(modifier = modifier) {
-        SessionDetailHeaderContent(state)
+        SessionDetailHeaderContent(header, eventSink, compact)
         AppDivider()
     }
 }
 
 @Composable
 private fun SessionDetailHeaderContent(
-    state: SessionDetailState,
+    header: SessionHeaderState,
+    eventSink: (SessionDetailEvent) -> Unit,
+    compact: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.padding(bottom = 12.dp)) {
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            SessionHeaderTopRow(state)
+            SessionHeaderTopRow(header, eventSink)
             Text(
-                state.overline,
+                header.overline,
                 style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.14.em),
                 color = AppPalette.Gold,
                 modifier = Modifier.padding(top = 4.dp),
             )
             SessionTitle(
-                title = state.title,
-                isEditing = state.isTitleEditing,
-                onEditStarted = { state.eventSink(SessionDetailEvent.TitleEditStarted) },
-                onEditFinished = { state.eventSink(SessionDetailEvent.TitleEditFinished) },
-                onTitleChanged = { state.eventSink(SessionDetailEvent.TitleChanged(it)) },
+                title = header.title,
+                maxLines = if (compact) 1 else TITLE_MAX_LINES,
+                isEditing = header.isTitleEditing,
+                onEditStarted = { eventSink(SessionDetailEvent.TitleEditStarted) },
+                onEditFinished = { eventSink(SessionDetailEvent.TitleEditFinished) },
+                onTitleChanged = { eventSink(SessionDetailEvent.TitleChanged(it)) },
                 modifier = Modifier.padding(top = 2.dp),
             )
-            Text(
-                state.dateLabel,
-                style = MaterialTheme.typography.bodyMedium,
-                color = AppPalette.TextSecondary,
-                modifier = Modifier.padding(top = 2.dp),
-            )
-            SessionTagsRow(state, modifier = Modifier.padding(top = 10.dp))
+            if (!compact) {
+                Text(
+                    header.dateLabel,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = AppPalette.TextSecondary,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+                SessionTagsRow(header, eventSink, modifier = Modifier.padding(top = 10.dp))
+            }
         }
-        if (state.headerMentions.isNotEmpty()) {
-            HeaderMentionsRow(state.headerMentions, state.eventSink, modifier = Modifier.padding(top = 10.dp))
+        if (!compact && header.headerMentions.isNotEmpty()) {
+            HeaderMentionsRow(header.headerMentions, eventSink, modifier = Modifier.padding(top = 10.dp))
         }
     }
 }
 
 @Composable
 private fun SessionHeaderTopRow(
-    state: SessionDetailState,
+    header: SessionHeaderState,
+    eventSink: (SessionDetailEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -131,24 +147,24 @@ private fun SessionHeaderTopRow(
             color = AppPalette.GoldBright,
             modifier =
                 Modifier
-                    .clickable { state.eventSink(SessionDetailEvent.BackClicked) }
+                    .clickable { eventSink(SessionDetailEvent.BackClicked) }
                     .padding(top = 6.dp, end = 4.dp, bottom = 6.dp),
         )
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            SessionStatusBadge(isLive = state.isLive)
-            if (state.isLive) {
+            SessionStatusBadge(isLive = header.isLive)
+            if (header.isLive) {
                 AppButton(
                     text = stringResource(Res.string.session_detail_end_button),
-                    onClick = { state.eventSink(SessionDetailEvent.EndSessionClicked) },
+                    onClick = { eventSink(SessionDetailEvent.EndSessionClicked) },
                     tone = ButtonTone.Maroon,
                 )
             } else {
                 AppButton(
                     text = stringResource(Res.string.session_detail_resume_button),
-                    onClick = { state.eventSink(SessionDetailEvent.ResumeSessionClicked) },
+                    onClick = { eventSink(SessionDetailEvent.ResumeSessionClicked) },
                 )
             }
         }
@@ -159,6 +175,7 @@ private fun SessionHeaderTopRow(
 @Composable
 private fun SessionTitle(
     title: String,
+    maxLines: Int,
     isEditing: Boolean,
     onEditStarted: () -> Unit,
     onEditFinished: () -> Unit,
@@ -174,7 +191,13 @@ private fun SessionTitle(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.Top,
         ) {
-            Text(title, style = titleStyle, modifier = Modifier.weight(1f))
+            Text(
+                title,
+                style = titleStyle,
+                maxLines = maxLines,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
             IconBadge(
                 modifier = Modifier.padding(top = 1.dp),
                 size = 36.dp,
@@ -279,7 +302,8 @@ private fun HeaderMentionsRow(
 // the session's own tag pills plus the dashed "+ Тег"/"+ Добавить тег" button that opens the tags bottom sheet
 @Composable
 private fun SessionTagsRow(
-    state: SessionDetailState,
+    header: SessionHeaderState,
+    eventSink: (SessionDetailEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     FlowRow(
@@ -287,7 +311,7 @@ private fun SessionTagsRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        state.tags.forEach { tag ->
+        header.tags.forEach { tag ->
             TagChip(
                 text = sessionTagLabel(tag),
                 foreground = AppPalette.TextDescription,
@@ -297,14 +321,16 @@ private fun SessionTagsRow(
             )
         }
         TagButton(
-            label = state.tagButtonLabel,
-            suggestionCount = state.tagSuggestionCount,
-            onClick = { state.eventSink(SessionDetailEvent.TagButtonClicked) },
+            label = header.tagButtonLabel,
+            suggestionCount = header.tagSuggestionCount,
+            onClick = { eventSink(SessionDetailEvent.TagButtonClicked) },
         )
     }
 }
 
 private val SUGGESTION_BADGE_SIZE = 18.dp
+
+private const val TITLE_MAX_LINES = 3
 
 @Composable
 private fun TagButton(

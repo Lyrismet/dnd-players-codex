@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -280,6 +281,7 @@ private fun LiveCardStatusRow(
             dateLabel,
             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
             color = AppPalette.TextSecondary,
+            maxLines = 1,
         )
     }
 }
@@ -364,7 +366,7 @@ private fun SessionArchiveRow(
         ) {
             NumberLabel(text = session.numberLabel, width = 52.dp, color = AppPalette.GoldDim)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(session.title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
+                ArchiveTitle(session.title)
                 ArchiveMeta(session)
                 if (session.tags.isNotEmpty() || session.mentionCount > 0) {
                     FlowRow(
@@ -398,6 +400,17 @@ private fun SessionArchiveRow(
     }
 }
 
+@Composable
+private fun ArchiveTitle(title: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.titleMedium,
+        color = AppPalette.TextHeading,
+        maxLines = 3,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
 // the date and how many notes the session holds
 @Composable
 private fun ArchiveMeta(session: SessionListItem) {
@@ -406,5 +419,7 @@ private fun ArchiveMeta(session: SessionListItem) {
         joinWithDot(session.dateLabel, notes),
         style = MaterialTheme.typography.bodySmall,
         color = AppPalette.TextSecondary,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
     )
 }

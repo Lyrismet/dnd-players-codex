@@ -46,7 +46,7 @@ class SessionDraftControllerTest {
     fun `the at button appends a trigger and puts the cursor at the end`() =
         runTest {
             val composer = controller()
-            composer.draft.value = TextFieldValue("встретили")
+            composer.draft.value = TextFieldValue("встретили", TextRange(9))
 
             composer.insertMentionTrigger()
 
@@ -55,10 +55,34 @@ class SessionDraftControllerTest {
         }
 
     @Test
+    fun `the at button inserts a trigger at the caret in the middle of the text`() =
+        runTest {
+            val composer = controller()
+            composer.draft.value = TextFieldValue("встретили гоблина", TextRange(9))
+
+            composer.insertMentionTrigger()
+
+            assertEquals("встретили @ гоблина", composer.draft.value.text)
+            assertEquals(TextRange(11), composer.draft.value.selection)
+        }
+
+    @Test
+    fun `a picked mention goes in at the caret and keeps the text after it`() =
+        runTest {
+            val composer = controller()
+            composer.draft.value = TextFieldValue("видели @Гр там", TextRange(10))
+
+            composer.pickMention(gromm.token())
+
+            assertEquals("видели ${gromm.token()} там", composer.draft.value.text)
+            assertEquals(TextRange("видели ${gromm.token()} ".length), composer.draft.value.selection)
+        }
+
+    @Test
     fun `a picked mention replaces the trailing query with its token`() =
         runTest {
             val composer = controller()
-            composer.draft.value = TextFieldValue("видели @Гр")
+            composer.draft.value = TextFieldValue("видели @Гр", TextRange(10))
 
             composer.pickMention(gromm.token())
 
@@ -191,7 +215,7 @@ class SessionDraftControllerTest {
     fun `a digit typed after a picked species becomes its count`() =
         runTest {
             val composer = controller()
-            composer.draft.value = TextFieldValue("@")
+            composer.draft.value = TextFieldValue("@", TextRange(1))
             composer.pickMention("@[Гоблин|s:7]")
 
             composer.onDraftChanged("@[Гоблин|s:7] 4", TextRange(15))
@@ -204,7 +228,7 @@ class SessionDraftControllerTest {
     fun `a letter typed after a picked species is plain text`() =
         runTest {
             val composer = controller()
-            composer.draft.value = TextFieldValue("@")
+            composer.draft.value = TextFieldValue("@", TextRange(1))
             composer.pickMention("@[Гоблин|s:7]")
 
             composer.onDraftChanged("@[Гоблин|s:7] и", TextRange(15))

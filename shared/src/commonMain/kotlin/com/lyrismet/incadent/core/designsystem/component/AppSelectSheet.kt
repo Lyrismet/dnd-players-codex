@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.debounce.rememberDebounced
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
@@ -125,9 +126,10 @@ fun AppSelectSheetContent(
 ) {
     var query by remember { mutableStateOf("") }
     var checked by remember { mutableStateOf(selectedIds) }
+    val searchQuery = rememberDebounced(query) { it.isEmpty() }
     val rows =
-        remember(options, query, checked, recentIds, excludedIds, multi) {
-            selectRows(options, query, checked, recentIds, excludedIds, floatSelected = multi)
+        remember(options, searchQuery, checked, recentIds, excludedIds, multi) {
+            selectRows(options, searchQuery, checked, recentIds, excludedIds, floatSelected = multi)
         }
     val picked = remember(options, checked) { pickedIds(options, checked) }
     val canCreate = onCreate != null && texts.createLabel != null && canCreateFromQuery(options, query)

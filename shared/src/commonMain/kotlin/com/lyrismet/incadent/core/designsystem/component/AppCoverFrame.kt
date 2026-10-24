@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
-import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
+import com.lyrismet.incadent.core.portrait.rememberPhotoBitmapAsync
 import com.lyrismet.incadent.domain.model.Photo
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.photo_cover_expand
@@ -48,7 +48,7 @@ fun AppCoverFrame(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
 ) {
-    val bitmap = rememberPhotoBitmap(cover.display)
+    val bitmap = rememberPhotoBitmapAsync(cover.display)
     Box(
         modifier =
             modifier
@@ -58,12 +58,14 @@ fun AppCoverFrame(
                 .background(AppPalette.Background)
                 .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
-        Image(
-            bitmap = bitmap,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
+        bitmap?.let {
+            Image(
+                bitmap = it,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
         Box(Modifier.fillMaxSize().border(1.dp, AppPalette.Parchment.copy(alpha = 0.3f), CardCoverShape))
         if (onClick != null) {
             Row(
@@ -132,13 +134,14 @@ fun AppCoverField(
                 .clickable(onClick = onClick),
     ) {
         if (cover != null) {
-            val bitmap = rememberPhotoBitmap(cover.display)
-            Image(
-                bitmap = bitmap,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
+            rememberPhotoBitmapAsync(cover.display)?.let { bitmap ->
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         } else {
             Column(
                 modifier =

@@ -23,7 +23,6 @@ import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
-import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.StringResource
 
 /** the one codex entity a chip, a mention or a codex list row can point at - never more than one kind at a time */
@@ -116,7 +115,6 @@ data class RelatedNoteItem(
     val entryId: Long,
     val numberLabel: String,
     val title: String,
-    val sessionDate: LocalDateTime,
     val snippet: String,
     val matchCount: Int,
 )

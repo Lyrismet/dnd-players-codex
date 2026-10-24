@@ -9,7 +9,7 @@ class Photo(
     val display: ByteArray get() = full ?: thumb
 
     override fun equals(other: Any?): Boolean =
-        other is Photo && thumb.contentEquals(other.thumb) && full.contentEqualsNullable(other.full)
+        this === other || other is Photo && thumb.contentEquals(other.thumb) && full.contentEqualsNullable(other.full)
 
     override fun hashCode(): Int = 31 * thumb.contentHashCode() + (full?.contentHashCode() ?: 0)
 }

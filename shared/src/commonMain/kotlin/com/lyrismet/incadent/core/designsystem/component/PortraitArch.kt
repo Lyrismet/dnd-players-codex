@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.StatusColor
-import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
+import com.lyrismet.incadent.core.portrait.rememberPhotoBitmapAsync
 import com.lyrismet.incadent.domain.model.Photo
 
 private val PortraitArchShape =
@@ -59,14 +59,15 @@ fun PortraitArch(
             contentAlignment = Alignment.Center,
         ) {
             if (portrait != null) {
-                val bitmap = rememberPhotoBitmap(portrait.display)
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = null,
-                    modifier = Modifier.matchParentSize(),
-                    contentScale = ContentScale.Crop,
-                    colorFilter = if (monochrome) PortraitGrayscaleFilter else null,
-                )
+                rememberPhotoBitmapAsync(portrait.display)?.let { bitmap ->
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = null,
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.Crop,
+                        colorFilter = if (monochrome) PortraitGrayscaleFilter else null,
+                    )
+                }
             } else {
                 Text(
                     emblemText,

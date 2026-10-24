@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
@@ -20,8 +21,6 @@ import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.NumberLabel
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.format.NumberSizeLadder
-import com.lyrismet.incadent.core.format.toDisplayDate
-import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.feature.codex.presentation.summary.RelatedNoteItem
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_related_count_format
@@ -84,16 +83,14 @@ private fun EntityRelatedNoteRow(
     ) {
         NumberLabel(text = item.numberLabel, sizeLadder = NumberSizeLadder.RELATED_NOTE, lineHeightFactor = 1.3f)
         Column(modifier = Modifier.weight(1f)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                // mockup - title font-size 14px in the plain Inter face, not the 18sp serif titleMedium
-                Text(item.title, style = MaterialTheme.typography.titleSmall, color = AppPalette.TextHeading)
-                Text(
-                    item.sessionDate.toDisplayDate(currentAppLanguage()),
-                    // mockup's date has no bold weight or wide tracking, unlike labelSmall's caption styling
-                    style = AppText.caption,
-                    color = AppPalette.TextTertiary,
-                )
-            }
+            // mockup - title font-size 14px in the plain Inter face, not the 18sp serif titleMedium
+            Text(
+                item.title,
+                style = MaterialTheme.typography.titleSmall,
+                color = AppPalette.TextHeading,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
             Text(
                 "«${item.snippet}»",
                 // mockup - font-size 13px - one step up from bodySmall's 12sp

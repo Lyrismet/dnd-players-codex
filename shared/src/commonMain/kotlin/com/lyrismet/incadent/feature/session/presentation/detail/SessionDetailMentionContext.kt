@@ -1,7 +1,10 @@
 package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import com.lyrismet.incadent.core.debounce.rememberDebounced
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -38,6 +41,8 @@ import dndplayerscodex.shared.generated.resources.session_detail_mention_type_np
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_party
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_species
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 
 internal data class MentionContext(
@@ -64,6 +69,7 @@ internal fun buildMentionContext(
     parties: List<PartyMember>,
     species: List<Species>,
     draftText: String,
+    caret: Int,
     sessions: MentionSessionBodies,
 ): MentionContext {
     val mentionEntities =
@@ -99,21 +105,35 @@ internal fun buildMentionContext(
             recent = stringResource(Res.string.mention_section_recent),
             codex = stringResource(Res.string.mention_section_codex),
         )
-    val query = trailingMentionQuery(draftText)
-    // the search and the empty-query sections only rerun when the query or the records change, not on every keystroke
-    val dropdown =
-        remember(query, mentionEntities, nicknames, details, sessions, typeLabels, dropdownTexts) {
-            query?.let {
-                mentionDropdown(
-                    MentionDropdownInput(mentionEntities, candidates, nicknames, details, sessions),
-                    it,
-                    typeLabels,
-                    dropdownTexts,
-                )
-            }
-        }
+    val query = trailingMentionQuery(draftText, caret)
+    // a non-blank query is passed on after a short pause, a closed or empty one at once
+    val searchQuery = rememberDebounced(query) { it.isNullOrBlank() }
+    // the search runs off the main thread and only for the settled query, so typing never waits for it
+    val dropdown by produceState(
+        emptyList<MentionDropdownItem>(),
+        searchQuery,
+        mentionEntities,
+        nicknames,
+        details,
+        sessions,
+        typeLabels,
+        dropdownTexts,
+    ) {
+        value =
+            searchQuery
+                ?.let {
+                    withContext(Dispatchers.Default) {
+                        mentionDropdown(
+                            MentionDropdownInput(mentionEntities, candidates, nicknames, details, sessions),
+                            it,
+                            typeLabels,
+                            dropdownTexts,
+                        )
+                    }
+                }.orEmpty()
+    }
 
-    return MentionContext(candidates, dropdown.orEmpty(), mentionEntities)
+    return MentionContext(candidates, if (query == null) emptyList() else dropdown, mentionEntities)
 }
 
 internal data class MentionDropdownTexts(

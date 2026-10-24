@@ -43,7 +43,7 @@ internal fun SessionDetailTagsSheet(
     eventSink: (SessionDetailEvent) -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = { eventSink(SessionDetailEvent.TagSheetDismissed) }) {
-        AppSheetColumn(spacing = 18.dp) {
+        AppSheetColumn(spacing = 18.dp, scroll = true) {
             AppSheetHeader(
                 title = stringResource(Res.string.session_detail_tag_sheet_title),
                 onClose = { eventSink(SessionDetailEvent.TagSheetDismissed) },

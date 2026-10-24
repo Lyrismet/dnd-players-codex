@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
@@ -13,6 +15,8 @@ import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_you_label
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 
 /** the records plus resolved labels a summary is built from - composable only because the labels come from resources */
@@ -76,5 +80,9 @@ fun selectedEntitySummary(
             species,
             facts,
         )
-    return buildEntitySummary(ref, lookup)
+    // built off the main thread and only when the ref or the records change, a keystroke elsewhere reuses it
+    val summary by produceState<EntitySummaryItem?>(null, ref, lookup) {
+        value = withContext(Dispatchers.Default) { buildEntitySummary(ref, lookup) }
+    }
+    return summary
 }
