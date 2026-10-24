@@ -21,6 +21,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
+import com.lyrismet.incadent.core.designsystem.component.AppCheckRow
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
@@ -128,7 +129,7 @@ private fun CampaignWorldSection(
         )
         if (sheet.sameWorld) {
             sheet.sources.forEach { source ->
-                SourceRow(source, selected = source.id == sheet.sourceId) {
+                CampaignSourceCard(source, selected = source.id == sheet.sourceId) {
                     onEvent(CampaignSheetEvent.SourceSelected(source.id))
                 }
             }
@@ -172,7 +173,7 @@ private fun WorldOptionRow(
 }
 
 @Composable
-private fun SourceRow(
+private fun CampaignSourceCard(
     source: CampaignSourceItem,
     selected: Boolean,
     onClick: () -> Unit,
@@ -210,16 +211,7 @@ private fun CheckRow(
     checked: Boolean,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .appCard(AppShapes.Control, Color.Transparent, null, onClick = onClick)
-                .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        AppCheckBox(checked)
+    AppCheckRow(checked = checked, onClick = onClick, minHeight = 0.dp) {
         Text(
             text = text,
             color = AppPalette.TextPrimary,

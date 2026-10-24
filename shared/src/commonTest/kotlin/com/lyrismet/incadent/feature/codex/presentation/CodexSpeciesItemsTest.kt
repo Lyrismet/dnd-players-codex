@@ -14,9 +14,9 @@ private val goblin =
         "Гоблин",
         CreatureType.HUMANOID,
         mapOf(DamageType.FIRE to DamageState.RESISTANCE, DamageType.COLD to DamageState.VULNERABILITY),
-        nicknames = listOf("Зелёный"),
     )
 private val skeleton = Species(2, "Скелет", CreatureType.UNDEAD)
+private val leshy = Species(3, "Лёший", CreatureType.FEY)
 
 class CodexSpeciesItemsTest {
     @Test
@@ -36,11 +36,11 @@ class CodexSpeciesItemsTest {
     }
 
     @Test
-    fun `the query finds a species by name or nickname and treats yo as ye`() {
-        val all = listOf(goblin, skeleton)
+    fun `the query finds a species by name and treats yo as ye`() {
+        val all = listOf(goblin, skeleton, leshy)
         assertEquals(listOf(1L), all.toCodexItems("гобл", labels, emptyMap()).map { it.id })
-        assertEquals(listOf(1L), all.toCodexItems("зелёный", labels, emptyMap()).map { it.id })
-        assertEquals(listOf(1L), all.toCodexItems("зеленый", labels, emptyMap()).map { it.id })
+        assertEquals(listOf(3L), all.toCodexItems("лёши", labels, emptyMap()).map { it.id })
+        assertEquals(listOf(3L), all.toCodexItems("леши", labels, emptyMap()).map { it.id })
         assertEquals(emptyList(), all.toCodexItems("дракон", labels, emptyMap()))
     }
 }

@@ -188,7 +188,6 @@ sealed interface EntitySummaryItem {
         val seenInSessions: Int,
         // how many the tapped chip stands for, set only on a card opened from a note
         val noteQuantity: Int? = null,
-        val nicknames: List<String> = emptyList(),
         val hitPoints: Int? = null,
         // the saved fights it was in and what they hint about its hit points
         val fights: Int = 0,

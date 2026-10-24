@@ -10,8 +10,6 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.grouping.encodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.Species
-import com.lyrismet.incadent.feature.codex.domain.model.joinNicknames
-import com.lyrismet.incadent.feature.codex.domain.model.parseNicknames
 import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -51,7 +49,6 @@ class SpeciesRepositoryImpl(
                         entity.creatureType,
                         entity.vulnerabilities.encodeVulnerabilities(),
                         entity.notes,
-                        entity.nicknames.joinNicknames(),
                         entity.hitPoints?.toLong(),
                         entity.id,
                     )
@@ -71,7 +68,6 @@ class SpeciesRepositoryImpl(
                 species.creatureType,
                 species.vulnerabilities.encodeVulnerabilities(),
                 species.notes,
-                species.nicknames.joinNicknames(),
                 species.hitPoints?.toLong(),
                 species.photo?.full,
                 species.photo?.thumb,
@@ -84,7 +80,6 @@ class SpeciesRepositoryImpl(
             species.creatureType,
             species.vulnerabilities.encodeVulnerabilities(),
             species.notes,
-            species.nicknames.joinNicknames(),
             species.hitPoints?.toLong(),
             species.photo?.full,
             species.photo?.thumb,
@@ -119,7 +114,6 @@ class SpeciesRepositoryImpl(
         creatureType: CreatureType,
         vulnerabilities: String,
         notes: String,
-        nicknames: String,
         hitPoints: Long?,
         photoThumb: ByteArray?,
     ) = Species(
@@ -131,7 +125,6 @@ class SpeciesRepositoryImpl(
         photoThumb?.let {
             Photo(it)
         },
-        parseNicknames(nicknames),
         hitPoints?.toInt(),
     )
 
@@ -143,10 +136,9 @@ class SpeciesRepositoryImpl(
         creatureType: CreatureType,
         vulnerabilities: String,
         notes: String,
-        nicknames: String,
         hitPoints: Long?,
         photoThumb: ByteArray?,
         photo: ByteArray?,
-    ) = toDomain(id, name, creatureType, vulnerabilities, notes, nicknames, hitPoints, photoThumb)
+    ) = toDomain(id, name, creatureType, vulnerabilities, notes, hitPoints, photoThumb)
         .copy(photo = photoThumb?.let { Photo(it, photo) })
 }

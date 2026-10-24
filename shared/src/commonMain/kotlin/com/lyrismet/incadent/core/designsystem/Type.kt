@@ -104,49 +104,49 @@ fun appTypography(headingFontFamily: FontFamily = headingFontFamily(HeadingFont.
                 fontFamily = headingFontFamily,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = AppFontSize.Title,
-                lineHeight = 23.sp,
+                lineHeight = AppLineHeight.Row,
             ),
         titleSmall =
             TextStyle(
                 fontFamily = body,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = AppFontSize.Medium,
-                lineHeight = 20.sp,
+                lineHeight = AppLineHeight.Row,
             ),
         bodyLarge =
             TextStyle(
                 fontFamily = body,
                 fontWeight = FontWeight.Normal,
                 fontSize = AppFontSize.Large,
-                lineHeight = 24.sp,
+                lineHeight = AppLineHeight.Row,
             ),
         bodyMedium =
             TextStyle(
                 fontFamily = body,
                 fontWeight = FontWeight.Normal,
                 fontSize = AppFontSize.Body,
-                lineHeight = 19.sp,
+                lineHeight = AppLineHeight.Row,
             ),
         bodySmall =
             TextStyle(
                 fontFamily = body,
                 fontWeight = FontWeight.Normal,
                 fontSize = AppFontSize.Small,
-                lineHeight = 17.sp,
+                lineHeight = AppLineHeight.Row,
             ),
         labelLarge =
             TextStyle(
                 fontFamily = body,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = AppFontSize.Body,
-                lineHeight = 18.sp,
+                lineHeight = AppLineHeight.Row,
             ),
         labelMedium =
             TextStyle(
                 fontFamily = body,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = AppFontSize.Caption,
-                lineHeight = 16.sp,
+                lineHeight = AppLineHeight.Row,
             ),
         // overline section labels (АРХИВ, БАЗА ЗНАНИЙ...) - the wide tracking is what gives them away
         labelSmall =
@@ -154,7 +154,7 @@ fun appTypography(headingFontFamily: FontFamily = headingFontFamily(HeadingFont.
                 fontFamily = body,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = AppFontSize.Caption,
-                lineHeight = 16.sp,
+                lineHeight = AppLineHeight.Row,
                 letterSpacing = 0.18.em,
             ),
     )

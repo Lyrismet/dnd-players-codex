@@ -26,10 +26,8 @@ class QuickEditSpeciesTest {
     }
 
     @Test
-    fun `nicknames are split from the typed line`() {
-        val edited = species.withQuickEdit(QuickEditField.NICKNAMES, QuickEditValue.Text("Гоб, Зелёный"))
-
-        assertEquals(listOf("Гоб", "Зелёный"), edited?.nicknames)
+    fun `a nicknames edit changes nothing for a species`() {
+        assertEquals(null, species.withQuickEdit(QuickEditField.NICKNAMES, QuickEditValue.Text("Гоб")))
     }
 
     @Test

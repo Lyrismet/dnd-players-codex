@@ -46,10 +46,6 @@ import dndplayerscodex.shared.generated.resources.combat_summary_hint
 import dndplayerscodex.shared.generated.resources.combat_summary_overline
 import org.jetbrains.compose.resources.stringResource
 
-private val ResistanceText = Color(0xFFF6CC72)
-private val ImmunityText = Color(0xFFF1F3F7)
-private val VulnerabilityText = Color(0xFFF59A93)
-
 /** the damage of one round, target by target and blow by blow, with the master's resistance named after the blow */
 @Composable
 internal fun SummarySheet(
@@ -230,7 +226,7 @@ private fun TermButton(
     val border =
         when {
             chip.open -> AppPalette.GoldBright
-            chip.changed -> Color(0x8CF0B43C)
+            chip.changed -> AppPalette.AmberOutline
             else -> AppPalette.BorderHover
         }
     val base =
@@ -350,9 +346,9 @@ private fun PopupOption(
 private fun optionColor(effect: HitEffect): Color =
     when (effect) {
         HitEffect.FULL -> AppPalette.TextMuted
-        HitEffect.HALF -> ResistanceText
-        HitEffect.NONE -> ImmunityText
-        HitEffect.DOUBLE -> VulnerabilityText
+        HitEffect.HALF -> AppPalette.ResistanceText
+        HitEffect.NONE -> AppPalette.ImmunityText
+        HitEffect.DOUBLE -> AppPalette.VulnerabilityText
     }
 
 @Composable

@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
@@ -110,7 +109,7 @@ internal fun ResultBlock(
                 }
             }
         }
-        Text(calc.result, color = tint, fontSize = 34.sp, fontWeight = FontWeight.Bold)
+        Text(calc.result, color = tint, fontSize = AppFontSize.StatLarge, fontWeight = FontWeight.Bold)
         if (damage) {
             Text(
                 if (calc.keysShown) "▾" else "▴",
@@ -146,7 +145,7 @@ private fun Terms(
                 Text(
                     "+",
                     color = AppPalette.TextTertiary,
-                    fontSize = 20.sp,
+                    fontSize = AppFontSize.Heading,
                     modifier = Modifier.padding(horizontal = 2.dp),
                 )
             }
@@ -162,7 +161,12 @@ private fun Terms(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(term.text, color = AppPalette.TextHeading, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    term.text,
+                    color = AppPalette.TextHeading,
+                    fontSize = AppFontSize.SubDisplay,
+                    fontWeight = FontWeight.Bold,
+                )
                 term.type?.let {
                     AppDamageShield(
                         it.shieldIconPath(),
@@ -177,7 +181,7 @@ private fun Terms(
             Text(
                 stringResource(Res.string.combat_calc_type_none),
                 color = Color.Transparent,
-                fontSize = 24.sp,
+                fontSize = AppFontSize.SubDisplay,
             )
         }
     }

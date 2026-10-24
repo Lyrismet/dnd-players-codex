@@ -829,6 +829,7 @@
     <string name="codex_species_empty_text">Goblins, wolves, skeletons - everything that comes in packs. Add a species to mark it in notes</string>
     <string name="codex_species_seen_prefix">Seen %1$s</string>
     <string name="codex_species_fights_format">in %1$d fights</string>
+    <string name="codex_species_row_hp_format">HP %1$s</string>
     <string name="codex_species_row_seen_format">in %1$s</string>
     <string name="codex_entry_label_name_species">Species name</string>
     <string name="codex_entry_placeholder_species_name">For example, goblin</string>

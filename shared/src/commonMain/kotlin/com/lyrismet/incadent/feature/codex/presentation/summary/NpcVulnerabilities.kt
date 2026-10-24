@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -20,15 +21,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.HoldFrame
 import com.lyrismet.incadent.core.designsystem.component.HoldToEditField
+import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.feature.codex.domain.grouping.effectiveVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.grouping.isInheritedVulnerability
 import com.lyrismet.incadent.feature.codex.domain.grouping.nextOwnVulnerability
@@ -36,9 +36,7 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.shields
 import com.lyrismet.incadent.feature.codex.domain.grouping.stateOf
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
-import com.lyrismet.incadent.feature.codex.presentation.style.toShieldStyle
+import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_hint
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_hint_inherited
@@ -46,19 +44,17 @@ import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabiliti
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_none
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_step
 import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_tip_inherited
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_done
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_tip_format
 import org.jetbrains.compose.resources.stringResource
 
 private const val INHERITED_ALPHA = 0.6f
 private val LABEL_WIDTH = 104.dp
-private val ResistanceText = Color(0xFFF0B43C)
 
 private fun DamageState.labelColor(): Color =
     when (this) {
         DamageState.VULNERABILITY -> AppPalette.MaroonBright
         DamageState.IMMUNITY -> AppPalette.TextPrimary
-        else -> ResistanceText
+        else -> AppPalette.Amber
     }
 
 /** the "уязвимости" row of an npc card - its shields by state, and with [onChange] a hold opens the shield editor */
@@ -79,17 +75,17 @@ internal fun NpcVulnerabilitySection(
                 before = null
                 onEdited?.invoke(opened)
             },
-            modifier = modifier,
+            modifier = modifier.padding(horizontal = 14.dp, vertical = 8.dp),
         )
         return
     }
     val rows: @Composable () -> Unit = { NpcVulnerabilityRows(vulnerabilities) }
     if (onChange == null) {
-        rows()
+        Box(modifier = modifier.padding(horizontal = 14.dp, vertical = 4.dp)) { rows() }
     } else {
         HoldToEditField(
             onHeld = { before = vulnerabilities.own },
-            frame = HoldFrame.Description,
+            frame = HoldFrame.FactLine,
             modifier = modifier,
             content = rows,
         )
@@ -105,7 +101,7 @@ private fun NpcVulnerabilityRows(vulnerabilities: NpcVulnerabilities) {
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         if (groups.isEmpty()) {
             RowLine(stringResource(Res.string.entity_sheet_npc_vulnerabilities_label), AppPalette.TextTertiary) {
-                Text("-", color = AppPalette.TextTertiary, fontSize = AppFontSize.Body)
+                Text(EMPTY_VALUE_DASH, color = AppPalette.TextPrimary, fontSize = AppFontSize.Medium)
             }
         }
         groups.forEach { (state, types) ->
@@ -113,7 +109,7 @@ private fun NpcVulnerabilityRows(vulnerabilities: NpcVulnerabilities) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     types.forEach { type ->
                         val inherited = isInheritedVulnerability(vulnerabilities.fromSpecies, vulnerabilities.own, type)
-                        Shield(
+                        VulnerabilityShield(
                             type = type,
                             state = state,
                             modifier =
@@ -136,7 +132,7 @@ private fun RowLine(
     content: @Composable () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().heightIn(min = 40.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 32.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -144,7 +140,7 @@ private fun RowLine(
             label,
             modifier = Modifier.width(LABEL_WIDTH),
             color = color,
-            fontSize = AppFontSize.Body,
+            fontSize = AppFontSize.Medium,
             lineHeight = AppLineHeight.Row,
         )
         content()
@@ -152,15 +148,14 @@ private fun RowLine(
 }
 
 @Composable
-private fun Shield(
+private fun VulnerabilityShield(
     type: DamageType,
     state: DamageState,
     modifier: Modifier = Modifier,
 ) {
-    AppDamageShield(
-        iconPath = type.shieldIconPath(),
-        iconColor = type.shieldColor(),
-        style = state.toShieldStyle(),
+    DamageTypeShield(
+        type = type,
+        state = state,
         modifier = modifier.heightIn(min = 34.dp).padding(horizontal = 5.dp, vertical = 4.dp),
     )
 }
@@ -183,19 +178,14 @@ internal fun NpcVulnerabilityEditor(
                 fontSize = AppFontSize.Caption,
             )
             if (onDone != null) {
-                Text(
-                    stringResource(Res.string.entity_sheet_species_vulnerabilities_done),
-                    modifier = Modifier.heightIn(min = 40.dp).clickable(onClick = onDone),
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = AppPalette.Gold,
-                )
+                VulnerabilityDoneButton(onClick = onDone)
             }
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             DamageType.entries.forEach { type ->
                 val inherited = isInheritedVulnerability(vulnerabilities.fromSpecies, vulnerabilities.own, type)
                 val shown = effective.stateOf(type).takeIf { it != DamageState.NORMAL } ?: DamageState.UNKNOWN
-                Shield(
+                VulnerabilityShield(
                     type = type,
                     state = shown,
                     modifier =
@@ -288,10 +278,5 @@ private fun TipLine(
                 stateLabels.getValue(state).lowercase(),
             )
         }
-    Text(
-        tip,
-        modifier = Modifier.padding(start = LABEL_WIDTH + 12.dp, bottom = 6.dp),
-        style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Body, fontWeight = FontWeight.SemiBold),
-        color = AppPalette.GoldBright,
-    )
+    VulnerabilityTip(tip, modifier = Modifier.padding(start = LABEL_WIDTH + 12.dp, bottom = 6.dp))
 }

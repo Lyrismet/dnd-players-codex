@@ -59,7 +59,7 @@ class CampaignExchangeTest {
     private var npcId: Long = 0L
 
     private fun seed() {
-        database.speciesQueries.insert("Wolf", CreatureType.BEAST, "bite", "", "", 25L, jpeg, byteArrayOf(1), source)
+        database.speciesQueries.insert("Wolf", CreatureType.BEAST, "bite", "", 25L, jpeg, byteArrayOf(1), source)
         val speciesId = database.speciesQueries.lastInsertRowId().executeAsOne()
         database.locationQueries.insert("Town", "big", null, jpeg, byteArrayOf(1), source)
         val town = database.locationQueries.lastInsertRowId().executeAsOne()

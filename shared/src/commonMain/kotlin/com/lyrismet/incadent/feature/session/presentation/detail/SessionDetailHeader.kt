@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -345,7 +346,7 @@ private fun TagButton(
                     Modifier
                         .defaultMinSize(minWidth = SUGGESTION_BADGE_SIZE, minHeight = SUGGESTION_BADGE_SIZE)
                         .appCard(
-                            shape = RoundedCornerShape(SUGGESTION_BADGE_SIZE / 2),
+                            shape = CircleShape,
                             background = AppPalette.Gold,
                             border = null,
                         ).padding(horizontal = 5.dp)

@@ -11,7 +11,6 @@ data class Species(
     val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
     val notes: String = "",
     val photo: Photo? = null,
-    val nicknames: List<String> = emptyList(),
     // known by the player from somewhere, not filled in by a fight - null while nobody knows it
     val hitPoints: Int? = null,
 )

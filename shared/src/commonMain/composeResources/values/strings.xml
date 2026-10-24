@@ -857,6 +857,7 @@
     <string name="codex_species_empty_text">Гоблины, волки, скелеты - всё, что встречается стаями. Добавьте вид, чтобы отмечать его в заметках</string>
     <string name="codex_species_seen_prefix">Встречено %1$s</string>
     <string name="codex_species_fights_format">в боях %1$d</string>
+    <string name="codex_species_row_hp_format">хиты %1$s</string>
     <string name="codex_species_row_seen_format">в %1$s</string>
     <string name="codex_entry_label_name_species">Название вида</string>
     <string name="codex_entry_placeholder_species_name">Например, гоблин</string>

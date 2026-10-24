@@ -513,7 +513,7 @@ class CodexPresenter(
             typeLabels,
             seen,
             records.facts,
-        ) { records.species.toCodexItems(query, typeLabels, seen, records.facts.species.mapValues { it.value.fights }) }
+        ) { records.species.toCodexItems(query, typeLabels, seen, records.facts.species) }
     }
 
     // the warning of a delete that notes still mention - null when nothing waits or the record is already gone

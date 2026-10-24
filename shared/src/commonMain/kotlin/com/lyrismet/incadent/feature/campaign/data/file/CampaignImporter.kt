@@ -211,7 +211,6 @@ internal class CampaignImporter(
                         record.creatureType,
                         record.vulnerabilities,
                         record.notes,
-                        record.nicknames,
                         record.hitPoints?.toLong(),
                         it,
                     )
@@ -222,7 +221,6 @@ internal class CampaignImporter(
                         record.creatureType,
                         record.vulnerabilities,
                         record.notes,
-                        record.nicknames,
                         record.hitPoints?.toLong(),
                         null,
                         null,

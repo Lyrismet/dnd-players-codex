@@ -177,7 +177,6 @@ class CampaignExporter(
                     it.creature_type,
                     it.vulnerabilities,
                     it.notes,
-                    it.nicknames,
                     it.hit_points?.toInt(),
                 ),
             )

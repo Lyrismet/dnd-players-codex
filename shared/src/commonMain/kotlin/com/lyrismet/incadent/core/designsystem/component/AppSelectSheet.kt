@@ -342,15 +342,12 @@ internal fun SelectCreateRow(
     text: String,
     onClick: () -> Unit,
 ) {
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 50.dp)
-                .clip(AppShapes.Card)
-                .dashedBorder(AppPalette.Gold.copy(alpha = 0.6f), cornerRadius = 14.dp)
-                .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
+    AppDashedTile(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        color = AppPalette.Gold.copy(alpha = 0.6f),
+        cornerRadius = 14.dp,
+        minHeight = 50.dp,
     ) {
         Text(text, fontSize = AppFontSize.Medium, fontWeight = FontWeight.SemiBold, color = AppPalette.GoldBright)
     }

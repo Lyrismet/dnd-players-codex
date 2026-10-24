@@ -2,7 +2,6 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,7 +68,6 @@ private const val DAMAGE_FILL_ALPHA = 0.18f
 private const val DAMAGE_BORDER_ALPHA = 0.6f
 private const val SOFT_FILL_ALPHA = 0.12f
 private const val SOFT_BORDER_ALPHA = 0.45f
-private val TempBase = Color(0xFF6EA0E6)
 private val PANEL_RADIUS = 20.dp
 private val PanelShape = RoundedCornerShape(topStart = PANEL_RADIUS, topEnd = PANEL_RADIUS)
 
@@ -139,23 +137,7 @@ private fun PanelHeader(
             )
         }
         Column(horizontalAlignment = Alignment.End) {
-            panel.hp?.let { hp ->
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    modifier = Modifier.clickable { send(CombatRoundEvent.SetHpOpened) },
-                ) {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(hp.current, color = AppPalette.TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                        Text(" / ${hp.max}", color = AppPalette.TextTertiary, fontSize = AppFontSize.MediumPlus)
-                    }
-                    Text(
-                        hp.caption,
-                        color = AppPalette.TextTertiary,
-                        fontSize = AppFontSize.Caption,
-                        lineHeight = AppLineHeight.Row,
-                    )
-                }
-            }
+            panel.hp?.let { hp -> PanelHpBlock(hp, send) }
             panel.wound?.let { wound ->
                 Text(
                     wound.label,
@@ -468,7 +450,7 @@ private fun calcLook(mode: CalcMode): CalcLook =
             CalcLook(
                 stringResource(Res.string.combat_calc_mode_temp),
                 AppPalette.Azure,
-                TempBase,
+                AppPalette.Party,
                 SOFT_FILL_ALPHA,
                 SOFT_BORDER_ALPHA,
             )

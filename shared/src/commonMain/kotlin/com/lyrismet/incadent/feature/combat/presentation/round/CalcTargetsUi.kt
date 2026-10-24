@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,10 +30,11 @@ import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
+import com.lyrismet.incadent.core.designsystem.component.AppDashedTile
+import com.lyrismet.incadent.core.designsystem.component.AppRemoveButton
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.ShieldStyle
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
@@ -49,7 +51,7 @@ internal fun HitEffect.shieldStyle(): ShieldStyle =
     }
 
 @Composable
-internal fun Shield(
+internal fun CalcShieldMark(
     shield: CalcShield,
     width: androidx.compose.ui.unit.Dp,
 ) {
@@ -86,18 +88,19 @@ internal fun TargetsBlock(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 calc.offTargets.forEach { off ->
-                    Text(
-                        text = stringResource(Res.string.combat_calc_add_target, off.name),
-                        color = AppPalette.TextSecondary,
-                        fontSize = AppFontSize.Body,
-                        maxLines = 1,
-                        modifier =
-                            Modifier
-                                .defaultMinSize(minHeight = 40.dp)
-                                .dashedBorder(AppPalette.BorderHover, cornerRadius = 10.dp)
-                                .clickable { emit(CalcEvent.TargetAdded(off.id)) }
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                    )
+                    AppDashedTile(
+                        onClick = { emit(CalcEvent.TargetAdded(off.id)) },
+                        cornerRadius = 10.dp,
+                        minHeight = 40.dp,
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.combat_calc_add_target, off.name),
+                            color = AppPalette.TextSecondary,
+                            fontSize = AppFontSize.Body,
+                            maxLines = 1,
+                        )
+                    }
                 }
             }
         }
@@ -185,7 +188,7 @@ private fun TargetChips(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(target.name, color = tint, fontSize = AppFontSize.BodyPlus, fontWeight = FontWeight.SemiBold)
-                    target.shield?.let { Shield(it, 16.dp) }
+                    target.shield?.let { CalcShieldMark(it, 16.dp) }
                     ScaleBadge(target)
                     calc.reaction?.takeIf { it.memberId == target.id }?.let { rx ->
                         ReactionChip(rx) { emit(CalcEvent.ReactionToggled(rx.memberId)) }
@@ -199,15 +202,7 @@ private fun TargetChips(
                         )
                     }
                 }
-                Text(
-                    text = "✕",
-                    color = AppPalette.TextSecondary,
-                    fontSize = AppFontSize.Small,
-                    modifier =
-                        Modifier
-                            .clickable { emit(CalcEvent.TargetRemoved(target.id)) }
-                            .padding(horizontal = 12.dp, vertical = 12.dp),
-                )
+                AppRemoveButton(onClick = { emit(CalcEvent.TargetRemoved(target.id)) })
             }
         }
     }
@@ -268,7 +263,7 @@ private fun TargetRow(
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
                     )
-                    target.shield?.let { Shield(it, 16.dp) }
+                    target.shield?.let { CalcShieldMark(it, 16.dp) }
                     ScaleBadge(target)
                     reaction?.let { ReactionChip(it) { emit(CalcEvent.ReactionToggled(it.memberId)) } }
                 }
@@ -282,16 +277,7 @@ private fun TargetRow(
                     fontWeight = FontWeight.ExtraBold,
                 )
             }
-            Text(
-                text = "✕",
-                color = AppPalette.TextSecondary,
-                fontSize = AppFontSize.Small,
-                modifier =
-                    Modifier
-                        .clickable {
-                            emit(CalcEvent.TargetRemoved(target.id))
-                        }.padding(horizontal = 12.dp, vertical = 12.dp),
-            )
+            AppRemoveButton(onClick = { emit(CalcEvent.TargetRemoved(target.id)) })
         }
         if (target.selected) SelectedTarget(target, emit, showParts = false)
     }
@@ -305,7 +291,7 @@ internal fun PartsLine(parts: List<CalcPart>) {
         parts.forEach { part ->
             Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(part.prefix, color = AppPalette.TextMuted, fontSize = AppFontSize.Small)
-                part.type?.let { Shield(CalcShield(it, HitEffect.FULL), 12.dp) }
+                part.type?.let { CalcShieldMark(CalcShield(it, HitEffect.FULL), 12.dp) }
                 Text(
                     part.text,
                     color = AppPalette.TextMuted,

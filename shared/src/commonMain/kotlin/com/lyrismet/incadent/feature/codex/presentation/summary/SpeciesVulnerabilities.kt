@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,11 +39,9 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.shields
 import com.lyrismet.incadent.feature.codex.domain.grouping.stateOf
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
+import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import com.lyrismet.incadent.feature.codex.presentation.style.toShieldStyle
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_done
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_empty
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_hint
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_tip_format
@@ -68,12 +65,7 @@ internal fun SpeciesVulnerabilitySection(
         Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             FormFieldLabel(text = title, fontSize = AppFontSize.Caption)
             VulnerabilityGridEditor(vulnerabilities, onChange)
-            Text(
-                stringResource(Res.string.entity_sheet_species_vulnerabilities_done),
-                modifier = Modifier.heightIn(min = 40.dp).clickable { editing = false },
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = AppPalette.Gold,
-            )
+            VulnerabilityDoneButton(onClick = { editing = false })
         }
         return
     }
@@ -110,10 +102,9 @@ private fun DamageShieldsView(vulnerabilities: Map<DamageType, DamageState>) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             marks.forEach { (type, state) ->
-                AppDamageShield(
-                    iconPath = type.shieldIconPath(),
-                    iconColor = type.shieldColor(),
-                    style = state.toShieldStyle(),
+                DamageTypeShield(
+                    type = type,
+                    state = state,
                     modifier =
                         Modifier
                             .heightIn(min = 44.dp)
@@ -123,18 +114,12 @@ private fun DamageShieldsView(vulnerabilities: Map<DamageType, DamageState>) {
             }
         }
         tipped?.let { type ->
-            Text(
+            VulnerabilityTip(
                 stringResource(
                     Res.string.entity_sheet_species_vulnerabilities_tip_format,
                     typeLabels.getValue(type),
                     stateLabels.getValue(vulnerabilities.stateOf(type)).lowercase(),
                 ),
-                style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = AppFontSize.Body,
-                        fontWeight = FontWeight.SemiBold,
-                    ),
-                color = AppPalette.GoldBright,
             )
         }
         ShieldLegend()
@@ -236,7 +221,7 @@ private fun DamageTile(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        AppDamageShield(type.shieldIconPath(), type.shieldColor(), state.toShieldStyle(), width = 22.dp)
+        DamageTypeShield(type, state, width = 22.dp)
         Text(
             label,
             style = MaterialTheme.typography.labelMedium.copy(fontSize = AppFontSize.Small),
@@ -255,7 +240,7 @@ private fun DamageStatePicker(
     labels: Map<DamageState, String>,
     onPick: (DamageState) -> Unit,
 ) {
-    val frame = RoundedCornerShape(12.dp)
+    val frame = AppShapes.Field
     Column(
         modifier =
             Modifier
@@ -270,7 +255,7 @@ private fun DamageStatePicker(
     ) {
         Text(
             title.uppercase(),
-            fontSize = 10.sp,
+            fontSize = AppFontSize.Tiny,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = 1.4.sp,
             color = AppPalette.GoldBright,
@@ -291,7 +276,7 @@ private fun DamageStatePicker(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(7.dp),
                 ) {
-                    AppDamageShield(type.shieldIconPath(), type.shieldColor(), state.toShieldStyle(), width = 20.dp)
+                    DamageTypeShield(type, state, width = 20.dp)
                     Text(
                         labels.getValue(state),
                         fontSize = AppFontSize.Body,

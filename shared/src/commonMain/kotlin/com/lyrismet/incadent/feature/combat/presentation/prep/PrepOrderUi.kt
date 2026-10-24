@@ -15,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -38,7 +37,6 @@ import dndplayerscodex.shared.generated.resources.combat_prep_order_header
 import dndplayerscodex.shared.generated.resources.combat_prep_order_hint
 import org.jetbrains.compose.resources.stringResource
 
-private val EnemyColor = Color(0xFFC0443F)
 private val NumberShape = CircleShape
 
 /** the third step: tap the participants in the order the master names them */
@@ -85,7 +83,7 @@ private fun OrderRow(
         when (row.side) {
             OrderSide.PARTY -> AppPalette.Azure
             OrderSide.ALLY -> AppPalette.Emerald
-            OrderSide.ENEMY -> EnemyColor
+            OrderSide.ENEMY -> AppPalette.Enemy
         }
     Row(
         modifier =
@@ -102,7 +100,7 @@ private fun OrderRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) { Dot(size = 8.dp, color = dot) }
-        RowTitle(row.name, row.sub, Modifier.weight(1f))
+        PrepRowTitle(row.name, row.sub, Modifier.weight(1f))
         OrderNumber(row.number)
     }
 }

@@ -3,13 +3,14 @@ package com.lyrismet.incadent.feature.codex.presentation
 import com.lyrismet.incadent.feature.codex.domain.grouping.shields
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.combat.domain.results.SpeciesCombatFacts
 
-/** the species whose name or nickname holds [query] as rows, [seenBySpecies] counts the sessions that mention each */
+/** the species whose name holds [query] as rows, [seenBySpecies] counts the sessions that mention each */
 internal fun List<Species>.toCodexItems(
     query: String,
     creatureTypeLabels: Map<CreatureType, String>,
     seenBySpecies: Map<Long, Int>,
-    fightsBySpecies: Map<Long, Int> = emptyMap(),
+    factsBySpecies: Map<Long, SpeciesCombatFacts> = emptyMap(),
 ): List<SpeciesCodexItem> =
     filter { it.matchesQuery(query) }.map { species ->
         SpeciesCodexItem(
@@ -19,6 +20,8 @@ internal fun List<Species>.toCodexItems(
             photo = species.photo,
             shields = species.vulnerabilities.shields(),
             seenInSessions = seenBySpecies[species.id] ?: 0,
-            fights = fightsBySpecies[species.id] ?: 0,
+            fights = factsBySpecies[species.id]?.fights ?: 0,
+            hitPoints = species.hitPoints,
+            hitRange = factsBySpecies[species.id]?.hitRange,
         )
     }

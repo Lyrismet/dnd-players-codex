@@ -1,9 +1,9 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.component.AppDashedTile
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 
 @Composable
@@ -94,17 +94,15 @@ private fun QuickButton(
     onClick: () -> Unit,
 ) {
     val effect = HitEffect.entries.first { it.toDamageState() == quick.state }
-    Row(
-        modifier =
-            Modifier
-                .dashedBorder(AppPalette.RadioIdle, cornerRadius = 9.dp)
-                .clickable(onClick = onClick)
-                .defaultMinSize(minHeight = 36.dp)
-                .padding(horizontal = 10.dp),
+    AppDashedTile(
+        onClick = onClick,
+        color = AppPalette.RadioIdle,
+        cornerRadius = 9.dp,
+        minHeight = 36.dp,
+        contentPadding = PaddingValues(horizontal = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(7.dp),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Shield(CalcShield(quick.type, effect), 16.dp)
+        CalcShieldMark(CalcShield(quick.type, effect), 16.dp)
         Text(
             quick.label,
             color = AppPalette.TextDescription,

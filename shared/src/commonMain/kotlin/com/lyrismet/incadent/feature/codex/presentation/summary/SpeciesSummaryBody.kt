@@ -44,11 +44,10 @@ internal fun SpeciesSummaryBody(
                     QuickEditField.CREATURE_TYPE,
                     creatureOptions = creatureOptions,
                 ),
-                nicknamesFact(species.nicknames),
                 FactRow(
                     Res.string.entity_sheet_species_hp_label,
                     FactValue.Text(
-                        species.hitPoints?.toString() ?: species.hitRange?.let { "≈ ${it.text()}" }.orDash(),
+                        species.hitPoints?.toString() ?: species.hitRange?.approxText().orDash(),
                     ),
                     QuickEditField.HIT_POINTS,
                 ),

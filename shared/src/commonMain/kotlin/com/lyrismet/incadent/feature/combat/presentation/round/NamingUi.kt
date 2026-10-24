@@ -21,7 +21,6 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
-import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
@@ -34,9 +33,7 @@ import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
-import com.lyrismet.incadent.feature.codex.presentation.style.toShieldStyle
+import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.combat_name_carry_title
@@ -195,12 +192,7 @@ private fun LearnedRowView(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            AppDamageShield(
-                iconPath = row.type.shieldIconPath(),
-                iconColor = row.type.shieldColor(),
-                style = row.state.toShieldStyle(),
-                width = 22.dp,
-            )
+            DamageTypeShield(row.type, row.state, width = 22.dp)
             Text(row.label, color = AppPalette.TextPrimary, fontSize = AppFontSize.Body, lineHeight = AppLineHeight.Row)
         }
         AppSegmentedTabs(

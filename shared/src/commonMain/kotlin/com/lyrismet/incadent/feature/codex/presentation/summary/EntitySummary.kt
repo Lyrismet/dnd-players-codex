@@ -162,7 +162,6 @@ private fun buildSpeciesSummary(
         vulnerabilities = species.vulnerabilities,
         relatedNotes = relatedNotes,
         seenInSessions = relatedNotes.size,
-        nicknames = species.nicknames,
         hitPoints = species.hitPoints,
         fights = lookup.facts.species[species.id]?.fights ?: 0,
         hitRange = lookup.facts.species[species.id]?.hitRange,

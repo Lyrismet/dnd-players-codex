@@ -40,7 +40,6 @@ import org.jetbrains.compose.resources.stringResource
 
 private const val DIMMED_ALPHA = 0.5f
 private const val SAVE_PIPS = 3
-private val BadgeFill = Color(0xFF23252F)
 
 @Composable
 internal fun RoundList(
@@ -101,7 +100,7 @@ private fun RoundRowCard(
     ) {
         TurnBadge(row)
         Column(modifier = Modifier.weight(1f)) {
-            RowTitle(row)
+            RoundRowTitle(row)
             RowBars(row)
             if (row.chips.isNotEmpty()) RowChips(row.chips)
         }
@@ -122,14 +121,14 @@ private fun TurnBadge(row: RoundRow) {
                 .size(36.dp)
                 .appCard(
                     shape = AppShapes.Control,
-                    background = if (row.current) AppPalette.Gold else BadgeFill,
+                    background = if (row.current) AppPalette.Gold else AppPalette.BadgeFill,
                     border = null,
                 ).padding(top = 7.dp),
     )
 }
 
 @Composable
-private fun RowTitle(row: RoundRow) {
+private fun RoundRowTitle(row: RoundRow) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
         Dot(size = 6.dp, color = RoundColors.side(row.side))
         Text(

@@ -52,7 +52,6 @@ sealed interface FileRecord {
         @JsonNames("damage")
         val vulnerabilities: String = "",
         val notes: String = "",
-        val nicknames: String = "",
         val hitPoints: Int? = null,
     ) : FileRecord
 

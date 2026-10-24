@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.core.designsystem.component
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -51,7 +49,6 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import kotlinx.coroutines.flow.collectLatest
 
-private val ChipShape = AppShapes.Pill
 private val QuickAddPanelShape = AppShapes.Field
 private val QuickAddFieldShape = AppShapes.Control
 private val QuickAddFieldSize = 44.dp
@@ -111,17 +108,20 @@ fun QuickAddOutsideTapHost(
 /** the dashed-gold "+ New X" pill, styled like a chip but never filled and never selected */
 @Composable
 internal fun QuickAddPill(quickAdd: FormChipQuickAdd) {
-    Text(
-        quickAdd.addLabel,
-        style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Body, fontWeight = FontWeight.SemiBold),
-        color = AppPalette.GoldBright,
-        modifier =
-            Modifier
-                .clip(ChipShape)
-                .dashedBorder(AppPalette.Gold.copy(alpha = QUICK_ADD_BORDER_ALPHA))
-                .clickable { quickAdd.onOpen() }
-                .padding(horizontal = 14.dp, vertical = 11.dp),
-    )
+    AppDashedTile(
+        onClick = quickAdd.onOpen,
+        color = AppPalette.Gold.copy(alpha = QUICK_ADD_BORDER_ALPHA),
+        cornerRadius = 20.dp,
+        minHeight = 0.dp,
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 11.dp),
+    ) {
+        Text(
+            quickAdd.addLabel,
+            style =
+                MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Body, fontWeight = FontWeight.SemiBold),
+            color = AppPalette.GoldBright,
+        )
+    }
 }
 
 /**

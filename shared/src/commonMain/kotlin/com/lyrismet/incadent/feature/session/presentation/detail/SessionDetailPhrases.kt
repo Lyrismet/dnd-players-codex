@@ -3,7 +3,6 @@ package com.lyrismet.incadent.feature.session.presentation.detail
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,9 +23,9 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
+import com.lyrismet.incadent.core.designsystem.component.AppDashedTile
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.bleedHorizontally
-import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.phrase_completion_frequent_meta_format
 import dndplayerscodex.shared.generated.resources.phrase_completion_header
@@ -58,16 +57,7 @@ internal fun PhraseStrip(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         items.forEach { item -> PhraseChip(item, onClick = { onPick(item.text) }) }
-        Box(
-            modifier =
-                Modifier
-                    .height(36.dp)
-                    .clip(StripChipShape)
-                    .dashedBorder(AppPalette.BorderHover, cornerRadius = 18.dp)
-                    .clickable(onClick = onOpenSheet)
-                    .padding(horizontal = 12.dp),
-            contentAlignment = Alignment.Center,
-        ) {
+        AppDashedTile(onClick = onOpenSheet, cornerRadius = 18.dp, minHeight = 36.dp) {
             Text(
                 stringResource(Res.string.phrase_strip_open_button),
                 style = MaterialTheme.typography.labelLarge.copy(fontSize = AppFontSize.SmallPlus),

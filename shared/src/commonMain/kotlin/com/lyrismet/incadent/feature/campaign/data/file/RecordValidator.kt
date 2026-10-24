@@ -117,7 +117,6 @@ private fun fits(
 private fun FileRecord.Species.fits() =
     fits(MAX_SHORT_CHARS, name) &&
         fits(MAX_LONG_CHARS, notes, vulnerabilities) &&
-        fits(MAX_NICKNAMES_CHARS, nicknames) &&
         (hitPoints == null || hitPoints in SPECIES_HIT_POINTS_RANGE)
 
 private fun FileRecord.Place.fits() = fits(MAX_SHORT_CHARS, name) && fits(MAX_LONG_CHARS, description)

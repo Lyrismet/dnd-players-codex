@@ -113,7 +113,7 @@ private fun ConditionChip(
         modifier =
             Modifier
                 .defaultMinSize(minHeight = 28.dp)
-                .appCard(shape = RoundedCornerShape(14.dp), background = bg, border = border, onClick = onClick)
+                .appCard(shape = AppShapes.Card, background = bg, border = border, onClick = onClick)
                 .padding(horizontal = 10.dp, vertical = 4.dp),
     )
 }

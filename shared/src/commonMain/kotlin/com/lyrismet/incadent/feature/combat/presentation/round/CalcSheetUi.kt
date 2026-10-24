@@ -42,8 +42,6 @@ import dndplayerscodex.shared.generated.resources.combat_calc_more
 import dndplayerscodex.shared.generated.resources.combat_calc_source_title
 import org.jetbrains.compose.resources.stringResource
 
-private val HealOnFill = Color(0xFF0E1A14)
-private val TempOnFill = Color(0xFF10151D)
 private const val DAMAGE_BORDER_ALPHA = 0.6f
 private const val BORDER_ALPHA = 0.5f
 private val DamageKeyHeight = 42.dp
@@ -71,14 +69,14 @@ private fun accentOf(mode: CalcMode): ModeAccent =
                 AppPalette.EmeraldBright,
                 AppPalette.Emerald.copy(alpha = BORDER_ALPHA),
                 AppPalette.Emerald,
-                HealOnFill,
+                AppPalette.HealOnFill,
             )
         CalcMode.TEMP ->
             ModeAccent(
                 AppPalette.Azure,
                 AppPalette.Azure.copy(alpha = BORDER_ALPHA),
                 AppPalette.Azure,
-                TempOnFill,
+                AppPalette.TempOnFill,
             )
     }
 
@@ -95,7 +93,7 @@ internal fun CalcSheet(
         AppSheetColumn(scroll = true, spacing = 12.dp) {
             CalcHeader(calc, accent, emit)
             if (calc.modes.size > 1) CalcModes(calc, emit)
-            SourceRow(calc, emit)
+            CalcSourceChips(calc, emit)
             if (calc.done.isNotEmpty()) DoneBlock(calc.done)
             TargetsBlock(calc, emit)
             if (damage) TypeBlock(calc, emit)
@@ -169,7 +167,7 @@ private fun CalcModes(
 }
 
 @Composable
-private fun SourceRow(
+private fun CalcSourceChips(
     calc: CalcState,
     emit: (CalcEvent) -> Unit,
 ) {

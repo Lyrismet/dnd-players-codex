@@ -23,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,7 +65,6 @@ import dndplayerscodex.shared.generated.resources.combat_list_title
 import org.jetbrains.compose.resources.stringResource
 
 private val GroupLetterSpacing = 0.12.em
-private val RowDivider = Color(0xFF1F2029)
 
 @Composable
 fun CombatListUi(
@@ -155,7 +153,7 @@ private fun CombatRow(
     onClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
-        AppDivider(color = RowDivider)
+        AppDivider(color = AppPalette.RowDivider)
         Row(
             modifier =
                 Modifier

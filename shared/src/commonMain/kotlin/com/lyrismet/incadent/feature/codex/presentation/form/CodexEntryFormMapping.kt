@@ -136,7 +136,6 @@ internal fun Species.toFields(ref: EntityRef.Species) =
         name = name,
         description = notes,
         portrait = photo,
-        nicknames = nicknames.joinNicknames(),
         speciesType = creatureType,
         vulnerabilities = vulnerabilities,
         speciesHitPoints = hitPoints,
@@ -150,6 +149,5 @@ internal fun CodexEntryFormFields.toSpecies() =
         vulnerabilities = vulnerabilities,
         notes = description.trim(),
         photo = portrait,
-        nicknames = parseNicknames(nicknames),
         hitPoints = speciesHitPoints?.coerceIn(SPECIES_HIT_POINTS_RANGE),
     )

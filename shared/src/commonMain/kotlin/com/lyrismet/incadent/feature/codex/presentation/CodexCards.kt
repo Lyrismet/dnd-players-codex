@@ -29,7 +29,6 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
-import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
 import com.lyrismet.incadent.core.designsystem.component.StatusBadge
@@ -40,10 +39,9 @@ import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
-import com.lyrismet.incadent.feature.codex.presentation.style.toShieldStyle
+import com.lyrismet.incadent.feature.codex.presentation.summary.speciesHitsLine
 import com.lyrismet.incadent.feature.codex.presentation.summary.speciesSeenLine
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
@@ -167,14 +165,16 @@ internal fun SpeciesCodexCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 item.shields.forEach { (type, state) ->
-                    AppDamageShield(type.shieldIconPath(), type.shieldColor(), state.toShieldStyle(), width = 22.dp)
+                    DamageTypeShield(type, state, width = 22.dp)
                 }
             }
         }
-        val seen = speciesSeenLine(item.seenInSessions, item.fights)
-        if (seen.isNotEmpty()) {
+        val seen =
+            listOf(speciesSeenLine(item.seenInSessions, item.fights), speciesHitsLine(item.hitPoints, item.hitRange))
+        val seenLine = seen.filter { it.isNotEmpty() }.joinToString(" · ")
+        if (seenLine.isNotEmpty()) {
             Text(
-                text = seen,
+                text = seenLine,
                 style = MaterialTheme.typography.bodySmall,
                 color = AppPalette.TextTertiary,
                 modifier = Modifier.padding(top = 4.dp),

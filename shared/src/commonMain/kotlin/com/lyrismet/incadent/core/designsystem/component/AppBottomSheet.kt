@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
@@ -115,8 +116,9 @@ fun SheetCloseButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Dp = 32.dp,
+    background: Color = AppPalette.BorderSubtle,
 ) {
-    IconBadge(modifier = modifier, size = size, background = AppPalette.BorderSubtle, onClick = onClick) {
+    IconBadge(modifier = modifier, size = size, background = background, onClick = onClick) {
         Text("✕", fontSize = AppFontSize.Body, color = AppPalette.TextMuted)
     }
 }

@@ -1,11 +1,11 @@
 package com.lyrismet.incadent.feature.combat.presentation.prep
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -41,16 +41,16 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
+import com.lyrismet.incadent.core.designsystem.component.AppDashedTile
 import com.lyrismet.incadent.core.designsystem.component.AppStepper
 import com.lyrismet.incadent.core.designsystem.component.AppTitleSubtitle
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.DiscardChangesDialog
 import com.lyrismet.incadent.core.designsystem.component.Dot
-import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
+import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
@@ -70,9 +70,7 @@ import dndplayerscodex.shared.generated.resources.combat_prep_title
 import org.jetbrains.compose.resources.stringResource
 
 private const val UNCHECKED_ALPHA = 0.55f
-private val PartyRowBorder = Color(0x736EA0E6)
 private val AllyDot = AppPalette.Emerald
-private val EnemyDot = Color(0xFFC0443F)
 
 @Composable
 fun CombatPrepUi(
@@ -124,14 +122,12 @@ private fun PrepHeader(state: CombatPrepState) {
                 color = AppPalette.MaroonBright,
                 modifier = Modifier.weight(1f),
             )
-            IconBadge(
-                size = 44.dp,
-                background = Color.Transparent,
+            SheetCloseButton(
                 onClick = { state.eventSink(CombatPrepEvent.CloseClicked) },
                 modifier = Modifier.offset(x = 10.dp),
-            ) {
-                Text("✕", color = AppPalette.TextMuted, fontSize = AppFontSize.Body)
-            }
+                size = 44.dp,
+                background = Color.Transparent,
+            )
         }
         Text(
             text = stringResource(Res.string.combat_prep_title),
@@ -177,7 +173,7 @@ private fun PrepBody(
             countColor = AppPalette.Azure,
         )
         state.party.forEach { row ->
-            PartyRow(row, onToggle = { send(CombatPrepEvent.PartyToggled(row.partyMemberId)) }) {
+            PrepPartyRow(row, onToggle = { send(CombatPrepEvent.PartyToggled(row.partyMemberId)) }) {
                 send(CombatPrepEvent.HpPadOpened(row.partyMemberId))
             }
         }
@@ -203,7 +199,7 @@ private fun PrepBody(
             countColor = AppPalette.MaroonBright,
             modifier = Modifier.padding(top = 12.dp),
         )
-        state.enemies.forEach { row -> MemberRow(row, EnemyDot, PrepSide.ENEMY, send) }
+        state.enemies.forEach { row -> MemberRow(row, AppPalette.Enemy, PrepSide.ENEMY, send) }
         AddEnemyButton(
             stringResource(Res.string.combat_prep_add_enemy),
         ) { send(CombatPrepEvent.SearchOpened(PrepSide.ENEMY)) }
@@ -234,7 +230,7 @@ private fun SectionLabel(
 }
 
 @Composable
-private fun PartyRow(
+private fun PrepPartyRow(
     row: PrepPartyRow,
     onToggle: () -> Unit,
     onHp: () -> Unit,
@@ -247,7 +243,7 @@ private fun PartyRow(
                 .appCard(
                     shape = AppShapes.Field,
                     background = AppPalette.SurfaceVariant,
-                    border = if (row.included) PartyRowBorder else AppPalette.BorderSubtle,
+                    border = if (row.included) AppPalette.PartyRowBorder else AppPalette.BorderSubtle,
                     onClick = onToggle,
                 ).defaultMinSize(minHeight = 60.dp)
                 .padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
@@ -255,7 +251,7 @@ private fun PartyRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AppCheckBox(row.included, accent = AppPalette.Azure)
-        RowTitle(row.name, row.sub, Modifier.weight(1f))
+        PrepRowTitle(row.name, row.sub, Modifier.weight(1f))
         row.hp?.let { HpButton(it, onHp) }
     }
 }
@@ -312,7 +308,7 @@ private fun MemberRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) { Dot(size = 8.dp, color = dot) }
-        RowTitle(row.name, row.sub, Modifier.weight(1f))
+        PrepRowTitle(row.name, row.sub, Modifier.weight(1f))
         AppStepper(
             count = row.count,
             onDecrease = { onEvent(CombatPrepEvent.MemberDecreased(side, row.key)) },
@@ -325,7 +321,7 @@ private fun MemberRow(
 }
 
 @Composable
-internal fun RowTitle(
+internal fun PrepRowTitle(
     name: String,
     sub: String,
     modifier: Modifier = Modifier,
@@ -338,16 +334,7 @@ internal fun AddButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier =
-            modifier
-                .defaultMinSize(minHeight = 48.dp)
-                .dashedBorder(AppPalette.BorderHover, cornerRadius = 12.dp)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    AppDashedTile(onClick = onClick, modifier = modifier, contentPadding = PaddingValues(horizontal = 10.dp)) {
         Text("+", color = color, fontSize = AppFontSize.Heading)
         Text(text, color = color, fontSize = AppFontSize.BodyPlus, fontWeight = FontWeight.SemiBold)
     }
@@ -358,16 +345,11 @@ private fun AddEnemyButton(
     text: String,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = 52.dp)
-                .dashedBorder(AppPalette.BorderHover, cornerRadius = 12.dp)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp),
+    AppDashedTile(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        minHeight = 52.dp,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier.size(24.dp).appCard(CircleShape, AppPalette.Gold.copy(alpha = 0.14f), null),

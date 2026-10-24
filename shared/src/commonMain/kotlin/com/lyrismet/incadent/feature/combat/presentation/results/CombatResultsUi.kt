@@ -1,13 +1,11 @@
 package com.lyrismet.incadent.feature.combat.presentation.results
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
@@ -26,8 +24,7 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
-import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
-import com.lyrismet.incadent.core.designsystem.component.AppDamageShield
+import com.lyrismet.incadent.core.designsystem.component.AppCheckRow
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
@@ -37,15 +34,13 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
-import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
+import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
-import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
-import com.lyrismet.incadent.feature.codex.presentation.style.toShieldStyle
+import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import com.lyrismet.incadent.feature.codex.presentation.summary.damageTypeLabels
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.results.CodexEntry
@@ -173,13 +168,10 @@ private fun ResultsHeader(state: CombatResultsState) {
                 Text(text = state.target, color = AppPalette.GoldBright, style = AppText.rowSubtitle)
             }
         }
-        IconBadge(
-            size = 32.dp,
-            background = AppPalette.SurfaceElevated,
+        SheetCloseButton(
             onClick = { send(CombatResultsEvent.BackClicked) },
-        ) {
-            Text(text = "✕", color = AppPalette.TextMuted, fontSize = AppFontSize.Body)
-        }
+            background = AppPalette.SurfaceElevated,
+        )
     }
 }
 
@@ -245,25 +237,9 @@ private fun ChecklistRow(
     onClick: () -> Unit,
 ) {
     val words = entry.item.words()
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .defaultMinSize(
-                    minHeight = 56.dp,
-                ).clickable(onClick = onClick)
-                .padding(vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AppCheckBox(entry.checked)
+    AppCheckRow(checked = entry.checked, onClick = onClick) {
         (entry.item as? CodexItem.Resistance)?.guess?.let { guess ->
-            AppDamageShield(
-                guess.type.shieldIconPath(),
-                guess.type.shieldColor(),
-                guess.state.toShieldStyle(),
-                width = 20.dp,
-            )
+            DamageTypeShield(guess.type, guess.state, width = 20.dp)
         }
         AppTitleSubtitle(title = words.first, subtitle = words.second, modifier = Modifier.weight(1f), maxLines = 2)
     }
