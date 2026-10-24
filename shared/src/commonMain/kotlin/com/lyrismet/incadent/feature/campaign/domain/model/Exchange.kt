@@ -70,6 +70,14 @@ data class ImportContents(
     val withPhotos: Boolean,
     val options: ExchangeOptions,
     val graph: ExchangeGraph,
+    val newer: NewerFile? = null,
+)
+
+/** a file made by a newer version of the app, [skipped] records of it cannot be read and are left out */
+data class NewerFile(
+    val fileVersion: Int,
+    val appVersion: Int,
+    val skipped: Int,
 )
 
 sealed interface ImportTarget {

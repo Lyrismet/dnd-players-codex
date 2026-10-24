@@ -963,8 +963,11 @@
     <string name="exchange_error_title">Не получилось</string>
     <string name="exchange_error_not_incadent_title">Это не файл Incadent</string>
     <string name="exchange_error_not_incadent_body">В файле нет метки Incadent. Выберите файл, который сделало приложение: его имя заканчивается на .incadent.json.</string>
-    <string name="exchange_error_newer_title">Файл из более новой версии</string>
-    <string name="exchange_error_newer_body">Этот файл сделан более новой версией Incadent. Обновите приложение и откройте его снова.</string>
+    <string name="exchange_newer_title">Файл из более новой версии</string>
+    <string name="exchange_newer_text">Этот файл сделан более новой версией Incadent (V%1$d), а у вас V%2$d. Всё, что ваша версия не узнаёт, не загрузится. Продолжить?</string>
+    <string name="exchange_newer_skipped">Не загрузится записей: %1$d.</string>
+    <string name="exchange_newer_continue">Продолжить</string>
+    <string name="exchange_newer_back">Назад</string>
     <string name="exchange_error_large_title">Файл слишком большой</string>
     <string name="exchange_error_large_body">Больше 25 МБ приложение не открывает. Попросите отправить файл без фото.</string>
     <string name="exchange_error_broken_title">Файл повреждён</string>
@@ -1111,6 +1114,10 @@
     <string name="combat_name_carry_title">Перенесём в карточку</string>
     <string name="combat_name_carry_note">заметка</string>
     <string name="combat_name_carry_type">%1$s %2$s</string>
+    <string name="combat_mult_resistance">×½</string>
+    <string name="combat_mult_immunity">×0</string>
+    <string name="combat_mult_vulnerability">×2</string>
+    <string name="combat_promo_note_quoted">«%1$s»</string>
     <string name="combat_name_plain_title">%1$s → %2$s</string>
     <string name="combat_name_plain_sub">только подпись в этом бою</string>
     <string name="combat_name_made_title">%1$s записан в кодекс</string>

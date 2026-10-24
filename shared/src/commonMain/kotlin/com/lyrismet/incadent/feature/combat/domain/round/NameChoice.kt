@@ -25,15 +25,19 @@ fun nameChoices(
     query: String,
     speciesId: Long?,
     npcs: List<Npc>,
+    takenIds: Set<Long> = emptySet(),
 ): List<NameChoice> {
     val name = query.trim()
     if (name.isEmpty()) return emptyList()
+    val free = npcs.filter { it.id !in takenIds }
     val matches =
-        npcs
+        free
             .filter { it.name.contains(name, ignoreCase = true) }
-            .sortedByDescending { it.speciesId != null && it.speciesId == speciesId }
-            .take(MAX_EXISTING)
-    val exact = npcs.any { it.name.equals(name, ignoreCase = true) }
+            .sortedWith(
+                compareByDescending<Npc> { it.name.equals(name, ignoreCase = true) }
+                    .thenByDescending { it.speciesId != null && it.speciesId == speciesId },
+            ).take(MAX_EXISTING)
+    val exact = free.any { it.name.equals(name, ignoreCase = true) }
     return buildList {
         if (!exact) add(NameChoice.New(name))
         matches.forEach { add(NameChoice.Existing(it.id, it.name)) }

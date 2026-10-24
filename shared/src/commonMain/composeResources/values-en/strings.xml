@@ -931,8 +931,11 @@
     <string name="exchange_error_title">That did not work</string>
     <string name="exchange_error_not_incadent_title">This is not an Incadent file</string>
     <string name="exchange_error_not_incadent_body">The file has no Incadent mark. Pick a file the app made, its name ends with .incadent.json.</string>
-    <string name="exchange_error_newer_title">The file is from a newer version</string>
-    <string name="exchange_error_newer_body">A newer Incadent made this file. Update the app and open it again.</string>
+    <string name="exchange_newer_title">The file is from a newer version</string>
+    <string name="exchange_newer_text">A newer Incadent (V%1$d) made this file, and yours is V%2$d. Whatever your version does not recognize will not load. Continue?</string>
+    <string name="exchange_newer_skipped">Entries that will not load: %1$d.</string>
+    <string name="exchange_newer_continue">Continue</string>
+    <string name="exchange_newer_back">Back</string>
     <string name="exchange_error_large_title">The file is too large</string>
     <string name="exchange_error_large_body">The app does not open files over 25 MB. Ask for the file without photos.</string>
     <string name="exchange_error_broken_title">The file is damaged</string>
@@ -1073,6 +1076,10 @@
     <string name="combat_name_carry_title">Goes to the card</string>
     <string name="combat_name_carry_note">note</string>
     <string name="combat_name_carry_type">%1$s %2$s</string>
+    <string name="combat_mult_resistance">×½</string>
+    <string name="combat_mult_immunity">×0</string>
+    <string name="combat_mult_vulnerability">×2</string>
+    <string name="combat_promo_note_quoted">“%1$s”</string>
     <string name="combat_name_plain_title">%1$s → %2$s</string>
     <string name="combat_name_plain_sub">only a caption in this fight</string>
     <string name="combat_name_made_title">%1$s is in the codex</string>

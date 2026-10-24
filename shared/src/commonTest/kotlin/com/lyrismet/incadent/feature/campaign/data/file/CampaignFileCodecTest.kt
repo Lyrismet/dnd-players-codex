@@ -74,10 +74,41 @@ class CampaignFileCodecTest {
         assertEquals(ImportError.NotIncadent, errorOf { CampaignFileReader.open(MemoryFile()) })
     }
 
+    private val newerHeader = """{"format":"incadent","version":${FILE_VERSION + 1}}"""
+
+    private fun skippedOf(vararg lines: String): Pair<List<FileRecord>, Int> {
+        val reader = CampaignFileReader.open(MemoryFile(listOf(newerHeader) + lines))
+        val records = generateSequence { reader.nextRecord() }.toList()
+        return records to reader.skipped
+    }
+
     @Test
-    fun `a file of a newer version is turned away`() {
-        val file = MemoryFile(listOf("""{"format":"incadent","version":${FILE_VERSION + 1}}"""))
-        assertEquals(ImportError.NewerVersion, errorOf { CampaignFileReader.open(file) })
+    fun `a file of a newer version opens`() {
+        val reader = CampaignFileReader.open(MemoryFile(listOf(newerHeader)))
+        assertEquals(FILE_VERSION + 1, reader.header.version)
+        assertNull(reader.nextRecord())
+    }
+
+    @Test
+    fun `a newer file leaves out a record of an unknown type`() {
+        val (records, skipped) = skippedOf("""{"t":"dragon"}""", """{"t":"place","id":1,"name":"Town"}""")
+        assertEquals(listOf<FileRecord>(FileRecord.Place(1, "Town")), records)
+        assertEquals(1, skipped)
+    }
+
+    @Test
+    fun `a newer file leaves out a record with an unknown value`() {
+        val (records, skipped) = skippedOf("""{"t":"npc","id":1,"name":"Bob","status":"EVIL_GENIUS"}""")
+        assertEquals(emptyList(), records)
+        assertEquals(1, skipped)
+    }
+
+    @Test
+    fun `a newer file leaves out the records that point at a skipped one`() {
+        val npc = """{"t":"npc","id":1,"name":"Bob","status":"FRIEND","speciesId":9}"""
+        val (records, skipped) = skippedOf("""{"t":"dragon","id":9}""", npc, """{"t":"place","id":1,"name":"Town"}""")
+        assertEquals(listOf<FileRecord>(FileRecord.Place(1, "Town")), records)
+        assertEquals(2, skipped)
     }
 
     @Test

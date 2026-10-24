@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.combat.domain.round
 
 import com.lyrismet.incadent.feature.codex.domain.grouping.with
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -67,39 +68,45 @@ class NpcPromotion(
         if (trace.createdNpc) npcs.delete(trace.npcId)
     }
 
-    /**
-     * moves what the fight learned about [types] from the species card to the npc card and returns the way back
-     */
+    /** moves what the fight learned about [types] from the species card to the npc card, returns the way back */
     suspend fun moveLearned(
         combatId: Long,
         trace: PromotionTrace,
         learned: List<LearnedVulnerability>,
         types: Set<DamageType>,
     ): suspend () -> Unit {
-        val moving = learned.filter { it.type in types }
-        val npc = npcs.getById(trace.npcId)
-        val speciesRecord = moving.firstOrNull()?.let { species.getById(it.speciesId) }
-        if (npc == null || speciesRecord == null) return {}
-        var npcMap = npc.vulnerabilities
-        var speciesMap = speciesRecord.vulnerabilities
-        moving.forEach { item ->
-            val now = speciesMap[item.type] ?: return@forEach
-            npcMap = npcMap.with(item.type, now)
-            speciesMap = speciesMap.with(item.type, item.previous)
+        val moved = mutableListOf<MovedVulnerability>()
+        learned.filter { it.type in types }.forEach { item ->
+            val speciesRecord = species.getById(item.speciesId) ?: return@forEach
+            val npc = npcs.getById(trace.npcId) ?: return@forEach
+            val now = speciesRecord.vulnerabilities[item.type] ?: return@forEach
+            npcs.upsert(npc.copy(vulnerabilities = npc.vulnerabilities.with(item.type, now)))
+            species.upsert(
+                speciesRecord.copy(vulnerabilities = speciesRecord.vulnerabilities.with(item.type, item.previous)),
+            )
             combats.removeLearned(combatId, item.speciesId, item.type)
+            moved += MovedVulnerability(item, npc.vulnerabilities[item.type], now)
         }
-        npcs.upsert(npc.copy(vulnerabilities = npcMap))
-        species.upsert(speciesRecord.copy(vulnerabilities = speciesMap))
         return {
-            species
-                .getById(
-                    speciesRecord.id,
-                )?.let { species.upsert(it.copy(vulnerabilities = speciesRecord.vulnerabilities)) }
-            npcs.getById(npc.id)?.let { npcs.upsert(it.copy(vulnerabilities = npc.vulnerabilities)) }
-            moving.forEach { combats.addLearned(combatId, it) }
+            moved.forEach { (item, npcBefore, speciesNow) ->
+                species.getById(item.speciesId)?.let {
+                    species.upsert(it.copy(vulnerabilities = it.vulnerabilities.with(item.type, speciesNow)))
+                }
+                npcs.getById(trace.npcId)?.let {
+                    val restored = it.vulnerabilities.with(item.type, npcBefore)
+                    npcs.upsert(it.copy(vulnerabilities = restored))
+                }
+                combats.addLearned(combatId, item)
+            }
         }
     }
 }
+
+private data class MovedVulnerability(
+    val item: LearnedVulnerability,
+    val npcBefore: DamageState?,
+    val speciesNow: DamageState,
+)
 
 private fun CombatStance.toNpcStatus() =
     when (this) {

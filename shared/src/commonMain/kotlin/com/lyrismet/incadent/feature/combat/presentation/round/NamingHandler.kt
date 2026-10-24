@@ -5,6 +5,7 @@ import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.core.undo.UndoFollowUp
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.presentation.summary.entityWriteLock
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
@@ -20,6 +21,7 @@ import dndplayerscodex.shared.generated.resources.combat_name_plain_sub
 import dndplayerscodex.shared.generated.resources.combat_name_plain_title
 import dndplayerscodex.shared.generated.resources.combat_round_took
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.getString
 
 /** what is being typed over a participant */
@@ -119,10 +121,13 @@ internal class NamingHandler(
     ) {
         promotion.value = null
         editor.withMember(draft.trace.memberId) { combat, member ->
-            val back = promotions.moveLearned(editor.combatId, draft.trace, draft.learned, draft.onlyNpc)
+            val back =
+                entityWriteLock.withLock {
+                    promotions.moveLearned(editor.combatId, draft.trace, draft.learned, draft.onlyNpc)
+                }
             val species = snapshot.species.firstOrNull { it.id == member.speciesId }
             undo.show(madeTitle(draft), subtitle(combat, member, species)) {
-                back()
+                entityWriteLock.withLock { back() }
                 promotions.undo(draft.trace)
             }
         }

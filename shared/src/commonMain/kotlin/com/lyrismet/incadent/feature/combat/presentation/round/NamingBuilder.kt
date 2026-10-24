@@ -15,6 +15,9 @@ import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import com.lyrismet.incadent.feature.combat.domain.round.nameChoices
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.combat_mult_immunity
+import dndplayerscodex.shared.generated.resources.combat_mult_resistance
+import dndplayerscodex.shared.generated.resources.combat_mult_vulnerability
 import dndplayerscodex.shared.generated.resources.combat_name_carry_note
 import dndplayerscodex.shared.generated.resources.combat_name_carry_type
 import dndplayerscodex.shared.generated.resources.combat_name_existing_sub
@@ -30,6 +33,7 @@ import dndplayerscodex.shared.generated.resources.combat_promo_hp
 import dndplayerscodex.shared.generated.resources.combat_promo_hp_hint
 import dndplayerscodex.shared.generated.resources.combat_promo_note
 import dndplayerscodex.shared.generated.resources.combat_promo_note_hint
+import dndplayerscodex.shared.generated.resources.combat_promo_note_quoted
 import dndplayerscodex.shared.generated.resources.combat_promo_only
 import dndplayerscodex.shared.generated.resources.combat_promo_over_known
 import dndplayerscodex.shared.generated.resources.combat_promo_over_new
@@ -41,12 +45,15 @@ import org.jetbrains.compose.resources.stringResource
 /** a participant of the codex is not offered a name again, and neither is one of the party */
 internal fun Combatant.canBeNamed() = side != CombatSide.PARTY && npcId == null
 
-private fun DamageState.multiplier(): String? =
+private fun DamageState.hasMultiplier() =
+    this == DamageState.RESISTANCE || this == DamageState.IMMUNITY || this == DamageState.VULNERABILITY
+
+@Composable
+private fun DamageState.multiplierText() =
     when (this) {
-        DamageState.RESISTANCE -> "×½"
-        DamageState.IMMUNITY -> "×0"
-        DamageState.VULNERABILITY -> "×2"
-        else -> null
+        DamageState.RESISTANCE -> stringResource(Res.string.combat_mult_resistance)
+        DamageState.IMMUNITY -> stringResource(Res.string.combat_mult_immunity)
+        else -> stringResource(Res.string.combat_mult_vulnerability)
     }
 
 /** the learned entries that still hold on the species card, so there is something to move to a new npc */
@@ -57,7 +64,7 @@ internal fun learnedOf(
 ): List<LearnedVulnerability> =
     learned.filter { item ->
         val now = species?.vulnerabilities?.get(item.type)
-        item.speciesId == member.speciesId && now?.multiplier() != null && now != item.previous
+        item.speciesId == member.speciesId && now?.hasMultiplier() == true && now != item.previous
     }
 
 @Composable
@@ -72,9 +79,10 @@ internal fun namingState(
 ): NamingState? {
     if (!member.canBeNamed()) return null
     val speciesRecord = species.firstOrNull { it.id == member.speciesId }
+    val linkedNpcIds = combat.combatants.mapNotNullTo(mutableSetOf()) { it.npcId }
     val speciesNames = species.associate { it.id to it.name.lowercase() }
     val options =
-        nameChoices(typed, member.speciesId, npcs).map { choice ->
+        nameChoices(typed, member.speciesId, npcs, linkedNpcIds).map { choice ->
             when (choice) {
                 is NameChoice.New ->
                     NameOption(
@@ -122,8 +130,8 @@ private fun carryChips(
         if (member.state != CombatState.WHOLE) woundWord(member).first else null,
     ) +
         learnedOf(member, species, learned).mapNotNull { item ->
-            species?.vulnerabilities?.get(item.type)?.multiplier()?.let {
-                stringResource(Res.string.combat_name_carry_type, typeNames.getValue(item.type), it)
+            species?.vulnerabilities?.get(item.type)?.let {
+                stringResource(Res.string.combat_name_carry_type, typeNames.getValue(item.type), it.multiplierText())
             }
         } +
         listOfNotNull(if (member.note.isNotBlank()) stringResource(Res.string.combat_name_carry_note) else null)
@@ -198,7 +206,7 @@ private fun promotionRows(
         ),
         PromotionRow(
             stringResource(Res.string.combat_promo_note),
-            if (note.isEmpty()) "-" else "«$note»",
+            if (note.isEmpty()) "-" else stringResource(Res.string.combat_promo_note_quoted, note),
             if (draft.isNew && note.isNotEmpty()) stringResource(Res.string.combat_promo_note_hint) else "",
         ),
     )

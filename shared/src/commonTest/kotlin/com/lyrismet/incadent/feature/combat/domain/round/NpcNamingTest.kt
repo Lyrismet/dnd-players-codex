@@ -41,4 +41,17 @@ class NpcNamingTest {
         val ids = nameChoices("Орк", 7, npcs).filterIsInstance<NameChoice.Existing>().map { it.npcId }
         assertEquals(listOf(2L, 3L, 4L), ids)
     }
+
+    @Test
+    fun `the npc with the exact name stays among many partial matches`() {
+        val npcs = listOf(npc(1, "Боб А", null), npc(2, "Боб Б", null), npc(3, "Боб В", null), npc(4, "Боб", null))
+        val ids = nameChoices("Боб", null, npcs).filterIsInstance<NameChoice.Existing>().map { it.npcId }
+        assertEquals(4L, ids.first())
+    }
+
+    @Test
+    fun `an npc already in the fight is not offered`() {
+        val choices = nameChoices("Гракс", null, listOf(npc(1, "Гракс", null)), takenIds = setOf(1L))
+        assertEquals(listOf(NameChoice.New("Гракс"), NameChoice.Plain("Гракс")), choices)
+    }
 }

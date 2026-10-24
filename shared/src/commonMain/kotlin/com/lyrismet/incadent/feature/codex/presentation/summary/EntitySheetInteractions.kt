@@ -34,7 +34,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 // process-wide since the sheet is rebuilt on every composition, so an instance lock would serialize nothing
-private val entityWriteLock = Mutex()
+internal val entityWriteLock = Mutex()
 
 /** the tap/dismiss/change-value/related-note flow every entity-sheet host reuses - [onChanged] feeds the undo toast */
 class EntitySheetInteractions(

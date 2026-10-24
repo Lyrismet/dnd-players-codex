@@ -38,8 +38,6 @@ import dndplayerscodex.shared.generated.resources.exchange_error_broken_body
 import dndplayerscodex.shared.generated.resources.exchange_error_broken_title
 import dndplayerscodex.shared.generated.resources.exchange_error_large_body
 import dndplayerscodex.shared.generated.resources.exchange_error_large_title
-import dndplayerscodex.shared.generated.resources.exchange_error_newer_body
-import dndplayerscodex.shared.generated.resources.exchange_error_newer_title
 import dndplayerscodex.shared.generated.resources.exchange_error_not_incadent_body
 import dndplayerscodex.shared.generated.resources.exchange_error_not_incadent_title
 import dndplayerscodex.shared.generated.resources.exchange_error_other_file
@@ -109,9 +107,6 @@ private fun failureTexts(failure: ImportFailure): Pair<StringResource, StringRes
             when (failure.error) {
                 ImportError.NotIncadent ->
                     Res.string.exchange_error_not_incadent_title to Res.string.exchange_error_not_incadent_body
-                ImportError.NewerVersion ->
-                    Res.string.exchange_error_newer_title to
-                        Res.string.exchange_error_newer_body
                 ImportError.TooLarge -> Res.string.exchange_error_large_title to Res.string.exchange_error_large_body
                 ImportError.Malformed -> Res.string.exchange_error_broken_title to Res.string.exchange_error_broken_body
             }

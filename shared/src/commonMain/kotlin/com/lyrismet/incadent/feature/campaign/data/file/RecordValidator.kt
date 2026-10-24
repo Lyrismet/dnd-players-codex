@@ -27,7 +27,6 @@ class RecordValidator {
     fun accept(record: FileRecord) {
         val next = record.rank()
         must(next >= rank)
-        rank = next
         checkLengths(record)
         when (record) {
             is FileRecord.Species -> must(species.add(record.id))
@@ -44,6 +43,8 @@ class RecordValidator {
             is FileRecord.Photo -> must(record.ownerId in owners(record.owner))
             is FileRecord.Tag, is FileRecord.Phrase -> Unit
         }
+        // set last, a record that is left out of a newer file must not move the order on
+        rank = next
     }
 
     private fun checkNpc(record: FileRecord.Npc) {
