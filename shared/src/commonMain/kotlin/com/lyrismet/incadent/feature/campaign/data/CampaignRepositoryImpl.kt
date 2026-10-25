@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.campaign.data
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
+import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.campaign.domain.model.Campaign
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignPlayer
@@ -15,7 +16,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
@@ -41,13 +41,13 @@ class CampaignRepositoryImpl(
     private val phraseQueries = database.phraseSnippetQueries
 
     override fun observeAll(): Flow<List<Campaign>> =
-        queries.selectSummaries(::toDomain).asFlow().mapToList(Dispatchers.Default)
+        queries.selectSummaries(::toDomain).asFlow().mapToList(DatabaseDispatcher)
 
     override fun observeCurrent(): Flow<Campaign?> =
         combine(observeAll(), current.id) { all, id -> all.firstOrNull { it.id == id } }
 
     override suspend fun open(id: String) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.touch(now(), id)
             current.open(id)
         }
@@ -58,7 +58,7 @@ class CampaignRepositoryImpl(
         transfer: CampaignTransfer?,
         starterPhrases: List<String>,
     ): Int =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             val id = Uuid.random().toString()
             val copied =
                 database.transactionWithResult {
@@ -74,22 +74,22 @@ class CampaignRepositoryImpl(
         id: String,
         name: String,
     ) {
-        withContext(Dispatchers.Default) { queries.rename(name.trim(), id) }
+        withContext(DatabaseDispatcher) { queries.rename(name.trim(), id) }
     }
 
     override suspend fun archive(id: String) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.setStatus(CampaignStatus.ARCHIVED, id)
             if (current.id.value == id) openFirstLiveOrClose()
         }
     }
 
     override suspend fun resume(id: String) {
-        withContext(Dispatchers.Default) { queries.setStatus(CampaignStatus.LIVE, id) }
+        withContext(DatabaseDispatcher) { queries.setStatus(CampaignStatus.LIVE, id) }
     }
 
     override suspend fun deleteWithData(id: String) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.deleteById(id)
             if (current.id.value == id) openFirstLiveOrClose()
         }
@@ -102,8 +102,8 @@ class CampaignRepositoryImpl(
 
     override fun observeTransferCandidates(sourceId: String): Flow<TransferCandidates> =
         combine(
-            locationQueries.selectAll(sourceId).asFlow().mapToList(Dispatchers.Default),
-            npcQueries.selectAllWithLocations(sourceId).asFlow().mapToList(Dispatchers.Default),
+            locationQueries.selectAll(sourceId).asFlow().mapToList(DatabaseDispatcher),
+            npcQueries.selectAllWithLocations(sourceId).asFlow().mapToList(DatabaseDispatcher),
         ) { places, npcs ->
             val byId = places.associateBy { it.id }
 

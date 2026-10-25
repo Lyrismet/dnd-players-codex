@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.core.campaign
 
-import com.lyrismet.incadent.db.AppDatabase
 import com.russhwolf.settings.ObservableSettings
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -19,9 +18,8 @@ private const val KEY_CURRENT_CAMPAIGN_ID = "current_campaign_id"
 @SingleIn(AppScope::class)
 class CurrentCampaign(
     private val settings: ObservableSettings,
-    database: AppDatabase,
+    private val lookup: CampaignLookup,
 ) {
-    private val queries = database.campaignQueries
     private val state = MutableStateFlow(resolveInitialId())
 
     val id: StateFlow<String?> = state.asStateFlow()
@@ -38,16 +36,12 @@ class CurrentCampaign(
         state.value = null
     }
 
-    // the saved campaign if it still exists, otherwise the latest live one so a wiped row never strands the app
+    // a stale saved id falls back to the latest live campaign, which is then remembered
     private fun resolveInitialId(): String? {
         val saved = settings.getStringOrNull(KEY_CURRENT_CAMPAIGN_ID)
-        if (saved != null && queries.exists(saved).executeAsOne() > 0L) return saved
+        val resolved = lookup.resolveInitialId(saved)
         // written straight to settings, open() would touch state before it is assigned
-        return queries.selectFirstLiveId().executeAsOneOrNull()?.also {
-            settings.putString(
-                KEY_CURRENT_CAMPAIGN_ID,
-                it,
-            )
-        }
+        if (resolved != null && resolved != saved) settings.putString(KEY_CURRENT_CAMPAIGN_ID, resolved)
+        return resolved
     }
 }

@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
+import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
@@ -11,7 +12,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
@@ -30,11 +30,11 @@ class SessionEntryRepositoryImpl(
     private val queries = database.sessionEntryQueries
 
     override fun observeForSession(sessionNoteId: Long): Flow<List<SessionEntry>> =
-        queries.selectForSession(sessionNoteId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+        queries.selectForSession(sessionNoteId, ::toDomain).asFlow().mapToList(DatabaseDispatcher)
 
     override fun observeAll(): Flow<List<SessionEntry>> =
         current.observe { campaignId ->
-            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(DatabaseDispatcher)
         }
 
     @OptIn(ExperimentalTime::class)
@@ -42,7 +42,7 @@ class SessionEntryRepositoryImpl(
         sessionNoteId: Long,
         body: String,
     ): Long =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
             database.transactionWithResult {
                 queries.insert(sessionNoteId, now, body, edited = false, mention_check = true)
@@ -51,7 +51,7 @@ class SessionEntryRepositoryImpl(
         }
 
     override suspend fun restore(entry: SessionEntry): Long =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.insertWithId(
                 entry.id,
                 entry.sessionNoteId,
@@ -67,7 +67,7 @@ class SessionEntryRepositoryImpl(
         id: Long,
         body: String,
     ) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.updateBody(body, id)
         }
     }
@@ -76,18 +76,18 @@ class SessionEntryRepositoryImpl(
         id: Long,
         body: String,
     ) {
-        withContext(Dispatchers.Default) { queries.renameBody(body, id) }
+        withContext(DatabaseDispatcher) { queries.renameBody(body, id) }
     }
 
     override suspend fun setMentionCheck(
         id: Long,
         check: Boolean,
     ) {
-        withContext(Dispatchers.Default) { queries.setMentionCheck(check, id) }
+        withContext(DatabaseDispatcher) { queries.setMentionCheck(check, id) }
     }
 
     override suspend fun delete(id: Long) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.deleteById(id)
         }
     }

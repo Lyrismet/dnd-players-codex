@@ -24,7 +24,7 @@ import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.feature.session.domain.tags.sessionTagLabel
+import com.lyrismet.incadent.feature.session.presentation.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_tag_add_all_button
 import dndplayerscodex.shared.generated.resources.session_detail_tag_add_suggestion_button

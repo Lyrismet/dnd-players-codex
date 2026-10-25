@@ -4,13 +4,13 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
+import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.phrases.domain.repository.PhraseSnippetRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -29,17 +29,17 @@ class PhraseSnippetRepositoryImpl(
             queries
                 .selectAll(campaignId)
                 .asFlow()
-                .mapToList(Dispatchers.Default)
+                .mapToList(DatabaseDispatcher)
                 .map { rows -> rows.map { it.text } }
         }
 
     override suspend fun add(text: String) {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return
-        withContext(Dispatchers.Default) { queries.insert(trimmed, current.requireId()) }
+        withContext(DatabaseDispatcher) { queries.insert(trimmed, current.requireId()) }
     }
 
     override suspend fun remove(text: String) {
-        withContext(Dispatchers.Default) { queries.deleteByText(text, current.requireId()) }
+        withContext(DatabaseDispatcher) { queries.deleteByText(text, current.requireId()) }
     }
 }

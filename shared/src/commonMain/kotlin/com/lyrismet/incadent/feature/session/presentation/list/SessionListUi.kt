@@ -61,7 +61,7 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.entitySheetActions
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
-import com.lyrismet.incadent.feature.session.domain.tags.sessionTagLabel
+import com.lyrismet.incadent.feature.session.presentation.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.campaign_switcher_description
 import dndplayerscodex.shared.generated.resources.mention_count_notes

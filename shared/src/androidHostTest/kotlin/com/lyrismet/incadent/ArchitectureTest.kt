@@ -115,6 +115,23 @@ class ArchitectureTest {
         )
 
     @Test
+    fun `a domain package imports no framework`() {
+        val banned =
+            listOf("androidx.", "org.jetbrains.compose.", "dev.zacsweers.", "com.slack.", "app.cash.sqldelight.")
+        assertNoViolations(
+            "feature domain must stay free of compose, circuit, metro and sqldelight",
+            all.filter { it.layer == "domain" }.flatMap { source ->
+                source.file
+                    .readLines()
+                    .filter { line ->
+                        line.startsWith("import ") &&
+                            banned.any { line.removePrefix("import ").startsWith(it) }
+                    }.map { "${source.name} (${source.pkg.joinToString(".")}) has $it" }
+            },
+        )
+    }
+
+    @Test
     fun `a data package stays inside its own feature`() =
         assertNoViolations(
             "feature data must not import another feature's data or any presentation",

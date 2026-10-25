@@ -63,7 +63,7 @@ import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
-import com.lyrismet.incadent.feature.session.domain.tags.sessionTagLabel
+import com.lyrismet.incadent.feature.session.presentation.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_back
 import dndplayerscodex.shared.generated.resources.session_detail_end_button

@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
+import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.session.domain.model.BUILT_IN_SESSION_TAGS
 import com.lyrismet.incadent.feature.session.domain.repository.TagRepository
@@ -11,7 +12,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -31,7 +31,7 @@ class TagRepositoryImpl(
             tagQueries
                 .selectAll(campaignId)
                 .asFlow()
-                .mapToList(Dispatchers.Default)
+                .mapToList(DatabaseDispatcher)
                 .map { rows ->
                     val custom = rows.map { it.name }.filterNot { name -> name.isBuiltIn() }
                     BUILT_IN_SESSION_TAGS + custom
@@ -39,14 +39,14 @@ class TagRepositoryImpl(
         }
 
     override fun observeTagsFor(sessionNoteId: Long): Flow<List<String>> =
-        sessionTagQueries.selectTagNamesForSession(sessionNoteId).asFlow().mapToList(Dispatchers.Default)
+        sessionTagQueries.selectTagNamesForSession(sessionNoteId).asFlow().mapToList(DatabaseDispatcher)
 
     override fun observeAllSessionTags(): Flow<Map<Long, List<String>>> =
         current.observe { campaignId ->
             sessionTagQueries
                 .selectAllSessionTagNames(campaignId)
                 .asFlow()
-                .mapToList(Dispatchers.Default)
+                .mapToList(DatabaseDispatcher)
                 .map { rows -> rows.groupBy({ it.session_note_id }, { it.name }) }
         }
 
@@ -54,7 +54,7 @@ class TagRepositoryImpl(
         sessionNoteId: Long,
         name: String,
     ) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             val tagId = ensureTagId(name)
             sessionTagQueries.insert(sessionNoteId, tagId)
         }
@@ -64,7 +64,7 @@ class TagRepositoryImpl(
         sessionNoteId: Long,
         name: String,
     ) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             val tagId = findTagId(name) ?: return@withContext
             sessionTagQueries.delete(sessionNoteId, tagId)
         }

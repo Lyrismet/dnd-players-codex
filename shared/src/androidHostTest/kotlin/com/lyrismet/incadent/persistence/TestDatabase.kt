@@ -3,6 +3,7 @@ package com.lyrismet.incadent.persistence
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.feature.campaign.data.CampaignLookupImpl
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.persistence.createAppDatabase
 import com.russhwolf.settings.MapSettings
@@ -20,7 +21,7 @@ internal class TestDatabase(
         addCampaign(campaignId)
     }
 
-    val current = CurrentCampaign(MapSettings(), database)
+    val current = CurrentCampaign(MapSettings(), CampaignLookupImpl(database))
 
     init {
         current.open(campaignId)

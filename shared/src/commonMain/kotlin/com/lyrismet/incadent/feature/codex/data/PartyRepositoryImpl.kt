@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
+import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -13,7 +14,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
@@ -28,11 +28,11 @@ class PartyRepositoryImpl(
 
     override fun observeAll(): Flow<List<PartyMember>> =
         current.observe { campaignId ->
-            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(DatabaseDispatcher)
         }
 
     override suspend fun getById(id: Long): PartyMember? =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.selectById(id, ::toDomainFull).executeAsOneOrNull()
         }
 
@@ -41,12 +41,12 @@ class PartyRepositoryImpl(
         fallen: Boolean,
         combatId: Long?,
     ) {
-        withContext(Dispatchers.Default) { queries.setFallen(fallen, combatId.takeIf { fallen }, id) }
+        withContext(DatabaseDispatcher) { queries.setFallen(fallen, combatId.takeIf { fallen }, id) }
     }
 
     // the "вы" flag is unique per campaign - saving a player character clears it from everyone else
     override suspend fun upsert(entity: PartyMember): Long =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             database.transactionWithResult {
                 val stored =
                     if (entity.id == 0L) null else queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
@@ -129,7 +129,7 @@ class PartyRepositoryImpl(
     }
 
     override suspend fun delete(id: Long) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.deleteById(id)
         }
     }
