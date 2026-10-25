@@ -98,6 +98,64 @@ class CombatRepositoryTest {
         }
 
     @Test
+    fun `record writes the members and the events together`() =
+        runTest {
+            val combatId = repository.create(null, STARTED_AT)
+            val targetId = repository.addCombatant(combatId, goblin())
+            val stored =
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .single()
+            val event =
+                CombatEvent(0, 1, CombatEventKind.DAMAGE, null, targetId, 5, DamageType.FIRE, HitEffect.FULL, null)
+
+            repository.record(combatId, listOf(stored.copy(state = CombatState.BLOODIED)), listOf(event))
+
+            val combat = assertNotNull(repository.observe(combatId).first())
+            assertEquals(CombatState.BLOODIED, combat.combatants.single().state)
+            assertEquals(1, combat.events.size)
+        }
+
+    @Test
+    fun `record leaves the members untouched when an event cannot be written`() =
+        runTest {
+            val combatId = repository.create(null, STARTED_AT)
+            val targetId = repository.addCombatant(combatId, goblin())
+            val stored =
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .single()
+            val broken =
+                CombatEvent(
+                    0,
+                    1,
+                    CombatEventKind.DAMAGE,
+                    null,
+                    targetId + 100,
+                    5,
+                    DamageType.FIRE,
+                    HitEffect.FULL,
+                    null,
+                )
+
+            runCatching {
+                repository.record(
+                    combatId,
+                    listOf(stored.copy(state = CombatState.BLOODIED)),
+                    listOf(broken),
+                )
+            }
+
+            val combat = assertNotNull(repository.observe(combatId).first())
+            assertEquals(CombatState.WHOLE, combat.combatants.single().state)
+            assertTrue(combat.events.isEmpty())
+        }
+
+    @Test
     fun `deleting a combat removes its combatants and events`() =
         runTest {
             val combatId = repository.create(null, STARTED_AT)
