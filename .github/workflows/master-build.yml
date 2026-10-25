@@ -33,14 +33,29 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Assemble debug APK
-        run: ./gradlew :androidApp:assembleDebug --no-daemon
+      - name: Restore release key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "ANDROID_KEYSTORE_BASE64 secret is not set" >&2
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/incadent-release.jks"
 
-      - name: Upload debug APK
+      - name: Assemble signed release APK
+        env:
+          SIGNING_STORE_FILE: ${{ runner.temp }}/incadent-release.jks
+          SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew :androidApp:assembleRelease --no-daemon
+
+      - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
-          path: androidApp/build/outputs/apk/debug/*.apk
+          name: app-release-apk
+          path: androidApp/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
   release:
@@ -69,11 +84,11 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Download debug APK
+      - name: Download release APK
         if: steps.existing.outputs.exists == 'false'
         uses: actions/download-artifact@v4
         with:
-          name: app-debug-apk
+          name: app-release-apk
           path: apk
 
       - name: Publish GitHub release
