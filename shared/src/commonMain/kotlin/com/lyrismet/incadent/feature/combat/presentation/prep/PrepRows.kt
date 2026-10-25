@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.combat.presentation.prep
 
 import androidx.compose.runtime.Composable
+import com.lyrismet.incadent.core.debounce.rememberDebounced
 import com.lyrismet.incadent.core.format.toRomanNumeral
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
@@ -174,7 +175,7 @@ internal fun searchState(
     val side = draft.side.toCombatSide()
     val ally = draft.side == PrepSide.ALLY
     val members = combat?.combatants.orEmpty().filter { it.side == side }
-    val query = draft.query.normalized()
+    val query = rememberDebounced(draft.query.normalized()) { it.isEmpty() }
     val typeLabels = creatureTypeLabels()
     val npcRows =
         npcs

@@ -1,4 +1,4 @@
-package com.lyrismet.incadent.feature.session.domain.tags
+package com.lyrismet.incadent.feature.session.presentation.tags
 
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.feature.session.domain.model.BUILT_IN_SESSION_TAGS

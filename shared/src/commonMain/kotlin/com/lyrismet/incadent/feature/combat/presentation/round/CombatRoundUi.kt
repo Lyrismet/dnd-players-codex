@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -39,6 +40,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.centeredLine
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
@@ -46,8 +48,10 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
+import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
+import com.lyrismet.incadent.feature.combat.domain.round.formatElapsed
 import com.lyrismet.incadent.feature.combat.presentation.prep.CombatPrepEvent
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeSearchSheet
 import dndplayerscodex.shared.generated.resources.Res
@@ -61,7 +65,10 @@ import dndplayerscodex.shared.generated.resources.combat_round_stop_hint
 import dndplayerscodex.shared.generated.resources.combat_round_sum_up
 import dndplayerscodex.shared.generated.resources.combat_round_title
 import dndplayerscodex.shared.generated.resources.combat_summary_button
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 private const val PANEL_SHARE = 0.58f
 private const val MENU_OFFSET_Y = 120
@@ -75,6 +82,10 @@ fun CombatRoundUi(
     val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     Scaffold(modifier = modifier, contentWindowInsets = contentWindowInsets) { contentPadding ->
         BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+            if (state.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { AppLoader() }
+                return@BoxWithConstraints
+            }
             Column(modifier = Modifier.fillMaxSize()) {
                 RoundHeader(state)
                 if (state.allClear) AllClearBanner { send(CombatRoundEvent.EndRequested(EndKind.FINISH)) }
@@ -100,6 +111,30 @@ fun CombatRoundUi(
     state.promotion?.let { PromotionSheetUi(it, send) }
 }
 
+/** the fight clock, the only part of the screen that changes every second */
+@Composable
+private fun RoundTimer(
+    startedAt: Instant?,
+    modifier: Modifier = Modifier,
+) {
+    val visible = LocalTabSelected.current
+    val now by produceState(Clock.System.now(), visible) {
+        // a hidden tab stops ticking, it reads the clock again when shown
+        while (visible) {
+            value = Clock.System.now()
+            delay(TICK_MILLIS)
+        }
+    }
+    val seconds = startedAt?.let { (now - it).inWholeSeconds } ?: 0L
+    SectionOverline(
+        text = stringResource(Res.string.combat_round_overline, formatElapsed(seconds)),
+        color = AppPalette.MaroonBright,
+        modifier = modifier,
+    )
+}
+
+private const val TICK_MILLIS = 1000L
+
 @Composable
 private fun RoundHeader(state: CombatRoundState) {
     val send = state.eventSink
@@ -109,11 +144,7 @@ private fun RoundHeader(state: CombatRoundState) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            SectionOverline(
-                text = stringResource(Res.string.combat_round_overline, state.timer),
-                color = AppPalette.MaroonBright,
-                modifier = Modifier.weight(1f),
-            )
+            RoundTimer(state.startedAt, modifier = Modifier.weight(1f))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 AppButton(
                     text = stringResource(Res.string.combat_round_end),

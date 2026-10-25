@@ -6,7 +6,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.portrait.ImageCompressor
@@ -31,7 +30,6 @@ import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
 import com.lyrismet.incadent.feature.combat.domain.round.NpcPromotion
-import com.lyrismet.incadent.feature.combat.domain.round.formatElapsed
 import com.lyrismet.incadent.feature.combat.domain.round.hostileCount
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpMode
@@ -63,17 +61,12 @@ import dndplayerscodex.shared.generated.resources.combat_prep_enemy_temp
 import dndplayerscodex.shared.generated.resources.combat_round_hostile
 import dndplayerscodex.shared.generated.resources.combat_round_no_hostile
 import dndplayerscodex.shared.generated.resources.error_action_failed
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Clock
-import kotlin.time.Instant
-
-private const val TICK_MILLIS = 1000L
 
 /** everything the fight reads from the app, collected once */
 @Suppress("LongParameterList")
@@ -86,29 +79,33 @@ private class RoundData(
     val liveBodies: List<String>,
     val seen: Map<Long, List<SpeciesHitObservation>>,
     val learned: List<LearnedVulnerability>,
-    val now: Instant,
 )
 
 @Composable
 private fun CombatRoundPresenter.rememberData(): RoundData {
     val combat by combatRepository.observe(combatId).collectAsState(initial = null)
     val sessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
-    val npcs by codexRepositories.npcRepository.observeAll().collectAsState(initial = emptyList())
-    val species by codexRepositories.speciesRepository.observeAll().collectAsState(initial = emptyList())
-    val party by codexRepositories.partyRepository.observeAll().collectAsState(initial = emptyList())
+    val loadedNpcs by codexRepositories.npcRepository.observeAll().collectAsState(initial = null)
+    val loadedSpecies by codexRepositories.speciesRepository.observeAll().collectAsState(initial = null)
+    val loadedParty by codexRepositories.partyRepository.observeAll().collectAsState(initial = null)
     val live = sessions.firstOrNull { it.isLive }
     val entries by remember(live?.id) {
         live?.let { sessionEntryRepository.observeForSession(it.id) } ?: flowOf(emptyList())
     }.collectAsState(initial = emptyList())
-    val now by produceState(Clock.System.now()) {
-        while (true) {
-            value = Clock.System.now()
-            delay(TICK_MILLIS)
-        }
-    }
     val seen by hitObservationRepository.observeAll().collectAsState(initial = emptyMap())
     val learned by combatRepository.observeLearned(combatId).collectAsState(initial = emptyList())
-    return RoundData(combat, sessions, npcs, species, party, entries.map { it.body }, seen, learned, now)
+    // the screen waits for the records the rows are named from, a first frame without them would show other names
+    val loaded = loadedNpcs != null && loadedSpecies != null && loadedParty != null
+    return RoundData(
+        combat.takeIf { loaded },
+        sessions,
+        loadedNpcs.orEmpty(),
+        loadedSpecies.orEmpty(),
+        loadedParty.orEmpty(),
+        entries.map { it.body },
+        seen,
+        learned,
+    )
 }
 
 /** the states of the sheets and the panel, they live as long as the screen does */
@@ -372,10 +369,8 @@ private fun RoundView.render(
     val learners = speciesOf.filterKeys { id -> ordered.any { it.id == id && it.side != CombatSide.PARTY } }.keys
     val calcContext = CalcContext(ordered, mover, ownIds, resistances, learners)
     return CombatRoundState(
-        timer =
-            formatElapsed(
-                (data.now - current.startedAt.toInstant(TimeZone.currentSystemDefault())).inWholeSeconds,
-            ),
+        isLoading = false,
+        startedAt = current.startedAt.toInstant(TimeZone.currentSystemDefault()),
         round = current.round,
         currentName = mover?.name.orEmpty(),
         hostile = hostileText(hostile),

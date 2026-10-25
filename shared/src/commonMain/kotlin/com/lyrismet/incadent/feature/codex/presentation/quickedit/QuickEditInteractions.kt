@@ -111,7 +111,7 @@ class QuickEditInteractions(
         }
     }
 
-    // null unless the species of an npc card is being edited
+    // null unless the species of an npc card or the race of a party card is being edited
     @Composable
     private fun speciesSelectOf(
         edit: InlineEdit?,
@@ -120,11 +120,15 @@ class QuickEditInteractions(
     ): SpeciesSelectState? {
         val isRussian = currentAppLanguage() == AppLanguage.RUSSIAN
         val npc = (ref as? EntityRef.Npc)?.let { held -> records.npcs.firstOrNull { it.id == held.id } }
-        return if (edit?.field == QuickEditField.SPECIES && npc != null) {
-            speciesSelectState(records.species, npc.speciesId, isRussian)
-        } else {
-            null
-        }
+        val member = (ref as? EntityRef.Party)?.let { held -> records.parties.firstOrNull { it.id == held.id } }
+        val selectedId =
+            when {
+                edit?.field == QuickEditField.SPECIES && npc != null -> npc.speciesId
+                edit?.field == QuickEditField.RACE && member != null ->
+                    records.species.find { it.name.equals(member.race, ignoreCase = true) }?.id
+                else -> return null
+            }
+        return speciesSelectState(records.species, selectedId, isRussian)
     }
 
     // flat event dispatch table, grows one branch per event variant - not real branching complexity
@@ -138,7 +142,7 @@ class QuickEditInteractions(
             is QuickEditUiEvent.DraftChanged -> inlineEdit.value = inlineEdit.value?.copy(draft = event.draft)
             QuickEditUiEvent.EditCancelled -> inlineEdit.value = null
             QuickEditUiEvent.EditSaved -> saveDraft(scope)
-            is QuickEditUiEvent.LinkChosen -> commitChosen(scope, QuickEditValue.Link(event.id))
+            is QuickEditUiEvent.LinkChosen -> onLinkChosen(scope, event.id)
             is QuickEditUiEvent.CreatureTypeChosen -> commitChosen(scope, QuickEditValue.Creature(event.type))
             is QuickEditUiEvent.PlacesChosen -> {
                 recentPlaceIds.value = recentPlaceIds.value.withRecentPlaces(event.ids)
@@ -148,6 +152,7 @@ class QuickEditInteractions(
             is QuickEditUiEvent.SpeciesCreated -> createSpecies(scope, event)
             QuickEditUiEvent.UndoClicked -> undoController.undo()
             QuickEditUiEvent.UndoFollowUpClicked -> undoController.followUp()
+            QuickEditUiEvent.UndoDismissed -> undoController.dismiss()
             is QuickEditUiEvent.RelationToggled -> toggleRelation(scope, event.id)
             QuickEditUiEvent.HoldHintDismissed -> onHoldHintSeen()
             is QuickEditPhotoEvent -> onPhotoEvent(scope, event)
@@ -188,6 +193,22 @@ class QuickEditInteractions(
         }
     }
 
+    // a party member keeps the species name as its race, the other cards link the record
+    private fun onLinkChosen(
+        scope: CoroutineScope,
+        id: Long?,
+    ) {
+        if (inlineEdit.value?.field == QuickEditField.RACE) {
+            inlineEdit.value = null
+            scope.launch {
+                val name = id?.let { speciesRepository.getById(it)?.name }.orEmpty()
+                commit(scope, QuickEditField.RACE, QuickEditValue.Text(name))
+            }
+        } else {
+            commitChosen(scope, QuickEditValue.Link(id))
+        }
+    }
+
     private fun createSpecies(
         scope: CoroutineScope,
         event: QuickEditUiEvent.SpeciesCreated,
@@ -199,7 +220,8 @@ class QuickEditInteractions(
         inlineEdit.value = null
         scope.launch {
             val id = speciesRepository.upsert(quickSpecies(name).copy(creatureType = event.type))
-            entitySheet.onQuickEdit(scope, ref, edit.field, QuickEditValue.Link(id))
+            val value = if (edit.field == QuickEditField.RACE) QuickEditValue.Text(name) else QuickEditValue.Link(id)
+            entitySheet.onQuickEdit(scope, ref, edit.field, value)
         }
     }
 

@@ -35,6 +35,7 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
@@ -77,12 +78,19 @@ fun CombatListUi(
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             Column(modifier = Modifier.fillMaxSize()) {
                 CombatListHeader(state)
-                if (state.groups.isEmpty()) {
-                    EmptyState(text = stringResource(Res.string.combat_list_empty), modifier = Modifier.weight(1f))
+                if (state.isLoading) {
+                    Box(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) { AppLoader() }
                 } else {
-                    CombatJournal(state.groups, state.eventSink, modifier = Modifier.weight(1f))
+                    if (state.groups.isEmpty()) {
+                        EmptyState(text = stringResource(Res.string.combat_list_empty), modifier = Modifier.weight(1f))
+                    } else {
+                        CombatJournal(state.groups, state.eventSink, modifier = Modifier.weight(1f))
+                    }
+                    CombatFooterBar(state.footer, state.eventSink)
                 }
-                CombatFooterBar(state.footer, state.eventSink)
             }
             AppToast(text = state.toast?.text, modifier = floatingBarAnchor())
         }

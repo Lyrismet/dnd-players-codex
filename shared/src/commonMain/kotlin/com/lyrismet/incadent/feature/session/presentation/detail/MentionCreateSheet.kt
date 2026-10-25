@@ -66,7 +66,7 @@ internal fun MentionCreateSheet(
 ) {
     val dismiss = { eventSink(SessionDetailEvent.MentionCreateDismissed) }
     AppBottomSheet(onDismissRequest = dismiss) {
-        AppSheetColumn(spacing = 16.dp) {
+        AppSheetColumn(spacing = 16.dp, scroll = true) {
             AppSheetHeader(
                 overline = stringResource(Res.string.mention_create_overline),
                 title = stringResource(Res.string.mention_create_title),

@@ -6,10 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -19,9 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -36,6 +38,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppListCard
 import com.lyrismet.incadent.core.designsystem.component.AppListRow
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
@@ -94,7 +97,9 @@ fun SettingsUi(
     val sink = state.eventSink
     val pickFile = rememberImportPicker { sink(SettingsEvent.CampaignSheet(it)) }
     Box(modifier = modifier.fillMaxSize()) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { contentPadding ->
+        // the tab bar already sits above the navigation bar, so this scaffold must not reserve it again
+        val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        Scaffold(modifier = Modifier.fillMaxSize(), contentWindowInsets = contentWindowInsets) { contentPadding ->
             Column(
                 modifier =
                     Modifier
@@ -327,14 +332,11 @@ private fun CampaignNameRow(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        Box(
-            modifier =
-                Modifier
-                    .size(36.dp)
-                    .clip(AppShapes.Control)
-                    .background(AppPalette.SurfacePopover)
-                    .border(1.dp, AppPalette.Border, AppShapes.Control),
-            contentAlignment = Alignment.Center,
+        IconBadge(
+            size = 36.dp,
+            shape = AppShapes.Control,
+            background = AppPalette.SurfacePopover,
+            border = AppPalette.Border,
         ) {
             Icon(
                 imageVector = AppIcons.Edit,

@@ -80,7 +80,6 @@ data class CodexEntryFormState(
 enum class CodexEntryField {
     NAME,
     DESCRIPTION,
-    RACE,
     NICKNAMES,
     REWARD,
     PARTY_CLASS,

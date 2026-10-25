@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.core.portrait
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import com.lyrismet.incadent.core.logging.AppLog
@@ -95,14 +97,82 @@ fun makeThumb(
 @Composable
 fun rememberPhotoBitmap(bytes: ByteArray): ImageBitmap {
     // the hash is walked once per array instance, not on every recomposition
-    val key = remember(bytes) { PhotoKey(bytes.size, bytes.contentHashCode()) }
-    return remember(key) { decodeImageBitmap(bytes) }
+    val key = remember(bytes) { photoKeyOf(bytes) }
+    return remember(key) { DecodedBitmaps.getOrDecode(key, bytes) }
 }
 
-private data class PhotoKey(
+/** keeps recent decodes so a list item that scrolls back or a card opened twice does not decode its jpeg again */
+private object DecodedBitmaps {
+    // only the main thread touches it, a decode off the main thread hands its result back before it is stored
+    private val cache = LinkedHashMap<PhotoKey, ImageBitmap>()
+    private var cachedPixels = 0L
+
+    fun peek(key: PhotoKey): ImageBitmap? {
+        // re-inserting on a hit keeps the iteration order oldest-use first
+        val hit = cache.remove(key) ?: return null
+        cache[key] = hit
+        return hit
+    }
+
+    fun put(
+        key: PhotoKey,
+        bitmap: ImageBitmap,
+    ): ImageBitmap {
+        cache.remove(key)?.let { cachedPixels -= it.pixels() }
+        cache[key] = bitmap
+        cachedPixels += bitmap.pixels()
+        val iterator = cache.entries.iterator()
+        while (cachedPixels > MAX_CACHED_PIXELS && cache.size > 1 && iterator.hasNext()) {
+            cachedPixels -= iterator.next().value.pixels()
+            iterator.remove()
+        }
+        return bitmap
+    }
+
+    fun getOrDecode(
+        key: PhotoKey,
+        bytes: ByteArray,
+    ): ImageBitmap = peek(key) ?: put(key, decodeImageBitmap(bytes))
+
+    private fun ImageBitmap.pixels(): Long = width.toLong() * height
+}
+
+/** like [rememberPhotoBitmap] but a big picture decodes off the main thread, null until it is ready */
+@Composable
+fun rememberPhotoBitmapAsync(bytes: ByteArray): ImageBitmap? {
+    val key = remember(bytes) { photoKeyOf(bytes) }
+    // a thumbnail is cheap enough to decode at once, so a list never shows an empty frame for it
+    val first =
+        remember(key) {
+            DecodedBitmaps.peek(key)
+                ?: if (bytes.size <= SYNC_DECODE_MAX_BYTES) DecodedBitmaps.getOrDecode(key, bytes) else null
+        }
+    // null until a big picture decodes, the slot draws its loader meanwhile
+    val bitmap by produceState(first, key) {
+        value =
+            DecodedBitmaps.peek(key)
+                ?: DecodedBitmaps.put(key, withContext(Dispatchers.Default) { decodeImageBitmap(bytes) })
+    }
+    return bitmap
+}
+
+private const val SYNC_DECODE_MAX_BYTES = 20_000
+private const val MAX_CACHED_PIXELS = 6_000_000L
+
+internal data class PhotoKey(
     val size: Int,
-    val hash: Int,
+    val hash: Long,
 )
+
+// 64-bit fnv-1a, so two different pictures of one size practically never share a cache entry
+internal fun photoKeyOf(bytes: ByteArray): PhotoKey {
+    var hash = FNV_OFFSET_BASIS
+    for (byte in bytes) hash = (hash xor byte.toLong()) * FNV_PRIME
+    return PhotoKey(bytes.size, hash)
+}
+
+private const val FNV_OFFSET_BASIS = -3750763034362895579L
+private const val FNV_PRIME = 1099511628211L
 
 private fun Int.toKb(): Int = (this + BYTES_PER_KB / 2) / BYTES_PER_KB
 

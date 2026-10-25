@@ -150,6 +150,9 @@ sealed interface CodexSheet {
     data class EntryForm(
         val form: CodexEntryFormState,
     ) : CodexSheet
+
+    /** a card was tapped and its summary is still being built */
+    data object EntityLoading : CodexSheet
 }
 
 /** a button of the empty state that opens the entry form of [entryType], with [name] prefilled */
@@ -201,6 +204,8 @@ data class CodexState(
     val groupOptions: List<CodexFilterOption<CodexGroupBy>> = emptyList(),
     val emptyState: CodexEmptyState = CodexEmptyState.Hidden,
     val activeSheet: CodexSheet? = null,
+    // the records have not arrived yet, so the lists must not claim they are empty
+    val isLoading: Boolean = true,
     val editMode: EntityEditMode = EntityEditMode.QUICK,
     // the in-place editing of the open card, quick mode only
     val quick: QuickEditState = QuickEditState(),

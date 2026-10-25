@@ -14,9 +14,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
-private val UNDO_WINDOW = 5.seconds
+/** how long the bar waits for an undo, the countdown line of the toast runs for the same time */
+const val UNDO_WINDOW_MILLIS = 5_000L
+
+private val UNDO_WINDOW = UNDO_WINDOW_MILLIS.milliseconds
 private const val LOG_COMPONENT = "UndoController"
 
 /** a second button on the bar next to "Undo", for what to do with the thing that was just made */
@@ -32,6 +37,8 @@ data class UndoAction(
     val followUp: UndoFollowUp? = null,
     // a bar of something made keeps its icon after the follow-up is taken away
     val isMade: Boolean = followUp != null,
+    // the toast draws its countdown from this mark, so it always runs out together with the controller's timer
+    val shownAt: TimeMark = TimeSource.Monotonic.markNow(),
 )
 
 /** shared across session/codex deletes - only one undo toast is on screen at a time */
@@ -73,6 +80,12 @@ class UndoController(
         dismissJob?.cancel()
         _current.value = null
         action.followUp?.onClick?.invoke()
+    }
+
+    /** the bar is swiped away, nothing is undone and no follow-up runs */
+    fun dismiss() {
+        dismissJob?.cancel()
+        _current.value = null
     }
 
     /** takes the follow-up button off the bar when the screen that can act on it is gone, undo itself stays */

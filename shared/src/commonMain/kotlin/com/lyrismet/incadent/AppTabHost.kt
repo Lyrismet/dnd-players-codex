@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -20,8 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
@@ -87,7 +86,7 @@ internal class AppTabsState(
 ) {
     val selectedTab: AppTab get() = AppTab.entries[selectedTabIndex.value]
 
-    fun stackOf(tab: AppTab): TabStack? =
+    fun stackOf(tab: AppTab): TabStack =
         when (tab) {
             AppTab.SESSIONS -> sessions
             AppTab.CODEX -> codex
@@ -129,10 +128,11 @@ internal fun AppTabHost(
     HandleSwipeHintReplay(swipeHintReplayController, tabs)
     var isExitConfirmVisible by remember { mutableStateOf(false) }
     // the tab bar stays put under the keyboard, so the content only lifts by the keyboard height beyond it
-    val density = LocalDensity.current
+    val ime = WindowInsets.ime
+    // plain set, a new entry always arrives with the selected tab changing, which recomposes this anyway
+    val composedTabs = remember { mutableSetOf<AppTab>() }
+    composedTabs += selectedTab
     var tabBarHeightPx by remember { mutableIntStateOf(0) }
-    val imeBottomPx = WindowInsets.ime.getBottom(density)
-    val contentLiftPx = (imeBottomPx - tabBarHeightPx).coerceAtLeast(0)
 
     // reached only when the selected tab's own back handler passes, i.e. at a tab root
     NavigationBackHandler(
@@ -148,24 +148,21 @@ internal fun AppTabHost(
                 Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(bottom = with(density) { contentLiftPx.toDp() }),
+                    .liftAboveKeyboard(ime) { tabBarHeightPx },
         ) {
-            Box(modifier = tabContentModifier(selectedTab == AppTab.SESSIONS)) {
-                TabBackstackHost(tabs.sessions, isSelected = selectedTab == AppTab.SESSIONS)
-            }
-            Box(modifier = tabContentModifier(selectedTab == AppTab.CODEX)) {
-                TabBackstackHost(tabs.codex, isSelected = selectedTab == AppTab.CODEX)
-            }
-            Box(modifier = tabContentModifier(selectedTab == AppTab.COMBAT)) {
-                TabBackstackHost(tabs.combat, isSelected = selectedTab == AppTab.COMBAT)
-            }
-            Box(modifier = tabContentModifier(selectedTab == AppTab.SETTINGS)) {
-                TabBackstackHost(tabs.settings, isSelected = selectedTab == AppTab.SETTINGS)
+            AppTab.entries.forEach { tab ->
+                // a tab composes the first time it is shown and then stays, so its nav stack and ui state survive
+                if (tab in composedTabs) {
+                    Box(modifier = tabContentModifier(selectedTab == tab)) {
+                        TabBackstackHost(tabs.stackOf(tab), isSelected = selectedTab == tab)
+                    }
+                }
             }
             UndoToast(
                 action = pendingUndo,
                 onUndo = undoController::undo,
                 onFollowUp = undoController::followUp,
+                onDismiss = undoController::dismiss,
                 modifier = floatingBarAnchor(),
             )
         }
@@ -211,9 +208,9 @@ private fun handleTabRootBack(
 ) {
     val tab = tabs.selectedTab
     val stack = tabs.stackOf(tab)
-    val depth = stack?.backStack?.size ?: 1
+    val depth = stack.backStack.size
     when (resolveBackAction(isOnSessionsTab = tab == AppTab.SESSIONS, activeTabDepth = depth)) {
-        BackAction.Pop -> stack?.navigator?.pop()
+        BackAction.Pop -> stack.navigator.pop()
         BackAction.SwitchToSessions -> tabs.selectedTabIndex.value = AppTab.SESSIONS.ordinal
         BackAction.ConfirmExit -> onExitRequested()
     }
@@ -228,13 +225,30 @@ private fun onTabTapped(
         tabs.selectedTabIndex.value = index
         return
     }
-    val stack = tabs.stackOf(AppTab.entries[index]) ?: return
+    val stack = tabs.stackOf(AppTab.entries[index])
     popToRoot(stack)
 }
 
 private fun popToRoot(stack: TabStack) {
     repeat(stack.backStack.size - 1) { stack.navigator.pop() }
 }
+
+// read while measuring, so the keyboard sliding in does not recompose the whole host each frame
+private fun Modifier.liftAboveKeyboard(
+    ime: WindowInsets,
+    reservedBottomPx: () -> Int,
+): Modifier =
+    layout { measurable, constraints ->
+        val lift = (ime.getBottom(this) - reservedBottomPx()).coerceAtLeast(0)
+        val height = (constraints.maxHeight - lift).coerceAtLeast(0)
+        val placeable =
+            measurable.measure(
+                constraints.copy(minHeight = minOf(constraints.minHeight, height), maxHeight = height),
+            )
+        layout(placeable.width, (placeable.height + lift).coerceIn(constraints.minHeight, constraints.maxHeight)) {
+            placeable.place(0, 0)
+        }
+    }
 
 private fun tabContentModifier(visible: Boolean): Modifier =
     if (visible) Modifier.fillMaxSize() else Modifier.size(0.dp)

@@ -82,6 +82,16 @@ interface CombatRepository {
     /** writes every field a fight can change on [combatant], the sides and the sources stay as they were */
     suspend fun updateCombatant(combatant: Combatant)
 
+    /** one blow or heal in one write: the changed participants and the events told of it, announced once */
+    suspend fun record(
+        combatId: Long,
+        members: List<Combatant>,
+        events: List<CombatEvent>,
+    ) {
+        members.forEach { updateCombatant(it) }
+        events.forEach { addEvent(combatId, it) }
+    }
+
     suspend fun setTurnOrder(
         combatantId: Long,
         order: Int?,

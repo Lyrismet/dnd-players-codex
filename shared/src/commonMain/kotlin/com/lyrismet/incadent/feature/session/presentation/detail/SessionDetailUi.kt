@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
@@ -50,6 +51,7 @@ import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityCardSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.asSheet
+import com.lyrismet.incadent.feature.codex.presentation.summary.EntityLoadingSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.codex.presentation.summary.entitySheetActions
@@ -79,6 +81,9 @@ fun SessionDetailUi(
     }
 
     state.selectedEntity?.let { entity -> SessionDetailEntitySheet(state, entity) }
+    if (state.entityLoading) {
+        EntityLoadingSheet { state.eventSink(SessionDetailEvent.EntitySheet(EntitySheetEvent.Dismissed)) }
+    }
     if (state.combatDeleteVisible) {
         ConfirmationDialog(
             title = stringResource(Res.string.combat_results_delete_title),
@@ -106,18 +111,20 @@ fun SessionDetailUi(
 
 @Composable
 private fun ColumnScope.SessionDetailBody(state: SessionDetailState) {
-    SessionDetailHeader(state)
+    SessionDetailHeader(state.header, state.eventSink)
 
     // the toast floats at the feed's bottom edge, so it never covers the composer
     Box(modifier = Modifier.weight(1f)) {
-        if (state.feed.isEmpty()) {
+        if (state.feed.items.isEmpty() && state.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { AppLoader() }
+        } else if (state.feed.items.isEmpty()) {
             EmptyState(
                 title = stringResource(Res.string.session_detail_empty_feed),
                 text = stringResource(Res.string.session_detail_empty_feed_hint),
                 ornament = true,
             )
         } else {
-            SessionFeed(state)
+            SessionFeed(state.feed, state.eventSink)
         }
         AppToast(
             text = state.toast,
@@ -126,14 +133,15 @@ private fun ColumnScope.SessionDetailBody(state: SessionDetailState) {
     }
 
     // an ended session only shows the input while one of its notes is being edited
-    if ((state.isLive || state.isEditingEntry) && !state.readOnly) {
+    if ((state.header.isLive || state.isEditingEntry) && !state.readOnly) {
         SessionComposer(state)
     }
 }
 
 @Composable
 private fun SessionFeed(
-    state: SessionDetailState,
+    state: SessionFeedState,
+    eventSink: (SessionDetailEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -144,7 +152,7 @@ private fun SessionFeed(
         contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        items(state.feed, key = { it.key }) { feedItem ->
+        items(state.items, key = { it.key }) { feedItem ->
             when (feedItem) {
                 is SessionFeedItem.DaySeparator -> {
                     DaySeparatorRow(feedItem.label)
@@ -154,13 +162,13 @@ private fun SessionFeed(
                     CombatFeedCard(
                         item = feedItem.card,
                         onDelete =
-                            { state.eventSink(SessionDetailEvent.CombatDeleteClicked(feedItem.card.id)) }
+                            { eventSink(SessionDetailEvent.CombatDeleteClicked(feedItem.card.id)) }
                                 .takeUnless { state.readOnly },
                         modifier = Modifier.animateItem(),
                     )
                 }
 
-                is SessionFeedItem.Note -> NoteRow(state, feedItem.entry, Modifier.animateItem())
+                is SessionFeedItem.Note -> NoteRow(state, eventSink, feedItem.entry, Modifier.animateItem())
             }
         }
     }
@@ -179,20 +187,20 @@ private fun SessionFeed(
     // always jump to the newest entry, chat-app style - no "stay where the user scrolled" tracking
     // also falls back here once a highlight clears without ever resolving (e.g. its entry was deleted),
     // instead of leaving the list stuck wherever it happened to be when the highlight was requested
-    LaunchedEffect(state.feed.size, state.highlightedEntryId) {
-        if (state.feed.isNotEmpty() && state.highlightedEntryId == null && !focusResolved) {
-            listState.animateScrollToItem(state.feed.lastIndex)
+    LaunchedEffect(state.items.size, state.highlightedEntryId) {
+        if (state.items.isNotEmpty() && state.highlightedEntryId == null && !focusResolved) {
+            listState.animateScrollToItem(state.items.lastIndex)
         }
     }
 }
 
 @Composable
 private fun NoteRow(
-    state: SessionDetailState,
+    state: SessionFeedState,
+    send: (SessionDetailEvent) -> Unit,
     entry: SessionEntryItem,
     modifier: Modifier,
 ) {
-    val send = state.eventSink
     SessionEntryRow(
         entry = entry,
         isSelected = state.selectedEntryId == entry.id,

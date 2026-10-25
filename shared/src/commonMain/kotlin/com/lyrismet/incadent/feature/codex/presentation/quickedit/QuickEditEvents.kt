@@ -64,6 +64,8 @@ sealed interface QuickEditUiEvent {
 
     data object UndoFollowUpClicked : QuickEditUiEvent
 
+    data object UndoDismissed : QuickEditUiEvent
+
     /** the raw picked image - the presenter shrinks it and opens the crop window on it */
     class PhotoPicked(
         val slot: PhotoSlot,

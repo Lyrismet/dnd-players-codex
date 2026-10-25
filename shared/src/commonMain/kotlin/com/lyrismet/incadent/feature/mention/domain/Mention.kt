@@ -111,6 +111,8 @@ class MentionIndex(
             }.sortedByDescending { it.name.length }
     }
 
+    internal val autoNames: List<AutoName> by lazy { buildAutoNames(uniqueByName) }
+
     private val foldedNames: Set<String> by lazy { entities.mapTo(mutableSetOf()) { it.name.foldPerChar() } }
 
     /** whether some live record carries [name], whatever its case */
@@ -199,14 +201,47 @@ private fun splitOnAutoNames(
 // a space ends the mention token - also what closes the popover once insertMention's own trailing space lands
 private val TRAILING_MENTION_REGEX = Regex("@([^@\\s\\[\\]|]{0,24})$")
 
-/** the in-progress "@query" at the end of [draft], if the caret is mid-mention - drives the suggestion popover */
-fun trailingMentionQuery(draft: String): String? = TRAILING_MENTION_REGEX.find(draft)?.groupValues?.get(1)
+/** the in-progress "@query" ending at [caret], if the caret is mid-mention - drives the suggestion popover */
+fun trailingMentionQuery(
+    draft: String,
+    caret: Int = draft.length,
+): String? {
+    val upToCaret = draft.substring(0, caret.coerceIn(0, draft.length))
+    return TRAILING_MENTION_REGEX.find(upToCaret)?.groupValues?.get(1)
+}
+
+/** [text] with the new caret, so the caller can keep the cursor right after what was inserted */
+data class MentionInsertion(
+    val text: String,
+    val caret: Int,
+)
+
+/** replaces the "@query" ending at [caret] in [draft] with [token] plus a trailing space, the rest of the text stays */
+fun insertMentionAt(
+    draft: String,
+    token: String,
+    caret: Int = draft.length,
+): MentionInsertion {
+    val end = caret.coerceIn(0, draft.length)
+    val upToCaret = draft.substring(0, end)
+    // without an "@query" before the caret the token goes in at the caret
+    val before =
+        if (TRAILING_MENTION_REGEX.containsMatchIn(upToCaret)) {
+            TRAILING_MENTION_REGEX.replace(upToCaret) { "$token " }
+        } else {
+            "$upToCaret$token "
+        }
+    val after = draft.substring(end)
+    // an existing space after the caret is reused so the text does not get a double space
+    val skip = if (after.startsWith(" ")) 1 else 0
+    return MentionInsertion(before + after.substring(skip), before.length)
+}
 
 /** replaces the trailing "@query" in [draft] with [token] plus a trailing space */
 fun insertMention(
     draft: String,
     token: String,
-): String = TRAILING_MENTION_REGEX.replace(draft) { "$token " }
+): String = insertMentionAt(draft, token).text
 
 /** every distinct entity mentioned across [bodies], in first-seen order - the caller decides whether to cap it */
 fun mentionsIn(

@@ -4,37 +4,18 @@ import com.lyrismet.incadent.core.file.FileSink
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.db.Combat_event
 import com.lyrismet.incadent.db.Combatant
-import com.lyrismet.incadent.db.SelectAllWithLocations
-import com.lyrismet.incadent.db.Session_entry
-import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.exchange.resolve
-import com.lyrismet.incadent.feature.campaign.domain.exchange.withKnownMentionsOnly
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
-import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeGraph
-import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeItem
-import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordSelection
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
-import com.lyrismet.incadent.feature.mention.domain.MentionRef
-import com.lyrismet.incadent.feature.mention.domain.mentionRefsIn
 import com.lyrismet.incadent.feature.mention.domain.remapMentionTokens
 import kotlin.io.encoding.Base64
-import com.lyrismet.incadent.db.location.SelectAll as PlaceSql
-import com.lyrismet.incadent.db.partyMember.SelectAll as PartySql
-import com.lyrismet.incadent.db.quest.SelectAll as QuestSql
-import com.lyrismet.incadent.db.sessionNote.SelectAll as SessionSql
-import com.lyrismet.incadent.db.species.SelectAll as SpeciesSql
 
 private const val BASE64_NUMERATOR = 4
 private const val BASE64_DENOMINATOR = 3
-private const val UTF8_ONE_LIMIT = 0x80
-private const val UTF8_TWO_LIMIT = 0x800
-private const val UTF8_TWO = 2
-private const val UTF8_THREE = 3
-private const val UTF8_FOUR = 4
 
 /** reads one campaign out of the database into the lines of a file */
 class CampaignExporter(
@@ -427,115 +408,3 @@ private fun Combat_event.toBlow(
     raw = raw.toInt(),
     scale = scale,
 )
-
-private fun String.toIdList(): List<Long> = split(',').mapNotNull { it.toLongOrNull() }
-
-// utf-8 size without building the byte array, a surrogate pair is 4 bytes
-private fun String.utf8Length(): Int {
-    var length = 0
-    var index = 0
-    while (index < this.length) {
-        val char = this[index]
-        val paired = char.isHighSurrogate() && index + 1 < this.length && this[index + 1].isLowSurrogate()
-        if (paired) index++
-        length +=
-            when {
-                paired -> UTF8_FOUR
-                char.code < UTF8_ONE_LIMIT -> 1
-                char.code < UTF8_TWO_LIMIT -> UTF8_TWO
-                else -> UTF8_THREE
-            }
-        index++
-    }
-    return length
-}
-
-private fun MentionRef.toExchangeRef(): ExchangeRef = ExchangeRef(type.toExchangeKind(), id)
-
-/** the rows of one campaign as they were read, [catalog] is what the picker offers from them */
-@Suppress("LongParameterList")
-private class Snapshot(
-    val campaignId: String,
-    val name: String,
-    val places: List<PlaceSql>,
-    val npcs: List<SelectAllWithLocations>,
-    val quests: List<QuestSql>,
-    val sessions: List<SessionSql>,
-    val species: List<SpeciesSql>,
-    val party: List<PartySql>,
-    val entries: Map<Long, List<Session_entry>>,
-    val tagNames: Map<Long, List<String>>,
-) {
-    val catalog: ExchangeCatalog by lazy {
-        val rows =
-            ExchangeRows(
-                sessions = sessions.map { SessionRow(it.id, it.title, it.session_date.date.toString()) },
-                places = places.map { PlaceRow(it.id, it.name, it.parent_id) },
-                npcs = npcs.map { NpcRow(it.id, it.name, it.species_id, it.location_ids.toIdList()) },
-                quests = quests.map { QuestRow(it.id, it.title, it.given_by_npc_id, it.location_id) },
-                species = species.map { ExchangeItem(it.id, it.name) },
-                party = party.map { ExchangeItem(it.id, it.name) },
-                mentions =
-                    entries.mapValues { (_, list) ->
-                        list.flatMap { mentionRefsIn(it.body) }.map { it.toExchangeRef() }.toSet()
-                    },
-            )
-        val options = rows.options()
-        ExchangeCatalog(name, options, rows.graph().withKnownMentionsOnly(options))
-    }
-}
-
-/** counts what is written and keeps none of it */
-private class CountingSink : FileSink {
-    var bytes = 0L
-
-    override fun writeLine(line: String) {
-        bytes += line.utf8Length() + 1
-    }
-
-    override fun close() = Unit
-}
-
-/** the file's own number for every exported record, counted from 1 per kind in database order */
-internal class FileIds(
-    scope: RecordScope,
-    private val graph: ExchangeGraph,
-) {
-    private val species = scope.species.numbered()
-    private val places = scope.places.numbered()
-    private val npcs = scope.npcs.numbered()
-    private val quests = scope.quests.numbered()
-    private val party = scope.party.numbered()
-    private val sessions = scope.sessions.numbered()
-
-    fun species(id: Long) = species.getValue(id)
-
-    fun place(id: Long) = places.getValue(id)
-
-    fun npc(id: Long) = npcs.getValue(id)
-
-    fun quest(id: Long) = quests.getValue(id)
-
-    fun party(id: Long) = party.getValue(id)
-
-    fun session(id: Long) = sessions.getValue(id)
-
-    fun placeDepth(id: Long): Int =
-        generateSequence(graph.placeParent[id]) {
-            graph.placeParent[it]
-        }.take(places.size).count()
-
-    private val byKind =
-        mapOf(
-            EntityKind.NPC to npcs,
-            EntityKind.PARTY to party,
-            EntityKind.LOCATION to places,
-            EntityKind.QUEST to quests,
-            EntityKind.SPECIES to species,
-        )
-
-    /** the file number a note token moves to, null for a record that is not in the file */
-    fun mapped(ref: MentionRef): Long? = byKind[ref.type]?.get(ref.id)
-}
-
-private fun Set<Long>.numbered(): Map<Long, Long> = sorted().withIndex().associate { (index, id) -> id to index + 1L }

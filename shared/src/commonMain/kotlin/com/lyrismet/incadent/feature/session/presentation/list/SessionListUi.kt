@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -30,11 +31,13 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.GlowingDot
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
+import com.lyrismet.incadent.core.designsystem.component.NoPeek
 import com.lyrismet.incadent.core.designsystem.component.NumberLabel
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
@@ -53,11 +56,12 @@ import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSwitche
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityCardSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.asSheet
+import com.lyrismet.incadent.feature.codex.presentation.summary.EntityLoadingSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.entitySheetActions
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
-import com.lyrismet.incadent.feature.session.domain.tags.sessionTagLabel
+import com.lyrismet.incadent.feature.session.presentation.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.campaign_switcher_description
 import dndplayerscodex.shared.generated.resources.mention_count_notes
@@ -91,7 +95,7 @@ fun SessionListUi(
     val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     Scaffold(modifier = modifier, contentWindowInsets = contentWindowInsets) { contentPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
-            SessionListBody(state, swipeHint.peekOffsetPx)
+            SessionListBody(state) { swipeHint.peekOffsetPx }
             AppToast(
                 text = state.toast?.text,
                 modifier = floatingBarAnchor(),
@@ -111,6 +115,9 @@ fun SessionListUi(
 
     CampaignSheets(state.campaignSheet) { event -> state.eventSink(SessionListEvent.CampaignSheet(event)) }
 
+    if (state.entityLoading) {
+        EntityLoadingSheet { state.eventSink(SessionListEvent.EntitySheet(EntitySheetEvent.Dismissed)) }
+    }
     state.selectedEntity?.let { entity ->
         val onQuickEvent = { event: QuickEditUiEvent -> state.eventSink(SessionListEvent.QuickEdit(event)) }
         EntityCardSheet(
@@ -129,7 +136,7 @@ fun SessionListUi(
 @Composable
 private fun SessionListBody(
     state: SessionListState,
-    swipeHintPeekOffsetPx: Float,
+    swipeHintPeekOffsetPx: () -> Float,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         ScreenHeader(
@@ -159,7 +166,9 @@ private fun SessionListBody(
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
             )
         }
-        if (state.liveSession == null && state.sessions.isEmpty()) {
+        if (state.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { AppLoader() }
+        } else if (state.liveSession == null && state.sessions.isEmpty()) {
             EmptyState(
                 title = stringResource(Res.string.session_list_empty_title),
                 text = stringResource(Res.string.session_list_empty),
@@ -181,7 +190,7 @@ private fun SessionListBody(
 @Composable
 private fun SessionListContent(
     state: SessionListState,
-    swipeHintPeekOffsetPx: Float,
+    swipeHintPeekOffsetPx: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -218,7 +227,7 @@ private fun SessionListContent(
                 onClick = { state.eventSink(SessionListEvent.SessionClicked(session.id)) },
                 onDeleteClick = { state.eventSink(SessionListEvent.DeleteSessionClicked(session.id)) },
                 // only the row the swipe hint targets actually peeks - every other row stays at rest
-                peekOffsetPx = if (session.id == state.swipeHintTarget?.itemId) swipeHintPeekOffsetPx else 0f,
+                peekOffsetPx = if (session.id == state.swipeHintTarget?.itemId) swipeHintPeekOffsetPx else NoPeek,
                 modifier = Modifier.animateItem(),
             )
         }
@@ -280,6 +289,7 @@ private fun LiveCardStatusRow(
             dateLabel,
             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
             color = AppPalette.TextSecondary,
+            maxLines = 1,
         )
     }
 }
@@ -340,7 +350,7 @@ private fun SessionArchiveRow(
     session: SessionListItem,
     onClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    peekOffsetPx: Float,
+    peekOffsetPx: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     SwipeToDeleteRow(
@@ -364,7 +374,7 @@ private fun SessionArchiveRow(
         ) {
             NumberLabel(text = session.numberLabel, width = 52.dp, color = AppPalette.GoldDim)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(session.title, style = MaterialTheme.typography.titleMedium, color = AppPalette.TextHeading)
+                ArchiveTitle(session.title)
                 ArchiveMeta(session)
                 if (session.tags.isNotEmpty() || session.mentionCount > 0) {
                     FlowRow(
@@ -398,6 +408,17 @@ private fun SessionArchiveRow(
     }
 }
 
+@Composable
+private fun ArchiveTitle(title: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.titleMedium,
+        color = AppPalette.TextHeading,
+        maxLines = 3,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
 // the date and how many notes the session holds
 @Composable
 private fun ArchiveMeta(session: SessionListItem) {
@@ -406,5 +427,7 @@ private fun ArchiveMeta(session: SessionListItem) {
         joinWithDot(session.dateLabel, notes),
         style = MaterialTheme.typography.bodySmall,
         color = AppPalette.TextSecondary,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
     )
 }

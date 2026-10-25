@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -24,13 +25,18 @@ fun NumberLabel(
     lineHeightFactor: Float = 1.35f,
 ) {
     val fontSize = sizeLadder.sizeFor(text).sp
+    val base = MaterialTheme.typography.titleMedium
+    val style =
+        remember(base, fontSize, lineHeightFactor) {
+            base.copy(
+                fontSize = fontSize,
+                lineHeight =
+                    fontSize * lineHeightFactor,
+            )
+        }
     Text(
         text = text,
-        style =
-            MaterialTheme.typography.titleMedium.copy(
-                fontSize = fontSize,
-                lineHeight = fontSize * lineHeightFactor,
-            ),
+        style = style,
         color = color,
         textAlign = TextAlign.Center,
         maxLines = 1,

@@ -38,7 +38,7 @@ enum class QuickEditField(
     NAME(QuickEditKind.Text, isRequired = true),
     DESCRIPTION(QuickEditKind.Text),
     NICKNAMES(QuickEditKind.Text),
-    RACE(QuickEditKind.Text),
+    RACE(QuickEditKind.Species),
     SPECIES(QuickEditKind.Species),
     CHARACTER_CLASS(QuickEditKind.Text),
     PLAYER_NAME(QuickEditKind.Text),

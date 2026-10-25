@@ -20,3 +20,7 @@ node_modules/
 
 # design reference file, not project source
 *.dc.html
+
+# release signing keys, never committed
+*.jks
+*.keystore

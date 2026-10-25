@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.format.toShortDayMonthUpper
 import com.lyrismet.incadent.core.localization.currentAppLanguage
@@ -35,35 +36,45 @@ internal fun buildFeed(
     noteItems: Map<Long, SessionEntryItem>,
 ): List<SessionFeedItem> {
     val slots =
-        (
-            entries.map { FeedSlot(it.createdAt, noteItems[it.id], null) } +
-                cards.map { FeedSlot(it.finishedAt, null, it) }
-        ).sortedBy { it.at }
+        remember(entries, cards, noteItems) {
+            (
+                entries.map { FeedSlot(it.createdAt, noteItems[it.id], null) } +
+                    cards.map { FeedSlot(it.finishedAt, null, it) }
+            ).sortedBy { it.at }
+        }
     if (slots.isEmpty()) return emptyList()
     val language = currentAppLanguage()
-    val distinctDays = (listOfNotNull(sessionStartDay) + slots.map { it.at.date }).distinct().sorted()
+    val distinctDays = remember(slots, sessionStartDay) { slots.distinctDays(sessionStartDay) }
     val isMultiDay = distinctDays.size > 1
-
-    val feed = mutableListOf<SessionFeedItem>()
-    var lastDay: LocalDate? = null
-    for (slot in slots) {
-        val day = slot.at.date
-        if (isMultiDay && day != lastDay) {
-            val meetingNumber = distinctDays.indexOf(day) + 1
-            val label =
-                stringResource(
-                    Res.string.session_detail_meeting_separator_format,
-                    meetingNumber,
-                    day.toShortDayMonthUpper(language),
-                )
-            feed += SessionFeedItem.DaySeparator(key = "sep-$day", label = label)
-            lastDay = day
+    // one label per day, read here because resources can only be read while composing
+    val separatorLabels =
+        distinctDays.mapIndexed { index, day ->
+            stringResource(
+                Res.string.session_detail_meeting_separator_format,
+                index + 1,
+                day.toShortDayMonthUpper(language),
+            )
         }
-        slot.note?.let { feed += SessionFeedItem.Note(it) }
-        slot.card?.let { feed += SessionFeedItem.Combat(it) }
+
+    return remember(slots, isMultiDay, separatorLabels) {
+        val feed = mutableListOf<SessionFeedItem>()
+        var lastDay: LocalDate? = null
+        for (slot in slots) {
+            val day = slot.at.date
+            if (isMultiDay && day != lastDay) {
+                feed +=
+                    SessionFeedItem.DaySeparator(key = "sep-$day", label = separatorLabels[distinctDays.indexOf(day)])
+                lastDay = day
+            }
+            slot.note?.let { feed += SessionFeedItem.Note(it) }
+            slot.card?.let { feed += SessionFeedItem.Combat(it) }
+        }
+        feed
     }
-    return feed
 }
+
+private fun List<FeedSlot>.distinctDays(sessionStartDay: LocalDate?): List<LocalDate> =
+    (listOfNotNull(sessionStartDay) + map { it.at.date }).distinct().sorted()
 
 internal fun SessionEntry.toItem(candidates: MentionIndex): SessionEntryItem {
     // only a note that was sent or edited and not decided on yet is searched for words without "@"

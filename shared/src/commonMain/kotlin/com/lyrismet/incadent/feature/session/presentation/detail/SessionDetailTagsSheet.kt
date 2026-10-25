@@ -24,7 +24,7 @@ import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.feature.session.domain.tags.sessionTagLabel
+import com.lyrismet.incadent.feature.session.presentation.tags.sessionTagLabel
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_tag_add_all_button
 import dndplayerscodex.shared.generated.resources.session_detail_tag_add_suggestion_button
@@ -43,7 +43,7 @@ internal fun SessionDetailTagsSheet(
     eventSink: (SessionDetailEvent) -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = { eventSink(SessionDetailEvent.TagSheetDismissed) }) {
-        AppSheetColumn(spacing = 18.dp) {
+        AppSheetColumn(spacing = 18.dp, scroll = true) {
             AppSheetHeader(
                 title = stringResource(Res.string.session_detail_tag_sheet_title),
                 onClose = { eventSink(SessionDetailEvent.TagSheetDismissed) },

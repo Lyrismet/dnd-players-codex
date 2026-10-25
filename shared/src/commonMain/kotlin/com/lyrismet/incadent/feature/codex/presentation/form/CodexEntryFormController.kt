@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.localization.currentAppLanguage
@@ -176,7 +177,7 @@ class CodexEntryFormController private constructor(
             is CodexEntryFormEvent.EntryPlaceCreated -> onPlaceCreated(scope, event.name, event.checked)
             CodexEntryFormEvent.EntryPlaceSelectClosed -> onPlaceSelectClosed()
             CodexEntryFormEvent.EntrySpeciesSelectOpened -> onSpeciesSelectToggled(true)
-            is CodexEntryFormEvent.EntrySpeciesChosen -> onSpeciesChosen(event.ids)
+            is CodexEntryFormEvent.EntrySpeciesChosen -> onSpeciesChosen(scope, event.ids)
             is CodexEntryFormEvent.EntrySpeciesCreated -> onSpeciesCreated(scope, event.name)
             is CodexEntryFormEvent.EntrySpeciesSrdChosen -> onSpeciesCreated(scope, event.name, event.type)
             CodexEntryFormEvent.EntrySpeciesSelectClosed -> onSpeciesSelectToggled(false)
@@ -259,7 +260,6 @@ class CodexEntryFormController private constructor(
             when (field) {
                 CodexEntryField.NAME -> current.copy(name = text)
                 CodexEntryField.DESCRIPTION -> current.copy(description = text)
-                CodexEntryField.RACE -> current.copy(race = text)
                 CodexEntryField.NICKNAMES -> current.copy(nicknames = text)
                 CodexEntryField.REWARD -> current.copy(reward = text)
                 CodexEntryField.PARTY_CLASS -> current.copy(party = current.party.copy(characterClass = text))
@@ -385,10 +385,30 @@ class CodexEntryFormController private constructor(
     }
 
     // an empty list clears the link
-    fun onSpeciesChosen(ids: List<Long>) {
+    fun onSpeciesChosen(
+        scope: CoroutineScope,
+        ids: List<Long>,
+    ) {
         val current = fields.value ?: return
         pendingSpecies = null
-        fields.value = current.copy(npcSpeciesId = ids.firstOrNull(), speciesSelectOpen = false)
+        if (current.type == EntityKind.PARTY) {
+            onPartyRaceChosen(scope, current, ids.firstOrNull())
+        } else {
+            fields.value = current.copy(npcSpeciesId = ids.firstOrNull(), speciesSelectOpen = false)
+        }
+    }
+
+    // a party member keeps the species name as its race, not a link
+    private fun onPartyRaceChosen(
+        scope: CoroutineScope,
+        current: CodexEntryFormFields,
+        speciesId: Long?,
+    ) {
+        fields.value = current.copy(race = "", speciesSelectOpen = false)
+        if (speciesId == null) return
+        scope.launch {
+            speciesRepository.getById(speciesId)?.let { fields.value = fields.value?.copy(race = it.name) }
+        }
     }
 
     fun onSpeciesCreated(
@@ -396,11 +416,17 @@ class CodexEntryFormController private constructor(
         name: String,
         type: CreatureType = CreatureType.HUMANOID,
     ) {
-        val current = fields.value ?: return
+        val current = fields.value
         val trimmed = name.trim().capitalizeFirst()
-        if (trimmed.isBlank()) return
+        if (current == null || trimmed.isBlank()) return
+        val species = quickSpecies(trimmed).copy(creatureType = type)
+        if (current.type == EntityKind.PARTY) {
+            fields.value = current.copy(race = trimmed, speciesSelectOpen = false)
+            scope.launch { speciesRepository.upsert(species) }
+            return
+        }
         fields.value = current.copy(speciesSelectOpen = false)
-        val created = scope.async { speciesRepository.upsert(quickSpecies(trimmed).copy(creatureType = type)) }
+        val created = scope.async { speciesRepository.upsert(species) }
         pendingSpecies = created
         scope.launch {
             val id = created.await()
@@ -560,7 +586,7 @@ class CodexEntryFormController private constructor(
         val questLabels = questStatusLabels()
         val partyLabels = partyPresenceLabels()
         val party = current.party
-        val places = PlaceTree(locations)
+        val places = remember(locations) { PlaceTree(locations) }
         val topLevelLabel = stringResource(Res.string.codex_place_top_level_caption)
         val typeLabels = creatureTypeLabels()
         val isRussian = currentAppLanguage() == AppLanguage.RUSSIAN
@@ -640,7 +666,11 @@ class CodexEntryFormController private constructor(
                 },
             speciesSelect =
                 if (current.speciesSelectOpen) {
-                    speciesSelectState(species, current.npcSpeciesId, isRussian)
+                    speciesSelectState(
+                        species,
+                        current.npcSpeciesId ?: species.find { it.name.equals(current.race, ignoreCase = true) }?.id,
+                        isRussian,
+                    )
                 } else {
                     null
                 },

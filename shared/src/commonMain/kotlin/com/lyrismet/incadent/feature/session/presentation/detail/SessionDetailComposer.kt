@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,9 +41,9 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
@@ -87,6 +86,7 @@ private val COMPOSER_TOP_PADDING = 10.dp
 // the popup is anchored to the padded content, so the 1dp divider and top padding sit between it and the footer edge
 // tall enough for the seven rows and three headers of an empty "@", anything more scrolls
 private val POPOVER_MAX_HEIGHT = 360.dp
+private const val POPOVER_MAX_WINDOW_SHARE = 0.4f
 private val POPOVER_OFFSET_ABOVE_CONTENT = 6.dp + COMPOSER_TOP_PADDING + 1.dp
 
 @Composable
@@ -174,10 +174,10 @@ private fun ComposerDraftField(
     modifier: Modifier = Modifier,
 ) {
     AppTextInput(
-        value = TextFieldValue(state.draft, state.draftSelection),
+        value = TextFieldValue(state.draft, state.draftSelection, state.draftComposition),
         onValueChange = {
             val capped = it.copy(text = takeMentionDisplay(it.text, TextLimits.NOTE))
-            state.eventSink(SessionDetailEvent.DraftChanged(capped.text, capped.selection))
+            state.eventSink(SessionDetailEvent.DraftChanged(capped.text, capped.selection, capped.composition))
         },
         placeholder = stringResource(Res.string.session_detail_composer_placeholder),
         // the card around the field is the composer's own, so the input draws none and counts what the user sees
@@ -189,9 +189,12 @@ private fun ComposerDraftField(
             ),
         singleLine = false,
         minLines = 2,
-        counter = AppTextInputCounter(TextLimits.NOTE, count = mentionDisplayLength(state.draft)),
-        keyboardOptions = SentenceKeyboardOptions.copy(imeAction = ImeAction.Send),
-        keyboardActions = KeyboardActions(onSend = { state.eventSink(SessionDetailEvent.SubmitEntryClicked) }),
+        counter =
+            AppTextInputCounter(
+                TextLimits.NOTE,
+                count = remember(state.draft) { mentionDisplayLength(state.draft) },
+            ),
+        keyboardOptions = SentenceKeyboardOptions,
         visualTransformation = remember { MentionVisualTransformation(SpanStyle(color = AppPalette.GoldBright)) },
         focusRequester = draftFocusRequester,
         modifier =
@@ -364,6 +367,17 @@ private fun ComposerPopover(
     val popupWidth = with(density) { composerWidthPx.toDp() }
     val shape = AppShapes.Card
     val gapPx = with(density) { POPOVER_OFFSET_ABOVE_CONTENT.roundToPx() }
+    // on a short screen with the keyboard up the popover takes a share of the window, not a fixed height
+    val maxHeight =
+        minOf(
+            POPOVER_MAX_HEIGHT,
+            with(density) {
+                (
+                    LocalWindowInfo.current.containerSize.height *
+                        POPOVER_MAX_WINDOW_SHARE
+                ).toDp()
+            },
+        )
     Popup(popupPositionProvider = AbovePopupPositionProvider(gapPx)) {
         Column(
             modifier =
@@ -371,7 +385,7 @@ private fun ComposerPopover(
                     .width(popupWidth)
                     .shadow(elevation = 16.dp, shape = shape)
                     .appCard(shape = shape, background = AppPalette.SurfacePopover, border = AppPalette.BorderPopover)
-                    .heightIn(max = POPOVER_MAX_HEIGHT)
+                    .heightIn(max = maxHeight)
                     .verticalScroll(rememberScrollState())
                     .padding(6.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),

@@ -98,13 +98,19 @@ fun rememberCampaignSheetHost(
     val sessionWords = campaignSessionLabels(campaigns)
     val lastNew = stringResource(Res.string.campaign_last_new)
     val language = currentAppLanguage()
-    val cards =
-        campaigns.map { it.toCard(current?.id, sessionWords.getValue(it.id), lastNew, playerSuffix(it), language) }
+    val suffixes = campaigns.associate { it.id to playerSuffix(it) }
+    // rebuilt when the campaigns change, not on every key typed into a rename or a delete confirmation
     val library =
-        CampaignLibraryState(
-            live = cards.filterNot { it.isArchived },
-            archived = cards.filter { it.isArchived },
-        )
+        remember(campaigns, current?.id, sessionWords, suffixes, lastNew, language) {
+            val cards =
+                campaigns.map {
+                    it.toCard(current?.id, sessionWords.getValue(it.id), lastNew, suffixes.getValue(it.id), language)
+                }
+            CampaignLibraryState(
+                live = cards.filterNot { it.isArchived },
+                archived = cards.filter { it.isArchived },
+            )
+        }
 
     val sheet =
         when (val open = dialog) {

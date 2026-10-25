@@ -9,11 +9,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.alegreya_variable
-import dndplayerscodex.shared.generated.resources.cormorant_garamond_variable
 import dndplayerscodex.shared.generated.resources.inter_variable
-import dndplayerscodex.shared.generated.resources.lora_variable
-import dndplayerscodex.shared.generated.resources.pt_serif_bold
-import dndplayerscodex.shared.generated.resources.pt_serif_regular
 import org.jetbrains.compose.resources.Font
 
 /** ui and body text - matches Inter 400/500/600/700 from the design system */
@@ -26,49 +22,19 @@ fun interFontFamily(): FontFamily =
         Font(Res.font.inter_variable, weight = FontWeight.Bold),
     )
 
-/** the four heading serifs offered in Settings > Кампания, matching the design's `FONTS` map */
-enum class HeadingFont {
-    ALEGREYA,
-    LORA,
-    PT_SERIF,
-    CORMORANT_GARAMOND,
-}
-
-/** [font] is the injection point for the future serif-picker setting, default matches the design's default */
+/** headings - Alegreya, pinned by the design, there is no serif picker in Settings */
 @Composable
-fun headingFontFamily(font: HeadingFont = HeadingFont.ALEGREYA): FontFamily =
-    when (font) {
-        HeadingFont.ALEGREYA ->
-            FontFamily(
-                Font(Res.font.alegreya_variable, weight = FontWeight.Medium),
-                Font(Res.font.alegreya_variable, weight = FontWeight.SemiBold),
-                Font(Res.font.alegreya_variable, weight = FontWeight.Bold),
-            )
-        HeadingFont.LORA ->
-            FontFamily(
-                Font(Res.font.lora_variable, weight = FontWeight.Medium),
-                Font(Res.font.lora_variable, weight = FontWeight.SemiBold),
-                Font(Res.font.lora_variable, weight = FontWeight.Bold),
-            )
-        // PT Serif ships as static Regular/Bold only (no variable weight axis) - SemiBold requests fall back to Bold
-        HeadingFont.PT_SERIF ->
-            FontFamily(
-                Font(Res.font.pt_serif_regular, weight = FontWeight.Medium),
-                Font(Res.font.pt_serif_bold, weight = FontWeight.SemiBold),
-                Font(Res.font.pt_serif_bold, weight = FontWeight.Bold),
-            )
-        HeadingFont.CORMORANT_GARAMOND ->
-            FontFamily(
-                Font(Res.font.cormorant_garamond_variable, weight = FontWeight.Medium),
-                Font(Res.font.cormorant_garamond_variable, weight = FontWeight.SemiBold),
-                Font(Res.font.cormorant_garamond_variable, weight = FontWeight.Bold),
-            )
-    }
+fun headingFontFamily(): FontFamily =
+    FontFamily(
+        Font(Res.font.alegreya_variable, weight = FontWeight.Medium),
+        Font(Res.font.alegreya_variable, weight = FontWeight.SemiBold),
+        Font(Res.font.alegreya_variable, weight = FontWeight.Bold),
+    )
 
 // one flat table of the design's type slots - a longer list of styles, not real complexity
 @Suppress("LongMethod")
 @Composable
-fun appTypography(headingFontFamily: FontFamily = headingFontFamily(HeadingFont.ALEGREYA)): Typography {
+fun appTypography(headingFontFamily: FontFamily = headingFontFamily()): Typography {
     val body = interFontFamily()
     return Typography(
         displayLarge =

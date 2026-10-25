@@ -102,7 +102,7 @@ private fun <T> LazyListScope.codexSection(
 @Composable
 internal fun CodexPartyList(
     state: CodexState,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     CodexGroupedList(
@@ -128,7 +128,7 @@ private fun rememberPartyGroups(party: List<PartyCodexItem>): List<CodexGroup<Pa
 @Composable
 internal fun CodexNpcList(
     state: CodexState,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     CodexGroupedList(
@@ -141,7 +141,7 @@ internal fun CodexNpcList(
 @Composable
 internal fun CodexQuestList(
     state: CodexState,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     CodexGroupedList(
@@ -154,7 +154,7 @@ internal fun CodexQuestList(
 @Composable
 internal fun CodexLocationList(
     state: CodexState,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     CodexGroupedList(
@@ -168,7 +168,7 @@ internal fun CodexLocationList(
 @Composable
 internal fun CodexAllList(
     state: CodexState,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
     modifier: Modifier = Modifier,
     header: (@Composable () -> Unit)? = null,
 ) {

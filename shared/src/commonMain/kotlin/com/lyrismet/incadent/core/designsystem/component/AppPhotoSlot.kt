@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.portrait.rememberImagePickerLauncher
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
+import com.lyrismet.incadent.core.portrait.rememberPhotoBitmapAsync
 import com.lyrismet.incadent.domain.model.Photo
 
 /** one photo and everything a tap leads to, the viewer or the chooser while empty, null [actions] is read-only */
@@ -48,7 +49,8 @@ fun AppPhotoSlot(
         onDismiss = { menuOpen = false },
     )
     if (viewerOpen && photo != null) {
-        val image = rememberPhotoBitmap(photo.display)
+        // the thumbnail fills in at once while the full picture decodes off the main thread
+        val image = rememberPhotoBitmapAsync(photo.display) ?: rememberPhotoBitmap(photo.thumb)
         AppPhotoViewer(
             image = image,
             kind = kind,

@@ -103,10 +103,18 @@ dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
 }
 
+composeCompiler {
+    // lists, dates and the domain models are immutable, so a screen state holding them can be skipped when unchanged
+    stabilityConfigurationFiles.add(layout.projectDirectory.file("compose-stability.conf"))
+}
+
 sqldelight {
     databases {
         create("AppDatabase") {
             packageName.set("com.lyrismet.incadent.db")
+            // each released schema is kept as a snapshot, a migration is checked against it
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
+            verifyMigrations.set(true)
         }
     }
 }

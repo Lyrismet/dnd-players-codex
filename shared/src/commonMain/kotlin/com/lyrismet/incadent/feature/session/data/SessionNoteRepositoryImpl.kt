@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
+import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
@@ -11,7 +12,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
@@ -29,17 +29,17 @@ class SessionNoteRepositoryImpl(
 
     override fun observeAll(): Flow<List<SessionNote>> =
         current.observe { campaignId ->
-            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(DatabaseDispatcher)
         }
 
     override suspend fun getById(id: Long): SessionNote? =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.selectById(id, ::toDomain).executeAsOneOrNull()
         }
 
     @OptIn(ExperimentalTime::class)
     override suspend fun upsert(sessionNote: SessionNote): Long =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             if (sessionNote.id == 0L) {
                 database.transactionWithResult {
                     queries.insert(
@@ -58,7 +58,7 @@ class SessionNoteRepositoryImpl(
         }
 
     override suspend fun delete(id: Long) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.deleteById(id)
         }
     }
@@ -67,7 +67,7 @@ class SessionNoteRepositoryImpl(
         id: Long,
         now: LocalDateTime,
     ) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             database.transaction {
                 queries.reopen(id)
                 queries.endOtherLive(now, id, current.requireId())

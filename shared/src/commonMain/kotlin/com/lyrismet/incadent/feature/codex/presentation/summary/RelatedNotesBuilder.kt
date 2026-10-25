@@ -41,7 +41,6 @@ internal fun buildRelatedNotes(
                     entryId = hits.first().id,
                     numberLabel = numberLabels.getValue(note.id),
                     title = note.title,
-                    sessionDate = note.sessionDate,
                     snippet = plainTextSnippet(hits.first().body, lookup.mentionIndex),
                     matchCount = hits.size,
                 )

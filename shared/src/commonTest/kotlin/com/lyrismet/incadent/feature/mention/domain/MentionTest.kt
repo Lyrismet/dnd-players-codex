@@ -156,6 +156,25 @@ class MentionTest {
     }
 
     @Test
+    fun `trailingMentionQuery reads the query that ends at the caret`() {
+        assertEquals("Ра", trailingMentionQuery("Поговорили с @Ра и ушли", caret = 16))
+    }
+
+    @Test
+    fun `insertMentionAt keeps the text after the caret and moves the caret past the token`() {
+        val result = insertMentionAt("с @Ра и ушли", ragnar.token(), caret = 5)
+        assertEquals("с ${ragnar.token()} и ушли", result.text)
+        assertEquals("с ${ragnar.token()} ".length, result.caret)
+    }
+
+    @Test
+    fun `insertMentionAt puts the token at the caret when there is no query before it`() {
+        val result = insertMentionAt("с  и ушли", ragnar.token(), caret = 2)
+        assertEquals("с ${ragnar.token()} и ушли", result.text)
+        assertEquals("с ${ragnar.token()} ".length, result.caret)
+    }
+
+    @Test
     fun `trailingMentionQuery returns null when there is no at-sign`() {
         assertNull(trailingMentionQuery("просто текст"))
     }

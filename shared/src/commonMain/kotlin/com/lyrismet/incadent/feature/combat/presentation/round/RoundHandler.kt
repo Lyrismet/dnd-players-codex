@@ -115,7 +115,8 @@ internal class RoundHandler(
                 editor.withMember(
                     id,
                 ) { _, m -> editor.actions.setEnteredWhole(m, !m.enteredWhole) }
-            is CombatRoundEvent.NoteChanged -> editor.withMember(id) { _, m -> editor.actions.setNote(m, event.note) }
+            is CombatRoundEvent.NoteChanged ->
+                editor.withMember(event.memberId) { _, m -> editor.actions.setNote(m, event.note) }
             CombatRoundEvent.RemoveClicked -> editor.remove(id) { selected.value = null }
             else -> onHp(event, id)
         }

@@ -60,7 +60,6 @@ import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_notes
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_player
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_race
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_description
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_quest_reward
@@ -70,6 +69,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
 import dndplayerscodex.shared.generated.resources.codex_entry_type_party
 import dndplayerscodex.shared.generated.resources.codex_entry_type_quest
 import dndplayerscodex.shared.generated.resources.codex_entry_type_species
+import dndplayerscodex.shared.generated.resources.codex_species_pick_hint
 import org.jetbrains.compose.resources.stringResource
 
 private val CloseButtonSize = 40.dp
@@ -196,12 +196,12 @@ private fun PartyIdentityFields(
         eventSink = eventSink,
         placeholder = stringResource(Res.string.codex_entry_placeholder_party_class),
     )
-    CodexEntryTextField(
+    FormPickField(
         label = stringResource(Res.string.codex_entry_label_race),
-        value = form.race,
-        field = CodexEntryField.RACE,
-        eventSink = eventSink,
-        placeholder = stringResource(Res.string.codex_entry_placeholder_party_race),
+        placeholder = stringResource(Res.string.codex_species_pick_hint),
+        onClick = { eventSink(CodexEntryFormEvent.EntrySpeciesSelectOpened) },
+        title = form.race.takeIf { it.isNotBlank() },
+        leadingGlyph = MentionGlyph.SPECIES.symbol,
     )
 }
 

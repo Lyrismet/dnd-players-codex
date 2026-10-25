@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.session.presentation.detail
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
 import com.lyrismet.incadent.domain.model.EntityKind
@@ -22,32 +23,24 @@ data class SessionDetailState(
     // a finished campaign is read-only, so the note composer stays hidden
     val readOnly: Boolean = false,
     val isLoading: Boolean = true,
-    val overline: String = "",
-    val title: String = "",
-    val dateLabel: String = "",
-    val isLive: Boolean = true,
-    val headerMentions: List<MentionChipItem> = emptyList(),
-    val feed: List<SessionFeedItem> = emptyList(),
+    val header: SessionHeaderState = SessionHeaderState(),
+    val feed: SessionFeedState = SessionFeedState(),
     // the fight whose delete is waiting for a yes
     val combatDeleteVisible: Boolean = false,
     val draft: String = "",
     val draftSelection: TextRange = TextRange.Zero,
+    // the span the keyboard is still composing, kept so a suggestion underline survives the round trip
+    val draftComposition: TextRange? = null,
     // the species just inserted that waits for its count to be typed, null otherwise
     val quantityHint: String? = null,
     val mentionSuggestions: List<MentionDropdownItem> = emptyList(),
     val selectedEntity: EntitySummaryItem? = null,
+    // a card was tapped and its summary is still being built
+    val entityLoading: Boolean = false,
     // the in-place editing of the open entity card
     val quickEdit: QuickEditState = QuickEditState(),
     val editingEntryTimeLabel: String? = null,
-    val selectedEntryId: Long? = null,
-    val isTitleEditing: Boolean = false,
     val editingEntryId: Long? = null,
-    val highlightedEntryId: Long? = null,
-    // feed position the list scrolls to while the highlight is active - null once the entry is not in the feed yet
-    val focusIndex: Int? = null,
-    val tags: List<String> = emptyList(),
-    val tagButtonLabel: String = "",
-    val tagSuggestionCount: Int = 0,
     val tagSheet: SessionTagSheetState? = null,
     // pinned and frequent phrases offered in the row above the composer
     val phraseStrip: List<SessionPhraseItem> = emptyList(),
@@ -65,6 +58,32 @@ data class SessionDetailState(
 ) : CircuitUiState {
     val isEditingEntry: Boolean get() = editingEntryTimeLabel != null
 }
+
+/** what the header draws, apart from the state so a keystroke in the composer leaves it alone */
+@Immutable
+data class SessionHeaderState(
+    val overline: String = "",
+    val title: String = "",
+    val dateLabel: String = "",
+    val isLive: Boolean = true,
+    val isTitleEditing: Boolean = false,
+    val headerMentions: List<MentionChipItem> = emptyList(),
+    val tags: List<String> = emptyList(),
+    val tagButtonLabel: String = "",
+    val tagSuggestionCount: Int = 0,
+)
+
+/** what the note list draws, apart from the state so a keystroke in the composer leaves it alone */
+@Immutable
+data class SessionFeedState(
+    val items: List<SessionFeedItem> = emptyList(),
+    val readOnly: Boolean = false,
+    val selectedEntryId: Long? = null,
+    val editingEntryId: Long? = null,
+    val highlightedEntryId: Long? = null,
+    // feed position the list scrolls to while the highlight is active - null once the entry is not in the feed yet
+    val focusIndex: Int? = null,
+)
 
 /** the "Теги сессии" bottom sheet's content - absent (null on [SessionDetailState]) while the sheet is closed */
 data class SessionTagSheetState(
@@ -200,6 +219,7 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     data class DraftChanged(
         val text: String,
         val selection: TextRange,
+        val composition: TextRange? = null,
     ) : SessionDetailEvent
 
     data object InsertMentionTriggerClicked : SessionDetailEvent

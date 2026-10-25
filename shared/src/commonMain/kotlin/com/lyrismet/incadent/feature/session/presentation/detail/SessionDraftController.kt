@@ -7,7 +7,7 @@ import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.displayMentionText
-import com.lyrismet.incadent.feature.mention.domain.insertMention
+import com.lyrismet.incadent.feature.mention.domain.insertMentionAt
 import com.lyrismet.incadent.feature.mention.domain.linkTypedMentions
 import com.lyrismet.incadent.feature.mention.domain.markUnlinkedMentions
 import com.lyrismet.incadent.feature.mention.domain.typedQuantityEdit
@@ -36,6 +36,7 @@ internal class SessionDraftController(
     fun onDraftChanged(
         text: String,
         selection: TextRange,
+        composition: TextRange? = null,
     ) {
         val counted = typedQuantityEdit(draft.value.text, draft.value.selection.end, text)
         if (counted != null) {
@@ -45,21 +46,28 @@ internal class SessionDraftController(
         val clean = stripBrokenTokens(text)
         draft.value =
             if (clean == text) {
-                TextFieldValue(text, selection)
+                TextFieldValue(text, selection, composition)
             } else {
                 val caret = stripBrokenTokens(text.take(selection.end)).length
                 TextFieldValue(clean, TextRange(caret.coerceAtMost(clean.length)))
             }
     }
 
-    /** the cursor always lands at the end of the new text, not stuck at the caret's old position */
+    /** the "@" goes in at the caret, replacing a selection, and the caret lands right after it */
     fun insertMentionTrigger() {
-        val current = draft.value.text
-        setDraft(if (current.isEmpty() || current.endsWith(" ")) "$current@" else "$current @")
+        val current = draft.value
+        val start = current.selection.min
+        val before = current.text.substring(0, start)
+        val trigger = if (before.isEmpty() || before.last().isWhitespace()) "@" else " @"
+        val text = before + trigger + current.text.substring(current.selection.max)
+        draft.value = TextFieldValue(text, TextRange(start + trigger.length))
     }
 
+    /** the picked mention replaces the "@query" at the caret, the caret lands after it */
     fun pickMention(token: String) {
-        setDraft(insertMention(draft.value.text, token))
+        val current = draft.value
+        val inserted = insertMentionAt(current.text, token, current.selection.end)
+        draft.value = TextFieldValue(inserted.text, TextRange(inserted.caret))
     }
 
     /** the cursor lands after the inserted phrase, same as a picked mention */

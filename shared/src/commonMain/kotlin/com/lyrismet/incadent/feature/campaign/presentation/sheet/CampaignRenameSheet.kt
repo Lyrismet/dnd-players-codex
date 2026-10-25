@@ -45,7 +45,7 @@ fun CampaignRenameSheet(
 ) {
     val canSave = savableCampaignName(draft) != null
     AppBottomSheet(onDismissRequest = onDismiss) {
-        AppSheetColumn(spacing = 14.dp) {
+        AppSheetColumn(spacing = 14.dp, scroll = true) {
             AppSheetHeader(
                 overline = stringResource(Res.string.settings_section_campaign),
                 title = stringResource(Res.string.settings_rename_title),

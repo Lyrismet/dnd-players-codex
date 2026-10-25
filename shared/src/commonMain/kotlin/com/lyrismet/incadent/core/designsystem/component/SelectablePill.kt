@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,7 +63,15 @@ fun SelectablePill(
     unselectedContent: Color = AppPalette.TextDescription,
 ) {
     val look = pillLook(selected, selectedFill, selectedColor, background, unselectedContent)
-    val shape = RoundedCornerShape(size.minHeight / 2)
+    val shape = remember(size) { RoundedCornerShape(size.minHeight / 2) }
+    val base = MaterialTheme.typography.bodySmall
+    val textStyle =
+        remember(base, size) {
+            base.copy(
+                fontSize = if (size == PillSize.Small) 12.sp else 13.sp,
+                fontWeight = if (size == PillSize.Small) FontWeight.Medium else FontWeight.SemiBold,
+            )
+        }
     Box(
         modifier =
             modifier
@@ -76,11 +85,7 @@ fun SelectablePill(
     ) {
         Text(
             text,
-            style =
-                MaterialTheme.typography.bodySmall.copy(
-                    fontSize = if (size == PillSize.Small) 12.sp else 13.sp,
-                    fontWeight = if (size == PillSize.Small) FontWeight.Medium else FontWeight.SemiBold,
-                ),
+            style = textStyle,
             color = look.foreground,
         )
     }

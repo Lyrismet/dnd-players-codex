@@ -1,0 +1,11 @@
+-- indexes on the columns the fight, the notes and the foreign keys are looked up by, no rows change
+CREATE INDEX combat_campaign_id ON combat(campaign_id);
+CREATE INDEX combat_session_note_id ON combat(session_note_id);
+CREATE INDEX combatant_npc_id ON combatant(npc_id);
+CREATE INDEX combatant_species_id ON combatant(species_id);
+CREATE INDEX combatant_party_member_id ON combatant(party_member_id);
+CREATE INDEX combat_event_target_id ON combat_event(target_id);
+CREATE INDEX species_hit_observation_combat_id ON species_hit_observation(combat_id);
+CREATE INDEX party_member_fell_combat_id ON party_member(fell_combat_id);
+DROP INDEX session_entry_session_note_id;
+CREATE INDEX session_entry_session_note_id ON session_entry(session_note_id, created_at);

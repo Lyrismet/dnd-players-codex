@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
+import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
@@ -12,7 +13,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
@@ -27,17 +27,17 @@ class QuestRepositoryImpl(
 
     override fun observeAll(): Flow<List<Quest>> =
         current.observe { campaignId ->
-            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(DatabaseDispatcher)
         }
 
     override suspend fun getById(id: Long): Quest? =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.selectById(id, ::toDomain).executeAsOneOrNull()
         }
 
     // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
     override suspend fun upsert(entity: Quest): Long =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             database.transactionWithResult {
                 val exists = entity.id != 0L && queries.selectById(entity.id, ::toDomain).executeAsOneOrNull() != null
                 if (exists) {
@@ -84,7 +84,7 @@ class QuestRepositoryImpl(
     }
 
     override suspend fun delete(id: Long) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.deleteById(id)
         }
     }

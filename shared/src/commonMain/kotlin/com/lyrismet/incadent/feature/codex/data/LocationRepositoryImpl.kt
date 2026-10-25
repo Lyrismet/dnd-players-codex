@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
+import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.Location
@@ -13,7 +14,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
@@ -28,17 +28,17 @@ class LocationRepositoryImpl(
 
     override fun observeAll(): Flow<List<Location>> =
         current.observe { campaignId ->
-            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(Dispatchers.Default)
+            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(DatabaseDispatcher)
         }
 
     override suspend fun getById(id: Long): Location? =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.selectById(id, ::toDomainFull).executeAsOneOrNull()
         }
 
     // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
     override suspend fun upsert(entity: Location): Long =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             database.transactionWithResult {
                 val stored =
                     if (entity.id ==
@@ -85,7 +85,7 @@ class LocationRepositoryImpl(
 
     // one transaction, so a move the rule refuses rolls the earlier ones back
     override suspend fun setParents(parents: Map<Long, Long?>) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             database.transaction {
                 parents.forEach { (id, parentId) ->
                     checkNoCycle(id, parentId)
@@ -132,7 +132,7 @@ class LocationRepositoryImpl(
     }
 
     override suspend fun delete(id: Long) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.deleteById(id)
         }
     }

@@ -42,6 +42,7 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
 import com.lyrismet.incadent.core.designsystem.component.AppDashedTile
+import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppStepper
 import com.lyrismet.incadent.core.designsystem.component.AppTitleSubtitle
 import com.lyrismet.incadent.core.designsystem.component.AppToast
@@ -80,15 +81,10 @@ fun CombatPrepUi(
     val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     Scaffold(modifier = modifier, contentWindowInsets = contentWindowInsets) { contentPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                PrepHeader(state)
-                val intro = state.intro
-                if (intro != null) {
-                    PrepIntroBody(intro, state.eventSink, Modifier.weight(1f))
-                } else {
-                    PrepBody(state, Modifier.weight(1f))
-                    state.start?.let { PrepStartBar(it) { state.eventSink(CombatPrepEvent.StartClicked) } }
-                }
+            if (state.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { AppLoader() }
+            } else {
+                PrepContent(state)
             }
             AppToast(text = state.toast?.text, modifier = floatingBarAnchor())
         }
@@ -106,6 +102,20 @@ fun CombatPrepUi(
             onStay = { state.eventSink(CombatPrepEvent.ExitDismissed) },
             onLeave = { state.eventSink(CombatPrepEvent.ExitConfirmed) },
         )
+    }
+}
+
+@Composable
+private fun PrepContent(state: CombatPrepState) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        PrepHeader(state)
+        val intro = state.intro
+        if (intro != null) {
+            PrepIntroBody(intro, state.eventSink, Modifier.weight(1f))
+        } else {
+            PrepBody(state, Modifier.weight(1f))
+            state.start?.let { PrepStartBar(it) { state.eventSink(CombatPrepEvent.StartClicked) } }
+        }
     }
 }
 

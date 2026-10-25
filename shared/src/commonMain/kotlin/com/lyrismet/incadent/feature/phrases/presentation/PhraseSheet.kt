@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.feature.phrases.domain.FrequentPhrase
 import com.lyrismet.incadent.feature.phrases.domain.findFrequentPhrases
 import com.lyrismet.incadent.feature.phrases.domain.phraseLabel
@@ -16,6 +17,7 @@ import dndplayerscodex.shared.generated.resources.phrase_meta_sessions
 import dndplayerscodex.shared.generated.resources.phrase_meta_times
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.pluralStringResource
@@ -87,11 +89,18 @@ class PhraseSheetController(
     }
 }
 
+private const val PHRASE_SCAN_DELAY_MS = 2_000L
+
 /** frequent phrases of every note on the device - searched off the main thread and redone when the notes change */
 @Composable
 fun rememberFrequentPhrases(entries: List<SessionEntry>): List<FrequentPhrase> {
-    val phrases by produceState(emptyList<FrequentPhrase>(), entries) {
-        value = withContext(Dispatchers.Default) { findFrequentPhrases(entries) }
+    // a hidden tab does not scan at all, and once there is a result a burst of notes is scanned once after a pause
+    val visible = LocalTabSelected.current
+    val phrases by produceState(emptyList<FrequentPhrase>(), entries, visible) {
+        if (visible) {
+            if (value.isNotEmpty()) delay(PHRASE_SCAN_DELAY_MS)
+            value = withContext(Dispatchers.Default) { findFrequentPhrases(entries) }
+        }
     }
     return phrases
 }
@@ -103,10 +112,11 @@ fun PhraseSheetController.sheetState(
     frequent: List<FrequentPhrase>,
 ): PhraseSheetState? {
     if (!isOpen.value) return null
+    val pinnedTexts = pinned.toHashSet()
     return PhraseSheetState(
         pinned = pinned.map { PhrasePinnedRow(it, phraseLabel(it)) },
         frequent =
-            frequent.filter { phrase -> pinned.none { it == phrase.text } }.map { phrase ->
+            frequent.filter { phrase -> phrase.text !in pinnedTexts }.map { phrase ->
                 val times = pluralStringResource(Res.plurals.phrase_meta_times, phrase.entryCount, phrase.entryCount)
                 val sessions =
                     pluralStringResource(Res.plurals.phrase_meta_sessions, phrase.sessionCount, phrase.sessionCount)

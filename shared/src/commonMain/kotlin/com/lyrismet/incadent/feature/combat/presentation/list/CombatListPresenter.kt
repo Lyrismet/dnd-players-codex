@@ -69,7 +69,8 @@ class CombatListPresenter(
 
     @Composable
     override fun present(): CombatListState {
-        val combats by combatRepository.observeAll().collectAsState(initial = emptyList())
+        val loadedCombats by combatRepository.observeAll().collectAsState(initial = null)
+        val combats = loadedCombats.orEmpty()
         val sessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
         val party by codexRepositories.partyRepository.observeAll().collectAsState(initial = emptyList())
         val numbering by appPreferencesRepository
@@ -99,6 +100,7 @@ class CombatListPresenter(
             }
 
         return CombatListState(
+            isLoading = isListLoading(loadedCombats, ongoing),
             campaignName = campaignHost.current?.name.orEmpty(),
             campaignId = campaignHost.current?.id,
             campaignArchived = campaignArchived,
@@ -190,3 +192,9 @@ private fun List<PartyMember>.toSeats(): List<PartySeat> =
     filter { it.presence == PartyPresence.IN && !it.fallen }.map { PartySeat(it.id, it.name) }
 
 private fun EnemyChip.summary(): String = name + if (count > 1) " ×$count" else ""
+
+/** nothing to show yet, or a fight is on and the tab is about to open it */
+private fun isListLoading(
+    loaded: List<Combat>?,
+    ongoing: Combat?,
+): Boolean = loaded == null || ongoing != null

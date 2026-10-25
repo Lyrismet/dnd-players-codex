@@ -2,15 +2,21 @@ package com.lyrismet.incadent.feature.codex.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppSearchField
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
@@ -24,6 +30,7 @@ import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityCardSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.asSheet
+import com.lyrismet.incadent.feature.codex.presentation.summary.EntityLoadingSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummarySheetActions
@@ -60,7 +67,9 @@ fun CodexUi(
     val tabItems = codexTabItems(state)
     val swipeHint = rememberSwipeHintPlayback(state.swipeHintTarget, state.swipeHintDirection)
 
-    Scaffold(modifier = modifier) { contentPadding ->
+    // the tab bar already sits above the navigation bar, so this scaffold must not reserve it again
+    val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    Scaffold(modifier = modifier, contentWindowInsets = contentWindowInsets) { contentPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             Column(modifier = Modifier.fillMaxSize()) {
                 ScreenHeader(
@@ -94,7 +103,7 @@ fun CodexUi(
                     CodexListChoices(state)
                 }
                 Box(modifier = Modifier.weight(1f)) {
-                    CodexListArea(state, swipeHint.peekOffsetPx)
+                    CodexListArea(state) { swipeHint.peekOffsetPx }
                 }
             }
             SwipeHintBanner(
@@ -111,10 +120,21 @@ fun CodexUi(
 
     state.deleteWarning?.let { CodexDeleteWarningDialog(it, state.eventSink) }
 
+    CodexActiveSheet(state)
+}
+
+@Composable
+private fun CodexActiveSheet(state: CodexState) {
     when (val sheet = state.activeSheet) {
         is CodexSheet.EntryForm ->
             CodexEntryFormSheet(sheet.form, state.toast?.text) { state.eventSink(CodexEvent.EntryForm(it)) }
         is CodexSheet.EntityView -> CodexEntitySheet(state, sheet.entity)
+        CodexSheet.EntityLoading ->
+            EntityLoadingSheet {
+                state.eventSink(
+                    CodexEvent.EntitySheet(EntitySheetEvent.Dismissed),
+                )
+            }
         null -> Unit
     }
 }
@@ -136,7 +156,7 @@ private fun codexSwipeHintSubtitle(direction: SwipeHintDirection): String =
 @Composable
 private fun CodexActiveList(
     state: CodexState,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
 ) {
     when (state.activeTab) {
         CodexTab.ALL -> CodexAllList(state = state, hintPeekOffsetPx = hintPeekOffsetPx)
@@ -151,8 +171,12 @@ private fun CodexActiveList(
 @Composable
 private fun CodexListArea(
     state: CodexState,
-    hintPeekOffsetPx: Float,
+    hintPeekOffsetPx: () -> Float,
 ) {
+    if (state.isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { AppLoader() }
+        return
+    }
     if (state.showsSpecies) {
         CodexSpeciesList(state)
         return

@@ -20,8 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
@@ -39,8 +37,6 @@ import dndplayerscodex.shared.generated.resources.photo_viewer_delete
 import dndplayerscodex.shared.generated.resources.photo_viewer_read_only
 import dndplayerscodex.shared.generated.resources.photo_viewer_replace
 import org.jetbrains.compose.resources.stringResource
-
-private val GrayscaleFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
 
 /** what a slot's owner does with the photo - the slot itself only runs the picker and the viewer */
 class PhotoSlotActions(
@@ -85,7 +81,7 @@ fun AppPhotoViewer(
                 bitmap = image,
                 contentDescription = stringResource(Res.string.photo_viewer_close),
                 contentScale = ContentScale.Fit,
-                colorFilter = if (monochrome) GrayscaleFilter else null,
+                colorFilter = if (monochrome) PortraitGrayscaleFilter else null,
                 modifier =
                     Modifier
                         .weight(1f)

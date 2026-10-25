@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.core.preferences
 
 import com.lyrismet.incadent.core.preferences.EntityEditMode
-import com.lyrismet.incadent.core.preferences.FirstRecordHintState
 import com.lyrismet.incadent.core.preferences.HoldHintState
 import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.core.preferences.SessionNumbering
@@ -32,8 +31,4 @@ interface AppPreferencesRepository {
     fun observeCodexSwipeHintState(): Flow<SwipeHintState>
 
     fun setCodexSwipeHintState(state: SwipeHintState)
-
-    fun observeFirstRecordHintState(): Flow<FirstRecordHintState>
-
-    fun setFirstRecordHintState(state: FirstRecordHintState)
 }

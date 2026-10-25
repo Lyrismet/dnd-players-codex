@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
+import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
@@ -18,7 +19,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
@@ -34,11 +34,11 @@ class NpcRepositoryImpl(
 
     override fun observeAll(): Flow<List<Npc>> =
         current.observe { campaignId ->
-            queries.selectAllWithLocations(campaignId, ::toDomainWithLocations).asFlow().mapToList(Dispatchers.Default)
+            queries.selectAllWithLocations(campaignId, ::toDomainWithLocations).asFlow().mapToList(DatabaseDispatcher)
         }
 
     override suspend fun getById(id: Long): Npc? =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.selectById(id, ::toDomainFull).executeAsOneOrNull()?.let { npc ->
                 npc.copy(locationIds = locationQueries.selectByNpc(id).executeAsList())
             }
@@ -46,7 +46,7 @@ class NpcRepositoryImpl(
 
     // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
     override suspend fun upsert(entity: Npc): Long =
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             database.transactionWithResult {
                 // a species deleted since the npc was read would break the foreign key, so the link is dropped
                 val speciesId =
@@ -120,7 +120,7 @@ class NpcRepositoryImpl(
     }
 
     override suspend fun delete(id: Long) {
-        withContext(Dispatchers.Default) {
+        withContext(DatabaseDispatcher) {
             queries.deleteById(id)
         }
     }

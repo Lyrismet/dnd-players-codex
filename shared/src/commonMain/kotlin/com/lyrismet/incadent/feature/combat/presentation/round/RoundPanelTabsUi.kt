@@ -15,9 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +57,7 @@ import dndplayerscodex.shared.generated.resources.combat_panel_remove
 import dndplayerscodex.shared.generated.resources.combat_panel_set_hp
 import dndplayerscodex.shared.generated.resources.combat_panel_side_title
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_title
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -168,7 +172,7 @@ internal fun MoreTab(
             }
         }
     }
-    NoteField(panel.id, more.note, more.notePlaceholder) { send(CombatRoundEvent.NoteChanged(it)) }
+    NoteField(panel.id, more.note, more.notePlaceholder) { send(CombatRoundEvent.NoteChanged(panel.id, it)) }
     AppButton(
         text = stringResource(Res.string.combat_panel_remove),
         onClick = { send(CombatRoundEvent.RemoveClicked) },
@@ -206,6 +210,8 @@ private fun FullRow(
     }
 }
 
+private const val NOTE_SAVE_DELAY_MS = 500L
+
 @Composable
 private fun NoteField(
     memberId: Long,
@@ -215,12 +221,26 @@ private fun NoteField(
 ) {
     // the text is kept here while it is typed, the stored one only comes back when another participant is chosen
     var text by remember(memberId) { mutableStateOf(note) }
+    val latestText by rememberUpdatedState(text)
+    val save by rememberUpdatedState(onChange)
+    val saved = remember(memberId) { arrayOf(note) }
+    // every key used to write the database and rebuild the fight, now the text is stored once the typing pauses
+    LaunchedEffect(memberId, text) {
+        if (text != saved[0]) {
+            delay(NOTE_SAVE_DELAY_MS)
+            saved[0] = text
+            save(text)
+        }
+    }
+    // leaving the field or the participant keeps what was typed in the last moment
+    DisposableEffect(memberId) {
+        onDispose {
+            if (latestText != saved[0]) save(latestText)
+        }
+    }
     AppTextInput(
         value = text,
-        onValueChange = {
-            text = it
-            onChange(it)
-        },
+        onValueChange = { text = it },
         modifier = Modifier.fillMaxWidth(),
         placeholder = placeholder,
         style = AppTextInputStyle(contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)),

@@ -38,6 +38,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.Dot
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
+import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.CalculatorIcon
@@ -176,42 +177,24 @@ private fun MarksBlock(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         FormFieldLabel(stringResource(Res.string.combat_panel_mark_title))
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .appCard(
-                        shape = AppShapes.Field,
-                        background = AppPalette.Background,
-                        border = AppPalette.BorderSubtle,
-                    ).padding(3.dp),
-            horizontalArrangement = Arrangement.spacedBy(3.dp),
-        ) {
-            marks.forEach { mark ->
-                val tint = RoundColors.wound(mark.tone)
-                Box(
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .defaultMinSize(minHeight = 32.dp)
-                            .appCard(
-                                shape = AppShapes.Small,
-                                background = if (mark.selected) AppPalette.SurfacePopover else Color.Transparent,
-                                border = if (mark.selected) tint else null,
-                                onClick = { send(CombatRoundEvent.MarkSelected(mark.state)) },
-                            ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = mark.label,
-                        color = if (mark.selected) tint else AppPalette.TextSecondary,
-                        fontSize = AppFontSize.Caption,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            }
+        SegmentedControl(
+            items = marks,
+            onSelected = { mark -> send(CombatRoundEvent.MarkSelected(mark.state)) },
+            itemBackground = { mark -> if (mark.selected) AppPalette.SurfacePopover else Color.Transparent },
+            containerBackground = AppPalette.Background,
+            itemShape = AppShapes.Small,
+            itemHeight = 32.dp,
+            contentPadding = 3.dp,
+            itemBorder = { mark -> if (mark.selected) RoundColors.wound(mark.tone) else Color.Transparent },
+        ) { mark ->
+            Text(
+                text = mark.label,
+                color = if (mark.selected) RoundColors.wound(mark.tone) else AppPalette.TextSecondary,
+                fontSize = AppFontSize.Caption,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+            )
         }
         Text(sayLine, color = AppPalette.TextDescription, fontSize = AppFontSize.Small, lineHeight = AppLineHeight.Row)
         Text(

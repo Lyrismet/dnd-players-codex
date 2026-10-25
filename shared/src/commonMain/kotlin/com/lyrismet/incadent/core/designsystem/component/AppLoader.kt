@@ -9,6 +9,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 
+/** the size of the loader that stands in a photo slot while its picture is decoded */
+internal val PhotoLoaderSize = 24.dp
+
 /** the standard spinning loader in the accent gold, drawn while something is still being measured or read */
 @Composable
 fun AppLoader(
