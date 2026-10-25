@@ -589,7 +589,6 @@
     <string name="codex_entry_placeholder_party_player">Who plays</string>
     <string name="codex_entry_label_class">Class</string>
     <string name="codex_entry_placeholder_party_class">Fighter, bard…</string>
-    <string name="codex_entry_placeholder_party_race">Elf, dwarf…</string>
     <string name="codex_entry_label_level">Level</string>
     <string name="codex_entry_label_hp_max">Max HP</string>
     <string name="codex_entry_label_presence">Roster</string>

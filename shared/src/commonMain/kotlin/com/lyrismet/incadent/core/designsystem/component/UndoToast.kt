@@ -121,9 +121,17 @@ private fun CountdownLine(
     action: UndoAction,
     modifier: Modifier = Modifier,
 ) {
-    val progress = remember(action.onUndo) { Animatable(1f) }
+    val progress =
+        remember(action.onUndo) {
+            val left =
+                (UNDO_WINDOW_MILLIS - action.shownAt.elapsedNow().inWholeMilliseconds).coerceIn(
+                    0L,
+                    UNDO_WINDOW_MILLIS,
+                )
+            Animatable(left.toFloat() / UNDO_WINDOW_MILLIS)
+        }
     LaunchedEffect(progress) {
-        progress.animateTo(0f, tween(UNDO_WINDOW_MILLIS.toInt(), easing = LinearEasing))
+        progress.animateTo(0f, tween((progress.value * UNDO_WINDOW_MILLIS).toInt(), easing = LinearEasing))
     }
     Box(
         modifier =

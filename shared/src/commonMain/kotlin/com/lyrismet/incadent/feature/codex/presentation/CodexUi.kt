@@ -2,8 +2,12 @@ package com.lyrismet.incadent.feature.codex.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -63,7 +67,9 @@ fun CodexUi(
     val tabItems = codexTabItems(state)
     val swipeHint = rememberSwipeHintPlayback(state.swipeHintTarget, state.swipeHintDirection)
 
-    Scaffold(modifier = modifier) { contentPadding ->
+    // the tab bar already sits above the navigation bar, so this scaffold must not reserve it again
+    val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    Scaffold(modifier = modifier, contentWindowInsets = contentWindowInsets) { contentPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             Column(modifier = Modifier.fillMaxSize()) {
                 ScreenHeader(

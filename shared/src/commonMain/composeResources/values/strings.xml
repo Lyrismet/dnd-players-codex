@@ -605,7 +605,6 @@
     <string name="codex_entry_placeholder_party_player">Кто играет</string>
     <string name="codex_entry_label_class">Класс</string>
     <string name="codex_entry_placeholder_party_class">Воин, бард…</string>
-    <string name="codex_entry_placeholder_party_race">Эльф, дварф…</string>
     <string name="codex_entry_label_level">Уровень</string>
     <string name="codex_entry_label_hp_max">Максимум хитов</string>
     <string name="codex_entry_label_presence">Состав</string>

@@ -168,6 +168,13 @@ class MentionTest {
     }
 
     @Test
+    fun `insertMentionAt puts the token at the caret when there is no query before it`() {
+        val result = insertMentionAt("с  и ушли", ragnar.token(), caret = 2)
+        assertEquals("с ${ragnar.token()} и ушли", result.text)
+        assertEquals("с ${ragnar.token()} ".length, result.caret)
+    }
+
+    @Test
     fun `trailingMentionQuery returns null when there is no at-sign`() {
         assertNull(trailingMentionQuery("просто текст"))
     }

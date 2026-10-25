@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 /** how long the bar waits for an undo, the countdown line of the toast runs for the same time */
 const val UNDO_WINDOW_MILLIS = 5_000L
@@ -35,6 +37,8 @@ data class UndoAction(
     val followUp: UndoFollowUp? = null,
     // a bar of something made keeps its icon after the follow-up is taken away
     val isMade: Boolean = followUp != null,
+    // the toast draws its countdown from this mark, so it always runs out together with the controller's timer
+    val shownAt: TimeMark = TimeSource.Monotonic.markNow(),
 )
 
 /** shared across session/codex deletes - only one undo toast is on screen at a time */

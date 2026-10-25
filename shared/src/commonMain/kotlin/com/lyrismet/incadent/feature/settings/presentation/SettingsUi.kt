@@ -6,10 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -93,7 +97,9 @@ fun SettingsUi(
     val sink = state.eventSink
     val pickFile = rememberImportPicker { sink(SettingsEvent.CampaignSheet(it)) }
     Box(modifier = modifier.fillMaxSize()) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { contentPadding ->
+        // the tab bar already sits above the navigation bar, so this scaffold must not reserve it again
+        val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        Scaffold(modifier = Modifier.fillMaxSize(), contentWindowInsets = contentWindowInsets) { contentPadding ->
             Column(
                 modifier =
                     Modifier

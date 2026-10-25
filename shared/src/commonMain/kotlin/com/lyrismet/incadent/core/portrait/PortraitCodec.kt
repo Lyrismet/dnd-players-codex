@@ -147,7 +147,7 @@ fun rememberPhotoBitmapAsync(bytes: ByteArray): ImageBitmap? {
             DecodedBitmaps.peek(key)
                 ?: if (bytes.size <= SYNC_DECODE_MAX_BYTES) DecodedBitmaps.getOrDecode(key, bytes) else null
         }
-    // the previous picture stays on screen while the next one decodes
+    // null until a big picture decodes, the slot draws its loader meanwhile
     val bitmap by produceState(first, key) {
         value =
             DecodedBitmaps.peek(key)

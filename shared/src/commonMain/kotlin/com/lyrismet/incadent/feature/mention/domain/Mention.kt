@@ -224,10 +224,16 @@ fun insertMentionAt(
 ): MentionInsertion {
     val end = caret.coerceIn(0, draft.length)
     val upToCaret = draft.substring(0, end)
-    val before = TRAILING_MENTION_REGEX.replace(upToCaret) { "$token " }
+    // without an "@query" before the caret the token goes in at the caret
+    val before =
+        if (TRAILING_MENTION_REGEX.containsMatchIn(upToCaret)) {
+            TRAILING_MENTION_REGEX.replace(upToCaret) { "$token " }
+        } else {
+            "$upToCaret$token "
+        }
     val after = draft.substring(end)
     // an existing space after the caret is reused so the text does not get a double space
-    val skip = if (before != upToCaret && after.startsWith(" ")) 1 else 0
+    val skip = if (after.startsWith(" ")) 1 else 0
     return MentionInsertion(before + after.substring(skip), before.length)
 }
 

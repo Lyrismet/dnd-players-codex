@@ -12,7 +12,7 @@ const val SEARCH_DEBOUNCE_MS = 400L
 fun <T> rememberDebounced(
     value: T,
     delayMs: Long = SEARCH_DEBOUNCE_MS,
-    isImmediate: (T) -> Boolean = { false },
+    isImmediate: (T) -> Boolean,
 ): T {
     val settled by produceState(value, value) {
         if (!isImmediate(value)) delay(delayMs)
