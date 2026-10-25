@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.lyrismet.incadent.core.file.sharedFileOrigin
+import com.lyrismet.incadent.di.AppGraph
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,13 +26,19 @@ class MainActivity : ComponentActivity() {
 
         // a recreated activity or a relaunch from recents must not open the same file again
         val fromHistory = intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0
-        lifecycleScope.launch {
-            val graph = withContext(Dispatchers.Default) { (application as IncadentApplication).graph }
+
+        fun show(graph: AppGraph) {
             graphReady = true
             if (savedInstanceState == null && !fromHistory) openSharedFile(intent)
             setContent {
                 App(graph, onExit = { finish() })
             }
+        }
+        val app = application as IncadentApplication
+        if (app.isGraphBuilt) {
+            show(app.graph)
+        } else {
+            lifecycleScope.launch { show(withContext(Dispatchers.Default) { app.graph }) }
         }
     }
 

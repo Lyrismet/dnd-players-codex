@@ -27,12 +27,12 @@ class CombatFactsSourceImpl(
     observations: HitObservationRepository,
     @AppCoroutineScope scope: CoroutineScope,
 ) : CombatFactsSource {
-    // one computation off the main thread for every screen that reads it, kept a few seconds after the last one leaves
+    // one computation off the main thread for every screen, dropped a few seconds after the last one leaves
     private val shared =
         combine(combats.observeAll(), observations.observeAll(), ::combatFacts)
             .flowOn(Dispatchers.Default)
             .distinctUntilChanged()
-            .shareIn(scope, SharingStarted.WhileSubscribed(SHARE_TIMEOUT_MS), replay = 1)
+            .shareIn(scope, SharingStarted.WhileSubscribed(SHARE_TIMEOUT_MS, replayExpirationMillis = 0), replay = 1)
 
     override fun observe(): Flow<CombatFacts> = shared
 

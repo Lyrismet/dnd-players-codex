@@ -18,11 +18,17 @@ class IncadentApplication : Application() {
         CoroutineScope(Dispatchers.Default).launch { graph }
     }
 
-    val graph: AppGraph by lazy {
-        createAppGraph(
-            DatabaseDriverFactory(applicationContext),
-            SettingsFactory(applicationContext),
-            FileStorage(applicationContext),
-        )
-    }
+    private val lazyGraph =
+        lazy {
+            createAppGraph(
+                DatabaseDriverFactory(applicationContext),
+                SettingsFactory(applicationContext),
+                FileStorage(applicationContext),
+            )
+        }
+
+    val graph: AppGraph get() = lazyGraph.value
+
+    /** true once [graph] is built, so a recreated activity can show its content without leaving the main thread */
+    val isGraphBuilt: Boolean get() = lazyGraph.isInitialized()
 }

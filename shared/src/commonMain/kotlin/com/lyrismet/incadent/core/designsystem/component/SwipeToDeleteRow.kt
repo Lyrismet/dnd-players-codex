@@ -152,8 +152,7 @@ fun SwipeToDeleteRow(
     modifier: Modifier = Modifier,
     deleteContentDescription: String? = null,
     editAction: SwipeEditAction? = null,
-    // the one-shot teaching nudge from rememberSwipeHintPlayback (SwipeHintBanner.kt), 0 once not demoing - a lambda
-    // so each animation frame is read while drawing and never recomposes the row
+    // the one-shot teaching nudge from rememberSwipeHintPlayback, a lambda so frames are read while drawing
     peekOffsetPx: () -> Float = NoPeek,
     content: @Composable () -> Unit,
 ) {

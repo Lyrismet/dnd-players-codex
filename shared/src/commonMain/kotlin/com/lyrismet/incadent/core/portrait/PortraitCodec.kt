@@ -97,7 +97,7 @@ fun makeThumb(
 @Composable
 fun rememberPhotoBitmap(bytes: ByteArray): ImageBitmap {
     // the hash is walked once per array instance, not on every recomposition
-    val key = remember(bytes) { PhotoKey(bytes.size, bytes.contentHashCode()) }
+    val key = remember(bytes) { photoKeyOf(bytes) }
     return remember(key) { DecodedBitmaps.getOrDecode(key, bytes) }
 }
 
@@ -140,7 +140,7 @@ private object DecodedBitmaps {
 /** like [rememberPhotoBitmap] but a big picture decodes off the main thread, null until it is ready */
 @Composable
 fun rememberPhotoBitmapAsync(bytes: ByteArray): ImageBitmap? {
-    val key = remember(bytes) { PhotoKey(bytes.size, bytes.contentHashCode()) }
+    val key = remember(bytes) { photoKeyOf(bytes) }
     // a thumbnail is cheap enough to decode at once, so a list never shows an empty frame for it
     val first =
         remember(key) {
@@ -159,10 +159,20 @@ fun rememberPhotoBitmapAsync(bytes: ByteArray): ImageBitmap? {
 private const val SYNC_DECODE_MAX_BYTES = 20_000
 private const val MAX_CACHED_PIXELS = 6_000_000L
 
-private data class PhotoKey(
+internal data class PhotoKey(
     val size: Int,
-    val hash: Int,
+    val hash: Long,
 )
+
+// 64-bit fnv-1a, so two different pictures of one size practically never share a cache entry
+internal fun photoKeyOf(bytes: ByteArray): PhotoKey {
+    var hash = FNV_OFFSET_BASIS
+    for (byte in bytes) hash = (hash xor byte.toLong()) * FNV_PRIME
+    return PhotoKey(bytes.size, hash)
+}
+
+private const val FNV_OFFSET_BASIS = -3750763034362895579L
+private const val FNV_PRIME = 1099511628211L
 
 private fun Int.toKb(): Int = (this + BYTES_PER_KB / 2) / BYTES_PER_KB
 

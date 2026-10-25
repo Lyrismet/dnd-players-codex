@@ -97,20 +97,13 @@ internal fun buildMentionContext(
             mentionDetails(npcs, locations, quests, parties) { giverLines[it].orEmpty() }
         }
     val nicknames = remember(npcs) { mentionNicknames(npcs) }
-    val dropdownTexts =
-        MentionDropdownTexts(
-            search = stringResource(Res.string.session_detail_mention_suggestions_header),
-            thisSession = stringResource(Res.string.mention_section_this_session),
-            previousSession = stringResource(Res.string.mention_section_previous_session),
-            recent = stringResource(Res.string.mention_section_recent),
-            codex = stringResource(Res.string.mention_section_codex),
-        )
+    val dropdownTexts = mentionDropdownTexts()
     val query = trailingMentionQuery(draftText, caret)
     // a non-blank query is passed on after a short pause, a closed or empty one at once
     val searchQuery = rememberDebounced(query) { it.isNullOrBlank() }
     // the search runs off the main thread and only for the settled query, so typing never waits for it
-    val dropdown by produceState(
-        emptyList<MentionDropdownItem>(),
+    val found by produceState(
+        MentionSearchResult(null, emptyList()),
         searchQuery,
         mentionEntities,
         nicknames,
@@ -119,22 +112,40 @@ internal fun buildMentionContext(
         typeLabels,
         dropdownTexts,
     ) {
-        value =
-            searchQuery
-                ?.let {
-                    withContext(Dispatchers.Default) {
-                        mentionDropdown(
-                            MentionDropdownInput(mentionEntities, candidates, nicknames, details, sessions),
-                            it,
-                            typeLabels,
-                            dropdownTexts,
-                        )
-                    }
-                }.orEmpty()
+        val input = MentionDropdownInput(mentionEntities, candidates, nicknames, details, sessions)
+        value = searchMentions(searchQuery, input, typeLabels, dropdownTexts)
     }
 
-    return MentionContext(candidates, if (query == null) emptyList() else dropdown, mentionEntities)
+    // results of an older query stay hidden until the current one is searched, so a tap never picks a stale match
+    val dropdown = if (query == null || found.query != searchQuery || query != searchQuery) emptyList() else found.items
+    return MentionContext(candidates, dropdown, mentionEntities)
 }
+
+private class MentionSearchResult(
+    val query: String?,
+    val items: List<MentionDropdownItem>,
+)
+
+private suspend fun searchMentions(
+    query: String?,
+    input: MentionDropdownInput,
+    typeLabels: MentionTypeLabels,
+    texts: MentionDropdownTexts,
+): MentionSearchResult =
+    MentionSearchResult(
+        query,
+        query?.let { withContext(Dispatchers.Default) { mentionDropdown(input, it, typeLabels, texts) } }.orEmpty(),
+    )
+
+@Composable
+private fun mentionDropdownTexts(): MentionDropdownTexts =
+    MentionDropdownTexts(
+        search = stringResource(Res.string.session_detail_mention_suggestions_header),
+        thisSession = stringResource(Res.string.mention_section_this_session),
+        previousSession = stringResource(Res.string.mention_section_previous_session),
+        recent = stringResource(Res.string.mention_section_recent),
+        codex = stringResource(Res.string.mention_section_codex),
+    )
 
 internal data class MentionDropdownTexts(
     val search: String,

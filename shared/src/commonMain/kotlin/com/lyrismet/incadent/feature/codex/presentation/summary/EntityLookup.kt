@@ -89,8 +89,14 @@ fun rememberEntitySummary(
     ref: EntityRef?,
     lookup: EntityLookup,
 ): EntitySummaryItem? {
-    val summary by produceState<EntitySummaryItem?>(null, ref, lookup) {
-        value = ref?.let { withContext(Dispatchers.Default) { buildEntitySummary(it, lookup) } }
+    val built by produceState<BuiltSummary?>(null, ref, lookup) {
+        value = ref?.let { BuiltSummary(it, withContext(Dispatchers.Default) { buildEntitySummary(it, lookup) }) }
     }
-    return if (ref == null) null else summary
+    // a summary built for the previous ref is not shown for the new one
+    return built?.takeIf { it.ref == ref }?.summary
 }
+
+private class BuiltSummary(
+    val ref: EntityRef,
+    val summary: EntitySummaryItem?,
+)
