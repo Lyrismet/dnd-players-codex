@@ -40,6 +40,7 @@ class SettingsPresenter(
     private val sessionEntryRepository: SessionEntryRepository,
     private val campaignRepository: CampaignRepository,
     private val importSource: ImportSource,
+    private val versionName: String,
 ) : Presenter<SettingsState> {
     @Composable
     override fun present(): SettingsState {
@@ -71,6 +72,7 @@ class SettingsPresenter(
             editMode = editMode,
             campaignName = campaignHost.current?.name.orEmpty(),
             campaignSheet = campaignHost.sheet,
+            version = versionName,
             toast = toast.value,
             pinnedPhraseCount = pinnedPhrases.size,
             frequentPhraseCount = phrasePool(pinnedPhrases, frequentPhrases).count { !it.isPinned },

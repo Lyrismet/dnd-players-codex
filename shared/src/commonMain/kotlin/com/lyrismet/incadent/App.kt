@@ -100,7 +100,7 @@ fun App(
                                     targetValue = if (splashPhase == SplashPhase.VISIBLE) 1f else 0f,
                                     animationSpec = tween(SPLASH_FADE_MILLIS),
                                 )
-                                Splash(modifier = Modifier.alpha(splashAlpha))
+                                Splash(version = graph.appVersion.name, modifier = Modifier.alpha(splashAlpha))
                             }
                         }
                     }

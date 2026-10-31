@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lyrismet.incadent.core.attribution.SrdAttribution
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
@@ -56,8 +57,7 @@ import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.rememberImportPicker
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.settings_about_srd_title
-import dndplayerscodex.shared.generated.resources.settings_about_srd_value
+import dndplayerscodex.shared.generated.resources.settings_about_version_title
 import dndplayerscodex.shared.generated.resources.settings_all_campaigns_title
 import dndplayerscodex.shared.generated.resources.settings_campaign_name_title
 import dndplayerscodex.shared.generated.resources.settings_hints_desc
@@ -146,7 +146,7 @@ fun SettingsUi(
                         onRenameClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.RenameClicked)) },
                         onAllCampaignsClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.LibraryOpened)) },
                     )
-                    AboutSection()
+                    AboutSection(version = state.version)
                 }
             }
         }
@@ -259,12 +259,11 @@ private fun CampaignSection(
 }
 
 @Composable
-private fun AboutSection() {
+private fun AboutSection(version: String) {
     SettingsGroup(overline = stringResource(Res.string.settings_section_about), topSpacing = 12.dp) {
-        AppListRow(
-            title = stringResource(Res.string.settings_about_srd_title),
-            subtitle = stringResource(Res.string.settings_about_srd_value),
-        )
+        InfoRow(title = stringResource(Res.string.settings_about_version_title), value = version)
+        AppDivider()
+        SrdAttribution()
     }
 }
 

@@ -1,6 +1,7 @@
 package com.lyrismet.incadent
 
 import android.app.Application
+import com.lyrismet.incadent.core.appinfo.AppVersionReader
 import com.lyrismet.incadent.core.file.FileStorage
 import com.lyrismet.incadent.core.preferences.SettingsFactory
 import com.lyrismet.incadent.di.AppGraph
@@ -24,6 +25,7 @@ class IncadentApplication : Application() {
                 DatabaseDriverFactory(applicationContext),
                 SettingsFactory(applicationContext),
                 FileStorage(applicationContext),
+                AppVersionReader(applicationContext),
             )
         }
 
