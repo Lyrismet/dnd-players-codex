@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.feature.codex.presentation.form
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -102,8 +101,6 @@ private fun CodexEntryFormContent(
     kinds: List<EntityKind>,
 ) {
     AppSheetColumn(
-        // shrinks the scroll viewport above the keyboard, so the open quick-add panel can scroll clear of it
-        modifier = Modifier.imePadding(),
         spacing = 16.dp,
         scroll = true,
         // matches every bottom-sheet body's content inset, see Players Codex v5.dc.html sheetRef 6px 20px 44px

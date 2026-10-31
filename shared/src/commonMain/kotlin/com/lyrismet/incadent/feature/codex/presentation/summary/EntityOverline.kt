@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -16,14 +14,6 @@ import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
-import com.lyrismet.incadent.feature.codex.presentation.summary.EntityEmblem
-import com.lyrismet.incadent.feature.codex.presentation.summary.EntityEmblemShape
-import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
-import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
-import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummarySheetActions
-import com.lyrismet.incadent.feature.codex.presentation.summary.FactRow
-import com.lyrismet.incadent.feature.codex.presentation.summary.QuickEditSheet
-import com.lyrismet.incadent.feature.codex.presentation.summary.StatusOption
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_type_species
 import dndplayerscodex.shared.generated.resources.codex_party_fallen_word
