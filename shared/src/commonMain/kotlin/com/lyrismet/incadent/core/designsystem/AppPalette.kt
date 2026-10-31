@@ -41,6 +41,11 @@ object AppPalette {
     val Parchment = Color(0xFFD8C9A3)
     val Azure = Color(0xFF8CB8EC)
 
+    // warm accent of the v9 design (a copy from another player, rest, a warning) and the entity greys
+    val Warm = Color(0xFFE9A27A)
+    val EntityNeutral = Color(0xFFB4BAC6)
+    val EntityDead = Color(0xFF8E939C)
+
     // мёртв
     val DeadBackground = Color(0xFF07080A)
 

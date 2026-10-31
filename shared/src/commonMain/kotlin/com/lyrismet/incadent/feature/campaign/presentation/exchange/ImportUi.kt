@@ -70,12 +70,13 @@ fun ImportUi(
         // the sheet stays up under the prompt instead of hiding first
         onDismissBlocked = if (state.guardsClosing) ({ sink(ImportEvent.CloseRequested) }) else null,
     ) {
-        AppSheetColumn(spacing = 12.dp, scroll = true) {
+        AppSheetColumn(spacing = 12.dp, scroll = true, header = {
             AppSheetHeader(
                 overline = stringResource(Res.string.exchange_import_overline),
                 title = stepTitle(state),
                 onClose = { sink(ImportEvent.CloseRequested) },
             )
+        }) {
             when (val step = state.step) {
                 ImportStep.Reading, ImportStep.Working -> Note(stringResource(Res.string.exchange_import_reading))
                 is ImportStep.Failed -> FailedStep(step.failure, onOtherFile = pickFile)

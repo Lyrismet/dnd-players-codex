@@ -5,16 +5,13 @@ import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_type_species
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_creature_type_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_hp_label
-import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun SpeciesSummaryBody(
     species: EntitySummaryItem.SpeciesSummary,
     actions: EntitySummarySheetActions,
-    onClose: () -> Unit,
 ) {
     val creatureType = creatureTypeLabels().getValue(species.creatureType)
     val creatureOptions =
@@ -24,12 +21,9 @@ internal fun SpeciesSummaryBody(
     val seen = speciesSeenCardLine(species.seenInSessions, species.fights)
     EntityHeader(
         emblem = species.emblem,
-        overlineTypeLabel = stringResource(Res.string.codex_entry_type_species),
-        overlineValue = creatureType,
         title = species.name,
         subtitle = seen,
-        onClose = onClose,
-        onEditClicked = actions.onEditClicked?.let { edit -> { edit(species.ref) } },
+        showEditHint = actions.onEditClicked != null,
         quick = actions.quickEdit,
     )
     species.noteQuantity?.let { SpeciesNoteQuantityRow(it, actions.onSpeciesNoteQuantityStep) }

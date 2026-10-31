@@ -45,12 +45,13 @@ fun CampaignRenameSheet(
 ) {
     val canSave = savableCampaignName(draft) != null
     AppBottomSheet(onDismissRequest = onDismiss) {
-        AppSheetColumn(spacing = 14.dp, scroll = true) {
+        AppSheetColumn(spacing = 14.dp, scroll = true, header = {
             AppSheetHeader(
                 overline = stringResource(Res.string.settings_section_campaign),
                 title = stringResource(Res.string.settings_rename_title),
                 onClose = onDismiss,
             )
+        }) {
             RenameNameInput(
                 draft = draft,
                 onDraftChanged = { onDraftChanged(it.take(TextLimits.LINE)) },

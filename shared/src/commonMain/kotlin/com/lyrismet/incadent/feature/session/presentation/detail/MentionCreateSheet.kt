@@ -41,6 +41,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
+import com.lyrismet.incadent.core.format.kindLabelRes
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.mention.presentation.mentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
@@ -66,12 +67,13 @@ internal fun MentionCreateSheet(
 ) {
     val dismiss = { eventSink(SessionDetailEvent.MentionCreateDismissed) }
     AppBottomSheet(onDismissRequest = dismiss) {
-        AppSheetColumn(spacing = 16.dp, scroll = true) {
+        AppSheetColumn(spacing = 16.dp, scroll = true, header = {
             AppSheetHeader(
                 overline = stringResource(Res.string.mention_create_overline),
                 title = stringResource(Res.string.mention_create_title),
                 onClose = dismiss,
             )
+        }) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FormFieldLabel(stringResource(Res.string.mention_create_name_label))
                 MentionCreateNameInput(sheet.name) { eventSink(SessionDetailEvent.MentionCreateNameChanged(it)) }

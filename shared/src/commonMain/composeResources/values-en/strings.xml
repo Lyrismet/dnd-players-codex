@@ -9,6 +9,7 @@
 
     <string name="splash_app_name">Incadent</string>
     <string name="splash_tagline">TTRPG Journal</string>
+    <string name="splash_version_format">Version %1$s</string>
 
     <string name="session_list_title">Session Diary</string>
     <string name="session_list_new_session_button">+ Session</string>
@@ -844,11 +845,11 @@
     <string name="codex_species_select_clear">Not set</string>
     <string name="codex_species_select_create">+ New species «%1$s»</string>
     <string name="codex_entry_srd_label">From the SRD</string>
-    <string name="codex_srd_attribution">Creature names: SRD 5.1, Wizards of the Coast, CC-BY-4.0</string>
     <string name="codex_species_add">+ Add species</string>
     <string name="settings_section_about">ABOUT</string>
-    <string name="settings_about_srd_title">Creature names</string>
-    <string name="settings_about_srd_value">This work includes material taken from the System Reference Document 5.1 (SRD 5.1) by Wizards of the Coast LLC, available at https://dnd.wizards.com/resources/systems-reference-document. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode. Creature names were translated and adapted. Wizards of the Coast does not endorse this app.</string>
+    <string name="settings_about_srd_title">SRD 5.1 materials</string>
+    <string name="settings_about_version_title">Version</string>
+    <string name="settings_about_srd_value">This work includes material taken from the System Reference Document 5.1 (SRD 5.1) by Wizards of the Coast LLC, available at https://dnd.wizards.com/resources/systems-reference-document. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode. Creature names and resource templates were translated and adapted. Wizards of the Coast does not endorse this app.</string>
     <string name="entity_sheet_species_note_quantity">In this note</string>
     <string name="session_detail_quantity_hint">○ %1$s ×…  a digit is how many</string>
     <string name="entity_sheet_npc_species_label">Race / species</string>
@@ -1099,4 +1100,50 @@
     <string name="combat_promo_confirm_new">Add to the codex</string>
     <string name="combat_promo_confirm_known">Done</string>
     <string name="combat_promo_reject">Do not add</string>
+
+    <!-- help hints -->
+    <string name="help_got_it">Got it</string>
+    <string name="help_skills_title">Skill proficiency</string>
+    <string name="help_skills_none_title">None</string>
+    <string name="help_skills_none_sub">Ability modifier only</string>
+    <string name="help_skills_proficient_title">Proficient</string>
+    <string name="help_skills_proficient_sub">Plus the proficiency bonus</string>
+    <string name="help_skills_expert_title">Expertise</string>
+    <string name="help_skills_expert_sub">Proficiency doubled</string>
+    <string name="help_skills_body">Press the circle to cycle through the states. Press the name to edit the skill with a modifier.</string>
+    <string name="help_slots_title">Spell slots</string>
+    <string name="help_slots_on_title">Available</string>
+    <string name="help_slots_on_sub">Press to spend</string>
+    <string name="help_slots_off_title">Spent</string>
+    <string name="help_slots_off_sub">Press to restore</string>
+    <string name="help_slots_body">A column is one spell level. A long rest restores every slot.</string>
+    <string name="help_res_title">Resources</string>
+    <string name="help_pip_on_title">Available</string>
+    <string name="help_res_on_sub">Press to spend</string>
+    <string name="help_pip_off_title">Spent</string>
+    <string name="help_res_off_sub">Press to restore</string>
+    <string name="help_res_body">Rage, Ki, Second Wind - anything that is spent and builds back up. A long rest restores everything. Press the name to edit or delete it.</string>
+    <string name="help_ds_title">Death saving throws</string>
+    <string name="help_ds_ok_title">Three successes</string>
+    <string name="help_ds_ok_sub">Stable: unconscious, but no longer rolls</string>
+    <string name="help_ds_fail_title">Three failures</string>
+    <string name="help_ds_fail_sub">Can be marked as fallen</string>
+    <string name="help_ds_body">Pressing a marked circle clears it. Any healing brings the character back to consciousness.</string>
+    <string name="help_ac_title">Armor class</string>
+    <string name="help_ac_body">AC is entered by hand, as on a paper sheet: armor, shield and magic are not counted for you. The "Source" line lets you note for yourself what it is made of.</string>
+    <string name="help_per_title">Passive Perception</string>
+    <string name="help_per_body">10 + your Perception bonus. The DM checks it against enemy Stealth when you are not searching on purpose. Some editions call it passive perception.</string>
+    <string name="help_wallet_title">Wallet</string>
+    <string name="help_wallet_body">1 platinum = 10 gold. 1 gold = 10 silver = 100 copper. 1 electrum = 5 silver. Coins do not change by themselves, "Total ≈" is only a hint.</string>
+    <string name="help_temp_title">Temporary hit points</string>
+    <string name="help_temp_body">They go first when you take damage. They do not stack: if you get new ones, keep the larger. A long rest removes them.</string>
+    <string name="help_friend_title">What is not sent to a friend</string>
+    <string name="help_friend_row_hp">Party hit points and temporary hit points</string>
+    <string name="help_friend_row_ac">Party AC</string>
+    <string name="help_friend_row_notes">Notes about the party</string>
+    <string name="help_friend_row_notes_sub">when the switch is off</string>
+    <string name="help_friend_row_sheet">Your character sheet</string>
+    <string name="help_friend_row_items">Personal items and wallet</string>
+    <string name="help_friend_row_me">The "me" mark</string>
+    <string name="help_friend_body">Party names, classes and levels, all codex entries, sessions and mentions are sent. NPC and place items are sent too.</string>
 </resources>

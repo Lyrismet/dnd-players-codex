@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,12 +30,14 @@ import com.lyrismet.incadent.core.designsystem.component.FlameSweepEffect
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.splash_app_name
 import dndplayerscodex.shared.generated.resources.splash_tagline
+import dndplayerscodex.shared.generated.resources.splash_version_format
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
 // same size as the system splash icon so the mark does not jump when compose takes over
 private val SPLASH_MARK_SIZE = 112.dp
 private val SPLASH_TEXT_SPACING = 18.dp
+private val SPLASH_VERSION_BOTTOM = 46.dp
 
 // the first text draw pays a one-time layout warm-up, so the text waits before it fades in
 private const val TEXT_START_DELAY_MILLIS = 400L
@@ -45,7 +48,10 @@ private const val FLAME_SWEEP_ENABLED = false
 
 /** the sealed-d8 mark, app name and tagline shown on cold start, with only the text fading in */
 @Composable
-fun Splash(modifier: Modifier = Modifier) {
+fun Splash(
+    version: String,
+    modifier: Modifier = Modifier,
+) {
     var textVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         delay(TEXT_START_DELAY_MILLIS)
@@ -80,6 +86,12 @@ fun Splash(modifier: Modifier = Modifier) {
                 },
             )
         }
+        Text(
+            text = stringResource(Res.string.splash_version_format, version),
+            style = MaterialTheme.typography.labelSmall,
+            color = AppPalette.TextMuted,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = SPLASH_VERSION_BOTTOM).alpha(textAlpha),
+        )
         // starts the text layout warm-up off-screen so the first fade frame is not late
         Text(text = "", modifier = Modifier.size(0.dp))
     }

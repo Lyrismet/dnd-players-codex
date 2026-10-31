@@ -19,14 +19,14 @@
 
 - **Код (где работать):**
   - `androidApp/src/main/AndroidManifest.xml:14` (`launchMode="singleTop"` -> `singleTask`), `onNewIntent` уже есть в `androidApp/src/main/kotlin/com/lyrismet/incadent/MainActivity.kt:45`, проверить, что повторное открытие файла идёт через него.
-  - Версия Android: `androidApp/build.gradle.kts:16-17,49-51` (`versionName = "0.8.1"`, `versionCodeOf`). iOS: `iosApp/Configuration/Config.xcconfig:6-7` (`CURRENT_PROJECT_VERSION=1`, `MARKETING_VERSION=1.0`). Сейчас они расходятся.
+  - Версия Android: `androidApp/build.gradle.kts:16-17,49-51` (`versionName = "0.8.1"`, `versionCodeOf`). iOS: `iosApp/Configuration/Config.xcconfig:6-7` (`CURRENT_PROJECT_VERSION=1`, `MARKETING_VERSION=1.0`). Сейчас они расходятся, цифры здесь не меняем: единую `0.9.0` ставит шаг 15.
   - Новое: `shared/src/commonMain/kotlin/com/lyrismet/incadent/core/appinfo/AppVersion.kt` (expect) + `androidMain`/`iosMain` actual; провайдер через `DataBindings` (граф Metro, не локатор).
   - Сплэш: `shared/.../incadent/Splash.kt` (114 строк, `Splash` на 48, тексты 69-74), вызывается из `App.kt:103`.
   - О приложении: `feature/settings/presentation/SettingsUi.kt:262-270` (`AboutSection`, `InfoRow` на 352), ссылки через `LocalUriHandler`.
   - Форма вида: `feature/codex/presentation/form/CodexSpeciesFormFields.kt:79` (`codex_srd_attribution`).
 - **Миграция и тесты:** миграции нет. Тест форматирования версии в `commonTest/.../core/appinfo/` (приложение В, строка "Версия (8)": разбор "9.0.0"; разбор и сравнение нужны шагу 14, здесь достаточно формата).
 - **Не трогать:** `UpdateStatus`, `UpdatePolicy`, `LatestVersionSource` (шаг 14), схему БД, `AppGraph` кроме одного биндинга версии.
-- **Приёмка:** (1) одна и та же версия на сплэше и в настройках на Android и iOS; (2) холодный старт из Telegram и повторное открытие файла при открытом приложении не создают окно внутри Telegram; "Назад" возвращает в Telegram; (3) обе ссылки SRD открываются в браузере, текст копируется; (4) заголовок "Материалы SRD 5.1"; (5) в форме вида тот же блок. Сценарий 12 приложения Д.
-- **Вопрос владельцу до начала:** какое значение версии ставить на обеих платформах (в макете "9.0.0" только пример, ориентир владельца 0.9.5).
+- **Приёмка:** (1) версия на сплэше и в настройках читается из сборки (одинаковое число на платформах появится после шага 15); (2) холодный старт из Telegram и повторное открытие файла при открытом приложении не создают окно внутри Telegram; "Назад" возвращает в Telegram; (3) обе ссылки SRD открываются в браузере, текст копируется; (4) заголовок "Материалы SRD 5.1"; (5) в форме вида тот же блок. Сценарий 12 приложения Д.
+- **Номера версий:** не менять, `0.9.0` на обеих платформах ставится на шаге 15.
 - **Строки и словарь:** префикс `settings_about_` (версия, заголовок), `splash_version_format`. Менять `settings_about_srd_title` (`values:878`, `values-en:850`) и дополнить `settings_about_srd_value` (`values:879`, `values-en:851`) предложением про шаблоны ресурсов, не теряя "переведены и адаптированы" и "не поддерживает". Ссылки: `https://dnd.wizards.com/resources/systems-reference-document`, `https://creativecommons.org/licenses/by/4.0/legalcode`.
-- **Готово, когда:** выполнены пункты "Готовность задачи" (`DESIGN_V9.md:27-39`), в приложении А шаг 1 отмечен `[x]`, в `FEATURES.md` отмечены пункты версии, `singleTask` и SRD.
+- **Готово, когда:** выполнены пункты "Готовность задачи" (`DESIGN_V9.md:27-39`), в приложении А шаг 1 отмечен `[x]`, в `FEATURES.md` отмечены пункты показа версии, `singleTask` и SRD (выравнивание номеров платформ остаётся `[ ]` до шага 15).

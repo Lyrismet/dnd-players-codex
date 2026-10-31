@@ -36,6 +36,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.format.kindLabelRes
 import com.lyrismet.incadent.domain.model.EntityKind
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.deleted_mention_back
@@ -76,7 +77,7 @@ internal fun DeletedMentionSheet(
     val overlineRes =
         if (sheet.isUnlinked) Res.string.mention_unlinked_overline else Res.string.deleted_mention_overline
     AppBottomSheet(onDismissRequest = { eventSink(SessionDetailEvent.DeletedMentionSheetDismissed) }) {
-        AppSheetColumn(spacing = 14.dp, scroll = true) {
+        AppSheetColumn(spacing = 14.dp, scroll = true, header = {
             AppSheetHeader(
                 title =
                     buildAnnotatedString {
@@ -89,6 +90,7 @@ internal fun DeletedMentionSheet(
                 overlineColor = AppPalette.TextSecondary,
                 closeSize = 32.dp,
             )
+        }) {
             if (sheet.isPicking) {
                 DeletedMentionPicker(sheet, eventSink)
             } else {

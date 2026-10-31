@@ -74,12 +74,13 @@ fun ExportUi(
     }
     Box(modifier = modifier) {
         AppBottomSheet(onDismissRequest = { sink(ExportEvent.Closed) }) {
-            AppSheetColumn(spacing = 14.dp, scroll = true) {
+            AppSheetColumn(spacing = 14.dp, scroll = true, header = {
                 AppSheetHeader(
                     overline = stringResource(Res.string.exchange_export_overline),
                     title = "«${state.campaignName}»",
                     onClose = { sink(ExportEvent.Closed) },
                 )
+            }) {
                 ExportBody(state)
             }
         }

@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.di
 
+import com.lyrismet.incadent.core.appinfo.AppVersion
 import com.lyrismet.incadent.core.file.FileStorage
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
@@ -26,6 +27,7 @@ interface AppGraph {
     val undoController: UndoController
     val importSource: ImportSource
     val swipeHintReplayController: SwipeHintReplayController
+    val appVersion: AppVersion
 
     @DependencyGraph.Factory
     fun interface Factory {
@@ -33,6 +35,7 @@ interface AppGraph {
             @Provides settings: ObservableSettings,
             @Provides databaseDriverFactory: DatabaseDriverFactory,
             @Provides fileStorage: FileStorage,
+            @Provides appVersion: AppVersion,
         ): AppGraph
     }
 }

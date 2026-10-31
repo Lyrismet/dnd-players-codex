@@ -2,9 +2,16 @@ package com.lyrismet.incadent.core.designsystem.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,6 +30,8 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -33,6 +42,7 @@ private val SheetShape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)
 private val SheetScrimColor = AppPalette.Scrim.copy(alpha = 0.66f)
 private val SheetEdgeColor = AppPalette.Gold.copy(alpha = 0.4f)
 private val SheetCornerRadius = 26.dp
+private val SheetTopGap = 8.dp
 
 /**
  * modal bottom sheet matching the design's entity/action sheets - 26dp top corners, dark surface, thin gold edge.
@@ -50,6 +60,7 @@ fun AppBottomSheet(
     // the sheet is a window above everything, so it must go with its tab instead of hanging over the next one
     if (!LocalTabSelected.current) return
     val blocked by rememberUpdatedState(onDismissBlocked)
+    val maxContentHeight = sheetContentMaxHeight()
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         modifier = modifier,
@@ -73,9 +84,26 @@ fun AppBottomSheet(
         containerColor = AppPalette.Surface,
         scrimColor = SheetScrimColor,
         dragHandle = { AppBottomSheetDragHandle() },
+        // no top inset inside the sheet: it appears and vanishes while the sheet is dragged and made the sheet jump
+        contentWindowInsets = {
+            WindowInsets.safeDrawing.only(
+                WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+            )
+        },
         // the sheet is its own window, so the app-root dismiss-on-tap never sees taps inside it
-        content = { Box(Modifier.dismissKeyboardOnTap()) { content() } },
+        content = { Box(Modifier.heightIn(max = maxContentHeight).dismissKeyboardOnTap()) { content() } },
     )
+}
+
+// the keyboard is left out of the cap so it does not change on every frame while the keyboard animates
+@Composable
+private fun sheetContentMaxHeight(): Dp {
+    val density = LocalDensity.current
+    val windowHeight = LocalWindowInfo.current.containerSize.height
+    val topInset = WindowInsets.statusBars.getTop(density)
+    val bottomInset = WindowInsets.navigationBars.getBottom(density)
+    val reserved = with(density) { (SheetCornerRadius + 4.dp + SheetTopGap).roundToPx() }
+    return with(density) { (windowHeight - topInset - bottomInset - reserved).coerceAtLeast(0).toDp() }
 }
 
 // Material3's Surface discards an external Modifier.border(), so the gold edge is hand-drawn here instead

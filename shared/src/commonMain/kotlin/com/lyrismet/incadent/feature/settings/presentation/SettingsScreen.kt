@@ -25,6 +25,7 @@ data class SettingsState(
     val editMode: EntityEditMode,
     val campaignName: String,
     val campaignSheet: CampaignSheetState,
+    val version: String,
     val toast: String?,
     val pinnedPhraseCount: Int,
     val frequentPhraseCount: Int,

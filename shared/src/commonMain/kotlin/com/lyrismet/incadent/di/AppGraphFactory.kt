@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.di
 
+import com.lyrismet.incadent.core.appinfo.AppVersionReader
 import com.lyrismet.incadent.core.file.FileStorage
 import com.lyrismet.incadent.core.preferences.SettingsFactory
 import com.lyrismet.incadent.persistence.DatabaseDriverFactory
@@ -10,5 +11,7 @@ fun createAppGraph(
     databaseDriverFactory: DatabaseDriverFactory,
     settingsFactory: SettingsFactory,
     fileStorage: FileStorage,
+    appVersionReader: AppVersionReader,
 ): AppGraph =
-    createGraphFactory<AppGraph.Factory>().create(settingsFactory.createSettings(), databaseDriverFactory, fileStorage)
+    createGraphFactory<AppGraph.Factory>()
+        .create(settingsFactory.createSettings(), databaseDriverFactory, fileStorage, appVersionReader.read())

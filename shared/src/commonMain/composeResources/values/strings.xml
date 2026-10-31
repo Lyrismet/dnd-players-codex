@@ -9,6 +9,7 @@
 
     <string name="splash_app_name">Incadent</string>
     <string name="splash_tagline">TTRPG Журнал</string>
+    <string name="splash_version_format">Версия %1$s</string>
 
     <string name="session_list_title">Дневник сессий</string>
     <string name="session_list_new_session_button">+ Сессия</string>
@@ -872,11 +873,11 @@
     <string name="codex_species_select_clear">Не указано</string>
     <string name="codex_species_select_create">+ Создать вид «%1$s»</string>
     <string name="codex_entry_srd_label">Из SRD</string>
-    <string name="codex_srd_attribution">Названия существ: SRD 5.1, Wizards of the Coast, CC-BY-4.0</string>
     <string name="codex_species_add">+ Добавить вид</string>
     <string name="settings_section_about">О ПРИЛОЖЕНИИ</string>
-    <string name="settings_about_srd_title">Названия существ</string>
-    <string name="settings_about_srd_value">Это приложение использует материалы из System Reference Document 5.1 (SRD 5.1) компании Wizards of the Coast LLC, доступного по адресу https://dnd.wizards.com/resources/systems-reference-document. SRD 5.1 распространяется по лицензии Creative Commons Attribution 4.0 International, доступной по адресу https://creativecommons.org/licenses/by/4.0/legalcode. Названия существ переведены и адаптированы. Wizards of the Coast не поддерживает это приложение.</string>
+    <string name="settings_about_srd_title">Материалы SRD 5.1</string>
+    <string name="settings_about_version_title">Версия</string>
+    <string name="settings_about_srd_value">Это приложение использует материалы из System Reference Document 5.1 (SRD 5.1) компании Wizards of the Coast LLC, доступного по адресу https://dnd.wizards.com/resources/systems-reference-document. SRD 5.1 распространяется по лицензии Creative Commons Attribution 4.0 International, доступной по адресу https://creativecommons.org/licenses/by/4.0/legalcode. Названия существ и шаблоны ресурсов переведены и адаптированы. Wizards of the Coast не поддерживает это приложение.</string>
     <string name="entity_sheet_species_note_quantity">В этой заметке</string>
     <string name="session_detail_quantity_hint">○ %1$s ×… цифра - сколько их</string>
     <string name="entity_sheet_npc_species_label">Раса / вид</string>
@@ -1137,4 +1138,50 @@
     <string name="combat_promo_confirm_new">Записать в кодекс</string>
     <string name="combat_promo_confirm_known">Готово</string>
     <string name="combat_promo_reject">Не записывать</string>
+
+    <!-- help hints -->
+    <string name="help_got_it">Понятно</string>
+    <string name="help_skills_title">Владение навыком</string>
+    <string name="help_skills_none_title">Нет</string>
+    <string name="help_skills_none_sub">Только бонус характеристики</string>
+    <string name="help_skills_proficient_title">Владею</string>
+    <string name="help_skills_proficient_sub">Плюс бонус мастерства</string>
+    <string name="help_skills_expert_title">Компетентность</string>
+    <string name="help_skills_expert_sub">Мастерство дважды</string>
+    <string name="help_skills_body">Нажмите на кружок — переключится по кругу. На название — правка навыка с поправкой.</string>
+    <string name="help_slots_title">Ячейки заклинаний</string>
+    <string name="help_slots_on_title">Свободна</string>
+    <string name="help_slots_on_sub">Нажмите, чтобы потратить</string>
+    <string name="help_slots_off_title">Потрачена</string>
+    <string name="help_slots_off_sub">Нажмите, чтобы вернуть</string>
+    <string name="help_slots_body">Столбец — круг заклинаний. Долгий отдых вернёт все ячейки.</string>
+    <string name="help_res_title">Ресурсы</string>
+    <string name="help_pip_on_title">Есть</string>
+    <string name="help_res_on_sub">Нажмите, чтобы потратить</string>
+    <string name="help_pip_off_title">Потрачен</string>
+    <string name="help_res_off_sub">Нажмите, чтобы вернуть</string>
+    <string name="help_res_body">Ярость, Ки, Второе дыхание — всё, что тратится и копится. Долгий отдых вернёт всё. Нажмите на название, чтобы изменить или удалить.</string>
+    <string name="help_ds_title">Спасброски от смерти</string>
+    <string name="help_ds_ok_title">Три успеха</string>
+    <string name="help_ds_ok_sub">Состояние стабильно: без сознания, но больше не бросает</string>
+    <string name="help_ds_fail_title">Три провала</string>
+    <string name="help_ds_fail_sub">Можно отметить павшим</string>
+    <string name="help_ds_body">Нажатие на отмеченный кружок снимает отметку. Любое лечение возвращает в сознание.</string>
+    <string name="help_ac_title">Класс доспеха</string>
+    <string name="help_ac_body">КД вписывается рукой, как на бумажном листе: доспехи, щит и магия сами не считаются. В строке «Откуда» можно записать для себя, из чего он сложился.</string>
+    <string name="help_per_title">Пассивная внимательность</string>
+    <string name="help_per_body">10 + бонус Внимательности. Мастер сверяет её со Скрытностью врагов, когда вы не ищете специально. В некоторых изданиях — пассивное восприятие.</string>
+    <string name="help_wallet_title">Кошелёк</string>
+    <string name="help_wallet_body">1 платиновая = 10 золотых. 1 золотая = 10 серебряных = 100 медных. 1 электрумовая = 5 серебряных. Монеты сами не размениваются, «Всего ≈» — только подсказка.</string>
+    <string name="help_temp_title">Временные хиты</string>
+    <string name="help_temp_body">Уходят первыми при уроне. Не складываются: если получили новые, оставьте большее. Долгий отдых их убирает.</string>
+    <string name="help_friend_title">Что не уйдёт другу</string>
+    <string name="help_friend_row_hp">Хиты и временные хиты отряда</string>
+    <string name="help_friend_row_ac">КД отряда</string>
+    <string name="help_friend_row_notes">Заметки об отряде</string>
+    <string name="help_friend_row_notes_sub">если тумблер выключен</string>
+    <string name="help_friend_row_sheet">Ваш лист персонажа</string>
+    <string name="help_friend_row_items">Личные вещи и кошелёк</string>
+    <string name="help_friend_row_me">Метка «я»</string>
+    <string name="help_friend_body">Уйдут имена, классы и уровни отряда, все записи кодекса, сессии и упоминания. Предметы NPC и мест тоже уйдут.</string>
 </resources>
