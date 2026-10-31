@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -94,13 +95,13 @@ fun AppBottomSheet(
     )
 }
 
-// a tall sheet stops below the status bar, so its rounded top and gold edge are always the real top of the sheet
+// the keyboard is left out of the cap so it does not change on every frame while the keyboard animates
 @Composable
 private fun sheetContentMaxHeight(): Dp {
     val density = LocalDensity.current
     val windowHeight = LocalWindowInfo.current.containerSize.height
     val topInset = WindowInsets.statusBars.getTop(density)
-    val bottomInset = WindowInsets.safeDrawing.getBottom(density)
+    val bottomInset = WindowInsets.navigationBars.getBottom(density)
     val reserved = with(density) { (SheetCornerRadius + 4.dp + SheetTopGap).roundToPx() }
     return with(density) { (windowHeight - topInset - bottomInset - reserved).coerceAtLeast(0).toDp() }
 }

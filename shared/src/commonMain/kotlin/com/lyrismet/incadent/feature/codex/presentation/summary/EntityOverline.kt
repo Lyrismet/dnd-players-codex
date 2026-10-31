@@ -14,14 +14,13 @@ import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
+import com.lyrismet.incadent.core.format.kindLabelRes
+import com.lyrismet.incadent.domain.model.EntityKind
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_type_species
 import dndplayerscodex.shared.generated.resources.codex_party_fallen_word
 import dndplayerscodex.shared.generated.resources.entity_sheet_overline_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_type_label
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
 import org.jetbrains.compose.resources.stringResource
 
 /** the type, status and the edit and close buttons of a card - they stay above the scrolling body */
@@ -35,21 +34,21 @@ internal fun PinnedOverline(
         when (item) {
             is EntitySummaryItem.NpcSummary ->
                 OverlineParts(
-                    stringResource(Res.string.session_detail_mention_type_npc),
+                    stringResource(EntityKind.NPC.kindLabelRes()),
                     item.statusLabel,
                     item.emblem,
                     item.ref,
                 )
             is EntitySummaryItem.LocationSummary ->
                 OverlineParts(
-                    stringResource(Res.string.session_detail_mention_type_location),
+                    stringResource(EntityKind.LOCATION.kindLabelRes()),
                     "",
                     item.emblem,
                     item.ref,
                 )
             is EntitySummaryItem.QuestSummary ->
                 OverlineParts(
-                    stringResource(Res.string.session_detail_mention_type_quest),
+                    stringResource(EntityKind.QUEST.kindLabelRes()),
                     item.statusLabel,
                     item.emblem,
                     item.ref,

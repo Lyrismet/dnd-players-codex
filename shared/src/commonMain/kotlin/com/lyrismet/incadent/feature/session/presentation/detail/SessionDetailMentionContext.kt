@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.debounce.rememberDebounced
+import com.lyrismet.incadent.core.format.kindLabelRes
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -36,11 +38,6 @@ import dndplayerscodex.shared.generated.resources.mention_section_previous_sessi
 import dndplayerscodex.shared.generated.resources.mention_section_recent
 import dndplayerscodex.shared.generated.resources.mention_section_this_session
 import dndplayerscodex.shared.generated.resources.session_detail_mention_suggestions_header
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_party
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_species
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
@@ -80,11 +77,11 @@ internal fun buildMentionContext(
 
     val typeLabels =
         MentionTypeLabels(
-            npc = stringResource(Res.string.session_detail_mention_type_npc),
-            party = stringResource(Res.string.session_detail_mention_type_party),
-            location = stringResource(Res.string.session_detail_mention_type_location),
-            quest = stringResource(Res.string.session_detail_mention_type_quest),
-            species = stringResource(Res.string.session_detail_mention_type_species),
+            npc = stringResource(EntityKind.NPC.kindLabelRes()),
+            party = stringResource(EntityKind.PARTY.kindLabelRes()),
+            location = stringResource(EntityKind.LOCATION.kindLabelRes()),
+            quest = stringResource(EntityKind.QUEST.kindLabelRes()),
+            species = stringResource(EntityKind.SPECIES.kindLabelRes()),
         )
     val giverNames =
         remember(npcs, quests) {

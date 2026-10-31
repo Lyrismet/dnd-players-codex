@@ -36,6 +36,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.format.kindLabelRes
 import com.lyrismet.incadent.domain.model.EntityKind
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.deleted_mention_back

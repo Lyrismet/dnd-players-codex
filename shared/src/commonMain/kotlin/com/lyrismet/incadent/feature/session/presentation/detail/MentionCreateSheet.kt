@@ -41,6 +41,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
+import com.lyrismet.incadent.core.format.kindLabelRes
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.mention.presentation.mentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
