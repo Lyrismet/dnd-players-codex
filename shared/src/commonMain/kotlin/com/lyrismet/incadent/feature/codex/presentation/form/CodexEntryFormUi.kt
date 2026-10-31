@@ -1,13 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.form
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
+import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.DiscardChangesDialog
@@ -106,24 +101,22 @@ private fun CodexEntryFormContent(
     density: FormDensity,
     kinds: List<EntityKind>,
 ) {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                // shrinks the scroll viewport above the keyboard, so the open quick-add panel can scroll clear of it
-                .imePadding()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
-                // matches every bottom-sheet body's content inset, see Players Codex v5.dc.html sheetRef 6px 20px 44px
-                .padding(top = 6.dp, bottom = 44.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    AppSheetColumn(
+        // shrinks the scroll viewport above the keyboard, so the open quick-add panel can scroll clear of it
+        modifier = Modifier.imePadding(),
+        spacing = 16.dp,
+        scroll = true,
+        // matches every bottom-sheet body's content inset, see Players Codex v5.dc.html sheetRef 6px 20px 44px
+        bottomPadding = 44.dp,
+        header = {
+            AppSheetHeader(
+                title = form.heading,
+                onClose = onClose,
+                overline = form.overline,
+                closeSize = CloseButtonSize,
+            )
+        },
     ) {
-        AppSheetHeader(
-            title = form.heading,
-            onClose = onClose,
-            overline = form.overline,
-            closeSize = CloseButtonSize,
-        )
         if (!form.isEditing && kinds.size > 1) {
             CodexEntryTypeSwitch(
                 selected = form.type,

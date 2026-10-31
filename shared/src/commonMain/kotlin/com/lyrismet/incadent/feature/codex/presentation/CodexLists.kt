@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -14,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
+import com.lyrismet.incadent.core.designsystem.component.scrollEdgeFade
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
@@ -33,8 +35,10 @@ internal fun CodexLazyColumn(
     modifier: Modifier,
     content: LazyListScope.() -> Unit,
 ) {
+    val listState = rememberLazyListState()
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        state = listState,
+        modifier = modifier.fillMaxSize().scrollEdgeFade(listState),
         contentPadding = LIST_CONTENT_PADDING,
         verticalArrangement = Arrangement.spacedBy(8.dp),
         content = content,

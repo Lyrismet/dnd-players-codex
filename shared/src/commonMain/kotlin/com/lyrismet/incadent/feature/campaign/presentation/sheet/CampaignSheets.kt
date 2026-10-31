@@ -49,11 +49,12 @@ private fun CampaignLibrarySheet(
     onEvent: (CampaignSheetEvent) -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = { onEvent(CampaignSheetEvent.Dismissed) }) {
-        AppSheetColumn(spacing = 10.dp, scroll = true) {
+        AppSheetColumn(spacing = 10.dp, scroll = true, header = {
             AppSheetHeader(
                 title = stringResource(Res.string.campaign_sheet_title),
                 onClose = { onEvent(CampaignSheetEvent.Dismissed) },
             )
+        }) {
             CampaignSections(
                 library = sheet.library,
                 onOpen = { onEvent(CampaignSheetEvent.CampaignClicked(it)) },

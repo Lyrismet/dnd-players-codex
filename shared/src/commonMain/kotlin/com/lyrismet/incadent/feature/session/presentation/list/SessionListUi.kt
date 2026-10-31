@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -46,6 +47,7 @@ import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
+import com.lyrismet.incadent.core.designsystem.component.scrollEdgeFade
 import com.lyrismet.incadent.core.format.NumberSizeLadder
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
@@ -193,8 +195,10 @@ private fun SessionListContent(
     swipeHintPeekOffsetPx: () -> Float,
     modifier: Modifier = Modifier,
 ) {
+    val listState = rememberLazyListState()
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        state = listState,
+        modifier = modifier.fillMaxSize().scrollEdgeFade(listState),
         contentPadding = PaddingValues(start = 16.dp, top = 2.dp, end = 16.dp, bottom = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {

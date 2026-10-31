@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.icons.QuillIcon
 
@@ -54,7 +56,11 @@ fun ScreenHeader(
         }
         Text(
             text = title,
-            style = MaterialTheme.typography.displayLarge,
+            style =
+                MaterialTheme.typography.displayLarge.copy(
+                    fontSize = AppFontSize.StatLarge,
+                    lineHeight = 38.sp,
+                ),
             color = AppPalette.TextHeading,
         )
         if (showDivider) {

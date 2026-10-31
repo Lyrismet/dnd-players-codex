@@ -69,7 +69,7 @@ internal fun FoeSearchSheet(
     val enemy = search.side == PrepSide.ENEMY
     val accent = if (enemy) AppPalette.MaroonBright else AppPalette.EmeraldBright
     AppBottomSheet(onDismissRequest = { onEvent(CombatPrepEvent.SearchClosed) }) {
-        AppSheetColumn(scroll = true) {
+        AppSheetColumn(scroll = true, header = {
             AppSheetHeader(
                 title =
                     stringResource(
@@ -86,6 +86,7 @@ internal fun FoeSearchSheet(
                     ),
                 overlineColor = accent,
             )
+        }) {
             AppSearchField(
                 query = search.query,
                 onQueryChange = { onEvent(CombatPrepEvent.QueryChanged(it)) },

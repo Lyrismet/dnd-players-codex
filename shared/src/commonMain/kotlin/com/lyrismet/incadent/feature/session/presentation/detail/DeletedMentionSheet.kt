@@ -76,7 +76,7 @@ internal fun DeletedMentionSheet(
     val overlineRes =
         if (sheet.isUnlinked) Res.string.mention_unlinked_overline else Res.string.deleted_mention_overline
     AppBottomSheet(onDismissRequest = { eventSink(SessionDetailEvent.DeletedMentionSheetDismissed) }) {
-        AppSheetColumn(spacing = 14.dp, scroll = true) {
+        AppSheetColumn(spacing = 14.dp, scroll = true, header = {
             AppSheetHeader(
                 title =
                     buildAnnotatedString {
@@ -89,6 +89,7 @@ internal fun DeletedMentionSheet(
                 overlineColor = AppPalette.TextSecondary,
                 closeSize = 32.dp,
             )
+        }) {
             if (sheet.isPicking) {
                 DeletedMentionPicker(sheet, eventSink)
             } else {

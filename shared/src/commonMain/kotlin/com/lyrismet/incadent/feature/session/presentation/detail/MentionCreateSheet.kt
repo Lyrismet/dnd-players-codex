@@ -66,12 +66,13 @@ internal fun MentionCreateSheet(
 ) {
     val dismiss = { eventSink(SessionDetailEvent.MentionCreateDismissed) }
     AppBottomSheet(onDismissRequest = dismiss) {
-        AppSheetColumn(spacing = 16.dp, scroll = true) {
+        AppSheetColumn(spacing = 16.dp, scroll = true, header = {
             AppSheetHeader(
                 overline = stringResource(Res.string.mention_create_overline),
                 title = stringResource(Res.string.mention_create_title),
                 onClose = dismiss,
             )
+        }) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FormFieldLabel(stringResource(Res.string.mention_create_name_label))
                 MentionCreateNameInput(sheet.name) { eventSink(SessionDetailEvent.MentionCreateNameChanged(it)) }

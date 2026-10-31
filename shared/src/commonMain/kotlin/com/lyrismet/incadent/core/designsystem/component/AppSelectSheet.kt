@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -221,14 +222,17 @@ private fun SelectRows(
     carriedLabel: (@Composable (name: String) -> String)?,
     onRowClick: (Long) -> Unit,
 ) {
+    val listState = rememberLazyListState()
     LazyColumn(
+        state = listState,
         modifier =
             Modifier
                 .fillMaxWidth()
                 .heightIn(max = ListMaxHeight)
                 .clip(ListShape)
                 .background(AppPalette.Background)
-                .border(1.dp, AppPalette.BorderSubtle, ListShape),
+                .border(1.dp, AppPalette.BorderSubtle, ListShape)
+                .scrollEdgeFade(listState),
         contentPadding = PaddingValues(horizontal = RowContentGap),
     ) {
         itemsIndexed(rows, key = { _, row -> row.option.id }) { index, row ->

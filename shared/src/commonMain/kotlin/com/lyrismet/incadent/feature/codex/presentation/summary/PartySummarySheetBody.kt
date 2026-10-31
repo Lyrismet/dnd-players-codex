@@ -33,11 +33,9 @@ import dndplayerscodex.shared.generated.resources.codex_party_chronicle_sessions
 import dndplayerscodex.shared.generated.resources.codex_party_chronicle_title
 import dndplayerscodex.shared.generated.resources.codex_party_epitaph
 import dndplayerscodex.shared.generated.resources.codex_party_epitaph_foes
-import dndplayerscodex.shared.generated.resources.codex_party_fallen_word
 import dndplayerscodex.shared.generated.resources.codex_party_fell_in_battle
 import dndplayerscodex.shared.generated.resources.codex_party_revive
 import dndplayerscodex.shared.generated.resources.entity_sheet_party_presence_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_party_type_label
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -45,13 +43,12 @@ import org.jetbrains.compose.resources.stringResource
 internal fun PartySummaryBody(
     party: PartySummary,
     actions: EntitySummarySheetActions,
-    onClose: () -> Unit,
 ) {
     // the flame goes over the card once, the card itself changes under it when the record does
     var revived by remember { mutableStateOf(false) }
     FlameSweepEffect(play = revived) {
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-            PartyBody(party, actions, onClose) { revived = true }
+            PartyBody(party, actions) { revived = true }
         }
     }
 }
@@ -60,19 +57,15 @@ internal fun PartySummaryBody(
 private fun PartyBody(
     party: PartySummary,
     actions: EntitySummarySheetActions,
-    onClose: () -> Unit,
     onRevived: () -> Unit,
 ) {
     val fall = party.fall
     EntityHeader(
         emblem = party.emblem,
-        overlineTypeLabel = stringResource(Res.string.entity_sheet_party_type_label),
-        overlineValue = if (fall != null) stringResource(Res.string.codex_party_fallen_word) else party.overlineValue,
         title = party.name,
         subtitle = party.subtitle,
         strikeThrough = fall != null,
-        onEditClicked = actions.onEditClicked?.let { edit -> { edit(party.ref) } },
-        onClose = onClose,
+        showEditHint = actions.onEditClicked != null,
         quick = actions.quickEdit,
     )
     if (fall != null) Epitaph(fall, actions)

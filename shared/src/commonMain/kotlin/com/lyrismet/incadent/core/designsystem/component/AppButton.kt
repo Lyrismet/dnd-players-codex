@@ -90,8 +90,8 @@ private class ButtonMetrics(
 
 private fun metrics(size: ButtonSize): ButtonMetrics =
     when (size) {
-        ButtonSize.Compact -> ButtonMetrics(32.dp, 10.dp, 12.dp, exactHeight = true)
-        ButtonSize.Medium -> ButtonMetrics(36.dp, 10.dp, 12.dp, exactHeight = true)
+        ButtonSize.Compact -> ButtonMetrics(30.dp, 10.dp, 12.dp, exactHeight = true)
+        ButtonSize.Medium -> ButtonMetrics(34.dp, 10.dp, 12.dp, exactHeight = true)
         ButtonSize.Large -> ButtonMetrics(48.dp, 12.dp, 16.dp, exactHeight = false)
         ButtonSize.Primary -> ButtonMetrics(52.dp, 14.dp, 16.dp, exactHeight = true)
     }

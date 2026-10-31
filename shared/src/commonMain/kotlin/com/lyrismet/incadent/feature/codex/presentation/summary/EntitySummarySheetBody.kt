@@ -9,11 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,15 +34,10 @@ import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppPhotoCropDraftWindow
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.HoldTooShortToast
-import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.LocalHoldTooShort
-import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
-import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
-import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.language.label
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EditorHoleTracker
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EditorShield
@@ -62,15 +55,11 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.StatusOption
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_life_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_overline_format
 import dndplayerscodex.shared.generated.resources.entity_sheet_portrait_hint
 import dndplayerscodex.shared.generated.resources.entity_sheet_relation_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_status_label
 import dndplayerscodex.shared.generated.resources.quick_edit_hold_too_short
 import dndplayerscodex.shared.generated.resources.quick_edit_label_name
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
 import org.jetbrains.compose.resources.stringResource
 
 private const val HOLD_TOAST_BOTTOM_PADDING_DP = 64
@@ -85,27 +74,34 @@ fun EntitySummarySheetContent(
     var holdTooShortTrigger by remember { mutableIntStateOf(0) }
     val editorHole = remember { EditorHoleTracker() }
     val quick = actions.quickEdit
+    val scrollState = rememberScrollState()
     Box(modifier = modifier.fillMaxWidth().onGloballyPositioned { editorHole.rootCoordinates = it }) {
         CompositionLocalProvider(
             LocalHoldTooShort provides { holdTooShortTrigger += 1 },
             LocalEditorHoleTracker provides editorHole,
         ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 20.dp)
-                        // mockup - 6px top / 44px bottom padding, the header sits under the drag handle
-                        .padding(top = 6.dp, bottom = 44.dp),
-                verticalArrangement = Arrangement.spacedBy(18.dp),
-            ) {
-                when (item) {
-                    is EntitySummaryItem.NpcSummary -> NpcSummaryBody(item, actions, onClose)
-                    is EntitySummaryItem.LocationSummary -> LocationSummaryBody(item, actions, onClose)
-                    is EntitySummaryItem.QuestSummary -> QuestSummaryBody(item, actions, onClose)
-                    is EntitySummaryItem.PartySummary -> PartySummaryBody(item, actions, onClose)
-                    is EntitySummaryItem.SpeciesSummary -> SpeciesSummaryBody(item, actions, onClose)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Box(Modifier.padding(start = 20.dp, top = 6.dp, end = 20.dp, bottom = 4.dp)) {
+                    PinnedOverline(item, actions, onClose)
+                }
+                AppDivider(color = if (scrollState.value > 0) AppPalette.BorderSubtle else Color.Transparent)
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(scrollState)
+                            .padding(horizontal = 20.dp)
+                            // mockup - 44px bottom padding, the header sits under the drag handle
+                            .padding(bottom = 44.dp),
+                    verticalArrangement = Arrangement.spacedBy(18.dp),
+                ) {
+                    when (item) {
+                        is EntitySummaryItem.NpcSummary -> NpcSummaryBody(item, actions)
+                        is EntitySummaryItem.LocationSummary -> LocationSummaryBody(item, actions)
+                        is EntitySummaryItem.QuestSummary -> QuestSummaryBody(item, actions)
+                        is EntitySummaryItem.PartySummary -> PartySummaryBody(item, actions)
+                        is EntitySummaryItem.SpeciesSummary -> SpeciesSummaryBody(item, actions)
+                    }
                 }
             }
         }
@@ -132,17 +128,13 @@ fun EntitySummarySheetContent(
 private fun NpcSummaryBody(
     npc: EntitySummaryItem.NpcSummary,
     actions: EntitySummarySheetActions,
-    onClose: () -> Unit,
 ) {
     EntityHeader(
         emblem = npc.emblem,
-        overlineTypeLabel = stringResource(Res.string.session_detail_mention_type_npc),
-        overlineValue = npc.statusLabel,
         title = npc.name,
         subtitle = npc.subtitle,
+        showEditHint = actions.onEditClicked != null,
         strikeThrough = npc.isDead,
-        onEditClicked = actions.onEditClicked?.let { edit -> { edit(npc.ref) } },
-        onClose = onClose,
         quick = actions.quickEdit,
     )
     val relationTitle = stringResource(Res.string.entity_sheet_relation_label)
@@ -187,7 +179,6 @@ private fun NpcSummaryBody(
 private fun LocationSummaryBody(
     location: EntitySummaryItem.LocationSummary,
     actions: EntitySummarySheetActions,
-    onClose: () -> Unit,
 ) {
     // a read-only card without a cover has nothing to show there, a quick-mode one offers the add strip
     val hasCover = location.cover != null || actions.quickEdit != null
@@ -201,12 +192,9 @@ private fun LocationSummaryBody(
     }
     EntityHeader(
         emblem = location.emblem,
-        overlineTypeLabel = stringResource(Res.string.session_detail_mention_type_location),
-        overlineValue = "",
         title = location.name,
         subtitle = location.subtitle,
-        onEditClicked = actions.onEditClicked?.let { edit -> { edit(location.ref) } },
-        onClose = onClose,
+        showEditHint = actions.onEditClicked != null,
         quick = actions.quickEdit,
         cover = if (hasCover) coverSlot else null,
     )
@@ -227,16 +215,12 @@ private fun LocationSummaryBody(
 private fun QuestSummaryBody(
     quest: EntitySummaryItem.QuestSummary,
     actions: EntitySummarySheetActions,
-    onClose: () -> Unit,
 ) {
     EntityHeader(
         emblem = quest.emblem,
-        overlineTypeLabel = stringResource(Res.string.session_detail_mention_type_quest),
-        overlineValue = quest.statusLabel,
         title = quest.title,
         subtitle = quest.subtitle,
-        onEditClicked = actions.onEditClicked?.let { edit -> { edit(quest.ref) } },
-        onClose = onClose,
+        showEditHint = actions.onEditClicked != null,
         quick = actions.quickEdit,
     )
     val statusTitle = stringResource(Res.string.entity_sheet_status_label)
@@ -260,40 +244,20 @@ private fun QuestSummaryBody(
     EntityDeleteButton(quest.ref, actions)
 }
 
-private val HeaderButtonSize = 36.dp
-
 /** the sheet's top block - overline row with its actions, the optional hold tip, then emblem and title */
 @Composable
 internal fun EntityHeader(
     emblem: EntityEmblem,
-    overlineTypeLabel: String,
-    overlineValue: String,
     title: String,
     subtitle: String,
-    onClose: () -> Unit,
     modifier: Modifier = Modifier,
     strikeThrough: Boolean = false,
-    onEditClicked: (() -> Unit)? = null,
+    showEditHint: Boolean = false,
     quick: QuickEditSheet? = null,
     // a place's cover - sits between the overline row and the emblem, like the mockup's `sh.hasCover`
     cover: (@Composable () -> Unit)? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        EntityOverlineRow(
-            overline =
-                if (overlineValue.isBlank()) {
-                    overlineTypeLabel.uppercase()
-                } else {
-                    stringResource(
-                        Res.string.entity_sheet_overline_format,
-                        overlineTypeLabel.uppercase(),
-                        overlineValue.uppercase(),
-                    )
-                },
-            color = emblem.color.foreground,
-            onEditClicked = onEditClicked,
-            onClose = onClose,
-        )
         // mockup - the overline's -6dp and the tip's -4dp margins leave 8dp above the tip and 18dp below it
         if (quick.hasVisibleHoldTip()) {
             Spacer(Modifier.height(8.dp))
@@ -312,7 +276,7 @@ internal fun EntityHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (emblem.hasPortraitSlot) {
-                EntityPortraitSlot(emblem, title, quick, showEditHint = onEditClicked != null)
+                EntityPortraitSlot(emblem, title, quick, showEditHint = showEditHint)
             } else {
                 EntityEmblemBox(emblem)
             }
@@ -326,42 +290,6 @@ internal fun EntityHeader(
             )
         }
     }
-}
-
-@Composable
-private fun EntityOverlineRow(
-    overline: String,
-    color: Color,
-    onEditClicked: (() -> Unit)?,
-    onClose: () -> Unit,
-) {
-    // already uppercased by the caller's string resource, so SectionOverline's own uppercase is a no-op here
-    SectionOverline(
-        text = overline,
-        color = color,
-        style = OverlineStyle.Section,
-        trailingContent = {
-            // matches the original Row's spacedBy(8.dp), now that the overline and the buttons are split apart
-            Spacer(Modifier.width(8.dp))
-            onEditClicked?.let { onClick ->
-                IconBadge(
-                    size = HeaderButtonSize,
-                    background = AppPalette.Gold.copy(alpha = 0.12f),
-                    border = AppPalette.Gold.copy(alpha = 0.45f),
-                    onClick = onClick,
-                ) {
-                    Icon(
-                        AppIcons.Edit,
-                        contentDescription = null,
-                        tint = AppPalette.GoldBright,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-                Spacer(Modifier.width(8.dp))
-            }
-            SheetCloseButton(onClick = onClose, size = HeaderButtonSize)
-        },
-    )
 }
 
 @Composable

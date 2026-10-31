@@ -43,13 +43,14 @@ internal fun SessionDetailTagsSheet(
     eventSink: (SessionDetailEvent) -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = { eventSink(SessionDetailEvent.TagSheetDismissed) }) {
-        AppSheetColumn(spacing = 18.dp, scroll = true) {
+        AppSheetColumn(spacing = 18.dp, scroll = true, header = {
             AppSheetHeader(
                 title = stringResource(Res.string.session_detail_tag_sheet_title),
                 onClose = { eventSink(SessionDetailEvent.TagSheetDismissed) },
                 overline = sheet.overline.ifEmpty { null },
                 subtitle = sheet.sessionTitle,
             )
+        }) {
             if (sheet.suggestions.isNotEmpty()) {
                 TagSuggestionsSection(sheet.suggestions, eventSink)
             }

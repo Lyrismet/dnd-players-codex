@@ -49,13 +49,14 @@ fun PhraseSnippetsSheet(
     onEvent: (PhraseSheetEvent) -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = { onEvent(PhraseSheetEvent.Dismissed) }) {
-        AppSheetColumn(spacing = 18.dp, scroll = true) {
+        AppSheetColumn(spacing = 18.dp, scroll = true, header = {
             AppSheetHeader(
                 title = stringResource(Res.string.phrase_sheet_title),
                 onClose = { onEvent(PhraseSheetEvent.Dismissed) },
                 overline = stringResource(Res.string.phrase_sheet_overline),
                 intro = stringResource(Res.string.phrase_sheet_intro),
             )
+        }) {
             PinnedPhrasesSection(state, onEvent)
             FrequentPhrasesSection(state.frequent, onEvent)
             Text(

@@ -69,13 +69,14 @@ internal fun CampaignCreateSheet(
 ) {
     val onItems = sheet.step == CampaignCreateStep.ITEMS
     AppBottomSheet(onDismissRequest = { onEvent(CampaignSheetEvent.Dismissed) }) {
-        AppSheetColumn(spacing = 14.dp, scroll = true) {
+        AppSheetColumn(spacing = 14.dp, scroll = true, header = {
             AppSheetHeader(
                 overline = stringResource(Res.string.campaign_create_overline),
                 title =
                     stringResource(if (onItems) Res.string.campaign_items_title else Res.string.campaign_create_title),
                 onClose = { onEvent(CampaignSheetEvent.Dismissed) },
             )
+        }) {
             if (onItems) CampaignItemsStep(sheet, onEvent) else CampaignFormStep(sheet, onEvent)
         }
     }
