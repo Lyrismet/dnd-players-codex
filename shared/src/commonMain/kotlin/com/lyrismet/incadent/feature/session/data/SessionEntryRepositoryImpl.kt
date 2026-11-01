@@ -5,6 +5,8 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
+import com.lyrismet.incadent.core.identity.newOriginId
+import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
@@ -45,7 +47,14 @@ class SessionEntryRepositoryImpl(
         withContext(DatabaseDispatcher) {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
             database.transactionWithResult {
-                queries.insert(sessionNoteId, now, body, edited = false, mention_check = true)
+                queries.insert(
+                    sessionNoteId,
+                    now,
+                    body,
+                    edited = false,
+                    mention_check = true,
+                    origin_id = newOriginId(),
+                )
                 queries.lastInsertRowId().executeAsOne()
             }
         }
@@ -59,6 +68,7 @@ class SessionEntryRepositoryImpl(
                 entry.body,
                 entry.edited,
                 entry.mentionCheck,
+                entry.originId.orNewOriginId(),
             )
             entry.id
         }
@@ -101,6 +111,7 @@ class SessionEntryRepositoryImpl(
         body: String,
         edited: Boolean,
         mentionCheck: Boolean,
+        originId: String,
     ) = SessionEntry(
         id = id,
         sessionNoteId = sessionNoteId,
@@ -108,5 +119,6 @@ class SessionEntryRepositoryImpl(
         body = body,
         edited = edited,
         mentionCheck = mentionCheck,
+        originId = originId,
     )
 }

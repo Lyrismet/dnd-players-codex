@@ -16,34 +16,36 @@ CREATE TABLE party_member (
     fell_combat_id INTEGER REFERENCES combat(id) ON DELETE SET NULL,
     portrait BLOB,
     portrait_thumb BLOB,
-    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX party_member_campaign_id ON party_member(campaign_id);
+CREATE UNIQUE INDEX party_member_origin_id ON party_member(campaign_id, origin_id);
 CREATE INDEX party_member_fell_combat_id ON party_member(fell_combat_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
 SELECT id, name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current,
-    description, fallen, fell_combat_id, portrait_thumb
+    description, fallen, fell_combat_id, portrait_thumb, origin_id
 FROM party_member
 WHERE campaign_id = ?
 ORDER BY name;
 
 selectById:
 SELECT id, name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current,
-    description, fallen, fell_combat_id, portrait_thumb, portrait
+    description, fallen, fell_combat_id, portrait_thumb, portrait, origin_id
 FROM party_member
 WHERE id = ?;
 
 insert:
-INSERT INTO party_member(name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, portrait, portrait_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO party_member(name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, portrait, portrait_thumb, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO party_member(id, name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, fallen, fell_combat_id, portrait, portrait_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO party_member(id, name, character_class, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, fallen, fell_combat_id, portrait, portrait_thumb, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:

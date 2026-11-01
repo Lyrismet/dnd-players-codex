@@ -18,6 +18,7 @@ data class PartyMember(
     // fell in a fight and is out of the party until brought back, [fellCombatId] is that fight
     val fallen: Boolean = false,
     val fellCombatId: Long? = null,
+    val originId: String = "",
 )
 
 enum class PartyPresence {

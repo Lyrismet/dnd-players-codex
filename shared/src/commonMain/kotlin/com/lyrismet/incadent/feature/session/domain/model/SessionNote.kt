@@ -7,6 +7,7 @@ data class SessionNote(
     val title: String,
     val sessionDate: LocalDateTime,
     val endedAt: LocalDateTime?,
+    val originId: String = "",
 ) {
     val isLive: Boolean get() = endedAt == null
 }

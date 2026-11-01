@@ -5,22 +5,24 @@ CREATE TABLE session_note (
     session_date TEXT AS LocalDateTime NOT NULL,
     ended_at TEXT AS LocalDateTime,
     created_at INTEGER NOT NULL,
-    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX session_note_campaign_date ON session_note(campaign_id, session_date);
+CREATE UNIQUE INDEX session_note_origin_id ON session_note(campaign_id, origin_id);
 
 selectAll:
-SELECT id, title, session_date, ended_at, created_at FROM session_note
+SELECT id, title, session_date, ended_at, created_at, origin_id FROM session_note
 WHERE campaign_id = ?
 ORDER BY session_date DESC;
 
 selectById:
-SELECT id, title, session_date, ended_at, created_at FROM session_note WHERE id = ?;
+SELECT id, title, session_date, ended_at, created_at, origin_id FROM session_note WHERE id = ?;
 
 insert:
-INSERT INTO session_note(title, session_date, ended_at, created_at, campaign_id)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO session_note(title, session_date, ended_at, created_at, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE session_note

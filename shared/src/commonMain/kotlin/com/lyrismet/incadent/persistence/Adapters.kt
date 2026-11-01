@@ -3,6 +3,7 @@ package com.lyrismet.incadent.persistence
 import app.cash.sqldelight.ColumnAdapter
 import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -29,6 +30,7 @@ val npcLifeStateAdapter = enumColumnAdapter(NpcLifeState.ALIVE)
 val partyPresenceAdapter = enumColumnAdapter(PartyPresence.IN)
 val questStatusAdapter = enumColumnAdapter(QuestStatus.ACTIVE)
 val campaignStatusAdapter = enumColumnAdapter(CampaignStatus.LIVE)
+val exchangeKindAdapter = enumColumnAdapter(ExchangeKind.NPC)
 val combatOutcomeAdapter = enumColumnAdapter(CombatOutcome.INTERRUPTED)
 val combatPhaseAdapter = enumColumnAdapter(CombatPhase.FINISHED)
 val combatSideAdapter = enumColumnAdapter(CombatSide.ENEMY)

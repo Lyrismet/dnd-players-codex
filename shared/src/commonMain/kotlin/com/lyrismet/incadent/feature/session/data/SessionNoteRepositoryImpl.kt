@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
+import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
@@ -48,6 +49,7 @@ class SessionNoteRepositoryImpl(
                         sessionNote.endedAt,
                         Clock.System.now().toEpochMilliseconds(),
                         current.requireId(),
+                        sessionNote.originId.orNewOriginId(),
                     )
                     queries.lastInsertRowId().executeAsOne()
                 }
@@ -76,12 +78,13 @@ class SessionNoteRepositoryImpl(
     }
 
     // createdAt is required to match selectAll's column order even though the domain model doesn't expose it
-    @Suppress("UnusedParameter")
+    @Suppress("UnusedParameter", "LongParameterList")
     private fun toDomain(
         id: Long,
         title: String,
         sessionDate: LocalDateTime,
         endedAt: LocalDateTime?,
         createdAt: Long,
-    ) = SessionNote(id = id, title = title, sessionDate = sessionDate, endedAt = endedAt)
+        originId: String,
+    ) = SessionNote(id = id, title = title, sessionDate = sessionDate, endedAt = endedAt, originId = originId)
 }

@@ -27,7 +27,8 @@ class NicknamesPersistenceTest {
                     nicknames = listOf("Седой", "Кузнец"),
                 )
             val id = npcs.upsert(npc)
-            assertEquals(npc.copy(id = id), npcs.getById(id))
+            val stored = npcs.getById(id)
+            assertEquals(npc.copy(id = id, originId = stored?.originId.orEmpty()), stored)
 
             npcs.upsert(npc.copy(id = id, nicknames = emptyList(), description = "другая"))
             assertEquals(emptyList(), npcs.getById(id)?.nicknames)

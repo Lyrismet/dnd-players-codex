@@ -7,36 +7,38 @@ CREATE TABLE quest (
     given_by_npc_id INTEGER REFERENCES npc(id) ON DELETE SET NULL,
     location_id INTEGER REFERENCES location(id) ON DELETE SET NULL,
     description TEXT NOT NULL DEFAULT '',
-    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX quest_given_by_npc_id ON quest(given_by_npc_id);
 CREATE INDEX quest_location_id ON quest(location_id);
 CREATE INDEX quest_campaign_id ON quest(campaign_id);
+CREATE UNIQUE INDEX quest_origin_id ON quest(campaign_id, origin_id);
 
 selectAll:
-SELECT id, title, status, reward, given_by_npc_id, location_id, description FROM quest
+SELECT id, title, status, reward, given_by_npc_id, location_id, description, origin_id FROM quest
 WHERE campaign_id = ?
 ORDER BY id DESC;
 
 selectById:
-SELECT id, title, status, reward, given_by_npc_id, location_id, description FROM quest WHERE id = ?;
+SELECT id, title, status, reward, given_by_npc_id, location_id, description, origin_id FROM quest WHERE id = ?;
 
 selectByStatus:
-SELECT id, title, status, reward, given_by_npc_id, location_id, description FROM quest
+SELECT id, title, status, reward, given_by_npc_id, location_id, description, origin_id FROM quest
 WHERE campaign_id = ? AND status = ?;
 
 selectByLocation:
-SELECT id, title, status, reward, given_by_npc_id, location_id, description FROM quest WHERE location_id = ?;
+SELECT id, title, status, reward, given_by_npc_id, location_id, description, origin_id FROM quest WHERE location_id = ?;
 
 insert:
-INSERT INTO quest(title, status, reward, given_by_npc_id, location_id, description, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO quest(title, status, reward, given_by_npc_id, location_id, description, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO quest(id, title, status, reward, given_by_npc_id, location_id, description, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO quest(id, title, status, reward, given_by_npc_id, location_id, description, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE quest

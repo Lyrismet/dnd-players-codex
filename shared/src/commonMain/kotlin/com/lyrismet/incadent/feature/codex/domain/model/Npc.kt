@@ -17,6 +17,8 @@ data class Npc(
     val speciesId: Long? = null,
     // only what the npc has of its own, the rest is read from the species
     val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
+    // the stable id that travels in files, empty until the record is stored
+    val originId: String = "",
 )
 
 /** the party's relation to this npc - independent of whether the npc is still alive */

@@ -13,6 +13,13 @@ internal class FightImport(
     private val npcMap: Map<Long, Long>,
     private val partyMap: Map<Long, Long>,
 ) {
+    private val origins =
+        OriginSet(
+            database.combatQueries
+                .selectAll(campaignId)
+                .executeAsList()
+                .map { it.origin_id },
+        )
     private val combatMap = mutableMapOf<Long, Long>()
     private val fighterMap = mutableMapOf<Pair<Long, Long>, Long>()
 
@@ -41,6 +48,7 @@ internal class FightImport(
             record.outcome,
             record.finishedAt,
             campaignId,
+            origins.claim(record.originId),
         )
         combatMap[record.id] = database.combatQueries.lastInsertRowId().executeAsOne()
     }

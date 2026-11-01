@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
+import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
@@ -72,6 +73,7 @@ class SpeciesRepositoryImpl(
                 species.photo?.full,
                 species.photo?.thumb,
                 current.requireId(),
+                species.originId.orNewOriginId(),
             )
             return species.id
         }
@@ -84,6 +86,7 @@ class SpeciesRepositoryImpl(
             species.photo?.full,
             species.photo?.thumb,
             current.requireId(),
+            species.originId.orNewOriginId(),
         )
         return queries.lastInsertRowId().executeAsOne()
     }
@@ -116,6 +119,7 @@ class SpeciesRepositoryImpl(
         notes: String,
         hitPoints: Long?,
         photoThumb: ByteArray?,
+        originId: String,
     ) = Species(
         id,
         name,
@@ -126,6 +130,7 @@ class SpeciesRepositoryImpl(
             Photo(it)
         },
         hitPoints?.toInt(),
+        originId,
     )
 
     // the by-id row also carries the full jpeg
@@ -139,6 +144,7 @@ class SpeciesRepositoryImpl(
         hitPoints: Long?,
         photoThumb: ByteArray?,
         photo: ByteArray?,
-    ) = toDomain(id, name, creatureType, vulnerabilities, notes, hitPoints, photoThumb)
+        originId: String,
+    ) = toDomain(id, name, creatureType, vulnerabilities, notes, hitPoints, photoThumb, originId)
         .copy(photo = photoThumb?.let { Photo(it, photo) })
 }

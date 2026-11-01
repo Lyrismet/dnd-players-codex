@@ -28,7 +28,7 @@ internal class TestDatabase(
     }
 
     fun addCampaign(id: String) {
-        database.campaignQueries.insert(id, "Campaign $id", CampaignStatus.LIVE, 0L, 0L)
+        database.campaignQueries.insert(id, "Campaign $id", CampaignStatus.LIVE, 0L, 0L, "origin-$id")
     }
 
     companion object {

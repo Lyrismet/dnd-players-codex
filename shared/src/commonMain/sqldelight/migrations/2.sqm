@@ -1,0 +1,36 @@
+-- a stable id for every campaign, record, session, note and fight, each existing row gets its own
+ALTER TABLE campaign ADD COLUMN origin_id TEXT NOT NULL DEFAULT '';
+UPDATE campaign SET origin_id = lower(hex(randomblob(16)));
+CREATE INDEX campaign_origin_id ON campaign(origin_id);
+ALTER TABLE npc ADD COLUMN origin_id TEXT NOT NULL DEFAULT '';
+UPDATE npc SET origin_id = lower(hex(randomblob(16)));
+CREATE UNIQUE INDEX npc_origin_id ON npc(campaign_id, origin_id);
+ALTER TABLE quest ADD COLUMN origin_id TEXT NOT NULL DEFAULT '';
+UPDATE quest SET origin_id = lower(hex(randomblob(16)));
+CREATE UNIQUE INDEX quest_origin_id ON quest(campaign_id, origin_id);
+ALTER TABLE location ADD COLUMN origin_id TEXT NOT NULL DEFAULT '';
+UPDATE location SET origin_id = lower(hex(randomblob(16)));
+CREATE UNIQUE INDEX location_origin_id ON location(campaign_id, origin_id);
+ALTER TABLE species ADD COLUMN origin_id TEXT NOT NULL DEFAULT '';
+UPDATE species SET origin_id = lower(hex(randomblob(16)));
+CREATE UNIQUE INDEX species_origin_id ON species(campaign_id, origin_id);
+ALTER TABLE party_member ADD COLUMN origin_id TEXT NOT NULL DEFAULT '';
+UPDATE party_member SET origin_id = lower(hex(randomblob(16)));
+CREATE UNIQUE INDEX party_member_origin_id ON party_member(campaign_id, origin_id);
+ALTER TABLE session_note ADD COLUMN origin_id TEXT NOT NULL DEFAULT '';
+UPDATE session_note SET origin_id = lower(hex(randomblob(16)));
+CREATE UNIQUE INDEX session_note_origin_id ON session_note(campaign_id, origin_id);
+ALTER TABLE session_entry ADD COLUMN origin_id TEXT NOT NULL DEFAULT '';
+UPDATE session_entry SET origin_id = lower(hex(randomblob(16)));
+CREATE UNIQUE INDEX session_entry_origin_id ON session_entry(session_note_id, origin_id);
+ALTER TABLE combat ADD COLUMN origin_id TEXT NOT NULL DEFAULT '';
+UPDATE combat SET origin_id = lower(hex(randomblob(16)));
+CREATE UNIQUE INDEX combat_origin_id ON combat(campaign_id, origin_id);
+
+CREATE TABLE origin_alias (
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    alias_origin_id TEXT NOT NULL,
+    origin_id TEXT NOT NULL,
+    PRIMARY KEY (campaign_id, kind, alias_origin_id)
+);

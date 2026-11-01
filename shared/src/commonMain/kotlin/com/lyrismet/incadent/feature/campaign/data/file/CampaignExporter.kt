@@ -13,6 +13,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 import com.lyrismet.incadent.feature.mention.domain.remapMentionTokens
 import kotlin.io.encoding.Base64
+import com.lyrismet.incadent.db.Combat as CombatRow
 
 private const val BASE64_NUMERATOR = 4
 private const val BASE64_DENOMINATOR = 3
@@ -74,6 +75,11 @@ class CampaignExporter(
                     .selectName(campaignId)
                     .executeAsOneOrNull()
                     .orEmpty(),
+            originId =
+                database.campaignQueries
+                    .selectOriginId(campaignId)
+                    .executeAsOneOrNull()
+                    .orEmpty(),
             places = placeQueries.selectAll(campaignId).executeAsList(),
             npcs = npcQueries.selectAllWithLocations(campaignId).executeAsList(),
             quests = questQueries.selectAll(campaignId).executeAsList(),
@@ -111,6 +117,7 @@ class CampaignExporter(
                     selection.photos,
                     scope.recordCount,
                     scope.sessions.size,
+                    snapshot.originId,
                 ),
             )
             writeEntities(snapshot, selection, scope, ids, writer)
@@ -159,6 +166,7 @@ class CampaignExporter(
                     it.vulnerabilities,
                     it.notes,
                     it.hit_points?.toInt(),
+                    it.origin_id,
                 ),
             )
         }
@@ -167,7 +175,15 @@ class CampaignExporter(
             .filter { it.id in scope.places }
             .sortedBy { depth.getValue(it.id) }
             .forEach {
-                writer.write(FileRecord.Place(ids.place(it.id), it.name, it.description, it.parent_id?.let(ids::place)))
+                writer.write(
+                    FileRecord.Place(
+                        ids.place(it.id),
+                        it.name,
+                        it.description,
+                        it.parent_id?.let(ids::place),
+                        it.origin_id,
+                    ),
+                )
             }
     }
 
@@ -194,6 +210,7 @@ class CampaignExporter(
                             .toIdList()
                             .filter { it in scope.places }
                             .map(ids::place),
+                    originId = npc.origin_id,
                 ),
             )
         }
@@ -207,6 +224,7 @@ class CampaignExporter(
                     giverNpcId = it.given_by_npc_id?.takeIf { npc -> npc in scope.npcs }?.let(ids::npc),
                     placeId = it.location_id?.takeIf { place -> place in scope.places }?.let(ids::place),
                     description = it.description,
+                    originId = it.origin_id,
                 ),
             )
         }
@@ -225,6 +243,7 @@ class CampaignExporter(
                     hpCurrent = it.hp_current?.toInt(),
                     description = it.description,
                     fallen = it.fallen,
+                    originId = it.origin_id,
                 ),
             )
         }
@@ -240,7 +259,15 @@ class CampaignExporter(
         ordered.forEach {
             val tags = snapshot.tagNames[it.id].orEmpty()
             writer.write(
-                FileRecord.Session(ids.session(it.id), it.title, it.session_date, it.ended_at, it.created_at, tags),
+                FileRecord.Session(
+                    ids.session(it.id),
+                    it.title,
+                    it.session_date,
+                    it.ended_at,
+                    it.created_at,
+                    tags,
+                    it.origin_id,
+                ),
             )
         }
         ordered.forEach { session ->
@@ -252,6 +279,7 @@ class CampaignExporter(
                         body = remapMentionTokens(entry.body) { ids.mapped(it) },
                         edited = entry.edited,
                         mentionCheck = entry.mention_check,
+                        originId = entry.origin_id,
                     ),
                 )
             }
@@ -289,18 +317,7 @@ class CampaignExporter(
                 .groupBy { it.combat_id }
         val numbers = combats.withIndex().associate { (index, row) -> row.id to index + 1L }
         combats.forEach { row ->
-            val sessionId = checkNotNull(row.session_note_id)
-            writer.write(
-                FileRecord.Combat(
-                    id = numbers.getValue(row.id),
-                    sessionId = ids.session(sessionId),
-                    outcome = row.outcome ?: CombatOutcome.INTERRUPTED,
-                    startedAt = row.started_at,
-                    finishedAt = row.finished_at,
-                    rounds = row.round.toInt(),
-                    turn = row.turn.toInt(),
-                ),
-            )
+            writer.write(row.toFileRecord(numbers.getValue(row.id), ids.session(checkNotNull(row.session_note_id))))
         }
         combats.forEach { row ->
             val members = fighters[row.id].orEmpty().withIndex().associate { (index, it) -> it.id to index + 1L }
@@ -407,4 +424,18 @@ private fun Combat_event.toBlow(
     hit = hit.toInt(),
     raw = raw.toInt(),
     scale = scale,
+)
+
+private fun CombatRow.toFileRecord(
+    number: Long,
+    sessionNumber: Long,
+) = FileRecord.Combat(
+    id = number,
+    sessionId = sessionNumber,
+    outcome = outcome ?: CombatOutcome.INTERRUPTED,
+    startedAt = started_at,
+    finishedAt = finished_at,
+    rounds = round.toInt(),
+    turn = turn.toInt(),
+    originId = origin_id,
 )

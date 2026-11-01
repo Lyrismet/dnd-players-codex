@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
+import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.Location
@@ -105,6 +106,7 @@ class LocationRepositoryImpl(
                 location.cover?.full,
                 location.cover?.thumb,
                 current.requireId(),
+                location.originId.orNewOriginId(),
             )
             return location.id
         }
@@ -115,6 +117,7 @@ class LocationRepositoryImpl(
             location.cover?.full,
             location.cover?.thumb,
             current.requireId(),
+            location.originId.orNewOriginId(),
         )
         return queries.lastInsertRowId().executeAsOne()
     }
@@ -145,7 +148,8 @@ class LocationRepositoryImpl(
         description: String,
         parentId: Long?,
         coverThumb: ByteArray?,
-    ) = Location(id, name, description, parentId, coverThumb?.let { Photo(it) })
+        originId: String,
+    ) = Location(id, name, description, parentId, coverThumb?.let { Photo(it) }, originId)
 
     // the by-id row also carries the full jpeg - one param per column, dictated by the generated mapper
     @Suppress("LongParameterList")
@@ -156,11 +160,13 @@ class LocationRepositoryImpl(
         parentId: Long?,
         coverThumb: ByteArray?,
         cover: ByteArray?,
+        originId: String,
     ) = toDomain(
         id,
         name,
         description,
         parentId,
         coverThumb,
+        originId,
     ).copy(cover = coverThumb?.let { Photo(it, cover) })
 }

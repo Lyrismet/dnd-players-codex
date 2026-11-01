@@ -8,6 +8,7 @@ data class Quest(
     val givenByNpcId: Long?,
     val locationId: Long?,
     val description: String = "",
+    val originId: String = "",
 )
 
 enum class QuestStatus {
