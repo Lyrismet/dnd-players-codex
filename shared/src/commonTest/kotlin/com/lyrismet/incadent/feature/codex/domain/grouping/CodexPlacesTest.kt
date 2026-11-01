@@ -57,28 +57,28 @@ class CodexPlacesTest {
     }
 
     @Test
-    fun `with several top level places each of them is a region`() {
-        assertEquals(wastes, tree.regionOf(castle))
-        assertEquals(wastes, tree.regionOf(wastes))
-        assertEquals(plane, tree.regionOf(temple))
-        assertEquals(plane, tree.regionOf(valley))
+    fun `the top level places are never regions, the places just below them are`() {
+        assertEquals(valley, tree.regionOf(temple))
+        assertEquals(valley, tree.regionOf(valley))
+        assertEquals(castle, tree.regionOf(castle))
+        assertEquals(tower, tree.regionOf(tower))
+        assertEquals(null, tree.regionOf(plane))
+        assertEquals(null, tree.regionOf(wastes))
     }
 
     @Test
-    fun `a shared top level place is passed and its countries are the regions`() {
-        val world = location(1, "Материальный план")
-        val sanChitlan = location(2, "Сан-Читлан", parentId = 1)
-        val tkhalopl = location(3, "Ткхалопль", parentId = 1)
-        val village = location(4, "Деревня Ибиотса", parentId = 2)
-        val hut = location(5, "Хижина", parentId = 4)
-        val world3 = PlaceTree(listOf(world, sanChitlan, tkhalopl, village, hut))
+    fun `two planes share their countries as regions`() {
+        val material = location(1, "Материальный план")
+        val ethereal = location(2, "Эфирный план")
+        val sanChitlan = location(3, "Сан-Читлан", parentId = 1)
+        val mist = location(4, "Туманы", parentId = 2)
+        val village = location(5, "Деревня", parentId = 3)
+        val planes = PlaceTree(listOf(material, ethereal, sanChitlan, mist, village))
 
-        assertEquals(sanChitlan, world3.regionOf(village))
-        assertEquals(sanChitlan, world3.regionOf(hut))
-        assertEquals(sanChitlan, world3.regionOf(sanChitlan))
-        assertEquals(tkhalopl, world3.regionOf(tkhalopl))
-        // the shared place itself has no country, it stays its own region
-        assertEquals(world, world3.regionOf(world))
+        assertEquals(sanChitlan, planes.regionOf(village))
+        assertEquals(mist, planes.regionOf(mist))
+        assertEquals(null, planes.regionOf(material))
+        assertEquals(null, planes.regionOf(ethereal))
     }
 
     @Test
@@ -92,14 +92,14 @@ class CodexPlacesTest {
 
         assertEquals(north, chained.regionOf(town))
         assertEquals(south, chained.regionOf(south))
-        // wrappers above the branch are listed under the branching place
-        assertEquals(plane, chained.regionOf(world))
+        // the wrapper below the root is listed under the branching place, the root itself has no region
         assertEquals(plane, chained.regionOf(plane))
+        assertEquals(null, chained.regionOf(world))
     }
 
     @Test
-    fun `a lone top level place is its own region`() {
-        assertEquals(plane, PlaceTree(listOf(plane)).regionOf(plane))
+    fun `a lone top level place has no region`() {
+        assertEquals(null, PlaceTree(listOf(plane)).regionOf(plane))
     }
 
     @Test
@@ -139,7 +139,7 @@ class CodexPlacesTest {
         val homeless = npc(2)
         val regions = CodexRegions(listOf(roamer, homeless), all)
 
-        assertEquals(listOf(wastes, plane), regions.regionsOfNpc(roamer))
+        assertEquals(listOf(castle, tower, valley), regions.regionsOfNpc(roamer))
         assertTrue(regions.regionsOfNpc(homeless).isEmpty())
     }
 
@@ -151,8 +151,8 @@ class CodexPlacesTest {
         val nowhere = quest(3)
         val regions = CodexRegions(listOf(giver), all)
 
-        assertEquals(wastes, regions.regionOfQuest(placed))
-        assertEquals(plane, regions.regionOfQuest(viaGiver))
+        assertEquals(castle, regions.regionOfQuest(placed))
+        assertEquals(valley, regions.regionOfQuest(viaGiver))
         assertEquals(null, regions.regionOfQuest(nowhere))
     }
 

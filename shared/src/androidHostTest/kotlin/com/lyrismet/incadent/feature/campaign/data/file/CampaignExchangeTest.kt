@@ -69,6 +69,7 @@ class CampaignExchangeTest {
             byteArrayOf(1),
             source,
             "wolf-origin",
+            null,
         )
         val speciesId = database.speciesQueries.lastInsertRowId().executeAsOne()
         database.locationQueries.insert("Town", "big", null, jpeg, byteArrayOf(1), source, "town-origin")

@@ -25,6 +25,7 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FlameSweepEffect
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem.PartySummary
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_party_chronicle_damage
@@ -71,10 +72,16 @@ private fun PartyBody(
     if (fall != null) Epitaph(fall, actions)
     if (fall == null) PresencePicker(party, actions)
     EntityDescription(party.description, party.descriptionSegments, actions)
-    EntityFactsGrid(party.facts, actions.onEntityRefClicked, actions.quickEdit)
+    EntityFactsGrid(party.withLevelArrow(actions), actions.onEntityRefClicked, actions.quickEdit)
     if (fall != null) Chronicle(fall, actions.onPartyRevived?.let { revive -> { revive(party.ref.id) } }, onRevived)
     EntityRelatedNotesSection(party.name, party.relatedNotes, actions.onRelatedNoteClicked)
     EntityDeleteButton(party.ref, actions)
+}
+
+// the level line of the player's own character gets the arrow that raises it by one
+private fun PartySummary.withLevelArrow(actions: EntitySummarySheetActions): List<FactRow> {
+    val raise = actions.onPartyLevelRaised?.takeIf { canRaiseLevel } ?: return facts
+    return facts.map { if (it.edit == QuickEditField.LEVEL) it.copy(onRaise = { raise(ref.id) }) else it }
 }
 
 @Composable

@@ -33,6 +33,11 @@ sealed interface EntitySheetEvent {
         val partyId: Long,
     ) : EntitySheetEvent
 
+    /** the arrow in the level field of the player's own character */
+    data class PartyLevelRaised(
+        val partyId: Long,
+    ) : EntitySheetEvent
+
     data class QuestStatusSelected(
         val questId: Long,
         val status: QuestStatus,
@@ -83,6 +88,7 @@ fun EntitySheetEvent.writesCampaignData(): Boolean =
         is EntitySheetEvent.NpcLifeSelected,
         is EntitySheetEvent.PartyPresenceSelected,
         is EntitySheetEvent.PartyRevived,
+        is EntitySheetEvent.PartyLevelRaised,
         is EntitySheetEvent.QuestStatusSelected,
         is EntitySheetEvent.SpeciesVulnerabilityChanged,
         is EntitySheetEvent.NpcVulnerabilityChanged,
@@ -109,6 +115,7 @@ fun EntitySheetInteractions.onEvent(
         is EntitySheetEvent.NpcLifeSelected -> onNpcLifeSelected(scope, event.npcId, event.lifeState)
         is EntitySheetEvent.PartyPresenceSelected -> onPartyPresenceSelected(scope, event.partyId, event.presence)
         is EntitySheetEvent.PartyRevived -> onPartyRevived(scope, event.partyId)
+        is EntitySheetEvent.PartyLevelRaised -> onPartyLevelRaised(scope, event.partyId)
         is EntitySheetEvent.QuestStatusSelected -> onQuestStatusSelected(scope, event.questId, event.status)
         // the session screen takes this one before it gets here, a card opened elsewhere has no note to count in
         is EntitySheetEvent.SpeciesNoteQuantityStepped -> Unit
@@ -134,7 +141,7 @@ fun EntitySheetInteractions.onEvent(
  * the card's actions, every one sent to [send] as an [EntitySheetEvent]. Presence is offered only when
  * [partyPresence] is set, the rest are what only the codex manages.
  */
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "LongMethod")
 fun entitySheetActions(
     partyPresence: Boolean = false,
     speciesVulnerabilityEdit: Boolean = false,
@@ -165,6 +172,12 @@ fun entitySheetActions(
         onPartyRevived =
             if (partyPresence) {
                 { id -> send(EntitySheetEvent.PartyRevived(id)) }
+            } else {
+                null
+            },
+        onPartyLevelRaised =
+            if (partyPresence) {
+                { id -> send(EntitySheetEvent.PartyLevelRaised(id)) }
             } else {
                 null
             },

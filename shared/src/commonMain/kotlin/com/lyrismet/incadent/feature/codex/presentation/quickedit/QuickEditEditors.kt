@@ -49,9 +49,7 @@ import com.lyrismet.incadent.core.designsystem.component.PillFill
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.presentation.summary.RelationOption
-import com.lyrismet.incadent.feature.codex.presentation.summary.StatusOption
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.quick_edit_description_hint
@@ -166,34 +164,6 @@ fun LinkOptionEditor(
                     text = if (selected) "✓ ${option.label}" else option.label,
                     selected = selected,
                     onClick = { onEvent(QuickEditUiEvent.LinkChosen(id)) },
-                    selectedFill = PillFill.Neutral,
-                    selectedColor = option.color,
-                )
-            }
-        }
-    }
-}
-
-/** re-picks the creature type of a species - one pill per type, the picked one ticked */
-@Composable
-fun CreatureTypeEditor(
-    label: String,
-    options: List<StatusOption<CreatureType>>,
-    onEvent: (QuickEditUiEvent) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    EditorFrame(modifier) {
-        EditorHeader(label) {}
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            options.forEach { option ->
-                SelectablePill(
-                    text = if (option.isSelected) "✓ ${option.label}" else option.label,
-                    selected = option.isSelected,
-                    onClick = { onEvent(QuickEditUiEvent.CreatureTypeChosen(option.value)) },
                     selectedFill = PillFill.Neutral,
                     selectedColor = option.color,
                 )

@@ -55,6 +55,8 @@ sealed interface FileRecord {
         val notes: String = "",
         val hitPoints: Int? = null,
         val originId: String? = null,
+        // the player's own type by name, a file made before them has none
+        val customType: String? = null,
     ) : FileRecord
 
     @Serializable

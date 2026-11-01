@@ -150,6 +150,7 @@ class SessionListPresenter(
                 navigator.sessionEntryOpener(),
                 entityHistory,
                 onChanged = rememberEntityChangeReporter(undoController),
+                followsPartyLevel = { appPreferencesRepository.observeFollowPartyLevel().first() },
             )
         val quickEdit =
             QuickEditInteractions(

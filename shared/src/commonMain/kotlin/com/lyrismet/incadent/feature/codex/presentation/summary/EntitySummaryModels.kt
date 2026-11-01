@@ -4,7 +4,6 @@ import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.PortraitMark
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.domain.model.Photo
-import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Location
@@ -16,6 +15,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.style.DEFAULT_STATUS_GLYPH
 import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
@@ -89,8 +89,8 @@ data class FactRow(
     val edit: QuickEditField? = null,
     // the entities a link fact can be re-pointed at - only read when [edit] is a link field
     val linkOptions: List<MentionChipItem> = emptyList(),
-    // the types a creature type fact can be switched to - only read when [edit] is [QuickEditField.CREATURE_TYPE]
-    val creatureOptions: List<StatusOption<CreatureType>> = emptyList(),
+    // a small up arrow at the end of the line, null shows none
+    val onRaise: (() -> Unit)? = null,
 )
 
 /** one candidate of an editable relation group, ticked when it is linked to the card's entity right now */
@@ -182,7 +182,7 @@ sealed interface EntitySummaryItem {
     data class SpeciesSummary(
         val ref: EntityRef.Species,
         val name: String,
-        val creatureType: CreatureType,
+        val type: SpeciesType,
         val notes: String,
         val descriptionSegments: List<MentionSegment> = emptyList(),
         val emblem: EntityEmblem,
@@ -211,6 +211,8 @@ sealed interface EntitySummaryItem {
         val relatedNotes: List<RelatedNoteItem>,
         // set for a character who fell, the card then shows the epitaph, the chronicle and the way back
         val fall: PartyFall? = null,
+        // the player's own level can still go up
+        val canRaiseLevel: Boolean = false,
     ) : EntitySummaryItem
 }
 

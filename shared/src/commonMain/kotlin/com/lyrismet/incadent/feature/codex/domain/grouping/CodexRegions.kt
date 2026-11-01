@@ -11,11 +11,10 @@ class CodexRegions(
 ) {
     val places = PlaceTree(locations)
 
-    /** one region per distinct place the npc can be met at, empty when it has no place */
+    /** one region per distinct place the npc can be met at, empty when it has no place or only a top level one */
     fun regionsOfNpc(npc: Npc): List<Location> =
         npc.locationIds
-            .mapNotNull { places.find(it) }
-            .map { places.regionOf(it) }
+            .mapNotNull { id -> places.find(id)?.let(places::regionOf) }
             .distinctBy { it.id }
 
     /** a quest's region comes from its "where" place, falling back to the first place of its giver */

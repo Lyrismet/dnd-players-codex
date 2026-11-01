@@ -1,9 +1,9 @@
 package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import com.lyrismet.incadent.domain.model.Photo
-import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 
 /** how a field takes its value - text and numbers are typed in, links and choices are tapped */
 sealed interface QuickEditKind {
@@ -22,6 +22,9 @@ sealed interface QuickEditKind {
     data object Places : QuickEditKind
 
     data object Choice : QuickEditKind
+
+    /** the creature type picked in the select sheet over the card, own types are made and kept there */
+    data object TypeSheet : QuickEditKind
 
     /** a group of linked entities on the card - every tap on a candidate toggles its link at once */
     data object Relations : QuickEditKind
@@ -63,7 +66,7 @@ enum class QuickEditField(
     PORTRAIT(QuickEditKind.Photo),
 
     /** the 5e creature type of a species, picked from the list of types */
-    CREATURE_TYPE(QuickEditKind.Choice),
+    CREATURE_TYPE(QuickEditKind.TypeSheet),
 
     /** the wide picture at the top of a place's card */
     COVER(QuickEditKind.Photo),
@@ -79,7 +82,10 @@ enum class QuickEditField(
 }
 
 /** true for a field that is edited in a select sheet over the card, the line itself stays as it is meanwhile */
-val QuickEditField.editsInSheet: Boolean get() = kind is QuickEditKind.Places || kind == QuickEditKind.Species
+val QuickEditField.editsInSheet: Boolean get() =
+    kind is QuickEditKind.Places ||
+        kind == QuickEditKind.Species ||
+        kind == QuickEditKind.TypeSheet
 
 /** the typed-in or tapped value of one [QuickEditField], always matching that field's [QuickEditKind] */
 sealed interface QuickEditValue {
@@ -103,7 +109,7 @@ sealed interface QuickEditValue {
     ) : QuickEditValue
 
     data class Creature(
-        val type: CreatureType,
+        val type: SpeciesType,
     ) : QuickEditValue
 
     /** null removes the photo */
@@ -128,6 +134,7 @@ fun quickEditValueFromDraft(
             }
         QuickEditKind.Link,
         QuickEditKind.Species,
+        QuickEditKind.TypeSheet,
         QuickEditKind.Places,
         QuickEditKind.Choice,
         QuickEditKind.Photo,

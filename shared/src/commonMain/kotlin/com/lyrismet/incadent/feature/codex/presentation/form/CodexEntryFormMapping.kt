@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -136,7 +137,7 @@ internal fun Species.toFields(ref: EntityRef.Species) =
         name = name,
         description = notes,
         portrait = photo,
-        speciesType = creatureType,
+        speciesType = type,
         vulnerabilities = vulnerabilities,
         speciesHitPoints = hitPoints,
     )
@@ -145,9 +146,9 @@ internal fun CodexEntryFormFields.toSpecies() =
     Species(
         id = (editingRef as? EntityRef.Species)?.id ?: reviveId,
         name = name.trim().capitalizeFirst(),
-        creatureType = speciesType,
+        creatureType = CreatureType.UNSPECIFIED,
         vulnerabilities = vulnerabilities,
         notes = description.trim(),
         photo = portrait,
         hitPoints = speciesHitPoints?.coerceIn(SPECIES_HIT_POINTS_RANGE),
-    )
+    ).withType(speciesType)

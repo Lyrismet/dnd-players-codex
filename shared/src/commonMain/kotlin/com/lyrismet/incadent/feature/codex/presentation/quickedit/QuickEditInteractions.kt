@@ -2,6 +2,9 @@ package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.portrait.CropRect
@@ -17,10 +20,13 @@ import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.grouping.withRecentPlaces
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.Location
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.quickSpecies
+import com.lyrismet.incadent.feature.codex.presentation.form.CreatureTypeSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.SpeciesSelectState
+import com.lyrismet.incadent.feature.codex.presentation.form.creatureTypeSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.editingPlace
 import com.lyrismet.incadent.feature.codex.presentation.form.placeFieldTitle
 import com.lyrismet.incadent.feature.codex.presentation.form.placeSelectState
@@ -29,13 +35,18 @@ import com.lyrismet.incadent.feature.codex.presentation.form.quickPlaceTarget
 import com.lyrismet.incadent.feature.codex.presentation.form.speciesSelectState
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
+import com.lyrismet.incadent.feature.codex.presentation.summary.entityWriteLock
 import com.lyrismet.incadent.feature.codex.presentation.summary.toMentionRef
 import com.lyrismet.incadent.feature.mention.presentation.MentionField
 import com.lyrismet.incadent.feature.mention.presentation.MentionSource
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_move_into
+import dndplayerscodex.shared.generated.resources.species_type_deleted_title
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 /** a photo in the crop window and the card it will be saved to - the ref is read once, the sheet may close meanwhile */
@@ -82,6 +93,7 @@ class QuickEditInteractions(
             photoCrop = photoCrop.value?.draft,
             placeSelect = placeSelectOf(edit, ref, records),
             speciesSelect = speciesSelectOf(edit, ref, records),
+            creatureTypeSelect = creatureTypeSelectOf(edit, ref, records),
             holdTipVisible = holdTipAllowed && edit == null,
             undoAction = undoAction,
             mention = mention?.let { MentionField(it, ref?.toMentionRef()) },
@@ -136,6 +148,24 @@ class QuickEditInteractions(
         return speciesSelectState(records.species, selectedId, isRussian)
     }
 
+    // null unless the creature type of a species card is being edited
+    @Composable
+    private fun creatureTypeSelectOf(
+        edit: InlineEdit?,
+        ref: EntityRef?,
+        records: CodexRecords,
+    ): CreatureTypeSelectState? {
+        val customTypes by remember(speciesRepository) {
+            speciesRepository.observeCustomTypes()
+        }.collectAsState(initial = emptyList())
+        val species = (ref as? EntityRef.Species)?.let { held -> records.species.firstOrNull { it.id == held.id } }
+        return if (edit?.field == QuickEditField.CREATURE_TYPE && species != null) {
+            creatureTypeSelectState(species.type, customTypes, records.species)
+        } else {
+            null
+        }
+    }
+
     // flat event dispatch table, grows one branch per event variant - not real branching complexity
     @Suppress("CyclomaticComplexMethod")
     fun onEvent(
@@ -149,6 +179,10 @@ class QuickEditInteractions(
             QuickEditUiEvent.EditSaved -> saveDraft(scope)
             is QuickEditUiEvent.LinkChosen -> onLinkChosen(scope, event.id)
             is QuickEditUiEvent.CreatureTypeChosen -> commitChosen(scope, QuickEditValue.Creature(event.type))
+            is QuickEditUiEvent.CustomTypeCreated -> createCustomType(scope, event.name)
+            is QuickEditUiEvent.CustomTypeRenamed ->
+                scope.launch { entityWriteLock.withLock { speciesRepository.renameCustomType(event.id, event.name) } }
+            is QuickEditUiEvent.CustomTypeDeleted -> deleteCustomType(scope, event.id)
             is QuickEditUiEvent.PlacesChosen -> {
                 recentPlaceIds.value = recentPlaceIds.value.withRecentPlaces(event.ids)
                 commitChosen(scope, QuickEditValue.Places(event.ids))
@@ -195,6 +229,42 @@ class QuickEditInteractions(
             if (inlineEdit.value == null) return@launch locationRepository.delete(id)
             recentPlaceIds.value = recentPlaceIds.value.withRecentPlaces(listOf(id))
             commitChosen(scope, QuickEditValue.Places(if (isMulti) event.checked + id else listOf(id)))
+        }
+    }
+
+    // the species that carried the type get it back with the undo
+    private fun deleteCustomType(
+        scope: CoroutineScope,
+        id: Long,
+    ) {
+        scope.launch {
+            entityWriteLock.withLock {
+                val type = speciesRepository.observeCustomTypes().first().find { it.id == id } ?: return@launch
+                val carriers = speciesRepository.observeAll().first().filter { it.customType?.id == id }
+                speciesRepository.deleteCustomType(id)
+                undoController.show(getString(Res.string.species_type_deleted_title), type.name) {
+                    entityWriteLock.withLock {
+                        val back = speciesRepository.createCustomType(type.name)
+                        carriers.forEach { old ->
+                            speciesRepository
+                                .getById(old.id)
+                                ?.takeIf { it.customType == null }
+                                ?.let { speciesRepository.upsert(it.copy(customType = back)) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun createCustomType(
+        scope: CoroutineScope,
+        name: String,
+    ) {
+        if (name.isBlank()) return
+        scope.launch {
+            val type = speciesRepository.createCustomType(name)
+            commitChosen(scope, QuickEditValue.Creature(SpeciesType.Custom(type)))
         }
     }
 

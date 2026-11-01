@@ -10,7 +10,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.Species
-import com.lyrismet.incadent.feature.codex.presentation.summary.creatureTypeLabels
+import com.lyrismet.incadent.feature.codex.presentation.summary.speciesTypeLabels
 import com.lyrismet.incadent.feature.combat.domain.grouping.baseName
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
@@ -176,7 +176,7 @@ internal fun searchState(
     val ally = draft.side == PrepSide.ALLY
     val members = combat?.combatants.orEmpty().filter { it.side == side }
     val query = rememberDebounced(draft.query.normalized()) { it.isEmpty() }
-    val typeLabels = creatureTypeLabels()
+    val typeLabels = speciesTypeLabels()
     val npcRows =
         npcs
             .filter { it.lifeState == NpcLifeState.ALIVE && (it.status == NpcStatus.ENEMY) != ally }
@@ -203,7 +203,7 @@ internal fun searchState(
             .map { kind ->
                 val key = speciesKey(kind.id)
                 val base =
-                    stringResource(Res.string.combat_prep_found_species_type, typeLabels.getValue(kind.creatureType))
+                    stringResource(Res.string.combat_prep_found_species_type, typeLabels.of(kind))
                 FoeRow(
                     key,
                     kind.name,

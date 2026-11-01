@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +41,7 @@ import com.lyrismet.incadent.core.debounce.rememberDebounced
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.core.selectlist.SelectRow
@@ -51,6 +53,7 @@ private val ListMaxHeight = 380.dp
 private val SearchHeight = 46.dp
 private val RowMinHeight = 58.dp
 private val RowContentGap = 16.dp
+private val EditButtonSize = 44.dp
 private val ListShape = AppShapes.Card
 private const val INACTIVE_ALPHA = 0.45f
 
@@ -95,6 +98,7 @@ fun AppSelectSheet(
     excludedIds: Set<Long> = emptySet(),
     leadingIcon: ImageVector? = null,
     onCreate: ((query: String, checked: Set<Long>) -> Unit)? = null,
+    onEdit: ((Long) -> Unit)? = null,
 ) {
     AppBottomSheet(onDismissRequest = onDismiss) {
         AppSelectSheetContent(
@@ -108,6 +112,7 @@ fun AppSelectSheet(
             excludedIds = excludedIds,
             leadingIcon = leadingIcon,
             onCreate = onCreate,
+            onEdit = onEdit,
         )
     }
 }
@@ -126,6 +131,7 @@ fun AppSelectSheetContent(
     excludedIds: Set<Long> = emptySet(),
     leadingIcon: ImageVector? = null,
     onCreate: ((query: String, checked: Set<Long>) -> Unit)? = null,
+    onEdit: ((Long) -> Unit)? = null,
 ) {
     var query by remember { mutableStateOf("") }
     var checked by remember { mutableStateOf(selectedIds) }
@@ -166,6 +172,7 @@ fun AppSelectSheetContent(
                     multi = multi,
                     leadingIcon = leadingIcon,
                     carriedLabel = texts.carriedLabel,
+                    onEdit = onEdit,
                     onRowClick = { id ->
                         if (multi) checked = if (id in checked) checked - id else checked + id else onConfirm(setOf(id))
                     },
@@ -222,6 +229,7 @@ private fun SelectRows(
     multi: Boolean,
     leadingIcon: ImageVector?,
     carriedLabel: (@Composable (name: String) -> String)?,
+    onEdit: ((Long) -> Unit)?,
     onRowClick: (Long) -> Unit,
 ) {
     val listState = rememberLazyListState()
@@ -246,7 +254,7 @@ private fun SelectRows(
             } else if (index > 0) {
                 AppDivider(color = AppPalette.SurfacePopover)
             }
-            SelectListRow(row, multi, leadingIcon, carriedLabel) { onRowClick(row.option.id) }
+            SelectListRow(row, multi, leadingIcon, carriedLabel, onEdit, onClick = { onRowClick(row.option.id) })
         }
     }
 }
@@ -257,6 +265,7 @@ private fun SelectListRow(
     multi: Boolean,
     leadingIcon: ImageVector?,
     carriedLabel: (@Composable (name: String) -> String)?,
+    onEdit: ((Long) -> Unit)?,
     onClick: () -> Unit,
 ) {
     val note = row.option.unavailableNote ?: row.carriedBy?.let { name -> carriedLabel?.invoke(name) }
@@ -305,6 +314,14 @@ private fun SelectListRow(
             }
         }
         if (!multi && row.selected) Text("✓", color = AppPalette.GoldBright, fontWeight = FontWeight.Bold)
+        if (onEdit != null && row.option.editable) SelectEditButton { onEdit(row.option.id) }
+    }
+}
+
+@Composable
+private fun SelectEditButton(onClick: () -> Unit) {
+    IconBadge(size = EditButtonSize, shape = AppShapes.Control, background = Color.Transparent, onClick = onClick) {
+        Icon(AppIcons.Edit, contentDescription = null, tint = AppPalette.TextSecondary, modifier = Modifier.size(18.dp))
     }
 }
 

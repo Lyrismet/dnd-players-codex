@@ -208,7 +208,7 @@ private fun LocationSummaryBody(
     if ((actions.quickEdit != null && location.canMove) || actions.onDeleteClicked != null) {
         Column(modifier = Modifier.padding(top = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             EntityPlaceMoveButton(location, actions.quickEdit)
-            EntityDeleteButton(location.ref, actions, topGap = 0.dp)
+            EntityDeleteButton(location.ref, actions)
         }
     }
 }

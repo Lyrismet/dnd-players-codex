@@ -9,7 +9,7 @@ private const val BASE = "com.lyrismet.incadent"
 /** the presentation subpackages a feature offers to the others - everything else in `presentation` is its own screens */
 private val SHARED_PRESENTATION: Map<String, Set<String>> =
     mapOf(
-        "codex" to setOf("summary", "quickedit", "style", "form"),
+        "codex" to setOf("summary", "quickedit", "style", "form", "party"),
         "campaign" to setOf("sheet"),
         // the saved fight as a card in a session and the outcome badge
         "combat" to setOf("summary"),

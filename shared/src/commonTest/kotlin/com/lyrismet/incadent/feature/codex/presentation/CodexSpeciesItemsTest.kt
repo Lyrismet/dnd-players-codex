@@ -4,10 +4,11 @@ import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.presentation.summary.SpeciesTypeLabels
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-private val labels = CreatureType.entries.associateWith { it.name.lowercase() }
+private val labels = SpeciesTypeLabels(CreatureType.entries.associateWith { it.name.lowercase() }, "-")
 private val goblin =
     Species(
         1,

@@ -1,0 +1,28 @@
+CREATE TABLE creature_type (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX creature_type_campaign_name ON creature_type(campaign_id, name);
+
+selectAll:
+SELECT id, name FROM creature_type WHERE campaign_id = ? ORDER BY name;
+
+selectByName:
+SELECT id, name FROM creature_type WHERE campaign_id = ? AND name = ?;
+
+selectById:
+SELECT id, name FROM creature_type WHERE id = ?;
+
+insert:
+INSERT INTO creature_type(name, campaign_id) VALUES (?, ?);
+
+rename:
+UPDATE creature_type SET name = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM creature_type WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

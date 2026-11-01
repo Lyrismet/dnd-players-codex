@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -32,7 +33,11 @@ class QuickEditSpeciesTest {
 
     @Test
     fun `a creature type edit switches the type`() {
-        val edited = species.withQuickEdit(QuickEditField.CREATURE_TYPE, QuickEditValue.Creature(CreatureType.BEAST))
+        val edited =
+            species.withQuickEdit(
+                QuickEditField.CREATURE_TYPE,
+                QuickEditValue.Creature(SpeciesType.Builtin(CreatureType.BEAST)),
+            )
 
         assertEquals(CreatureType.BEAST, edited?.creatureType)
     }

@@ -111,6 +111,7 @@ data class ImportResult(
     val campaignId: String,
     val records: Int,
     val sessions: Int,
+    val partyAdded: Int = 0,
 )
 
 /** the file an export would make, in bytes - the text alone and what the photos add in base64 */

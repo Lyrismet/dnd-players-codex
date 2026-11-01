@@ -19,6 +19,7 @@ import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.core.designsystem.component.scrollEdgeFade
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
+import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterBanner
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_all_species
 import dndplayerscodex.shared.generated.resources.codex_party_fallen_section
@@ -53,9 +54,11 @@ private fun <T> CodexGroupedList(
     itemKey: (T) -> Any,
     modifier: Modifier = Modifier,
     onSectionToggled: (Long) -> Unit = {},
+    header: (@Composable () -> Unit)? = null,
     itemContent: @Composable (T) -> Unit,
 ) {
     CodexLazyColumn(modifier) {
+        if (header != null) item(key = "header") { header() }
         groups.forEachIndexed { index, group ->
             val toggleId = group.toggleId
             if (toggleId != null && group.title != null) {
@@ -115,6 +118,17 @@ internal fun CodexPartyList(
         groups = rememberPartyGroups(state.party),
         itemKey = { it.id },
         modifier = modifier,
+        header =
+            if (state.playerBannerVisible) {
+                {
+                    PlayerCharacterBanner(
+                        onPick = { state.eventSink(CodexEvent.PlayerBannerPickClicked) },
+                        onHide = { state.eventSink(CodexEvent.PlayerBannerHidden) },
+                    )
+                }
+            } else {
+                null
+            },
     ) { CodexPartyEntry(state, it, hintPeekOffsetPx) }
 }
 

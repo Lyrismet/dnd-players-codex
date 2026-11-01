@@ -28,6 +28,7 @@ import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayba
 import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
+import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPickSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityCardSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.asSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityLoadingSheet
@@ -125,6 +126,13 @@ fun CodexUi(
 
 @Composable
 private fun CodexActiveSheet(state: CodexState) {
+    state.playerPick?.let { pick ->
+        PlayerCharacterPickSheet(
+            state = pick,
+            onPicked = { state.eventSink(CodexEvent.PlayerPicked(it)) },
+            onDismiss = { state.eventSink(CodexEvent.PlayerPickDismissed) },
+        )
+    }
     when (val sheet = state.activeSheet) {
         is CodexSheet.EntryForm ->
             CodexEntryFormSheet(sheet.form, state.toast?.text) { state.eventSink(CodexEvent.EntryForm(it)) }

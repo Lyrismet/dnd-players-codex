@@ -6,6 +6,8 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.presentation.form.CreatureTypeSelectSheet
+import com.lyrismet.incadent.feature.codex.presentation.form.CreatureTypeSheetActions
 import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.SpeciesSelectSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
@@ -40,6 +42,19 @@ fun EntityCardSheet(
             onChosen = { onQuickEvent(QuickEditUiEvent.PlacesChosen(it)) },
             onCreated = { name, checked -> onQuickEvent(QuickEditUiEvent.PlaceCreated(name, checked)) },
             onDismiss = { onQuickEvent(QuickEditUiEvent.EditCancelled) },
+        )
+    }
+    quick.creatureTypeSelect?.let { select ->
+        CreatureTypeSelectSheet(
+            select = select,
+            actions =
+                CreatureTypeSheetActions(
+                    onChosen = { onQuickEvent(QuickEditUiEvent.CreatureTypeChosen(it)) },
+                    onCreated = { onQuickEvent(QuickEditUiEvent.CustomTypeCreated(it)) },
+                    onRenamed = { id, name -> onQuickEvent(QuickEditUiEvent.CustomTypeRenamed(id, name)) },
+                    onDeleted = { onQuickEvent(QuickEditUiEvent.CustomTypeDeleted(it)) },
+                    onDismiss = { onQuickEvent(QuickEditUiEvent.EditCancelled) },
+                ),
         )
     }
     quick.speciesSelect?.let { select ->

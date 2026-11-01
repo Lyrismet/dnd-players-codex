@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.lyrismet.incadent.feature.codex.domain.grouping.InsideChanges
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
+import com.lyrismet.incadent.feature.codex.domain.grouping.levelFollowers
 import com.lyrismet.incadent.feature.codex.domain.grouping.with
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
@@ -16,7 +17,9 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.domain.model.clampedToRanges
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.MovedPlaces
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
@@ -27,16 +30,20 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.withPlaceToggl
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.withPresence
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.withQuickEdit
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.withStatus
+import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.party_level_up_followed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.jetbrains.compose.resources.getString
 
 // process-wide since the sheet is rebuilt on every composition, so an instance lock would serialize nothing
 internal val entityWriteLock = Mutex()
 
 /** the tap/dismiss/change-value/related-note flow every entity-sheet host reuses - [onChanged] feeds the undo toast */
+@Suppress("LongParameterList")
 class EntitySheetInteractions(
     private val selectedRef: MutableState<EntityRef?>,
     repositories: CodexRepositories,
@@ -47,6 +54,8 @@ class EntitySheetInteractions(
     private val onChanged: suspend (EntityChange) -> Unit = {},
     // null on a screen that offers no links from notes
     internal val links: LinkSuggestionInteractions? = null,
+    // true when raising the player's own level takes the party along, read when the raise happens
+    private val followsPartyLevel: suspend () -> Boolean = { false },
 ) {
     private val partyRepository = repositories.partyRepository
     private val npcRepository = repositories.npcRepository
@@ -189,6 +198,47 @@ class EntitySheetInteractions(
         }
     }
 
+    /** the player's own level goes up by one, the party follows like it does for any raise of that level */
+    fun onPartyLevelRaised(
+        scope: CoroutineScope,
+        partyId: Long,
+    ) {
+        scope.launch {
+            commitPartyChange(partyId, QuickEditField.LEVEL) { it.copy(level = (it.level ?: 0) + 1) }
+        }
+    }
+
+    // a raise of the player's own level lifts the ones below it, one bar undoes all of it
+    private suspend fun commitPartyChange(
+        partyId: Long,
+        field: QuickEditField,
+        change: (PartyMember) -> PartyMember?,
+    ) {
+        entityWriteLock.withLock {
+            val before = partyRepository.getById(partyId) ?: return
+            val after = change(before)?.clampedToRanges()?.takeIf { it != before } ?: return
+            val followers = if (followsPartyLevel()) partyRepository.followersOf(before, after) else emptyList()
+            partyRepository.upsert(after)
+            followers.forEach { partyRepository.upsert(it.copy(level = after.level)) }
+            val subtitle =
+                if (followers.isEmpty()) before.name else getString(Res.string.party_level_up_followed, followers.size)
+            onChanged(
+                EntityChange(field, subtitle) {
+                    entityWriteLock.withLock {
+                        // a record changed again since this edit keeps its newer state
+                        if (partyRepository.getById(partyId) == after) partyRepository.upsert(before)
+                        followers.forEach { old ->
+                            partyRepository
+                                .getById(old.id)
+                                ?.takeIf { it.level == after.level }
+                                ?.let { partyRepository.upsert(it.copy(level = old.level)) }
+                        }
+                    }
+                },
+            )
+        }
+    }
+
     // a fallen character is back in the party, the sheet shows them alive when the record changes
     fun onPartyRevived(
         scope: CoroutineScope,
@@ -238,13 +288,7 @@ class EntitySheetInteractions(
                         Species::name,
                         { it.withQuickEdit(field, value) },
                     ) { speciesRepository.upsert(it) }
-                is EntityRef.Party ->
-                    commitChange(
-                        field,
-                        { partyRepository.getById(ref.id) },
-                        PartyMember::name,
-                        { it.withQuickEdit(field, value) },
-                    ) { partyRepository.upsert(it) }
+                is EntityRef.Party -> commitPartyChange(ref.id, field) { it.withQuickEdit(field, value) }
             }
         }
     }
@@ -362,4 +406,15 @@ class EntitySheetInteractions(
             )
         }
     }
+}
+
+// the party follows only when the player's own level goes up
+private suspend fun PartyRepository.followersOf(
+    before: PartyMember,
+    after: PartyMember,
+): List<PartyMember> {
+    val from = before.level
+    val to = after.level
+    val raised = before.isPlayerCharacter && from != null && to != null && to > from
+    return if (raised) levelFollowers(observeAll().first(), before.id, checkNotNull(to)) else emptyList()
 }

@@ -12,6 +12,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
+import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.domain.model.Species
@@ -151,7 +152,7 @@ private fun buildSpeciesSummary(
     return EntitySummaryItem.SpeciesSummary(
         ref = EntityRef.Species(species.id),
         name = species.name,
-        creatureType = species.creatureType,
+        type = species.type,
         notes = species.notes,
         descriptionSegments = noteSegments(species.notes, lookup),
         emblem =
@@ -238,6 +239,7 @@ private fun buildPartySummary(
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Party(member.id), lookup),
         fall = if (member.fallen) fallOf(member, lookup) else null,
+        canRaiseLevel = !member.fallen && (member.level ?: 0) < PartyStatRanges.level.last,
     )
 }
 

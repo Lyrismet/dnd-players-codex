@@ -9,7 +9,7 @@ fun Species.withQuickEdit(
     when (field) {
         QuickEditField.NAME -> value.name?.let { copy(name = it) }
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(notes = it) }
-        QuickEditField.CREATURE_TYPE -> (value as? QuickEditValue.Creature)?.let { copy(creatureType = it.type) }
+        QuickEditField.CREATURE_TYPE -> (value as? QuickEditValue.Creature)?.let { withType(it.type) }
         QuickEditField.HIT_POINTS -> (value as? QuickEditValue.Number)?.let { copy(hitPoints = it.number) }
         QuickEditField.PORTRAIT -> value.picture()?.let { copy(photo = it.photo) }
         else -> null

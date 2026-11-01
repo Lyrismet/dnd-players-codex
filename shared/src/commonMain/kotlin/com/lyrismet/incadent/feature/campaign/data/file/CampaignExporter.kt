@@ -167,6 +167,7 @@ class CampaignExporter(
                     it.notes,
                     it.hit_points?.toInt(),
                     it.origin_id,
+                    it.custom_type_name,
                 ),
             )
         }

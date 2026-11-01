@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
+import com.lyrismet.incadent.feature.codex.domain.model.CustomCreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -105,6 +106,27 @@ internal class FakeSpeciesRepository(
     override suspend fun upsert(entity: Species): Long = put(entity)
 
     override suspend fun delete(id: Long) = remove(id)
+
+    private val customTypes = MutableStateFlow(emptyList<CustomCreatureType>())
+
+    override fun observeCustomTypes(): Flow<List<CustomCreatureType>> = customTypes
+
+    override suspend fun createCustomType(name: String): CustomCreatureType {
+        val lower = name.trim().lowercase()
+        customTypes.value.firstOrNull { it.name == lower }?.let { return it }
+        return CustomCreatureType(customTypes.value.size + 1L, lower).also { customTypes.value += it }
+    }
+
+    override suspend fun renameCustomType(
+        id: Long,
+        name: String,
+    ) {
+        customTypes.value = customTypes.value.map { if (it.id == id) it.copy(name = name.trim().lowercase()) else it }
+    }
+
+    override suspend fun deleteCustomType(id: Long) {
+        customTypes.value = customTypes.value.filter { it.id != id }
+    }
 }
 
 internal class FakeQuestRepository(

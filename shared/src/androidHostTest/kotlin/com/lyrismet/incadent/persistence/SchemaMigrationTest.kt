@@ -109,6 +109,25 @@ class SchemaMigrationTest {
         file.delete()
     }
 
+    @Test
+    fun `migrating the fourth schema keeps the species and their types`() {
+        val file = File.createTempFile("schema-v4", ".db")
+        File("src/commonMain/sqldelight/databases/4.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        driver.execute(null, "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'Old', 1, 1)", 0)
+        driver.execute(null, "INSERT INTO species(name, creature_type, campaign_id) VALUES ('Wolf', 'BEAST', 'c')", 0)
+
+        AppDatabase.Schema.migrate(driver, 4, AppDatabase.Schema.version)
+
+        assertEquals("BEAST", driver.single("SELECT creature_type FROM species"))
+        assertEquals(null, driver.single("SELECT custom_type_id FROM species"))
+        driver.execute(null, "INSERT INTO creature_type(id, name, campaign_id) VALUES (1, 'x', 'c')", 0)
+        driver.execute(null, "UPDATE species SET custom_type_id = 1", 0)
+        assertEquals("1", driver.single("SELECT custom_type_id FROM species"))
+        driver.close()
+        file.delete()
+    }
+
     private fun SqlDriver.single(sql: String): String? =
         executeQuery(
             null,

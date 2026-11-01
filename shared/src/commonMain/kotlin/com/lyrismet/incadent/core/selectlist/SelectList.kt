@@ -14,6 +14,8 @@ data class SelectOption(
     val coveredBy: List<SelectCover> = emptyList(),
     /** the subheading the option is listed under, groups keep the order they first appear in [selectRows]'s options */
     val group: String? = null,
+    /** shows an edit button at the end of the row when the sheet is given an `onEdit` */
+    val editable: Boolean = false,
 )
 
 /** an option that, while checked, carries the options naming it in [SelectOption.coveredBy] */

@@ -3,7 +3,6 @@ package com.lyrismet.incadent.feature.campaign.presentation.sheet
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -23,6 +22,7 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppNoticeBar
 import com.lyrismet.incadent.core.designsystem.component.AppTriangle
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import dndplayerscodex.shared.generated.resources.Res
@@ -80,18 +80,7 @@ fun AppArchiveBanner(
     onResume: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .appCard(
-                    shape = AppShapes.Card,
-                    background = AppPalette.Parchment.copy(alpha = 0.07f),
-                    border = AppPalette.Parchment.copy(alpha = 0.32f),
-                ).padding(start = 14.dp, top = 12.dp, end = 12.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
+    AppNoticeBar(AppPalette.Parchment, modifier, fillAlpha = 0.07f, borderAlpha = 0.32f) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(Res.string.campaign_archive_banner_title),

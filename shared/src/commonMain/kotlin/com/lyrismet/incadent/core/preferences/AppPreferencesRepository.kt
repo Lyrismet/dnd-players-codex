@@ -31,4 +31,20 @@ interface AppPreferencesRepository {
     fun observeCodexSwipeHintState(): Flow<SwipeHintState>
 
     fun setCodexSwipeHintState(state: SwipeHintState)
+
+    /** true when raising the player's own level takes along the party members who stood at the old one */
+    fun observeFollowPartyLevel(): Flow<Boolean>
+
+    fun setFollowPartyLevel(follow: Boolean)
+
+    /** true while the party banner that asks for the player's character is hidden in this campaign */
+    fun observeMeBannerHidden(campaignId: String): Flow<Boolean>
+
+    fun setMeBannerHidden(
+        campaignId: String,
+        hidden: Boolean,
+    )
+
+    /** drops what is stored for a deleted campaign */
+    fun forgetCampaign(campaignId: String)
 }
