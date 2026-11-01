@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.lyrismet.incadent.core.designsystem.component.PortraitMark
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityEmblem
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityEmblemShape
@@ -35,7 +36,7 @@ class SpeciesNoteControllerTest {
         EntitySummaryItem.SpeciesSummary(
             ref = EntityRef.Species(id),
             name = "Гоблин",
-            creatureType = CreatureType.HUMANOID,
+            type = SpeciesType.Builtin(CreatureType.HUMANOID),
             notes = "",
             emblem = EntityEmblem(PortraitMark.Letter("Г"), EntityEmblemShape.CIRCLE, SpeciesMentionColor),
             vulnerabilities = emptyMap(),

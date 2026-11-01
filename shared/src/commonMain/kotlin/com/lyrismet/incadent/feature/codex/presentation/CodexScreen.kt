@@ -14,6 +14,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
+import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPickState
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditState
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
@@ -218,6 +219,10 @@ data class CodexState(
     val toast: ToastMessage? = null,
     // set while a delete waits on the "notes still mention this record" warning
     val deleteWarning: CodexDeleteWarning? = null,
+    // the party has someone alive and nobody marked as the player's own, and the banner was not hidden
+    val playerBannerVisible: Boolean = false,
+    // non-null while the sheet to pick the player's own character is open
+    val playerPick: PlayerCharacterPickState? = null,
     val eventSink: (CodexEvent) -> Unit = {},
 ) : CircuitUiState
 
@@ -278,6 +283,16 @@ sealed interface CodexEvent : CircuitUiEvent {
     data class QuickEdit(
         val event: QuickEditUiEvent,
     ) : CodexEvent
+
+    data object PlayerBannerPickClicked : CodexEvent
+
+    data object PlayerBannerHidden : CodexEvent
+
+    data class PlayerPicked(
+        val id: Long,
+    ) : CodexEvent
+
+    data object PlayerPickDismissed : CodexEvent
 
     /** a change inside the create/edit form sheet that opens over this screen */
     data class EntryForm(

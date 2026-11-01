@@ -1,0 +1,11 @@
+-- the creature types a player made up, a species points at one and its built-in type stays unspecified
+CREATE TABLE creature_type (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX creature_type_campaign_name ON creature_type(campaign_id, name);
+
+ALTER TABLE species ADD COLUMN custom_type_id INTEGER REFERENCES creature_type(id) ON DELETE SET NULL;
+CREATE INDEX species_custom_type_id ON species(custom_type_id);

@@ -63,7 +63,7 @@ internal fun PinnedOverline(
             is EntitySummaryItem.SpeciesSummary ->
                 OverlineParts(
                     stringResource(Res.string.codex_entry_type_species),
-                    creatureTypeLabels().getValue(item.creatureType),
+                    speciesTypeLabels().of(item.type),
                     item.emblem,
                     item.ref,
                 )

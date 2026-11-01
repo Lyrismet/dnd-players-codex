@@ -3,7 +3,6 @@ package com.lyrismet.incadent.feature.codex.presentation.summary
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
-import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_creature_type_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_species_hp_label
@@ -13,11 +12,7 @@ internal fun SpeciesSummaryBody(
     species: EntitySummaryItem.SpeciesSummary,
     actions: EntitySummarySheetActions,
 ) {
-    val creatureType = creatureTypeLabels().getValue(species.creatureType)
-    val creatureOptions =
-        creatureTypeLabels().map { (type, label) ->
-            StatusOption(type, label, SpeciesMentionColor, isSelected = type == species.creatureType)
-        }
+    val creatureType = speciesTypeLabels().of(species.type)
     val seen = speciesSeenCardLine(species.seenInSessions, species.fights)
     EntityHeader(
         emblem = species.emblem,
@@ -36,7 +31,6 @@ internal fun SpeciesSummaryBody(
                     Res.string.entity_sheet_species_creature_type_label,
                     FactValue.Text(creatureType),
                     QuickEditField.CREATURE_TYPE,
-                    creatureOptions = creatureOptions,
                 ),
                 FactRow(
                     Res.string.entity_sheet_species_hp_label,

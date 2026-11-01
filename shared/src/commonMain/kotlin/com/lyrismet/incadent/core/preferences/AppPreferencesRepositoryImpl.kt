@@ -8,6 +8,7 @@ import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.core.preferences.SwipeHintState
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ObservableSettings
+import com.russhwolf.settings.coroutines.getBooleanFlow
 import com.russhwolf.settings.coroutines.getStringFlow
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -22,6 +23,8 @@ private const val KEY_ENTITY_EDIT_MODE = "entity_edit_mode"
 private const val KEY_HOLD_HINT_STATE = "hold_hint_state"
 private const val KEY_SESSION_LIST_SWIPE_HINT_STATE = "session_list_swipe_hint_state"
 private const val KEY_CODEX_SWIPE_HINT_STATE = "codex_swipe_hint_state"
+private const val KEY_FOLLOW_PARTY_LEVEL = "follow_party_level"
+private const val KEY_ME_BANNER_HIDDEN_PREFIX = "me_banner_hidden_"
 
 @Inject
 @SingleIn(AppScope::class)
@@ -87,5 +90,27 @@ class AppPreferencesRepositoryImpl(
 
     override fun setCodexSwipeHintState(state: SwipeHintState) {
         settings.putString(KEY_CODEX_SWIPE_HINT_STATE, state.tag)
+    }
+
+    @OptIn(ExperimentalSettingsApi::class)
+    override fun observeFollowPartyLevel(): Flow<Boolean> = settings.getBooleanFlow(KEY_FOLLOW_PARTY_LEVEL, false)
+
+    override fun setFollowPartyLevel(follow: Boolean) {
+        settings.putBoolean(KEY_FOLLOW_PARTY_LEVEL, follow)
+    }
+
+    @OptIn(ExperimentalSettingsApi::class)
+    override fun observeMeBannerHidden(campaignId: String): Flow<Boolean> =
+        settings.getBooleanFlow(KEY_ME_BANNER_HIDDEN_PREFIX + campaignId, false)
+
+    override fun setMeBannerHidden(
+        campaignId: String,
+        hidden: Boolean,
+    ) {
+        settings.putBoolean(KEY_ME_BANNER_HIDDEN_PREFIX + campaignId, hidden)
+    }
+
+    override fun forgetCampaign(campaignId: String) {
+        settings.remove(KEY_ME_BANNER_HIDDEN_PREFIX + campaignId)
     }
 }

@@ -2,6 +2,8 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
@@ -32,6 +34,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
@@ -42,11 +45,11 @@ import com.lyrismet.incadent.feature.codex.domain.repository.quickNpc
 import com.lyrismet.incadent.feature.codex.domain.repository.quickSpecies
 import com.lyrismet.incadent.feature.codex.presentation.style.toStatusColor
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
-import com.lyrismet.incadent.feature.codex.presentation.summary.creatureTypeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.npcLifeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.npcStatusLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.partyPresenceLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.questStatusLabels
+import com.lyrismet.incadent.feature.codex.presentation.summary.speciesTypeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.toMentionRef
 import com.lyrismet.incadent.feature.mention.presentation.MentionField
 import com.lyrismet.incadent.feature.mention.presentation.MentionSource
@@ -93,6 +96,8 @@ class CodexEntryFormController private constructor(
     // the first character a campaign gets is the player's own, so the form opens on the owner tab for it
     private val hasPlayerCharacter: Boolean,
 ) {
+    private val creatureTypes = CreatureTypeFormEditor(fields, speciesRepository)
+
     private val persister =
         CodexEntryPersister(npcRepository, partyRepository, questRepository, locationRepository, speciesRepository)
 
@@ -158,7 +163,12 @@ class CodexEntryFormController private constructor(
             CodexEntryFormEvent.EntryPhotoCropCancelled -> onPhotoCropCancelled()
             is CodexEntryFormEvent.EntryPhotoRemoved -> onPhotoRemoved(event.slot)
             is CodexEntryFormEvent.EntryNumberChanged -> onNumberChanged(event.field, event.value)
-            is CodexEntryFormEvent.EntryCreatureTypeChanged -> onCreatureTypeChanged(event.type)
+            is CodexEntryFormEvent.EntryCreatureTypeChanged -> creatureTypes.onChanged(event.type)
+            CodexEntryFormEvent.EntryCreatureTypeSelectOpened -> creatureTypes.onSelectToggled(true)
+            CodexEntryFormEvent.EntryCreatureTypeSelectClosed -> creatureTypes.onSelectToggled(false)
+            is CodexEntryFormEvent.EntryCustomTypeCreated -> creatureTypes.onCreated(scope, event.name)
+            is CodexEntryFormEvent.EntryCustomTypeRenamed -> creatureTypes.onRenamed(scope, event.id, event.name)
+            is CodexEntryFormEvent.EntryCustomTypeDeleted -> creatureTypes.onDeleted(scope, event.id)
             is CodexEntryFormEvent.EntryVulnerabilityChanged -> onVulnerabilityChanged(event.type, event.state)
             is CodexEntryFormEvent.EntrySrdPicked -> onSrdPicked(event.name, event.type)
             is CodexEntryFormEvent.EntryNpcStatusChanged -> onNpcStatusChanged(event.status)
@@ -299,16 +309,12 @@ class CodexEntryFormController private constructor(
         fields.value = current.copy(vulnerabilities = current.vulnerabilities.with(type, state))
     }
 
-    fun onCreatureTypeChanged(type: CreatureType) {
-        fields.value = fields.value?.copy(speciesType = type)
-    }
-
     // an SRD name fills the name and the type, the rest of the form is left as typed
     fun onSrdPicked(
         name: String,
         type: CreatureType,
     ) {
-        fields.value = fields.value?.copy(name = name, speciesType = type)
+        fields.value = fields.value?.copy(name = name, speciesType = SpeciesType.Builtin(type))
     }
 
     fun onNpcStatusChanged(status: NpcStatus) {
@@ -592,7 +598,10 @@ class CodexEntryFormController private constructor(
         val party = current.party
         val places = remember(locations) { PlaceTree(locations) }
         val topLevelLabel = stringResource(Res.string.codex_place_top_level_caption)
-        val typeLabels = creatureTypeLabels()
+        val typeLabels = speciesTypeLabels()
+        val customTypes by remember(speciesRepository) {
+            speciesRepository.observeCustomTypes()
+        }.collectAsState(initial = emptyList())
         val isRussian = currentAppLanguage() == AppLanguage.RUSSIAN
         return CodexEntryFormState(
             mention = mention?.let { MentionField(it, current.editingRef?.toMentionRef()) },
@@ -658,16 +667,16 @@ class CodexEntryFormController private constructor(
             npcSpeciesVulnerabilities =
                 species.find { it.id == current.npcSpeciesId }?.vulnerabilities.orEmpty(),
             speciesHitPoints = current.speciesHitPoints,
-            creatureTypeOptions =
-                CreatureType.entries.map {
-                    FormChipOption(it, typeLabels.getValue(it), it == current.speciesType)
+            creatureTypeLabel = typeLabels.of(current.speciesType).takeIf { current.speciesType != SpeciesType.None },
+            creatureTypeSelect =
+                if (current.creatureTypeSelectOpen) {
+                    creatureTypeSelectState(current.speciesType, customTypes, species)
+                } else {
+                    null
                 },
             npcSpecies =
                 species.find { it.id == current.npcSpeciesId }?.let {
-                    SelectedSpecies(
-                        it.name,
-                        typeLabels.getValue(it.creatureType),
-                    )
+                    SelectedSpecies(it.name, typeLabels.of(it))
                 },
             speciesSelect =
                 if (current.speciesSelectOpen) {

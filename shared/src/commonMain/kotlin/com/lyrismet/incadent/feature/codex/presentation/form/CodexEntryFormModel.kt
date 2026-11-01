@@ -14,6 +14,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
 import com.lyrismet.incadent.feature.mention.presentation.MentionField
 
@@ -51,7 +52,10 @@ data class CodexEntryFormState(
     // what the picked species gives an npc, shown faded under the npc's own
     val npcSpeciesVulnerabilities: Map<DamageType, DamageState> = emptyMap(),
     val speciesHitPoints: Int? = null,
-    val creatureTypeOptions: List<FormChipOption<CreatureType>> = emptyList(),
+    // the species' type as written on its field row
+    val creatureTypeLabel: String? = null,
+    // non-null while the creature type select sheet is open over the form
+    val creatureTypeSelect: CreatureTypeSelectState? = null,
     // the species the npc is linked to, shown on its field row
     val npcSpecies: SelectedSpecies? = null,
     // non-null while the species select sheet is open over the form
@@ -172,7 +176,24 @@ sealed interface CodexEntryFormEvent {
     ) : CodexEntryFormEvent
 
     data class EntryCreatureTypeChanged(
-        val type: CreatureType,
+        val type: SpeciesType,
+    ) : CodexEntryFormEvent
+
+    data object EntryCreatureTypeSelectOpened : CodexEntryFormEvent
+
+    data object EntryCreatureTypeSelectClosed : CodexEntryFormEvent
+
+    data class EntryCustomTypeCreated(
+        val name: String,
+    ) : CodexEntryFormEvent
+
+    data class EntryCustomTypeRenamed(
+        val id: Long,
+        val name: String,
+    ) : CodexEntryFormEvent
+
+    data class EntryCustomTypeDeleted(
+        val id: Long,
     ) : CodexEntryFormEvent
 
     data class EntryVulnerabilityChanged(

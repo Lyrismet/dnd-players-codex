@@ -1,11 +1,13 @@
 package com.lyrismet.incadent.feature.campaign.data
 
+import com.lyrismet.incadent.core.preferences.AppPreferencesRepositoryImpl
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignTransfer
 import com.lyrismet.incadent.feature.codex.data.NpcRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.SpeciesRepositoryImpl
 import com.lyrismet.incadent.feature.codex.domain.repository.quickNpc
 import com.lyrismet.incadent.feature.codex.domain.repository.quickSpecies
 import com.lyrismet.incadent.persistence.TestDatabase
+import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -15,7 +17,7 @@ import kotlin.test.assertNotNull
 
 class CampaignCopySpeciesTest {
     private val db = TestDatabase()
-    private val campaigns = CampaignRepositoryImpl(db.database, db.current)
+    private val campaigns = CampaignRepositoryImpl(db.database, db.current, AppPreferencesRepositoryImpl(MapSettings()))
     private val npcs = NpcRepositoryImpl(db.database, db.current)
     private val species = SpeciesRepositoryImpl(db.database, db.current)
 

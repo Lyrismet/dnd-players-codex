@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroupingSelectio
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
+import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPicker
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineEdit
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditInteractions
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickPhotoCrop
@@ -44,6 +45,8 @@ internal class CodexFields(
     val pendingDelete: MutableState<EntityRef?>,
     // which list the npc tab shows
     val npcMode: MutableState<NpcListMode>,
+    // true while the sheet to pick the player's own character is open
+    val playerPickOpen: MutableState<Boolean>,
 ) {
     val showsSpecies: Boolean get() = activeTab.value == CodexTab.NPC && npcMode.value == NpcListMode.SPECIES
 }
@@ -53,6 +56,7 @@ internal class CodexEventHandler(
     private val imageCompressor: ImageCompressor,
     private val undoController: UndoController,
     private val deletionPlanner: CodexDeletionPlanner,
+    private val playerPicker: PlayerCharacterPicker,
 ) {
     // flat circuit event-dispatch table, grows one branch per event variant - not real branching complexity
     @Suppress("CyclomaticComplexMethod", "LongMethod", "LongParameterList")
@@ -63,8 +67,16 @@ internal class CodexEventHandler(
         records: CodexRecords,
         labels: CodexLabels,
         scope: CoroutineScope,
+        campaignId: String?,
     ) {
         when (event) {
+            CodexEvent.PlayerBannerPickClicked -> fields.playerPickOpen.value = true
+            CodexEvent.PlayerBannerHidden -> playerPicker.hideBanner(campaignId)
+            CodexEvent.PlayerPickDismissed -> fields.playerPickOpen.value = false
+            is CodexEvent.PlayerPicked -> {
+                fields.playerPickOpen.value = false
+                playerPicker.pick(scope, records.parties, event.id)
+            }
             is CodexEvent.TabSelected -> fields.activeTab.value = event.tab
             is CodexEvent.NpcModeSelected -> fields.npcMode.value = event.mode
             is CodexEvent.SearchQueryChanged -> fields.searchQuery.value = event.query

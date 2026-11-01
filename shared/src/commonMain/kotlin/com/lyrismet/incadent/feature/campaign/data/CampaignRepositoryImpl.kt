@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.core.identity.newOriginId
+import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.campaign.domain.model.Campaign
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignPlayer
@@ -13,6 +14,7 @@ import com.lyrismet.incadent.feature.campaign.domain.model.CampaignTransfer
 import com.lyrismet.incadent.feature.campaign.domain.model.TransferCandidate
 import com.lyrismet.incadent.feature.campaign.domain.model.TransferCandidates
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
+import com.lyrismet.incadent.persistence.creatureTypeIdIn
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -33,6 +35,7 @@ import kotlin.uuid.Uuid
 class CampaignRepositoryImpl(
     private val database: AppDatabase,
     private val current: CurrentCampaign,
+    private val preferences: AppPreferencesRepository,
 ) : CampaignRepository {
     private val queries = database.campaignQueries
     private val locationQueries = database.locationQueries
@@ -92,6 +95,7 @@ class CampaignRepositoryImpl(
     override suspend fun deleteWithData(id: String) {
         withContext(DatabaseDispatcher) {
             queries.deleteById(id)
+            preferences.forgetCampaign(id)
             if (current.id.value == id) openFirstLiveOrClose()
         }
     }
@@ -186,7 +190,7 @@ class CampaignRepositoryImpl(
             copiedNpcs++
         }
         // the whole bestiary comes along, not only the species a copied npc points at
-        speciesQueries.selectAll(source) { id, _, _, _, _, _, _, _ -> id }.executeAsList().forEach {
+        speciesQueries.selectAll(source) { id, _, _, _, _, _, _, _, _, _ -> id }.executeAsList().forEach {
             copySpecies(it, targetId, speciesMap)
         }
         if (transfer.copyTags) queries.copyTags(targetId, source)
@@ -210,6 +214,7 @@ class CampaignRepositoryImpl(
                 full.photo_thumb,
                 targetId,
                 newOriginId(),
+                database.creatureTypeIdIn(targetId, full.custom_type_name),
             )
             speciesQueries.lastInsertRowId().executeAsOne().also { copied[oldId] = it }
         }

@@ -11,8 +11,10 @@ import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.grouping.encodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.CustomCreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
+import com.lyrismet.incadent.persistence.creatureTypeIdIn
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -28,6 +30,7 @@ class SpeciesRepositoryImpl(
     private val current: CurrentCampaign,
 ) : SpeciesRepository {
     private val queries = database.speciesQueries
+    private val typeQueries = database.creatureTypeQueries
 
     override fun observeAll(): Flow<List<Species>> =
         current.observe { campaignId ->
@@ -48,6 +51,7 @@ class SpeciesRepositoryImpl(
                     queries.update(
                         entity.name,
                         entity.creatureType,
+                        liveTypeId(entity),
                         entity.vulnerabilities.encodeVulnerabilities(),
                         entity.notes,
                         entity.hitPoints?.toLong(),
@@ -77,6 +81,7 @@ class SpeciesRepositoryImpl(
                 species.photo?.thumb,
                 current.requireId(),
                 species.originId.orNewOriginId(),
+                liveTypeId(species),
             )
             return species.id
         }
@@ -90,6 +95,7 @@ class SpeciesRepositoryImpl(
             species.photo?.thumb,
             current.requireId(),
             species.originId.orNewOriginId(),
+            liveTypeId(species),
         )
         return queries.lastInsertRowId().executeAsOne()
     }
@@ -99,6 +105,49 @@ class SpeciesRepositoryImpl(
             queries.deleteById(id)
         }
     }
+
+    override fun observeCustomTypes(): Flow<List<CustomCreatureType>> =
+        current.observe { campaignId ->
+            typeQueries.selectAll(campaignId, ::CustomCreatureType).asFlow().mapToList(DatabaseDispatcher)
+        }
+
+    override suspend fun createCustomType(name: String): CustomCreatureType =
+        withContext(DatabaseDispatcher) {
+            database.transactionWithResult { customTypeNamed(name.toTypeName()) }
+        }
+
+    override suspend fun renameCustomType(
+        id: Long,
+        name: String,
+    ) {
+        withContext(DatabaseDispatcher) {
+            val newName = name.toTypeName()
+            val taken =
+                typeQueries
+                    .selectByName(
+                        current.requireId(),
+                        newName,
+                        ::CustomCreatureType,
+                    ).executeAsOneOrNull()
+            if (newName.isNotEmpty() && (taken == null || taken.id == id)) typeQueries.rename(newName, id)
+        }
+    }
+
+    override suspend fun deleteCustomType(id: Long) {
+        withContext(DatabaseDispatcher) { typeQueries.deleteById(id) }
+    }
+
+    // the type of this name in the open campaign, made when it is new
+    private fun customTypeNamed(name: String): CustomCreatureType {
+        val id = checkNotNull(database.creatureTypeIdIn(current.requireId(), name)) { "a type needs a name" }
+        return CustomCreatureType(id, name)
+    }
+
+    // a type deleted since the species was read would break the foreign key, so the link is dropped
+    private fun liveTypeId(species: Species): Long? =
+        species.customType?.id?.takeIf { typeQueries.selectById(it, ::CustomCreatureType).executeAsOneOrNull() != null }
+
+    private fun String.toTypeName() = trim().lowercase()
 
     // one param per species column - dictated by SQLDelight's generated query mapper shape
     @Suppress("LongParameterList")
@@ -111,6 +160,8 @@ class SpeciesRepositoryImpl(
         hitPoints: Long?,
         photoThumb: ByteArray?,
         originId: String,
+        customTypeId: Long?,
+        customTypeName: String?,
     ) = Species(
         id,
         name,
@@ -122,6 +173,7 @@ class SpeciesRepositoryImpl(
         },
         hitPoints?.toInt(),
         originId,
+        if (customTypeId != null && customTypeName != null) CustomCreatureType(customTypeId, customTypeName) else null,
     )
 
     // the by-id row also carries the full jpeg
@@ -136,6 +188,18 @@ class SpeciesRepositoryImpl(
         photoThumb: ByteArray?,
         photo: ByteArray?,
         originId: String,
-    ) = toDomain(id, name, creatureType, vulnerabilities, notes, hitPoints, photoThumb, originId)
-        .copy(photo = photoThumb?.let { Photo(it, photo) })
+        customTypeId: Long?,
+        customTypeName: String?,
+    ) = toDomain(
+        id,
+        name,
+        creatureType,
+        vulnerabilities,
+        notes,
+        hitPoints,
+        photoThumb,
+        originId,
+        customTypeId,
+        customTypeName,
+    ).copy(photo = photoThumb?.let { Photo(it, photo) })
 }

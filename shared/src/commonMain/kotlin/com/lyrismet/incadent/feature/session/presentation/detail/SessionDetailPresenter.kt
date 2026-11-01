@@ -68,6 +68,7 @@ import dndplayerscodex.shared.generated.resources.session_detail_phrase_saved_to
 import dndplayerscodex.shared.generated.resources.session_detail_undo_deleted_entry_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -420,6 +421,7 @@ class SessionDetailPresenter(
         navigator.sessionEntryOpener(),
         remember(noteId) { mutableStateOf(emptyList()) },
         onChanged = reportChange,
+        followsPartyLevel = { appPreferencesRepository.observeFollowPartyLevel().first() },
     )
 }
 

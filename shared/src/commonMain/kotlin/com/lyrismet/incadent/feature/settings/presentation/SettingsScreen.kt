@@ -23,6 +23,7 @@ data class SettingsState(
     val numbering: SessionNumbering,
     val mentionStyle: MentionStyle,
     val editMode: EntityEditMode,
+    val followPartyLevel: Boolean,
     val campaignName: String,
     val campaignSheet: CampaignSheetState,
     val version: String,
@@ -48,6 +49,10 @@ sealed interface SettingsEvent : CircuitUiEvent {
 
     data class EditModeSelected(
         val mode: EntityEditMode,
+    ) : SettingsEvent
+
+    data class FollowPartyLevelToggled(
+        val follow: Boolean,
     ) : SettingsEvent
 
     data object SwipeHintsShowRequested : SettingsEvent

@@ -36,7 +36,18 @@ class OriginIdExchangeTest {
         }
 
     private fun seed() {
-        database.speciesQueries.insert("Wolf", CreatureType.BEAST, "", "", null, null, null, source, "wolf-origin")
+        database.speciesQueries.insert(
+            "Wolf",
+            CreatureType.BEAST,
+            "",
+            "",
+            null,
+            null,
+            null,
+            source,
+            "wolf-origin",
+            null,
+        )
         database.locationQueries.insert("Town", "", null, null, null, source, "town-origin")
         database.npcQueries.insert(
             "Bob",

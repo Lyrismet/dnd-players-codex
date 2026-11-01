@@ -30,6 +30,7 @@ import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignReposito
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroupingSelection
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexRegions
+import com.lyrismet.incadent.feature.codex.domain.grouping.needsPlayerCharacterPick
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
@@ -47,6 +48,8 @@ import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormContr
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
 import com.lyrismet.incadent.feature.codex.presentation.form.rememberMentionSource
 import com.lyrismet.incadent.feature.codex.presentation.form.rememberPlaceFailureText
+import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPicker
+import com.lyrismet.incadent.feature.codex.presentation.party.playerCharacterPickState
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineEdit
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditInteractions
@@ -57,11 +60,11 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.codex.presentation.summary.LinkSuggestionInteractions
-import com.lyrismet.incadent.feature.codex.presentation.summary.creatureTypeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.entityLookupOf
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberEntitySummary
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhoto
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberLinkOffers
+import com.lyrismet.incadent.feature.codex.presentation.summary.speciesTypeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.withFullPhoto
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
 import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
@@ -83,6 +86,8 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_party_fell_session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 
@@ -138,7 +143,13 @@ class CodexPresenter(
             speciesRepository,
         )
 
-    private val events = CodexEventHandler(imageCompressor, undoController, deletionPlanner)
+    private val events =
+        CodexEventHandler(
+            imageCompressor,
+            undoController,
+            deletionPlanner,
+            PlayerCharacterPicker(partyRepository, undoController, appPreferencesRepository),
+        )
 
     // one collection per source the screen reads - a flat merge, not real complexity
     @Suppress("LongMethod")
@@ -384,6 +395,7 @@ class CodexPresenter(
                 navigator.sessionEntryOpener(),
                 entityHistory,
                 onChanged = reportChange,
+                followsPartyLevel = { appPreferencesRepository.observeFollowPartyLevel().first() },
                 links =
                     remember(codexRepositories, linkDismissals, undoController) {
                         LinkSuggestionInteractions(codexRepositories, linkDismissals, undoController)
@@ -407,6 +419,7 @@ class CodexPresenter(
         val collapsedPlaceIds = rememberRetained { mutableStateOf(emptySet<Long>()) }
         val pendingDelete = rememberRetained { mutableStateOf<EntityRef?>(null) }
         val npcMode = rememberRetained { mutableStateOf(NpcListMode.NAMED) }
+        val playerPickOpen = rememberRetained { mutableStateOf(false) }
         toast.autoDismiss()
         return CodexFields(
             activeTab,
@@ -422,6 +435,7 @@ class CodexPresenter(
             collapsedPlaceIds,
             pendingDelete,
             npcMode,
+            playerPickOpen,
         )
     }
 
@@ -450,7 +464,7 @@ class CodexPresenter(
         val latest =
             rememberUpdatedState { event: CodexEvent ->
                 if (!(readOnly && event.writesCampaignData())) {
-                    events.handle(event, fields, formController, records, labels, scope)
+                    events.handle(event, fields, formController, records, labels, scope, campaign?.id)
                 }
             }
         val eventSink = remember { { event: CodexEvent -> latest.value(event) } }
@@ -498,6 +512,8 @@ class CodexPresenter(
             swipeHintDirection = codexSwipeHintDirection(context.editMode),
             toast = fields.toast.value,
             deleteWarning = deleteWarning(fields.pendingDelete.value, records, labels),
+            playerBannerVisible = playerBannerVisible(campaign?.id, activeTab, readOnly, records.parties),
+            playerPick = if (fields.playerPickOpen.value) playerCharacterPickState(records.parties) else null,
             eventSink = eventSink,
         )
     }
@@ -509,7 +525,7 @@ class CodexPresenter(
         query: String,
         isShown: Boolean,
     ): List<SpeciesCodexItem> {
-        val typeLabels = creatureTypeLabels()
+        val typeLabels = speciesTypeLabels()
         // parsing every note is only worth it while the species rows can be seen, and it runs off the main thread
         val visible = isShown && LocalTabSelected.current
         val seen by produceState(emptyMap<Long, Int>(), records.entries, records.mentionIndex, visible) {
@@ -533,6 +549,20 @@ class CodexPresenter(
     }
 
     // the warning of a delete that notes still mention - null when nothing waits or the record is already gone
+    // asks while the party has nobody marked as the player's own, a hidden banner stays hidden for the campaign
+    @Composable
+    private fun playerBannerVisible(
+        campaignId: String?,
+        activeTab: CodexTab,
+        readOnly: Boolean,
+        parties: List<PartyMember>,
+    ): Boolean {
+        val hidden by remember(campaignId) {
+            campaignId?.let(appPreferencesRepository::observeMeBannerHidden) ?: flowOf(true)
+        }.collectAsState(initial = true)
+        return activeTab == CodexTab.PARTY && !readOnly && !hidden && needsPlayerCharacterPick(parties)
+    }
+
     private fun deleteWarning(
         ref: EntityRef?,
         records: CodexRecords,

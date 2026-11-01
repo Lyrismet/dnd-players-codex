@@ -3,13 +3,13 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Photo
-import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 
 /** the party-only part of the form, nested so the other entry types never see these fields */
@@ -42,7 +42,7 @@ internal data class CodexEntryFormFields(
     val npcLife: NpcLifeState = NpcLifeState.ALIVE,
     val npcLocationIds: List<Long> = emptyList(),
     val npcSpeciesId: Long? = null,
-    val speciesType: CreatureType = CreatureType.UNSPECIFIED,
+    val speciesType: SpeciesType = SpeciesType.None,
     // a species keeps what its card grid set, an npc edits its own shields here
     val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
     val speciesHitPoints: Int? = null,
@@ -60,6 +60,8 @@ internal data class CodexEntryFormFields(
     val placeSelectField: CodexEntryPlaceField? = null,
     // true while the species select sheet is open
     val speciesSelectOpen: Boolean = false,
+    // true while the creature type select sheet is open
+    val creatureTypeSelectOpen: Boolean = false,
     // null means no "+ New X" quick-add input is open - see onQuickAddOpened
     val quickAddField: CodexEntryChipField? = null,
     val quickAddDraft: String = "",
@@ -75,6 +77,7 @@ internal data class CodexEntryFormFields(
         copy(
             placeSelectField = baseline.placeSelectField,
             speciesSelectOpen = baseline.speciesSelectOpen,
+            creatureTypeSelectOpen = baseline.creatureTypeSelectOpen,
             quickAddField = baseline.quickAddField,
             quickAddDraft = baseline.quickAddDraft,
             photoCrop = baseline.photoCrop,

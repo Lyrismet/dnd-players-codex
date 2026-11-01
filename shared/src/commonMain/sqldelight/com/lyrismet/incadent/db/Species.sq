@@ -10,38 +10,44 @@ CREATE TABLE species (
     photo BLOB,
     photo_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
-    origin_id TEXT NOT NULL DEFAULT ''
+    origin_id TEXT NOT NULL DEFAULT '',
+    custom_type_id INTEGER REFERENCES creature_type(id) ON DELETE SET NULL
 );
 
 CREATE INDEX species_campaign_id ON species(campaign_id);
 CREATE UNIQUE INDEX species_origin_id ON species(campaign_id, origin_id);
+CREATE INDEX species_custom_type_id ON species(custom_type_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT id, name, creature_type, vulnerabilities, notes, hit_points, photo_thumb, origin_id FROM species WHERE campaign_id = ? ORDER BY name;
+SELECT s.id, s.name, s.creature_type, s.vulnerabilities, s.notes, s.hit_points, s.photo_thumb, s.origin_id, s.custom_type_id, t.name AS custom_type_name
+FROM species s LEFT JOIN creature_type t ON t.id = s.custom_type_id
+WHERE s.campaign_id = ? ORDER BY s.name;
 
 selectById:
-SELECT id, name, creature_type, vulnerabilities, notes, hit_points, photo_thumb, photo, origin_id FROM species WHERE id = ?;
+SELECT s.id, s.name, s.creature_type, s.vulnerabilities, s.notes, s.hit_points, s.photo_thumb, s.photo, s.origin_id, s.custom_type_id, t.name AS custom_type_name
+FROM species s LEFT JOIN creature_type t ON t.id = s.custom_type_id
+WHERE s.id = ?;
 
 insert:
-INSERT INTO species(name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO species(name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id, origin_id, custom_type_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO species(id, name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO species(id, name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id, origin_id, custom_type_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE species
-SET name = ?, creature_type = ?, vulnerabilities = ?, notes = ?, hit_points = ?
+SET name = ?, creature_type = ?, custom_type_id = ?, vulnerabilities = ?, notes = ?, hit_points = ?
 WHERE id = ?;
 
 -- an import leaves the hit points alone when the file does not know them, an older file never does
 updateImported:
 UPDATE species
-SET name = ?, creature_type = ?, vulnerabilities = ?, notes = ?, hit_points = COALESCE(?, hit_points)
+SET name = ?, creature_type = ?, custom_type_id = ?, vulnerabilities = ?, notes = ?, hit_points = COALESCE(?, hit_points)
 WHERE id = ?;
 
 setPhoto:

@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.codex.presentation.quickedit
 import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 
 /** the field whose editor is open and what it currently holds - at most one editor is open at a time */
 data class InlineEdit(
@@ -37,7 +38,21 @@ sealed interface QuickEditUiEvent {
 
     /** a type of the open creature type editor was tapped */
     data class CreatureTypeChosen(
-        val type: CreatureType,
+        val type: SpeciesType,
+    ) : QuickEditUiEvent
+
+    /** a type made in the creature type sheet, the card's species takes it */
+    data class CustomTypeCreated(
+        val name: String,
+    ) : QuickEditUiEvent
+
+    data class CustomTypeRenamed(
+        val id: Long,
+        val name: String,
+    ) : QuickEditUiEvent
+
+    data class CustomTypeDeleted(
+        val id: Long,
     ) : QuickEditUiEvent
 
     /** a candidate of the open relation editor was tapped - the editor stays open for the next one */

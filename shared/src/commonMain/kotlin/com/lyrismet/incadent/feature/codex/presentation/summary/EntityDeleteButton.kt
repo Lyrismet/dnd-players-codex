@@ -1,12 +1,8 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
@@ -20,10 +16,8 @@ import org.jetbrains.compose.resources.stringResource
 internal fun EntityDeleteButton(
     ref: EntityRef,
     actions: EntitySummarySheetActions,
-    topGap: Dp = 24.dp,
 ) {
     val onDelete = actions.onDeleteClicked ?: return
-    if (topGap > 0.dp) Spacer(Modifier.height(topGap))
     AppButton(
         text = stringResource(Res.string.entity_sheet_delete_button),
         onClick = { onDelete(ref) },

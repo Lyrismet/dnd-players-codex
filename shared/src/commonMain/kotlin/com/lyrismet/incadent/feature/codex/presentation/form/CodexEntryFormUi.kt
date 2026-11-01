@@ -399,6 +399,19 @@ internal fun CodexEntryFormSheet(
             onDismiss = { eventSink(CodexEntryFormEvent.EntryPlaceSelectClosed) },
         )
     }
+    form.creatureTypeSelect?.let { select ->
+        CreatureTypeSelectSheet(
+            select = select,
+            actions =
+                CreatureTypeSheetActions(
+                    onChosen = { eventSink(CodexEntryFormEvent.EntryCreatureTypeChanged(it)) },
+                    onCreated = { eventSink(CodexEntryFormEvent.EntryCustomTypeCreated(it)) },
+                    onRenamed = { id, name -> eventSink(CodexEntryFormEvent.EntryCustomTypeRenamed(id, name)) },
+                    onDeleted = { eventSink(CodexEntryFormEvent.EntryCustomTypeDeleted(it)) },
+                    onDismiss = { eventSink(CodexEntryFormEvent.EntryCreatureTypeSelectClosed) },
+                ),
+        )
+    }
     form.speciesSelect?.let { select ->
         SpeciesSelectSheet(
             select = select,

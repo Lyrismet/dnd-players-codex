@@ -35,6 +35,8 @@ data class EntitySummarySheetActions(
     val onSpeciesNoteQuantityStep: ((delta: Int) -> Unit)? = null,
     // true shows the status pickers as plain badges - the form-mode card is read-only
     val statusesReadOnly: Boolean = false,
+    // null hides the level arrow of the player's own character
+    val onPartyLevelRaised: ((partyId: Long) -> Unit)? = null,
     // null keeps the card read-only - in-place editing only exists in the codex
     val quickEdit: QuickEditSheet? = null,
     // what the notes mention and the card could link, shown only while [onLinkApplied] and [onLinkDismissed] are set

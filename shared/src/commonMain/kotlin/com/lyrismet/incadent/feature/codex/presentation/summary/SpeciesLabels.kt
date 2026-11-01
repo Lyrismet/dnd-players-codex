@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
+import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.creature_type_aberration
 import dndplayerscodex.shared.generated.resources.creature_type_beast
@@ -38,6 +40,7 @@ import dndplayerscodex.shared.generated.resources.damage_type_psychic
 import dndplayerscodex.shared.generated.resources.damage_type_radiant
 import dndplayerscodex.shared.generated.resources.damage_type_slashing
 import dndplayerscodex.shared.generated.resources.damage_type_thunder
+import dndplayerscodex.shared.generated.resources.species_type_unset
 import org.jetbrains.compose.resources.stringResource
 
 /** resource-backed names of the species enums, one place for the list row, the card and the damage grid */
@@ -60,6 +63,25 @@ fun creatureTypeLabels(): Map<CreatureType, String> =
         CreatureType.UNDEAD to stringResource(Res.string.creature_type_undead),
         CreatureType.UNSPECIFIED to stringResource(Res.string.creature_type_unspecified),
     )
+
+/** the words of a species' type - a built-in name, the player's own name or a dash while it has none */
+data class SpeciesTypeLabels(
+    private val builtin: Map<CreatureType, String>,
+    private val none: String,
+) {
+    fun of(type: SpeciesType): String =
+        when (type) {
+            is SpeciesType.Builtin -> builtin.getValue(type.type)
+            is SpeciesType.Custom -> type.type.name
+            SpeciesType.None -> none
+        }
+
+    fun of(species: Species): String = of(species.type)
+}
+
+@Composable
+fun speciesTypeLabels(): SpeciesTypeLabels =
+    SpeciesTypeLabels(creatureTypeLabels(), stringResource(Res.string.species_type_unset))
 
 @Composable
 fun damageTypeLabels(): Map<DamageType, String> =

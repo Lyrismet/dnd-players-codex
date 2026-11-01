@@ -52,6 +52,7 @@ class SettingsPresenter(
         val editMode by appPreferencesRepository
             .observeEntityEditMode()
             .collectAsState(initial = EntityEditMode.QUICK)
+        val followPartyLevel by appPreferencesRepository.observeFollowPartyLevel().collectAsState(initial = false)
         val toast = remember { mutableStateOf<String?>(null) }
         toast.autoDismiss()
         val failedText = stringResource(Res.string.error_action_failed)
@@ -70,6 +71,7 @@ class SettingsPresenter(
             numbering = numbering,
             mentionStyle = mentionStyle,
             editMode = editMode,
+            followPartyLevel = followPartyLevel,
             campaignName = campaignHost.current?.name.orEmpty(),
             campaignSheet = campaignHost.sheet,
             version = versionName,
@@ -83,6 +85,7 @@ class SettingsPresenter(
                 is SettingsEvent.NumberingSelected -> appPreferencesRepository.setSessionNumbering(event.numbering)
                 is SettingsEvent.MentionStyleSelected -> appPreferencesRepository.setMentionStyle(event.style)
                 is SettingsEvent.EditModeSelected -> appPreferencesRepository.setEntityEditMode(event.mode)
+                is SettingsEvent.FollowPartyLevelToggled -> appPreferencesRepository.setFollowPartyLevel(event.follow)
                 SettingsEvent.SwipeHintsShowRequested -> {
                     // the row teaches the swipe-to-delete/edit peek, not the unrelated hold-to-edit pin card
                     appPreferencesRepository.setSessionListSwipeHintState(SwipeHintState.PENDING)

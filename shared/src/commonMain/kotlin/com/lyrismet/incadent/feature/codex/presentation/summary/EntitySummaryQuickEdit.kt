@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,17 +18,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.component.AppTriangle
 import com.lyrismet.incadent.core.designsystem.component.HoldFrame
 import com.lyrismet.incadent.core.designsystem.component.HoldHintCard
 import com.lyrismet.incadent.core.designsystem.component.HoldToEditField
+import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.orDash
-import com.lyrismet.incadent.feature.codex.presentation.quickedit.CreatureTypeEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineFieldEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.LinkOptionEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.NotesEditorScreen
@@ -42,6 +49,7 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.QuickEditSheet
 import com.lyrismet.incadent.feature.mention.domain.MentionSegment
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.party_level_up_raise
 import dndplayerscodex.shared.generated.resources.quick_edit_description_placeholder
 import dndplayerscodex.shared.generated.resources.quick_edit_hold_tip
 import dndplayerscodex.shared.generated.resources.quick_edit_hold_tip_dismiss
@@ -170,8 +178,26 @@ private fun FactRowContent(
         Box(modifier = Modifier.weight(1f)) {
             FactReadOnlyValue(fact.value, style, onEntityRefClicked)
         }
+        fact.onRaise?.let { RaiseArrow(it) }
     }
 }
+
+// the gold arrow at the end of a line, it raises the value by one
+@Composable
+private fun RaiseArrow(onClick: () -> Unit) {
+    val description = stringResource(Res.string.party_level_up_raise)
+    IconBadge(
+        modifier = Modifier.semantics { contentDescription = description },
+        size = RaiseArrowTouch,
+        shape = AppShapes.Control,
+        background = Color.Transparent,
+        onClick = onClick,
+    ) {
+        AppTriangle(true, AppPalette.GoldBright, Modifier.width(14.dp).height(9.dp))
+    }
+}
+
+private val RaiseArrowTouch = 40.dp
 
 @Composable
 private fun FactEditor(
@@ -189,7 +215,6 @@ private fun FactEditor(
                     selectedId = (fact.value as? FactValue.Link)?.chip?.entityRef?.id,
                     onEvent = quick.onEvent,
                 )
-            QuickEditKind.Choice -> CreatureTypeEditor(label, fact.creatureOptions, quick.onEvent)
             else ->
                 InlineFieldEditor(
                     label = label,

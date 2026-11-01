@@ -16,6 +16,7 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ImportRequest
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportResult
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportTarget
 import com.lyrismet.incadent.feature.mention.domain.remapMentionTokens
+import com.lyrismet.incadent.persistence.creatureTypeIdIn
 import kotlin.io.encoding.Base64
 import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
@@ -61,7 +62,7 @@ internal class CampaignImporter(
         val campaignId = targetCampaign(request.target, reader.header)
         val session = ImportSession(campaignId, request, reader.header.withPhotos)
         while (true) session.accept(reader.nextRecord() ?: break)
-        return ImportResult(campaignId, session.records, session.sessions)
+        return ImportResult(campaignId, session.records, session.sessions, session.partyAdded)
     }
 
     private fun targetCampaign(
@@ -87,6 +88,7 @@ internal class CampaignImporter(
         private val scope = request.scope
         var records = 0
         var sessions = 0
+        var partyAdded = 0
 
         private val speciesMap = mutableMapOf<Long, Long>()
         private val placeMap = mutableMapOf<Long, Long>()
@@ -215,6 +217,7 @@ internal class CampaignImporter(
                     database.speciesQueries.updateImported(
                         record.name,
                         record.creatureType,
+                        database.creatureTypeIdIn(campaignId, record.customType),
                         record.vulnerabilities,
                         record.notes,
                         record.hitPoints?.toLong(),
@@ -232,6 +235,7 @@ internal class CampaignImporter(
                         null,
                         campaignId,
                         origins.getValue(ExchangeKind.SPECIES).claim(record.originId),
+                        database.creatureTypeIdIn(campaignId, record.customType),
                     )
                     inserted(PhotoOwner.SPECIES, record.id, queries.lastInsertRowId().executeAsOne())
                 }
@@ -329,6 +333,7 @@ internal class CampaignImporter(
                         campaignId,
                         origins.getValue(ExchangeKind.PARTY).claim(record.originId),
                     )
+                    partyAdded++
                     val id = queries.lastInsertRowId().executeAsOne()
                     // the fight that felled them is not in the file's party record, so only the fact is kept
                     if (record.fallen) queries.setFallen(true, null, id)

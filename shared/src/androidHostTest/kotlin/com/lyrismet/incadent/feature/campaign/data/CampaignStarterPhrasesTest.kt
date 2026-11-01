@@ -1,7 +1,9 @@
 package com.lyrismet.incadent.feature.campaign.data
 
+import com.lyrismet.incadent.core.preferences.AppPreferencesRepositoryImpl
 import com.lyrismet.incadent.feature.phrases.data.PhraseSnippetRepositoryImpl
 import com.lyrismet.incadent.persistence.TestDatabase
+import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -9,7 +11,7 @@ import kotlin.test.assertEquals
 
 class CampaignStarterPhrasesTest {
     private val db = TestDatabase()
-    private val campaigns = CampaignRepositoryImpl(db.database, db.current)
+    private val campaigns = CampaignRepositoryImpl(db.database, db.current, AppPreferencesRepositoryImpl(MapSettings()))
     private val phrases = PhraseSnippetRepositoryImpl(db.database, db.current)
 
     @Test

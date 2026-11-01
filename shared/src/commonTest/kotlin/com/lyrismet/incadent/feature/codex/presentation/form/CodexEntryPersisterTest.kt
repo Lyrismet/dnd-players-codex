@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeLocationRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcRepository
@@ -135,7 +136,7 @@ class CodexEntryPersisterTest {
         runTest {
             persister.save(
                 form(EntityKind.SPECIES, " гоблин ").copy(
-                    speciesType = CreatureType.FEY,
+                    speciesType = SpeciesType.Builtin(CreatureType.FEY),
                     description = " мерзкие ",
                 ),
             )
@@ -155,7 +156,7 @@ class CodexEntryPersisterTest {
             val edit =
                 form(EntityKind.SPECIES, "скелеты").copy(
                     editingRef = EntityRef.Species(3),
-                    speciesType = CreatureType.UNDEAD,
+                    speciesType = SpeciesType.Builtin(CreatureType.UNDEAD),
                     vulnerabilities = existing.vulnerabilities,
                 )
 

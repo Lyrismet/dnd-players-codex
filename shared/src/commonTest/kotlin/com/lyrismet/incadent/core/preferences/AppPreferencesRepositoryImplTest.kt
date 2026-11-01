@@ -116,4 +116,15 @@ class AppPreferencesRepositoryImplTest {
             assertEquals(SwipeHintState.PENDING, repository.observeCodexSwipeHintState().first())
             assertEquals(SwipeHintState.SEEN, repository.observeSessionListSwipeHintState().first())
         }
+
+    @Test
+    fun `a forgotten campaign shows the banner again`() =
+        runTest {
+            val repository = AppPreferencesRepositoryImpl(MapSettings())
+            repository.setMeBannerHidden("c1", true)
+
+            repository.forgetCampaign("c1")
+
+            assertEquals(false, repository.observeMeBannerHidden("c1").first())
+        }
 }
