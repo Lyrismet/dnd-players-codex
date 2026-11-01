@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.PortraitMark
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
@@ -52,9 +53,9 @@ sealed interface EntityRef {
 
 enum class EntityEmblemShape { CIRCLE, ROUNDED }
 
-/** self-contained visual identity for the sheet header - initial letter (circle) or a glyph (rounded) */
+/** self-contained visual identity for the sheet header, [mark] shows while there is no photo */
 data class EntityEmblem(
-    val text: String,
+    val mark: PortraitMark,
     val shape: EntityEmblemShape,
     val color: StatusColor,
     // only an npc or a party member can carry a portrait - see Players Codex v6.dc.html's `por` flag

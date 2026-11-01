@@ -138,7 +138,7 @@ fun Modifier.sheetTopEdge(cornerRadius: Dp): Modifier =
         drawPath(path, color = SheetEdgeColor, style = Stroke(width = 1.5.dp.toPx()))
     }
 
-// raw "✕" glyph, not a Material icon - matches this codebase's existing raw-glyph precedent (MentionGlyph's symbols)
+// raw "✕" glyph instead of a Material icon
 @Composable
 fun SheetCloseButton(
     onClick: () -> Unit,

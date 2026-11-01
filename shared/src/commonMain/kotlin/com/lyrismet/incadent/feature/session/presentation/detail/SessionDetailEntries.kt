@@ -385,7 +385,7 @@ private fun SessionEntryBody(
                             }
                                 ?: segment.chip.deleted?.let { deleted -> { mentionActions.onDeletedClick(deleted) } },
                         fontSize = AppFontSize.Medium,
-                        glyphSize = 7.sp,
+                        glyphSize = 13.dp,
                         glyphGap = 4.dp,
                         lineHeightFactor = 1.5f,
                     )

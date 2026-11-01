@@ -21,10 +21,10 @@ import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.QuickAddOutsideTapHost
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_discard_text
 import dndplayerscodex.shared.generated.resources.codex_entry_label_class
@@ -191,7 +191,7 @@ private fun PartyIdentityFields(
         placeholder = stringResource(Res.string.codex_species_pick_hint),
         onClick = { eventSink(CodexEntryFormEvent.EntrySpeciesSelectOpened) },
         title = form.race.takeIf { it.isNotBlank() },
-        leadingGlyph = MentionGlyph.SPECIES.symbol,
+        leadingIcon = EntityKind.SPECIES.icon(),
     )
 }
 
@@ -270,7 +270,7 @@ private fun QuestEntryFields(
         onClick = { eventSink(CodexEntryFormEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.QUEST_PLACE)) },
         title = form.questPlace?.name,
         subtitle = form.questPlace?.path,
-        leadingGlyph = MentionGlyph.LOCATION.symbol,
+        leadingIcon = EntityKind.LOCATION.icon(),
     )
     FormChipPicker(
         label = stringResource(Res.string.codex_entry_label_status),
@@ -307,7 +307,7 @@ private fun LocationEntryFields(
             onClick = { eventSink(CodexEntryFormEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.LOCATION_PARENT)) },
             title = form.locationParent?.name,
             subtitle = form.locationParent?.path,
-            leadingGlyph = MentionGlyph.LOCATION.symbol,
+            leadingIcon = EntityKind.LOCATION.icon(),
         )
         FormPickField(
             label = stringResource(Res.string.codex_entry_label_inside),

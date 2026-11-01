@@ -36,6 +36,7 @@ import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.HoldTooShortToast
 import com.lyrismet.incadent.core.designsystem.component.LocalHoldTooShort
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
+import com.lyrismet.incadent.core.designsystem.component.PortraitMarkContent
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.language.label
@@ -52,7 +53,6 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryShe
 import com.lyrismet.incadent.feature.codex.presentation.summary.FactRow
 import com.lyrismet.incadent.feature.codex.presentation.summary.QuickEditSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.StatusOption
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_life_label
 import dndplayerscodex.shared.generated.resources.entity_sheet_portrait_hint
@@ -353,17 +353,10 @@ private fun EntityEmblemBox(
         monochrome = emblem.isMonochrome,
         modifier = modifier,
     ) {
-        // the design sizes the NPC initial at 26, the quest diamond at 18 and the location triangle at 16
-        val textSize =
-            when {
-                emblem.shape == EntityEmblemShape.CIRCLE -> 26.sp
-                emblem.text == MentionGlyph.QUEST.symbol -> 18.sp
-                else -> 16.sp
-            }
-        Text(
-            emblem.text,
-            style = MaterialTheme.typography.headlineMedium.copy(fontSize = textSize),
-            color = emblem.color.foreground,
+        PortraitMarkContent(
+            emblem.mark,
+            emblem.color.foreground,
+            MaterialTheme.typography.headlineMedium.copy(fontSize = 26.sp),
         )
     }
 }

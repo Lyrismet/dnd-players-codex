@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +40,7 @@ import com.lyrismet.incadent.core.debounce.rememberDebounced
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.core.selectlist.SelectRow
 import com.lyrismet.incadent.core.selectlist.canCreateFromQuery
@@ -91,7 +93,7 @@ fun AppSelectSheet(
     modifier: Modifier = Modifier,
     recentIds: List<Long> = emptyList(),
     excludedIds: Set<Long> = emptySet(),
-    leadingGlyph: String? = null,
+    leadingIcon: ImageVector? = null,
     onCreate: ((query: String, checked: Set<Long>) -> Unit)? = null,
 ) {
     AppBottomSheet(onDismissRequest = onDismiss) {
@@ -104,7 +106,7 @@ fun AppSelectSheet(
             modifier = modifier,
             recentIds = recentIds,
             excludedIds = excludedIds,
-            leadingGlyph = leadingGlyph,
+            leadingIcon = leadingIcon,
             onCreate = onCreate,
         )
     }
@@ -122,7 +124,7 @@ fun AppSelectSheetContent(
     modifier: Modifier = Modifier,
     recentIds: List<Long> = emptyList(),
     excludedIds: Set<Long> = emptySet(),
-    leadingGlyph: String? = null,
+    leadingIcon: ImageVector? = null,
     onCreate: ((query: String, checked: Set<Long>) -> Unit)? = null,
 ) {
     var query by remember { mutableStateOf("") }
@@ -162,7 +164,7 @@ fun AppSelectSheetContent(
                 SelectRows(
                     rows = rows,
                     multi = multi,
-                    leadingGlyph = leadingGlyph,
+                    leadingIcon = leadingIcon,
                     carriedLabel = texts.carriedLabel,
                     onRowClick = { id ->
                         if (multi) checked = if (id in checked) checked - id else checked + id else onConfirm(setOf(id))
@@ -218,7 +220,7 @@ private fun SelectHeader(
 private fun SelectRows(
     rows: List<SelectRow>,
     multi: Boolean,
-    leadingGlyph: String?,
+    leadingIcon: ImageVector?,
     carriedLabel: (@Composable (name: String) -> String)?,
     onRowClick: (Long) -> Unit,
 ) {
@@ -244,7 +246,7 @@ private fun SelectRows(
             } else if (index > 0) {
                 AppDivider(color = AppPalette.SurfacePopover)
             }
-            SelectListRow(row, multi, leadingGlyph, carriedLabel) { onRowClick(row.option.id) }
+            SelectListRow(row, multi, leadingIcon, carriedLabel) { onRowClick(row.option.id) }
         }
     }
 }
@@ -253,7 +255,7 @@ private fun SelectRows(
 private fun SelectListRow(
     row: SelectRow,
     multi: Boolean,
-    leadingGlyph: String?,
+    leadingIcon: ImageVector?,
     carriedLabel: (@Composable (name: String) -> String)?,
     onClick: () -> Unit,
 ) {
@@ -271,9 +273,9 @@ private fun SelectListRow(
     ) {
         if (multi) AppCheckBox(row.selected, carried = row.carriedBy != null)
         if (!multi &&
-            leadingGlyph != null
+            leadingIcon != null
         ) {
-            Text(leadingGlyph, fontSize = AppFontSize.Micro, color = AppPalette.Parchment)
+            AppEntityIcon(leadingIcon, AppPalette.Parchment, size = 14.dp)
         }
         Column(modifier = Modifier.weight(1f)) {
             // explicit line heights - without them the theme's tall default spreads the title and the path apart

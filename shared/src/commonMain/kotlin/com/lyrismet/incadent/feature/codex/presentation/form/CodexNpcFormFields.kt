@@ -3,10 +3,11 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.designsystem.component.FormChipPicker
 import com.lyrismet.incadent.core.designsystem.component.FormPickField
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilities
 import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilityEditor
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_label_life
 import dndplayerscodex.shared.generated.resources.codex_entry_label_name_npc
@@ -93,7 +94,7 @@ private fun NpcSpeciesField(
         onClick = { eventSink(CodexEntryFormEvent.EntrySpeciesSelectOpened) },
         title = form.npcSpecies?.name,
         subtitle = form.npcSpecies?.typeLabel,
-        leadingGlyph = MentionGlyph.SPECIES.symbol,
+        leadingIcon = EntityKind.SPECIES.icon(),
     )
 }
 

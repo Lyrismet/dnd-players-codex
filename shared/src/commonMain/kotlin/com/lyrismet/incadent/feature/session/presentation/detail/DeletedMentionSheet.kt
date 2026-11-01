@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -38,6 +38,7 @@ import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.format.kindLabelRes
 import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.mention.presentation.MentionGlyphMark
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.deleted_mention_back
 import dndplayerscodex.shared.generated.resources.deleted_mention_body
@@ -227,13 +228,9 @@ private fun DeletedMentionLinkRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            option.glyph.symbol,
-            fontSize = AppFontSize.Micro,
-            color = option.color.foreground,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.width(14.dp),
-        )
+        Box(modifier = Modifier.width(14.dp), contentAlignment = Alignment.Center) {
+            MentionGlyphMark(option.glyph, option.color.foreground, size = 14.dp)
+        }
         Text(
             option.name,
             style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Large),

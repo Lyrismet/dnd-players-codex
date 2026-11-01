@@ -10,7 +10,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppDisclosure
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_more
 import dndplayerscodex.shared.generated.resources.codex_entry_more_close
@@ -41,15 +40,13 @@ internal fun npcDetailsSummary(form: CodexEntryFormState): String {
     val filled =
         listOfNotNull(
             stringResource(Res.string.codex_entry_summary_portrait).takeIf { form.portrait != null },
-            form.npcSpecies?.let { "${MentionGlyph.SPECIES.symbol} ${it.name}" }
+            form.npcSpecies?.name
                 ?: form.race.trim().takeIf { it.isNotEmpty() },
             form.npcLifeOptions
                 .firstOrNull { it.selected && it.value != NpcLifeState.ALIVE }
                 ?.label
                 ?.lowercase(),
-            form.npcPlaces.takeIf { it.isNotEmpty() }?.joinToString(
-                prefix = "${MentionGlyph.LOCATION.symbol} ",
-            ) { it.label },
+            form.npcPlaces.takeIf { it.isNotEmpty() }?.joinToString { it.label },
             form.nicknames.trim().takeIf { it.isNotEmpty() },
         )
     return filled.joinToString(" · ").ifEmpty { stringResource(Res.string.codex_entry_more_hint_npc) }

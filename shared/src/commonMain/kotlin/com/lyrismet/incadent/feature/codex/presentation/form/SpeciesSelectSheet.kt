@@ -4,10 +4,11 @@ import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSelectSheetContent
 import com.lyrismet.incadent.core.designsystem.component.AppSelectTexts
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.core.selectlist.SelectOption
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.srdNotAdded
 import com.lyrismet.incadent.feature.codex.domain.model.Species
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_label_species
 import dndplayerscodex.shared.generated.resources.codex_species_group_own
@@ -49,7 +50,7 @@ internal fun SpeciesSelectSheet(
                 val srd = ids.firstNotNullOfOrNull { select.srd[it] }
                 if (srd != null) onSrdChosen(srd) else onChosen(ids.toList())
             },
-            leadingGlyph = MentionGlyph.SPECIES.symbol,
+            leadingIcon = EntityKind.SPECIES.icon(),
             onCreate = { name, _ -> onCreated(name) },
         )
     }

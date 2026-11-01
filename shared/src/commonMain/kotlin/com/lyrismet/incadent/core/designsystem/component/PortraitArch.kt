@@ -35,13 +35,13 @@ private val DiamondHaloSize = 14.dp
 
 /**
  * the npc/party portrait of the entity sheet header, see Players Codex v6.dc.html's sheet `sh.isPortrait` - an 88x114
- * arch with a gold inset ring and diamond. A decoded [portrait] fills it, otherwise [emblemText]. [onClick]
+ * arch with a gold inset ring and diamond. A decoded [portrait] fills it, otherwise [mark]. [onClick]
  * non-null makes it tappable and, while empty, adds the "+" badge that invites a tap.
  */
 @Composable
 fun PortraitArch(
     portrait: Photo?,
-    emblemText: String,
+    mark: PortraitMark,
     color: StatusColor,
     monochrome: Boolean,
     modifier: Modifier = Modifier,
@@ -72,10 +72,11 @@ fun PortraitArch(
                     AppLoader(size = PhotoLoaderSize, strokeWidth = 2.dp, modifier = Modifier.align(Alignment.Center))
                 }
             } else {
-                Text(
-                    emblemText,
-                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = AppFontSize.Hero),
-                    color = color.foreground,
+                PortraitMarkContent(
+                    mark,
+                    color.foreground,
+                    MaterialTheme.typography.headlineLarge.copy(fontSize = AppFontSize.Hero),
+                    iconSize = 48.dp,
                 )
             }
             Box(

@@ -10,10 +10,10 @@ import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_npc_mode_named
 import dndplayerscodex.shared.generated.resources.codex_npc_mode_species
@@ -35,13 +35,15 @@ internal fun CodexNpcModeSwitch(
             listOf(
                 SegmentedTab(
                     NpcListMode.NAMED,
-                    "${MentionGlyph.NPC.symbol} ${stringResource(Res.string.codex_npc_mode_named)}",
+                    stringResource(Res.string.codex_npc_mode_named),
                     state.tabCounts.npc,
+                    EntityKind.NPC.icon(),
                 ),
                 SegmentedTab(
                     NpcListMode.SPECIES,
-                    "${MentionGlyph.SPECIES.symbol} ${stringResource(Res.string.codex_npc_mode_species)}",
+                    stringResource(Res.string.codex_npc_mode_species),
                     state.tabCounts.species,
+                    EntityKind.SPECIES.icon(),
                 ),
             ),
         selected = state.npcMode,

@@ -23,17 +23,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
-import com.lyrismet.incadent.core.designsystem.component.AppTriangle
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
+import com.lyrismet.incadent.core.designsystem.component.PortraitMark
+import com.lyrismet.incadent.core.designsystem.component.PortraitMarkContent
 import com.lyrismet.incadent.core.designsystem.component.StatusBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.cosmicBackdrop
 import com.lyrismet.incadent.core.designsystem.component.coverStrip
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.EntityIcons
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
@@ -42,7 +44,6 @@ import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.summary.speciesHitsLine
 import com.lyrismet.incadent.feature.codex.presentation.summary.speciesSeenLine
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
 import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
@@ -82,7 +83,7 @@ private fun CodexCardRow(
 
 @Composable
 private fun CodexInitialBadge(
-    initial: String,
+    mark: PortraitMark,
     color: StatusColor,
     portrait: Photo? = null,
     monochrome: Boolean = false,
@@ -94,7 +95,7 @@ private fun CodexInitialBadge(
         shape = CircleShape,
         monochrome = monochrome,
     ) {
-        Text(initial, style = MaterialTheme.typography.titleLarge, color = color.foreground)
+        PortraitMarkContent(mark, color.foreground, MaterialTheme.typography.titleLarge)
     }
 }
 
@@ -108,7 +109,12 @@ internal fun NpcCodexCard(
         onClick = onClick,
         modifier = modifier,
         badge = {
-            CodexInitialBadge(item.initial, item.statusColor, item.portrait, monochrome = item.isDead)
+            CodexInitialBadge(
+                PortraitMark.Letter(item.initial),
+                item.statusColor,
+                item.portrait,
+                monochrome = item.isDead,
+            )
         },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -144,7 +150,7 @@ internal fun SpeciesCodexCard(
     CodexCardRow(
         onClick = onClick,
         modifier = modifier,
-        badge = { CodexInitialBadge(MentionGlyph.SPECIES.symbol, SpeciesMentionColor, item.photo) },
+        badge = { CodexInitialBadge(PortraitMark.Icon(EntityIcons.Species), SpeciesMentionColor, item.photo) },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
@@ -191,7 +197,7 @@ internal fun PartyCodexCard(
     CodexCardRow(
         onClick = onClick,
         modifier = modifier,
-        badge = { CodexInitialBadge(item.initial, item.color, item.portrait) },
+        badge = { CodexInitialBadge(PortraitMark.Letter(item.initial), item.color, item.portrait) },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
@@ -238,11 +244,7 @@ internal fun QuestCodexCard(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                MentionGlyph.QUEST.symbol,
-                fontSize = AppFontSize.Tiny,
-                color = item.statusColor.foreground,
-            )
+            AppEntityIcon(EntityIcons.Quest, item.statusColor.foreground, size = 16.dp)
             Text(
                 text = item.title,
                 style = MaterialTheme.typography.titleMedium,
@@ -317,7 +319,7 @@ internal fun LocationCodexCard(
                 background = AppPalette.Parchment.copy(alpha = 0.08f),
                 border = AppPalette.Parchment.copy(alpha = 0.3f),
             ) {
-                AppTriangle(true, AppPalette.Parchment, Modifier.size(width = 14.dp, height = 12.dp))
+                AppEntityIcon(EntityIcons.Location, AppPalette.Parchment, size = 24.dp)
             }
         },
     ) {
