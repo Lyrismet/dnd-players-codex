@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
+import com.lyrismet.incadent.core.designsystem.component.PortraitMark
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
@@ -284,7 +285,7 @@ class EntitySummaryTest {
         val summary = buildEntitySummary(EntityRef.Party(7), lookup()) as EntitySummaryItem.PartySummary
 
         assertEquals("Волшебница · Вы", summary.overlineValue)
-        assertEquals("Л", summary.emblem.text)
+        assertEquals(PortraitMark.Letter("Л"), summary.emblem.mark)
         assertEquals("Вы", (summary.facts.first().value as FactValue.Text).text)
     }
 

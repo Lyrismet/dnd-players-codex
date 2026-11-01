@@ -233,16 +233,26 @@ internal fun MentionEntity.toSuggestion(
 ): SessionMentionSuggestion {
     val (glyph, tint, typeLabel) =
         when (this) {
-            is MentionEntity.NpcMention -> Triple(MentionGlyph.NPC, status.toStatusColor().foreground, labels.npc)
+            is MentionEntity.NpcMention ->
+                Triple(
+                    MentionGlyph.Entity(EntityKind.NPC),
+                    status.toStatusColor().foreground,
+                    labels.npc,
+                )
             is MentionEntity.LocationMention ->
-                Triple(MentionGlyph.LOCATION, LocationMentionColor.foreground, labels.location)
+                Triple(MentionGlyph.Entity(EntityKind.LOCATION), LocationMentionColor.foreground, labels.location)
             is MentionEntity.QuestMention ->
-                Triple(MentionGlyph.QUEST, status.toStatusColor().foreground, labels.quest)
-            is MentionEntity.PartyMention -> Triple(MentionGlyph.PARTY, PartyMemberColor.foreground, labels.party)
+                Triple(MentionGlyph.Entity(EntityKind.QUEST), status.toStatusColor().foreground, labels.quest)
+            is MentionEntity.PartyMention ->
+                Triple(
+                    MentionGlyph.Entity(EntityKind.PARTY),
+                    PartyMemberColor.foreground,
+                    labels.party,
+                )
             is MentionEntity.SpeciesMention ->
-                Triple(MentionGlyph.SPECIES, SpeciesMentionColor.foreground, labels.species)
+                Triple(MentionGlyph.Entity(EntityKind.SPECIES), SpeciesMentionColor.foreground, labels.species)
             // a deleted record is never offered by the autocomplete, its candidates come from live records only
-            is MentionEntity.DeletedMention -> Triple(MentionGlyph.DELETED, LocationMentionColor.foreground, "")
+            is MentionEntity.DeletedMention -> Triple(MentionGlyph.Deleted, LocationMentionColor.foreground, "")
         }
     return SessionMentionSuggestion(
         token = token(),

@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.PortraitMark
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.EntityIcons
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.orDash
@@ -80,7 +81,7 @@ private fun buildNpcSummary(
         description = npc.description,
         emblem =
             EntityEmblem(
-                text = npc.name.take(1).uppercase(),
+                mark = PortraitMark.Letter(npc.name.take(1).uppercase()),
                 shape = EntityEmblemShape.CIRCLE,
                 color = npc.status.toStatusColor(),
                 portrait = npc.portrait,
@@ -153,8 +154,7 @@ private fun buildSpeciesSummary(
         notes = species.notes,
         emblem =
             EntityEmblem(
-                text = "",
-                icon = EntityIcons.Species,
+                mark = PortraitMark.Icon(EntityIcons.Species),
                 shape = EntityEmblemShape.CIRCLE,
                 color = SpeciesMentionColor,
                 portrait = species.photo,
@@ -199,7 +199,7 @@ private fun buildPartySummary(
         description = member.description,
         emblem =
             EntityEmblem(
-                text = member.name.take(1).uppercase(),
+                mark = PortraitMark.Letter(member.name.take(1).uppercase()),
                 shape = EntityEmblemShape.CIRCLE,
                 color = PartyMemberColor,
                 portrait = member.portrait,
@@ -250,7 +250,12 @@ private fun buildQuestSummary(
         statusLabel = lookup.questStatusLabels.getValue(quest.status),
         reward = quest.reward,
         description = quest.description,
-        emblem = EntityEmblem("", EntityEmblemShape.ROUNDED, quest.status.toStatusColor(), icon = EntityIcons.Quest),
+        emblem =
+            EntityEmblem(
+                PortraitMark.Icon(EntityIcons.Quest),
+                EntityEmblemShape.ROUNDED,
+                quest.status.toStatusColor(),
+            ),
         subtitle = location?.name.orEmpty(),
         statusOptions =
             statusOptions(
@@ -298,7 +303,7 @@ private fun buildLocationSummary(
         name = location.name,
         description = location.description,
         cover = location.cover,
-        emblem = EntityEmblem("", EntityEmblemShape.ROUNDED, LocationMentionColor, icon = EntityIcons.Location),
+        emblem = EntityEmblem(PortraitMark.Icon(EntityIcons.Location), EntityEmblemShape.ROUNDED, LocationMentionColor),
         subtitle = tree.ancestorsLabel(location),
         // with no other place in the codex there is nothing to be inside of, so the row would be a dead end
         facts =

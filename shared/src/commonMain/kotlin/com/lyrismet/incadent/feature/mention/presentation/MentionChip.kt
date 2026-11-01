@@ -17,20 +17,19 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
-import com.lyrismet.incadent.core.designsystem.component.icons.entity.EntityIcons
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.core.preferences.MentionStyle
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -56,32 +55,28 @@ private const val DASH_OFF_DP = 2
 /** how inline mention chips are drawn - set once at the app root from Settings */
 val LocalMentionStyle = compositionLocalOf { MentionStyle.FILLED }
 
-enum class MentionGlyph(
-    val icon: ImageVector?,
-) {
-    NPC(EntityIcons.Npc),
-    LOCATION(EntityIcons.Location),
-    QUEST(EntityIcons.Quest),
-    PARTY(EntityIcons.Party),
-    SPECIES(EntityIcons.Species),
+sealed interface MentionGlyph {
+    data class Entity(
+        val kind: EntityKind,
+    ) : MentionGlyph
 
     /** the "?" of a mention whose record was deleted from the codex, it has no icon */
-    DELETED(null),
+    data object Deleted : MentionGlyph
 }
 
-/** the icon of [glyph] in a square of [size], or the "?" of a deleted mention */
+/** the icon of [glyph] in a square of [size], or the "?" of a deleted mention at [deletedFontSize] */
 @Composable
 fun MentionGlyphMark(
     glyph: MentionGlyph,
     tint: Color,
     modifier: Modifier = Modifier,
     size: Dp = 14.dp,
+    deletedFontSize: TextUnit = AppFontSize.Micro,
 ) {
-    val icon = glyph.icon
-    if (icon != null) {
-        AppEntityIcon(icon, tint, modifier, size)
-    } else {
-        Text("?", fontSize = size.value.sp, color = tint, modifier = modifier)
+    when (glyph) {
+        is MentionGlyph.Entity -> AppEntityIcon(glyph.kind.icon(), tint, modifier, size)
+        MentionGlyph.Deleted ->
+            Text("?", fontSize = deletedFontSize, color = tint, modifier = modifier)
     }
 }
 
@@ -104,7 +99,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
         is MentionEntity.NpcMention ->
             MentionChipItem(
                 stableId = dedupeKey(),
-                glyph = MentionGlyph.NPC,
+                glyph = MentionGlyph.Entity(EntityKind.NPC),
                 label = name,
                 color = status.toStatusColor(),
                 strikeThrough = lifeState == NpcLifeState.DEAD,
@@ -114,7 +109,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
         is MentionEntity.LocationMention ->
             MentionChipItem(
                 stableId = dedupeKey(),
-                glyph = MentionGlyph.LOCATION,
+                glyph = MentionGlyph.Entity(EntityKind.LOCATION),
                 label = name,
                 color = LocationMentionColor,
                 entityRef = EntityRef.Location(id),
@@ -123,7 +118,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
         is MentionEntity.QuestMention ->
             MentionChipItem(
                 stableId = dedupeKey(),
-                glyph = MentionGlyph.QUEST,
+                glyph = MentionGlyph.Entity(EntityKind.QUEST),
                 label = name,
                 color = status.toStatusColor(),
                 entityRef = EntityRef.Quest(id),
@@ -132,7 +127,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
         is MentionEntity.SpeciesMention ->
             MentionChipItem(
                 stableId = dedupeKey(),
-                glyph = MentionGlyph.SPECIES,
+                glyph = MentionGlyph.Entity(EntityKind.SPECIES),
                 label = name,
                 color = SpeciesMentionColor,
                 entityRef = EntityRef.Species(id),
@@ -141,7 +136,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
         is MentionEntity.PartyMention ->
             MentionChipItem(
                 stableId = dedupeKey(),
-                glyph = MentionGlyph.PARTY,
+                glyph = MentionGlyph.Entity(EntityKind.PARTY),
                 label = name,
                 color = PartyMemberColor,
                 entityRef = EntityRef.Party(id),
@@ -150,7 +145,7 @@ fun MentionEntity.toChipItem(): MentionChipItem =
         is MentionEntity.DeletedMention ->
             MentionChipItem(
                 stableId = dedupeKey(),
-                glyph = MentionGlyph.DELETED,
+                glyph = MentionGlyph.Deleted,
                 label = name,
                 color = DeletedMentionColor,
                 deleted = DeletedMention(id, name, type),
@@ -178,7 +173,7 @@ fun MentionChip(
     glyphGap: Dp = 5.dp,
     lineHeightFactor: Float = 1.6f,
 ) {
-    val isDeleted = item.glyph == MentionGlyph.DELETED
+    val isDeleted = item.glyph == MentionGlyph.Deleted
     // a deleted record has no status colors to fill or line, so it always reads as a dashed underline
     val underlined = isDeleted || LocalMentionStyle.current == MentionStyle.UNDERLINE
     val shape = AppShapes.Badge
@@ -196,7 +191,7 @@ fun MentionChip(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(glyphGap),
     ) {
-        MentionGlyphMark(item.glyph, item.color.foreground, size = if (isDeleted) fontSize.value.dp else glyphSize)
+        MentionGlyphMark(item.glyph, item.color.foreground, size = glyphSize, deletedFontSize = fontSize)
         Text(
             text = item.label,
             fontSize = fontSize,

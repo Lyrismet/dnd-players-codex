@@ -5,7 +5,8 @@ import androidx.compose.ui.Modifier
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSelectSheetContent
 import com.lyrismet.incadent.core.designsystem.component.AppSelectTexts
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
+import com.lyrismet.incadent.domain.model.EntityKind
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_place_select_clear
 import dndplayerscodex.shared.generated.resources.codex_place_select_done
@@ -66,7 +67,7 @@ internal fun PlaceSelectContent(
         onConfirm = { ids -> onChosen(ids.toList()) },
         modifier = modifier,
         recentIds = select.recentIds,
-        leadingIcon = MentionGlyph.LOCATION.icon,
+        leadingIcon = EntityKind.LOCATION.icon(),
         onCreate = { name, checked -> onCreated(name, checked.toList()) },
     )
 }

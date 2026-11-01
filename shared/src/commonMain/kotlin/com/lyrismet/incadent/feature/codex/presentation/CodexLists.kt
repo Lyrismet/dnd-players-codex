@@ -15,9 +15,10 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.core.designsystem.component.scrollEdgeFade
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_all_species
 import dndplayerscodex.shared.generated.resources.codex_party_fallen_section
@@ -72,7 +73,7 @@ private fun <T> CodexGroupedList(
                     item {
                         ListSectionHeader(
                             text = title,
-                            leadingIcon = MentionGlyph.LOCATION.icon,
+                            leadingIcon = EntityKind.LOCATION.icon(),
                             modifier = Modifier.padding(top = if (index == 0) 4.dp else 12.dp),
                             count = group.items.size,
                         )

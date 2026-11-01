@@ -2,12 +2,14 @@ package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
@@ -226,7 +228,9 @@ private fun DeletedMentionLinkRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MentionGlyphMark(option.glyph, option.color.foreground, size = 14.dp)
+        Box(modifier = Modifier.width(14.dp), contentAlignment = Alignment.Center) {
+            MentionGlyphMark(option.glyph, option.color.foreground, size = 14.dp)
+        }
         Text(
             option.name,
             style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Large),

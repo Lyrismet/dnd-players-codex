@@ -36,9 +36,9 @@ import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.HoldTooShortToast
 import com.lyrismet.incadent.core.designsystem.component.LocalHoldTooShort
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
+import com.lyrismet.incadent.core.designsystem.component.PortraitMarkContent
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 import com.lyrismet.incadent.core.language.label
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EditorHoleTracker
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EditorShield
@@ -353,16 +353,11 @@ private fun EntityEmblemBox(
         monochrome = emblem.isMonochrome,
         modifier = modifier,
     ) {
-        val icon = emblem.icon
-        if (icon != null) {
-            AppEntityIcon(icon, emblem.color.foreground, size = 24.dp)
-        } else {
-            Text(
-                emblem.text,
-                style = MaterialTheme.typography.headlineMedium.copy(fontSize = 26.sp),
-                color = emblem.color.foreground,
-            )
-        }
+        PortraitMarkContent(
+            emblem.mark,
+            emblem.color.foreground,
+            MaterialTheme.typography.headlineMedium.copy(fontSize = 26.sp),
+        )
     }
 }
 

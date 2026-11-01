@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,6 +28,8 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
+import com.lyrismet.incadent.core.designsystem.component.PortraitMark
+import com.lyrismet.incadent.core.designsystem.component.PortraitMarkContent
 import com.lyrismet.incadent.core.designsystem.component.StatusBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.cosmicBackdrop
@@ -82,11 +83,10 @@ private fun CodexCardRow(
 
 @Composable
 private fun CodexInitialBadge(
-    initial: String,
+    mark: PortraitMark,
     color: StatusColor,
     portrait: Photo? = null,
     monochrome: Boolean = false,
-    icon: ImageVector? = null,
 ) {
     PortraitBadge(
         portrait = portrait,
@@ -95,11 +95,7 @@ private fun CodexInitialBadge(
         shape = CircleShape,
         monochrome = monochrome,
     ) {
-        if (icon != null) {
-            AppEntityIcon(icon, color.foreground, size = 24.dp)
-        } else {
-            Text(initial, style = MaterialTheme.typography.titleLarge, color = color.foreground)
-        }
+        PortraitMarkContent(mark, color.foreground, MaterialTheme.typography.titleLarge)
     }
 }
 
@@ -113,7 +109,12 @@ internal fun NpcCodexCard(
         onClick = onClick,
         modifier = modifier,
         badge = {
-            CodexInitialBadge(item.initial, item.statusColor, item.portrait, monochrome = item.isDead)
+            CodexInitialBadge(
+                PortraitMark.Letter(item.initial),
+                item.statusColor,
+                item.portrait,
+                monochrome = item.isDead,
+            )
         },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -149,7 +150,7 @@ internal fun SpeciesCodexCard(
     CodexCardRow(
         onClick = onClick,
         modifier = modifier,
-        badge = { CodexInitialBadge("", SpeciesMentionColor, item.photo, icon = EntityIcons.Species) },
+        badge = { CodexInitialBadge(PortraitMark.Icon(EntityIcons.Species), SpeciesMentionColor, item.photo) },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
@@ -196,7 +197,7 @@ internal fun PartyCodexCard(
     CodexCardRow(
         onClick = onClick,
         modifier = modifier,
-        badge = { CodexInitialBadge(item.initial, item.color, item.portrait) },
+        badge = { CodexInitialBadge(PortraitMark.Letter(item.initial), item.color, item.portrait) },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(

@@ -1,7 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.PortraitMark
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
@@ -53,9 +53,9 @@ sealed interface EntityRef {
 
 enum class EntityEmblemShape { CIRCLE, ROUNDED }
 
-/** self-contained visual identity for the sheet header - initial letter (circle) or an entity [icon] in place of it */
+/** self-contained visual identity for the sheet header, [mark] shows while there is no photo */
 data class EntityEmblem(
-    val text: String,
+    val mark: PortraitMark,
     val shape: EntityEmblemShape,
     val color: StatusColor,
     // only an npc or a party member can carry a portrait - see Players Codex v6.dc.html's `por` flag
@@ -63,7 +63,6 @@ data class EntityEmblem(
     val isMonochrome: Boolean = false,
     // the sheet header draws the big arch instead of the round badge - npc and party only
     val hasPortraitSlot: Boolean = false,
-    val icon: ImageVector? = null,
 )
 
 /** one row's value in the facts grid - plain text or a chip that reopens the sheet on another entity */

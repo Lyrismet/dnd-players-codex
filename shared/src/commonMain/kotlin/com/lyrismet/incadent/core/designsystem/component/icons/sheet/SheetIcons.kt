@@ -5,28 +5,31 @@ import com.lyrismet.incadent.core.designsystem.component.icons.silhouetteIcon
 
 /** the interface glyphs of the v9 design system for the character sheet, same grid and style as the entity icons */
 object SheetIcons {
-    val Heart: ImageVector =
+    val Heart: ImageVector by lazy {
         silhouetteIcon(
             name = "Heart",
             body =
                 "M12 21.2C6 16.8 2.2 13.2 2.2 8.8 2.2 5.6 4.6 3.2 7.6 3.2" +
                     "c1.8 0 3.4.9 4.4 2.4 1-1.5 2.6-2.4 4.4-2.4 3 0 5.4 2.4 5.4 5.6 0 4.4-3.8 8-9.8 12.4Z",
         )
-    val Shield: ImageVector =
+    }
+    val Shield: ImageVector by lazy {
         silhouetteIcon(
             name = "Shield",
             body =
                 "M12 2.2c2.6 1.4 5.4 2 8.2 2v6.4c0 5.6-3.4 9.6-8.2 11.8C7.2 20.2 3.8 16.2 3.8 10.6V4.2" +
                     "c2.8 0 5.6-.6 8.2-2Z",
         )
-    val Bolt: ImageVector =
+    }
+    val Bolt: ImageVector by lazy {
         silhouetteIcon(
             name = "Bolt",
             body =
                 "M13.6 1.8 4.6 13.4c-.4.5 0 1.2.6 1.2H11l-1.4 7.4c-.1.6.7.9 1.1.4l8.8-11.6" +
                     "c.4-.5 0-1.2-.6-1.2H13l1.7-7.2c.2-.6-.7-1-1.1-.6Z",
         )
-    val Boot: ImageVector =
+    }
+    val Boot: ImageVector by lazy {
         silhouetteIcon(
             name = "Boot",
             body =
@@ -34,7 +37,8 @@ object SheetIcons {
                     "V20.8C21.4 21.3 21 21.7 20.5 21.7H3.5C3 21.7 2.6 21.3 2.6 20.8V19" +
                     "C2.6 18.5 2.8 18 3.2 17.6L6.4 14.2V3C6.4 2.5 6.7 2.2 7.2 2.2ZM2.6 18.1H21.4V19.7H2.6Z",
         )
-    val Medal: ImageVector =
+    }
+    val Medal: ImageVector by lazy {
         silhouetteIcon(
             name = "Medal",
             body =
@@ -44,7 +48,8 @@ object SheetIcons {
                 "M6.4 1.8H10.6L13.2 7.9 10.1 9.5ZM17.6 1.8H13.4L10.8 7.9 13.9 9.5ZM10.3 15.2" +
                     "a1.7 1.7 0 1 0 3.4 0a1.7 1.7 0 1 0 -3.4 0Z",
         )
-    val Eye: ImageVector =
+    }
+    val Eye: ImageVector by lazy {
         silhouetteIcon(
             name = "Eye",
             body =
@@ -52,7 +57,8 @@ object SheetIcons {
                     "a3.8 3.8 0 1 0 7.6 0a3.8 3.8 0 1 0 -7.6 0Z",
             extra = "M10.2 12a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0 -3.6 0Z",
         )
-    val Campfire: ImageVector =
+    }
+    val Campfire: ImageVector by lazy {
         silhouetteIcon(
             name = "Campfire",
             body =
@@ -61,7 +67,8 @@ object SheetIcons {
                     "C13.8 13.6 13 14.2 12 14.2S10.2 13.6 10.2 12.6C10.2 11.5 11.3 10.8 12 9.4Z",
             extra = "M5.8 20.2 18.6 17.1 19 18.6 6.2 21.7ZM5.4 17.1 18.2 20.2 17.8 21.7 5 18.6Z",
         )
-    val Coin: ImageVector =
+    }
+    val Coin: ImageVector by lazy {
         silhouetteIcon(
             name = "Coin",
             body =
@@ -69,4 +76,5 @@ object SheetIcons {
                     "a6.6 6.6 0 1 0 -13.2 0Z",
             extra = "M8.4 12a3.6 3.6 0 1 0 7.2 0a3.6 3.6 0 1 0 -7.2 0Z",
         )
+    }
 }

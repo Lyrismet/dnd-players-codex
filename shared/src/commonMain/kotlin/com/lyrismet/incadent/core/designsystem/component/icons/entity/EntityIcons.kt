@@ -11,9 +11,9 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.icons.silhouetteIcon
 import com.lyrismet.incadent.domain.model.EntityKind
 
-/** the seven silhouettes of the v9 set (pc-icons.js), one grid, tinted by the Icon's tint */
+/** the seven silhouettes of the v9 set (pc-icons.js), one grid, tinted by the Icon's tint and built on first use */
 object EntityIcons {
-    val Npc: ImageVector =
+    val Npc: ImageVector by lazy {
         silhouetteIcon(
             name = "Npc",
             body =
@@ -21,14 +21,16 @@ object EntityIcons {
                     "c0-3.5-1.5-6.2-4.2-7.4.9-1.2 1.4-2.7 1.4-4.6C18.6 5.6 16.1 2.2 12 2.2ZM12 7.4" +
                     "c-2 0-3.3 1.7-3.3 3.8S10 15 12 15s3.3-1.7 3.3-3.8S14 7.4 12 7.4Z",
         )
-    val Location: ImageVector =
+    }
+    val Location: ImageVector by lazy {
         silhouetteIcon(
             name = "Location",
             body =
                 "M2 6.3c0-.4.3-.8.7-.9L7.9 3.6v14.6L3.2 20c-.6.2-1.2-.2-1.2-.9ZM9.1 3.6l5.8 2v14.6" +
                     "l-5.8-2ZM16.1 5.8l4.7-1.8c.6-.2 1.2.2 1.2.9v12.7c0 .4-.3.8-.7.9l-5.2 1.9Z",
         )
-    val Quest: ImageVector =
+    }
+    val Quest: ImageVector by lazy {
         silhouetteIcon(
             name = "Quest",
             body = "M5.6 5h12.8v13H5.6ZM8.4 9h7.2v2H8.4ZM8.4 12.7h4.6v2H8.4Z",
@@ -36,7 +38,8 @@ object EntityIcons {
                 "M4.6 2.4h14.8a2.3 2.3 0 0 1 0 4.6H4.6a2.3 2.3 0 0 1 0-4.6ZM4.6 16.8h14.8" +
                     "a2.3 2.3 0 0 1 0 4.6H4.6a2.3 2.3 0 0 1 0-4.6Z",
         )
-    val Party: ImageVector =
+    }
+    val Party: ImageVector by lazy {
         silhouetteIcon(
             name = "Party",
             body =
@@ -47,7 +50,8 @@ object EntityIcons {
                     "C23 17.4 21.8 15.6 19.8 15.6 19.4 15.6 19 15.7 18.7 15.8 19.1 16.9 19.3 18.1 19.3 19.4" +
                     "V21.6Z",
         )
-    val Species: ImageVector =
+    }
+    val Species: ImageVector by lazy {
         silhouetteIcon(
             name = "Species",
             body =
@@ -58,7 +62,8 @@ object EntityIcons {
                     "a2.5 2.5 0 1 0 -5 0ZM12.6 6.3a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0ZM17.099 11.2" +
                     "a2.3 2.3 0 1 0 4.6 0a2.3 2.3 0 1 0 -4.6 0Z",
         )
-    val Item: ImageVector =
+    }
+    val Item: ImageVector by lazy {
         silhouetteIcon(
             name = "Item",
             body =
@@ -68,7 +73,8 @@ object EntityIcons {
                 "M8 2C9.3 2.8 10.7 2.8 12 2S14.7 1.2 16 2L14.6 6.4H9.4ZM9.9 6.4H14.1" +
                     "A1.3 1.3 0 0 1 14.1 9H9.9A1.3 1.3 0 0 1 9.9 6.4Z",
         )
-    val Me: ImageVector =
+    }
+    val Me: ImageVector by lazy {
         silhouetteIcon(
             name = "Me",
             body = "M4 22V10A8 8 0 0 1 20 10V22ZM6 20.2V10A6 6 0 0 1 18 10V20.2Z",
@@ -76,6 +82,7 @@ object EntityIcons {
                 "M9.4 10.4a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0 -5.2 0ZM7.8 20.2" +
                     "C7.8 17.2 9.7 15.3 12 15.3S16.2 17.2 16.2 20.2Z",
         )
+    }
 }
 
 fun EntityKind.icon(): ImageVector =
@@ -87,7 +94,7 @@ fun EntityKind.icon(): ImageVector =
         EntityKind.SPECIES -> EntityIcons.Species
     }
 
-/** an entity silhouette in a square of [size] (12, 16, 24 or 48 dp), filled with [tint] */
+/** an entity silhouette in a square of [size] (14 dp in rows and chips, 24 and 48 dp in badges), filled with [tint] */
 @Composable
 fun AppEntityIcon(
     icon: ImageVector,
