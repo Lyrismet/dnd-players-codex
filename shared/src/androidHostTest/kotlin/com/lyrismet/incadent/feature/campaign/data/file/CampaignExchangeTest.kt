@@ -59,11 +59,21 @@ class CampaignExchangeTest {
     private var npcId: Long = 0L
 
     private fun seed() {
-        database.speciesQueries.insert("Wolf", CreatureType.BEAST, "bite", "", 25L, jpeg, byteArrayOf(1), source)
+        database.speciesQueries.insert(
+            "Wolf",
+            CreatureType.BEAST,
+            "bite",
+            "",
+            25L,
+            jpeg,
+            byteArrayOf(1),
+            source,
+            "wolf-origin",
+        )
         val speciesId = database.speciesQueries.lastInsertRowId().executeAsOne()
-        database.locationQueries.insert("Town", "big", null, jpeg, byteArrayOf(1), source)
+        database.locationQueries.insert("Town", "big", null, jpeg, byteArrayOf(1), source, "town-origin")
         val town = database.locationQueries.lastInsertRowId().executeAsOne()
-        database.locationQueries.insert("Inn", "", town, null, null, source)
+        database.locationQueries.insert("Inn", "", town, null, null, source, "inn-origin")
         val inn = database.locationQueries.lastInsertRowId().executeAsOne()
         database.npcQueries.insert(
             "Bob",
@@ -77,10 +87,11 @@ class CampaignExchangeTest {
             jpeg,
             byteArrayOf(1),
             source,
+            "bob-origin",
         )
         npcId = database.npcQueries.lastInsertRowId().executeAsOne()
         database.npcLocationQueries.insert(npcId, inn)
-        database.questQueries.insert("Find", QuestStatus.ACTIVE, "gold", npcId, inn, "", source)
+        database.questQueries.insert("Find", QuestStatus.ACTIVE, "gold", npcId, inn, "", source, "quest-origin")
         database.partyMemberQueries.insert(
             "Hero",
             "Rogue",
@@ -95,14 +106,22 @@ class CampaignExchangeTest {
             null,
             null,
             source,
+            "hero-origin",
         )
         database.tagQueries.insert("fight", source)
         database.phraseSnippetQueries.insert("Roll for it", source)
-        database.sessionNoteQueries.insert("Day one", date, date, 5L, source)
+        database.sessionNoteQueries.insert("Day one", date, date, 5L, source, "session-origin")
         val session = database.sessionNoteQueries.lastInsertRowId().executeAsOne()
         val tag = database.tagQueries.selectIdByName("fight", source).executeAsOne()
         database.sessionTagQueries.insert(session, tag)
-        database.sessionEntryQueries.insert(session, date, "met @[Bob|n:$npcId] at @[Inn|l:$inn]", false, true)
+        database.sessionEntryQueries.insert(
+            session,
+            date,
+            "met @[Bob|n:$npcId] at @[Inn|l:$inn]",
+            false,
+            true,
+            "entry-origin",
+        )
     }
 
     private fun export(selection: RecordSelection): MemoryFile =
@@ -285,6 +304,7 @@ class CampaignExchangeTest {
             null,
             null,
             source,
+            "other-origin",
         )
         val sessionId =
             database.sessionNoteQueries
@@ -650,7 +670,16 @@ class CampaignExchangeTest {
                 .executeAsList()
                 .single()
                 .id
-        database.combatQueries.insertFinished(session, date, 3L, 1L, CombatOutcome.VICTORY, date, source)
+        database.combatQueries.insertFinished(
+            session,
+            date,
+            3L,
+            1L,
+            CombatOutcome.VICTORY,
+            date,
+            source,
+            "combat-origin",
+        )
         val combat = database.combatQueries.lastInsertRowId().executeAsOne()
 
         fun fighter(

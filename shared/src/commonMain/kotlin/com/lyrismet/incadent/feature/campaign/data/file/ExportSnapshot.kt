@@ -23,6 +23,7 @@ private fun MentionRef.toExchangeRef(): ExchangeRef = ExchangeRef(type.toExchang
 internal class Snapshot(
     val campaignId: String,
     val name: String,
+    val originId: String,
     val places: List<PlaceSql>,
     val npcs: List<SelectAllWithLocations>,
     val quests: List<QuestSql>,

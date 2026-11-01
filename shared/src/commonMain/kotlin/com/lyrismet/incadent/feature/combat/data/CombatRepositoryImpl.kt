@@ -6,6 +6,7 @@ import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
+import com.lyrismet.incadent.core.identity.newOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
@@ -77,7 +78,7 @@ class CombatRepositoryImpl(
     ): Long =
         withContext(DatabaseDispatcher) {
             combats.transactionWithResult {
-                combats.insert(sessionNoteId, startedAt, current.requireId())
+                combats.insert(sessionNoteId, startedAt, current.requireId(), newOriginId())
                 combats.lastInsertRowId().executeAsOne()
             }
         }

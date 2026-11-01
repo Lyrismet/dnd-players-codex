@@ -22,8 +22,8 @@ import kotlinx.serialization.json.JsonNames
 
 const val FILE_FORMAT = "incadent"
 
-// 2 added the saved fights, a file of version 1 has none and reads as before
-const val FILE_VERSION = 2
+// 2 added the saved fights, 3 the origin ids, a file of an older version has none and reads as before
+const val FILE_VERSION = 3
 
 /** the first line of a file, what the preview shows is read from here before anything else */
 @Serializable
@@ -34,6 +34,7 @@ data class FileHeader(
     val withPhotos: Boolean = false,
     val records: Int = 0,
     val sessions: Int = 0,
+    val originId: String? = null,
 )
 
 /**
@@ -53,6 +54,7 @@ sealed interface FileRecord {
         val vulnerabilities: String = "",
         val notes: String = "",
         val hitPoints: Int? = null,
+        val originId: String? = null,
     ) : FileRecord
 
     @Serializable
@@ -62,6 +64,7 @@ sealed interface FileRecord {
         val name: String,
         val description: String = "",
         val parentId: Long? = null,
+        val originId: String? = null,
     ) : FileRecord
 
     @Serializable
@@ -77,6 +80,7 @@ sealed interface FileRecord {
         val speciesId: Long? = null,
         val vulnerabilities: String = "",
         val placeIds: List<Long> = emptyList(),
+        val originId: String? = null,
     ) : FileRecord
 
     @Serializable
@@ -89,6 +93,7 @@ sealed interface FileRecord {
         val giverNpcId: Long? = null,
         val placeId: Long? = null,
         val description: String = "",
+        val originId: String? = null,
     ) : FileRecord
 
     @Serializable
@@ -106,6 +111,7 @@ sealed interface FileRecord {
         val hpCurrent: Int? = null,
         val description: String = "",
         val fallen: Boolean = false,
+        val originId: String? = null,
     ) : FileRecord
 
     @Serializable
@@ -129,6 +135,7 @@ sealed interface FileRecord {
         val endedAt: LocalDateTime? = null,
         val createdAt: Long = 0,
         val tags: List<String> = emptyList(),
+        val originId: String? = null,
     ) : FileRecord
 
     @Serializable
@@ -139,6 +146,7 @@ sealed interface FileRecord {
         val body: String,
         val edited: Boolean = false,
         val mentionCheck: Boolean = false,
+        val originId: String? = null,
     ) : FileRecord
 
     /** a fight saved to [sessionId], its fighters, blows and species observations follow below the notes */
@@ -152,6 +160,7 @@ sealed interface FileRecord {
         val finishedAt: LocalDateTime? = null,
         val rounds: Int = 1,
         val turn: Int = 0,
+        val originId: String? = null,
     ) : FightRecord
 
     /** a participant of one fight, [id] is its number in that fight, the links are the file's ids or none */

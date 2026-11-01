@@ -4,8 +4,11 @@ CREATE TABLE campaign (
     name TEXT NOT NULL,
     status TEXT AS CampaignStatus NOT NULL DEFAULT 'LIVE',
     created_at INTEGER NOT NULL,
-    last_opened_at INTEGER NOT NULL
+    last_opened_at INTEGER NOT NULL,
+    origin_id TEXT NOT NULL DEFAULT ''
 );
+
+CREATE INDEX campaign_origin_id ON campaign(origin_id);
 
 -- one row per campaign with what the library card shows - session count, last session and the player character
 selectSummaries:
@@ -27,7 +30,7 @@ exists:
 SELECT COUNT(*) FROM campaign WHERE id = ?;
 
 insert:
-INSERT INTO campaign(id, name, status, created_at, last_opened_at) VALUES (?, ?, ?, ?, ?);
+INSERT INTO campaign(id, name, status, created_at, last_opened_at, origin_id) VALUES (?, ?, ?, ?, ?, ?);
 
 rename:
 UPDATE campaign SET name = ? WHERE id = ?;
@@ -52,3 +55,6 @@ INSERT OR IGNORE INTO phrase_snippet(text, campaign_id) SELECT text, ? FROM phra
 
 selectName:
 SELECT name FROM campaign WHERE id = ?;
+
+selectOriginId:
+SELECT origin_id FROM campaign WHERE id = ?;

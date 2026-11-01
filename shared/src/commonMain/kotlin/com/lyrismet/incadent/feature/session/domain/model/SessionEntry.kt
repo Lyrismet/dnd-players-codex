@@ -12,4 +12,5 @@ data class SessionEntry(
     val edited: Boolean = false,
     // set when the note was sent or edited and its codex-name matches were not decided yet
     val mentionCheck: Boolean = false,
+    val originId: String = "",
 )

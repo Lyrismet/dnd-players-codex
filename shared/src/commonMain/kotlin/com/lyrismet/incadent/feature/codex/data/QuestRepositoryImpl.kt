@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
+import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
@@ -68,6 +69,7 @@ class QuestRepositoryImpl(
                 quest.locationId,
                 quest.description,
                 current.requireId(),
+                quest.originId.orNewOriginId(),
             )
             return quest.id
         }
@@ -79,6 +81,7 @@ class QuestRepositoryImpl(
             quest.locationId,
             quest.description,
             current.requireId(),
+            quest.originId.orNewOriginId(),
         )
         return queries.lastInsertRowId().executeAsOne()
     }
@@ -99,5 +102,6 @@ class QuestRepositoryImpl(
         givenByNpcId: Long?,
         locationId: Long?,
         description: String,
-    ) = Quest(id, title, status, reward, givenByNpcId, locationId, description)
+        originId: String,
+    ) = Quest(id, title, status, reward, givenByNpcId, locationId, description, originId)
 }

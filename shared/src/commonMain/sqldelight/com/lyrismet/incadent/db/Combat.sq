@@ -11,11 +11,13 @@ CREATE TABLE combat (
     turn INTEGER NOT NULL DEFAULT 0,
     outcome TEXT AS CombatOutcome,
     finished_at TEXT AS LocalDateTime,
-    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX combat_campaign_id ON combat(campaign_id);
 CREATE INDEX combat_session_note_id ON combat(session_note_id);
+CREATE UNIQUE INDEX combat_origin_id ON combat(campaign_id, origin_id);
 
 selectAll:
 SELECT * FROM combat
@@ -26,13 +28,13 @@ selectById:
 SELECT * FROM combat WHERE id = ? AND campaign_id = ?;
 
 insert:
-INSERT INTO combat(session_note_id, phase, started_at, round, campaign_id) VALUES (?, 'PREPARING', ?, 1, ?);
+INSERT INTO combat(session_note_id, phase, started_at, round, campaign_id, origin_id) VALUES (?, 'PREPARING', ?, 1, ?, ?);
 
 
 -- an imported fight comes in already finished
 insertFinished:
-INSERT INTO combat(session_note_id, phase, started_at, round, turn, outcome, finished_at, campaign_id)
-VALUES (?, 'FINISHED', ?, ?, ?, ?, ?, ?);
+INSERT INTO combat(session_note_id, phase, started_at, round, turn, outcome, finished_at, campaign_id, origin_id)
+VALUES (?, 'FINISHED', ?, ?, ?, ?, ?, ?, ?);
 
 updateTurn:
 UPDATE combat SET round = ?, turn = ? WHERE id = ?;

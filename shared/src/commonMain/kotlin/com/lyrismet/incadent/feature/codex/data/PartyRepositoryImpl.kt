@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
+import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -95,6 +96,7 @@ class PartyRepositoryImpl(
                 portrait = member.portrait?.full,
                 portrait_thumb = member.portrait?.thumb,
                 campaign_id = current.requireId(),
+                origin_id = member.originId.orNewOriginId(),
             )
             return member.id
         }
@@ -112,6 +114,7 @@ class PartyRepositoryImpl(
             portrait = member.portrait?.full,
             portrait_thumb = member.portrait?.thumb,
             campaign_id = current.requireId(),
+            origin_id = member.originId.orNewOriginId(),
         )
         return queries.lastInsertRowId().executeAsOne()
     }
@@ -151,6 +154,7 @@ class PartyRepositoryImpl(
         fallen: Boolean,
         fellCombatId: Long?,
         portraitThumb: ByteArray?,
+        originId: String,
     ) = PartyMember(
         id = id,
         name = name,
@@ -166,6 +170,7 @@ class PartyRepositoryImpl(
         portrait = portraitThumb?.let { Photo(it) },
         fallen = fallen,
         fellCombatId = fellCombatId,
+        originId = originId,
     )
 
     // the by-id row also carries the full jpeg
@@ -186,6 +191,7 @@ class PartyRepositoryImpl(
         fellCombatId: Long?,
         portraitThumb: ByteArray?,
         portrait: ByteArray?,
+        originId: String,
     ) = toDomain(
         id,
         name,
@@ -201,5 +207,6 @@ class PartyRepositoryImpl(
         fallen,
         fellCombatId,
         portraitThumb,
+        originId,
     ).copy(portrait = portraitThumb?.let { Photo(it, portrait) })
 }

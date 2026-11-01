@@ -9,26 +9,28 @@ CREATE TABLE species (
     hit_points INTEGER,
     photo BLOB,
     photo_thumb BLOB,
-    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX species_campaign_id ON species(campaign_id);
+CREATE UNIQUE INDEX species_origin_id ON species(campaign_id, origin_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT id, name, creature_type, vulnerabilities, notes, hit_points, photo_thumb FROM species WHERE campaign_id = ? ORDER BY name;
+SELECT id, name, creature_type, vulnerabilities, notes, hit_points, photo_thumb, origin_id FROM species WHERE campaign_id = ? ORDER BY name;
 
 selectById:
-SELECT id, name, creature_type, vulnerabilities, notes, hit_points, photo_thumb, photo FROM species WHERE id = ?;
+SELECT id, name, creature_type, vulnerabilities, notes, hit_points, photo_thumb, photo, origin_id FROM species WHERE id = ?;
 
 insert:
-INSERT INTO species(name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO species(name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO species(id, name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO species(id, name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:

@@ -58,7 +58,7 @@ internal class CampaignImporter(
         reader: CampaignFileReader,
         request: ImportRequest,
     ): ImportResult {
-        val campaignId = targetCampaign(request.target, reader.header.name)
+        val campaignId = targetCampaign(request.target, reader.header)
         val session = ImportSession(campaignId, request, reader.header.withPhotos)
         while (true) session.accept(reader.nextRecord() ?: break)
         return ImportResult(campaignId, session.records, session.sessions)
@@ -66,16 +66,16 @@ internal class CampaignImporter(
 
     private fun targetCampaign(
         target: ImportTarget,
-        fileName: String,
+        header: FileHeader,
     ): String =
         when (target) {
             is ImportTarget.Existing -> target.campaignId
             is ImportTarget.NewCampaign -> {
                 val name =
-                    fileName.ifBlank { target.name }.trim().ifBlank { DEFAULT_CAMPAIGN_NAME }.take(
+                    header.name.ifBlank { target.name }.trim().ifBlank { DEFAULT_CAMPAIGN_NAME }.take(
                         MAX_NAME_CHARS,
                     )
-                database.campaignQueries.insertLive(name)
+                database.campaignQueries.insertLive(name, originId = OriginSet().claim(header.originId))
             }
         }
 
@@ -109,13 +109,8 @@ internal class CampaignImporter(
         private val fresh = mutableSetOf<Pair<PhotoOwner, Long>>()
 
         private val copies = request.conflicts == ConflictMode.COPY
-        private val speciesByName =
-            namesOf(
-                database.speciesQueries.selectAll(campaignId).executeAsList().map {
-                    it.name to
-                        it.id
-                },
-            )
+        private val existingSpecies = database.speciesQueries.selectAll(campaignId).executeAsList()
+        private val speciesByName = namesOf(existingSpecies.map { it.name to it.id })
         private val existingPlaces = database.locationQueries.selectAll(campaignId).executeAsList()
         private val existingPlacesById = existingPlaces.associateBy { it.id }
         private val placeParents = existingPlaces.associate { it.id to it.parent_id }.toMutableMap()
@@ -130,11 +125,17 @@ internal class CampaignImporter(
         private val existingPartyById = existingParty.associateBy { it.id }
         private val partyByName = namesOf(existingParty.map { it.name to it.id })
         private var playerTaken = existingParty.any { it.is_player_character }
-        private var liveTaken =
-            database.sessionNoteQueries.selectAll(campaignId).executeAsList().any {
-                it.ended_at ==
-                    null
-            }
+        private val existingSessions = database.sessionNoteQueries.selectAll(campaignId).executeAsList()
+        private var liveTaken = existingSessions.any { it.ended_at == null }
+
+        // a file's origin id is kept for a row the import adds unless the campaign already holds it
+        private val speciesOrigins = OriginSet(existingSpecies.map { it.origin_id })
+        private val placeOrigins = OriginSet(existingPlaces.map { it.origin_id })
+        private val npcOrigins = OriginSet(existingNpcs.map { it.origin_id })
+        private val questOrigins = OriginSet(existingQuests.map { it.origin_id })
+        private val partyOrigins = OriginSet(existingParty.map { it.origin_id })
+        private val sessionOrigins = OriginSet(existingSessions.map { it.origin_id })
+        private val entryOrigins = OriginSet()
 
         fun accept(record: FileRecord) {
             if (!isWanted(record)) return
@@ -225,6 +226,7 @@ internal class CampaignImporter(
                         null,
                         null,
                         campaignId,
+                        speciesOrigins.claim(record.originId),
                     )
                     inserted(PhotoOwner.SPECIES, record.id, queries.lastInsertRowId().executeAsOne())
                 }
@@ -244,6 +246,7 @@ internal class CampaignImporter(
                         null,
                         null,
                         campaignId,
+                        placeOrigins.claim(record.originId),
                     )
                     inserted(PhotoOwner.PLACE, record.id, queries.lastInsertRowId().executeAsOne()).also {
                         placeParents[it] = parent
@@ -269,6 +272,7 @@ internal class CampaignImporter(
                         null,
                         null,
                         campaignId,
+                        npcOrigins.claim(record.originId),
                     )
                     val id = queries.lastInsertRowId().executeAsOne()
                     record.placeIds.mapNotNull(placeMap::get).forEach { database.npcLocationQueries.insert(id, it) }
@@ -290,6 +294,7 @@ internal class CampaignImporter(
                         record.placeId?.let(placeMap::get),
                         record.description,
                         campaignId,
+                        questOrigins.claim(record.originId),
                     )
                     inserted(null, record.id, queries.lastInsertRowId().executeAsOne())
                 }
@@ -317,6 +322,7 @@ internal class CampaignImporter(
                         null,
                         null,
                         campaignId,
+                        partyOrigins.claim(record.originId),
                     )
                     val id = queries.lastInsertRowId().executeAsOne()
                     // the fight that felled them is not in the file's party record, so only the fact is kept
@@ -424,7 +430,14 @@ internal class CampaignImporter(
             // the open session of the campaign stays the only one
             val endedAt = record.endedAt ?: record.date.takeIf { liveTaken }
             liveTaken = liveTaken || endedAt == null
-            database.sessionNoteQueries.insert(record.title, record.date, endedAt, record.createdAt, campaignId)
+            database.sessionNoteQueries.insert(
+                record.title,
+                record.date,
+                endedAt,
+                record.createdAt,
+                campaignId,
+                sessionOrigins.claim(record.originId),
+            )
             val id = database.sessionNoteQueries.lastInsertRowId().executeAsOne()
             sessionMap[record.id] = id
             record.tags.distinct().forEach { name ->
@@ -439,7 +452,15 @@ internal class CampaignImporter(
                 remapMentionTokens(record.body) { ref ->
                     mapByKind[ref.type]?.get(ref.id)
                 }
-            database.sessionEntryQueries.insert(sessionId, record.createdAt, body, record.edited, record.mentionCheck)
+            val origin = entryOrigins.claim(record.originId)
+            database.sessionEntryQueries.insert(
+                sessionId,
+                record.createdAt,
+                body,
+                record.edited,
+                record.mentionCheck,
+                origin,
+            )
         }
 
         private fun addPhoto(record: FileRecord.Photo) {

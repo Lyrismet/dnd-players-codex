@@ -1,0 +1,16 @@
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind;
+
+-- after two records merge the survivor remembers the origin id of the one that went away
+CREATE TABLE origin_alias (
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    kind TEXT AS ExchangeKind NOT NULL,
+    alias_origin_id TEXT NOT NULL,
+    origin_id TEXT NOT NULL,
+    PRIMARY KEY (campaign_id, kind, alias_origin_id)
+);
+
+insert:
+INSERT OR REPLACE INTO origin_alias(campaign_id, kind, alias_origin_id, origin_id) VALUES (?, ?, ?, ?);
+
+selectOriginId:
+SELECT origin_id FROM origin_alias WHERE campaign_id = ? AND kind = ? AND alias_origin_id = ?;

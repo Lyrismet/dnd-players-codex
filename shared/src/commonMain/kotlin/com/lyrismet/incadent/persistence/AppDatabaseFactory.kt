@@ -7,6 +7,7 @@ import com.lyrismet.incadent.db.Combat
 import com.lyrismet.incadent.db.Combat_event
 import com.lyrismet.incadent.db.Combatant
 import com.lyrismet.incadent.db.Npc
+import com.lyrismet.incadent.db.Origin_alias
 import com.lyrismet.incadent.db.Party_member
 import com.lyrismet.incadent.db.Quest
 import com.lyrismet.incadent.db.Session_entry
@@ -42,6 +43,7 @@ fun createAppDatabase(driver: SqlDriver): AppDatabase {
                 stateAdapter = combatStateAdapter,
                 scaleAdapter = hitScaleAdapter,
             ),
+        origin_aliasAdapter = Origin_alias.Adapter(kindAdapter = exchangeKindAdapter),
         npcAdapter = Npc.Adapter(statusAdapter = npcStatusAdapter, life_stateAdapter = npcLifeStateAdapter),
         party_memberAdapter = Party_member.Adapter(presenceAdapter = partyPresenceAdapter),
         questAdapter = Quest.Adapter(statusAdapter = questStatusAdapter),

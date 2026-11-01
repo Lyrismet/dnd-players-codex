@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
+import com.lyrismet.incadent.core.identity.newOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.campaign.domain.model.Campaign
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignPlayer
@@ -134,7 +135,7 @@ class CampaignRepositoryImpl(
         val source = transfer.sourceId
         val parents =
             locationQueries
-                .selectAll(source) { id, _, _, parentId, _ -> id to parentId }
+                .selectAll(source) { id, _, _, parentId, _, _ -> id to parentId }
                 .executeAsList()
                 .toMap()
         val npcPlaces =
@@ -157,6 +158,7 @@ class CampaignRepositoryImpl(
                 full.cover,
                 full.cover_thumb,
                 targetId,
+                newOriginId(),
             )
             placeMap[oldId] = locationQueries.lastInsertRowId().executeAsOne()
         }
@@ -177,13 +179,14 @@ class CampaignRepositoryImpl(
                 npc.portrait,
                 npc.portrait_thumb,
                 targetId,
+                newOriginId(),
             )
             val newId = npcQueries.lastInsertRowId().executeAsOne()
             npcPlaces[oldId].orEmpty().mapNotNull(placeMap::get).forEach { npcLocationQueries.insert(newId, it) }
             copiedNpcs++
         }
         // the whole bestiary comes along, not only the species a copied npc points at
-        speciesQueries.selectAll(source) { id, _, _, _, _, _, _ -> id }.executeAsList().forEach {
+        speciesQueries.selectAll(source) { id, _, _, _, _, _, _, _ -> id }.executeAsList().forEach {
             copySpecies(it, targetId, speciesMap)
         }
         if (transfer.copyTags) queries.copyTags(targetId, source)
@@ -206,6 +209,7 @@ class CampaignRepositoryImpl(
                 full.photo,
                 full.photo_thumb,
                 targetId,
+                newOriginId(),
             )
             speciesQueries.lastInsertRowId().executeAsOne().also { copied[oldId] = it }
         }

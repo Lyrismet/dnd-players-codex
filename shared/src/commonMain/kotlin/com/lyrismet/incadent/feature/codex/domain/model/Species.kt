@@ -13,6 +13,7 @@ data class Species(
     val photo: Photo? = null,
     // known by the player from somewhere, not filled in by a fight - null while nobody knows it
     val hitPoints: Int? = null,
+    val originId: String = "",
 )
 
 /** the hit points a species can be given */

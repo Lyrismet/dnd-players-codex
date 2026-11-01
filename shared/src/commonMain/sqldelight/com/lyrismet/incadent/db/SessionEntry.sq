@@ -6,30 +6,32 @@ CREATE TABLE session_entry (
     created_at TEXT AS LocalDateTime NOT NULL,
     body TEXT NOT NULL,
     edited INTEGER AS Boolean NOT NULL DEFAULT 0,
-    mention_check INTEGER AS Boolean NOT NULL DEFAULT 0
+    mention_check INTEGER AS Boolean NOT NULL DEFAULT 0,
+    origin_id TEXT NOT NULL DEFAULT ''
 );
 
 -- the notes of a session come out in time order straight from this index
 CREATE INDEX session_entry_session_note_id ON session_entry(session_note_id, created_at);
+CREATE UNIQUE INDEX session_entry_origin_id ON session_entry(session_note_id, origin_id);
 
 selectForSession:
 SELECT * FROM session_entry WHERE session_note_id = ? ORDER BY created_at ASC;
 
 selectAll:
 SELECT session_entry.id, session_entry.session_note_id, session_entry.created_at, session_entry.body,
-    session_entry.edited, session_entry.mention_check
+    session_entry.edited, session_entry.mention_check, session_entry.origin_id
 FROM session_entry
 INNER JOIN session_note ON session_note.id = session_entry.session_note_id
 WHERE session_note.campaign_id = ?
 ORDER BY session_entry.created_at ASC;
 
 insert:
-INSERT INTO session_entry(session_note_id, created_at, body, edited, mention_check)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO session_entry(session_note_id, created_at, body, edited, mention_check, origin_id)
+VALUES (?, ?, ?, ?, ?, ?);
 
 insertWithId:
-INSERT INTO session_entry(id, session_note_id, created_at, body, edited, mention_check)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO session_entry(id, session_note_id, created_at, body, edited, mention_check, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 updateBody:
 UPDATE session_entry SET body = ?, edited = 1, mention_check = 1 WHERE id = ?;

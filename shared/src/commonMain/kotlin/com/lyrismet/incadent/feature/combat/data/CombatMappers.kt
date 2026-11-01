@@ -22,6 +22,7 @@ internal fun CombatRow.toDomain(
         combatants = combatants,
         events = events,
         finishedAt = finished_at,
+        originId = origin_id,
     )
 
 internal fun CombatantRow.toDomain(): Combatant =
