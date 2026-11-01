@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 
 /** a segmented switch of text tabs where the selected one is raised and gold, the tabs share the width equally */
 @Composable
@@ -44,6 +45,7 @@ fun <T> AppSegmentedTabs(
     ) { tab ->
         val tint = if (tab.value == selected) AppPalette.GoldBright else AppPalette.TextSecondary
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+            tab.icon?.let { AppEntityIcon(it, tint, size = 14.dp) }
             Text(text = tab.label, style = labelStyle, color = tint, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (tab.count != null) {
                 Text(

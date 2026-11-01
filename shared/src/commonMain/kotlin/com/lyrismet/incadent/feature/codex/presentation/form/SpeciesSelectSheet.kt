@@ -49,7 +49,7 @@ internal fun SpeciesSelectSheet(
                 val srd = ids.firstNotNullOfOrNull { select.srd[it] }
                 if (srd != null) onSrdChosen(srd) else onChosen(ids.toList())
             },
-            leadingGlyph = MentionGlyph.SPECIES.symbol,
+            leadingIcon = MentionGlyph.SPECIES.icon,
             onCreate = { name, _ -> onCreated(name) },
         )
     }

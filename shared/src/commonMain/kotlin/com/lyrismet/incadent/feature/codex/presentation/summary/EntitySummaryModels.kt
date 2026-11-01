@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.domain.model.Photo
@@ -52,7 +53,7 @@ sealed interface EntityRef {
 
 enum class EntityEmblemShape { CIRCLE, ROUNDED }
 
-/** self-contained visual identity for the sheet header - initial letter (circle) or a glyph (rounded) */
+/** self-contained visual identity for the sheet header - initial letter (circle) or an entity [icon] in place of it */
 data class EntityEmblem(
     val text: String,
     val shape: EntityEmblemShape,
@@ -62,6 +63,7 @@ data class EntityEmblem(
     val isMonochrome: Boolean = false,
     // the sheet header draws the big arch instead of the round badge - npc and party only
     val hasPortraitSlot: Boolean = false,
+    val icon: ImageVector? = null,
 )
 
 /** one row's value in the facts grid - plain text or a chip that reopens the sheet on another entity */

@@ -70,8 +70,8 @@ class CodexGroupingTest {
 
         val items = groupNpcs(npcs, places, NpcGroupBy.REGION, labels).flatMap { it.items }
 
-        assertEquals("▲ Замок · Эльф", items.first { it.entity.name == "Анна" }.subtitle)
-        assertEquals("▲ Мельница · Человек", items.first { it.entity.name == "Борис" }.subtitle)
+        assertEquals("Замок · Эльф", items.first { it.entity.name == "Анна" }.subtitle)
+        assertEquals("Мельница · Человек", items.first { it.entity.name == "Борис" }.subtitle)
         assertNull(items.first { it.entity.name == "Вера" }.subtitle)
     }
 
@@ -217,7 +217,7 @@ class CodexGroupingTest {
         val groups = groupNpcs(listOf(roamer), places, NpcGroupBy.REGION, labels)
 
         assertEquals(listOf("СЕВЕР", "ЮГ"), groups.map { it.title })
-        assertEquals("▲ Замок, Мельница", groups[0].items.single().subtitle)
+        assertEquals("Замок, Мельница", groups[0].items.single().subtitle)
     }
 
     @Test

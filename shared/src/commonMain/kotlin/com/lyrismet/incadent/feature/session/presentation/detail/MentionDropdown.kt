@@ -21,6 +21,7 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.format.joinWithDot
+import com.lyrismet.incadent.feature.mention.presentation.MentionGlyphMark
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.mention_create_row_format
 import dndplayerscodex.shared.generated.resources.mention_empty_codex
@@ -75,7 +76,7 @@ private fun MentionDropdownEntry(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.width(14.dp), contentAlignment = Alignment.Center) {
-            Text(suggestion.glyph.symbol, fontSize = AppFontSize.Micro, color = suggestion.tint)
+            MentionGlyphMark(suggestion.glyph, suggestion.tint, size = 14.dp)
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(

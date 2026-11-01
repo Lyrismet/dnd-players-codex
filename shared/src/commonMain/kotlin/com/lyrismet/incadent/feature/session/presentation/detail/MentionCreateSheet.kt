@@ -41,9 +41,10 @@ import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.core.format.kindLabelRes
 import com.lyrismet.incadent.domain.model.EntityKind
-import com.lyrismet.incadent.feature.mention.presentation.mentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.mention_create_button
 import dndplayerscodex.shared.generated.resources.mention_create_button_empty
@@ -154,10 +155,10 @@ private fun MentionTypeTile(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(1.5.dp, Alignment.CenterVertically),
     ) {
-        Text(
-            kind.mentionGlyph().symbol,
-            fontSize = AppFontSize.Small,
-            color = if (selected) AppPalette.GoldBright else AppPalette.TextSecondary,
+        AppEntityIcon(
+            kind.icon(),
+            if (selected) AppPalette.GoldBright else AppPalette.TextSecondary,
+            size = 20.dp,
         )
         Text(
             stringResource(kind.kindLabelRes()),

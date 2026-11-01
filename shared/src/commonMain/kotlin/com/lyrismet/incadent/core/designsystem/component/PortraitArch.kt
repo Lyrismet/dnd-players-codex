@@ -15,12 +15,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmapAsync
 import com.lyrismet.incadent.domain.model.Photo
 
@@ -35,13 +37,14 @@ private val DiamondHaloSize = 14.dp
 
 /**
  * the npc/party portrait of the entity sheet header, see Players Codex v6.dc.html's sheet `sh.isPortrait` - an 88x114
- * arch with a gold inset ring and diamond. A decoded [portrait] fills it, otherwise [emblemText]. [onClick]
+ * arch with a gold inset ring and diamond. A decoded [portrait] fills it, otherwise [emblemIcon] or [emblemText]. [onClick]
  * non-null makes it tappable and, while empty, adds the "+" badge that invites a tap.
  */
 @Composable
 fun PortraitArch(
     portrait: Photo?,
     emblemText: String,
+    emblemIcon: ImageVector? = null,
     color: StatusColor,
     monochrome: Boolean,
     modifier: Modifier = Modifier,
@@ -72,11 +75,15 @@ fun PortraitArch(
                     AppLoader(size = PhotoLoaderSize, strokeWidth = 2.dp, modifier = Modifier.align(Alignment.Center))
                 }
             } else {
-                Text(
-                    emblemText,
-                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = AppFontSize.Hero),
-                    color = color.foreground,
-                )
+                if (emblemIcon != null) {
+                    AppEntityIcon(emblemIcon, color.foreground, size = 48.dp)
+                } else {
+                    Text(
+                        emblemText,
+                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = AppFontSize.Hero),
+                        color = color.foreground,
+                    )
+                }
             }
             Box(
                 modifier =

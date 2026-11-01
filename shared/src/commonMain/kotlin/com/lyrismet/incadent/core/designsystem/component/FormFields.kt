@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,6 +31,7 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 
 private val FieldShape = AppShapes.Field
@@ -165,7 +167,7 @@ fun FormPickField(
     title: String? = null,
     subtitle: String? = null,
     chips: (@Composable () -> Unit)? = null,
-    leadingGlyph: String? = null,
+    leadingIcon: ImageVector? = null,
 ) {
     FormFieldColumn(label, modifier) {
         Row(
@@ -182,8 +184,8 @@ fun FormPickField(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (leadingGlyph != null && title != null && chips == null) {
-                Text(leadingGlyph, style = CenteredLine, fontSize = AppFontSize.Micro, color = AppPalette.Parchment)
+            if (leadingIcon != null && title != null && chips == null) {
+                AppEntityIcon(leadingIcon, AppPalette.Parchment, size = 14.dp)
             }
             Column(modifier = Modifier.weight(1f)) {
                 when {

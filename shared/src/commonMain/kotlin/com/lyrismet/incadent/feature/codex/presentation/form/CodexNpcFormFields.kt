@@ -93,7 +93,7 @@ private fun NpcSpeciesField(
         onClick = { eventSink(CodexEntryFormEvent.EntrySpeciesSelectOpened) },
         title = form.npcSpecies?.name,
         subtitle = form.npcSpecies?.typeLabel,
-        leadingGlyph = MentionGlyph.SPECIES.symbol,
+        leadingIcon = MentionGlyph.SPECIES.icon,
     )
 }
 

@@ -71,7 +71,8 @@ private fun <T> CodexGroupedList(
                 group.title?.let { title ->
                     item {
                         ListSectionHeader(
-                            text = "${MentionGlyph.LOCATION.symbol} $title",
+                            text = title,
+                            leadingIcon = MentionGlyph.LOCATION.icon,
                             modifier = Modifier.padding(top = if (index == 0) 4.dp else 12.dp),
                             count = group.items.size,
                         )

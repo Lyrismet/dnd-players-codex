@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.EntityIcons
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
@@ -23,7 +24,6 @@ import com.lyrismet.incadent.feature.codex.presentation.style.toStatusColor
 import com.lyrismet.incadent.feature.codex.presentation.style.toStatusGlyph
 import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import com.lyrismet.incadent.feature.mention.presentation.toChipItem
 import com.lyrismet.incadent.feature.mention.presentation.toMentionChip
 import com.lyrismet.incadent.feature.session.domain.sessionNumberLabels
@@ -153,7 +153,8 @@ private fun buildSpeciesSummary(
         notes = species.notes,
         emblem =
             EntityEmblem(
-                text = MentionGlyph.SPECIES.symbol,
+                text = "",
+                icon = EntityIcons.Species,
                 shape = EntityEmblemShape.CIRCLE,
                 color = SpeciesMentionColor,
                 portrait = species.photo,
@@ -249,7 +250,7 @@ private fun buildQuestSummary(
         statusLabel = lookup.questStatusLabels.getValue(quest.status),
         reward = quest.reward,
         description = quest.description,
-        emblem = EntityEmblem(MentionGlyph.QUEST.symbol, EntityEmblemShape.ROUNDED, quest.status.toStatusColor()),
+        emblem = EntityEmblem("", EntityEmblemShape.ROUNDED, quest.status.toStatusColor(), icon = EntityIcons.Quest),
         subtitle = location?.name.orEmpty(),
         statusOptions =
             statusOptions(
@@ -297,7 +298,7 @@ private fun buildLocationSummary(
         name = location.name,
         description = location.description,
         cover = location.cover,
-        emblem = EntityEmblem(MentionGlyph.LOCATION.symbol, EntityEmblemShape.ROUNDED, LocationMentionColor),
+        emblem = EntityEmblem("", EntityEmblemShape.ROUNDED, LocationMentionColor, icon = EntityIcons.Location),
         subtitle = tree.ancestorsLabel(location),
         // with no other place in the codex there is nothing to be inside of, so the row would be a dead end
         facts =

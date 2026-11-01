@@ -191,7 +191,7 @@ private fun PartyIdentityFields(
         placeholder = stringResource(Res.string.codex_species_pick_hint),
         onClick = { eventSink(CodexEntryFormEvent.EntrySpeciesSelectOpened) },
         title = form.race.takeIf { it.isNotBlank() },
-        leadingGlyph = MentionGlyph.SPECIES.symbol,
+        leadingIcon = MentionGlyph.SPECIES.icon,
     )
 }
 
@@ -270,7 +270,7 @@ private fun QuestEntryFields(
         onClick = { eventSink(CodexEntryFormEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.QUEST_PLACE)) },
         title = form.questPlace?.name,
         subtitle = form.questPlace?.path,
-        leadingGlyph = MentionGlyph.LOCATION.symbol,
+        leadingIcon = MentionGlyph.LOCATION.icon,
     )
     FormChipPicker(
         label = stringResource(Res.string.codex_entry_label_status),
@@ -307,7 +307,7 @@ private fun LocationEntryFields(
             onClick = { eventSink(CodexEntryFormEvent.EntryPlaceFieldOpened(CodexEntryPlaceField.LOCATION_PARENT)) },
             title = form.locationParent?.name,
             subtitle = form.locationParent?.path,
-            leadingGlyph = MentionGlyph.LOCATION.symbol,
+            leadingIcon = MentionGlyph.LOCATION.icon,
         )
         FormPickField(
             label = stringResource(Res.string.codex_entry_label_inside),

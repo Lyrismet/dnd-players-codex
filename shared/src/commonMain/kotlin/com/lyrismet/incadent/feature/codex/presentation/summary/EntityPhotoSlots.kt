@@ -54,6 +54,7 @@ internal fun EntityPortraitSlot(
         PortraitArch(
             portrait = emblem.portrait,
             emblemText = emblem.text,
+            emblemIcon = emblem.icon,
             color = emblem.color,
             monochrome = emblem.isMonochrome,
             onClick = onClick,

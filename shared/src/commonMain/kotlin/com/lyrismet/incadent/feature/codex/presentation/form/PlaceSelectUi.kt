@@ -66,7 +66,7 @@ internal fun PlaceSelectContent(
         onConfirm = { ids -> onChosen(ids.toList()) },
         modifier = modifier,
         recentIds = select.recentIds,
-        leadingGlyph = MentionGlyph.LOCATION.symbol,
+        leadingIcon = MentionGlyph.LOCATION.icon,
         onCreate = { name, checked -> onCreated(name, checked.toList()) },
     )
 }

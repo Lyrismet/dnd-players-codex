@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
@@ -27,8 +28,9 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
+import com.lyrismet.incadent.core.designsystem.component.icons.entity.EntityIcons
 import com.lyrismet.incadent.core.preferences.MentionStyle
-import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -55,26 +57,33 @@ private const val DASH_OFF_DP = 2
 val LocalMentionStyle = compositionLocalOf { MentionStyle.FILLED }
 
 enum class MentionGlyph(
-    val symbol: String,
+    val icon: ImageVector?,
 ) {
-    NPC("●"),
-    LOCATION("▲"),
-    QUEST("◆"),
-    PARTY("■"),
-    SPECIES("○"),
+    NPC(EntityIcons.Npc),
+    LOCATION(EntityIcons.Location),
+    QUEST(EntityIcons.Quest),
+    PARTY(EntityIcons.Party),
+    SPECIES(EntityIcons.Species),
 
-    /** the "?" of a mention whose record was deleted from the codex */
-    DELETED("?"),
+    /** the "?" of a mention whose record was deleted from the codex, it has no icon */
+    DELETED(null),
 }
 
-fun EntityKind.mentionGlyph(): MentionGlyph =
-    when (this) {
-        EntityKind.NPC -> MentionGlyph.NPC
-        EntityKind.PARTY -> MentionGlyph.PARTY
-        EntityKind.QUEST -> MentionGlyph.QUEST
-        EntityKind.LOCATION -> MentionGlyph.LOCATION
-        EntityKind.SPECIES -> MentionGlyph.SPECIES
+/** the icon of [glyph] in a square of [size], or the "?" of a deleted mention */
+@Composable
+fun MentionGlyphMark(
+    glyph: MentionGlyph,
+    tint: Color,
+    modifier: Modifier = Modifier,
+    size: Dp = 14.dp,
+) {
+    val icon = glyph.icon
+    if (icon != null) {
+        AppEntityIcon(icon, tint, modifier, size)
+    } else {
+        Text("?", fontSize = size.value.sp, color = tint, modifier = modifier)
     }
+}
 
 /** pre-formatted for direct rendering - built once per presenter from a [MentionEntity], never touched by the Ui */
 data class MentionChipItem(
@@ -165,7 +174,7 @@ fun MentionChip(
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     fontSize: TextUnit = AppFontSize.Body,
-    glyphSize: TextUnit = 8.sp,
+    glyphSize: Dp = 14.dp,
     glyphGap: Dp = 5.dp,
     lineHeightFactor: Float = 1.6f,
 ) {
@@ -187,7 +196,7 @@ fun MentionChip(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(glyphGap),
     ) {
-        Text(item.glyph.symbol, fontSize = if (isDeleted) fontSize else glyphSize, color = item.color.foreground)
+        MentionGlyphMark(item.glyph, item.color.foreground, size = if (isDeleted) fontSize.value.dp else glyphSize)
         Text(
             text = item.label,
             fontSize = fontSize,

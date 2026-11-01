@@ -35,13 +35,15 @@ internal fun CodexNpcModeSwitch(
             listOf(
                 SegmentedTab(
                     NpcListMode.NAMED,
-                    "${MentionGlyph.NPC.symbol} ${stringResource(Res.string.codex_npc_mode_named)}",
+                    stringResource(Res.string.codex_npc_mode_named),
                     state.tabCounts.npc,
+                    MentionGlyph.NPC.icon,
                 ),
                 SegmentedTab(
                     NpcListMode.SPECIES,
-                    "${MentionGlyph.SPECIES.symbol} ${stringResource(Res.string.codex_npc_mode_species)}",
+                    stringResource(Res.string.codex_npc_mode_species),
                     state.tabCounts.species,
+                    MentionGlyph.SPECIES.icon,
                 ),
             ),
         selected = state.npcMode,
