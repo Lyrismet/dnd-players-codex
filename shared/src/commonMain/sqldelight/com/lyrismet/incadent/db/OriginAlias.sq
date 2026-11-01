@@ -14,3 +14,6 @@ INSERT OR REPLACE INTO origin_alias(campaign_id, kind, alias_origin_id, origin_i
 
 selectOriginId:
 SELECT origin_id FROM origin_alias WHERE campaign_id = ? AND kind = ? AND alias_origin_id = ?;
+
+repoint:
+UPDATE origin_alias SET origin_id = ? WHERE campaign_id = ? AND kind = ? AND origin_id = ?;

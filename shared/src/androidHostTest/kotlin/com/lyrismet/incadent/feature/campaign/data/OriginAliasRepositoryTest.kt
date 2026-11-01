@@ -29,4 +29,14 @@ class OriginAliasRepositoryTest {
             db.current.open(TestDatabase.SECOND_CAMPAIGN)
             assertEquals("gone", aliases.resolve(ExchangeKind.NPC, "gone"))
         }
+
+    @Test
+    fun `a chain of merges resolves to the last survivor`() =
+        runTest {
+            aliases.add(ExchangeKind.NPC, survivorOriginId = "b", mergedOriginId = "a")
+            aliases.add(ExchangeKind.NPC, survivorOriginId = "c", mergedOriginId = "b")
+
+            assertEquals("c", aliases.resolve(ExchangeKind.NPC, "a"))
+            assertEquals("c", aliases.resolve(ExchangeKind.NPC, "b"))
+        }
 }

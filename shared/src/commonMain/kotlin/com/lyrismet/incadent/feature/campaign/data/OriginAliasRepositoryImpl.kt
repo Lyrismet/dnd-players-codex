@@ -26,7 +26,12 @@ class OriginAliasRepositoryImpl(
         mergedOriginId: String,
     ) {
         withContext(DatabaseDispatcher) {
-            queries.insert(current.requireId(), kind, mergedOriginId, survivorOriginId)
+            val campaignId = current.requireId()
+            queries.transaction {
+                // older aliases of the record that goes away now lead to the survivor, so one lookup finds it
+                queries.repoint(survivorOriginId, campaignId, kind, mergedOriginId)
+                queries.insert(campaignId, kind, mergedOriginId, survivorOriginId)
+            }
         }
     }
 
