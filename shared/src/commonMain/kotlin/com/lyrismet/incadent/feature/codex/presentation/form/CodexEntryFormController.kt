@@ -47,6 +47,9 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.npcLifeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.npcStatusLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.partyPresenceLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.questStatusLabels
+import com.lyrismet.incadent.feature.codex.presentation.summary.toMentionRef
+import com.lyrismet.incadent.feature.mention.presentation.MentionField
+import com.lyrismet.incadent.feature.mention.presentation.MentionSource
 import com.lyrismet.incadent.feature.mention.presentation.toMentionChip
 import com.slack.circuit.retained.rememberRetained
 import dndplayerscodex.shared.generated.resources.Res
@@ -578,6 +581,7 @@ class CodexEntryFormController private constructor(
         npcs: List<Npc>,
         locations: List<Location>,
         species: List<Species>,
+        mention: MentionSource? = null,
     ): CodexEntryFormState? {
         val current = fields.value ?: return null
         val isEditing = current.editingRef != null
@@ -591,6 +595,7 @@ class CodexEntryFormController private constructor(
         val typeLabels = creatureTypeLabels()
         val isRussian = currentAppLanguage() == AppLanguage.RUSSIAN
         return CodexEntryFormState(
+            mention = mention?.let { MentionField(it, current.editingRef?.toMentionRef()) },
             overline =
                 stringResource(
                     if (isEditing) Res.string.codex_entry_overline_edit else Res.string.codex_entry_overline_create,

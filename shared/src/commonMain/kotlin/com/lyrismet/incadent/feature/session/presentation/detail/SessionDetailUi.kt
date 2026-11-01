@@ -56,6 +56,8 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.codex.presentation.summary.entitySheetActions
 import com.lyrismet.incadent.feature.combat.presentation.summary.CombatFeedCard
+import com.lyrismet.incadent.feature.mention.presentation.MentionCreateActions
+import com.lyrismet.incadent.feature.mention.presentation.MentionCreateSheet
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.combat_results_delete_confirm
@@ -96,7 +98,17 @@ fun SessionDetailUi(
     }
     state.tagSheet?.let { sheet -> SessionDetailTagsSheet(sheet, state.eventSink) }
     state.deletedMentionSheet?.let { sheet -> DeletedMentionSheet(sheet, state.eventSink) }
-    state.mentionCreateSheet?.let { sheet -> MentionCreateSheet(sheet, state.eventSink) }
+    state.mentionCreateSheet?.let { sheet ->
+        MentionCreateSheet(
+            sheet,
+            MentionCreateActions(
+                onNameChanged = { state.eventSink(SessionDetailEvent.MentionCreateNameChanged(it)) },
+                onTypeChanged = { state.eventSink(SessionDetailEvent.MentionCreateTypeChanged(it)) },
+                onConfirm = { state.eventSink(SessionDetailEvent.MentionCreateConfirmed) },
+                onDismiss = { state.eventSink(SessionDetailEvent.MentionCreateDismissed) },
+            ),
+        )
+    }
     state.entryForm?.let { form ->
         CodexEntryFormSheet(
             form,

@@ -1,4 +1,4 @@
-package com.lyrismet.incadent.feature.session.presentation.detail
+package com.lyrismet.incadent.feature.mention.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,6 +21,7 @@ import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.domain.MentionSection
+import com.lyrismet.incadent.feature.mention.domain.createRowShowsHint
 import com.lyrismet.incadent.feature.mention.domain.emptyMentionRows
 import com.lyrismet.incadent.feature.mention.domain.mentionDetails
 import com.lyrismet.incadent.feature.mention.domain.mentionEntitiesFrom
@@ -49,6 +50,33 @@ internal data class MentionContext(
     val entities: List<MentionEntity>,
 )
 
+/** the grey second lines of the "@" rows - the nicknames a query can hit and the details under a name */
+data class MentionLookups(
+    val nicknames: Map<MentionRef, List<String>>,
+    val details: Map<MentionRef, String>,
+)
+
+@Composable
+fun rememberMentionLookups(
+    npcs: List<Npc>,
+    locations: List<Location>,
+    quests: List<Quest>,
+    parties: List<PartyMember>,
+): MentionLookups {
+    val giverNames =
+        remember(npcs, quests) {
+            val byId = npcs.associateBy { it.id }
+            quests.mapNotNull { quest -> quest.givenByNpcId?.let { byId[it]?.name } }.distinct()
+        }
+    val giverLines = giverNames.associateWith { stringResource(Res.string.mention_quest_giver_format, it) }
+    val details =
+        remember(npcs, locations, quests, parties, giverLines) {
+            mentionDetails(npcs, locations, quests, parties) { giverLines[it].orEmpty() }
+        }
+    val nicknames = remember(npcs) { mentionNicknames(npcs) }
+    return MentionLookups(nicknames, details)
+}
+
 /** the bodies of the notes the empty "@" dropdown learns from - this session's and the one before it */
 internal data class MentionSessionBodies(
     val current: List<String>,
@@ -75,6 +103,31 @@ internal fun buildMentionContext(
         }
     val candidates = remember(mentionEntities) { MentionIndex(mentionEntities) }
 
+    val lookups = rememberMentionLookups(npcs, locations, quests, parties)
+    val dropdown =
+        rememberMentionDropdown(
+            mentionEntities,
+            candidates,
+            lookups.nicknames,
+            lookups.details,
+            sessions,
+            draftText,
+            caret,
+        )
+    return MentionContext(candidates, dropdown, mentionEntities)
+}
+
+/** the rows under the trailing "@query" of [draftText], searched off the main thread once the query settles */
+@Composable
+internal fun rememberMentionDropdown(
+    entities: List<MentionEntity>,
+    index: MentionIndex,
+    nicknames: Map<MentionRef, List<String>>,
+    details: Map<MentionRef, String>,
+    sessions: MentionSessionBodies,
+    draftText: String,
+    caret: Int,
+): List<MentionDropdownItem> {
     val typeLabels =
         MentionTypeLabels(
             npc = stringResource(EntityKind.NPC.kindLabelRes()),
@@ -83,17 +136,6 @@ internal fun buildMentionContext(
             quest = stringResource(EntityKind.QUEST.kindLabelRes()),
             species = stringResource(EntityKind.SPECIES.kindLabelRes()),
         )
-    val giverNames =
-        remember(npcs, quests) {
-            val byId = npcs.associateBy { it.id }
-            quests.mapNotNull { quest -> quest.givenByNpcId?.let { byId[it]?.name } }.distinct()
-        }
-    val giverLines = giverNames.associateWith { stringResource(Res.string.mention_quest_giver_format, it) }
-    val details =
-        remember(npcs, locations, quests, parties, giverLines) {
-            mentionDetails(npcs, locations, quests, parties) { giverLines[it].orEmpty() }
-        }
-    val nicknames = remember(npcs) { mentionNicknames(npcs) }
     val dropdownTexts = mentionDropdownTexts()
     val query = trailingMentionQuery(draftText, caret)
     // a non-blank query is passed on after a short pause, a closed or empty one at once
@@ -102,20 +144,19 @@ internal fun buildMentionContext(
     val found by produceState(
         MentionSearchResult(null, emptyList()),
         searchQuery,
-        mentionEntities,
+        entities,
         nicknames,
         details,
         sessions,
         typeLabels,
         dropdownTexts,
     ) {
-        val input = MentionDropdownInput(mentionEntities, candidates, nicknames, details, sessions)
+        val input = MentionDropdownInput(entities, index, nicknames, details, sessions)
         value = searchMentions(searchQuery, input, typeLabels, dropdownTexts)
     }
 
     // results of an older query stay hidden until the current one is searched, so a tap never picks a stale match
-    val dropdown = if (query == null || found.query != searchQuery || query != searchQuery) emptyList() else found.items
-    return MentionContext(candidates, dropdown, mentionEntities)
+    return if (query == null || found.query != searchQuery || query != searchQuery) emptyList() else found.items
 }
 
 private class MentionSearchResult(
@@ -175,17 +216,21 @@ internal fun mentionDropdown(
         input.entities.isEmpty() ->
             listOf(MentionDropdownItem.EmptyCodex) +
                 listOfNotNull(query.trim().takeIf { it.isNotEmpty() }?.let(MentionDropdownItem::Create))
-        query.isBlank() -> emptyRows(input, texts, ::entry)
+        query.isBlank() -> emptyRows(input, texts, ::entry) + createRecordRow(input)
         else -> {
             val search = searchMentions(input.entities, input.nicknames, query)
             val header =
                 listOf(
                     MentionDropdownItem.Header(texts.search),
                 ).takeIf { search.candidates.isNotEmpty() }.orEmpty()
-            header + search.candidates.map(::entry) + listOfNotNull(search.createName?.let(MentionDropdownItem::Create))
+            val create = search.createName?.let(MentionDropdownItem::Create) ?: createRecordRow(input)
+            header + search.candidates.map(::entry) + create
         }
     }
 }
+
+private fun createRecordRow(input: MentionDropdownInput) =
+    MentionDropdownItem.CreateRecord(createRowShowsHint(input.entities.size))
 
 private fun emptyRows(
     input: MentionDropdownInput,
@@ -230,7 +275,7 @@ internal fun MentionEntity.toSuggestion(
     labels: MentionTypeLabels,
     detail: String = "",
     nickname: String = "",
-): SessionMentionSuggestion {
+): MentionSuggestion {
     val (glyph, tint, typeLabel) =
         when (this) {
             is MentionEntity.NpcMention ->
@@ -254,7 +299,7 @@ internal fun MentionEntity.toSuggestion(
             // a deleted record is never offered by the autocomplete, its candidates come from live records only
             is MentionEntity.DeletedMention -> Triple(MentionGlyph.Deleted, LocationMentionColor.foreground, "")
         }
-    return SessionMentionSuggestion(
+    return MentionSuggestion(
         token = token(),
         glyph = glyph,
         tint = tint,

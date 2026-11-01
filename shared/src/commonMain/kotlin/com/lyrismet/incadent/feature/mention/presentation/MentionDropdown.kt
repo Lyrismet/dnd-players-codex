@@ -1,9 +1,10 @@
-package com.lyrismet.incadent.feature.session.presentation.detail
+package com.lyrismet.incadent.feature.mention.presentation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,8 +22,9 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.format.joinWithDot
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyphMark
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.mention_create_compact
+import dndplayerscodex.shared.generated.resources.mention_create_hint
 import dndplayerscodex.shared.generated.resources.mention_create_row_format
 import dndplayerscodex.shared.generated.resources.mention_empty_codex
 import dndplayerscodex.shared.generated.resources.mention_nickname_format
@@ -32,13 +34,15 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun MentionDropdownContent(
     items: List<MentionDropdownItem>,
-    eventSink: (SessionDetailEvent) -> Unit,
+    onPick: (token: String) -> Unit,
+    onCreate: (name: String) -> Unit,
 ) {
     items.forEach { item ->
         when (item) {
             is MentionDropdownItem.Header -> MentionDropdownHeader(item.title)
-            is MentionDropdownItem.Entry -> MentionDropdownEntry(item.suggestion, eventSink)
-            is MentionDropdownItem.Create -> MentionDropdownCreate(item.name, eventSink)
+            is MentionDropdownItem.Entry -> MentionDropdownEntry(item.suggestion, onPick)
+            is MentionDropdownItem.Create -> MentionDropdownCreate(item.name, onCreate)
+            is MentionDropdownItem.CreateRecord -> MentionDropdownCreateRecord(item.withHint) { onCreate("") }
             MentionDropdownItem.EmptyCodex ->
                 Text(
                     stringResource(Res.string.mention_empty_codex),
@@ -62,15 +66,15 @@ private fun MentionDropdownHeader(title: String) {
 
 @Composable
 private fun MentionDropdownEntry(
-    suggestion: SessionMentionSuggestion,
-    eventSink: (SessionDetailEvent) -> Unit,
+    suggestion: MentionSuggestion,
+    onPick: (String) -> Unit,
 ) {
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
                 .clip(AppShapes.Tile)
-                .clickable { eventSink(SessionDetailEvent.MentionSuggestionPicked(suggestion.token)) }
+                .clickable { onPick(suggestion.token) }
                 .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -116,20 +120,55 @@ private fun MentionDropdownEntry(
 @Composable
 private fun MentionDropdownCreate(
     name: String,
-    eventSink: (SessionDetailEvent) -> Unit,
+    onCreate: (String) -> Unit,
 ) {
-    Text(
-        stringResource(Res.string.mention_create_row_format, name),
-        fontSize = AppFontSize.Medium,
-        lineHeight = 20.sp,
-        color = AppPalette.GoldBright,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
+    CreateRow(onClick = { onCreate(name) }) {
+        Text(
+            stringResource(Res.string.mention_create_row_format, name),
+            fontSize = AppFontSize.Medium,
+            lineHeight = 20.sp,
+            color = AppPalette.GoldBright,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun CreateRow(
+    onClick: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
         modifier =
             Modifier
                 .fillMaxWidth()
                 .clip(AppShapes.Tile)
-                .clickable { eventSink(SessionDetailEvent.MentionCreateOpened(name)) }
+                .clickable(onClick = onClick)
                 .padding(horizontal = 8.dp, vertical = 11.dp),
+        content = content,
     )
+}
+
+@Composable
+private fun MentionDropdownCreateRecord(
+    withHint: Boolean,
+    onClick: () -> Unit,
+) {
+    CreateRow(onClick = onClick) {
+        Text(
+            stringResource(Res.string.mention_create_compact),
+            fontSize = AppFontSize.Medium,
+            lineHeight = 20.sp,
+            color = AppPalette.GoldBright,
+        )
+        if (withHint) {
+            Text(
+                stringResource(Res.string.mention_create_hint),
+                fontSize = AppFontSize.Caption,
+                lineHeight = 16.sp,
+                color = AppPalette.TextSecondary,
+            )
+        }
+    }
 }

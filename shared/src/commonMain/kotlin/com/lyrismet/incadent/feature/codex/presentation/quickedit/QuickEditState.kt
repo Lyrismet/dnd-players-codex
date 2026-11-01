@@ -5,6 +5,7 @@ import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.SpeciesSelectState
 import com.lyrismet.incadent.feature.codex.presentation.summary.QuickEditSheet
+import com.lyrismet.incadent.feature.mention.presentation.MentionField
 
 /** everything a screen shows of the in-place editing of the open card, built by [QuickEditInteractions.state] */
 data class QuickEditState(
@@ -19,6 +20,8 @@ data class QuickEditState(
     val holdTipVisible: Boolean = false,
     // the bar the card carries itself, the sheet covers the app-level one
     val undoAction: UndoAction? = null,
+    // what "@" offers in the description editor of the open card
+    val mention: MentionField? = null,
 )
 
 /** the card's editing hooks, [onEvent] reaches the screen's presenter */
@@ -28,4 +31,5 @@ fun QuickEditState.asSheet(onEvent: (QuickEditUiEvent) -> Unit): QuickEditSheet 
         photoCrop = photoCrop,
         holdTipVisible = holdTipVisible,
         onEvent = onEvent,
+        mention = mention,
     )

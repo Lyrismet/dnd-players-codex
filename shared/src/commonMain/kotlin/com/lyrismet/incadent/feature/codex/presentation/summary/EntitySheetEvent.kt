@@ -65,6 +65,14 @@ sealed interface EntitySheetEvent {
         val entryId: Long,
     ) : EntitySheetEvent
 
+    data class LinkOfferApplied(
+        val offer: LinkOffer,
+    ) : EntitySheetEvent
+
+    data class LinkOfferDismissed(
+        val offer: LinkOffer,
+    ) : EntitySheetEvent
+
     data object Dismissed : EntitySheetEvent
 }
 
@@ -80,6 +88,8 @@ fun EntitySheetEvent.writesCampaignData(): Boolean =
         is EntitySheetEvent.NpcVulnerabilityChanged,
         is EntitySheetEvent.NpcVulnerabilitiesEdited,
         is EntitySheetEvent.SpeciesNoteQuantityStepped,
+        is EntitySheetEvent.LinkOfferApplied,
+        is EntitySheetEvent.LinkOfferDismissed,
         -> true
         is EntitySheetEvent.EntityClicked,
         is EntitySheetEvent.RelatedNoteClicked,
@@ -87,7 +97,8 @@ fun EntitySheetEvent.writesCampaignData(): Boolean =
         -> false
     }
 
-/** runs one card event against the open sheet and its records */
+/** runs one card event against the open sheet, a flat dispatch table with one branch per event variant */
+@Suppress("CyclomaticComplexMethod")
 fun EntitySheetInteractions.onEvent(
     scope: CoroutineScope,
     event: EntitySheetEvent,
@@ -113,6 +124,8 @@ fun EntitySheetInteractions.onEvent(
         is EntitySheetEvent.NpcVulnerabilitiesEdited ->
             onNpcVulnerabilitiesEdited(scope, event.npcId, event.before)
         is EntitySheetEvent.RelatedNoteClicked -> onRelatedNoteClicked(event.sessionNoteId, event.entryId)
+        is EntitySheetEvent.LinkOfferApplied -> links?.apply(scope, event.offer)
+        is EntitySheetEvent.LinkOfferDismissed -> links?.dismiss(scope, event.offer)
         EntitySheetEvent.Dismissed -> onDismissed()
     }
 }
@@ -131,6 +144,8 @@ fun entitySheetActions(
     onDeleteClicked: ((EntityRef) -> Unit)? = null,
     statusesReadOnly: Boolean = false,
     quickEdit: QuickEditSheet? = null,
+    // null leaves the offers off, an empty list still lets the card take the answers
+    linkOffers: List<LinkOffer>? = null,
     send: (EntitySheetEvent) -> Unit,
 ): EntitySummarySheetActions =
     EntitySummarySheetActions(
@@ -185,4 +200,7 @@ fun entitySheetActions(
             },
         statusesReadOnly = statusesReadOnly,
         quickEdit = quickEdit,
+        linkOffers = linkOffers.orEmpty(),
+        onLinkApplied = linkOffers?.let { { offer -> send(EntitySheetEvent.LinkOfferApplied(offer)) } },
+        onLinkDismissed = linkOffers?.let { { offer -> send(EntitySheetEvent.LinkOfferDismissed(offer)) } },
     )

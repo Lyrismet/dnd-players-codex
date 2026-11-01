@@ -27,7 +27,7 @@ internal fun SpeciesSummaryBody(
         quick = actions.quickEdit,
     )
     species.noteQuantity?.let { SpeciesNoteQuantityRow(it, actions.onSpeciesNoteQuantityStep) }
-    EntityDescription(species.notes, actions.quickEdit)
+    EntityDescription(species.notes, species.descriptionSegments, actions)
     // the hit points are known from a fight or from the player, a dash until one of them says
     EntityFactsGrid(
         facts =

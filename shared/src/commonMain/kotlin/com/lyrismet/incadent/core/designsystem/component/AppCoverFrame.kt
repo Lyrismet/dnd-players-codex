@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.core.designsystem.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,14 +18,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
-import com.lyrismet.incadent.core.portrait.rememberPhotoBitmapAsync
 import com.lyrismet.incadent.domain.model.Photo
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.photo_cover_expand
@@ -48,7 +45,6 @@ fun AppCoverFrame(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
 ) {
-    val bitmap = rememberPhotoBitmapAsync(cover.display)
     Box(
         modifier =
             modifier
@@ -58,16 +54,7 @@ fun AppCoverFrame(
                 .background(AppPalette.Background)
                 .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
-        if (bitmap != null) {
-            Image(
-                bitmap = bitmap,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-        } else {
-            AppLoader(size = PhotoLoaderSize, strokeWidth = 2.dp, modifier = Modifier.align(Alignment.Center))
-        }
+        DecodedPhoto(cover)
         Box(Modifier.fillMaxSize().border(1.dp, AppPalette.Parchment.copy(alpha = 0.3f), CardCoverShape))
         if (onClick != null) {
             Row(
@@ -136,17 +123,7 @@ fun AppCoverField(
                 .clickable(onClick = onClick),
     ) {
         if (cover != null) {
-            val bitmap = rememberPhotoBitmapAsync(cover.display)
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                AppLoader(size = PhotoLoaderSize, strokeWidth = 2.dp, modifier = Modifier.align(Alignment.Center))
-            }
+            DecodedPhoto(cover)
         } else {
             Column(
                 modifier =

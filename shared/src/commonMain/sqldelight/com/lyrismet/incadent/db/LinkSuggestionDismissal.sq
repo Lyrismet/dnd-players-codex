@@ -1,0 +1,20 @@
+CREATE TABLE link_suggestion_dismissal (
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    owner_kind TEXT NOT NULL,
+    owner_id INTEGER NOT NULL,
+    target_kind TEXT NOT NULL,
+    target_id INTEGER NOT NULL,
+    PRIMARY KEY (campaign_id, owner_kind, owner_id, target_kind, target_id)
+);
+
+insert:
+INSERT OR IGNORE INTO link_suggestion_dismissal(campaign_id, owner_kind, owner_id, target_kind, target_id)
+VALUES (?, ?, ?, ?, ?);
+
+selectForOwner:
+SELECT target_kind, target_id FROM link_suggestion_dismissal
+WHERE campaign_id = ? AND owner_kind = ? AND owner_id = ?;
+
+delete:
+DELETE FROM link_suggestion_dismissal
+WHERE campaign_id = ? AND owner_kind = ? AND owner_id = ? AND target_kind = ? AND target_id = ?;

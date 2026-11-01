@@ -88,6 +88,27 @@ class SchemaMigrationTest {
         file.delete()
     }
 
+    @Test
+    fun `migrating the third schema keeps the records and adds the refusals table`() {
+        val file = File.createTempFile("schema-v3", ".db")
+        File("src/commonMain/sqldelight/databases/3.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        driver.execute(null, "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'Old', 1, 1)", 0)
+        driver.execute(
+            null,
+            "INSERT INTO npc(name, status, description, campaign_id) VALUES ('Bob', 'FRIEND', 'kept', 'c')",
+            0,
+        )
+
+        AppDatabase.Schema.migrate(driver, 3, AppDatabase.Schema.version)
+
+        assertEquals("kept", driver.single("SELECT description FROM npc"))
+        driver.execute(null, "INSERT INTO link_suggestion_dismissal VALUES ('c', 'NPC', 1, 'LOCATION', 2)", 0)
+        assertEquals("1", driver.single("SELECT COUNT(*) FROM link_suggestion_dismissal"))
+        driver.close()
+        file.delete()
+    }
+
     private fun SqlDriver.single(sql: String): String? =
         executeQuery(
             null,

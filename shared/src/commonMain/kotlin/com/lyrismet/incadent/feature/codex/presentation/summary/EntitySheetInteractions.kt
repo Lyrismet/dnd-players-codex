@@ -45,6 +45,8 @@ class EntitySheetInteractions(
     // the entities left open underneath, newest last - the host keeps it alive across recompositions
     private val history: MutableState<List<EntityRef>> = mutableStateOf(emptyList()),
     private val onChanged: suspend (EntityChange) -> Unit = {},
+    // null on a screen that offers no links from notes
+    internal val links: LinkSuggestionInteractions? = null,
 ) {
     private val partyRepository = repositories.partyRepository
     private val npcRepository = repositories.npcRepository

@@ -53,7 +53,10 @@ class SpeciesRepositoryImpl(
                         entity.hitPoints?.toLong(),
                         entity.id,
                     )
-                    writePhoto(entity.id, entity.photo, stored.photo)
+                    writePhotoIfChanged(
+                        entity.photo,
+                        stored.photo,
+                    ) { full, thumb -> queries.setPhoto(full, thumb, entity.id) }
                     entity.id
                 } else {
                     insert(entity)
@@ -94,18 +97,6 @@ class SpeciesRepositoryImpl(
     override suspend fun delete(id: Long) {
         withContext(DatabaseDispatcher) {
             queries.deleteById(id)
-        }
-    }
-
-    // null removes the picture, see needsWrite for what leaves it alone
-    private fun writePhoto(
-        speciesId: Long,
-        photo: Photo?,
-        stored: Photo?,
-    ) {
-        when {
-            photo == null -> if (stored != null) queries.setPhoto(null, null, speciesId)
-            photo.needsWrite(stored) -> queries.setPhoto(photo.full, photo.thumb, speciesId)
         }
     }
 

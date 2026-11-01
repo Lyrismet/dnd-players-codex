@@ -23,6 +23,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
@@ -136,6 +137,8 @@ fun AppTextInput(
     autoFocus: Boolean = false,
     leading: (@Composable () -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
+    // for a caller that scrolls the input itself and needs to know where the caret is
+    onTextLayout: (TextLayoutResult) -> Unit = {},
 ) {
     val requester = inputFocusRequester(focusRequester, autoFocus)
     val resolvedStyle = style.resolvedTextStyle()
@@ -149,6 +152,7 @@ fun AppTextInput(
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         visualTransformation = visualTransformation,
+        onTextLayout = onTextLayout,
         modifier = modifier.inputChrome(style, requester),
         decorationBox = { inner ->
             InputDecoration(

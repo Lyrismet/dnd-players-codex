@@ -37,6 +37,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.codex.domain.repository.LinkSuggestionDismissalRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
@@ -44,6 +45,7 @@ import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
+import com.lyrismet.incadent.feature.codex.presentation.form.rememberMentionSource
 import com.lyrismet.incadent.feature.codex.presentation.form.rememberPlaceFailureText
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineEdit
@@ -54,10 +56,12 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntityLookup
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
+import com.lyrismet.incadent.feature.codex.presentation.summary.LinkSuggestionInteractions
 import com.lyrismet.incadent.feature.codex.presentation.summary.creatureTypeLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.entityLookupOf
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberEntitySummary
 import com.lyrismet.incadent.feature.codex.presentation.summary.rememberFullPhoto
+import com.lyrismet.incadent.feature.codex.presentation.summary.rememberLinkOffers
 import com.lyrismet.incadent.feature.codex.presentation.summary.withFullPhoto
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
 import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
@@ -65,6 +69,7 @@ import com.lyrismet.incadent.feature.mention.domain.MentionBody
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.mentionEntitiesFrom
 import com.lyrismet.incadent.feature.mention.domain.mentionSessionCounts
+import com.lyrismet.incadent.feature.mention.presentation.MentionSource
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
@@ -120,6 +125,7 @@ class CodexPresenter(
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
     private val campaignRepository: CampaignRepository,
+    private val linkDismissals: LinkSuggestionDismissalRepository,
 ) : Presenter<CodexState> {
     private val codexRepositories =
         CodexRepositories(partyRepository, npcRepository, questRepository, locationRepository, speciesRepository)
@@ -177,7 +183,8 @@ class CodexPresenter(
             remember(search, records, party, labels, query, tab, grouping, collapsed, npcMode) {
                 codexListing(search, records, party, fields, labels, query)
             }
-        val formState = formController.buildState(records.npcs, records.locations, species)
+        val mention = rememberMentionSource(records, codexRepositories, undoController)
+        val formState = formController.buildState(records.npcs, records.locations, species, mention)
 
         val lookup = lookupOf(records, sessionNotes, numbering)
         val selectedEntity = selectedEntity(fields.selectedEntityRef.value, lookup)
@@ -205,7 +212,7 @@ class CodexPresenter(
             scope,
             query,
             loadedParties == null || loadedNpcs == null,
-            CodexEditContext(editMode, holdHint, undoAction, swipeHintTarget),
+            CodexEditContext(editMode, holdHint, undoAction, swipeHintTarget, mention),
         )
     }
 
@@ -377,6 +384,10 @@ class CodexPresenter(
                 navigator.sessionEntryOpener(),
                 entityHistory,
                 onChanged = reportChange,
+                links =
+                    remember(codexRepositories, linkDismissals, undoController) {
+                        LinkSuggestionInteractions(codexRepositories, linkDismissals, undoController)
+                    },
             )
         val recentPlaceIds = rememberRetained { mutableStateOf(emptyList<Long>()) }
         val quickEdit =
@@ -443,8 +454,11 @@ class CodexPresenter(
                 }
             }
         val eventSink = remember { { event: CodexEvent -> latest.value(event) } }
+        val linkOffers =
+            rememberLinkOffers(fields.selectedEntityRef.value, records, linkDismissals, enabled = !readOnly)
         return CodexState(
             readOnly = readOnly,
+            linkOffers = linkOffers,
             isLoading = isLoading,
             activeTab = activeTab,
             searchQuery = fields.searchQuery.value,
@@ -478,6 +492,7 @@ class CodexPresenter(
                     holdTipAllowed =
                         context.editMode == EntityEditMode.QUICK && context.holdHint == HoldHintState.PENDING,
                     undoAction = context.undoAction,
+                    mention = context.mention,
                 ),
             swipeHintTarget = context.swipeHintTarget,
             swipeHintDirection = codexSwipeHintDirection(context.editMode),
@@ -550,6 +565,7 @@ private data class CodexEditContext(
     val holdHint: HoldHintState,
     val undoAction: UndoAction?,
     val swipeHintTarget: SwipeHintTarget<EntityRef>?,
+    val mention: MentionSource,
 )
 
 // priority mirrors the mockup's firstC - and CodexAllList's own party/npc/quest/location render order

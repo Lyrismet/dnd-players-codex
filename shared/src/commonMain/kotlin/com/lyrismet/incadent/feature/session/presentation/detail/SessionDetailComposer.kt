@@ -5,17 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -41,7 +38,6 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -60,17 +56,20 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppPopoverPanel
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
 import com.lyrismet.incadent.core.designsystem.component.AppTextInputCounter
 import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
-import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
+import com.lyrismet.incadent.feature.mention.presentation.MentionDropdownContent
+import com.lyrismet.incadent.feature.mention.presentation.MentionTriggerButton
 import com.lyrismet.incadent.feature.mention.presentation.MentionVisualTransformation
 import com.lyrismet.incadent.feature.mention.presentation.mentionDisplayLength
 import com.lyrismet.incadent.feature.mention.presentation.takeMentionDisplay
+import com.lyrismet.incadent.feature.mention.presentation.withPinnedCreate
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.action_cancel
 import dndplayerscodex.shared.generated.resources.session_detail_composer_hint
@@ -84,9 +83,6 @@ internal val COMPOSER_SIDE_PADDING = 12.dp
 private val COMPOSER_TOP_PADDING = 10.dp
 
 // the popup is anchored to the padded content, so the 1dp divider and top padding sit between it and the footer edge
-// tall enough for the seven rows and three headers of an empty "@", anything more scrolls
-private val POPOVER_MAX_HEIGHT = 360.dp
-private const val POPOVER_MAX_WINDOW_SHARE = 0.4f
 private val POPOVER_OFFSET_ABOVE_CONTENT = 6.dp + COMPOSER_TOP_PADDING + 1.dp
 
 @Composable
@@ -321,27 +317,6 @@ private fun EditingEntryBanner(
     }
 }
 
-// fixed 32x32 rounded-rect, not a text button - matches the "@" square next to the composer in the design
-@Composable
-private fun MentionTriggerButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    IconBadge(
-        modifier = modifier,
-        size = 32.dp,
-        shape = AppShapes.Tile,
-        background = AppPalette.SurfaceElevated,
-        onClick = onClick,
-    ) {
-        Text(
-            "@",
-            style = MaterialTheme.typography.titleSmall.copy(fontSize = AppFontSize.Large),
-            color = AppPalette.GoldBright,
-        )
-    }
-}
-
 /** floats directly above the composer's top edge instead of growing the composer and shoving the feed up */
 private class AbovePopupPositionProvider(
     private val gapPx: Int,
@@ -354,44 +329,24 @@ private class AbovePopupPositionProvider(
     ): IntOffset = IntOffset(anchorBounds.left, anchorBounds.top - popupContentSize.height - gapPx)
 }
 
-/** the shared popup chrome of the mention and phrase-completion popovers, as wide as the composer */
+/** the shared popup of the mention and phrase-completion popovers, as wide as the composer */
 @Composable
 private fun ComposerPopover(
     composerWidthPx: Int,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
+    footer: (@Composable () -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     // a popup is a window of its own, so it ignores the zero size of a hidden tab and would hang at the screen top
     if (!LocalTabSelected.current) return
     val density = LocalDensity.current
-    val popupWidth = with(density) { composerWidthPx.toDp() }
-    val shape = AppShapes.Card
     val gapPx = with(density) { POPOVER_OFFSET_ABOVE_CONTENT.roundToPx() }
-    // on a short screen with the keyboard up the popover takes a share of the window, not a fixed height
-    val maxHeight =
-        minOf(
-            POPOVER_MAX_HEIGHT,
-            with(density) {
-                (
-                    LocalWindowInfo.current.containerSize.height *
-                        POPOVER_MAX_WINDOW_SHARE
-                ).toDp()
-            },
-        )
     Popup(popupPositionProvider = AbovePopupPositionProvider(gapPx)) {
-        Column(
-            modifier =
-                modifier
-                    .width(popupWidth)
-                    .shadow(elevation = 16.dp, shape = shape)
-                    .appCard(shape = shape, background = AppPalette.SurfacePopover, border = AppPalette.BorderPopover)
-                    .heightIn(max = maxHeight)
-                    .verticalScroll(rememberScrollState())
-                    .padding(6.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            content()
-        }
+        AppPopoverPanel(
+            modifier = modifier.width(with(density) { composerWidthPx.toDp() }),
+            footer = footer,
+            content = content,
+        )
     }
 }
 
@@ -413,5 +368,13 @@ private fun MentionSuggestionsPopover(
     state: SessionDetailState,
     composerWidthPx: Int,
 ) {
-    ComposerPopover(composerWidthPx) { MentionDropdownContent(state.mentionSuggestions, state.eventSink) }
+    val (list, pinned) = state.mentionSuggestions.withPinnedCreate()
+    val onPick = { token: String -> state.eventSink(SessionDetailEvent.MentionSuggestionPicked(token)) }
+    val onCreate = { name: String -> state.eventSink(SessionDetailEvent.MentionCreateOpened(name)) }
+    ComposerPopover(
+        composerWidthPx,
+        footer = pinned?.let { { MentionDropdownContent(listOf(it), onPick, onCreate) } },
+    ) {
+        MentionDropdownContent(list, onPick, onCreate)
+    }
 }

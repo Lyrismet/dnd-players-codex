@@ -225,6 +225,7 @@ private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
                 }
             },
         statusesReadOnly = !isQuick,
+        linkOffers = state.linkOffers,
         quickEdit = if (isQuick) state.quick.asSheet { state.eventSink(CodexEvent.QuickEdit(it)) } else null,
     ) { state.eventSink(CodexEvent.EntitySheet(it)) }
 }

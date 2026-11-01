@@ -29,6 +29,9 @@ import com.lyrismet.incadent.feature.codex.presentation.form.quickPlaceTarget
 import com.lyrismet.incadent.feature.codex.presentation.form.speciesSelectState
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
+import com.lyrismet.incadent.feature.codex.presentation.summary.toMentionRef
+import com.lyrismet.incadent.feature.mention.presentation.MentionField
+import com.lyrismet.incadent.feature.mention.presentation.MentionSource
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.entity_sheet_move_into
 import kotlinx.coroutines.CoroutineScope
@@ -70,6 +73,7 @@ class QuickEditInteractions(
         records: CodexRecords,
         holdTipAllowed: Boolean,
         undoAction: UndoAction?,
+        mention: MentionSource? = null,
     ): QuickEditState {
         val edit = inlineEdit.value
         val ref = selectedRef.value
@@ -80,6 +84,7 @@ class QuickEditInteractions(
             speciesSelect = speciesSelectOf(edit, ref, records),
             holdTipVisible = holdTipAllowed && edit == null,
             undoAction = undoAction,
+            mention = mention?.let { MentionField(it, ref?.toMentionRef()) },
         )
     }
 

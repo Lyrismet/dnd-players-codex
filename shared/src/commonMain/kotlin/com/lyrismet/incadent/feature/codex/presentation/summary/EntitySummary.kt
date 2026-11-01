@@ -79,6 +79,7 @@ private fun buildNpcSummary(
             if (isDead) joinWithDot(relationLabel, lookup.npcLifeLabels.getValue(npc.lifeState)) else relationLabel,
         isDead = isDead,
         description = npc.description,
+        descriptionSegments = noteSegments(npc.description, lookup),
         emblem =
             EntityEmblem(
                 mark = PortraitMark.Letter(npc.name.take(1).uppercase()),
@@ -152,6 +153,7 @@ private fun buildSpeciesSummary(
         name = species.name,
         creatureType = species.creatureType,
         notes = species.notes,
+        descriptionSegments = noteSegments(species.notes, lookup),
         emblem =
             EntityEmblem(
                 mark = PortraitMark.Icon(EntityIcons.Species),
@@ -197,6 +199,7 @@ private fun buildPartySummary(
         overlineValue = joinWithDot(member.characterClass, if (member.isPlayerCharacter) lookup.partyYouLabel else ""),
         subtitle = member.race,
         description = member.description,
+        descriptionSegments = noteSegments(member.description, lookup),
         emblem =
             EntityEmblem(
                 mark = PortraitMark.Letter(member.name.take(1).uppercase()),
@@ -250,6 +253,7 @@ private fun buildQuestSummary(
         statusLabel = lookup.questStatusLabels.getValue(quest.status),
         reward = quest.reward,
         description = quest.description,
+        descriptionSegments = noteSegments(quest.description, lookup),
         emblem =
             EntityEmblem(
                 PortraitMark.Icon(EntityIcons.Quest),
@@ -302,6 +306,7 @@ private fun buildLocationSummary(
         ref = EntityRef.Location(location.id),
         name = location.name,
         description = location.description,
+        descriptionSegments = noteSegments(location.description, lookup),
         cover = location.cover,
         emblem = EntityEmblem(PortraitMark.Icon(EntityIcons.Location), EntityEmblemShape.ROUNDED, LocationMentionColor),
         subtitle = tree.ancestorsLabel(location),

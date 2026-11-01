@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.core.designsystem.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,12 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.portrait.rememberPhotoBitmapAsync
 import com.lyrismet.incadent.domain.model.Photo
 
 private val PortraitFrameWidth = 72.dp
@@ -50,17 +47,7 @@ fun PortraitFrame(
             contentAlignment = Alignment.Center,
         ) {
             if (portrait != null) {
-                val bitmap = rememberPhotoBitmapAsync(portrait.display)
-                if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap,
-                        contentDescription = null,
-                        modifier = Modifier.matchParentSize(),
-                        contentScale = ContentScale.Crop,
-                    )
-                } else {
-                    AppLoader(size = PhotoLoaderSize, strokeWidth = 2.dp, modifier = Modifier.align(Alignment.Center))
-                }
+                DecodedPhoto(portrait)
             } else {
                 Text(
                     "+",

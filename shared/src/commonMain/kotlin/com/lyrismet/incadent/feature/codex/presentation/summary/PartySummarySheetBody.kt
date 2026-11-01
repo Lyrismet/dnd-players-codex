@@ -70,7 +70,7 @@ private fun PartyBody(
     )
     if (fall != null) Epitaph(fall, actions)
     if (fall == null) PresencePicker(party, actions)
-    EntityDescription(party.description, actions.quickEdit)
+    EntityDescription(party.description, party.descriptionSegments, actions)
     EntityFactsGrid(party.facts, actions.onEntityRefClicked, actions.quickEdit)
     if (fall != null) Chronicle(fall, actions.onPartyRevived?.let { revive -> { revive(party.ref.id) } }, onRevived)
     EntityRelatedNotesSection(party.name, party.relatedNotes, actions.onRelatedNoteClicked)

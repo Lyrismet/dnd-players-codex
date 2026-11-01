@@ -621,6 +621,13 @@
     <string name="entity_sheet_party_hp_label">Макс. хиты</string>
     <string name="quick_edit_label_name">Имя</string>
     <string name="quick_edit_label_description">Описание</string>
+    <string name="notes_editor_overline_format">%1$s · %2$s</string>
+    <string name="notes_editor_placeholder">Внешность, характер, что известно. @ упомянуть или создать запись</string>
+    <string name="notes_editor_at_hint">@ — упоминание</string>
+    <string name="notes_editor_at_action">Упомянуть</string>
+    <string name="notes_editor_save">Сохранить</string>
+    <string name="notes_editor_close">Закрыть</string>
+    <string name="notes_editor_discard_text">В описании есть несохранённый текст.</string>
     <string name="quick_edit_done">Готово</string>
     <string name="quick_edit_changed_suffix">— изменено</string>
     <string name="quick_edit_link_none">Не указано</string>
@@ -1184,4 +1191,17 @@
     <string name="help_friend_row_items">Личные вещи и кошелёк</string>
     <string name="help_friend_row_me">Метка «я»</string>
     <string name="help_friend_body">Уйдут имена, классы и уровни отряда, все записи кодекса, сессии и упоминания. Предметы NPC и мест тоже уйдут.</string>
+    <string name="link_suggestion_meet_at">%1$s - указать в «Где встретить»?</string>
+    <string name="link_suggestion_who_here">%1$s - указать в «Кто здесь»?</string>
+    <string name="link_suggestion_giver">%1$s - указать в «От кого»?</string>
+    <string name="link_suggestion_apply">Связать</string>
+    <string name="link_suggestion_dismiss">Не надо</string>
+    <string name="link_suggestion_done_title">Связано</string>
+    <string name="link_suggestion_done_meet_at">%1$s → Где встретить</string>
+    <string name="link_suggestion_done_who_here">%1$s → Кто здесь</string>
+    <string name="link_suggestion_done_giver">%1$s → От кого</string>
+    <string name="link_suggestion_dismissed_title">Предложение скрыто</string>
+    <string name="link_suggestion_dismissed_subtitle">%1$s - больше не предлагать связь</string>
+    <string name="mention_create_compact">+ Создать запись</string>
+    <string name="mention_create_hint">Нет нужного? Напишите имя, и мы создадим запись</string>
 </resources>
