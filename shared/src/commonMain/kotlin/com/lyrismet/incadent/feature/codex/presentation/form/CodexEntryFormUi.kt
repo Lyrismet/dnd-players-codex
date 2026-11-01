@@ -234,6 +234,7 @@ private fun PartyStatFields(
         value = form.description,
         field = CodexEntryField.DESCRIPTION,
         eventSink = eventSink,
+        mention = form.mention,
         placeholder = stringResource(Res.string.codex_entry_placeholder_party_notes),
     )
 }
@@ -282,6 +283,7 @@ private fun QuestEntryFields(
         value = form.description,
         field = CodexEntryField.DESCRIPTION,
         eventSink = eventSink,
+        mention = form.mention,
         placeholder = stringResource(Res.string.codex_entry_placeholder_quest_description),
     )
 }
@@ -324,6 +326,7 @@ private fun LocationEntryFields(
         value = form.description,
         field = CodexEntryField.DESCRIPTION,
         eventSink = eventSink,
+        mention = form.mention,
         placeholder = stringResource(Res.string.codex_entry_placeholder_location_description),
     )
 }

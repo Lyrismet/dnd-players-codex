@@ -57,7 +57,10 @@ class LocationRepositoryImpl(
                         entity.parentId,
                         entity.id,
                     )
-                    writeCover(entity.id, entity.cover, stored.cover)
+                    writePhotoIfChanged(
+                        entity.cover,
+                        stored.cover,
+                    ) { full, thumb -> queries.setCover(full, thumb, entity.id) }
                     entity.id
                 } else {
                     insert(entity)
@@ -120,18 +123,6 @@ class LocationRepositoryImpl(
             location.originId.orNewOriginId(),
         )
         return queries.lastInsertRowId().executeAsOne()
-    }
-
-    // null removes the picture, see needsWrite for what leaves it alone
-    private fun writeCover(
-        locationId: Long,
-        cover: Photo?,
-        stored: Photo?,
-    ) {
-        when {
-            cover == null -> if (stored != null) queries.setCover(null, null, locationId)
-            cover.needsWrite(stored) -> queries.setCover(cover.full, cover.thumb, locationId)
-        }
     }
 
     override suspend fun delete(id: Long) {

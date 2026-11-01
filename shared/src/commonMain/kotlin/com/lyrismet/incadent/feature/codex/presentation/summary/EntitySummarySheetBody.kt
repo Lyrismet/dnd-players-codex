@@ -153,7 +153,8 @@ private fun NpcSummaryBody(
             onSelected = { life -> actions.onNpcLifeSelected(npc.ref.id, life) },
         )
     }
-    EntityDescription(npc.description, actions.quickEdit)
+    EntityDescription(npc.description, npc.descriptionSegments, actions)
+    LinkOfferStrip(actions.linkOffers, actions)
     EntityFactsGrid(
         facts = npc.facts,
         onEntityRefClicked = actions.onEntityRefClicked,
@@ -198,7 +199,8 @@ private fun LocationSummaryBody(
         quick = actions.quickEdit,
         cover = if (hasCover) coverSlot else null,
     )
-    EntityDescription(location.description, actions.quickEdit)
+    EntityDescription(location.description, location.descriptionSegments, actions)
+    LinkOfferStrip(actions.linkOffers, actions)
     EntityFactsGrid(location.facts, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelationGroups(location.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(location.name, location.relatedNotes, actions.onRelatedNoteClicked)
@@ -237,7 +239,8 @@ private fun QuestSummaryBody(
             onSelected = { status -> actions.onQuestStatusSelected(quest.ref.id, status) },
         )
     }
-    EntityDescription(quest.description, actions.quickEdit)
+    EntityDescription(quest.description, quest.descriptionSegments, actions)
+    LinkOfferStrip(actions.linkOffers, actions)
     EntityFactsGrid(quest.facts, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelationGroups(quest.groups, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelatedNotesSection(quest.title, quest.relatedNotes, actions.onRelatedNoteClicked)

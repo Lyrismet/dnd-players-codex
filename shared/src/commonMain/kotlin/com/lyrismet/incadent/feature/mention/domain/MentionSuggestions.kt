@@ -116,3 +116,8 @@ fun emptyMentionRows(
     if (rows.isEmpty()) add(MentionSection.CODEX, all.sortedBy { it.name.foldForSearch() })
     return rows
 }
+
+private const val CREATE_HINT_MAX_RECORDS = 3
+
+/** a codex with so few records that the create row explains itself, a bigger one shows it compact */
+fun createRowShowsHint(recordCount: Int): Boolean = recordCount <= CREATE_HINT_MAX_RECORDS

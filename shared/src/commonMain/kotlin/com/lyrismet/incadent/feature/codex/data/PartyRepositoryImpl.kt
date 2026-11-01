@@ -66,7 +66,10 @@ class PartyRepositoryImpl(
                             description = entity.description,
                             id = entity.id,
                         )
-                        writePortrait(entity.id, entity.portrait, stored.portrait)
+                        writePhotoIfChanged(
+                            entity.portrait,
+                            stored.portrait,
+                        ) { full, thumb -> queries.setPortrait(full, thumb, entity.id) }
                         entity.id
                     } else {
                         insert(entity)
@@ -117,18 +120,6 @@ class PartyRepositoryImpl(
             origin_id = member.originId.orNewOriginId(),
         )
         return queries.lastInsertRowId().executeAsOne()
-    }
-
-    // null removes the picture, see needsWrite for what leaves it alone
-    private fun writePortrait(
-        memberId: Long,
-        portrait: Photo?,
-        stored: Photo?,
-    ) {
-        when {
-            portrait == null -> if (stored != null) queries.setPortrait(null, null, memberId)
-            portrait.needsWrite(stored) -> queries.setPortrait(portrait.full, portrait.thumb, memberId)
-        }
     }
 
     override suspend fun delete(id: Long) {

@@ -8,16 +8,17 @@ import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.displayMentionText
 import com.lyrismet.incadent.feature.mention.domain.insertMentionAt
+import com.lyrismet.incadent.feature.mention.domain.insertMentionTrigger
 import com.lyrismet.incadent.feature.mention.domain.linkTypedMentions
 import com.lyrismet.incadent.feature.mention.domain.markUnlinkedMentions
 import com.lyrismet.incadent.feature.mention.domain.typedQuantityEdit
 import com.lyrismet.incadent.feature.mention.domain.unmarkUnlinkedMentions
+import com.lyrismet.incadent.feature.mention.presentation.cleanedEdit
 import com.lyrismet.incadent.feature.phrases.domain.insertPhrase
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import com.lyrismet.incadent.feature.mention.domain.withoutBrokenTokens as stripBrokenTokens
 
 private const val ENTRY_PREVIEW_LENGTH = 60
 
@@ -43,24 +44,14 @@ internal class SessionDraftController(
             draft.value = TextFieldValue(counted.text, TextRange(counted.caret))
             return
         }
-        val clean = stripBrokenTokens(text)
-        draft.value =
-            if (clean == text) {
-                TextFieldValue(text, selection, composition)
-            } else {
-                val caret = stripBrokenTokens(text.take(selection.end)).length
-                TextFieldValue(clean, TextRange(caret.coerceAtMost(clean.length)))
-            }
+        draft.value = cleanedEdit(text, selection, composition)
     }
 
     /** the "@" goes in at the caret, replacing a selection, and the caret lands right after it */
     fun insertMentionTrigger() {
         val current = draft.value
-        val start = current.selection.min
-        val before = current.text.substring(0, start)
-        val trigger = if (before.isEmpty() || before.last().isWhitespace()) "@" else " @"
-        val text = before + trigger + current.text.substring(current.selection.max)
-        draft.value = TextFieldValue(text, TextRange(start + trigger.length))
+        val inserted = insertMentionTrigger(current.text, current.selection.min, current.selection.max)
+        draft.value = TextFieldValue(inserted.text, TextRange(inserted.caret))
     }
 
     /** the picked mention replaces the "@query" at the caret, the caret lands after it */

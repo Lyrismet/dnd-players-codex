@@ -268,7 +268,7 @@ private fun inputHeight(kind: InlineInputKind): Modifier =
 
 // mockup - title is serif 24/600, fields are Inter 15px, description is Inter 15px with a 1.6 line-height
 @Composable
-private fun inputTextStyle(kind: InlineInputKind) =
+internal fun inputTextStyle(kind: InlineInputKind) =
     when (kind) {
         InlineInputKind.TITLE ->
             MaterialTheme.typography.headlineLarge.copy(
@@ -296,7 +296,7 @@ private fun inputKeyboardOptions(kind: InlineInputKind): KeyboardOptions =
             KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done)
     }
 
-private fun handleEditorKey(
+internal fun handleEditorKey(
     type: KeyEventType,
     key: Key,
     commandPressed: Boolean,

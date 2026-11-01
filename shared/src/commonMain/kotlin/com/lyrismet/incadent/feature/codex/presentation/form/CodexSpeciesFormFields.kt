@@ -70,6 +70,7 @@ internal fun SpeciesEntryFields(
         value = form.description,
         field = CodexEntryField.DESCRIPTION,
         eventSink = eventSink,
+        mention = form.mention,
         placeholder = stringResource(Res.string.codex_entry_placeholder_species_notes),
     )
     SrdAttribution()

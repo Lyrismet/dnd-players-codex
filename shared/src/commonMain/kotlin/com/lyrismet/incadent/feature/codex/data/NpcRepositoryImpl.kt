@@ -76,7 +76,10 @@ class NpcRepositoryImpl(
                             entity.vulnerabilities.encodeVulnerabilities(),
                             entity.id,
                         )
-                        writePortrait(entity.id, entity.portrait, stored.portrait)
+                        writePhotoIfChanged(
+                            entity.portrait,
+                            stored.portrait,
+                        ) { full, thumb -> queries.setPortrait(full, thumb, entity.id) }
                         entity.id
                     } else {
                         insert(entity.copy(speciesId = speciesId))
@@ -125,18 +128,6 @@ class NpcRepositoryImpl(
     override suspend fun delete(id: Long) {
         withContext(DatabaseDispatcher) {
             queries.deleteById(id)
-        }
-    }
-
-    // null removes the picture, see needsWrite for what leaves it alone
-    private fun writePortrait(
-        npcId: Long,
-        portrait: Photo?,
-        stored: Photo?,
-    ) {
-        when {
-            portrait == null -> if (stored != null) queries.setPortrait(null, null, npcId)
-            portrait.needsWrite(stored) -> queries.setPortrait(portrait.full, portrait.thumb, npcId)
         }
     }
 

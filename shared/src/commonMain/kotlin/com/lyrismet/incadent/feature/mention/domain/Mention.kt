@@ -237,6 +237,17 @@ fun insertMentionAt(
     return MentionInsertion(before + after.substring(skip), before.length)
 }
 
+/** puts an "@" in over the selection [start] to [end], after a space unless it opens the text or follows one */
+fun insertMentionTrigger(
+    draft: String,
+    start: Int,
+    end: Int,
+): MentionInsertion {
+    val before = draft.substring(0, start)
+    val trigger = if (before.isEmpty() || before.last().isWhitespace()) "@" else " @"
+    return MentionInsertion(before + trigger + draft.substring(end), start + trigger.length)
+}
+
 /** replaces the trailing "@query" in [draft] with [token] plus a trailing space */
 fun insertMention(
     draft: String,

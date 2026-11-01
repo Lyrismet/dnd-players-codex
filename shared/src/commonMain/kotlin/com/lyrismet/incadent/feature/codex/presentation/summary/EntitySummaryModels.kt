@@ -21,6 +21,7 @@ import com.lyrismet.incadent.feature.codex.presentation.style.DEFAULT_STATUS_GLY
 import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
 import com.lyrismet.incadent.feature.combat.domain.results.HitRange
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
+import com.lyrismet.incadent.feature.mention.domain.MentionSegment
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
@@ -136,6 +137,7 @@ sealed interface EntitySummaryItem {
         val statusLabel: String,
         val isDead: Boolean,
         val description: String,
+        val descriptionSegments: List<MentionSegment> = emptyList(),
         val emblem: EntityEmblem,
         val subtitle: String,
         val statusOptions: List<StatusOption<NpcStatus>>,
@@ -150,6 +152,7 @@ sealed interface EntitySummaryItem {
         val ref: EntityRef.Location,
         val name: String,
         val description: String,
+        val descriptionSegments: List<MentionSegment> = emptyList(),
         val cover: Photo?,
         val emblem: EntityEmblem,
         val subtitle: String,
@@ -166,6 +169,7 @@ sealed interface EntitySummaryItem {
         val statusLabel: String,
         val reward: String,
         val description: String,
+        val descriptionSegments: List<MentionSegment> = emptyList(),
         val emblem: EntityEmblem,
         val subtitle: String,
         val statusOptions: List<StatusOption<QuestStatus>>,
@@ -180,6 +184,7 @@ sealed interface EntitySummaryItem {
         val name: String,
         val creatureType: CreatureType,
         val notes: String,
+        val descriptionSegments: List<MentionSegment> = emptyList(),
         val emblem: EntityEmblem,
         val vulnerabilities: Map<DamageType, DamageState>,
         val relatedNotes: List<RelatedNoteItem>,
@@ -199,6 +204,7 @@ sealed interface EntitySummaryItem {
         val overlineValue: String,
         val subtitle: String,
         val description: String,
+        val descriptionSegments: List<MentionSegment> = emptyList(),
         val emblem: EntityEmblem,
         val presenceOptions: List<StatusOption<PartyPresence>>,
         val facts: List<FactRow>,

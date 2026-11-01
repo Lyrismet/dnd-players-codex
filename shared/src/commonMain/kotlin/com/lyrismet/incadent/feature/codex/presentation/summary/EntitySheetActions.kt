@@ -9,6 +9,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineEdit
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
+import com.lyrismet.incadent.feature.mention.presentation.MentionField
 
 /** actions the sheet's interactive pieces dispatch - one bundle instead of one lambda param per feature */
 data class EntitySummarySheetActions(
@@ -36,6 +37,10 @@ data class EntitySummarySheetActions(
     val statusesReadOnly: Boolean = false,
     // null keeps the card read-only - in-place editing only exists in the codex
     val quickEdit: QuickEditSheet? = null,
+    // what the notes mention and the card could link, shown only while [onLinkApplied] and [onLinkDismissed] are set
+    val linkOffers: List<LinkOffer> = emptyList(),
+    val onLinkApplied: ((LinkOffer) -> Unit)? = null,
+    val onLinkDismissed: ((LinkOffer) -> Unit)? = null,
 )
 
 /** the in-place editing state a card renders - the presenter owns it, the card only shows it and forwards events */
@@ -45,4 +50,6 @@ data class QuickEditSheet(
     val photoCrop: PhotoCropDraft?,
     val holdTipVisible: Boolean,
     val onEvent: (QuickEditUiEvent) -> Unit,
+    // what "@" offers in the description editor, null keeps it a plain field
+    val mention: MentionField? = null,
 )

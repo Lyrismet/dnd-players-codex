@@ -19,6 +19,7 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEve
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
+import com.lyrismet.incadent.feature.codex.presentation.summary.LinkOffer
 import com.lyrismet.incadent.feature.combat.domain.results.HitRange
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
@@ -209,6 +210,8 @@ data class CodexState(
     val editMode: EntityEditMode = EntityEditMode.QUICK,
     // the in-place editing of the open card, quick mode only
     val quick: QuickEditState = QuickEditState(),
+    // what the open card's notes mention that its fields could take, empty in an archived campaign
+    val linkOffers: List<LinkOffer> = emptyList(),
     // the row the one-time swipe hint peeks on, and the direction captured when it started - see core/swipehint
     val swipeHintTarget: SwipeHintTarget<EntityRef>? = null,
     val swipeHintDirection: SwipeHintDirection = SwipeHintDirection.DELETE_ONLY,

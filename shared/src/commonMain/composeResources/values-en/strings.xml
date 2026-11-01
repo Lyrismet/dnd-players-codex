@@ -605,6 +605,13 @@
     <string name="entity_sheet_party_hp_label">Max HP</string>
     <string name="quick_edit_label_name">Name</string>
     <string name="quick_edit_label_description">Description</string>
+    <string name="notes_editor_overline_format">%1$s · %2$s</string>
+    <string name="notes_editor_placeholder">Appearance, personality, what is known. @ to mention or create a record</string>
+    <string name="notes_editor_at_hint">@ - mention</string>
+    <string name="notes_editor_at_action">Mention</string>
+    <string name="notes_editor_save">Save</string>
+    <string name="notes_editor_close">Close</string>
+    <string name="notes_editor_discard_text">The description has text that is not saved.</string>
     <string name="quick_edit_done">Done</string>
     <string name="quick_edit_changed_suffix"> — changed</string>
     <string name="quick_edit_link_none">Not set</string>
@@ -1146,4 +1153,17 @@
     <string name="help_friend_row_items">Personal items and wallet</string>
     <string name="help_friend_row_me">The "me" mark</string>
     <string name="help_friend_body">Party names, classes and levels, all codex entries, sessions and mentions are sent. NPC and place items are sent too.</string>
+    <string name="link_suggestion_meet_at">%1$s - add to "Where to find"?</string>
+    <string name="link_suggestion_who_here">%1$s - add to "Who is here"?</string>
+    <string name="link_suggestion_giver">%1$s - set as "Given by"?</string>
+    <string name="link_suggestion_apply">Link</string>
+    <string name="link_suggestion_dismiss">No thanks</string>
+    <string name="link_suggestion_done_title">Linked</string>
+    <string name="link_suggestion_done_meet_at">%1$s → Where to find</string>
+    <string name="link_suggestion_done_who_here">%1$s → Who is here</string>
+    <string name="link_suggestion_done_giver">%1$s → Given by</string>
+    <string name="link_suggestion_dismissed_title">Suggestion hidden</string>
+    <string name="link_suggestion_dismissed_subtitle">%1$s - will not be offered again</string>
+    <string name="mention_create_compact">+ Create a record</string>
+    <string name="mention_create_hint">Not there? Type the name and we will create the record</string>
 </resources>

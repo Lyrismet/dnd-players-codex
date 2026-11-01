@@ -1,4 +1,4 @@
-package com.lyrismet.incadent.feature.session.presentation.detail
+package com.lyrismet.incadent.feature.mention.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,38 +9,26 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
-import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
-import com.lyrismet.incadent.core.designsystem.component.AppInputChrome
+import com.lyrismet.incadent.core.designsystem.component.AppNameInput
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
-import com.lyrismet.incadent.core.designsystem.component.AppTextInput
-import com.lyrismet.incadent.core.designsystem.component.AppTextInputCounter
-import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
-import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.core.format.kindLabelRes
@@ -64,9 +52,9 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun MentionCreateSheet(
     sheet: MentionCreateSheetState,
-    eventSink: (SessionDetailEvent) -> Unit,
+    actions: MentionCreateActions,
 ) {
-    val dismiss = { eventSink(SessionDetailEvent.MentionCreateDismissed) }
+    val dismiss = actions.onDismiss
     AppBottomSheet(onDismissRequest = dismiss) {
         AppSheetColumn(spacing = 16.dp, scroll = true, header = {
             AppSheetHeader(
@@ -77,7 +65,8 @@ internal fun MentionCreateSheet(
         }) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FormFieldLabel(stringResource(Res.string.mention_create_name_label))
-                MentionCreateNameInput(sheet.name) { eventSink(SessionDetailEvent.MentionCreateNameChanged(it)) }
+                val namePlaceholder = stringResource(Res.string.mention_create_name_placeholder)
+                AppNameInput(sheet.name, actions.onNameChanged, namePlaceholder)
                 val hint =
                     sheet.linkedNotes?.let {
                         pluralStringResource(
@@ -99,7 +88,7 @@ internal fun MentionCreateSheet(
                                 kind = kind,
                                 selected = kind == sheet.type,
                                 modifier = Modifier.weight(1f),
-                                onClick = { eventSink(SessionDetailEvent.MentionCreateTypeChanged(kind)) },
+                                onClick = { actions.onTypeChanged(kind) },
                             )
                         }
                         repeat(TYPES_PER_ROW - row.size) { Spacer(Modifier.weight(1f)) }
@@ -108,7 +97,7 @@ internal fun MentionCreateSheet(
             }
             FormPrimaryButton(
                 text = stringResource(sheet.buttonRes()),
-                onClick = { eventSink(SessionDetailEvent.MentionCreateConfirmed) },
+                onClick = actions.onConfirm,
                 enabled = sheet.canCreate,
             )
             // the tag sheet keeps its note under the button, the draft one has it under the field
@@ -169,34 +158,6 @@ private fun MentionTypeTile(
     }
 }
 
-@Composable
-private fun MentionCreateNameInput(
-    name: String,
-    onNameChanged: (String) -> Unit,
-) {
-    var value by remember { mutableStateOf(TextFieldValue(name, TextRange(name.length))) }
-    AppTextInput(
-        value = value,
-        onValueChange = {
-            value = it
-            onNameChanged(it.text)
-        },
-        autoFocus = true,
-        placeholder = stringResource(Res.string.mention_create_name_placeholder),
-        style =
-            AppTextInputStyle(
-                textStyle =
-                    MaterialTheme.typography.headlineMedium.copy(
-                        fontSize = AppFontSize.Section,
-                        fontWeight = FontWeight.SemiBold,
-                    ),
-                textColor = AppPalette.TextHeading,
-                chrome = AppInputChrome(border = AppPalette.Gold.copy(alpha = 0.5f)),
-                height = 56.dp,
-            ),
-        maxLength = TextLimits.LINE,
-        counter = AppTextInputCounter(TextLimits.LINE),
-        keyboardOptions = SentenceKeyboardOptions.copy(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { }),
-    )
-}
+/** the record kinds the create sheet offers */
+internal val MentionCreateKinds =
+    listOf(EntityKind.NPC, EntityKind.QUEST, EntityKind.LOCATION, EntityKind.PARTY, EntityKind.SPECIES)

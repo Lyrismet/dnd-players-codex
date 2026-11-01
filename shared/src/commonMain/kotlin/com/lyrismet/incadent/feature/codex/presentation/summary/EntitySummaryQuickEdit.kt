@@ -29,6 +29,7 @@ import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.CreatureTypeEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineFieldEditor
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.LinkOptionEditor
+import com.lyrismet.incadent.feature.codex.presentation.quickedit.NotesEditorScreen
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditKind
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
@@ -38,6 +39,7 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.FactRow
 import com.lyrismet.incadent.feature.codex.presentation.summary.FactValue
 import com.lyrismet.incadent.feature.codex.presentation.summary.QuickEditSheet
+import com.lyrismet.incadent.feature.mention.domain.MentionSegment
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.quick_edit_description_placeholder
@@ -79,8 +81,17 @@ internal fun QuickEditableValue(
         return
     }
     val editing = quick.inlineEdit?.takeIf { it.field == field }
-    if (editing != null) {
-        InlineFieldEditor(label = label, draft = editing.draft, kind = field.inputKind(), onEvent = quick.onEvent)
+    val notesSource = quick.mention.takeIf { field == QuickEditField.DESCRIPTION }
+    if (editing != null && notesSource != null) {
+        NotesEditorScreen(editing.draft, notesSource, quick.onEvent)
+        content()
+    } else if (editing != null) {
+        InlineFieldEditor(
+            label = label,
+            draft = editing.draft,
+            kind = field.inputKind(),
+            onEvent = quick.onEvent,
+        )
     } else {
         HoldToEditField(
             onHeld = { quick.onEvent(QuickEditUiEvent.FieldHeld(field, value)) },
@@ -95,18 +106,18 @@ internal fun QuickEditableValue(
 @Composable
 internal fun EntityDescription(
     description: String,
-    quick: QuickEditSheet?,
+    segments: List<MentionSegment>,
+    actions: EntitySummarySheetActions,
 ) {
+    val quick = actions.quickEdit
     val blank = description.isBlank()
     if (quick == null && blank) return
     val shown = if (blank) stringResource(Res.string.quick_edit_description_placeholder) else description
     val label = stringResource(Res.string.quick_edit_label_description)
+    val style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Large, lineHeight = 24.sp)
     QuickEditableValue(field = QuickEditField.DESCRIPTION, label = label, value = description, quick = quick) {
-        Text(
-            shown,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = AppFontSize.Large, lineHeight = 24.sp),
-            color = if (blank) AppPalette.TextTertiary else AppPalette.TextDescription,
-        )
+        val color = if (blank) AppPalette.TextTertiary else AppPalette.TextDescription
+        ExpandableNote(shown, segments, style, color, actions.onEntityRefClicked)
     }
 }
 

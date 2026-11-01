@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.LinkSuggestionDismissalRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
@@ -43,6 +44,7 @@ class CodexPresenterFactory(
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
     private val campaignRepository: CampaignRepository,
+    private val linkDismissals: LinkSuggestionDismissalRepository,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -65,6 +67,7 @@ class CodexPresenterFactory(
                     appPreferencesRepository,
                     imageCompressor,
                     campaignRepository,
+                    linkDismissals,
                 )
             else -> null
         }

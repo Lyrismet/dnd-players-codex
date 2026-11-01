@@ -18,6 +18,8 @@ import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.domain.insertMentionAt
 import com.lyrismet.incadent.feature.mention.domain.mentionToken
 import com.lyrismet.incadent.feature.mention.domain.unlinkedMentionRef
+import com.lyrismet.incadent.feature.mention.presentation.MentionCreateKinds
+import com.lyrismet.incadent.feature.mention.presentation.MentionCreateSheetState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -27,9 +29,6 @@ internal data class OpenMentionCreate(
     val type: EntityKind,
     val unlinked: DeletedMention? = null,
 )
-
-private val CREATE_KINDS =
-    listOf(EntityKind.NPC, EntityKind.QUEST, EntityKind.LOCATION, EntityKind.PARTY, EntityKind.SPECIES)
 
 /** turns a typed name into a codex record and a mention of it, with an Undo that takes both back */
 @Suppress("LongParameterList")
@@ -66,7 +65,7 @@ internal class MentionCreateController(
             MentionCreateSheetState(
                 it.name,
                 it.type,
-                CREATE_KINDS,
+                MentionCreateKinds,
                 it.unlinked?.let { u ->
                     data.hitsOf(u).notes
                 },

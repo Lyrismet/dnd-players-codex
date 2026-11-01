@@ -1,31 +1,17 @@
 package com.lyrismet.incadent.feature.campaign.presentation.sheet
 
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
-import com.lyrismet.incadent.core.designsystem.component.AppInputChrome
+import com.lyrismet.incadent.core.designsystem.component.AppNameInput
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
-import com.lyrismet.incadent.core.designsystem.component.AppTextInput
-import com.lyrismet.incadent.core.designsystem.component.AppTextInputCounter
-import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
-import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.savableCampaignName
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.settings_rename_hint
@@ -52,9 +38,10 @@ fun CampaignRenameSheet(
                 onClose = onDismiss,
             )
         }) {
-            RenameNameInput(
-                draft = draft,
-                onDraftChanged = { onDraftChanged(it.take(TextLimits.LINE)) },
+            AppNameInput(
+                name = draft,
+                onNameChanged = onDraftChanged,
+                placeholder = stringResource(Res.string.settings_rename_placeholder),
                 onDone = { if (canSave) onSave() },
             )
             Text(
@@ -69,38 +56,4 @@ fun CampaignRenameSheet(
             )
         }
     }
-}
-
-@Composable
-private fun RenameNameInput(
-    draft: String,
-    onDraftChanged: (String) -> Unit,
-    onDone: () -> Unit,
-) {
-    // the caret starts after the last letter so a long name scrolls to its end
-    var value by remember { mutableStateOf(TextFieldValue(draft, TextRange(draft.length))) }
-    AppTextInput(
-        value = value,
-        onValueChange = {
-            value = it
-            onDraftChanged(it.text)
-        },
-        autoFocus = true,
-        placeholder = stringResource(Res.string.settings_rename_placeholder),
-        style =
-            AppTextInputStyle(
-                textStyle =
-                    MaterialTheme.typography.headlineMedium.copy(
-                        fontSize = AppFontSize.Section,
-                        fontWeight = FontWeight.SemiBold,
-                    ),
-                textColor = AppPalette.TextHeading,
-                chrome = AppInputChrome(border = AppPalette.Gold.copy(alpha = 0.5f)),
-                height = 56.dp,
-            ),
-        maxLength = TextLimits.LINE,
-        counter = AppTextInputCounter(TextLimits.LINE),
-        keyboardOptions = SentenceKeyboardOptions.copy(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { onDone() }),
-    )
 }

@@ -15,6 +15,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
+import com.lyrismet.incadent.feature.mention.presentation.MentionField
 
 /** pre-formatted create/edit sheet state - null fields/lists are simply unused for the current [type] */
 data class CodexEntryFormState(
@@ -75,6 +76,8 @@ data class CodexEntryFormState(
     val isDiscardPromptVisible: Boolean = false,
     // true once something was typed or picked, closing the sheet then asks before it goes away
     val hasUnsavedChanges: Boolean = false,
+    // null leaves the notes a plain field, as in a host that has no records to offer
+    val mention: MentionField? = null,
 )
 
 enum class CodexEntryField {

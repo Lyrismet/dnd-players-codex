@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
@@ -13,7 +12,8 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryIte
 import com.lyrismet.incadent.feature.combat.presentation.summary.CombatCardItem
 import com.lyrismet.incadent.feature.mention.domain.DeletedMention
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
-import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
+import com.lyrismet.incadent.feature.mention.presentation.MentionCreateSheetState
+import com.lyrismet.incadent.feature.mention.presentation.MentionDropdownItem
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSheetEvent
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSheetState
 import com.slack.circuit.runtime.CircuitUiEvent
@@ -161,48 +161,6 @@ sealed interface SessionEntrySegment {
         val text: String,
         val entityKey: String,
     ) : SessionEntrySegment
-}
-
-data class SessionMentionSuggestion(
-    val token: String,
-    val glyph: MentionGlyph,
-    val tint: Color,
-    val name: String,
-    val typeLabel: String,
-    // the grey second line - race and place, who gave the quest, the path of a place
-    val detail: String = "",
-    // the nickname the query hit, shown ahead of the detail
-    val nickname: String = "",
-)
-
-/** one line of the "@" dropdown */
-sealed interface MentionDropdownItem {
-    data class Header(
-        val title: String,
-    ) : MentionDropdownItem
-
-    data class Entry(
-        val suggestion: SessionMentionSuggestion,
-    ) : MentionDropdownItem
-
-    /** "+ Создать «X»…" - [name] is what was typed after the "@" */
-    data class Create(
-        val name: String,
-    ) : MentionDropdownItem
-
-    /** shown instead of the list while the codex has no records at all */
-    data object EmptyCodex : MentionDropdownItem
-}
-
-/** the sheet that makes a record out of [name] - the record kind is picked from [kinds] */
-data class MentionCreateSheetState(
-    val name: String,
-    val type: EntityKind,
-    val kinds: List<EntityKind>,
-    // how many notes carry the "?" tag this record is made for, null when the name comes from the draft
-    val linkedNotes: Int?,
-) {
-    val canCreate: Boolean get() = name.isNotBlank()
 }
 
 sealed interface SessionDetailEvent : CircuitUiEvent {
