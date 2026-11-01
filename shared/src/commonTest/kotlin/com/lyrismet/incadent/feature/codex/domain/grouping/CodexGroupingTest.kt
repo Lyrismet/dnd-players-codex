@@ -41,6 +41,11 @@ class CodexGroupingTest {
     private val barn = location(7, "Амбар", parentId = 4)
     private val places = listOf(north, castle, tavern, hall, south, mill, barn)
 
+    // the same places under one plane - the plane is the top level, so north and south are the regions
+    private val planed =
+        listOf(location(8, "Материальный план"), north.copy(parentId = 8), castle, tavern, hall) +
+            listOf(south.copy(parentId = 8), mill, barn)
+
     @Test
     fun `npcs group by the region of their place with the no-place group last`() {
         val npcs =
@@ -51,7 +56,7 @@ class CodexGroupingTest {
                 npc(4, "Глеб", NpcStatus.FRIEND, NpcLifeState.DEAD, locationIds = listOf(castle.id)),
             )
 
-        val groups = groupNpcs(npcs, places, NpcGroupBy.REGION, labels)
+        val groups = groupNpcs(npcs, planed, NpcGroupBy.REGION, labels)
 
         assertEquals(listOf("СЕВЕР", "ЮГ", "МЕСТО НЕ УКАЗАНО"), groups.map { it.title })
         assertEquals(listOf("Анна", "Глеб"), groups[0].items.map { it.entity.name })
@@ -125,7 +130,7 @@ class CodexGroupingTest {
                 quest(4, "Амулет", QuestStatus.ACTIVE, locationId = castle.id),
             )
 
-        val groups = groupQuests(quests, listOf(giver), places, QuestGroupBy.REGION, labels)
+        val groups = groupQuests(quests, listOf(giver), planed, QuestGroupBy.REGION, labels)
 
         assertEquals(listOf("СЕВЕР", "ЮГ", "БЕЗ РЕГИОНА"), groups.map { it.title })
         assertEquals(listOf("Амулет", "Ключ"), groups[0].items.map { it.title })
@@ -214,7 +219,7 @@ class CodexGroupingTest {
     fun `an npc met in two regions shows up under both`() {
         val roamer = npc(1, "Анна", locationIds = listOf(castle.id, mill.id))
 
-        val groups = groupNpcs(listOf(roamer), places, NpcGroupBy.REGION, labels)
+        val groups = groupNpcs(listOf(roamer), planed, NpcGroupBy.REGION, labels)
 
         assertEquals(listOf("СЕВЕР", "ЮГ"), groups.map { it.title })
         assertEquals("Замок, Мельница", groups[0].items.single().subtitle)

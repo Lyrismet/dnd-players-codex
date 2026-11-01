@@ -51,10 +51,13 @@ class PlaceTree(
     /** the places directly inside [id] */
     fun childrenOf(id: Long): List<Location> = childrenOf[id].orEmpty()
 
-    // the places down from the roots while each level holds exactly one place - wrappers such as a shared "world"
+    // the places just below the roots - the top level itself (a plane, a world) holds too much to be a region
+    private val belowRoots: List<Location> by lazy { roots.flatMap { childrenOf(it.id) } }
+
+    // the places down from [belowRoots] while each level holds exactly one place - wrappers such as a "continent"
     private val wrapperChain: List<Location> by lazy {
         val chain = ArrayList<Location>()
-        var level = roots
+        var level = belowRoots
         while (level.size == 1 && chain.size < MAX_PATH_DEPTH) {
             val only = level.single()
             chain += only
@@ -63,22 +66,22 @@ class PlaceTree(
         chain
     }
 
-    // the places a list is split into: the first level that holds several places, or the one wrapper if nothing does
+    // the places a list is split into: the first level below the roots that holds several places, or the one wrapper
     private val sections: List<Location> by lazy {
         val last = wrapperChain.lastOrNull()
-        if (last == null) roots else childrenOf(last.id).ifEmpty { listOf(last) }
+        if (last == null) belowRoots else childrenOf(last.id).ifEmpty { listOf(last) }
     }
 
     /**
-     * the place a list section is titled with. Going down from the top, a place that holds exactly one place is only
-     * a wrapper and is passed; the places where it first branches are the sections - so a shared "plane" with
-     * several countries sections by country, and several top level places are sections themselves. A wrapper or
+     * the place a list section is titled with, null for a top level place and for a place with nothing below its
+     * root - the top level (a plane, a world) is never a region. Going down from there, a place that holds exactly
+     * one place is only a wrapper and is passed; the places where it first branches are the sections. A wrapper or
      * the branching place itself is listed under the section that sits right below it.
      */
-    fun regionOf(place: Location): Location {
+    fun regionOf(place: Location): Location? {
         val path = pathOf(place)
-        val own = sections.firstOrNull { section -> path.any { it.id == section.id } }
-        return own ?: wrapperChain.lastOrNull() ?: path.first()
+        if (path.size < 2) return null
+        return sections.firstOrNull { section -> path.any { it.id == section.id } } ?: wrapperChain.lastOrNull()
     }
 
     /** true when [place] is [ancestorId] itself or somewhere inside it, at any depth */
