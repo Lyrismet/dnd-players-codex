@@ -4,17 +4,23 @@ import com.lyrismet.incadent.core.file.FileOrigin
 import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.core.portrait.jpegDimensions
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.db.Session_entry
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.data.insertLive
+import com.lyrismet.incadent.feature.campaign.domain.exchange.RecordMatch
 import com.lyrismet.incadent.feature.campaign.domain.exchange.nameKey
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
+import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
+import com.lyrismet.incadent.feature.campaign.domain.model.FieldChange
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportError
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportFailedException
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportRequest
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportResult
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportTarget
+import com.lyrismet.incadent.feature.campaign.domain.model.RecordField
+import com.lyrismet.incadent.feature.campaign.domain.model.Resolution
 import com.lyrismet.incadent.feature.mention.domain.remapMentionTokens
 import com.lyrismet.incadent.persistence.creatureTypeIdIn
 import kotlin.io.encoding.Base64
@@ -60,8 +66,12 @@ internal class CampaignImporter(
         request: ImportRequest,
     ): ImportResult {
         val campaignId = targetCampaign(request.target, reader.header)
-        val session = ImportSession(campaignId, request, reader.header.withPhotos)
+        // only an import into a campaign that was there before can be taken back
+        val journal = ImportJournal(enabled = request.target is ImportTarget.Existing)
+        val session = ImportSession(campaignId, request, reader.header, journal)
         while (true) session.accept(reader.nextRecord() ?: break)
+        session.finish()
+        journal.write(database, campaignId)
         return ImportResult(campaignId, session.records, session.sessions, session.partyAdded)
     }
 
@@ -80,15 +90,34 @@ internal class CampaignImporter(
             }
         }
 
+    // what to do with a record of the file once it is held up against the campaign
+    private sealed interface Outcome {
+        data class Use(
+            val id: Long,
+        ) : Outcome
+
+        data object Insert : Outcome
+
+        data object Skip : Outcome
+    }
+
+    @Suppress("LargeClass", "TooManyFunctions")
     private inner class ImportSession(
         private val campaignId: String,
         private val request: ImportRequest,
-        private val fileHasPhotos: Boolean,
+        private val header: FileHeader,
+        private val journal: ImportJournal,
     ) {
         private val scope = request.scope
+        private val fileHasPhotos = header.withPhotos
         var records = 0
         var sessions = 0
         var partyAdded = 0
+
+        // a friend copy carries no vitals, a personal copy of someone else brings them only when asked
+        private val vitals = header.mode == ExportMode.FRIEND || request.takeVitals
+        private val notes = (header.mode == ExportMode.FRIEND && header.partyNotes) || request.takeVitals
+        private val takeLabel = header.mode == ExportMode.SELF && request.takeAsMine
 
         private val speciesMap = mutableMapOf<Long, Long>()
         private val placeMap = mutableMapOf<Long, Long>()
@@ -105,30 +134,31 @@ internal class CampaignImporter(
                 EntityKind.SPECIES to speciesMap,
             )
 
-        private val fights = FightImport(database, campaignId, sessionMap, speciesMap, npcMap, partyMap)
+        private val copies = request.conflicts == ConflictMode.COPY
+        private val fights =
+            FightImport(database, campaignId, sessionMap, speciesMap, npcMap, partyMap, journal, dedupe = !copies)
 
         // only records written by this import take a photo, a matched one keeps what it has
         private val fresh = mutableSetOf<Pair<PhotoOwner, Long>>()
 
-        private val copies = request.conflicts == ConflictMode.COPY
-        private val existingSpecies = database.speciesQueries.selectAll(campaignId).executeAsList()
+        private val locals = CampaignLocals(database, campaignId)
+        private val existingSpecies = locals.species
+        private val existingSpeciesById = existingSpecies.associateBy { it.id }
         private val speciesByName = namesOf(existingSpecies.map { it.name to it.id })
-        private val existingPlaces = database.locationQueries.selectAll(campaignId).executeAsList()
+        private val existingPlaces = locals.places
         private val existingPlacesById = existingPlaces.associateBy { it.id }
         private val placeParents = existingPlaces.associate { it.id to it.parent_id }.toMutableMap()
         private val placesByName = namesOf(existingPlaces.map { it.name to it.id })
-        private val existingNpcs = database.npcQueries.selectAll(campaignId).executeAsList()
+        private val existingNpcs = locals.npcs
         private val existingNpcsById = existingNpcs.associateBy { it.id }
         private val npcsByName = namesOf(existingNpcs.map { it.name to it.id })
-        private val existingQuests = database.questQueries.selectAll(campaignId).executeAsList()
+        private val existingQuests = locals.quests
         private val existingQuestsById = existingQuests.associateBy { it.id }
         private val questsByName = namesOf(existingQuests.map { it.title to it.id })
-        private val existingParty = database.partyMemberQueries.selectAll(campaignId).executeAsList()
+        private val existingParty = locals.party
         private val existingPartyById = existingParty.associateBy { it.id }
         private val partyByName = namesOf(existingParty.map { it.name to it.id })
-        private var playerTaken = existingParty.any { it.is_player_character }
-        private val existingSessions = database.sessionNoteQueries.selectAll(campaignId).executeAsList()
-        private var liveTaken = existingSessions.any { it.ended_at == null }
+        private var liveTaken = locals.sessions.any { it.ended_at == null }
 
         // a file's origin id is kept for a row the import adds unless the campaign already holds it
         private val origins =
@@ -138,11 +168,15 @@ internal class CampaignImporter(
                 ExchangeKind.NPC to OriginSet(existingNpcs.map { it.origin_id }),
                 ExchangeKind.QUEST to OriginSet(existingQuests.map { it.origin_id }),
                 ExchangeKind.PARTY to OriginSet(existingParty.map { it.origin_id }),
-                ExchangeKind.SESSION to OriginSet(existingSessions.map { it.origin_id }),
+                ExchangeKind.SESSION to OriginSet(locals.sessions.map { it.origin_id }),
             )
 
-        // entry ids only have to differ inside one session, and an imported session starts empty
+        // entry ids only have to differ inside one session
         private val entryOrigins = mutableMapOf<Long, OriginSet>()
+
+        // the sessions of the file that went into a session already there, their notes are merged
+        private val mergedSessions = mutableSetOf<Long>()
+        private val overwritten = mutableSetOf<Pair<PhotoOwner, Long>>()
 
         fun accept(record: FileRecord) {
             if (!isWanted(record)) return
@@ -177,54 +211,204 @@ internal class CampaignImporter(
                 is FightRecord -> fights.isWanted(record, scope)
             }
 
-        // a matched record is kept or overwritten, the file's own id then points at the one that was used
-        private fun matched(
+        // one record of the file that may be one already there: how to tell, and how to write it over
+        @Suppress("LongParameterList")
+        private inner class Candidate(
+            val kind: ExchangeKind,
+            val fileId: Long,
+            val originId: String?,
+            val name: String,
+            val owner: PhotoOwner?,
+            val diff: (Long) -> List<FieldChange>,
+            val overwrite: (Long, FieldPick) -> Unit,
+        )
+
+        // the file's own id then points at the record that was used, kept as it is or overwritten
+        private fun decide(c: Candidate): Outcome {
+            if (copies) return Outcome.Insert
+            val ref = ExchangeRef(c.kind, c.fileId)
+            return when (val found = locals.match(c.kind, c.originId, c.name)) {
+                is RecordMatch.ByOrigin -> use(c, ref, found.id)
+                is RecordMatch.ByName ->
+                    if (request.mergeNameTwins) {
+                        alias(c.kind, c.originId, found.id)
+                        use(c, ref, found.id)
+                    } else {
+                        Outcome.Insert
+                    }
+                is RecordMatch.Similar ->
+                    when (request.resolutions[ref]) {
+                        Resolution.SAME -> {
+                            alias(c.kind, c.originId, found.id)
+                            use(c, ref, found.id)
+                        }
+                        Resolution.APART -> apart(c.kind, c.originId, found.id)
+                        else -> Outcome.Skip
+                    }
+                RecordMatch.None ->
+                    if (locals.isDeleted(c.kind, c.originId) &&
+                        ref !in request.restore
+                    ) {
+                        Outcome.Skip
+                    } else {
+                        Outcome.Insert
+                    }
+            }
+        }
+
+        // only what the person took is written, and the state before it goes to the journal
+        private fun use(
+            c: Candidate,
             ref: ExchangeRef,
-            owner: PhotoOwner?,
-            byName: Map<String, Long>,
-            name: String,
-            overwrite: (Long) -> Unit,
-        ): Long? {
-            val existing = byName[name.nameKey()]?.takeIf { !copies } ?: return null
-            if (ref in request.replace) {
-                overwrite(existing)
+            id: Long,
+        ): Outcome {
+            val pick = FieldPick(request.fields[ref].orEmpty(), ref in request.replace, request.fromFileLabel)
+            if (c.diff(id).any(pick::takes)) {
+                journal.changed(c.kind.name, id, before(c.kind, id))
+                c.overwrite(id, pick)
                 records++
                 // the photo of the file replaces the one there, a file without one leaves it alone
-                owner?.let { fresh += it to ref.id }
+                c.owner?.let {
+                    fresh += it to ref.id
+                    overwritten += it to ref.id
+                }
             }
-            return existing
+            return Outcome.Use(id)
+        }
+
+        private fun apart(
+            kind: ExchangeKind,
+            fileOrigin: String?,
+            localId: Long,
+        ): Outcome {
+            val local = locals.originOf(kind, localId)
+            if (!fileOrigin.isNullOrBlank() && local != null) {
+                database.keptApartQueries.insert(campaignId, kind, fileOrigin, local)
+            }
+            return Outcome.Insert
+        }
+
+        // the next file from the same player carries the old id, which now means the record it was merged into
+        private fun alias(
+            kind: ExchangeKind,
+            fileOrigin: String?,
+            localId: Long,
+        ) {
+            val local = locals.originOf(kind, localId)
+            if (fileOrigin.isNullOrBlank() || local == null || fileOrigin == local) return
+            database.originAliasQueries.repoint(local, campaignId, kind, fileOrigin)
+            database.originAliasQueries.insert(campaignId, kind, fileOrigin, local)
+            journal.alias(kind.name, fileOrigin)
         }
 
         // counts a record the import wrote, only those take a photo from the file
+        @Suppress("LongParameterList")
         private fun inserted(
+            kind: ExchangeKind,
+            text: String,
             owner: PhotoOwner?,
             fileId: Long,
             id: Long,
+            originId: String,
         ): Long {
             records++
             owner?.let { fresh += it to fileId }
+            val brought = ExchangeRef(kind, fileId) in request.restore
+            journal.added(kind.name, id, originId, brought)
+            later(kind, id, text)
             return id
         }
 
         private fun nameForInsert(
             byName: Map<String, Long>,
             name: String,
-        ): String = if (copies && name.nameKey() in byName) name + COPY_SUFFIX else name
+        ): String = if ((copies || !request.mergeNameTwins) && name.nameKey() in byName) name + COPY_SUFFIX else name
+
+        @Suppress("LongMethod")
+        private fun before(
+            kind: ExchangeKind,
+            id: Long,
+        ): FileRecord =
+            when (kind) {
+                ExchangeKind.SPECIES ->
+                    existingSpeciesById.getValue(id).let {
+                        FileRecord.Species(
+                            id,
+                            it.name,
+                            it.creature_type,
+                            it.vulnerabilities,
+                            it.notes,
+                            it.hit_points?.toInt(),
+                            customType = it.custom_type_name,
+                        )
+                    }
+                ExchangeKind.PLACE ->
+                    existingPlacesById.getValue(id).let { FileRecord.Place(id, it.name, it.description, it.parent_id) }
+                ExchangeKind.NPC ->
+                    existingNpcsById.getValue(id).let {
+                        FileRecord.Npc(
+                            id,
+                            it.name,
+                            it.status,
+                            it.description,
+                            it.race,
+                            it.life_state,
+                            it.nicknames,
+                            it.species_id,
+                            it.vulnerabilities,
+                            it.location_ids.toIdList(),
+                        )
+                    }
+                ExchangeKind.QUEST ->
+                    existingQuestsById.getValue(id).let {
+                        FileRecord.Quest(
+                            id,
+                            it.title,
+                            it.status,
+                            it.reward,
+                            it.given_by_npc_id,
+                            it.location_id,
+                            it.description,
+                        )
+                    }
+                ExchangeKind.PARTY ->
+                    existingPartyById.getValue(id).let {
+                        FileRecord.Party(
+                            id,
+                            it.name,
+                            it.character_class,
+                            it.race,
+                            it.level?.toInt(),
+                            it.player_name,
+                            it.is_player_character,
+                            it.presence,
+                            it.hp_max?.toInt(),
+                            it.hp_current?.toInt(),
+                            it.description,
+                            it.fallen,
+                        )
+                    }
+                ExchangeKind.SESSION -> error("a session is never overwritten")
+            }
 
         private fun addSpecies(record: FileRecord.Species) {
-            speciesMap[record.id] =
-                matched(ExchangeRef(ExchangeKind.SPECIES, record.id), PhotoOwner.SPECIES, speciesByName, record.name) {
-                    database.speciesQueries.updateImported(
+            val outcome =
+                decide(
+                    Candidate(
+                        ExchangeKind.SPECIES,
+                        record.id,
+                        record.originId,
                         record.name,
-                        record.creatureType,
-                        database.creatureTypeIdIn(campaignId, record.customType),
-                        record.vulnerabilities,
-                        record.notes,
-                        record.hitPoints?.toLong(),
-                        it,
-                    )
-                } ?: run {
+                        PhotoOwner.SPECIES,
+                        { diffSpecies(record, existingSpeciesById.getValue(it)) },
+                    ) { id, pick -> overwriteSpecies(id, record, pick) },
+                )
+            when (outcome) {
+                is Outcome.Use -> speciesMap[record.id] = outcome.id
+                Outcome.Skip -> Unit
+                Outcome.Insert -> {
                     val queries = database.speciesQueries
+                    val origin = origins.getValue(ExchangeKind.SPECIES).claim(record.originId)
                     queries.insert(
                         nameForInsert(speciesByName, record.name),
                         record.creatureType,
@@ -234,20 +418,41 @@ internal class CampaignImporter(
                         null,
                         null,
                         campaignId,
-                        origins.getValue(ExchangeKind.SPECIES).claim(record.originId),
+                        origin,
                         database.creatureTypeIdIn(campaignId, record.customType),
                     )
-                    inserted(PhotoOwner.SPECIES, record.id, queries.lastInsertRowId().executeAsOne())
+                    speciesMap[record.id] =
+                        inserted(
+                            ExchangeKind.SPECIES,
+                            record.notes,
+                            PhotoOwner.SPECIES,
+                            record.id,
+                            queries.lastInsertRowId().executeAsOne(),
+                            origin,
+                        )
                 }
+            }
         }
 
         private fun addPlace(record: FileRecord.Place) {
-            placeMap[record.id] =
-                matched(ExchangeRef(ExchangeKind.PLACE, record.id), PhotoOwner.PLACE, placesByName, record.name) {
-                    overwritePlace(it, record)
-                } ?: run {
+            val outcome =
+                decide(
+                    Candidate(
+                        ExchangeKind.PLACE,
+                        record.id,
+                        record.originId,
+                        record.name,
+                        PhotoOwner.PLACE,
+                        { diffPlace(record, existingPlacesById.getValue(it)) },
+                    ) { id, pick -> overwritePlace(id, record, pick) },
+                )
+            when (outcome) {
+                is Outcome.Use -> placeMap[record.id] = outcome.id
+                Outcome.Skip -> Unit
+                Outcome.Insert -> {
                     val queries = database.locationQueries
                     val parent = record.parentId?.let(placeMap::get)
+                    val origin = origins.getValue(ExchangeKind.PLACE).claim(record.originId)
                     queries.insert(
                         nameForInsert(placesByName, record.name),
                         record.description,
@@ -255,20 +460,39 @@ internal class CampaignImporter(
                         null,
                         null,
                         campaignId,
-                        origins.getValue(ExchangeKind.PLACE).claim(record.originId),
+                        origin,
                     )
-                    inserted(PhotoOwner.PLACE, record.id, queries.lastInsertRowId().executeAsOne()).also {
-                        placeParents[it] = parent
-                    }
+                    placeMap[record.id] =
+                        inserted(
+                            ExchangeKind.PLACE,
+                            record.description,
+                            PhotoOwner.PLACE,
+                            record.id,
+                            queries.lastInsertRowId().executeAsOne(),
+                            origin,
+                        ).also { placeParents[it] = parent }
                 }
+            }
         }
 
         private fun addNpc(record: FileRecord.Npc) {
-            npcMap[record.id] =
-                matched(ExchangeRef(ExchangeKind.NPC, record.id), PhotoOwner.NPC, npcsByName, record.name) {
-                    overwriteNpc(it, record)
-                } ?: run {
+            val outcome =
+                decide(
+                    Candidate(
+                        ExchangeKind.NPC,
+                        record.id,
+                        record.originId,
+                        record.name,
+                        PhotoOwner.NPC,
+                        { diffNpc(record, existingNpcsById.getValue(it)) },
+                    ) { id, pick -> overwriteNpc(id, record, pick) },
+                )
+            when (outcome) {
+                is Outcome.Use -> npcMap[record.id] = outcome.id
+                Outcome.Skip -> Unit
+                Outcome.Insert -> {
                     val queries = database.npcQueries
+                    val origin = origins.getValue(ExchangeKind.NPC).claim(record.originId)
                     queries.insert(
                         nameForInsert(npcsByName, record.name),
                         record.status,
@@ -281,20 +505,41 @@ internal class CampaignImporter(
                         null,
                         null,
                         campaignId,
-                        origins.getValue(ExchangeKind.NPC).claim(record.originId),
+                        origin,
                     )
                     val id = queries.lastInsertRowId().executeAsOne()
                     record.placeIds.mapNotNull(placeMap::get).forEach { database.npcLocationQueries.insert(id, it) }
-                    inserted(PhotoOwner.NPC, record.id, id)
+                    npcMap[record.id] =
+                        inserted(
+                            ExchangeKind.NPC,
+                            record.description,
+                            PhotoOwner.NPC,
+                            record.id,
+                            id,
+                            origin,
+                        )
                 }
+            }
         }
 
         private fun addQuest(record: FileRecord.Quest) {
-            questMap[record.id] =
-                matched(ExchangeRef(ExchangeKind.QUEST, record.id), null, questsByName, record.title) {
-                    overwriteQuest(it, record)
-                } ?: run {
+            val outcome =
+                decide(
+                    Candidate(
+                        ExchangeKind.QUEST,
+                        record.id,
+                        record.originId,
+                        record.title,
+                        null,
+                        { diffQuest(record, existingQuestsById.getValue(it)) },
+                    ) { id, pick -> overwriteQuest(id, record, pick) },
+                )
+            when (outcome) {
+                is Outcome.Use -> questMap[record.id] = outcome.id
+                Outcome.Skip -> Unit
+                Outcome.Insert -> {
                     val queries = database.questQueries
+                    val origin = origins.getValue(ExchangeKind.QUEST).claim(record.originId)
                     queries.insert(
                         nameForInsert(questsByName, record.title),
                         record.status,
@@ -303,52 +548,142 @@ internal class CampaignImporter(
                         record.placeId?.let(placeMap::get),
                         record.description,
                         campaignId,
-                        origins.getValue(ExchangeKind.QUEST).claim(record.originId),
+                        origin,
                     )
-                    inserted(null, record.id, queries.lastInsertRowId().executeAsOne())
+                    questMap[record.id] =
+                        inserted(
+                            ExchangeKind.QUEST,
+                            record.description,
+                            null,
+                            record.id,
+                            queries.lastInsertRowId().executeAsOne(),
+                            origin,
+                        )
                 }
+            }
         }
 
         private fun addParty(record: FileRecord.Party) {
-            partyMap[record.id] =
-                matched(ExchangeRef(ExchangeKind.PARTY, record.id), PhotoOwner.PARTY, partyByName, record.name) {
-                    overwriteParty(it, record)
-                } ?: run {
-                    val queries = database.partyMemberQueries
-                    val isPlayer = record.isPlayerCharacter && !playerTaken
-                    playerTaken = playerTaken || isPlayer
-                    queries.insert(
-                        nameForInsert(partyByName, record.name),
-                        record.characterClass,
-                        record.race,
-                        record.level?.toLong(),
-                        if (isPlayer) record.playerName else "",
-                        isPlayer,
-                        record.presence,
-                        record.hpMax?.toLong(),
-                        record.hpCurrent?.toLong(),
-                        record.description,
-                        null,
-                        null,
-                        campaignId,
-                        origins.getValue(ExchangeKind.PARTY).claim(record.originId),
-                    )
-                    partyAdded++
-                    val id = queries.lastInsertRowId().executeAsOne()
-                    // the fight that felled them is not in the file's party record, so only the fact is kept
-                    if (record.fallen) queries.setFallen(true, null, id)
-                    inserted(PhotoOwner.PARTY, record.id, id)
+            val outcome =
+                decide(
+                    Candidate(
+                        ExchangeKind.PARTY,
+                        record.id,
+                        record.originId,
+                        record.name,
+                        PhotoOwner.PARTY,
+                        { diffParty(record, existingPartyById.getValue(it), header.partyNotes) },
+                    ) { id, pick -> overwriteParty(id, record, pick) },
+                )
+            when (outcome) {
+                is Outcome.Use -> {
+                    partyMap[record.id] = outcome.id
+                    if (takeLabel && record.isPlayerCharacter) {
+                        journal.changed(ExchangeKind.PARTY.name, outcome.id, before(ExchangeKind.PARTY, outcome.id))
+                        markAsMine(outcome.id, record.playerName)
+                    }
                 }
+                Outcome.Skip -> Unit
+                Outcome.Insert -> insertParty(record)
+            }
+        }
+
+        private fun insertParty(record: FileRecord.Party) {
+            val queries = database.partyMemberQueries
+            val origin = origins.getValue(ExchangeKind.PARTY).claim(record.originId)
+            queries.insert(
+                nameForInsert(partyByName, record.name),
+                record.characterClass,
+                record.race,
+                record.level?.toLong(),
+                record.playerName,
+                false,
+                record.presence,
+                record.hpMax?.toLong()?.takeIf { vitals },
+                record.hpCurrent?.toLong()?.takeIf { vitals },
+                record.description.takeIf { notes }.orEmpty(),
+                null,
+                null,
+                campaignId,
+                origin,
+            )
+            partyAdded++
+            val id = queries.lastInsertRowId().executeAsOne()
+            // the fight that felled them is not in the file's party record, so only the fact is kept
+            if (record.fallen) queries.setFallen(true, null, id)
+            partyMap[record.id] =
+                inserted(
+                    ExchangeKind.PARTY,
+                    record.description.takeIf { notes }.orEmpty(),
+                    PhotoOwner.PARTY,
+                    record.id,
+                    id,
+                    origin,
+                )
+            if (takeLabel && record.isPlayerCharacter) markAsMine(id, record.playerName)
+        }
+
+        // the mark "я" is one per campaign, the one it leaves is put back when the import is taken back
+        private fun markAsMine(
+            id: Long,
+            playerName: String,
+        ) {
+            val queries = database.partyMemberQueries
+            val previous = existingParty.firstOrNull { it.is_player_character && it.id != id }?.id ?: 0L
+            queries.clearOtherPlayerCharacters(id, campaignId)
+            val row = queries.selectById(id).executeAsOne()
+            queries.update(
+                row.name,
+                row.character_class,
+                row.race,
+                row.level,
+                playerName.ifBlank { row.player_name },
+                true,
+                row.presence,
+                row.hp_max,
+                row.hp_current,
+                row.description,
+                id,
+            )
+            if (previous != 0L) journal.label(previous)
+        }
+
+        private fun overwriteSpecies(
+            id: Long,
+            record: FileRecord.Species,
+            pick: FieldPick,
+        ) {
+            val current = existingSpeciesById.getValue(id)
+            val takeType = !pick.value(RecordField.CREATURE_TYPE, false, true)
+            database.speciesQueries.updateImported(
+                pick.text(RecordField.NAME, current.name, record.name),
+                if (takeType) current.creature_type else record.creatureType,
+                if (takeType) current.custom_type_id else database.creatureTypeIdIn(campaignId, record.customType),
+                pick.text(RecordField.VULNERABILITIES, current.vulnerabilities, record.vulnerabilities),
+                pick.text(RecordField.NOTES, current.notes, record.notes).also {
+                    took(ExchangeKind.SPECIES, id, current.notes, it, record.notes)
+                },
+                pick.number(RecordField.HIT_POINTS, current.hit_points?.toInt(), record.hitPoints)?.toLong(),
+                id,
+            )
         }
 
         private fun overwritePlace(
             id: Long,
             record: FileRecord.Place,
+            pick: FieldPick,
         ) {
             val current = existingPlacesById.getValue(id)
             // a parent that would loop the places is not followed
             val parent = link(record.parentId, placeMap, current.parent_id)?.takeIf { !insideOf(it, id) }
-            database.locationQueries.update(record.name, record.description, parent, id)
+            database.locationQueries.update(
+                pick.text(RecordField.NAME, current.name, record.name),
+                pick.text(RecordField.DESCRIPTION, current.description, record.description).also {
+                    took(ExchangeKind.PLACE, id, current.description, it, record.description)
+                },
+                parent,
+                id,
+            )
             placeParents[id] = parent
         }
 
@@ -368,17 +703,20 @@ internal class CampaignImporter(
         private fun overwriteNpc(
             id: Long,
             record: FileRecord.Npc,
+            pick: FieldPick,
         ) {
             val current = existingNpcsById.getValue(id)
             database.npcQueries.update(
-                record.name,
-                record.status,
-                record.description,
-                record.race,
-                record.lifeState,
-                record.nicknames,
+                pick.text(RecordField.NAME, current.name, record.name),
+                pick.value(RecordField.STATUS, current.status, record.status),
+                pick.text(RecordField.DESCRIPTION, current.description, record.description).also {
+                    took(ExchangeKind.NPC, id, current.description, it, record.description)
+                },
+                pick.text(RecordField.RACE, current.race, record.race),
+                pick.value(RecordField.LIFE_STATE, current.life_state, record.lifeState),
+                pick.text(RecordField.NICKNAMES, current.nicknames, record.nicknames),
                 link(record.speciesId, speciesMap, current.species_id),
-                record.vulnerabilities,
+                pick.text(RecordField.VULNERABILITIES, current.vulnerabilities, record.vulnerabilities),
                 id,
             )
             val places = record.placeIds.mapNotNull(placeMap::get)
@@ -391,65 +729,179 @@ internal class CampaignImporter(
         private fun overwriteQuest(
             id: Long,
             record: FileRecord.Quest,
+            pick: FieldPick,
         ) {
             val current = existingQuestsById.getValue(id)
             database.questQueries.update(
-                record.title,
-                record.status,
-                record.reward,
+                pick.text(RecordField.NAME, current.title, record.title),
+                pick.value(RecordField.STATUS, current.status, record.status),
+                pick.text(RecordField.REWARD, current.reward, record.reward),
                 link(record.giverNpcId, npcMap, current.given_by_npc_id),
                 link(record.placeId, placeMap, current.location_id),
-                record.description,
+                pick.text(RecordField.DESCRIPTION, current.description, record.description).also {
+                    took(ExchangeKind.QUEST, id, current.description, it, record.description)
+                },
                 id,
             )
         }
 
-        // who plays the character and whether they are in the scene stay as the campaign has them
+        // who plays, the mark and the scene stay as the campaign has them, and so does what the file lacks
         private fun overwriteParty(
             id: Long,
             record: FileRecord.Party,
+            pick: FieldPick,
         ) {
             val current = existingPartyById.getValue(id)
             database.partyMemberQueries.update(
-                record.name,
-                record.characterClass,
-                record.race,
-                record.level?.toLong(),
+                pick.text(RecordField.NAME, current.name, record.name),
+                pick.text(RecordField.CHARACTER_CLASS, current.character_class, record.characterClass),
+                pick.text(RecordField.RACE, current.race, record.race),
+                pick.number(RecordField.LEVEL, current.level?.toInt(), record.level)?.toLong(),
                 current.player_name,
                 current.is_player_character,
                 current.presence,
-                record.hpMax?.toLong(),
-                record.hpCurrent?.toLong(),
-                record.description,
+                (record.hpMax?.toLong()).takeIf { vitals } ?: current.hp_max,
+                (record.hpCurrent?.toLong()).takeIf { vitals } ?: current.hp_current,
+                if (notes) {
+                    pick.text(RecordField.DESCRIPTION, current.description, record.description).also {
+                        took(ExchangeKind.PARTY, id, current.description, it, record.description)
+                    }
+                } else {
+                    current.description
+                },
                 id,
             )
         }
 
-        private val tagIds = mutableMapOf<String, Long>()
+        // sqlite NOCASE only folds ascii, so tags are matched in kotlin like TagRepositoryImpl does
+        // a text of the file carries mentions by the file's numbers, they move to the new ids once every record is in
+        private inner class PendingText(
+            val kind: ExchangeKind,
+            val id: Long,
+            val raw: String,
+        )
 
-        private fun tagId(name: String): Long? =
-            tagIds[name] ?: run {
-                database.tagQueries.insert(name, campaignId)
-                database.tagQueries
-                    .selectIdByName(name, campaignId)
-                    .executeAsOneOrNull()
-                    ?.also { tagIds[name] = it }
+        private val pendingTexts = mutableListOf<PendingText>()
+
+        private fun later(
+            kind: ExchangeKind,
+            id: Long,
+            raw: String,
+        ) {
+            if (raw.contains("@[")) pendingTexts += PendingText(kind, id, raw)
+        }
+
+        // a text that now holds the file's words is one whose mentions are still the file's
+        private fun took(
+            kind: ExchangeKind,
+            id: Long,
+            before: String,
+            after: String,
+            raw: String,
+        ) {
+            if (after != before) later(kind, id, raw)
+        }
+
+        fun finish() = pendingTexts.forEach(::pointMentions)
+
+        // only the part that came from the file is moved, what was there before keeps its own ids
+        private fun pointMentions(text: PendingText) {
+            val fixed = remapMentionTokens(text.raw) { mapByKind[it.type]?.get(it.id) }
+            val current = readText(text)
+            val at = current.lastIndexOf(text.raw)
+            if (fixed != text.raw && at >= 0) writeText(text, current.replaceRange(at, at + text.raw.length, fixed))
+        }
+
+        private fun readText(text: PendingText): String =
+            when (text.kind) {
+                ExchangeKind.SPECIES -> database.speciesQueries.selectNotes(text.id).executeAsOne()
+                ExchangeKind.PLACE -> database.locationQueries.selectDescription(text.id).executeAsOne()
+                ExchangeKind.NPC -> database.npcQueries.selectDescription(text.id).executeAsOne()
+                ExchangeKind.QUEST -> database.questQueries.selectDescription(text.id).executeAsOne()
+                ExchangeKind.PARTY -> database.partyMemberQueries.selectDescription(text.id).executeAsOne()
+                ExchangeKind.SESSION -> ""
             }
 
+        private fun writeText(
+            text: PendingText,
+            value: String,
+        ) {
+            when (text.kind) {
+                ExchangeKind.SPECIES -> database.speciesQueries.setNotes(value, text.id)
+                ExchangeKind.PLACE -> database.locationQueries.setDescription(value, text.id)
+                ExchangeKind.NPC -> database.npcQueries.setDescription(value, text.id)
+                ExchangeKind.QUEST -> database.questQueries.setDescription(value, text.id)
+                ExchangeKind.PARTY -> database.partyMemberQueries.setDescription(value, text.id)
+                ExchangeKind.SESSION -> Unit
+            }
+        }
+
+        private val tagIds: MutableMap<String, Long> by lazy {
+            database.tagQueries
+                .selectAll(campaignId)
+                .executeAsList()
+                .associateTo(mutableMapOf()) { it.name.lowercase() to it.id }
+        }
+
+        private fun tagId(name: String): Long? {
+            val key = name.lowercase()
+            tagIds[key]?.let { return it }
+            database.tagQueries.insert(name, campaignId)
+            val created =
+                database.tagQueries
+                    .selectAll(campaignId)
+                    .executeAsList()
+                    .firstOrNull { it.name.equals(name, ignoreCase = true) }
+                    ?.id
+            return created?.also { tagIds[key] = it }
+        }
+
         private fun addSession(record: FileRecord.Session) {
+            val ref = ExchangeRef(ExchangeKind.SESSION, record.id)
+            val day = record.date.date
+            val twin = locals.sessionTwin(record.originId, record.title, day)
+            when {
+                twin == null &&
+                    locals.isDeleted(
+                        ExchangeKind.SESSION,
+                        record.originId,
+                    ) &&
+                    ref !in request.restore -> Unit
+                twin == null || copies -> insertSession(record, record.title, ref in request.restore)
+                record.id in request.separateSessions ->
+                    insertSession(
+                        record,
+                        listOf(record.title, request.fromFileLabel).filter { it.isNotBlank() }.joinToString(" · "),
+                        false,
+                    )
+                else -> {
+                    sessionMap[record.id] = twin.id
+                    mergedSessions += record.id
+                    alias(ExchangeKind.SESSION, record.originId, twin.id)
+                }
+            }
+        }
+
+        private fun insertSession(
+            record: FileRecord.Session,
+            title: String,
+            brought: Boolean,
+        ) {
             // the open session of the campaign stays the only one
             val endedAt = record.endedAt ?: record.date.takeIf { liveTaken }
             liveTaken = liveTaken || endedAt == null
+            val origin = origins.getValue(ExchangeKind.SESSION).claim(record.originId)
             database.sessionNoteQueries.insert(
-                record.title,
+                title,
                 record.date,
                 endedAt,
                 record.createdAt,
                 campaignId,
-                origins.getValue(ExchangeKind.SESSION).claim(record.originId),
+                origin,
             )
             val id = database.sessionNoteQueries.lastInsertRowId().executeAsOne()
             sessionMap[record.id] = id
+            journal.added(ExchangeKind.SESSION.name, id, origin, brought)
             record.tags.distinct().forEach { name ->
                 tagId(name)?.let { database.sessionTagQueries.insert(id, it) }
             }
@@ -458,11 +910,19 @@ internal class CampaignImporter(
 
         private fun addEntry(record: FileRecord.Entry) {
             val sessionId = sessionMap[record.sessionId] ?: return
+            val merged = record.sessionId in mergedSessions
+            val held = if (merged) locals.entries[sessionId].orEmpty() else emptyList()
+            if (alreadyHeld(record, held)) return
             val body =
                 remapMentionTokens(record.body) { ref ->
                     mapByKind[ref.type]?.get(ref.id)
                 }
-            val origin = entryOrigins.getOrPut(sessionId) { OriginSet() }.claim(record.originId)
+            val origin =
+                entryOrigins
+                    .getOrPut(
+                        sessionId,
+                    ) { OriginSet(held.map { it.origin_id }) }
+                    .claim(record.originId)
             database.sessionEntryQueries.insert(
                 sessionId,
                 record.createdAt,
@@ -471,13 +931,29 @@ internal class CampaignImporter(
                 record.mentionCheck,
                 origin,
             )
+            if (merged) {
+                journal.entry(database.sessionEntryQueries.lastInsertRowId().executeAsOne())
+                records++
+            }
         }
+
+        // a note the session already holds comes back with every import of the same file
+        private fun alreadyHeld(
+            record: FileRecord.Entry,
+            held: List<Session_entry>,
+        ): Boolean =
+            if (record.originId.isNullOrBlank()) {
+                held.any { it.created_at == record.createdAt && it.body == record.body }
+            } else {
+                held.any { it.origin_id == record.originId }
+            }
 
         private fun addPhoto(record: FileRecord.Photo) {
             if ((record.owner to record.ownerId) !in fresh) return
             val bytes = decodeJpeg(record.data) ?: return
             val slot = if (record.owner == PhotoOwner.PLACE) PhotoSlot.COVER else PhotoSlot.PORTRAIT
             val thumb = makeThumb(bytes, slot)
+            rememberPhoto(record)
             when (record.owner) {
                 PhotoOwner.SPECIES ->
                     speciesMap[record.ownerId]?.let {
@@ -505,6 +981,47 @@ internal class CampaignImporter(
                         )
                     }
             }
+        }
+
+        // a photo that replaces another one is kept in the journal, so taking the import back can restore it
+        private fun rememberPhoto(record: FileRecord.Photo) {
+            if ((record.owner to record.ownerId) !in overwritten) return
+            val local =
+                when (record.owner) {
+                    PhotoOwner.SPECIES ->
+                        speciesMap[record.ownerId]?.let {
+                            database.speciesQueries
+                                .selectPhoto(it)
+                                .executeAsOneOrNull()
+                                ?.photo to
+                                it
+                        }
+                    PhotoOwner.PLACE ->
+                        placeMap[record.ownerId]?.let {
+                            database.locationQueries
+                                .selectPhoto(it)
+                                .executeAsOneOrNull()
+                                ?.cover to
+                                it
+                        }
+                    PhotoOwner.NPC ->
+                        npcMap[record.ownerId]?.let {
+                            database.npcQueries
+                                .selectPhoto(it)
+                                .executeAsOneOrNull()
+                                ?.portrait to
+                                it
+                        }
+                    PhotoOwner.PARTY ->
+                        partyMap[record.ownerId]?.let {
+                            database.partyMemberQueries
+                                .selectPhoto(it)
+                                .executeAsOneOrNull()
+                                ?.portrait to
+                                it
+                        }
+                } ?: return
+            journal.photo(record.owner, local.second, local.first?.let { Base64.encode(it) })
         }
 
         // only a jpeg of a sane size is decoded, a picture that is not one is dropped and the record stays without it

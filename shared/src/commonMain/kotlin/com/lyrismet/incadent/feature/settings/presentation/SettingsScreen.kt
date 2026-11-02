@@ -31,10 +31,18 @@ data class SettingsState(
     val pinnedPhraseCount: Int,
     val frequentPhraseCount: Int,
     val phraseSheet: PhraseSheetState?,
+    val canUndoImport: Boolean = false,
+    val undoImportPrompt: Boolean = false,
     val eventSink: (SettingsEvent) -> Unit = {},
 ) : CircuitUiState
 
 sealed interface SettingsEvent : CircuitUiEvent {
+    data object UndoImportRequested : SettingsEvent
+
+    data object UndoImportConfirmed : SettingsEvent
+
+    data object UndoImportDismissed : SettingsEvent
+
     data class LanguageSheet(
         val event: LanguageSheetEvent,
     ) : SettingsEvent

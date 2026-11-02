@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.campaign.presentation.exchange
 
 import com.lyrismet.incadent.core.designsystem.component.StatusKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
+import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
 import com.lyrismet.incadent.feature.campaign.domain.model.MAX_FILE_BYTES
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
@@ -28,6 +29,9 @@ data class DeliveryStatus(
 )
 
 data class ExportState(
+    val mode: ExportMode = ExportMode.FRIEND,
+    val fileName: String = "",
+    val partyNotes: Boolean = false,
     val loaded: Boolean = false,
     val writing: Boolean = false,
     val campaignName: String = "",
@@ -50,6 +54,12 @@ data class ExportState(
 }
 
 sealed interface ExportEvent : CircuitUiEvent {
+    data class ModeSelected(
+        val mode: ExportMode,
+    ) : ExportEvent
+
+    data object PartyNotesToggled : ExportEvent
+
     data class WholeSelected(
         val whole: Boolean,
     ) : ExportEvent

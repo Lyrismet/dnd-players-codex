@@ -39,6 +39,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppListCard
 import com.lyrismet.incadent.core.designsystem.component.AppListRow
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppToast
+import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
@@ -60,6 +61,9 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.settings_about_version_title
 import dndplayerscodex.shared.generated.resources.settings_all_campaigns_title
 import dndplayerscodex.shared.generated.resources.settings_campaign_name_title
+import dndplayerscodex.shared.generated.resources.settings_data_undo_import_confirm
+import dndplayerscodex.shared.generated.resources.settings_data_undo_import_text
+import dndplayerscodex.shared.generated.resources.settings_data_undo_import_title
 import dndplayerscodex.shared.generated.resources.settings_hints_desc
 import dndplayerscodex.shared.generated.resources.settings_hints_show
 import dndplayerscodex.shared.generated.resources.settings_hints_title
@@ -89,6 +93,7 @@ private val ChoiceLabelSerif = TextStyle(fontSize = AppFontSize.Lead, fontWeight
 internal val ChoiceLabelSans = TextStyle(fontSize = AppFontSize.Small, fontWeight = FontWeight.SemiBold)
 
 /** renders the settings screen - every tap goes out through the state's eventSink */
+@Suppress("LongMethod")
 @Composable
 fun SettingsUi(
     state: SettingsState,
@@ -122,6 +127,7 @@ fun SettingsUi(
                     DataSection(
                         onExportClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.ExportCurrentClicked)) },
                         onImportClick = pickFile,
+                        onUndoImportClick = { sink(SettingsEvent.UndoImportRequested) }.takeIf { state.canUndoImport },
                     )
                     DiarySection(
                         numbering = state.numbering,
@@ -151,6 +157,15 @@ fun SettingsUi(
     }
 
     SettingsSheets(state)
+    if (state.undoImportPrompt) {
+        ConfirmationDialog(
+            title = stringResource(Res.string.settings_data_undo_import_title),
+            text = stringResource(Res.string.settings_data_undo_import_text),
+            onConfirm = { state.eventSink(SettingsEvent.UndoImportConfirmed) },
+            onDismiss = { state.eventSink(SettingsEvent.UndoImportDismissed) },
+            confirmLabel = stringResource(Res.string.settings_data_undo_import_confirm),
+        )
+    }
 }
 
 @Composable

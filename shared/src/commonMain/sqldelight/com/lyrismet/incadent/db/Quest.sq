@@ -50,3 +50,10 @@ DELETE FROM quest WHERE id = ?;
 
 lastInsertRowId:
 SELECT last_insert_rowid();
+
+-- a text of its own, so an import can point its mentions at the new ids once every record is in
+selectDescription:
+SELECT description FROM quest WHERE id = ?;
+
+setDescription:
+UPDATE quest SET description = ? WHERE id = ?;

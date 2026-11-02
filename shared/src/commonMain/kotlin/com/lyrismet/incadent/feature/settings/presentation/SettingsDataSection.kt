@@ -11,6 +11,8 @@ import dndplayerscodex.shared.generated.resources.settings_data_export_hint
 import dndplayerscodex.shared.generated.resources.settings_data_export_title
 import dndplayerscodex.shared.generated.resources.settings_data_import_hint
 import dndplayerscodex.shared.generated.resources.settings_data_import_title
+import dndplayerscodex.shared.generated.resources.settings_data_undo_import_hint
+import dndplayerscodex.shared.generated.resources.settings_data_undo_import_title
 import dndplayerscodex.shared.generated.resources.settings_section_data
 import org.jetbrains.compose.resources.stringResource
 
@@ -19,6 +21,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun DataSection(
     onExportClick: () -> Unit,
     onImportClick: () -> Unit,
+    onUndoImportClick: (() -> Unit)?,
 ) {
     SettingsGroup(overline = stringResource(Res.string.settings_section_data), topSpacing = 12.dp) {
         AppIconListRow(
@@ -34,5 +37,14 @@ internal fun DataSection(
             icon = ImportIcon,
             onClick = onImportClick,
         )
+        onUndoImportClick?.let {
+            AppDivider()
+            AppIconListRow(
+                title = stringResource(Res.string.settings_data_undo_import_title),
+                subtitle = stringResource(Res.string.settings_data_undo_import_hint),
+                icon = ImportIcon,
+                onClick = it,
+            )
+        }
     }
 }

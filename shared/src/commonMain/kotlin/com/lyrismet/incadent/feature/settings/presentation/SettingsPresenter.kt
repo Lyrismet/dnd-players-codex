@@ -5,6 +5,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.language.LanguageSheet
@@ -18,6 +19,7 @@ import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.core.preferences.SwipeHintState
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.toast.autoDismiss
+import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignExchangeRepository
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.rememberCampaignSheetHost
 import com.lyrismet.incadent.feature.phrases.domain.phrasePool
@@ -29,6 +31,9 @@ import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepos
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.error_action_failed
+import dndplayerscodex.shared.generated.resources.settings_data_undo_import_done
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Suppress("LongParameterList")
@@ -40,8 +45,10 @@ class SettingsPresenter(
     private val sessionEntryRepository: SessionEntryRepository,
     private val campaignRepository: CampaignRepository,
     private val importSource: ImportSource,
+    private val exchangeRepository: CampaignExchangeRepository,
     private val versionName: String,
 ) : Presenter<SettingsState> {
+    @Suppress("CyclomaticComplexMethod", "LongMethod")
     @Composable
     override fun present(): SettingsState {
         val language by languageRepository.observeLanguage().collectAsState(initial = AppLanguage.RUSSIAN)
@@ -64,6 +71,12 @@ class SettingsPresenter(
         val frequentPhrases = rememberFrequentPhrases(allEntries)
         val phrases = remember { PhraseSheetController(phraseSnippetRepository) }
         val scope = rememberGuardedScope { toast.value = failedText }
+        val currentId = campaignHost.current?.id
+        val canUndoImport by remember(currentId) {
+            currentId?.let(exchangeRepository::observeCanUndoLastImport) ?: flowOf(false)
+        }.collectAsState(initial = false)
+        var undoPrompt by remember { mutableStateOf(false) }
+        val undoneText = stringResource(Res.string.settings_data_undo_import_done)
 
         return SettingsState(
             language = language,
@@ -79,8 +92,21 @@ class SettingsPresenter(
             pinnedPhraseCount = pinnedPhrases.size,
             frequentPhraseCount = phrasePool(pinnedPhrases, frequentPhrases).count { !it.isPinned },
             phraseSheet = phrases.sheetState(pinnedPhrases, frequentPhrases),
+            canUndoImport = canUndoImport,
+            undoImportPrompt = undoPrompt,
         ) { event ->
             when (event) {
+                SettingsEvent.UndoImportRequested -> undoPrompt = true
+                SettingsEvent.UndoImportDismissed -> undoPrompt = false
+                SettingsEvent.UndoImportConfirmed -> {
+                    undoPrompt = false
+                    currentId?.let {
+                        scope.launch {
+                            exchangeRepository.undoLastImport(it)
+                            toast.value = undoneText
+                        }
+                    }
+                }
                 is SettingsEvent.LanguageSheet -> languageSheet.onEvent(event.event)
                 is SettingsEvent.NumberingSelected -> appPreferencesRepository.setSessionNumbering(event.numbering)
                 is SettingsEvent.MentionStyleSelected -> appPreferencesRepository.setMentionStyle(event.style)

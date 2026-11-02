@@ -30,6 +30,7 @@ internal fun readImportContents(origin: FileOrigin): ImportContents {
                 reader.header.version
                     .takeIf { it > FILE_VERSION }
                     ?.let { NewerFile(it, FILE_VERSION, reader.skipped) },
+            mode = reader.header.mode,
         )
     } finally {
         source.close()

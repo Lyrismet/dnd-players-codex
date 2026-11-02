@@ -57,7 +57,7 @@ class CodexPlacesTest {
     }
 
     @Test
-    fun `the top level places are never regions, the places just below them are`() {
+    fun `the top level places are never regions and the places just below them are`() {
         assertEquals(valley, tree.regionOf(temple))
         assertEquals(valley, tree.regionOf(valley))
         assertEquals(castle, tree.regionOf(castle))

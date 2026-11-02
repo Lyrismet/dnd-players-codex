@@ -78,3 +78,10 @@ SELECT portrait FROM party_member WHERE id = ?;
 
 lastInsertRowId:
 SELECT last_insert_rowid();
+
+-- a text of its own, so an import can point its mentions at the new ids once every record is in
+selectDescription:
+SELECT description FROM party_member WHERE id = ?;
+
+setDescription:
+UPDATE party_member SET description = ? WHERE id = ?;

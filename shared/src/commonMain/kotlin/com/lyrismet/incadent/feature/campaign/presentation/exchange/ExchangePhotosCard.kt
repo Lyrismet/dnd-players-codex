@@ -68,6 +68,24 @@ fun ExchangePhotosCard(
         )
         return
     }
+    ExchangeToggleCard(
+        title = stringResource(Res.string.exchange_photos_title),
+        hint = estimate?.let { photosNote(it, photos) } ?: stringResource(Res.string.exchange_photos_hint),
+        checked = photos,
+        onToggle = onToggle,
+        modifier = modifier,
+    )
+}
+
+/** a titled switch card with one line under the title, the "С фото" card without sizes */
+@Composable
+fun ExchangeToggleCard(
+    title: String,
+    hint: String,
+    checked: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Row(
         modifier =
             modifier
@@ -79,7 +97,7 @@ fun ExchangePhotosCard(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = stringResource(Res.string.exchange_photos_title),
+                text = title,
                 color = AppPalette.TextPrimary,
                 style =
                     MaterialTheme.typography.titleSmall.copy(
@@ -88,13 +106,13 @@ fun ExchangePhotosCard(
                     ),
             )
             Text(
-                text = estimate?.let { photosNote(it, photos) } ?: stringResource(Res.string.exchange_photos_hint),
+                text = hint,
                 modifier = Modifier.padding(top = 1.dp),
                 color = AppPalette.TextSecondary,
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small),
             )
         }
-        AppSwitch(checked = photos, onCheckedChange = { onToggle() })
+        AppSwitch(checked = checked, onCheckedChange = { onToggle() })
     }
 }
 

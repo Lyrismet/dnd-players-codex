@@ -1,0 +1,16 @@
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind;
+
+-- pairs of a file's record and a local one a person said are different, they are not asked about again
+CREATE TABLE kept_apart (
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    kind TEXT AS ExchangeKind NOT NULL,
+    file_origin_id TEXT NOT NULL,
+    local_origin_id TEXT NOT NULL,
+    PRIMARY KEY (campaign_id, kind, file_origin_id, local_origin_id)
+);
+
+insert:
+INSERT OR IGNORE INTO kept_apart(campaign_id, kind, file_origin_id, local_origin_id) VALUES (?, ?, ?, ?);
+
+selectByCampaign:
+SELECT kind, file_origin_id, local_origin_id FROM kept_apart WHERE campaign_id = ?;

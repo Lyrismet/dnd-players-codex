@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.campaign.data.file
 
+import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -22,8 +23,8 @@ import kotlinx.serialization.json.JsonNames
 
 const val FILE_FORMAT = "incadent"
 
-// 2 added the saved fights, 3 the origin ids, a file of an older version has none and reads as before
-const val FILE_VERSION = 3
+// 2 added the saved fights, 3 the origin ids, 4 the export mode, a file of an older version reads as a friend copy
+const val FILE_VERSION = 4
 
 /** the first line of a file, what the preview shows is read from here before anything else */
 @Serializable
@@ -35,6 +36,9 @@ data class FileHeader(
     val records: Int = 0,
     val sessions: Int = 0,
     val originId: String? = null,
+    val mode: ExportMode = ExportMode.FRIEND,
+    // a friend copy leaves the notes about the party out unless asked, a file without the flag carries them
+    val partyNotes: Boolean = true,
 )
 
 /**

@@ -24,6 +24,7 @@ import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.file.rememberFilePicker
 import com.lyrismet.incadent.feature.campaign.domain.model.NewerFile
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.exchange_compare_title
 import dndplayerscodex.shared.generated.resources.exchange_dest_add
 import dndplayerscodex.shared.generated.resources.exchange_dest_add_hint
 import dndplayerscodex.shared.generated.resources.exchange_dest_label
@@ -43,7 +44,6 @@ import dndplayerscodex.shared.generated.resources.exchange_import_with_photos
 import dndplayerscodex.shared.generated.resources.exchange_import_without_photos
 import dndplayerscodex.shared.generated.resources.exchange_items_from
 import dndplayerscodex.shared.generated.resources.exchange_items_title
-import dndplayerscodex.shared.generated.resources.exchange_match_title
 import dndplayerscodex.shared.generated.resources.exchange_newer_back
 import dndplayerscodex.shared.generated.resources.exchange_newer_continue
 import dndplayerscodex.shared.generated.resources.exchange_newer_skipped
@@ -82,7 +82,7 @@ fun ImportUi(
                 is ImportStep.Failed -> FailedStep(step.failure, onOtherFile = pickFile)
                 ImportStep.Preview -> PreviewStep(state)
                 ImportStep.Items -> ItemsStep(state)
-                ImportStep.Match -> MatchStep(state)
+                ImportStep.Compare -> CompareStep(state)
                 is ImportStep.Done -> DoneStep(step.records) { sink(ImportEvent.Closed) }
             }
         }
@@ -111,7 +111,7 @@ private fun stepTitle(state: ImportState): String =
             }
                 ?: stringResource(Res.string.exchange_import_campaign_untitled)
         ImportStep.Items -> stringResource(Res.string.exchange_items_title)
-        ImportStep.Match -> stringResource(Res.string.exchange_match_title)
+        ImportStep.Compare -> stringResource(Res.string.exchange_compare_title)
         is ImportStep.Done -> stringResource(Res.string.exchange_import_overline)
     }
 
