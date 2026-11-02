@@ -7,6 +7,7 @@ import com.lyrismet.incadent.db.Combatant
 import com.lyrismet.incadent.feature.campaign.domain.exchange.resolve
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
+import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordSelection
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
@@ -118,11 +119,13 @@ class CampaignExporter(
                     scope.recordCount,
                     scope.sessions.size,
                     snapshot.originId,
+                    selection.mode,
+                    selection.mode == ExportMode.SELF || selection.partyNotes,
                 ),
             )
             writeEntities(snapshot, selection, scope, ids, writer)
             writeSessions(snapshot, scope, ids, writer)
-            writeCombats(snapshot.campaignId, scope, ids, writer)
+            writeCombats(snapshot.campaignId, selection, scope, ids, writer)
             if (selection.photos) writePhotos(scope, ids, writer)
         } finally {
             sink.close()
@@ -137,7 +140,7 @@ class CampaignExporter(
         writer: CampaignFileWriter,
     ) {
         writeWorld(snapshot, scope, ids, writer)
-        writeCast(snapshot, scope, ids, writer)
+        writeCast(snapshot, selection, scope, ids, writer)
         if (selection.tags) {
             database.tagQueries.selectAll(snapshot.campaignId).executeAsList().forEach {
                 writer.write(FileRecord.Tag(it.name))
@@ -164,7 +167,7 @@ class CampaignExporter(
                     it.name,
                     it.creature_type,
                     it.vulnerabilities,
-                    it.notes,
+                    ids.text(it.notes),
                     it.hit_points?.toInt(),
                     it.origin_id,
                     it.custom_type_name,
@@ -180,7 +183,7 @@ class CampaignExporter(
                     FileRecord.Place(
                         ids.place(it.id),
                         it.name,
-                        it.description,
+                        ids.text(it.description),
                         it.parent_id?.let(ids::place),
                         it.origin_id,
                     ),
@@ -190,6 +193,7 @@ class CampaignExporter(
 
     private fun writeCast(
         snapshot: Snapshot,
+        selection: RecordSelection,
         scope: RecordScope,
         ids: FileIds,
         writer: CampaignFileWriter,
@@ -200,7 +204,7 @@ class CampaignExporter(
                     id = ids.npc(npc.id),
                     name = npc.name,
                     status = npc.status,
-                    description = npc.description,
+                    description = ids.text(npc.description),
                     race = npc.race,
                     lifeState = npc.life_state,
                     nicknames = npc.nicknames,
@@ -224,28 +228,29 @@ class CampaignExporter(
                     reward = it.reward,
                     giverNpcId = it.given_by_npc_id?.takeIf { npc -> npc in scope.npcs }?.let(ids::npc),
                     placeId = it.location_id?.takeIf { place -> place in scope.places }?.let(ids::place),
-                    description = it.description,
+                    description = ids.text(it.description),
                     originId = it.origin_id,
                 ),
             )
         }
         snapshot.party.filter { it.id in scope.party }.forEach {
             writer.write(
-                FileRecord.Party(
-                    id = ids.party(it.id),
-                    name = it.name,
-                    characterClass = it.character_class,
-                    race = it.race,
-                    level = it.level?.toInt(),
-                    playerName = it.player_name,
-                    isPlayerCharacter = it.is_player_character,
-                    presence = it.presence,
-                    hpMax = it.hp_max?.toInt(),
-                    hpCurrent = it.hp_current?.toInt(),
-                    description = it.description,
-                    fallen = it.fallen,
-                    originId = it.origin_id,
-                ),
+                FileRecord
+                    .Party(
+                        id = ids.party(it.id),
+                        name = it.name,
+                        characterClass = it.character_class,
+                        race = it.race,
+                        level = it.level?.toInt(),
+                        playerName = it.player_name,
+                        isPlayerCharacter = it.is_player_character,
+                        presence = it.presence,
+                        hpMax = it.hp_max?.toInt(),
+                        hpCurrent = it.hp_current?.toInt(),
+                        description = ids.text(it.description),
+                        fallen = it.fallen,
+                        originId = it.origin_id,
+                    ).forMode(selection),
             )
         }
     }
@@ -290,6 +295,7 @@ class CampaignExporter(
     // the fights saved to a picked session go with it, a link to a record that is not in the file is left empty
     private fun writeCombats(
         campaignId: String,
+        selection: RecordSelection,
         scope: RecordScope,
         ids: FileIds,
         writer: CampaignFileWriter,
@@ -324,7 +330,7 @@ class CampaignExporter(
             val members = fighters[row.id].orEmpty().withIndex().associate { (index, it) -> it.id to index + 1L }
             fighters[row.id].orEmpty().forEach {
                 writer.write(
-                    it.toFighter(numbers.getValue(row.id), members, scope, ids),
+                    it.toFighter(numbers.getValue(row.id), members, scope, ids).forMode(selection),
                 )
             }
             events[row.id].orEmpty().forEach { event ->

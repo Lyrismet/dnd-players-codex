@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.campaign.presentation.exchange
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,8 +33,18 @@ import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.StatusMark
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.file.rememberFileSharing
+import com.lyrismet.incadent.core.help.HelpHint
+import com.lyrismet.incadent.core.help.HelpTopic
+import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.exchange_export_file
 import dndplayerscodex.shared.generated.resources.exchange_export_overline
+import dndplayerscodex.shared.generated.resources.exchange_friend_banner
+import dndplayerscodex.shared.generated.resources.exchange_mode_friend
+import dndplayerscodex.shared.generated.resources.exchange_mode_self
+import dndplayerscodex.shared.generated.resources.exchange_mode_self_note
+import dndplayerscodex.shared.generated.resources.exchange_party_notes_hint
+import dndplayerscodex.shared.generated.resources.exchange_party_notes_title
 import dndplayerscodex.shared.generated.resources.exchange_photos_footnote
 import dndplayerscodex.shared.generated.resources.exchange_records_count
 import dndplayerscodex.shared.generated.resources.exchange_save
@@ -87,24 +98,46 @@ fun ExportUi(
     }
 }
 
+@Suppress("LongMethod")
 @Composable
 private fun ExportBody(state: ExportState) {
     val sink = state.eventSink
+    val friend = state.mode == ExportMode.FRIEND
     AppSegmentedTabs(
         tabs =
             listOf(
-                SegmentedTab(true, stringResource(Res.string.exchange_scope_all)),
-                SegmentedTab(false, stringResource(Res.string.exchange_scope_pick)),
+                SegmentedTab(ExportMode.SELF, stringResource(Res.string.exchange_mode_self)),
+                SegmentedTab(ExportMode.FRIEND, stringResource(Res.string.exchange_mode_friend)),
             ),
-        selected = state.whole,
-        onSelected = { sink(ExportEvent.WholeSelected(it)) },
+        selected = state.mode,
+        onSelected = { sink(ExportEvent.ModeSelected(it)) },
         itemHeight = 36.dp,
         containerBackground = AppPalette.Background,
     )
-    if (state.whole) {
-        ExchangeSummary(state.recordCount, state.sessionCount, stringResource(Res.string.exchange_summary_hint))
+    if (friend) {
+        AppSegmentedTabs(
+            tabs =
+                listOf(
+                    SegmentedTab(true, stringResource(Res.string.exchange_scope_all)),
+                    SegmentedTab(false, stringResource(Res.string.exchange_scope_pick)),
+                ),
+            selected = state.whole,
+            onSelected = { sink(ExportEvent.WholeSelected(it)) },
+            itemHeight = 36.dp,
+            containerBackground = AppPalette.Background,
+        )
+    }
+    if (state.whole || !friend) {
+        val hint = if (friend) Res.string.exchange_summary_hint else Res.string.exchange_mode_self_note
+        ExchangeSummary(state.recordCount, state.sessionCount, stringResource(hint))
     }
     state.pick?.let { view -> ExchangePickSection(view, onEvent = { sink(ExportEvent.Pick(it)) }) }
+    if (friend) FriendNotice(state)
+    Text(
+        text = stringResource(Res.string.exchange_export_file, state.fileName),
+        color = AppPalette.TextSecondary,
+        style = AppText.footnote,
+    )
     // until the first measure is in, nobody knows whether there are photos, so a loader stands in for the card
     val estimate = state.estimate
     if (estimate == null) {
@@ -147,6 +180,33 @@ private fun ExportBody(state: ExportState) {
             contentColor = AppPalette.TextPrimary,
             leading = deliveryMark(state.status, ExportDelivery.SAVE),
         )
+    }
+}
+
+// the switch that lets the notes about the party go too, and what a friend does not get with the "?" that lists it
+@Composable
+private fun FriendNotice(state: ExportState) {
+    ExchangeToggleCard(
+        title = stringResource(Res.string.exchange_party_notes_title),
+        hint = stringResource(Res.string.exchange_party_notes_hint),
+        checked = state.partyNotes,
+        onToggle = { state.eventSink(ExportEvent.PartyNotesToggled) },
+    )
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .appCard(AppShapes.Card, AppPalette.Background, AppPalette.Border)
+                .padding(start = 14.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(Res.string.exchange_friend_banner),
+            modifier = Modifier.weight(1f),
+            color = AppPalette.TextDescription,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        HelpHint(HelpTopic.FRIEND_EXPORT)
     }
 }
 

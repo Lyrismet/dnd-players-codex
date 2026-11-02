@@ -4,6 +4,7 @@ import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeGraph
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
+import com.lyrismet.incadent.feature.mention.domain.remapMentionTokens
 
 /** the file's own number for every exported record, counted from 1 per kind in database order */
 internal class FileIds(
@@ -45,6 +46,9 @@ internal class FileIds(
 
     /** the file number a note token moves to, null for a record that is not in the file */
     fun mapped(ref: MentionRef): Long? = byKind[ref.type]?.get(ref.id)
+
+    /** a text of a record with its mentions moved to the file's numbers */
+    fun text(body: String): String = remapMentionTokens(body) { mapped(it) }
 }
 
 private fun Set<Long>.numbered(): Map<Long, Long> = sorted().withIndex().associate { (index, id) -> id to index + 1L }

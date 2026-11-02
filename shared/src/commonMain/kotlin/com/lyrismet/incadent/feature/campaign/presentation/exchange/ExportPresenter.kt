@@ -14,11 +14,16 @@ import com.lyrismet.incadent.core.toast.TOAST_DURATION_MS
 import com.lyrismet.incadent.feature.campaign.domain.exchange.exportFileName
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
+import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignExchangeRepository
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
+import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.exchange_file_friend
+import dndplayerscodex.shared.generated.resources.exchange_file_self
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 // a run of quick ticks only measures the last pick
 private const val ESTIMATE_DEBOUNCE_MILLIS = 200L
@@ -34,6 +39,8 @@ class ExportPresenter(
     @Composable
     override fun present(): ExportState {
         val catalog by produceState<ExchangeCatalog?>(null) { value = repository.loadCatalog(screen.campaignId) }
+        var mode by remember { mutableStateOf(ExportMode.FRIEND) }
+        var partyNotes by remember { mutableStateOf(false) }
         var whole by remember { mutableStateOf(true) }
         var hand by remember(catalog) { mutableStateOf(catalog?.let { ExchangePick.handPick(it.options, it.graph) }) }
         var photos by remember { mutableStateOf(true) }
@@ -56,31 +63,46 @@ class ExportPresenter(
 
         val loaded = catalog
         val everything = remember(loaded) { loaded?.let { ExchangePick.everything(it.options, it.graph) } }
-        val active = if (whole) everything else hand
+        val active = if (whole || mode == ExportMode.SELF) everything else hand
         // the text of the file does not depend on the photos switch, so a flip of it does not measure again
-        val measured = active?.selection
+        val measured = active?.selection?.copy(mode = mode, partyNotes = partyNotes)
         val estimate by produceState<ExportEstimate?>(null, measured) {
             // the first measure comes at once, only a run of later picks waits
             if (value != null) delay(ESTIMATE_DEBOUNCE_MILLIS)
             value = measured?.let { repository.estimate(screen.campaignId, it) }
         }
         val view = remember(hand) { hand?.toView() }
+        val modeLabel =
+            stringResource(
+                if (mode ==
+                    ExportMode.SELF
+                ) {
+                    Res.string.exchange_file_self
+                } else {
+                    Res.string.exchange_file_friend
+                },
+            )
 
         return ExportState(
+            mode = mode,
+            fileName = loaded?.let { exportFileName(it.campaignName, modeLabel) }.orEmpty(),
+            partyNotes = partyNotes,
             loaded = loaded != null,
             writing = writing,
             campaignName = loaded?.campaignName.orEmpty(),
             whole = whole,
-            pick = if (whole) null else view,
+            pick = if (whole || mode == ExportMode.SELF) null else view,
             recordCount = active?.recordCount ?: 0,
             sessionCount = active?.sessionCount ?: 0,
             photos = photos,
             estimate = estimate,
-            canExport = loaded != null && (whole || active?.isEmpty == false),
+            canExport = loaded != null && (whole || mode == ExportMode.SELF || active?.isEmpty == false),
             file = file,
             status = status,
         ) { event ->
             when (event) {
+                is ExportEvent.ModeSelected -> mode = event.mode
+                ExportEvent.PartyNotesToggled -> partyNotes = !partyNotes
                 is ExportEvent.WholeSelected -> whole = event.whole
                 is ExportEvent.Pick -> hand = hand?.reduce(event.event)
                 ExportEvent.PhotosToggled -> photos = !photos
@@ -90,7 +112,7 @@ class ExportPresenter(
                         delivering = event.delivery
                         status = DeliveryStatus(event.delivery, StatusKind.Working)
                         scope.launch {
-                            val fileName = exportFileName(loaded.campaignName)
+                            val fileName = exportFileName(loaded.campaignName, modeLabel)
                             repository.export(
                                 screen.campaignId,
                                 measured.copy(photos = photos),

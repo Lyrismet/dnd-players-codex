@@ -5,17 +5,16 @@ import com.lyrismet.incadent.core.file.FileSink
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportContents
+import com.lyrismet.incadent.feature.campaign.domain.model.ImportPlan
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportRequest
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportResult
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordSelection
+import kotlinx.coroutines.flow.Flow
 
 /** moves a campaign in and out of a file, a bad file fails with an `ImportFailedException` */
 interface CampaignExchangeRepository {
     /** what [campaignId] has to offer an export */
-    suspend fun loadCatalog(
-        campaignId: String,
-        withMentions: Boolean = true,
-    ): ExchangeCatalog
+    suspend fun loadCatalog(campaignId: String): ExchangeCatalog
 
     /** how big the file of [selection] would be, with and without its photos */
     suspend fun estimate(
@@ -36,4 +35,16 @@ interface CampaignExchangeRepository {
         origin: FileOrigin,
         request: ImportRequest,
     ): ImportResult
+
+    /** holds the file up against [campaignId] and says what each record of it would be, nothing is written */
+    suspend fun plan(
+        origin: FileOrigin,
+        campaignId: String,
+    ): ImportPlan
+
+    /** true while the last import into [campaignId] can still be taken back */
+    fun observeCanUndoLastImport(campaignId: String): Flow<Boolean>
+
+    /** puts [campaignId] back as it was before its last import */
+    suspend fun undoLastImport(campaignId: String)
 }

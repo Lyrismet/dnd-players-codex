@@ -66,3 +66,10 @@ SELECT photo FROM species WHERE id = ?;
 
 lastInsertRowId:
 SELECT last_insert_rowid();
+
+-- a text of its own, so an import can point its mentions at the new ids once every record is in
+selectNotes:
+SELECT notes FROM species WHERE id = ?;
+
+setNotes:
+UPDATE species SET notes = ? WHERE id = ?;

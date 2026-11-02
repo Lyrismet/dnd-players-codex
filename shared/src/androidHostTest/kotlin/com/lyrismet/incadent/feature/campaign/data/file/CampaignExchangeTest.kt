@@ -148,7 +148,16 @@ class CampaignExchangeTest {
     private fun importNew(
         file: MemoryFile,
         selection: RecordSelection? = null,
-    ) = importer.import(origin(file), ImportRequest(ImportTarget.NewCampaign("Fallback"), ConflictMode.SKIP, selection))
+    ) = importer.import(
+        origin(file),
+        ImportRequest(
+            ImportTarget.NewCampaign("Fallback"),
+            ConflictMode.SKIP,
+            selection,
+            takeAsMine = true,
+            takeVitals = true,
+        ),
+    )
 
     @Test
     fun `an export imported as a new campaign brings every record and link`() {
@@ -433,7 +442,7 @@ class CampaignExchangeTest {
     }
 
     @Test
-    fun `a replaced npc loses the places and the nickname the file does not have`() {
+    fun `a replaced npc keeps the places and the nickname the file does not have`() {
         seed()
         val bob =
             database.npcQueries
@@ -459,10 +468,10 @@ class CampaignExchangeTest {
             database.npcLocationQueries
                 .selectByNpc(bob.id)
                 .executeAsList()
-                .isEmpty(),
+                .isNotEmpty(),
         )
         assertEquals(
-            "",
+            "bobby",
             database.npcQueries
                 .selectAll(source)
                 .executeAsList()

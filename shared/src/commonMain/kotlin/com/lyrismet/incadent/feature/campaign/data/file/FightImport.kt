@@ -12,14 +12,15 @@ internal class FightImport(
     private val speciesMap: Map<Long, Long>,
     private val npcMap: Map<Long, Long>,
     private val partyMap: Map<Long, Long>,
+    private val journal: ImportJournal,
+    private val dedupe: Boolean,
 ) {
-    private val origins =
-        OriginSet(
-            database.combatQueries
-                .selectAll(campaignId)
-                .executeAsList()
-                .map { it.origin_id },
-        )
+    private val known =
+        database.combatQueries
+            .selectAll(campaignId)
+            .executeAsList()
+            .map { it.origin_id }
+    private val origins = OriginSet(known)
     private val combatMap = mutableMapOf<Long, Long>()
     private val fighterMap = mutableMapOf<Pair<Long, Long>, Long>()
 
@@ -40,6 +41,8 @@ internal class FightImport(
 
     private fun addCombat(record: FileRecord.Combat) {
         val sessionId = sessionMap[record.sessionId] ?: return
+        // a fight this campaign already holds comes back with every import of the same file
+        if (dedupe && !record.originId.isNullOrBlank() && record.originId in known) return
         database.combatQueries.insertFinished(
             sessionId,
             record.startedAt,
@@ -51,6 +54,7 @@ internal class FightImport(
             origins.claim(record.originId),
         )
         combatMap[record.id] = database.combatQueries.lastInsertRowId().executeAsOne()
+        journal.combat(combatMap.getValue(record.id))
     }
 
     private fun addFighter(record: FileRecord.Fighter) {

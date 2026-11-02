@@ -1,0 +1,88 @@
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind;
+
+-- what a person deleted, an import does not bring it back and the file never carries it
+CREATE TABLE deleted_origin (
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    kind TEXT AS ExchangeKind NOT NULL,
+    origin_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    PRIMARY KEY (campaign_id, kind, origin_id)
+);
+
+insert:
+INSERT OR REPLACE INTO deleted_origin(campaign_id, kind, origin_id, name) VALUES (?, ?, ?, ?);
+
+selectByCampaign:
+SELECT kind, origin_id, name FROM deleted_origin WHERE campaign_id = ? ORDER BY name;
+
+isDeleted:
+SELECT 1 FROM deleted_origin WHERE campaign_id = ? AND kind = ? AND origin_id = ?;
+
+forget:
+DELETE FROM deleted_origin WHERE campaign_id = ? AND kind = ? AND origin_id = ?;
+
+CREATE TRIGGER species_remember_deleted AFTER DELETE ON species
+WHEN EXISTS (SELECT 1 FROM campaign WHERE id = old.campaign_id) AND old.origin_id != ''
+BEGIN
+    INSERT OR REPLACE INTO deleted_origin(campaign_id, kind, origin_id, name) VALUES (old.campaign_id, 'SPECIES', old.origin_id, old.name);
+END;
+
+CREATE TRIGGER species_forget_deleted AFTER INSERT ON species
+BEGIN
+    DELETE FROM deleted_origin WHERE campaign_id = new.campaign_id AND kind = 'SPECIES' AND origin_id = new.origin_id;
+END;
+
+CREATE TRIGGER location_remember_deleted AFTER DELETE ON location
+WHEN EXISTS (SELECT 1 FROM campaign WHERE id = old.campaign_id) AND old.origin_id != ''
+BEGIN
+    INSERT OR REPLACE INTO deleted_origin(campaign_id, kind, origin_id, name) VALUES (old.campaign_id, 'PLACE', old.origin_id, old.name);
+END;
+
+CREATE TRIGGER location_forget_deleted AFTER INSERT ON location
+BEGIN
+    DELETE FROM deleted_origin WHERE campaign_id = new.campaign_id AND kind = 'PLACE' AND origin_id = new.origin_id;
+END;
+
+CREATE TRIGGER npc_remember_deleted AFTER DELETE ON npc
+WHEN EXISTS (SELECT 1 FROM campaign WHERE id = old.campaign_id) AND old.origin_id != ''
+BEGIN
+    INSERT OR REPLACE INTO deleted_origin(campaign_id, kind, origin_id, name) VALUES (old.campaign_id, 'NPC', old.origin_id, old.name);
+END;
+
+CREATE TRIGGER npc_forget_deleted AFTER INSERT ON npc
+BEGIN
+    DELETE FROM deleted_origin WHERE campaign_id = new.campaign_id AND kind = 'NPC' AND origin_id = new.origin_id;
+END;
+
+CREATE TRIGGER quest_remember_deleted AFTER DELETE ON quest
+WHEN EXISTS (SELECT 1 FROM campaign WHERE id = old.campaign_id) AND old.origin_id != ''
+BEGIN
+    INSERT OR REPLACE INTO deleted_origin(campaign_id, kind, origin_id, name) VALUES (old.campaign_id, 'QUEST', old.origin_id, old.title);
+END;
+
+CREATE TRIGGER quest_forget_deleted AFTER INSERT ON quest
+BEGIN
+    DELETE FROM deleted_origin WHERE campaign_id = new.campaign_id AND kind = 'QUEST' AND origin_id = new.origin_id;
+END;
+
+CREATE TRIGGER party_member_remember_deleted AFTER DELETE ON party_member
+WHEN EXISTS (SELECT 1 FROM campaign WHERE id = old.campaign_id) AND old.origin_id != ''
+BEGIN
+    INSERT OR REPLACE INTO deleted_origin(campaign_id, kind, origin_id, name) VALUES (old.campaign_id, 'PARTY', old.origin_id, old.name);
+END;
+
+CREATE TRIGGER party_member_forget_deleted AFTER INSERT ON party_member
+BEGIN
+    DELETE FROM deleted_origin WHERE campaign_id = new.campaign_id AND kind = 'PARTY' AND origin_id = new.origin_id;
+END;
+
+CREATE TRIGGER session_note_remember_deleted AFTER DELETE ON session_note
+WHEN EXISTS (SELECT 1 FROM campaign WHERE id = old.campaign_id) AND old.origin_id != ''
+BEGIN
+    INSERT OR REPLACE INTO deleted_origin(campaign_id, kind, origin_id, name) VALUES (old.campaign_id, 'SESSION', old.origin_id, old.title);
+END;
+
+CREATE TRIGGER session_note_forget_deleted AFTER INSERT ON session_note
+BEGIN
+    DELETE FROM deleted_origin WHERE campaign_id = new.campaign_id AND kind = 'SESSION' AND origin_id = new.origin_id;
+END;

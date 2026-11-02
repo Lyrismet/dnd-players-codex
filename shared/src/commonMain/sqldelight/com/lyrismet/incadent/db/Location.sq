@@ -58,3 +58,10 @@ SELECT cover FROM location WHERE id = ?;
 
 lastInsertRowId:
 SELECT last_insert_rowid();
+
+-- a text of its own, so an import can point its mentions at the new ids once every record is in
+selectDescription:
+SELECT description FROM location WHERE id = ?;
+
+setDescription:
+UPDATE location SET description = ? WHERE id = ?;

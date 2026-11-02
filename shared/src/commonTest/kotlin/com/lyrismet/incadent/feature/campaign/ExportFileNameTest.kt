@@ -25,4 +25,10 @@ class ExportFileNameTest {
     fun `dots at the start cannot make a hidden file or a path climb`() {
         assertEquals("hidden.incadent.json", exportFileName("../hidden"))
     }
+
+    @Test
+    fun `the mode label follows the name after a dot`() {
+        assertEquals("Тени · личная копия.incadent.json", exportFileName("Тени", "личная копия"))
+        assertEquals("Тени.incadent.json", exportFileName("Тени", ""))
+    }
 }

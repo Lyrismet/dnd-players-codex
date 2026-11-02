@@ -135,4 +135,30 @@ class SchemaMigrationTest {
             { cursor -> QueryResult.Value(if (cursor.next().value) cursor.getString(0) else null) },
             0,
         ).value
+
+    @Test
+    fun `migrating the fifth schema keeps the records and starts the list of deleted ones`() {
+        val file = File.createTempFile("schema-v5", ".db")
+        File("src/commonMain/sqldelight/databases/5.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO npc(name, status, description, campaign_id, origin_id) VALUES ('Bob', 'FRIEND', '', 'c', 'bob'), ('Ann', 'FRIEND', '', 'c', 'ann')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 5, AppDatabase.Schema.version)
+
+        assertEquals("2", driver.single("SELECT COUNT(*) FROM npc"))
+        assertEquals("0", driver.single("SELECT COUNT(*) FROM deleted_origin"))
+        driver.execute(null, "DELETE FROM npc WHERE name = 'Bob'", 0)
+        assertEquals("bob", driver.single("SELECT origin_id FROM deleted_origin WHERE kind = 'NPC'"))
+        driver.execute(
+            null,
+            "INSERT INTO npc(name, status, description, campaign_id, origin_id) VALUES ('Bob', 'FRIEND', '', 'c', 'bob')",
+            0,
+        )
+        assertEquals("0", driver.single("SELECT COUNT(*) FROM deleted_origin"))
+        driver.close()
+        file.delete()
+    }
 }

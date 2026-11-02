@@ -17,3 +17,9 @@ SELECT origin_id FROM origin_alias WHERE campaign_id = ? AND kind = ? AND alias_
 
 repoint:
 UPDATE origin_alias SET origin_id = ? WHERE campaign_id = ? AND kind = ? AND origin_id = ?;
+
+selectByCampaign:
+SELECT kind, alias_origin_id, origin_id FROM origin_alias WHERE campaign_id = ?;
+
+delete:
+DELETE FROM origin_alias WHERE campaign_id = ? AND kind = ? AND alias_origin_id = ?;

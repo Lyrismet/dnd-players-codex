@@ -5,6 +5,7 @@ import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.LanguageRepository
 import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
+import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignExchangeRepository
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.lyrismet.incadent.feature.phrases.domain.repository.PhraseSnippetRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
@@ -34,6 +35,7 @@ class SettingsPresenterFactory(
     private val sessionEntryRepository: SessionEntryRepository,
     private val campaignRepository: CampaignRepository,
     private val importSource: ImportSource,
+    private val exchangeRepository: CampaignExchangeRepository,
     private val appVersion: AppVersion,
 ) : Presenter.Factory {
     override fun create(
@@ -51,6 +53,7 @@ class SettingsPresenterFactory(
                     sessionEntryRepository,
                     campaignRepository,
                     importSource,
+                    exchangeRepository,
                     appVersion.name,
                 )
             else -> null

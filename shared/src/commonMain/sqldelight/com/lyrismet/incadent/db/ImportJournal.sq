@@ -1,0 +1,25 @@
+-- what the last import into a campaign changed, enough to take it back
+CREATE TABLE import_journal (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    action TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    row_id INTEGER NOT NULL DEFAULT 0,
+    ref TEXT NOT NULL DEFAULT '',
+    snapshot TEXT NOT NULL DEFAULT '',
+    flag INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX import_journal_campaign_id ON import_journal(campaign_id);
+
+insert:
+INSERT INTO import_journal(campaign_id, action, kind, row_id, ref, snapshot, flag) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectByCampaign:
+SELECT action, kind, row_id, ref, snapshot, flag FROM import_journal WHERE campaign_id = ? ORDER BY id DESC;
+
+clear:
+DELETE FROM import_journal WHERE campaign_id = ?;
+
+hasAny:
+SELECT COUNT(*) FROM import_journal WHERE campaign_id = ?;
