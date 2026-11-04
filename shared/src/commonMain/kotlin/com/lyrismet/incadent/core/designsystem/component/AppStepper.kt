@@ -118,13 +118,7 @@ private fun TileStepper(
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         StepperTile(
-            if (count <= 1 &&
-                removesAtOne
-            ) {
-                "✕"
-            } else {
-                "−"
-            },
+            if (count <= 1 && removesAtOne) "✕" else "−",
             AppPalette.TextMuted,
             decreaseDescription,
             onDecrease,

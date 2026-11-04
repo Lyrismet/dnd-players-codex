@@ -62,4 +62,9 @@ class ItemMentionTest {
         assertEquals(1, linkTypedMentions("@Лампа", mixed).count { it == '|' })
         assertTrue(linkTypedMentions("@Лампа", mixed).contains("|n:1]"))
     }
+
+    @Test
+    fun `a cut item token is removed whole`() {
+        assertEquals("a  b", withoutBrokenTokens("a @[Sword|i:5 b"))
+    }
 }

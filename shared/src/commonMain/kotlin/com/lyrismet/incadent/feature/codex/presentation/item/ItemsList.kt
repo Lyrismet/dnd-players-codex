@@ -76,7 +76,6 @@ internal fun CodexItemsList(
             EmptyState(
                 text = stringResource(Res.string.items_empty_text),
                 title = stringResource(Res.string.items_empty),
-                icon = EntityKind.ITEM.icon(),
                 modifier = modifier,
                 primaryAction =
                     if (state.readOnly) {

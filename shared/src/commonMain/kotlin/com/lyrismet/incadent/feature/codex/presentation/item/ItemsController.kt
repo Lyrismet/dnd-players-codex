@@ -77,11 +77,7 @@ internal class ItemsController(
         itemId: Long,
         delta: Int,
     ) {
-        scope.launch {
-            val item = repository.getById(itemId) ?: return@launch
-            val stepped = if (delta > 0) item.withOneMore() else item.withOneLess()
-            if (stepped != null && stepped != item) repository.upsert(stepped)
-        }
+        scope.launch { repository.stepQuantity(itemId, delta) }
     }
 
     /** opens the sheet of an item, an unknown id opens nothing */

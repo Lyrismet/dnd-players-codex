@@ -20,6 +20,7 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 @Inject
@@ -33,7 +34,11 @@ class ItemRepositoryImpl(
 
     override fun observeAll(): Flow<List<Item>> =
         current.observe { campaignId ->
-            queries.selectAll(campaignId, ::toDomain).asFlow().mapToList(DatabaseDispatcher)
+            queries
+                .selectAll(campaignId, ::toDomain)
+                .asFlow()
+                .mapToList(DatabaseDispatcher)
+                .map { items -> items.sortedBy { it.name.lowercase() } }
         }
 
     override suspend fun getById(id: Long): Item? =
@@ -111,21 +116,21 @@ class ItemRepositoryImpl(
         owner: ItemOwner,
     ) {
         withContext(DatabaseDispatcher) {
-            database.transaction {
-                ids.forEach { id ->
-                    val stored = queries.selectById(id, ::toDomainFull).executeAsOneOrNull() ?: return@forEach
-                    queries.update(
-                        stored.name,
-                        stored.quantity.toLong(),
-                        stored.price?.toLong(),
-                        stored.coin,
-                        owner.kind(),
-                        owner.id(),
-                        stored.notes,
-                        id,
-                    )
-                }
-            }
+            database.transaction { ids.forEach { id -> queries.setOwner(owner.kind(), owner.id(), id) } }
+        }
+    }
+
+    override suspend fun stepQuantity(
+        id: Long,
+        delta: Int,
+    ) {
+        withContext(DatabaseDispatcher) {
+            queries.stepQuantity(
+                delta.toLong(),
+                ITEM_QUANTITY_RANGE.first.toLong(),
+                ITEM_QUANTITY_RANGE.last.toLong(),
+                id,
+            )
         }
     }
 

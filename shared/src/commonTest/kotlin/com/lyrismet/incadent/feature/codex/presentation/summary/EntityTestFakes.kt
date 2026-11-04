@@ -150,6 +150,13 @@ internal class FakeItemRepository(
     ) {
         ids.forEach { id -> stored(id)?.let { put(it.copy(owner = owner)) } }
     }
+
+    override suspend fun stepQuantity(
+        id: Long,
+        delta: Int,
+    ) {
+        stored(id)?.let { put(it.withQuantity(it.quantity + delta)) }
+    }
 }
 
 internal class FakeQuestRepository(

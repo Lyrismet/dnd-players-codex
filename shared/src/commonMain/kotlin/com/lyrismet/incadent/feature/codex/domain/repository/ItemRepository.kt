@@ -9,4 +9,10 @@ interface ItemRepository : EntityRepository<Item> {
         ids: Collection<Long>,
         owner: ItemOwner,
     )
+
+    /** moves the quantity of [id] by [delta] in one step, kept inside the allowed range */
+    suspend fun stepQuantity(
+        id: Long,
+        delta: Int,
+    )
 }

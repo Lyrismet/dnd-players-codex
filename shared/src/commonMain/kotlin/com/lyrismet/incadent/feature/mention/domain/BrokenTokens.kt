@@ -1,7 +1,7 @@
 package com.lyrismet.incadent.feature.mention.domain
 
 // what is left of a token after an edit cut into it
-private val TOKEN_FRAGMENT_REGEX = Regex("@\\[[^\\[\\]@]*?\\|[npqls]:\\d*(?:\\|\\d*)?]?")
+private val TOKEN_FRAGMENT_REGEX = Regex("@\\[[^\\[\\]@]*?\\|[npqlsi]:\\d*(?:\\|\\d*)?]?")
 
 /** the draft without any half deleted token, so an edit inside a tag removes the tag instead of corrupting it */
 fun withoutBrokenTokens(text: String): String {

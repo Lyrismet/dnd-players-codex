@@ -22,7 +22,7 @@ CREATE UNIQUE INDEX item_origin_id ON item(campaign_id, origin_id);
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
 SELECT id, name, quantity, price, coin, owner_kind, owner_id, notes, photo_thumb, origin_id
-FROM item WHERE campaign_id = ? ORDER BY name;
+FROM item WHERE campaign_id = ?;
 
 selectById:
 SELECT id, name, quantity, price, coin, owner_kind, owner_id, notes, photo_thumb, photo, origin_id
@@ -42,6 +42,12 @@ update:
 UPDATE item
 SET name = ?, quantity = ?, price = ?, coin = ?, owner_kind = ?, owner_id = ?, notes = ?
 WHERE id = ?;
+
+stepQuantity:
+UPDATE item SET quantity = MIN(MAX(quantity + :delta, :min), :max) WHERE id = :id;
+
+setOwner:
+UPDATE item SET owner_kind = ?, owner_id = ? WHERE id = ?;
 
 setPhoto:
 UPDATE item SET photo = ?, photo_thumb = ? WHERE id = ?;

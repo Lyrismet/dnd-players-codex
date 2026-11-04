@@ -72,4 +72,34 @@ class ItemRepositoryTest {
             assertEquals(listOf(owner, owner), all.map { it.owner })
             assertEquals(2, all.first { it.id == first }.quantity)
         }
+
+    @Test
+    fun `stepping the quantity stays in range and adds up`() =
+        runTest {
+            val id = items.upsert(Item(0, "Arrow", quantity = 9998))
+            items.stepQuantity(id, 1)
+            items.stepQuantity(id, 1)
+            assertEquals(9999, items.getById(id)?.quantity)
+            items.stepQuantity(id, -20_000)
+            assertEquals(1, items.getById(id)?.quantity)
+        }
+
+    @Test
+    fun `setOwner keeps the other columns`() =
+        runTest {
+            val id = items.upsert(Item(0, "Gem", quantity = 3, price = 7, notes = "n"))
+            items.setOwner(listOf(id), ItemOwner.Of(EntityKind.NPC, 2))
+            val stored = items.getById(id)
+            assertEquals(ItemOwner.Of(EntityKind.NPC, 2), stored?.owner)
+            assertEquals(3, stored?.quantity)
+            assertEquals("n", stored?.notes)
+        }
+
+    @Test
+    fun `items list sorted by name ignoring case`() =
+        runTest {
+            items.upsert(Item(0, "Zebra"))
+            items.upsert(Item(0, "apple"))
+            assertEquals(listOf("apple", "Zebra"), items.observeAll().first().map { it.name })
+        }
 }
