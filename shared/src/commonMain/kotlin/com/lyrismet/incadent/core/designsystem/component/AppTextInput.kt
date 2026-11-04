@@ -36,6 +36,7 @@ import com.lyrismet.incadent.core.designsystem.SentenceKeyboardOptions
 
 private val DefaultInputShape = AppShapes.Field
 private val DefaultInputPadding = PaddingValues(horizontal = 14.dp)
+private val DefaultAreaPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)
 
 /** the card an input is drawn in */
 class AppInputChrome(
@@ -54,8 +55,12 @@ class AppTextInputStyle(
     val chrome: AppInputChrome? = AppInputChrome(),
     // an exact height, null lets a multi-line input grow with its lines
     val height: Dp? = null,
-    val contentPadding: PaddingValues = DefaultInputPadding,
-)
+    // null picks the usual inset: sides only for an exact height, the sides and 12dp above and below for a growing area
+    val contentPadding: PaddingValues? = null,
+) {
+    internal fun resolvedPadding(): PaddingValues =
+        contentPadding ?: if (height == null) DefaultAreaPadding else DefaultInputPadding
+}
 
 /** a counter pill inside the input, "12/32" - at the end of a line, at the bottom end of an area */
 class AppTextInputCounter(
@@ -229,7 +234,7 @@ private fun InputDecoration(
     }
     if (singleLine) {
         Row(
-            modifier = Modifier.padding(style.contentPadding).fillMaxWidth().then(fillHeight(style)),
+            modifier = Modifier.padding(style.resolvedPadding()).fillMaxWidth().then(fillHeight(style)),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -239,7 +244,7 @@ private fun InputDecoration(
             trailing?.invoke()
         }
     } else {
-        Column(modifier = Modifier.padding(style.contentPadding).fillMaxWidth()) {
+        Column(modifier = Modifier.padding(style.resolvedPadding()).fillMaxWidth()) {
             text()
             counter?.let { (count, max) ->
                 AppCharCountPill(count = count, max = max, modifier = Modifier.align(Alignment.End))

@@ -28,15 +28,10 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.lyrismet.incadent.core.designsystem.component.BottomTabBar
-import com.lyrismet.incadent.core.designsystem.component.BottomTabBarItem
 import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.dismissKeyboardOnTap
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
-import com.lyrismet.incadent.core.designsystem.component.icons.CodexTabIcon
-import com.lyrismet.incadent.core.designsystem.component.icons.CombatTabIcon
-import com.lyrismet.incadent.core.designsystem.component.icons.SessionsTabIcon
-import com.lyrismet.incadent.core.designsystem.component.icons.SettingsTabIcon
 import com.lyrismet.incadent.core.navigation.BackAction
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.navigation.resolveBackAction
@@ -44,6 +39,7 @@ import com.lyrismet.incadent.core.swipehint.SwipeHintReplayController
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.presentation.CodexScreen
 import com.lyrismet.incadent.feature.combat.presentation.list.CombatListScreen
+import com.lyrismet.incadent.feature.me.presentation.MeScreen
 import com.lyrismet.incadent.feature.session.presentation.list.SessionListScreen
 import com.lyrismet.incadent.feature.settings.presentation.SettingsScreen
 import com.slack.circuit.backstack.SaveableBackStack
@@ -57,15 +53,12 @@ import dndplayerscodex.shared.generated.resources.action_cancel
 import dndplayerscodex.shared.generated.resources.app_exit_confirm
 import dndplayerscodex.shared.generated.resources.app_exit_text
 import dndplayerscodex.shared.generated.resources.app_exit_title
-import dndplayerscodex.shared.generated.resources.bottom_tab_codex
-import dndplayerscodex.shared.generated.resources.bottom_tab_combat
-import dndplayerscodex.shared.generated.resources.bottom_tab_sessions
-import dndplayerscodex.shared.generated.resources.bottom_tab_settings
 import org.jetbrains.compose.resources.stringResource
 
 internal enum class AppTab {
     SESSIONS,
     CODEX,
+    ME,
     COMBAT,
     SETTINGS,
 }
@@ -81,6 +74,7 @@ internal class AppTabsState(
     val selectedTabIndex: MutableState<Int>,
     val sessions: TabStack,
     val codex: TabStack,
+    val me: TabStack,
     val combat: TabStack,
     val settings: TabStack,
 ) {
@@ -90,6 +84,7 @@ internal class AppTabsState(
         when (tab) {
             AppTab.SESSIONS -> sessions
             AppTab.CODEX -> codex
+            AppTab.ME -> me
             AppTab.SETTINGS -> settings
             AppTab.COMBAT -> combat
         }
@@ -100,10 +95,11 @@ internal fun rememberAppTabsState(): AppTabsState {
     val selectedTabIndex = rememberSaveable { mutableStateOf(AppTab.SESSIONS.ordinal) }
     val sessions = rememberTabStack(SessionListScreen)
     val codex = rememberTabStack(CodexScreen)
+    val me = rememberTabStack(MeScreen)
     val combat = rememberTabStack(CombatListScreen)
     val settings = rememberTabStack(SettingsScreen)
-    return remember(selectedTabIndex, sessions, codex, combat, settings) {
-        AppTabsState(selectedTabIndex, sessions, codex, combat, settings)
+    return remember(selectedTabIndex, sessions, codex, me, combat, settings) {
+        AppTabsState(selectedTabIndex, sessions, codex, me, combat, settings)
     }
 }
 
@@ -268,15 +264,3 @@ private fun TabBackstackHost(
         NavigableCircuitContent(navigator = navigator, backStack = stack.backStack)
     }
 }
-
-@Composable
-private fun appTabBarItems(combatRound: Int?): List<BottomTabBarItem> =
-    listOf(
-        BottomTabBarItem(stringResource(Res.string.bottom_tab_sessions)) { tint -> SessionsTabIcon(tint) },
-        BottomTabBarItem(stringResource(Res.string.bottom_tab_codex)) { tint -> CodexTabIcon(tint) },
-        BottomTabBarItem(
-            stringResource(Res.string.bottom_tab_combat),
-            combatRound?.toString(),
-        ) { tint -> CombatTabIcon(tint) },
-        BottomTabBarItem(stringResource(Res.string.bottom_tab_settings)) { tint -> SettingsTabIcon(tint) },
-    )

@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.runtime.Composable
+import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
+import com.lyrismet.incadent.core.format.signed
 import com.lyrismet.incadent.feature.codex.presentation.summary.damageTypeLabels
 import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
 import com.lyrismet.incadent.feature.combat.domain.damage.effectiveDamage
@@ -50,7 +52,7 @@ internal fun summaryState(
         rounds =
             (combat.round downTo 1).map { n ->
                 val sum = damage.filter { it.round == n }.sumOf { it.amount }
-                SummaryRound(n, if (sum > 0) "−$sum" else "—", n == shown)
+                SummaryRound(n, if (sum > 0) (-sum).signed() else EMPTY_VALUE_DASH, n == shown)
             },
         targets =
             inRound

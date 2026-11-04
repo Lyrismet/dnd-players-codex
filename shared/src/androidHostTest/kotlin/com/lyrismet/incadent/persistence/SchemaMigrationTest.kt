@@ -206,4 +206,61 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the eighth schema keeps the party and adds the sheet and the resources`() {
+        val file = File.createTempFile("schema-v8", ".db")
+        File("src/commonMain/sqldelight/databases/8.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(id, name, level, is_player_character, hp_max, hp_current, campaign_id, " +
+                "origin_id) " +
+                "VALUES (1, 'Lira', 5, 1, 28, 22, 'c', 'lira')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 8, AppDatabase.Schema.version)
+
+        assertEquals("Lira", driver.single("SELECT name FROM party_member"))
+        assertEquals("1", driver.single("SELECT is_player_character FROM party_member"))
+        assertEquals("22", driver.single("SELECT hp_current FROM party_member"))
+        assertEquals("0", driver.single("SELECT temp_hp FROM party_member"))
+        assertEquals("0", driver.single("SELECT death_saves_failure FROM party_member"))
+        assertEquals(null, driver.single("SELECT armor_class FROM party_member"))
+        assertEquals("0", driver.single("SELECT COUNT(*) FROM character_sheet"))
+        assertEquals("0", driver.single("SELECT COUNT(*) FROM character_resource"))
+        driver.close()
+        file.delete()
+    }
+
+    @Test
+    fun `migrating the ninth schema keeps the sheets and adds the resources`() {
+        val file = File.createTempFile("schema-v9", ".db")
+        File("src/commonMain/sqldelight/databases/8.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(id, name, campaign_id, origin_id) VALUES (1, 'Lira', 'c', 'lira')",
+        ).forEach { driver.execute(null, it, 0) }
+        AppDatabase.Schema.migrate(driver, 8, 9)
+        driver.execute(
+            null,
+            "INSERT INTO character_sheet(party_member_id, ability_int, coin_gold, campaign_id, origin_id) VALUES (1, 18, 34, 'c', 's')",
+            0,
+        )
+
+        AppDatabase.Schema.migrate(driver, 9, AppDatabase.Schema.version)
+
+        assertEquals("18", driver.single("SELECT ability_int FROM character_sheet"))
+        assertEquals("34", driver.single("SELECT coin_gold FROM character_sheet"))
+        driver.execute(
+            null,
+            "INSERT INTO character_resource(party_member_id, name, max_value, current_value, campaign_id, origin_id) " +
+                "VALUES (1, 'Rage', 2, 2, 'c', 'r')",
+            0,
+        )
+        assertEquals("Rage", driver.single("SELECT name FROM character_resource"))
+        driver.close()
+        file.delete()
+    }
 }
