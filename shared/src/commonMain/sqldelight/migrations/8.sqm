@@ -1,0 +1,42 @@
+-- hit points beside the max stay on the party record (one source with the fight), the rest of the sheet gets a table of its own
+ALTER TABLE party_member ADD COLUMN temp_hp INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE party_member ADD COLUMN armor_class INTEGER;
+ALTER TABLE party_member ADD COLUMN armor_class_from TEXT NOT NULL DEFAULT '';
+ALTER TABLE party_member ADD COLUMN death_saves_success INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE party_member ADD COLUMN death_saves_failure INTEGER NOT NULL DEFAULT 0;
+
+CREATE TABLE character_sheet (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    party_member_id INTEGER NOT NULL UNIQUE REFERENCES party_member(id) ON DELETE CASCADE,
+    ability_str INTEGER,
+    ability_dex INTEGER,
+    ability_con INTEGER,
+    ability_int INTEGER,
+    ability_wis INTEGER,
+    ability_cha INTEGER,
+    saves TEXT NOT NULL DEFAULT '',
+    skill_marks TEXT NOT NULL DEFAULT '',
+    skill_adjustments TEXT NOT NULL DEFAULT '',
+    initiative_adjustment INTEGER NOT NULL DEFAULT 0,
+    passive_perception_adjustment INTEGER NOT NULL DEFAULT 0,
+    spell_ability TEXT,
+    speed INTEGER,
+    inspiration INTEGER NOT NULL DEFAULT 0,
+    subclass TEXT NOT NULL DEFAULT '',
+    background TEXT NOT NULL DEFAULT '',
+    alignment TEXT NOT NULL DEFAULT '',
+    personality TEXT NOT NULL DEFAULT '',
+    languages TEXT NOT NULL DEFAULT '',
+    features TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT '',
+    coin_platinum INTEGER NOT NULL DEFAULT 0,
+    coin_gold INTEGER NOT NULL DEFAULT 0,
+    coin_electrum INTEGER NOT NULL DEFAULT 0,
+    coin_silver INTEGER NOT NULL DEFAULT 0,
+    coin_copper INTEGER NOT NULL DEFAULT 0,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX character_sheet_campaign_id ON character_sheet(campaign_id);
+CREATE UNIQUE INDEX character_sheet_origin_id ON character_sheet(campaign_id, origin_id);

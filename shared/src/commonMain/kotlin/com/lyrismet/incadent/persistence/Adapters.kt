@@ -5,6 +5,7 @@ import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
+import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.Coin
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
@@ -12,6 +13,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
@@ -82,3 +84,32 @@ internal inline fun <reified T : Enum<T>> enumColumnAdapter(fallback: T): Column
 
         override fun encode(value: T): String = value.name
     }
+
+// an ability or skill this build does not know is left out instead of failing the row
+val abilitySetAdapter =
+    object : ColumnAdapter<Set<Ability>, String> {
+        override fun decode(databaseValue: String): Set<Ability> =
+            databaseValue
+                .split(',')
+                .mapNotNull { name -> Ability.entries.firstOrNull { it.name == name } }
+                .toSet()
+
+        override fun encode(value: Set<Ability>): String = value.joinToString(",") { it.name }
+    }
+
+val skillValuesAdapter =
+    object : ColumnAdapter<Map<Skill, Int>, String> {
+        override fun decode(databaseValue: String): Map<Skill, Int> =
+            databaseValue
+                .split(',')
+                .mapNotNull { pair ->
+                    val skill = Skill.entries.firstOrNull { it.name == pair.substringBefore(':') }
+                    val value = pair.substringAfter(':', "").toIntOrNull()
+                    if (skill != null && value != null) skill to value else null
+                }.toMap()
+
+        override fun encode(value: Map<Skill, Int>): String =
+            value.entries.joinToString(",") { "${it.key.name}:${it.value}" }
+    }
+
+val abilityAdapter = enumColumnAdapter(Ability.STRENGTH)

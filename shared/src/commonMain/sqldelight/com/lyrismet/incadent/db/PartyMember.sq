@@ -17,7 +17,12 @@ CREATE TABLE party_member (
     portrait BLOB,
     portrait_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
-    origin_id TEXT NOT NULL DEFAULT ''
+    origin_id TEXT NOT NULL DEFAULT '',
+    temp_hp INTEGER NOT NULL DEFAULT 0,
+    armor_class INTEGER,
+    armor_class_from TEXT NOT NULL DEFAULT '',
+    death_saves_success INTEGER NOT NULL DEFAULT 0,
+    death_saves_failure INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX party_member_campaign_id ON party_member(campaign_id);
@@ -85,3 +90,13 @@ SELECT description FROM party_member WHERE id = ?;
 
 setDescription:
 UPDATE party_member SET description = ? WHERE id = ?;
+
+-- the numbers a sheet shows beside the hit points, written on their own so saving a form never touches them
+selectVitals:
+SELECT hp_max, hp_current, temp_hp, armor_class, armor_class_from, death_saves_success, death_saves_failure
+FROM party_member WHERE id = ?;
+
+setVitals:
+UPDATE party_member
+SET hp_current = ?, temp_hp = ?, armor_class = ?, armor_class_from = ?, death_saves_success = ?, death_saves_failure = ?
+WHERE id = ?;

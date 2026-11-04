@@ -1,0 +1,68 @@
+import com.lyrismet.incadent.feature.codex.domain.model.Ability;
+import com.lyrismet.incadent.feature.codex.domain.model.Skill;
+import kotlin.Boolean;
+import kotlin.Int;
+import kotlin.collections.Map;
+import kotlin.collections.Set;
+
+CREATE TABLE character_sheet (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    party_member_id INTEGER NOT NULL UNIQUE REFERENCES party_member(id) ON DELETE CASCADE,
+    ability_str INTEGER,
+    ability_dex INTEGER,
+    ability_con INTEGER,
+    ability_int INTEGER,
+    ability_wis INTEGER,
+    ability_cha INTEGER,
+    saves TEXT AS Set<Ability> NOT NULL DEFAULT '',
+    skill_marks TEXT AS Map<Skill, Int> NOT NULL DEFAULT '',
+    skill_adjustments TEXT AS Map<Skill, Int> NOT NULL DEFAULT '',
+    initiative_adjustment INTEGER NOT NULL DEFAULT 0,
+    passive_perception_adjustment INTEGER NOT NULL DEFAULT 0,
+    spell_ability TEXT AS Ability,
+    speed INTEGER,
+    inspiration INTEGER AS Boolean NOT NULL DEFAULT 0,
+    subclass TEXT NOT NULL DEFAULT '',
+    background TEXT NOT NULL DEFAULT '',
+    alignment TEXT NOT NULL DEFAULT '',
+    personality TEXT NOT NULL DEFAULT '',
+    languages TEXT NOT NULL DEFAULT '',
+    features TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT '',
+    coin_platinum INTEGER NOT NULL DEFAULT 0,
+    coin_gold INTEGER NOT NULL DEFAULT 0,
+    coin_electrum INTEGER NOT NULL DEFAULT 0,
+    coin_silver INTEGER NOT NULL DEFAULT 0,
+    coin_copper INTEGER NOT NULL DEFAULT 0,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX character_sheet_campaign_id ON character_sheet(campaign_id);
+CREATE UNIQUE INDEX character_sheet_origin_id ON character_sheet(campaign_id, origin_id);
+
+selectByMember:
+SELECT id, party_member_id, ability_str, ability_dex, ability_con, ability_int, ability_wis, ability_cha, saves,
+    skill_marks, skill_adjustments, initiative_adjustment, passive_perception_adjustment, spell_ability, speed,
+    inspiration, subclass, background, alignment, personality, languages, features, notes,
+    coin_platinum, coin_gold, coin_electrum, coin_silver, coin_copper, origin_id
+FROM character_sheet WHERE party_member_id = ?;
+
+insert:
+INSERT INTO character_sheet(party_member_id, ability_str, ability_dex, ability_con, ability_int, ability_wis, ability_cha,
+    saves, skill_marks, skill_adjustments, initiative_adjustment, passive_perception_adjustment, spell_ability, speed,
+    inspiration, subclass, background, alignment, personality, languages, features, notes,
+    coin_platinum, coin_gold, coin_electrum, coin_silver, coin_copper, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE character_sheet
+SET ability_str = ?, ability_dex = ?, ability_con = ?, ability_int = ?, ability_wis = ?, ability_cha = ?,
+    saves = ?, skill_marks = ?, skill_adjustments = ?, initiative_adjustment = ?, passive_perception_adjustment = ?,
+    spell_ability = ?, speed = ?, inspiration = ?, subclass = ?, background = ?, alignment = ?, personality = ?,
+    languages = ?, features = ?, notes = ?,
+    coin_platinum = ?, coin_gold = ?, coin_electrum = ?, coin_silver = ?, coin_copper = ?
+WHERE party_member_id = ?;
+
+deleteByMember:
+DELETE FROM character_sheet WHERE party_member_id = ?;

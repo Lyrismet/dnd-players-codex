@@ -1,0 +1,16 @@
+-- counters of a character, spell slots are the ones with a slot level
+CREATE TABLE character_resource (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    party_member_id INTEGER NOT NULL REFERENCES party_member(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    max_value INTEGER NOT NULL DEFAULT 1,
+    current_value INTEGER NOT NULL DEFAULT 0,
+    slot_level INTEGER,
+    position INTEGER NOT NULL DEFAULT 0,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX character_resource_party_member_id ON character_resource(party_member_id);
+CREATE INDEX character_resource_campaign_id ON character_resource(campaign_id);
+CREATE UNIQUE INDEX character_resource_origin_id ON character_resource(campaign_id, origin_id);

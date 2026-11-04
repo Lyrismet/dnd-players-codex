@@ -3,6 +3,7 @@ package com.lyrismet.incadent.persistence
 import app.cash.sqldelight.db.SqlDriver
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.db.Campaign
+import com.lyrismet.incadent.db.Character_sheet
 import com.lyrismet.incadent.db.Combat
 import com.lyrismet.incadent.db.Combat_event
 import com.lyrismet.incadent.db.Combatant
@@ -52,6 +53,13 @@ fun createAppDatabase(driver: SqlDriver): AppDatabase {
         npcAdapter = Npc.Adapter(statusAdapter = npcStatusAdapter, life_stateAdapter = npcLifeStateAdapter),
         party_memberAdapter = Party_member.Adapter(presenceAdapter = partyPresenceAdapter),
         questAdapter = Quest.Adapter(statusAdapter = questStatusAdapter),
+        character_sheetAdapter =
+            Character_sheet.Adapter(
+                savesAdapter = abilitySetAdapter,
+                skill_marksAdapter = skillValuesAdapter,
+                skill_adjustmentsAdapter = skillValuesAdapter,
+                spell_abilityAdapter = abilityAdapter,
+            ),
         itemAdapter = Item.Adapter(coinAdapter = coinAdapter, owner_kindAdapter = entityKindAdapter),
         speciesAdapter = Species.Adapter(creature_typeAdapter = creatureTypeAdapter),
         session_entryAdapter = Session_entry.Adapter(created_atAdapter = localDateTimeAdapter),
