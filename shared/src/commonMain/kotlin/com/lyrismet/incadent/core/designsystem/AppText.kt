@@ -6,6 +6,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 
@@ -65,6 +66,20 @@ object AppText {
         @Composable @ReadOnlyComposable
         get() = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Caption, lineHeight = AppLineHeight.Row)
 }
+
+/** the big figures of a character sheet in Inter with lining tabular digits, so a zero never looks like an O */
+@Composable
+@ReadOnlyComposable
+fun AppText.numeral(
+    size: TextUnit,
+    weight: FontWeight = FontWeight.Bold,
+): TextStyle =
+    MaterialTheme.typography.bodyLarge.copy(
+        fontSize = size,
+        fontWeight = weight,
+        fontFeatureSettings = "lnum, tnum",
+        letterSpacing = (-0.01).em,
+    )
 
 /** the line trimmed evenly above and below the glyphs, so a label sits at the true centre of its box */
 fun TextStyle.centeredLine(): TextStyle =
