@@ -70,6 +70,7 @@ import dndplayerscodex.shared.generated.resources.codex_entry_save_label_edit
 import dndplayerscodex.shared.generated.resources.codex_entry_save_label_invalid
 import dndplayerscodex.shared.generated.resources.codex_party_default_class
 import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
+import dndplayerscodex.shared.generated.resources.items_sheet_title_new
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -247,6 +248,8 @@ class CodexEntryFormController private constructor(
                     is EntityRef.Npc -> npcRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Quest -> questRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Species -> speciesRepository.getById(ref.id)?.let { it.toFields(ref) }
+                    // an item is edited in its own sheet
+                    is EntityRef.Item -> null
                     is EntityRef.Location ->
                         locationRepository.getById(ref.id)?.let { place ->
                             val inside = locationRepository.observeAll().first().filter { it.parentId == ref.id }
@@ -745,6 +748,7 @@ private fun newEntryHeading(type: EntityKind): String =
             EntityKind.QUEST -> Res.string.codex_entry_heading_new_quest
             EntityKind.LOCATION -> Res.string.codex_entry_heading_new_location
             EntityKind.SPECIES -> Res.string.codex_entry_heading_new_species
+            EntityKind.ITEM -> Res.string.items_sheet_title_new
         },
     )
 

@@ -33,6 +33,12 @@ data class EntitySummarySheetActions(
     val onNpcVulnerabilitiesEdited: ((npcId: Long, before: Map<DamageType, DamageState>) -> Unit)? = null,
     // steps the count of the chip the card was opened from, the row only shows when the card knows that count
     val onSpeciesNoteQuantityStep: ((delta: Int) -> Unit)? = null,
+    // steps the stack of an item card by one, null keeps the stack read-only
+    val onItemQuantityStep: ((itemId: Long, delta: Int) -> Unit)? = null,
+    // the pen of an item card, kept apart because the quick mode of the other cards has no pen
+    val onItemEditClicked: ((EntityRef) -> Unit)? = null,
+    // the hold on the gear of a character, an npc or a place - null shows the gear read-only
+    val onGearHeld: ((EntityRef) -> Unit)? = null,
     // true shows the status pickers as plain badges - the form-mode card is read-only
     val statusesReadOnly: Boolean = false,
     // null hides the level arrow of the player's own character

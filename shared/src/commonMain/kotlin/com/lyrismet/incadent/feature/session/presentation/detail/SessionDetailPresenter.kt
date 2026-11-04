@@ -118,6 +118,7 @@ class SessionDetailPresenter(
         val quests by codexRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val parties by codexRepositories.partyRepository.observeAll().collectAsState(initial = emptyList())
         val species by codexRepositories.speciesRepository.observeAll().collectAsState(initial = emptyList())
+        val items by codexRepositories.itemRepository.observeAll().collectAsState(initial = emptyList())
         val facts by combatFactsSource.observe().collectAsState(initial = CombatFacts.EMPTY)
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
@@ -172,6 +173,7 @@ class SessionDetailPresenter(
                 quests,
                 parties,
                 species,
+                items,
                 draft.value.text,
                 draft.value.selection.end,
                 sessionBodies,
@@ -211,6 +213,7 @@ class SessionDetailPresenter(
                 parties,
                 species,
                 facts,
+                items,
             )
         val fullPhoto =
             rememberFullPhoto(selectedSummary, codexRepositories)
@@ -305,6 +308,7 @@ class SessionDetailPresenter(
                         quests = quests,
                         locations = locations,
                         species = species,
+                        items = items,
                     ),
                     holdTipAllowed = holdHint == HoldHintState.PENDING,
                     undoAction = undoAction,

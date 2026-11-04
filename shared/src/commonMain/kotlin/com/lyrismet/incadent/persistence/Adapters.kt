@@ -2,8 +2,10 @@ package com.lyrismet.incadent.persistence
 
 import app.cash.sqldelight.ColumnAdapter
 import com.lyrismet.incadent.core.logging.AppLog
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
+import com.lyrismet.incadent.feature.codex.domain.model.Coin
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -40,6 +42,8 @@ val combatEventKindAdapter = enumColumnAdapter(CombatEventKind.DAMAGE)
 val hitScaleAdapter = enumColumnAdapter(HitScale.ONE)
 val hitEffectAdapter = enumColumnAdapter(HitEffect.FULL)
 val damageTypeAdapter = enumColumnAdapter(DamageType.BLUDGEONING)
+val coinAdapter = enumColumnAdapter(Coin.GOLD)
+val entityKindAdapter = enumColumnAdapter(EntityKind.NPC)
 
 // a condition this build does not know is left out of the set instead of failing the row
 val combatConditionsAdapter =

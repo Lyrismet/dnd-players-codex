@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import com.lyrismet.incadent.core.preferences.SessionNumbering
+import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -32,6 +33,7 @@ fun entityLookupOf(
     parties: List<PartyMember>,
     species: List<Species> = emptyList(),
     facts: CombatFacts = CombatFacts.EMPTY,
+    items: List<Item> = emptyList(),
 ): EntityLookup =
     EntityLookup(
         npcs = npcs,
@@ -49,6 +51,7 @@ fun entityLookupOf(
         sessionNumbering = sessionNumbering,
         species = species,
         facts = facts,
+        items = items,
     )
 
 /** the shared "resolve whatever's tapped" used by every screen that owns a nullable [EntityRef] selection */
@@ -65,6 +68,7 @@ fun selectedEntitySummary(
     parties: List<PartyMember>,
     species: List<Species> = emptyList(),
     facts: CombatFacts = CombatFacts.EMPTY,
+    items: List<Item> = emptyList(),
 ): EntitySummaryItem? {
     if (ref == null) return null
     val lookup =
@@ -79,6 +83,7 @@ fun selectedEntitySummary(
             parties,
             species,
             facts,
+            items,
         )
     return rememberEntitySummary(ref, lookup)
 }

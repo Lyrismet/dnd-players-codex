@@ -4,8 +4,12 @@ import com.lyrismet.incadent.core.designsystem.StatusColor
 import com.lyrismet.incadent.core.designsystem.component.PortraitMark
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.grouping.ItemOwnerView
+import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
+import com.lyrismet.incadent.feature.codex.domain.model.Coin
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
+import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -48,6 +52,10 @@ sealed interface EntityRef {
     ) : EntityRef
 
     data class Species(
+        override val id: Long,
+    ) : EntityRef
+
+    data class Item(
         override val id: Long,
     ) : EntityRef
 }
@@ -146,6 +154,7 @@ sealed interface EntitySummaryItem {
         val groups: List<RelationGroup>,
         val relatedNotes: List<RelatedNoteItem>,
         val vulnerabilities: NpcVulnerabilities = NpcVulnerabilities(),
+        val gear: List<MentionChipItem> = emptyList(),
     ) : EntitySummaryItem
 
     data class LocationSummary(
@@ -161,6 +170,7 @@ sealed interface EntitySummaryItem {
         val relatedNotes: List<RelatedNoteItem>,
         // false when no other place exists to move into
         val canMove: Boolean = false,
+        val gear: List<MentionChipItem> = emptyList(),
     ) : EntitySummaryItem
 
     data class QuestSummary(
@@ -198,6 +208,22 @@ sealed interface EntitySummaryItem {
         val hitRange: HitRange? = null,
     ) : EntitySummaryItem
 
+    /** a thing somebody carries - the stack, who has it and the notes that mention it */
+    data class ItemSummary(
+        val ref: EntityRef.Item,
+        val name: String,
+        val quantity: Int,
+        val price: Int?,
+        val coin: Coin,
+        val owner: ItemOwnerView,
+        // the owner's own card, null while the item is shared
+        val ownerChip: MentionChipItem?,
+        val notes: String,
+        val descriptionSegments: List<MentionSegment> = emptyList(),
+        val emblem: EntityEmblem,
+        val relatedNotes: List<RelatedNoteItem>,
+    ) : EntitySummaryItem
+
     data class PartySummary(
         val ref: EntityRef.Party,
         val name: String,
@@ -213,6 +239,7 @@ sealed interface EntitySummaryItem {
         val fall: PartyFall? = null,
         // the player's own level can still go up
         val canRaiseLevel: Boolean = false,
+        val gear: List<MentionChipItem> = emptyList(),
     ) : EntitySummaryItem
 }
 
@@ -243,6 +270,7 @@ data class EntityLookup(
     val sessionNumbering: SessionNumbering,
     val species: List<Species> = emptyList(),
     val facts: CombatFacts = CombatFacts.EMPTY,
+    val items: List<Item> = emptyList(),
 )
 
 /** what an npc has of its own and what its species gives it, the card shows both and tells them apart */
@@ -251,3 +279,6 @@ data class NpcVulnerabilities(
     val fromSpecies: Map<DamageType, DamageState> = emptyMap(),
     val speciesName: String? = null,
 )
+
+/** the records of the lookup that an owner of an item is read from */
+internal fun EntityLookup.asRecords() = CodexRecords(parties, npcs, quests, locations, items = items)

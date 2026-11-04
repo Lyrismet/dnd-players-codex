@@ -32,12 +32,14 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroupingSelectio
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexRegions
 import com.lyrismet.incadent.feature.codex.domain.grouping.needsPlayerCharacterPick
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
+import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LinkSuggestionDismissalRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
@@ -48,6 +50,9 @@ import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormContr
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
 import com.lyrismet.incadent.feature.codex.presentation.form.rememberMentionSource
 import com.lyrismet.incadent.feature.codex.presentation.form.rememberPlaceFailureText
+import com.lyrismet.incadent.feature.codex.presentation.item.PartyListMode
+import com.lyrismet.incadent.feature.codex.presentation.item.rememberItemsController
+import com.lyrismet.incadent.feature.codex.presentation.item.rememberItemsState
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPicker
 import com.lyrismet.incadent.feature.codex.presentation.party.playerCharacterPickState
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
@@ -91,13 +96,15 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 
+@Suppress("LongParameterList")
 private fun mentionIndexOf(
     npcs: List<Npc>,
     locations: List<Location>,
     quests: List<Quest>,
     parties: List<PartyMember>,
     species: List<Species>,
-) = MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties, species))
+    items: List<Item>,
+) = MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties, species, items))
 
 /** result of applying the text search query to every list */
 internal data class CodexSearchResults(
@@ -123,6 +130,7 @@ class CodexPresenter(
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
     private val speciesRepository: SpeciesRepository,
+    private val itemRepository: ItemRepository,
     private val combatFactsSource: CombatFactsSource,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
@@ -133,7 +141,14 @@ class CodexPresenter(
     private val linkDismissals: LinkSuggestionDismissalRepository,
 ) : Presenter<CodexState> {
     private val codexRepositories =
-        CodexRepositories(partyRepository, npcRepository, questRepository, locationRepository, speciesRepository)
+        CodexRepositories(
+            partyRepository,
+            npcRepository,
+            questRepository,
+            locationRepository,
+            speciesRepository,
+            itemRepository,
+        )
     private val deletionPlanner =
         CodexDeletionPlanner(
             npcRepository,
@@ -141,6 +156,7 @@ class CodexPresenter(
             questRepository,
             locationRepository,
             speciesRepository,
+            itemRepository,
         )
 
     private val events =
@@ -160,6 +176,7 @@ class CodexPresenter(
         val parties = loadedParties.orEmpty()
         val npcs = loadedNpcs.orEmpty()
         val species by speciesRepository.observeAll().collectAsState(initial = emptyList())
+        val items by itemRepository.observeAll().collectAsState(initial = emptyList())
         val quests by questRepository.observeAll().collectAsState(initial = emptyList())
         val locations by locationRepository.observeAll().collectAsState(initial = emptyList())
         val sessionNotes by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
@@ -178,7 +195,7 @@ class CodexPresenter(
         ReportFailures(failure, rememberPlaceFailureText()) { fields.toast.value = ToastMessage(it) }
         val formController = rememberFormController(fields, parties)
 
-        val records = rememberRecords(parties, npcs, quests, locations, sessionEntries, species)
+        val records = rememberRecords(parties, npcs, quests, locations, sessionEntries, species, items)
         // the field shows every keystroke at once, the lists below follow once typing pauses
         val query = rememberDebounced(fields.searchQuery.value.trim()) { it.isEmpty() }
         val search = remember(records, query) { buildSearchResults(records, query) }
@@ -207,7 +224,11 @@ class CodexPresenter(
                 grouped = listing.grouped,
                 // a hidden tab stays composed in the background, so it must not burn its one-time hint unseen
                 isBlocked =
-                    formState != null || selectedEntity != null || !LocalTabSelected.current || fields.showsSpecies,
+                    formState != null ||
+                        selectedEntity != null ||
+                        !LocalTabSelected.current ||
+                        fields.showsSpecies ||
+                        fields.showsItems,
             )
 
         return buildCodexState(
@@ -259,6 +280,7 @@ class CodexPresenter(
         records.parties,
         records.species,
         records.facts,
+        records.items,
     )
 
     // the mention candidates are rebuilt only when a record list changes
@@ -270,6 +292,7 @@ class CodexPresenter(
         locations: List<Location>,
         entries: List<SessionEntry>,
         species: List<Species>,
+        items: List<Item>,
     ): CodexRecords {
         val facts by combatFactsSource.observe().collectAsState(initial = CombatFacts.EMPTY)
         val index =
@@ -279,9 +302,10 @@ class CodexPresenter(
                 quests,
                 parties,
                 species,
-            ) { mentionIndexOf(npcs, locations, quests, parties, species) }
-        return remember(parties, npcs, quests, locations, entries, index, species, facts) {
-            CodexRecords(parties, npcs, quests, locations, entries, index, species, facts)
+                items,
+            ) { mentionIndexOf(npcs, locations, quests, parties, species, items) }
+        return remember(parties, npcs, quests, locations, entries, index, species, facts, items) {
+            CodexRecords(parties, npcs, quests, locations, entries, index, species, facts, items)
         }
     }
 
@@ -378,6 +402,7 @@ class CodexPresenter(
     }
 
     // the sheet and the in-place editor share one selection - every committed change is offered to the undo toast
+    @Suppress("LongMethod")
     @Composable
     private fun rememberFields(reportChange: suspend (EntityChange) -> Unit): CodexFields {
         // rememberRetained not remember - state must survive push/pop navigation, not just recomposition
@@ -420,6 +445,8 @@ class CodexPresenter(
         val pendingDelete = rememberRetained { mutableStateOf<EntityRef?>(null) }
         val npcMode = rememberRetained { mutableStateOf(NpcListMode.NAMED) }
         val playerPickOpen = rememberRetained { mutableStateOf(false) }
+        val partyMode = rememberRetained { mutableStateOf(PartyListMode.CHARACTERS) }
+        val items = rememberItemsController(itemRepository, undoController)
         toast.autoDismiss()
         return CodexFields(
             activeTab,
@@ -436,11 +463,13 @@ class CodexPresenter(
             pendingDelete,
             npcMode,
             playerPickOpen,
+            partyMode,
+            items,
         )
     }
 
     // assembles the full screen state from already-computed pieces - a flat data merge, not real complexity
-    @Suppress("LongParameterList")
+    @Suppress("LongParameterList", "LongMethod")
     @Composable
     private fun buildCodexState(
         fields: CodexFields,
@@ -487,6 +516,8 @@ class CodexPresenter(
             party = party,
             npcs = grouped.npcs,
             npcMode = fields.npcMode.value,
+            partyMode = fields.partyMode.value,
+            items = rememberItemsState(fields.items, records, query, labels.entityType, context.mention),
             species =
                 speciesItems(
                     records,

@@ -36,6 +36,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.presentation.style.ItemMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.LocationMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.PartyMemberColor
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
@@ -131,6 +132,15 @@ fun MentionEntity.toChipItem(): MentionChipItem =
                 label = name,
                 color = SpeciesMentionColor,
                 entityRef = EntityRef.Species(id),
+            )
+
+        is MentionEntity.ItemMention ->
+            MentionChipItem(
+                stableId = dedupeKey(),
+                glyph = MentionGlyph.Entity(EntityKind.ITEM),
+                label = name,
+                color = ItemMentionColor,
+                entityRef = EntityRef.Item(id),
             )
 
         is MentionEntity.PartyMention ->

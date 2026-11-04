@@ -44,6 +44,7 @@ private class ContentsCollector {
     private val npcs = mutableListOf<FileRecord.Npc>()
     private val quests = mutableListOf<FileRecord.Quest>()
     private val party = mutableListOf<FileRecord.Party>()
+    private val items = mutableListOf<FileRecord.Item>()
     private val sessions = mutableListOf<FileRecord.Session>()
     private val mentions = mutableMapOf<Long, MutableSet<ExchangeRef>>()
 
@@ -54,6 +55,7 @@ private class ContentsCollector {
             is FileRecord.Npc -> npcs += record
             is FileRecord.Quest -> quests += record
             is FileRecord.Party -> party += record
+            is FileRecord.Item -> items += record
             is FileRecord.Session -> sessions += record
             is FileRecord.Tag, is FileRecord.Phrase -> Unit
             is FileRecord.Entry -> addMentions(record)
@@ -64,7 +66,9 @@ private class ContentsCollector {
 
     private fun addMentions(entry: FileRecord.Entry) {
         val found = mentions.getOrPut(entry.sessionId) { mutableSetOf() }
-        mentionRefsIn(entry.body).forEach { found.add(ExchangeRef(it.type.toExchangeKind(), it.id)) }
+        mentionRefsIn(entry.body).forEach { ref ->
+            found.add(ExchangeRef(ref.type.toExchangeKind(), ref.id))
+        }
     }
 
     fun rows() =
@@ -75,9 +79,13 @@ private class ContentsCollector {
             quests = quests.map { QuestRow(it.id, it.title, it.giverNpcId, it.placeId) },
             species = species.map { ExchangeItem(it.id, it.name) },
             party = party.map { ExchangeItem(it.id, it.name) },
+            items = items.map { ItemRow(it.id, it.name, it.quantity, it.owner()) },
             mentions = mentions,
         )
 }
+
+private fun FileRecord.Item.owner(): ExchangeRef? =
+    if (ownerKind != null && ownerId != null) ExchangeRef(ownerKind, ownerId) else null
 
 internal fun EntityKind.toExchangeKind(): ExchangeKind =
     when (this) {
@@ -86,4 +94,5 @@ internal fun EntityKind.toExchangeKind(): ExchangeKind =
         EntityKind.LOCATION -> ExchangeKind.PLACE
         EntityKind.QUEST -> ExchangeKind.QUEST
         EntityKind.SPECIES -> ExchangeKind.SPECIES
+        EntityKind.ITEM -> ExchangeKind.ITEM
     }

@@ -74,6 +74,7 @@ private fun PartyBody(
     EntityDescription(party.description, party.descriptionSegments, actions)
     EntityFactsGrid(party.withLevelArrow(actions), actions.onEntityRefClicked, actions.quickEdit)
     if (fall != null) Chronicle(fall, actions.onPartyRevived?.let { revive -> { revive(party.ref.id) } }, onRevived)
+    EntityGearSection(party.ref, party.gear, actions)
     EntityRelatedNotesSection(party.name, party.relatedNotes, actions.onRelatedNoteClicked)
     EntityDeleteButton(party.ref, actions)
 }

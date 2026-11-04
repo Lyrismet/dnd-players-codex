@@ -3,7 +3,7 @@ package com.lyrismet.incadent.feature.mention.domain
 import com.lyrismet.incadent.domain.model.EntityKind
 
 // the name shows once its record is gone, the kind letter and id decide who it is, the optional last number is how many
-internal val TOKEN_REGEX = Regex("@\\[([^\\[\\]|]*)\\|([npqls]):(\\d+)(?:\\|(\\d+))?]")
+internal val TOKEN_REGEX = Regex("@\\[([^\\[\\]|]*)\\|([npqlsi]):(\\d+)(?:\\|(\\d+))?]")
 
 internal fun EntityKind.code(): Char =
     when (this) {
@@ -12,6 +12,7 @@ internal fun EntityKind.code(): Char =
         EntityKind.LOCATION -> 'l'
         EntityKind.QUEST -> 'q'
         EntityKind.SPECIES -> 's'
+        EntityKind.ITEM -> 'i'
     }
 
 private fun Char.toMentionType(): EntityKind =
@@ -20,6 +21,7 @@ private fun Char.toMentionType(): EntityKind =
         'p' -> EntityKind.PARTY
         'l' -> EntityKind.LOCATION
         's' -> EntityKind.SPECIES
+        'i' -> EntityKind.ITEM
         else -> EntityKind.QUEST
     }
 

@@ -2,7 +2,10 @@ package com.lyrismet.incadent.feature.campaign.presentation.exchange
 
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeGraph
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeItem
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeOptions
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
+import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordSelection
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -92,5 +95,43 @@ class ExchangePickTest {
                 .first { it.id == 10L }
                 .reason,
         )
+    }
+
+    private val carrying =
+        ExchangePick(
+            options.copy(
+                items = listOf(ExchangeItem(50, "Potion", "×2 · Bob"), ExchangeItem(51, "Dagger", "×1 · Hero")),
+            ),
+            graph.copy(
+                itemOwner =
+                    mapOf(
+                        50L to ExchangeRef(ExchangeKind.NPC, 10L),
+                        51L to ExchangeRef(ExchangeKind.PARTY, 40L),
+                    ),
+            ),
+            RecordSelection(mode = ExportMode.FRIEND),
+            tab = ExchangeTab.ITEMS,
+        )
+
+    @Test
+    fun `a ticked item pulls the npc that carries it and says why`() {
+        val pick = carrying.toggled(50)
+        val bob = pick.withTab(ExchangeTab.NPCS).rows().single { it.name == "Bob" }
+        assertEquals(PickMark.Pulled, bob.mark)
+        assertEquals(PullKind.ITEM_OWNER, bob.reason?.kind)
+        assertEquals("Potion", bob.reason?.source)
+    }
+
+    @Test
+    fun `a friend copy does not offer what a character carries`() {
+        assertEquals(listOf("Potion"), carrying.rows().map { it.name })
+        assertEquals(1, carrying.tabCounts().single { it.tab == ExchangeTab.ITEMS }.total)
+        assertEquals(listOf("Potion", "Dagger"), carrying.withMode(ExportMode.SELF).rows().map { it.name })
+    }
+
+    @Test
+    fun `the whole campaign ticks every item`() {
+        val everything = ExchangePick.everything(carrying.options, carrying.graph)
+        assertEquals(setOf(50L, 51L), everything.selection.items)
     }
 }

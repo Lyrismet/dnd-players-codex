@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.coroutines.AppCoroutineScope
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
@@ -30,14 +31,23 @@ object DataBindings {
         createAppDatabase(driverFactory.createDriver())
 
     @Provides
+    @Suppress("LongParameterList")
     fun provideCodexRepositories(
         partyRepository: PartyRepository,
         npcRepository: NpcRepository,
         questRepository: QuestRepository,
         locationRepository: LocationRepository,
         speciesRepository: SpeciesRepository,
+        itemRepository: ItemRepository,
     ): CodexRepositories =
-        CodexRepositories(partyRepository, npcRepository, questRepository, locationRepository, speciesRepository)
+        CodexRepositories(
+            partyRepository,
+            npcRepository,
+            questRepository,
+            locationRepository,
+            speciesRepository,
+            itemRepository,
+        )
 
     @Provides
     @SingleIn(AppScope::class)

@@ -879,6 +879,7 @@
     <string name="exchange_tab_npcs">NPCs</string>
     <string name="exchange_tab_quests">Quests</string>
     <string name="exchange_tab_species">Species</string>
+    <string name="exchange_tab_items">Items</string>
     <string name="exchange_tab_sessions">Sessions</string>
     <string name="exchange_tab_format">%1$s · %2$d of %3$d</string>
     <string name="exchange_items_search">Search</string>
@@ -921,6 +922,7 @@
     <string name="exchange_kind_npc">NPC</string>
     <string name="exchange_kind_quest">quest</string>
     <string name="exchange_kind_species">species</string>
+    <string name="exchange_kind_item">item</string>
     <string name="exchange_kind_party">party</string>
     <string name="exchange_import_button_count">Import %1$d</string>
     <string name="exchange_error_title">That did not work</string>
@@ -959,6 +961,7 @@
     <string name="exchange_pull_quest">from quest “%1$s”</string>
     <string name="exchange_pull_session">from session “%1$s”</string>
     <string name="exchange_pull_parent">parent of place “%1$s”</string>
+    <string name="exchange_pull_item_owner">owner of item “%1$s”</string>
     <!-- combat results -->
     <string name="combat_result_hp">%1$d / %2$d</string>
     <string name="combat_result_fled">Fled</string>
@@ -1219,6 +1222,8 @@
     <string name="exchange_field_vulnerabilities">Vulnerabilities</string>
     <string name="exchange_field_notes">Notes</string>
     <string name="exchange_field_hit_points">Hit points</string>
+    <string name="exchange_field_quantity">Quantity</string>
+    <string name="exchange_field_price">Price</string>
     <string name="exchange_field_class">Class</string>
     <string name="exchange_field_level">Level</string>
     <string name="exchange_field_reward">Reward</string>
@@ -1325,9 +1330,81 @@
         <item quantity="one">%1$d character</item>
         <item quantity="other">%1$d characters</item>
     </plurals>
+    <plurals name="exchange_new_item">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
     <plurals name="exchange_detail_conflicts">
         <item quantity="one">%1$d conflict</item>
         <item quantity="other">%1$d conflicts</item>
     </plurals>
     <string name="exchange_export_file">File: %1$s</string>
+    <string name="session_detail_mention_type_item">Item</string>
+    <string name="deleted_mention_type_item">an item</string>
+    <string name="items_segment_characters">Characters</string>
+    <string name="items_segment_items">Items</string>
+    <string name="items_empty">No items yet</string>
+    <string name="items_empty_search">No items found</string>
+    <string name="items_add">+ Add item</string>
+    <string name="items_quantity_format">×%1$d</string>
+    <string name="items_price_each_format">%1$s each</string>
+    <plurals name="items_coin_platinum">
+        <item quantity="one">%1$s platinum</item>
+        <item quantity="other">%1$s platinum</item>
+    </plurals>
+    <plurals name="items_coin_gold">
+        <item quantity="one">%1$s gold</item>
+        <item quantity="other">%1$s gold</item>
+    </plurals>
+    <plurals name="items_coin_electrum">
+        <item quantity="one">%1$s electrum</item>
+        <item quantity="other">%1$s electrum</item>
+    </plurals>
+    <plurals name="items_coin_silver">
+        <item quantity="one">%1$s silver</item>
+        <item quantity="other">%1$s silver</item>
+    </plurals>
+    <plurals name="items_coin_copper">
+        <item quantity="one">%1$s copper</item>
+        <item quantity="other">%1$s copper</item>
+    </plurals>
+    <string name="items_coin_platinum_short">platinum</string>
+    <string name="items_coin_gold_short">gold</string>
+    <string name="items_coin_electrum_short">electrum</string>
+    <string name="items_coin_silver_short">silver</string>
+    <string name="items_coin_copper_short">copper</string>
+    <string name="items_sheet_title_new">New item</string>
+    <string name="items_sheet_title_edit">Item</string>
+    <string name="items_name_label">Name</string>
+    <string name="items_name_placeholder">For example, Rope 50 ft</string>
+    <string name="items_quantity_label">Quantity · up to 9999</string>
+    <string name="items_price_label">Price each · optional</string>
+    <string name="items_price_placeholder">No price</string>
+    <string name="items_owner_label">Carried by</string>
+    <string name="items_notes_label">Notes</string>
+    <string name="items_notes_placeholder">Where from, what for, who it is promised to</string>
+    <string name="items_delete">Delete item</string>
+    <string name="items_save">Save</string>
+    <string name="items_owner_me">me</string>
+    <string name="items_owner_shared">Shared</string>
+    <string name="items_owner_place_format">place “%1$s”</string>
+    <string name="items_owner_pick_title">Who carries it</string>
+    <string name="items_deleted_title">Item deleted</string>
+    <string name="items_owner_changed_title">Gear changed</string>
+    <string name="items_equipment_title">Gear</string>
+    <string name="items_equipment_empty">Nothing yet</string>
+    <string name="items_equipment_hint">Press and hold to choose</string>
+    <string name="items_equip_sheet_title">What is in the gear</string>
+    <string name="items_equip_selected">Selected</string>
+    <string name="items_equip_others">Others</string>
+    <string name="items_equip_will_move">%1$s · will move</string>
+    <string name="items_equip_done">Done · %1$d</string>
+    <string name="items_equip_none">No items yet</string>
+    <string name="items_card_quantity">Quantity</string>
+    <string name="items_card_owner">Owner</string>
+    <string name="items_card_price">Price each</string>
+    <string name="items_quantity_less">Fewer</string>
+    <string name="items_quantity_more">More</string>
+    <string name="items_empty_text">Potions, keys, trophies — carried by a character, an NPC or kept in a place.</string>
+    <string name="items_add_short">Add</string>
 </resources>

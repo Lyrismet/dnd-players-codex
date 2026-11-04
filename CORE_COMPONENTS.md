@@ -156,6 +156,7 @@ shape got copy-pasted that triggered this doc's `SegmentedControl` extraction in
 |---|---|---|
 | `FormTextField` | `component/FormFields.kt` | single-line labeled text input matching the create/edit form style. `required = true` adds the gold " *" after the label (the name field of every codex entry). |
 | `FormTextArea` | `component/FormFields.kt` | multi-line variant of `FormTextField`, 3-line minimum height. |
+| `formInputTextStyle` / `formLineInputStyle` / `formAreaInputStyle` / `FormFieldHeight` / `FORM_AREA_MIN_LINES` | `component/FormInputStyles.kt` | the one look of a form input (text style, 48dp height, 14dp padding). For an input drawn outside the `Form*` fields: a price beside a picker, the notes with mentions. Do not rebuild `AppTextInputStyle` by hand. |
 | `FormChipPicker` | `component/FormFields.kt` | see "Buttons, badges, chips" above. |
 | `FormNumberField` | `component/FormFields.kt` | labeled integer input on the system number keyboard - digits only (3 max), a value over the range's end is pulled down at once, one under its start on blur, empty is `null` and shows "—". `action` adds a small gold link-button under the field ("set level as your character's"). |
 | `FormPickField` | `component/FormFields.kt` | a tappable field row that opens a select sheet instead of taking text - shows a title with a subtitle (one value), mention chips (several) or a hint placeholder such as "Выберите одно или несколько мест" (never a dash). |

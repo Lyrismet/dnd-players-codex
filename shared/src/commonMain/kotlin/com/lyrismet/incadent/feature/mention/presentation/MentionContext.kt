@@ -7,11 +7,13 @@ import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.debounce.rememberDebounced
 import com.lyrismet.incadent.core.format.kindLabelRes
 import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.presentation.style.ItemMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.LocationMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.PartyMemberColor
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
@@ -33,6 +35,7 @@ import com.lyrismet.incadent.feature.mention.domain.token
 import com.lyrismet.incadent.feature.mention.domain.trailingMentionQuery
 import com.lyrismet.incadent.feature.mention.presentation.MentionGlyph
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.items_owner_me
 import dndplayerscodex.shared.generated.resources.mention_quest_giver_format
 import dndplayerscodex.shared.generated.resources.mention_section_codex
 import dndplayerscodex.shared.generated.resources.mention_section_previous_session
@@ -62,16 +65,18 @@ fun rememberMentionLookups(
     locations: List<Location>,
     quests: List<Quest>,
     parties: List<PartyMember>,
+    items: List<Item> = emptyList(),
 ): MentionLookups {
     val giverNames =
         remember(npcs, quests) {
             val byId = npcs.associateBy { it.id }
             quests.mapNotNull { quest -> quest.givenByNpcId?.let { byId[it]?.name } }.distinct()
         }
+    val meLabel = stringResource(Res.string.items_owner_me)
     val giverLines = giverNames.associateWith { stringResource(Res.string.mention_quest_giver_format, it) }
     val details =
-        remember(npcs, locations, quests, parties, giverLines) {
-            mentionDetails(npcs, locations, quests, parties) { giverLines[it].orEmpty() }
+        remember(npcs, locations, quests, parties, giverLines, items, meLabel) {
+            mentionDetails(npcs, locations, quests, parties, { giverLines[it].orEmpty() }, items, meLabel)
         }
     val nicknames = remember(npcs) { mentionNicknames(npcs) }
     return MentionLookups(nicknames, details)
@@ -93,17 +98,18 @@ internal fun buildMentionContext(
     quests: List<Quest>,
     parties: List<PartyMember>,
     species: List<Species>,
+    items: List<Item>,
     draftText: String,
     caret: Int,
     sessions: MentionSessionBodies,
 ): MentionContext {
     val mentionEntities =
-        remember(npcs, locations, quests, parties, species) {
-            mentionEntitiesFrom(npcs, locations, quests, parties, species)
+        remember(npcs, locations, quests, parties, species, items) {
+            mentionEntitiesFrom(npcs, locations, quests, parties, species, items)
         }
     val candidates = remember(mentionEntities) { MentionIndex(mentionEntities) }
 
-    val lookups = rememberMentionLookups(npcs, locations, quests, parties)
+    val lookups = rememberMentionLookups(npcs, locations, quests, parties, items)
     val dropdown =
         rememberMentionDropdown(
             mentionEntities,
@@ -135,6 +141,7 @@ internal fun rememberMentionDropdown(
             location = stringResource(EntityKind.LOCATION.kindLabelRes()),
             quest = stringResource(EntityKind.QUEST.kindLabelRes()),
             species = stringResource(EntityKind.SPECIES.kindLabelRes()),
+            item = stringResource(EntityKind.ITEM.kindLabelRes()),
         )
     val dropdownTexts = mentionDropdownTexts()
     val query = trailingMentionQuery(draftText, caret)
@@ -269,6 +276,7 @@ internal data class MentionTypeLabels(
     val location: String,
     val quest: String,
     val species: String,
+    val item: String,
 )
 
 internal fun MentionEntity.toSuggestion(
@@ -296,6 +304,8 @@ internal fun MentionEntity.toSuggestion(
                 )
             is MentionEntity.SpeciesMention ->
                 Triple(MentionGlyph.Entity(EntityKind.SPECIES), SpeciesMentionColor.foreground, labels.species)
+            is MentionEntity.ItemMention ->
+                Triple(MentionGlyph.Entity(EntityKind.ITEM), ItemMentionColor.foreground, labels.item)
             // a deleted record is never offered by the autocomplete, its candidates come from live records only
             is MentionEntity.DeletedMention -> Triple(MentionGlyph.Deleted, LocationMentionColor.foreground, "")
         }

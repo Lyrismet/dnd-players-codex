@@ -1,7 +1,10 @@
 package com.lyrismet.incadent.feature.campaign.data.file
 
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportError
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportFailedException
+import com.lyrismet.incadent.feature.codex.domain.model.ITEM_PRICE_RANGE
+import com.lyrismet.incadent.feature.codex.domain.model.ITEM_QUANTITY_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 import com.lyrismet.incadent.feature.mention.domain.mentionRefsIn
@@ -21,6 +24,7 @@ class RecordValidator {
     private val npcs = mutableSetOf<Long>()
     private val quests = mutableSetOf<Long>()
     private val party = mutableSetOf<Long>()
+    private val items = mutableSetOf<Long>()
     private val sessions = mutableSetOf<Long>()
     private val fights = FightRules(species, npcs, party, sessions)
 
@@ -37,6 +41,7 @@ class RecordValidator {
             is FileRecord.Npc -> checkNpc(record)
             is FileRecord.Quest -> checkQuest(record)
             is FileRecord.Party -> must(party.add(record.id))
+            is FileRecord.Item -> checkItem(record)
             is FileRecord.Session -> must(sessions.add(record.id))
             is FileRecord.Entry -> must(record.sessionId in sessions)
             is FightRecord -> must(fights.accept(record))
@@ -53,6 +58,22 @@ class RecordValidator {
         must(npcs.add(record.id))
     }
 
+    private fun checkItem(record: FileRecord.Item) {
+        must(record.quantity in ITEM_QUANTITY_RANGE)
+        must(record.price == null || record.price in ITEM_PRICE_RANGE)
+        must((record.ownerKind == null) == (record.ownerId == null))
+        must(record.ownerKind == null || record.ownerId in ownersOf(record.ownerKind))
+        must(items.add(record.id))
+    }
+
+    private fun ownersOf(kind: ExchangeKind): Set<Long> =
+        when (kind) {
+            ExchangeKind.NPC -> npcs
+            ExchangeKind.PLACE -> places
+            ExchangeKind.PARTY -> party
+            else -> emptySet()
+        }
+
     private fun checkQuest(record: FileRecord.Quest) {
         must(record.giverNpcId == null || record.giverNpcId in npcs)
         must(record.placeId == null || record.placeId in places)
@@ -60,6 +81,7 @@ class RecordValidator {
     }
 
     // a file is never shorter than a form allows, but it can be stuffed to bloat the database
+    @Suppress("CyclomaticComplexMethod")
     private fun checkLengths(record: FileRecord) {
         must(
             when (record) {
@@ -68,6 +90,7 @@ class RecordValidator {
                 is FileRecord.Npc -> record.fits()
                 is FileRecord.Quest -> record.fits()
                 is FileRecord.Party -> record.fits()
+                is FileRecord.Item -> fits(MAX_SHORT_CHARS, record.name) && fits(MAX_LONG_CHARS, record.notes)
                 is FileRecord.Tag -> fits(MAX_SHORT_CHARS, record.name)
                 is FileRecord.Phrase -> fits(MAX_LONG_CHARS, record.text)
                 is FileRecord.Session -> record.fits()
@@ -84,6 +107,7 @@ class RecordValidator {
             PhotoOwner.PLACE -> places
             PhotoOwner.NPC -> npcs
             PhotoOwner.PARTY -> party
+            PhotoOwner.ITEM -> items
         }
 
     private fun must(holds: Boolean) {
@@ -92,7 +116,7 @@ class RecordValidator {
 }
 
 // a place's parent, an npc's species and places, a quest's npc and place all sit in sections above them
-private enum class Section { SPECIES, PLACE, NPC, QUEST, PARTY, TAG, PHRASE, SESSION, ENTRY, FIGHT, PHOTO }
+private enum class Section { SPECIES, PLACE, NPC, QUEST, PARTY, ITEM, TAG, PHRASE, SESSION, ENTRY, FIGHT, PHOTO }
 
 private fun FileRecord.rank(): Int =
     when (this) {
@@ -101,6 +125,7 @@ private fun FileRecord.rank(): Int =
         is FileRecord.Npc -> Section.NPC
         is FileRecord.Quest -> Section.QUEST
         is FileRecord.Party -> Section.PARTY
+        is FileRecord.Item -> Section.ITEM
         is FileRecord.Tag -> Section.TAG
         is FileRecord.Phrase -> Section.PHRASE
         is FileRecord.Session -> Section.SESSION

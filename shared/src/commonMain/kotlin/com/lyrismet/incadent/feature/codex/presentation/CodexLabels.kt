@@ -34,6 +34,7 @@ import dndplayerscodex.shared.generated.resources.codex_party_card_player_prefix
 import dndplayerscodex.shared.generated.resources.codex_party_card_you
 import dndplayerscodex.shared.generated.resources.codex_party_fallen_word
 import dndplayerscodex.shared.generated.resources.codex_undo_deleted_title
+import dndplayerscodex.shared.generated.resources.session_detail_mention_type_item
 import org.jetbrains.compose.resources.stringResource
 
 /** the labels the codex screen resolves from resources, collected once per composition */
@@ -59,6 +60,7 @@ internal fun codexLabels(): CodexLabels {
         entityType =
             mapOf(
                 EntityKind.PARTY to stringResource(Res.string.codex_entry_type_party),
+                EntityKind.ITEM to stringResource(Res.string.session_detail_mention_type_item),
                 EntityKind.NPC to stringResource(Res.string.codex_entry_type_npc),
                 EntityKind.QUEST to stringResource(Res.string.codex_entry_type_quest),
                 EntityKind.LOCATION to stringResource(Res.string.codex_entry_type_location),

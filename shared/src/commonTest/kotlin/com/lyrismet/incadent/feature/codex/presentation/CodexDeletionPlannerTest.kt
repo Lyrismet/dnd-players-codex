@@ -6,6 +6,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
+import com.lyrismet.incadent.feature.codex.presentation.summary.FakeItemRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeLocationRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartyRepository
@@ -40,6 +41,7 @@ class CodexDeletionPlannerTest {
             FakeQuestRepository(),
             FakeLocationRepository(),
             FakeSpeciesRepository(),
+            FakeItemRepository(),
         )
 
     private fun records(vararg bodies: Pair<Long, String>) =

@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -62,6 +61,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppTextInputCounter
 import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.formInputTextStyle
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.feature.mention.presentation.MentionDropdownContent
@@ -179,7 +179,7 @@ private fun ComposerDraftField(
         // the card around the field is the composer's own, so the input draws none and counts what the user sees
         style =
             AppTextInputStyle(
-                textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp),
+                textStyle = formInputTextStyle(),
                 chrome = null,
                 contentPadding = PaddingValues(),
             ),

@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LinkSuggestionDismissalRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
@@ -37,6 +38,7 @@ class CodexPresenterFactory(
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
     private val speciesRepository: SpeciesRepository,
+    private val itemRepository: ItemRepository,
     private val combatFactsSource: CombatFactsSource,
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
@@ -60,6 +62,7 @@ class CodexPresenterFactory(
                     questRepository,
                     locationRepository,
                     speciesRepository,
+                    itemRepository,
                     combatFactsSource,
                     sessionNoteRepository,
                     sessionEntryRepository,

@@ -63,7 +63,7 @@ class ExportPresenter(
 
         val loaded = catalog
         val everything = remember(loaded) { loaded?.let { ExchangePick.everything(it.options, it.graph) } }
-        val active = if (whole || mode == ExportMode.SELF) everything else hand
+        val active = (if (whole || mode == ExportMode.SELF) everything else hand)?.withMode(mode)
         // the text of the file does not depend on the photos switch, so a flip of it does not measure again
         val measured = active?.selection?.copy(mode = mode, partyNotes = partyNotes)
         val estimate by produceState<ExportEstimate?>(null, measured) {
@@ -71,7 +71,7 @@ class ExportPresenter(
             if (value != null) delay(ESTIMATE_DEBOUNCE_MILLIS)
             value = measured?.let { repository.estimate(screen.campaignId, it) }
         }
-        val view = remember(hand) { hand?.toView() }
+        val view = remember(hand, mode) { hand?.withMode(mode)?.toView() }
         val modeLabel =
             stringResource(
                 if (mode ==

@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.combat.presentation.results
 
+import com.lyrismet.incadent.feature.codex.data.ItemRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.LocationRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.NpcRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.PartyRepositoryImpl
@@ -51,6 +52,7 @@ class ResultsSaverTest {
             QuestRepositoryImpl(db.database, db.current),
             LocationRepositoryImpl(db.database, db.current),
             SpeciesRepositoryImpl(db.database, db.current),
+            ItemRepositoryImpl(db.database, db.current),
         )
     private val saver = ResultsSaver(combats, notes, observations, codex)
     private val now = LocalDateTime.parse("2026-10-22T21:00")

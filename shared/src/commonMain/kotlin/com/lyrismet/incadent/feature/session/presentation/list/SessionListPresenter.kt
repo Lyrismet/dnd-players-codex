@@ -100,6 +100,7 @@ class SessionListPresenter(
         val quests by codexRepositories.questRepository.observeAll().collectAsState(initial = emptyList())
         val parties by codexRepositories.partyRepository.observeAll().collectAsState(initial = emptyList())
         val species by codexRepositories.speciesRepository.observeAll().collectAsState(initial = emptyList())
+        val items by codexRepositories.itemRepository.observeAll().collectAsState(initial = emptyList())
         val facts by combatFactsSource.observe().collectAsState(initial = CombatFacts.EMPTY)
         val tagsBySession by tagRepository.observeAllSessionTags().collectAsState(initial = emptyMap())
         val numbering by appPreferencesRepository
@@ -109,8 +110,8 @@ class SessionListPresenter(
         val noNotesLabel = stringResource(Res.string.session_list_live_no_notes)
         val undoDeletedTitle = stringResource(Res.string.session_list_undo_deleted_title)
         val candidates =
-            remember(npcs, locations, quests, parties, species) {
-                MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties, species))
+            remember(npcs, locations, quests, parties, species, items) {
+                MentionIndex(mentionEntitiesFrom(npcs, locations, quests, parties, species, items))
             }
         val toast = remember { mutableStateOf<ToastMessage?>(null) }
         toast.autoDismiss()
@@ -180,6 +181,7 @@ class SessionListPresenter(
                 parties,
                 species,
                 facts,
+                items,
             )
         val fullPhoto =
             rememberFullPhoto(selectedSummary, codexRepositories)
@@ -221,6 +223,7 @@ class SessionListPresenter(
                         quests = quests,
                         locations = locations,
                         species = species,
+                        items = items,
                     ),
                     holdTipAllowed = holdHint == HoldHintState.PENDING,
                     undoAction = undoAction,

@@ -34,6 +34,7 @@ import dndplayerscodex.shared.generated.resources.exchange_error_other_file
 import dndplayerscodex.shared.generated.resources.exchange_error_read_body
 import dndplayerscodex.shared.generated.resources.exchange_error_read_title
 import dndplayerscodex.shared.generated.resources.exchange_import_done_toast
+import dndplayerscodex.shared.generated.resources.exchange_kind_item
 import dndplayerscodex.shared.generated.resources.exchange_kind_npc
 import dndplayerscodex.shared.generated.resources.exchange_kind_party
 import dndplayerscodex.shared.generated.resources.exchange_kind_place
@@ -96,6 +97,7 @@ internal fun ExchangeKind.label(): StringResource =
         ExchangeKind.NPC -> Res.string.exchange_kind_npc
         ExchangeKind.QUEST -> Res.string.exchange_kind_quest
         ExchangeKind.SPECIES -> Res.string.exchange_kind_species
+        ExchangeKind.ITEM -> Res.string.exchange_kind_item
         ExchangeKind.PARTY -> Res.string.exchange_kind_party
         ExchangeKind.SESSION -> Res.string.exchange_tab_sessions
     }

@@ -92,6 +92,7 @@ fun EntityKind.icon(): ImageVector =
         EntityKind.QUEST -> EntityIcons.Quest
         EntityKind.LOCATION -> EntityIcons.Location
         EntityKind.SPECIES -> EntityIcons.Species
+        EntityKind.ITEM -> EntityIcons.Item
     }
 
 /** an entity silhouette in a square of [size] (14 dp in rows and chips, 24 and 48 dp in badges), filled with [tint] */

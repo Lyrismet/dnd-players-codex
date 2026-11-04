@@ -20,6 +20,7 @@ internal class CampaignLocals(
     val npcs = database.npcQueries.selectAllWithLocations(campaignId).executeAsList()
     val quests = database.questQueries.selectAll(campaignId).executeAsList()
     val party = database.partyMemberQueries.selectAll(campaignId).executeAsList()
+    val items = database.itemQueries.selectAll(campaignId).executeAsList()
     val sessions = database.sessionNoteQueries.selectAll(campaignId).executeAsList()
     val entries: Map<Long, List<Session_entry>> =
         database.sessionEntryQueries
@@ -55,6 +56,7 @@ internal class CampaignLocals(
             ExchangeKind.NPC to npcs.map { LocalRecord(it.id, it.name, it.origin_id) },
             ExchangeKind.QUEST to quests.map { LocalRecord(it.id, it.title, it.origin_id) },
             ExchangeKind.PARTY to party.map { LocalRecord(it.id, it.name, it.origin_id) },
+            ExchangeKind.ITEM to items.map { LocalRecord(it.id, it.name, it.origin_id) },
             ExchangeKind.SESSION to sessions.map { LocalRecord(it.id, it.title, it.origin_id) },
         )
 
@@ -73,6 +75,8 @@ internal class CampaignLocals(
             name,
             records.getValue(kind),
             apart[kind].orEmpty(),
+            // stacks of the same name are common, so an item is only ever the one with its origin id
+            byName = kind != ExchangeKind.ITEM,
         ) { aliases[kind]?.get(it) ?: it }
 
     /** the origin id a file's id stands for here, an id merged away leads to its survivor */

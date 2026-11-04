@@ -10,7 +10,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 private val labels =
-    MentionTypeLabels(npc = "NPC", party = "Отряд", location = "Место", quest = "Квест", species = "Вид")
+    MentionTypeLabels(
+        npc = "NPC",
+        party = "Отряд",
+        location = "Место",
+        quest = "Квест",
+        species = "Вид",
+        item = "Предмет",
+    )
 private val texts =
     MentionDropdownTexts(
         search = "ПОИСК",

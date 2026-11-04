@@ -911,6 +911,7 @@
     <string name="exchange_tab_npcs">NPC</string>
     <string name="exchange_tab_quests">Квесты</string>
     <string name="exchange_tab_species">Виды</string>
+    <string name="exchange_tab_items">Предметы</string>
     <string name="exchange_tab_sessions">Сессии</string>
     <string name="exchange_tab_format">%1$s · %2$d из %3$d</string>
     <string name="exchange_items_search">Найти</string>
@@ -953,6 +954,7 @@
     <string name="exchange_kind_npc">NPC</string>
     <string name="exchange_kind_quest">квест</string>
     <string name="exchange_kind_species">вид</string>
+    <string name="exchange_kind_item">предмет</string>
     <string name="exchange_kind_party">отряд</string>
     <string name="exchange_import_button_count">Импортировать %1$d</string>
     <string name="exchange_error_title">Не получилось</string>
@@ -993,6 +995,7 @@
     <string name="exchange_pull_quest">из квеста «%1$s»</string>
     <string name="exchange_pull_session">из сессии «%1$s»</string>
     <string name="exchange_pull_parent">родитель места «%1$s»</string>
+    <string name="exchange_pull_item_owner">владелец предмета «%1$s»</string>
     <!-- combat results -->
     <string name="combat_result_hp">%1$d / %2$d</string>
     <string name="combat_result_fled">Сбежал</string>
@@ -1257,6 +1260,8 @@
     <string name="exchange_field_vulnerabilities">Уязвимости</string>
     <string name="exchange_field_notes">Заметки</string>
     <string name="exchange_field_hit_points">Хиты</string>
+    <string name="exchange_field_quantity">Количество</string>
+    <string name="exchange_field_price">Цена</string>
     <string name="exchange_field_class">Класс</string>
     <string name="exchange_field_level">Уровень</string>
     <string name="exchange_field_reward">Награда</string>
@@ -1385,6 +1390,12 @@
         <item quantity="many">%1$d персонажей</item>
         <item quantity="other">%1$d персонажа</item>
     </plurals>
+    <plurals name="exchange_new_item">
+        <item quantity="one">%1$d предмет</item>
+        <item quantity="few">%1$d предмета</item>
+        <item quantity="many">%1$d предметов</item>
+        <item quantity="other">%1$d предмета</item>
+    </plurals>
     <plurals name="exchange_detail_conflicts">
         <item quantity="one">%1$d конфликт</item>
         <item quantity="few">%1$d конфликта</item>
@@ -1392,4 +1403,82 @@
         <item quantity="other">%1$d конфликта</item>
     </plurals>
     <string name="exchange_export_file">Файл: %1$s</string>
+    <string name="session_detail_mention_type_item">Предмет</string>
+    <string name="deleted_mention_type_item">предмет</string>
+    <string name="items_segment_characters">Персонажи</string>
+    <string name="items_segment_items">Предметы</string>
+    <string name="items_empty">Предметов пока нет</string>
+    <string name="items_empty_search">Среди предметов ничего не нашлось</string>
+    <string name="items_add">+ Добавить предмет</string>
+    <string name="items_quantity_format">×%1$d</string>
+    <string name="items_price_each_format">%1$s за штуку</string>
+    <plurals name="items_coin_platinum">
+        <item quantity="one">%1$s платиновый</item>
+        <item quantity="few">%1$s платиновых</item>
+        <item quantity="many">%1$s платиновых</item>
+        <item quantity="other">%1$s платиновых</item>
+    </plurals>
+    <plurals name="items_coin_gold">
+        <item quantity="one">%1$s золотой</item>
+        <item quantity="few">%1$s золотых</item>
+        <item quantity="many">%1$s золотых</item>
+        <item quantity="other">%1$s золотых</item>
+    </plurals>
+    <plurals name="items_coin_electrum">
+        <item quantity="one">%1$s электрумовый</item>
+        <item quantity="few">%1$s электрумовых</item>
+        <item quantity="many">%1$s электрумовых</item>
+        <item quantity="other">%1$s электрумовых</item>
+    </plurals>
+    <plurals name="items_coin_silver">
+        <item quantity="one">%1$s серебряный</item>
+        <item quantity="few">%1$s серебряных</item>
+        <item quantity="many">%1$s серебряных</item>
+        <item quantity="other">%1$s серебряных</item>
+    </plurals>
+    <plurals name="items_coin_copper">
+        <item quantity="one">%1$s медный</item>
+        <item quantity="few">%1$s медных</item>
+        <item quantity="many">%1$s медных</item>
+        <item quantity="other">%1$s медных</item>
+    </plurals>
+    <string name="items_coin_platinum_short">платиновые</string>
+    <string name="items_coin_gold_short">золотые</string>
+    <string name="items_coin_electrum_short">электрумовые</string>
+    <string name="items_coin_silver_short">серебряные</string>
+    <string name="items_coin_copper_short">медные</string>
+    <string name="items_sheet_title_new">Новый предмет</string>
+    <string name="items_sheet_title_edit">Предмет</string>
+    <string name="items_name_label">Название</string>
+    <string name="items_name_placeholder">Например, Верёвка 50 фт</string>
+    <string name="items_quantity_label">Количество · до 9999</string>
+    <string name="items_price_label">Цена за штуку · необязательно</string>
+    <string name="items_price_placeholder">Без цены</string>
+    <string name="items_owner_label">У кого</string>
+    <string name="items_notes_label">Заметки</string>
+    <string name="items_notes_placeholder">Откуда, для чего, кому обещан</string>
+    <string name="items_delete">Удалить предмет</string>
+    <string name="items_save">Сохранить</string>
+    <string name="items_owner_me">я</string>
+    <string name="items_owner_shared">Общее</string>
+    <string name="items_owner_place_format">место «%1$s»</string>
+    <string name="items_owner_pick_title">У кого предмет</string>
+    <string name="items_deleted_title">Предмет удалён</string>
+    <string name="items_owner_changed_title">Снаряжение изменено</string>
+    <string name="items_equipment_title">Снаряжение</string>
+    <string name="items_equipment_empty">Пока ничего</string>
+    <string name="items_equipment_hint">Удерживайте, чтобы выбрать</string>
+    <string name="items_equip_sheet_title">Что в снаряжении</string>
+    <string name="items_equip_selected">Выбрано</string>
+    <string name="items_equip_others">Остальные</string>
+    <string name="items_equip_will_move">%1$s · перейдёт</string>
+    <string name="items_equip_done">Готово · %1$d</string>
+    <string name="items_equip_none">Предметов пока нет</string>
+    <string name="items_card_quantity">Количество</string>
+    <string name="items_card_owner">Владелец</string>
+    <string name="items_card_price">Цена за штуку</string>
+    <string name="items_quantity_less">Меньше</string>
+    <string name="items_quantity_more">Больше</string>
+    <string name="items_empty_text">Зелья, ключи, трофеи — у персонажа, NPC или в месте.</string>
+    <string name="items_add_short">Добавить</string>
 </resources>

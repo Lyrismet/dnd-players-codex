@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
+import com.lyrismet.incadent.feature.codex.presentation.summary.FakeItemRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeLocationRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartyRepository
@@ -112,5 +113,12 @@ class CodexDeletionPlannerPhotoTest {
         npcs: FakeNpcRepository = FakeNpcRepository(),
         party: FakePartyRepository = FakePartyRepository(),
         locations: FakeLocationRepository = FakeLocationRepository(),
-    ) = CodexDeletionPlanner(npcs, party, FakeQuestRepository(), locations, FakeSpeciesRepository())
+    ) = CodexDeletionPlanner(
+        npcs,
+        party,
+        FakeQuestRepository(),
+        locations,
+        FakeSpeciesRepository(),
+        FakeItemRepository(),
+    )
 }

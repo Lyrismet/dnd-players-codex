@@ -103,7 +103,7 @@ internal class PrepEditor(
                 codexRepositories.partyRepository.getById(id)?.let {
                     preparation.setPartyIncluded(combat, PartySeat(id, it.name), included = true)
                 }
-            EntityKind.QUEST, EntityKind.LOCATION -> Unit
+            EntityKind.QUEST, EntityKind.LOCATION, EntityKind.ITEM -> Unit
         }
     }
 

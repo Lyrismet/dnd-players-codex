@@ -28,6 +28,9 @@ import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayba
 import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
+import com.lyrismet.incadent.feature.codex.presentation.item.CodexItemSheets
+import com.lyrismet.incadent.feature.codex.presentation.item.CodexItemsList
+import com.lyrismet.incadent.feature.codex.presentation.item.ItemEvent
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPickSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityCardSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.asSheet
@@ -122,6 +125,7 @@ fun CodexUi(
     state.deleteWarning?.let { CodexDeleteWarningDialog(it, state.eventSink) }
 
     CodexActiveSheet(state)
+    CodexItemSheets(state)
 }
 
 @Composable
@@ -181,14 +185,19 @@ private fun CodexListArea(
     state: CodexState,
     hintPeekOffsetPx: () -> Float,
 ) {
-    if (state.isLoading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { AppLoader() }
-        return
+    when {
+        state.isLoading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { AppLoader() }
+        state.showsSpecies -> CodexSpeciesList(state)
+        state.showsItems -> CodexItemsList(state)
+        else -> CodexEmptyAwareList(state, hintPeekOffsetPx)
     }
-    if (state.showsSpecies) {
-        CodexSpeciesList(state)
-        return
-    }
+}
+
+@Composable
+private fun CodexEmptyAwareList(
+    state: CodexState,
+    hintPeekOffsetPx: () -> Float,
+) {
     when (val empty = state.emptyState) {
         CodexEmptyState.Hidden -> CodexActiveList(state, hintPeekOffsetPx)
         is CodexEmptyState.OtherSections ->
@@ -232,6 +241,11 @@ private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
                     state.eventSink(CodexEvent.EntityDeleteRequested(ref))
                 }
             },
+        itemEdit = !state.readOnly,
+        onItemEditClicked = { ref ->
+            state.eventSink(CodexEvent.EntitySheet(EntitySheetEvent.Dismissed))
+            state.eventSink(CodexEvent.Items(ItemEvent.Opened(ref.id)))
+        },
         statusesReadOnly = !isQuick,
         linkOffers = state.linkOffers,
         quickEdit = if (isQuick) state.quick.asSheet { state.eventSink(CodexEvent.QuickEdit(it)) } else null,

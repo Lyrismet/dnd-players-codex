@@ -14,6 +14,7 @@ fun ExchangeGraph.withKnownMentionsOnly(options: ExchangeOptions): ExchangeGraph
             options.quests.forEach { add(ExchangeRef(ExchangeKind.QUEST, it.id)) }
             options.species.forEach { add(ExchangeRef(ExchangeKind.SPECIES, it.id)) }
             options.party.forEach { add(ExchangeRef(ExchangeKind.PARTY, it.id)) }
+            options.items.forEach { add(ExchangeRef(ExchangeKind.ITEM, it.id)) }
         }
     return copy(
         sessionMentions =

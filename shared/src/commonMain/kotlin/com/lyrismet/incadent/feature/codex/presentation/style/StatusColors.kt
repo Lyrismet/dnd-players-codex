@@ -54,6 +54,9 @@ fun QuestStatus.toStatusColor(): StatusColor =
 /** a species chip has no status, it stays the neutral grey */
 val SpeciesMentionColor = Neutral
 
+/** an item has no status, so its chip keeps the neutral colour */
+val ItemMentionColor = Neutral
+
 /** location mention chips always use the parchment accent, regardless of any per-entity state */
 val LocationMentionColor =
     statusColor(

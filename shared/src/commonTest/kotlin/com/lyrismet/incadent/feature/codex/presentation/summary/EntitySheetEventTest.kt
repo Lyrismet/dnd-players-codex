@@ -28,6 +28,7 @@ class EntitySheetEventTest {
                 FakeQuestRepository(),
                 FakeLocationRepository(),
                 FakeSpeciesRepository(),
+                FakeItemRepository(),
             ),
             { id, entry -> opened += id to entry },
         )

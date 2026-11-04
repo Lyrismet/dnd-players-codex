@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.feature.campaign.data.file
 
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
+import com.lyrismet.incadent.feature.codex.domain.model.Coin
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -24,7 +26,8 @@ import kotlinx.serialization.json.JsonNames
 const val FILE_FORMAT = "incadent"
 
 // 2 added the saved fights, 3 the origin ids, 4 the export mode, a file of an older version reads as a friend copy
-const val FILE_VERSION = 4
+// 5 added the items
+const val FILE_VERSION = 5
 
 /** the first line of a file, what the preview shows is read from here before anything else */
 @Serializable
@@ -117,6 +120,21 @@ sealed interface FileRecord {
         val hpCurrent: Int? = null,
         val description: String = "",
         val fallen: Boolean = false,
+        val originId: String? = null,
+    ) : FileRecord
+
+    /** a thing somebody carries, [ownerKind] and [ownerId] are the file's own id of the party member, npc or place */
+    @Serializable
+    @SerialName("item")
+    data class Item(
+        val id: Long,
+        val name: String,
+        val quantity: Int = 1,
+        val price: Int? = null,
+        val coin: Coin = Coin.GOLD,
+        val ownerKind: ExchangeKind? = null,
+        val ownerId: Long? = null,
+        val notes: String = "",
         val originId: String? = null,
     ) : FileRecord
 
@@ -240,4 +258,4 @@ sealed interface FileRecord {
 sealed interface FightRecord : FileRecord
 
 @Serializable
-enum class PhotoOwner { SPECIES, PLACE, NPC, PARTY }
+enum class PhotoOwner { SPECIES, PLACE, NPC, PARTY, ITEM }

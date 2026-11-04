@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,7 +25,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
@@ -36,9 +34,8 @@ import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 
 private val FieldShape = AppShapes.Field
 private val PrimaryButtonHeight = 52.dp
-private val FieldHeight = 48.dp
+
 private val AreaMinHeight = 92.dp
-private const val AREA_MIN_LINES = 3
 
 /** one chip option for [FormChipPicker] - a single pill, selected state driven by the caller */
 data class FormChipOption<T>(
@@ -70,7 +67,7 @@ fun FormTextField(
             placeholder = placeholder,
             maxLength = maxLength,
             singleLine = true,
-            modifier = Modifier.height(FieldHeight),
+            modifier = Modifier.height(FormFieldHeight),
         )
     }
 }
@@ -127,10 +124,7 @@ fun FormNumberField(
             },
             placeholder = EMPTY_VALUE_DASH,
             style =
-                AppTextInputStyle(
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp),
-                    height = FieldHeight,
-                ),
+                AppTextInputStyle(textStyle = formInputTextStyle(), height = FormFieldHeight),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier =
                 Modifier.onFocusChanged { focus ->
@@ -261,20 +255,9 @@ private fun FormInput(
         modifier = modifier,
         placeholder = placeholder,
         style =
-            AppTextInputStyle(
-                textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp),
-                height = if (singleLine) FieldHeight else null,
-                contentPadding =
-                    if (singleLine) {
-                        PaddingValues(
-                            horizontal = 14.dp,
-                        )
-                    } else {
-                        PaddingValues(horizontal = 14.dp, vertical = 12.dp)
-                    },
-            ),
+            if (singleLine) formLineInputStyle() else formAreaInputStyle(),
         singleLine = singleLine,
-        minLines = if (singleLine) 1 else AREA_MIN_LINES,
+        minLines = if (singleLine) 1 else FORM_AREA_MIN_LINES,
         counter = AppTextInputCounter(maxLength),
     )
 }

@@ -15,6 +15,7 @@ val EntitySummaryItem.entityRef: EntityRef
             is EntitySummaryItem.QuestSummary -> ref
             is EntitySummaryItem.PartySummary -> ref
             is EntitySummaryItem.SpeciesSummary -> ref
+            is EntitySummaryItem.ItemSummary -> ref
         }
 
 /** the photo the card draws - only a thumbnail from the list models, until [withFullPhoto] swaps the full one in */
@@ -25,6 +26,7 @@ val EntitySummaryItem.photo: Photo?
             is EntitySummaryItem.LocationSummary -> cover
             is EntitySummaryItem.PartySummary -> emblem.portrait
             is EntitySummaryItem.SpeciesSummary -> emblem.portrait
+            is EntitySummaryItem.ItemSummary -> emblem.portrait
             is EntitySummaryItem.QuestSummary -> null
         }
 
@@ -37,6 +39,7 @@ fun EntitySummaryItem.withFullPhoto(full: Photo?): EntitySummaryItem {
         is EntitySummaryItem.LocationSummary -> copy(cover = full)
         is EntitySummaryItem.PartySummary -> copy(emblem = emblem.copy(portrait = full))
         is EntitySummaryItem.SpeciesSummary -> copy(emblem = emblem.copy(portrait = full))
+        is EntitySummaryItem.ItemSummary -> copy(emblem = emblem.copy(portrait = full))
         is EntitySummaryItem.QuestSummary -> this
     }
 }
@@ -59,6 +62,7 @@ fun rememberFullPhoto(
                     is EntityRef.Party -> repositories.partyRepository.getById(ref.id)?.portrait
                     is EntityRef.Location -> repositories.locationRepository.getById(ref.id)?.cover
                     is EntityRef.Species -> repositories.speciesRepository.getById(ref.id)?.photo
+                    is EntityRef.Item -> repositories.itemRepository.getById(ref.id)?.photo
                     is EntityRef.Quest, null -> null
                 }
             }

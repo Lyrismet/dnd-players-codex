@@ -86,3 +86,14 @@ CREATE TRIGGER session_note_forget_deleted AFTER INSERT ON session_note
 BEGIN
     DELETE FROM deleted_origin WHERE campaign_id = new.campaign_id AND kind = 'SESSION' AND origin_id = new.origin_id;
 END;
+
+CREATE TRIGGER item_remember_deleted AFTER DELETE ON item
+WHEN EXISTS (SELECT 1 FROM campaign WHERE id = old.campaign_id) AND old.origin_id != ''
+BEGIN
+    INSERT OR REPLACE INTO deleted_origin(campaign_id, kind, origin_id, name) VALUES (old.campaign_id, 'ITEM', old.origin_id, old.name);
+END;
+
+CREATE TRIGGER item_forget_deleted AFTER INSERT ON item
+BEGIN
+    DELETE FROM deleted_origin WHERE campaign_id = new.campaign_id AND kind = 'ITEM' AND origin_id = new.origin_id;
+END;

@@ -8,15 +8,16 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeItem
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeOptions
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
+import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordSelection
 
-enum class ExchangeTab { PLACES, NPCS, QUESTS, SPECIES, SESSIONS }
+enum class ExchangeTab { PLACES, NPCS, QUESTS, SPECIES, ITEMS, SESSIONS }
 
 /** [Pulled] is a record nobody ticked that comes along because a ticked one needs it */
 enum class PickMark { Off, On, Pulled }
 
-enum class PullKind { NPC_PLACE, NPC_SPECIES, QUEST, SESSION, PLACE_PARENT }
+enum class PullKind { NPC_PLACE, NPC_SPECIES, QUEST, SESSION, PLACE_PARENT, ITEM_OWNER }
 
 /** why a record comes along: what needs it and the name of that record */
 data class PullReason(
@@ -55,14 +56,13 @@ data class ExchangePick(
     val isEmpty: Boolean get() = recordCount + sessionCount == 0
 
     fun tabCounts(): List<PickTabCount> =
-        ExchangeTab.entries.map { PickTabCount(it, scope.idsOf(it).size, options.itemsOf(it).size) }
+        ExchangeTab.entries.map { PickTabCount(it, scope.idsOf(it).size, shown(it).size) }
 
     fun rows(): List<PickRow> {
         val explicit = selection.idsOf(tab)
         val all = scope.idsOf(tab)
         val needle = query.nameKey()
-        return options
-            .itemsOf(tab)
+        return shown(tab)
             .filter { needle.isEmpty() || it.name.foldForSearch().contains(needle) }
             .map {
                 val mark = markOf(it.id, explicit, all)
@@ -70,12 +70,31 @@ data class ExchangePick(
             }
     }
 
+    // what a tab lists - a friend copy never carries what a party member carries, so those items are not on offer
+    private fun shown(tab: ExchangeTab): List<ExchangeItem> =
+        options.itemsOf(tab).filter {
+            tab != ExchangeTab.ITEMS ||
+                selection.mode == ExportMode.SELF ||
+                graph.itemOwner[it.id]?.kind != ExchangeKind.PARTY
+        }
+
+    /** the same pick for [mode], the records a copy of that kind carries are recounted */
+    fun withMode(mode: ExportMode): ExchangePick =
+        if (selection.mode ==
+            mode
+        ) {
+            this
+        } else {
+            copy(selection = selection.copy(mode = mode))
+        }
+
     // the first record in the file that needs [id], looked up in the order the resolver pulls them in
     private fun reasonFor(id: Long): PullReason? =
         when (tab) {
             ExchangeTab.SPECIES -> speciesReason(id)
             ExchangeTab.PLACES -> placeReason(id)
             ExchangeTab.NPCS -> npcReason(id)
+            ExchangeTab.ITEMS -> sessionReason(ExchangeKind.ITEM, id)
             ExchangeTab.QUESTS -> sessionReason(ExchangeKind.QUEST, id)
             ExchangeTab.SESSIONS -> null
         }
@@ -92,13 +111,22 @@ data class ExchangePick(
                 options.quests,
                 scope.quests,
             ) { graph.questPlace[it] == id }?.let { PullReason(PullKind.QUEST, it) }
+            ?: itemOwnerReason(ExchangeKind.PLACE, id)
             ?: sessionReason(ExchangeKind.PLACE, id)
             ?: namedIn(options.places, scope.places) { graph.placeParent[it] == id }
                 ?.let { PullReason(PullKind.PLACE_PARENT, it) }
 
     private fun npcReason(id: Long): PullReason? =
         namedIn(options.quests, scope.quests) { graph.questGiver[it] == id }?.let { PullReason(PullKind.QUEST, it) }
+            ?: itemOwnerReason(ExchangeKind.NPC, id)
             ?: sessionReason(ExchangeKind.NPC, id)
+
+    private fun itemOwnerReason(
+        kind: ExchangeKind,
+        id: Long,
+    ): PullReason? =
+        namedIn(options.items, scope.items) { graph.itemOwner[it] == ExchangeRef(kind, id) }
+            ?.let { PullReason(PullKind.ITEM_OWNER, it) }
 
     private fun sessionReason(
         kind: ExchangeKind,
@@ -165,6 +193,7 @@ data class ExchangePick(
                     quests = options.quests.ids(),
                     species = options.species.ids(),
                     party = options.party.ids(),
+                    items = options.items.ids(),
                     tags = true,
                     phrases = true,
                     photos = photos,
@@ -189,6 +218,7 @@ private fun ExchangeOptions.itemsOf(tab: ExchangeTab): List<ExchangeItem> =
         ExchangeTab.NPCS -> npcs
         ExchangeTab.QUESTS -> quests
         ExchangeTab.SPECIES -> species
+        ExchangeTab.ITEMS -> items
         ExchangeTab.SESSIONS -> sessions
     }
 
@@ -198,6 +228,7 @@ private fun RecordSelection.idsOf(tab: ExchangeTab): Set<Long> =
         ExchangeTab.NPCS -> npcs
         ExchangeTab.QUESTS -> quests
         ExchangeTab.SPECIES -> species
+        ExchangeTab.ITEMS -> items
         ExchangeTab.SESSIONS -> sessions
     }
 
@@ -207,6 +238,7 @@ private fun RecordScope.idsOf(tab: ExchangeTab): Set<Long> =
         ExchangeTab.NPCS -> npcs
         ExchangeTab.QUESTS -> quests
         ExchangeTab.SPECIES -> species
+        ExchangeTab.ITEMS -> items
         ExchangeTab.SESSIONS -> sessions
     }
 
@@ -219,5 +251,6 @@ private fun RecordSelection.withIds(
         ExchangeTab.NPCS -> copy(npcs = ids)
         ExchangeTab.QUESTS -> copy(quests = ids)
         ExchangeTab.SPECIES -> copy(species = ids)
+        ExchangeTab.ITEMS -> copy(items = ids)
         ExchangeTab.SESSIONS -> copy(sessions = ids)
     }

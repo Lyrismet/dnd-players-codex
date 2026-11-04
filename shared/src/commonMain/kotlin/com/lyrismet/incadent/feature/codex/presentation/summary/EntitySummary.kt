@@ -5,7 +5,9 @@ import com.lyrismet.incadent.core.designsystem.component.PortraitMark
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.EntityIcons
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.orDash
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
+import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -63,6 +65,7 @@ fun buildEntitySummary(
         is EntityRef.Quest -> lookup.quests.find { it.id == ref.id }?.let { buildQuestSummary(it, lookup) }
         is EntityRef.Party -> lookup.parties.find { it.id == ref.id }?.let { buildPartySummary(it, lookup) }
         is EntityRef.Species -> lookup.species.find { it.id == ref.id }?.let { buildSpeciesSummary(it, lookup) }
+        is EntityRef.Item -> lookup.items.find { it.id == ref.id }?.let { buildItemSummary(it, lookup) }
     }
 
 private fun buildNpcSummary(
@@ -116,6 +119,7 @@ private fun buildNpcSummary(
                 ),
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Npc(npc.id), lookup),
+        gear = gearOf(EntityKind.NPC, npc.id, lookup),
         vulnerabilities =
             lookup.species.find { it.id == npc.speciesId }.let { species ->
                 NpcVulnerabilities(npc.vulnerabilities, species?.vulnerabilities.orEmpty(), species?.name)
@@ -240,6 +244,7 @@ private fun buildPartySummary(
         relatedNotes = buildRelatedNotes(EntityRef.Party(member.id), lookup),
         fall = if (member.fallen) fallOf(member, lookup) else null,
         canRaiseLevel = !member.fallen && (member.level ?: 0) < PartyStatRanges.level.last,
+        gear = gearOf(EntityKind.PARTY, member.id, lookup),
     )
 }
 
@@ -347,6 +352,7 @@ private fun buildLocationSummary(
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Location(location.id), lookup),
         canMove = hasPlaceToBeIn,
+        gear = gearOf(EntityKind.LOCATION, location.id, lookup),
     )
 }
 

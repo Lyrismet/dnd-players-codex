@@ -33,6 +33,7 @@ import dndplayerscodex.shared.generated.resources.codex_tab_location
 import dndplayerscodex.shared.generated.resources.codex_tab_npc
 import dndplayerscodex.shared.generated.resources.codex_tab_party
 import dndplayerscodex.shared.generated.resources.codex_tab_quest
+import dndplayerscodex.shared.generated.resources.items_add
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -156,4 +157,5 @@ private fun EntityKind.searchCreateButton(): StringResource =
         EntityKind.QUEST -> Res.string.codex_search_create_quest
         EntityKind.LOCATION -> Res.string.codex_search_create_location
         EntityKind.SPECIES -> Res.string.codex_search_create_species
+        EntityKind.ITEM -> Res.string.items_add
     }
