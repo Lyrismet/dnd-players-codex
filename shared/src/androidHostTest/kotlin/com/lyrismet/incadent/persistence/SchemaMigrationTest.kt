@@ -184,4 +184,26 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the seventh schema keeps the items and remembers a deleted one`() {
+        val file = File.createTempFile("schema-v7", ".db")
+        File("src/commonMain/sqldelight/databases/7.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO item(name, campaign_id, origin_id) VALUES ('Potion', 'c', 'potion')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 7, AppDatabase.Schema.version)
+
+        assertEquals("Potion", driver.single("SELECT name FROM item"))
+        assertEquals("0", driver.single("SELECT COUNT(*) FROM deleted_origin"))
+        driver.execute(null, "DELETE FROM item", 0)
+        assertEquals("potion", driver.single("SELECT origin_id FROM deleted_origin WHERE kind = 'ITEM'"))
+        driver.execute(null, "INSERT INTO item(name, campaign_id, origin_id) VALUES ('Potion', 'c', 'potion')", 0)
+        assertEquals("0", driver.single("SELECT COUNT(*) FROM deleted_origin"))
+        driver.close()
+        file.delete()
+    }
 }

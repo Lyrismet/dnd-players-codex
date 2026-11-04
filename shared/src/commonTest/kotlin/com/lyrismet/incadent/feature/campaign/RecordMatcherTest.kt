@@ -79,4 +79,12 @@ class RecordMatcherTest {
     fun `notes without an id never count as shared`() {
         assertEquals(0, noteOverlap(listOf("", ""), listOf("", "")).common)
     }
+
+    @Test
+    fun `a record whose names repeat on purpose is told only by its origin id`() {
+        val stacks = listOf(LocalRecord(1, "Potion", "a"), LocalRecord(2, "Potion", "b"))
+        assertEquals(RecordMatch.ByOrigin(2), matchRecord("b", "Potion", stacks, byName = false))
+        assertEquals(RecordMatch.None, matchRecord("c", "Potion", stacks, byName = false))
+        assertEquals(RecordMatch.None, matchRecord(null, "Potion", stacks, byName = false))
+    }
 }

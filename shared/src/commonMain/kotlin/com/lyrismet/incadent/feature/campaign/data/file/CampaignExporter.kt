@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordSelection
+import com.lyrismet.incadent.feature.campaign.domain.model.isIn
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 import com.lyrismet.incadent.feature.mention.domain.remapMentionTokens
@@ -28,6 +29,7 @@ class CampaignExporter(
     private val speciesQueries = database.speciesQueries
     private val questQueries = database.questQueries
     private val partyQueries = database.partyMemberQueries
+    private val itemQueries = database.itemQueries
     private val sessionQueries = database.sessionNoteQueries
     private val entryQueries = database.sessionEntryQueries
     private val sessionTagQueries = database.sessionTagQueries
@@ -53,6 +55,7 @@ class CampaignExporter(
                 npcQueries.selectPhotoSizes(campaignId).executeAsList().map { it.id to it.size } to scope.npcs,
                 speciesQueries.selectPhotoSizes(campaignId).executeAsList().map { it.id to it.size } to scope.species,
                 partyQueries.selectPhotoSizes(campaignId).executeAsList().map { it.id to it.size } to scope.party,
+                itemQueries.selectPhotoSizes(campaignId).executeAsList().map { it.id to it.size } to scope.items,
             ).flatMap { (rows, ids) -> rows.filter { it.first in ids }.map { it.second } }
         val stored = sizes.filter { it > 0 }
         return ExportEstimate(counter.bytes, stored.sum() * BASE64_NUMERATOR / BASE64_DENOMINATOR, stored.size)
@@ -87,6 +90,7 @@ class CampaignExporter(
             sessions = sessionQueries.selectAll(campaignId).executeAsList(),
             species = speciesQueries.selectAll(campaignId).executeAsList(),
             party = partyQueries.selectAll(campaignId).executeAsList(),
+            items = itemQueries.selectAll(campaignId).executeAsList(),
             entries =
                 if (mentions) {
                     entryQueries.selectAll(campaignId).executeAsList().groupBy { it.session_note_id }
@@ -253,6 +257,32 @@ class CampaignExporter(
                     ).forMode(selection),
             )
         }
+        writeItems(snapshot, scope, ids, writer)
+    }
+
+    // after the records that carry them, an owner that did not come along leaves the item shared
+    private fun writeItems(
+        snapshot: Snapshot,
+        scope: RecordScope,
+        ids: FileIds,
+        writer: CampaignFileWriter,
+    ) {
+        snapshot.items.filter { it.id in scope.items }.forEach { item ->
+            val owner = snapshot.owners[item.id]?.takeIf { it.isIn(scope) }
+            writer.write(
+                FileRecord.Item(
+                    id = ids.item(item.id),
+                    name = item.name,
+                    quantity = item.quantity.toInt(),
+                    price = item.price?.toInt(),
+                    coin = item.coin,
+                    ownerKind = owner?.kind,
+                    ownerId = owner?.let { ids.owner(it) },
+                    notes = ids.text(item.notes),
+                    originId = item.origin_id,
+                ),
+            )
+        }
     }
 
     private fun writeSessions(
@@ -373,6 +403,11 @@ class CampaignExporter(
         scope.party.forEach { id ->
             partyQueries.selectPhoto(id).executeAsOneOrNull()?.portrait?.let {
                 writer.writePhoto(PhotoOwner.PARTY, ids.party(id), it)
+            }
+        }
+        scope.items.forEach { id ->
+            itemQueries.selectPhoto(id).executeAsOneOrNull()?.photo?.let {
+                writer.writePhoto(PhotoOwner.ITEM, ids.item(id), it)
             }
         }
     }

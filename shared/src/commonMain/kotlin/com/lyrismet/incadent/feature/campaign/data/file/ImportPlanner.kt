@@ -143,6 +143,10 @@ internal class ImportPlanner(
                             header.partyNotes,
                         )
                     }
+                is FileRecord.Item ->
+                    add(ExchangeKind.ITEM, record.id, record.originId, record.name) { id ->
+                        diffItem(record, locals.items.first { it.id == id })
+                    }
                 else -> Unit
             }
         }

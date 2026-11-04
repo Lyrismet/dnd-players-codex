@@ -879,6 +879,7 @@
     <string name="exchange_tab_npcs">NPCs</string>
     <string name="exchange_tab_quests">Quests</string>
     <string name="exchange_tab_species">Species</string>
+    <string name="exchange_tab_items">Items</string>
     <string name="exchange_tab_sessions">Sessions</string>
     <string name="exchange_tab_format">%1$s · %2$d of %3$d</string>
     <string name="exchange_items_search">Search</string>
@@ -921,6 +922,7 @@
     <string name="exchange_kind_npc">NPC</string>
     <string name="exchange_kind_quest">quest</string>
     <string name="exchange_kind_species">species</string>
+    <string name="exchange_kind_item">item</string>
     <string name="exchange_kind_party">party</string>
     <string name="exchange_import_button_count">Import %1$d</string>
     <string name="exchange_error_title">That did not work</string>
@@ -959,6 +961,7 @@
     <string name="exchange_pull_quest">from quest “%1$s”</string>
     <string name="exchange_pull_session">from session “%1$s”</string>
     <string name="exchange_pull_parent">parent of place “%1$s”</string>
+    <string name="exchange_pull_item_owner">owner of item “%1$s”</string>
     <!-- combat results -->
     <string name="combat_result_hp">%1$d / %2$d</string>
     <string name="combat_result_fled">Fled</string>
@@ -1219,6 +1222,8 @@
     <string name="exchange_field_vulnerabilities">Vulnerabilities</string>
     <string name="exchange_field_notes">Notes</string>
     <string name="exchange_field_hit_points">Hit points</string>
+    <string name="exchange_field_quantity">Quantity</string>
+    <string name="exchange_field_price">Price</string>
     <string name="exchange_field_class">Class</string>
     <string name="exchange_field_level">Level</string>
     <string name="exchange_field_reward">Reward</string>
@@ -1324,6 +1329,10 @@
     <plurals name="exchange_new_party">
         <item quantity="one">%1$d character</item>
         <item quantity="other">%1$d characters</item>
+    </plurals>
+    <plurals name="exchange_new_item">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
     </plurals>
     <plurals name="exchange_detail_conflicts">
         <item quantity="one">%1$d conflict</item>

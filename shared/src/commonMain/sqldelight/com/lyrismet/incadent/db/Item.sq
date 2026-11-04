@@ -24,6 +24,13 @@ selectAll:
 SELECT id, name, quantity, price, coin, owner_kind, owner_id, notes, photo_thumb, origin_id
 FROM item WHERE campaign_id = ?;
 
+selectPhotoSizes:
+SELECT id, COALESCE(length(photo), 0) AS size FROM item WHERE campaign_id = ?;
+
+-- one stored jpeg, so an export reads a photo at a time without the other columns
+selectPhoto:
+SELECT photo FROM item WHERE id = ?;
+
 selectById:
 SELECT id, name, quantity, price, coin, owner_kind, owner_id, notes, photo_thumb, photo, origin_id
 FROM item WHERE id = ?;

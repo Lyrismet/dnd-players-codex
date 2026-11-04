@@ -35,17 +35,20 @@ import dndplayerscodex.shared.generated.resources.exchange_items_all
 import dndplayerscodex.shared.generated.resources.exchange_items_empty
 import dndplayerscodex.shared.generated.resources.exchange_items_none
 import dndplayerscodex.shared.generated.resources.exchange_items_search
+import dndplayerscodex.shared.generated.resources.exchange_kind_item
 import dndplayerscodex.shared.generated.resources.exchange_kind_npc
 import dndplayerscodex.shared.generated.resources.exchange_kind_place
 import dndplayerscodex.shared.generated.resources.exchange_kind_quest
 import dndplayerscodex.shared.generated.resources.exchange_kind_species
 import dndplayerscodex.shared.generated.resources.exchange_pick_footnote
+import dndplayerscodex.shared.generated.resources.exchange_pull_item_owner
 import dndplayerscodex.shared.generated.resources.exchange_pull_npc_place
 import dndplayerscodex.shared.generated.resources.exchange_pull_npc_species
 import dndplayerscodex.shared.generated.resources.exchange_pull_parent
 import dndplayerscodex.shared.generated.resources.exchange_pull_quest
 import dndplayerscodex.shared.generated.resources.exchange_pull_session
 import dndplayerscodex.shared.generated.resources.exchange_tab_format
+import dndplayerscodex.shared.generated.resources.exchange_tab_items
 import dndplayerscodex.shared.generated.resources.exchange_tab_npcs
 import dndplayerscodex.shared.generated.resources.exchange_tab_places
 import dndplayerscodex.shared.generated.resources.exchange_tab_quests
@@ -98,6 +101,7 @@ private fun ExchangeTab.label(): StringResource =
         ExchangeTab.NPCS -> Res.string.exchange_tab_npcs
         ExchangeTab.QUESTS -> Res.string.exchange_tab_quests
         ExchangeTab.SPECIES -> Res.string.exchange_tab_species
+        ExchangeTab.ITEMS -> Res.string.exchange_tab_items
         ExchangeTab.SESSIONS -> Res.string.exchange_tab_sessions
     }
 
@@ -259,6 +263,7 @@ private fun rowSubtitle(row: PickRow): String {
             ExchangeTab.NPCS -> stringResource(Res.string.exchange_kind_npc)
             ExchangeTab.QUESTS -> stringResource(Res.string.exchange_kind_quest)
             ExchangeTab.SPECIES -> stringResource(Res.string.exchange_kind_species)
+            ExchangeTab.ITEMS -> stringResource(Res.string.exchange_kind_item)
             ExchangeTab.SESSIONS -> ""
         }
     return listOf(kind, row.subtitle).filter { it.isNotEmpty() }.joinToString(" · ")
@@ -271,4 +276,5 @@ private fun PullKind.label(): StringResource =
         PullKind.QUEST -> Res.string.exchange_pull_quest
         PullKind.SESSION -> Res.string.exchange_pull_session
         PullKind.PLACE_PARENT -> Res.string.exchange_pull_parent
+        PullKind.ITEM_OWNER -> Res.string.exchange_pull_item_owner
     }

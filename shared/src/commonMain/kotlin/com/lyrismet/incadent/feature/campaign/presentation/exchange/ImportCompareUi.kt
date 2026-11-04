@@ -65,6 +65,7 @@ import dndplayerscodex.shared.generated.resources.exchange_compare_summary
 import dndplayerscodex.shared.generated.resources.exchange_compare_summary_short
 import dndplayerscodex.shared.generated.resources.exchange_compare_take_all
 import dndplayerscodex.shared.generated.resources.exchange_import_reading
+import dndplayerscodex.shared.generated.resources.exchange_new_item
 import dndplayerscodex.shared.generated.resources.exchange_new_npc
 import dndplayerscodex.shared.generated.resources.exchange_new_party
 import dndplayerscodex.shared.generated.resources.exchange_new_place
@@ -417,6 +418,7 @@ private fun newKindsText(view: CompareView): String {
             ExchangeKind.QUEST to Res.plurals.exchange_new_quest,
             ExchangeKind.SPECIES to Res.plurals.exchange_new_species,
             ExchangeKind.PARTY to Res.plurals.exchange_new_party,
+            ExchangeKind.ITEM to Res.plurals.exchange_new_item,
         )
     return order
         .mapNotNull { (kind, plural) ->

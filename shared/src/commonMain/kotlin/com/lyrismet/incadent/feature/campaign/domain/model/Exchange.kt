@@ -18,8 +18,9 @@ data class ExchangeOptions(
     val quests: List<ExchangeItem> = emptyList(),
     val species: List<ExchangeItem> = emptyList(),
     val party: List<ExchangeItem> = emptyList(),
+    val items: List<ExchangeItem> = emptyList(),
 ) {
-    val recordCount: Int get() = places.size + npcs.size + quests.size + species.size + party.size
+    val recordCount: Int get() = places.size + npcs.size + quests.size + species.size + party.size + items.size
     val sessionCount: Int get() = sessions.size
 }
 
@@ -30,10 +31,12 @@ data class ExchangeGraph(
     val npcPlaces: Map<Long, List<Long>> = emptyMap(),
     val questGiver: Map<Long, Long?> = emptyMap(),
     val questPlace: Map<Long, Long?> = emptyMap(),
+    /** who carries an item - a party member, npc or place, null for a shared one */
+    val itemOwner: Map<Long, ExchangeRef?> = emptyMap(),
     val sessionMentions: Map<Long, Set<ExchangeRef>> = emptyMap(),
 )
 
-enum class ExchangeKind { SESSION, PLACE, NPC, QUEST, SPECIES, PARTY }
+enum class ExchangeKind { SESSION, PLACE, NPC, QUEST, SPECIES, PARTY, ITEM }
 
 data class ExchangeRef(
     val kind: ExchangeKind,
@@ -48,6 +51,7 @@ data class RecordSelection(
     val quests: Set<Long> = emptySet(),
     val species: Set<Long> = emptySet(),
     val party: Set<Long> = emptySet(),
+    val items: Set<Long> = emptySet(),
     val tags: Boolean = false,
     val phrases: Boolean = false,
     val photos: Boolean = true,
@@ -55,6 +59,19 @@ data class RecordSelection(
     /** a friend copy carries the notes about the party only when asked */
     val partyNotes: Boolean = false,
 )
+
+/** true when [scope] takes this record, a null scope takes the whole file */
+fun ExchangeRef.isIn(scope: RecordScope?): Boolean =
+    scope == null ||
+        when (kind) {
+            ExchangeKind.SESSION -> id in scope.sessions
+            ExchangeKind.PLACE -> id in scope.places
+            ExchangeKind.NPC -> id in scope.npcs
+            ExchangeKind.QUEST -> id in scope.quests
+            ExchangeKind.SPECIES -> id in scope.species
+            ExchangeKind.PARTY -> id in scope.party
+            ExchangeKind.ITEM -> id in scope.items
+        }
 
 /** the ticked records and the ones they need, what an export writes and an import takes */
 data class RecordScope(
@@ -64,8 +81,9 @@ data class RecordScope(
     val quests: Set<Long>,
     val species: Set<Long>,
     val party: Set<Long>,
+    val items: Set<Long> = emptySet(),
 ) {
-    val recordCount: Int get() = places.size + npcs.size + quests.size + species.size + party.size
+    val recordCount: Int get() = places.size + npcs.size + quests.size + species.size + party.size + items.size
 }
 
 /** what the preview of a file shows */
@@ -198,6 +216,8 @@ enum class RecordField {
     REWARD,
     LIFE_STATE,
     CREATURE_TYPE,
+    QUANTITY,
+    PRICE,
 }
 
 data class PlannedRecord(

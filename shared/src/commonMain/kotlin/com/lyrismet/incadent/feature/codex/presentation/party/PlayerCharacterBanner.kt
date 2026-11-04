@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.party
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -8,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppButton
@@ -40,8 +42,9 @@ fun PlayerCharacterBanner(
             )
             Text(
                 text = stringResource(Res.string.me_pick_banner_text),
+                modifier = Modifier.padding(top = 4.dp),
                 color = AppPalette.TextSecondary,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small, lineHeight = 16.sp),
             )
         }
         AppButton(

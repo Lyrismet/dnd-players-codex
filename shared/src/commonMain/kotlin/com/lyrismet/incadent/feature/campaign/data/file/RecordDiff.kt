@@ -88,3 +88,14 @@ internal fun diffParty(
         file.level?.let { text(RecordField.LEVEL, mine.level?.toString().orEmpty(), it.toString()) },
         if (withNotes) text(RecordField.DESCRIPTION, mine.description, file.description) else null,
     )
+
+internal fun diffItem(
+    file: FileRecord.Item,
+    mine: com.lyrismet.incadent.db.item.SelectAll,
+): List<FieldChange> =
+    listOfNotNull(
+        text(RecordField.NAME, mine.name, file.name),
+        text(RecordField.QUANTITY, mine.quantity.toString(), file.quantity.toString()),
+        file.price?.let { text(RecordField.PRICE, mine.price?.toString().orEmpty(), it.toString()) },
+        text(RecordField.NOTES, mine.notes, file.notes),
+    )

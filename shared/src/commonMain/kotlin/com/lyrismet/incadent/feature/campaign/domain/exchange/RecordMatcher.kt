@@ -35,12 +35,14 @@ sealed interface RecordMatch {
  * away into the survivor's), then the exact name, then a name that contains the other. A pair in [apart]
  * (file origin id to local origin id) was told to be different and is never offered again.
  */
-@Suppress("ReturnCount")
+@Suppress("ReturnCount", "LongParameterList")
 fun matchRecord(
     fileOriginId: String?,
     fileName: String,
     locals: List<LocalRecord>,
     apart: Set<Pair<String, String>> = emptySet(),
+    // false for records whose names repeat on purpose (two stacks of rations), only their origin id tells them apart
+    byName: Boolean = true,
     resolveAlias: (String) -> String = { it },
 ): RecordMatch {
     val origin = fileOriginId?.takeIf { it.isNotBlank() }
@@ -48,6 +50,7 @@ fun matchRecord(
         val wanted = resolveAlias(origin)
         locals.firstOrNull { it.originId == wanted }?.let { return RecordMatch.ByOrigin(it.id) }
     }
+    if (!byName) return RecordMatch.None
     val candidates = locals.filter { origin == null || (origin to it.originId) !in apart }
     val key = fileName.nameKey()
     candidates

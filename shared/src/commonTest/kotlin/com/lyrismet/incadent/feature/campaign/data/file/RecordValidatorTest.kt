@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.campaign.data.file
 
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportFailedException
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
@@ -84,6 +85,39 @@ class RecordValidatorTest {
             FileRecord.Npc(1, "Bob", NpcStatus.NEUTRAL, nicknames = "x".repeat(1_000)),
             FileRecord.Session(1, "A", date),
             FileRecord.Entry(1, date, "x".repeat(20_000)),
+        )
+    }
+
+    @Test
+    fun `an item may be carried by a record written above it or by nobody`() {
+        accepts(
+            FileRecord.Npc(1, "Bob", NpcStatus.NEUTRAL),
+            FileRecord.Item(1, "Potion", ownerKind = ExchangeKind.NPC, ownerId = 1),
+            FileRecord.Item(2, "Rope"),
+        )
+    }
+
+    @Test
+    fun `an item with a carrier that is not in the file is refused`() {
+        rejects(FileRecord.Item(1, "Potion", ownerKind = ExchangeKind.NPC, ownerId = 7))
+        rejects(FileRecord.Item(1, "Potion", ownerKind = ExchangeKind.NPC))
+        rejects(FileRecord.Item(1, "Potion", ownerKind = ExchangeKind.QUEST, ownerId = 1))
+    }
+
+    @Test
+    fun `an item with an amount or a price outside the forms limits is refused`() {
+        rejects(FileRecord.Item(1, "Potion", quantity = 0))
+        rejects(FileRecord.Item(1, "Potion", quantity = 10_000))
+        rejects(FileRecord.Item(1, "Potion", price = -1))
+        rejects(FileRecord.Item(1, "Potion", price = 10_000_000))
+        accepts(FileRecord.Item(1, "Potion", quantity = 9_999, price = 9_999_999))
+    }
+
+    @Test
+    fun `an item cannot come before the records it points at`() {
+        rejects(
+            FileRecord.Item(1, "Potion"),
+            FileRecord.Npc(1, "Bob", NpcStatus.NEUTRAL),
         )
     }
 }

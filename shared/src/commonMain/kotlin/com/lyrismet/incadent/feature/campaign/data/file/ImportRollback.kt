@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.campaign.data.file
 import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.db.importJournal.SelectByCampaign
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.persistence.creatureTypeIdIn
 import kotlin.io.encoding.Base64
@@ -54,6 +55,7 @@ internal class ImportRollback(
             ExchangeKind.NPC -> database.npcQueries.deleteById(row.row_id)
             ExchangeKind.QUEST -> database.questQueries.deleteById(row.row_id)
             ExchangeKind.PARTY -> database.partyMemberQueries.deleteById(row.row_id)
+            ExchangeKind.ITEM -> database.itemQueries.deleteById(row.row_id)
             ExchangeKind.SESSION -> database.sessionNoteQueries.deleteById(row.row_id)
         }
         if (row.flag == 0L) database.deletedOriginQueries.forget(campaignId, kind, row.ref)
@@ -105,6 +107,12 @@ internal class ImportRollback(
                 )
             PhotoOwner.PARTY ->
                 database.partyMemberQueries.setPortrait(
+                    bytes,
+                    bytes?.let { makeThumb(it, PhotoSlot.PORTRAIT) },
+                    id,
+                )
+            PhotoOwner.ITEM ->
+                database.itemQueries.setPhoto(
                     bytes,
                     bytes?.let { makeThumb(it, PhotoSlot.PORTRAIT) },
                     id,
@@ -175,7 +183,27 @@ internal class ImportRollback(
                     record.description,
                     record.id,
                 )
+            is FileRecord.Item ->
+                database.itemQueries.update(
+                    record.name,
+                    record.quantity.toLong(),
+                    record.price?.toLong(),
+                    record.coin,
+                    record.ownerKind?.toOwnerKind(),
+                    record.ownerId ?: 0L,
+                    record.notes,
+                    record.id,
+                )
             else -> Unit
         }
     }
 }
+
+// the kinds of record that can carry an item, in the kinds the item table keeps
+private fun ExchangeKind.toOwnerKind(): EntityKind? =
+    when (this) {
+        ExchangeKind.NPC -> EntityKind.NPC
+        ExchangeKind.PLACE -> EntityKind.LOCATION
+        ExchangeKind.PARTY -> EntityKind.PARTY
+        else -> null
+    }

@@ -12,6 +12,7 @@ import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordStatus
 import com.lyrismet.incadent.feature.campaign.domain.model.Resolution
 import com.lyrismet.incadent.feature.campaign.domain.model.SessionStatus
+import com.lyrismet.incadent.feature.campaign.domain.model.isIn
 import kotlinx.datetime.LocalDate
 
 // the search over the conflicts shows up only when there are enough of them to scroll through
@@ -120,17 +121,6 @@ data class CompareAnswers(
     val takeAsMine: Boolean = false,
     val takeVitals: Boolean = false,
 )
-
-internal fun ExchangeRef.isIn(scope: RecordScope?): Boolean =
-    scope == null ||
-        when (kind) {
-            ExchangeKind.SESSION -> id in scope.sessions
-            ExchangeKind.PLACE -> id in scope.places
-            ExchangeKind.NPC -> id in scope.npcs
-            ExchangeKind.QUEST -> id in scope.quests
-            ExchangeKind.SPECIES -> id in scope.species
-            ExchangeKind.PARTY -> id in scope.party
-        }
 
 private fun CompareAnswers.choiceOf(
     ref: ExchangeRef,

@@ -75,6 +75,8 @@ import dndplayerscodex.shared.generated.resources.exchange_field_life_state
 import dndplayerscodex.shared.generated.resources.exchange_field_name
 import dndplayerscodex.shared.generated.resources.exchange_field_nicknames
 import dndplayerscodex.shared.generated.resources.exchange_field_notes
+import dndplayerscodex.shared.generated.resources.exchange_field_price
+import dndplayerscodex.shared.generated.resources.exchange_field_quantity
 import dndplayerscodex.shared.generated.resources.exchange_field_race
 import dndplayerscodex.shared.generated.resources.exchange_field_reward
 import dndplayerscodex.shared.generated.resources.exchange_field_status
@@ -549,6 +551,7 @@ private fun valueText(
     } ?: raw
 }
 
+@Suppress("CyclomaticComplexMethod")
 internal fun RecordField.label(): StringResource =
     when (this) {
         RecordField.NAME -> Res.string.exchange_field_name
@@ -564,4 +567,6 @@ internal fun RecordField.label(): StringResource =
         RecordField.REWARD -> Res.string.exchange_field_reward
         RecordField.LIFE_STATE -> Res.string.exchange_field_life_state
         RecordField.CREATURE_TYPE -> Res.string.exchange_field_creature_type
+        RecordField.QUANTITY -> Res.string.exchange_field_quantity
+        RecordField.PRICE -> Res.string.exchange_field_price
     }

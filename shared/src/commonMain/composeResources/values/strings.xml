@@ -911,6 +911,7 @@
     <string name="exchange_tab_npcs">NPC</string>
     <string name="exchange_tab_quests">Квесты</string>
     <string name="exchange_tab_species">Виды</string>
+    <string name="exchange_tab_items">Предметы</string>
     <string name="exchange_tab_sessions">Сессии</string>
     <string name="exchange_tab_format">%1$s · %2$d из %3$d</string>
     <string name="exchange_items_search">Найти</string>
@@ -953,6 +954,7 @@
     <string name="exchange_kind_npc">NPC</string>
     <string name="exchange_kind_quest">квест</string>
     <string name="exchange_kind_species">вид</string>
+    <string name="exchange_kind_item">предмет</string>
     <string name="exchange_kind_party">отряд</string>
     <string name="exchange_import_button_count">Импортировать %1$d</string>
     <string name="exchange_error_title">Не получилось</string>
@@ -993,6 +995,7 @@
     <string name="exchange_pull_quest">из квеста «%1$s»</string>
     <string name="exchange_pull_session">из сессии «%1$s»</string>
     <string name="exchange_pull_parent">родитель места «%1$s»</string>
+    <string name="exchange_pull_item_owner">владелец предмета «%1$s»</string>
     <!-- combat results -->
     <string name="combat_result_hp">%1$d / %2$d</string>
     <string name="combat_result_fled">Сбежал</string>
@@ -1257,6 +1260,8 @@
     <string name="exchange_field_vulnerabilities">Уязвимости</string>
     <string name="exchange_field_notes">Заметки</string>
     <string name="exchange_field_hit_points">Хиты</string>
+    <string name="exchange_field_quantity">Количество</string>
+    <string name="exchange_field_price">Цена</string>
     <string name="exchange_field_class">Класс</string>
     <string name="exchange_field_level">Уровень</string>
     <string name="exchange_field_reward">Награда</string>
@@ -1384,6 +1389,12 @@
         <item quantity="few">%1$d персонажа</item>
         <item quantity="many">%1$d персонажей</item>
         <item quantity="other">%1$d персонажа</item>
+    </plurals>
+    <plurals name="exchange_new_item">
+        <item quantity="one">%1$d предмет</item>
+        <item quantity="few">%1$d предмета</item>
+        <item quantity="many">%1$d предметов</item>
+        <item quantity="other">%1$d предмета</item>
     </plurals>
     <plurals name="exchange_detail_conflicts">
         <item quantity="one">%1$d конфликт</item>

@@ -2,6 +2,8 @@ package com.lyrismet.incadent.feature.campaign.data.file
 
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeGraph
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
+import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.domain.remapMentionTokens
@@ -16,6 +18,7 @@ internal class FileIds(
     private val npcs = scope.npcs.numbered()
     private val quests = scope.quests.numbered()
     private val party = scope.party.numbered()
+    private val items = scope.items.numbered()
     private val sessions = scope.sessions.numbered()
 
     fun species(id: Long) = species.getValue(id)
@@ -27,6 +30,17 @@ internal class FileIds(
     fun quest(id: Long) = quests.getValue(id)
 
     fun party(id: Long) = party.getValue(id)
+
+    fun item(id: Long) = items.getValue(id)
+
+    /** the file number of the record that carries an item */
+    fun owner(ref: ExchangeRef): Long =
+        when (ref.kind) {
+            ExchangeKind.NPC -> npc(ref.id)
+            ExchangeKind.PLACE -> place(ref.id)
+            ExchangeKind.PARTY -> party(ref.id)
+            else -> error("an item is not carried by a ${ref.kind}")
+        }
 
     fun session(id: Long) = sessions.getValue(id)
 
@@ -42,6 +56,7 @@ internal class FileIds(
             EntityKind.LOCATION to places,
             EntityKind.QUEST to quests,
             EntityKind.SPECIES to species,
+            EntityKind.ITEM to items,
         )
 
     /** the file number a note token moves to, null for a record that is not in the file */

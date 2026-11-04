@@ -124,6 +124,7 @@ internal class CampaignImporter(
         private val npcMap = mutableMapOf<Long, Long>()
         private val questMap = mutableMapOf<Long, Long>()
         private val partyMap = mutableMapOf<Long, Long>()
+        private val itemMap = mutableMapOf<Long, Long>()
         private val sessionMap = mutableMapOf<Long, Long>()
         private val mapByKind =
             mapOf(
@@ -132,6 +133,7 @@ internal class CampaignImporter(
                 EntityKind.LOCATION to placeMap,
                 EntityKind.QUEST to questMap,
                 EntityKind.SPECIES to speciesMap,
+                EntityKind.ITEM to itemMap,
             )
 
         private val copies = request.conflicts == ConflictMode.COPY
@@ -158,6 +160,8 @@ internal class CampaignImporter(
         private val existingParty = locals.party
         private val existingPartyById = existingParty.associateBy { it.id }
         private val partyByName = namesOf(existingParty.map { it.name to it.id })
+        private val existingItems = locals.items
+        private val existingItemsById = existingItems.associateBy { it.id }
         private var liveTaken = locals.sessions.any { it.ended_at == null }
 
         // a file's origin id is kept for a row the import adds unless the campaign already holds it
@@ -168,6 +172,7 @@ internal class CampaignImporter(
                 ExchangeKind.NPC to OriginSet(existingNpcs.map { it.origin_id }),
                 ExchangeKind.QUEST to OriginSet(existingQuests.map { it.origin_id }),
                 ExchangeKind.PARTY to OriginSet(existingParty.map { it.origin_id }),
+                ExchangeKind.ITEM to OriginSet(existingItems.map { it.origin_id }),
                 ExchangeKind.SESSION to OriginSet(locals.sessions.map { it.origin_id }),
             )
 
@@ -186,6 +191,7 @@ internal class CampaignImporter(
                 is FileRecord.Npc -> addNpc(record)
                 is FileRecord.Quest -> addQuest(record)
                 is FileRecord.Party -> addParty(record)
+                is FileRecord.Item -> addItem(record)
                 is FileRecord.Tag -> database.tagQueries.insert(record.name, campaignId)
                 is FileRecord.Phrase -> database.phraseSnippetQueries.insert(record.text, campaignId)
                 is FileRecord.Session -> addSession(record)
@@ -203,6 +209,7 @@ internal class CampaignImporter(
                 is FileRecord.Npc -> scope?.npcs?.contains(record.id) != false
                 is FileRecord.Quest -> scope?.quests?.contains(record.id) != false
                 is FileRecord.Party -> scope?.party?.contains(record.id) != false
+                is FileRecord.Item -> scope?.items?.contains(record.id) != false
                 is FileRecord.Session -> scope?.sessions?.contains(record.id) != false
                 is FileRecord.Tag -> request.selection?.tags != false
                 is FileRecord.Phrase -> request.selection?.phrases != false
@@ -324,7 +331,7 @@ internal class CampaignImporter(
             name: String,
         ): String = if ((copies || !request.mergeNameTwins) && name.nameKey() in byName) name + COPY_SUFFIX else name
 
-        @Suppress("LongMethod")
+        @Suppress("LongMethod", "CyclomaticComplexMethod")
         private fun before(
             kind: ExchangeKind,
             id: Long,
@@ -386,6 +393,20 @@ internal class CampaignImporter(
                             it.hp_current?.toInt(),
                             it.description,
                             it.fallen,
+                        )
+                    }
+                ExchangeKind.ITEM ->
+                    existingItemsById.getValue(id).let {
+                        val owner = it.owner_kind?.toExchangeKind()
+                        FileRecord.Item(
+                            id,
+                            it.name,
+                            it.quantity.toInt(),
+                            it.price?.toInt(),
+                            it.coin,
+                            owner,
+                            owner?.let { _ -> it.owner_id },
+                            it.notes,
                         )
                     }
                 ExchangeKind.SESSION -> error("a session is never overwritten")
@@ -588,6 +609,64 @@ internal class CampaignImporter(
             }
         }
 
+        private fun addItem(record: FileRecord.Item) {
+            // what a character of the file carries is not written when that character did not come along
+            if (record.ownerKind == ExchangeKind.PARTY && ownerOf(record) == null) return
+            val outcome =
+                decide(
+                    Candidate(
+                        ExchangeKind.ITEM,
+                        record.id,
+                        record.originId,
+                        record.name,
+                        PhotoOwner.ITEM,
+                        { diffItem(record, existingItemsById.getValue(it)) },
+                    ) { id, pick -> overwriteItem(id, record, pick) },
+                )
+            when (outcome) {
+                is Outcome.Use -> itemMap[record.id] = outcome.id
+                Outcome.Skip -> Unit
+                Outcome.Insert -> {
+                    val queries = database.itemQueries
+                    val origin = origins.getValue(ExchangeKind.ITEM).claim(record.originId)
+                    val owner = ownerOf(record)
+                    queries.insert(
+                        record.name,
+                        record.quantity.toLong(),
+                        record.price?.toLong(),
+                        record.coin,
+                        owner?.first,
+                        owner?.second ?: 0L,
+                        record.notes,
+                        null,
+                        null,
+                        campaignId,
+                        origin,
+                    )
+                    itemMap[record.id] =
+                        inserted(
+                            ExchangeKind.ITEM,
+                            record.notes,
+                            PhotoOwner.ITEM,
+                            record.id,
+                            queries.lastInsertRowId().executeAsOne(),
+                            origin,
+                        )
+                }
+            }
+        }
+
+        // who carries the item here, null when it is shared or its carrier was not written by this import
+        private fun ownerOf(record: FileRecord.Item): Pair<EntityKind, Long>? {
+            val fileId = record.ownerId ?: return null
+            return when (record.ownerKind) {
+                ExchangeKind.NPC -> npcMap[fileId]?.let { EntityKind.NPC to it }
+                ExchangeKind.PLACE -> placeMap[fileId]?.let { EntityKind.LOCATION to it }
+                ExchangeKind.PARTY -> partyMap[fileId]?.let { EntityKind.PARTY to it }
+                else -> null
+            }
+        }
+
         private fun insertParty(record: FileRecord.Party) {
             val queries = database.partyMemberQueries
             val origin = origins.getValue(ExchangeKind.PARTY).claim(record.originId)
@@ -621,6 +700,30 @@ internal class CampaignImporter(
                     origin,
                 )
             if (takeLabel && record.isPlayerCharacter) markAsMine(id, record.playerName)
+        }
+
+        // a carrier the file names but did not bring along leaves the current one alone, like link() does
+        private fun overwriteItem(
+            id: Long,
+            record: FileRecord.Item,
+            pick: FieldPick,
+        ) {
+            val current = existingItemsById.getValue(id)
+            val owner = ownerOf(record)
+            val price = pick.number(RecordField.PRICE, current.price?.toInt(), record.price)?.toLong()
+            database.itemQueries.update(
+                pick.text(RecordField.NAME, current.name, record.name),
+                pick.number(RecordField.QUANTITY, current.quantity.toInt(), record.quantity)?.toLong()
+                    ?: current.quantity,
+                price,
+                if (price != null && price == record.price?.toLong()) record.coin else current.coin,
+                owner?.first ?: current.owner_kind,
+                owner?.second ?: current.owner_id,
+                pick.text(RecordField.NOTES, current.notes, record.notes).also {
+                    took(ExchangeKind.ITEM, id, current.notes, it, record.notes)
+                },
+                id,
+            )
         }
 
         // the mark "я" is one per campaign, the one it leaves is put back when the import is taken back
@@ -819,6 +922,7 @@ internal class CampaignImporter(
                 ExchangeKind.NPC -> database.npcQueries.selectDescription(text.id).executeAsOne()
                 ExchangeKind.QUEST -> database.questQueries.selectDescription(text.id).executeAsOne()
                 ExchangeKind.PARTY -> database.partyMemberQueries.selectDescription(text.id).executeAsOne()
+                ExchangeKind.ITEM -> database.itemQueries.selectNotes(text.id).executeAsOne()
                 ExchangeKind.SESSION -> ""
             }
 
@@ -832,6 +936,7 @@ internal class CampaignImporter(
                 ExchangeKind.NPC -> database.npcQueries.setDescription(value, text.id)
                 ExchangeKind.QUEST -> database.questQueries.setDescription(value, text.id)
                 ExchangeKind.PARTY -> database.partyMemberQueries.setDescription(value, text.id)
+                ExchangeKind.ITEM -> database.itemQueries.setNotes(value, text.id)
                 ExchangeKind.SESSION -> Unit
             }
         }
@@ -980,6 +1085,7 @@ internal class CampaignImporter(
                             it,
                         )
                     }
+                PhotoOwner.ITEM -> itemMap[record.ownerId]?.let { database.itemQueries.setPhoto(bytes, thumb, it) }
             }
         }
 
@@ -1019,6 +1125,13 @@ internal class CampaignImporter(
                                 .executeAsOneOrNull()
                                 ?.portrait to
                                 it
+                        }
+                    PhotoOwner.ITEM ->
+                        itemMap[record.ownerId]?.let {
+                            database.itemQueries
+                                .selectPhoto(it)
+                                .executeAsOneOrNull()
+                                ?.photo to it
                         }
                 } ?: return
             journal.photo(record.owner, local.second, local.first?.let { Base64.encode(it) })
