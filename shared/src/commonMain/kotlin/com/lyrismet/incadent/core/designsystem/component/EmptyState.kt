@@ -4,15 +4,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +33,8 @@ fun EmptyState(
     modifier: Modifier = Modifier,
     title: String? = null,
     ornament: Boolean = false,
+    // a dashed tile with this icon above the title, for a list of things the user fills in
+    icon: ImageVector? = null,
     primaryAction: EmptyStateAction? = null,
     secondaryAction: EmptyStateAction? = null,
 ) {
@@ -39,6 +44,23 @@ fun EmptyState(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            if (icon != null) {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(
+                                100.dp,
+                            ).dashedBorder(AppPalette.Gold.copy(alpha = 0.4f), cornerRadius = 22.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = AppPalette.Gold.copy(alpha = 0.6f),
+                        modifier = Modifier.size(48.dp),
+                    )
+                }
+            }
             if (ornament) {
                 DiamondOutline(size = 10.dp)
             }
@@ -73,9 +95,14 @@ private fun PrimaryEmptyStateButton(action: EmptyStateAction) {
     AppButton(
         text = action.label,
         onClick = action.onClick,
-        modifier = Modifier.padding(top = 4.dp).widthIn(max = 280.dp),
-        variant = ButtonVariant.Solid,
-        size = ButtonSize.Primary,
+        modifier =
+            Modifier
+                .padding(
+                    top = 4.dp,
+                ).then(if (action.tinted) Modifier.fillMaxWidth() else Modifier)
+                .widthIn(max = 280.dp),
+        variant = if (action.tinted) ButtonVariant.Tinted else ButtonVariant.Solid,
+        size = if (action.tinted) ButtonSize.Large else ButtonSize.Primary,
         height = 48.dp,
     )
 }

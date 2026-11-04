@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.core.designsystem.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -37,7 +38,13 @@ fun AppStepper(
     increaseDescription: String,
     modifier: Modifier = Modifier,
     canIncrease: Boolean = true,
+    // separate raised tiles with the count between them, instead of one bordered box
+    tiles: Boolean = false,
 ) {
+    if (tiles) {
+        TileStepper(count, onDecrease, onIncrease, decreaseDescription, increaseDescription, modifier, canIncrease)
+        return
+    }
     Row(
         modifier = modifier.clip(AppShapes.Field).border(1.dp, AppPalette.BorderHover, AppShapes.Field),
         verticalAlignment = Alignment.CenterVertically,
@@ -79,6 +86,53 @@ private fun StepperButton(
             Modifier
                 .size(44.dp)
                 .alpha(if (enabled) 1f else DISABLED_ALPHA)
+                .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier)
+                .semantics { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text = glyph, color = color, fontSize = AppFontSize.HeadingPlus)
+    }
+}
+
+@Composable
+private fun TileStepper(
+    count: Int,
+    onDecrease: () -> Unit,
+    onIncrease: () -> Unit,
+    decreaseDescription: String,
+    increaseDescription: String,
+    modifier: Modifier,
+    canIncrease: Boolean,
+) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        StepperTile(if (count <= 1) "✕" else "−", AppPalette.TextMuted, decreaseDescription, onDecrease, true)
+        Text(
+            text = count.toString(),
+            modifier = Modifier.widthIn(min = 56.dp),
+            color = AppPalette.TextPrimary,
+            fontSize = AppFontSize.MediumPlus,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        StepperTile("+", AppPalette.TextPrimary, increaseDescription, onIncrease, canIncrease)
+    }
+}
+
+@Composable
+private fun StepperTile(
+    glyph: String,
+    color: Color,
+    description: String,
+    onClick: () -> Unit,
+    enabled: Boolean,
+) {
+    Box(
+        modifier =
+            Modifier
+                .size(width = 64.dp, height = 56.dp)
+                .alpha(if (enabled) 1f else DISABLED_ALPHA)
+                .clip(AppShapes.Field)
+                .background(AppPalette.SurfaceElevated)
                 .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier)
                 .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,

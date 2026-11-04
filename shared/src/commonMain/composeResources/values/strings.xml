@@ -1439,13 +1439,13 @@
     <string name="items_sheet_title_new">Новый предмет</string>
     <string name="items_sheet_title_edit">Предмет</string>
     <string name="items_name_label">Название</string>
-    <string name="items_name_placeholder">Зелье лечения</string>
-    <string name="items_quantity_label">Количество</string>
-    <string name="items_price_label">Цена за штуку</string>
+    <string name="items_name_placeholder">Например, Верёвка 50 фт</string>
+    <string name="items_quantity_label">Количество · до 9999</string>
+    <string name="items_price_label">Цена за штуку · необязательно</string>
     <string name="items_price_placeholder">Без цены</string>
     <string name="items_owner_label">У кого</string>
     <string name="items_notes_label">Заметки</string>
-    <string name="items_notes_placeholder">Что это и откуда, упоминайте через @</string>
+    <string name="items_notes_placeholder">Откуда, для чего, кому обещан</string>
     <string name="items_delete">Удалить предмет</string>
     <string name="items_save">Сохранить</string>
     <string name="items_owner_me">я</string>
@@ -1468,4 +1468,6 @@
     <string name="items_card_price">Цена за штуку</string>
     <string name="items_quantity_less">Меньше</string>
     <string name="items_quantity_more">Больше</string>
+    <string name="items_empty_text">Зелья, ключи, трофеи — у персонажа, NPC или в месте.</string>
+    <string name="items_add_short">Добавить</string>
 </resources>

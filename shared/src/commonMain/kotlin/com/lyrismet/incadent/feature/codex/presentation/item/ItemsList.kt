@@ -22,9 +22,10 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_search_empty_reset
 import dndplayerscodex.shared.generated.resources.codex_search_empty_text
 import dndplayerscodex.shared.generated.resources.codex_search_empty_title
-import dndplayerscodex.shared.generated.resources.codex_tab_party
 import dndplayerscodex.shared.generated.resources.items_add
 import dndplayerscodex.shared.generated.resources.items_empty
+import dndplayerscodex.shared.generated.resources.items_empty_text
+import dndplayerscodex.shared.generated.resources.items_segment_characters
 import dndplayerscodex.shared.generated.resources.items_segment_items
 import org.jetbrains.compose.resources.stringResource
 
@@ -39,7 +40,7 @@ internal fun CodexPartyModeSwitch(
             listOf(
                 SegmentedTab(
                     PartyListMode.CHARACTERS,
-                    stringResource(Res.string.codex_tab_party),
+                    stringResource(Res.string.items_segment_characters),
                     state.tabCounts.party,
                     EntityKind.PARTY.icon(),
                 ),
@@ -73,14 +74,15 @@ internal fun CodexItemsList(
             }
         items.total == 0 ->
             EmptyState(
-                text = "",
+                text = stringResource(Res.string.items_empty_text),
                 title = stringResource(Res.string.items_empty),
+                icon = EntityKind.ITEM.icon(),
                 modifier = modifier,
                 primaryAction =
                     if (state.readOnly) {
                         null
                     } else {
-                        EmptyStateAction(stringResource(Res.string.items_add)) {
+                        EmptyStateAction(stringResource(Res.string.items_add), tinted = true) {
                             state.eventSink(CodexEvent.Items(ItemEvent.AddClicked))
                         }
                     },

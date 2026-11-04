@@ -1367,13 +1367,13 @@
     <string name="items_sheet_title_new">New item</string>
     <string name="items_sheet_title_edit">Item</string>
     <string name="items_name_label">Name</string>
-    <string name="items_name_placeholder">Healing potion</string>
-    <string name="items_quantity_label">Quantity</string>
-    <string name="items_price_label">Price each</string>
+    <string name="items_name_placeholder">For example, Rope 50 ft</string>
+    <string name="items_quantity_label">Quantity · up to 9999</string>
+    <string name="items_price_label">Price each · optional</string>
     <string name="items_price_placeholder">No price</string>
     <string name="items_owner_label">Carried by</string>
     <string name="items_notes_label">Notes</string>
-    <string name="items_notes_placeholder">What it is and where it came from, mention with @</string>
+    <string name="items_notes_placeholder">Where from, what for, who it is promised to</string>
     <string name="items_delete">Delete item</string>
     <string name="items_save">Save</string>
     <string name="items_owner_me">me</string>
@@ -1396,4 +1396,6 @@
     <string name="items_card_price">Price each</string>
     <string name="items_quantity_less">Fewer</string>
     <string name="items_quantity_more">More</string>
+    <string name="items_empty_text">Potions, keys, trophies — carried by a character, an NPC or kept in a place.</string>
+    <string name="items_add_short">Add</string>
 </resources>
