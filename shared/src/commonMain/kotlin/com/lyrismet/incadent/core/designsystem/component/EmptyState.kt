@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,16 +47,15 @@ fun EmptyState(
                 Box(
                     modifier =
                         Modifier
-                            .size(
-                                100.dp,
-                            ).dashedBorder(AppPalette.Gold.copy(alpha = 0.4f), cornerRadius = 22.dp),
+                            .size(64.dp)
+                            .dashedBorder(AppPalette.Gold.copy(alpha = 0.45f), cornerRadius = 18.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         icon,
                         contentDescription = null,
                         tint = AppPalette.Gold.copy(alpha = 0.6f),
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(26.dp),
                     )
                 }
             }
@@ -95,14 +93,9 @@ private fun PrimaryEmptyStateButton(action: EmptyStateAction) {
     AppButton(
         text = action.label,
         onClick = action.onClick,
-        modifier =
-            Modifier
-                .padding(
-                    top = 4.dp,
-                ).then(if (action.tinted) Modifier.fillMaxWidth() else Modifier)
-                .widthIn(max = 280.dp),
-        variant = if (action.tinted) ButtonVariant.Tinted else ButtonVariant.Solid,
-        size = if (action.tinted) ButtonSize.Large else ButtonSize.Primary,
+        modifier = Modifier.padding(top = 4.dp).widthIn(max = 280.dp),
+        variant = ButtonVariant.Solid,
+        size = ButtonSize.Primary,
         height = 48.dp,
     )
 }

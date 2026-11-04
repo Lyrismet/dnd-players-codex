@@ -205,33 +205,35 @@ internal fun ItemCodexCard(
         badge = { CodexInitialBadge(PortraitMark.Icon(EntityIcons.Item), ItemMentionColor, item.photo) },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(
-                text = item.name,
-                style = MaterialTheme.typography.titleMedium,
-                color = AppPalette.TextHeading,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                text = itemQuantityText(item.quantity),
-                style = MaterialTheme.typography.titleMedium,
-                color = AppPalette.TextSecondary,
-            )
-        }
-        Text(
-            text = item.owner.text(),
-            style = MaterialTheme.typography.bodySmall,
-            color = AppPalette.TextTertiary,
-            modifier = Modifier.padding(top = 4.dp),
-        )
-        if (item.price != null) {
-            Text(
-                text = itemPriceEachText(item.price, item.coin),
-                style = MaterialTheme.typography.bodySmall,
-                color = AppPalette.TextTertiary,
-                modifier = Modifier.padding(top = 2.dp),
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = AppPalette.TextHeading,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (item.price != null) {
+                    Text(
+                        text = itemPriceEachText(item.price, item.coin),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppPalette.TextMuted,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+            }
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = itemQuantityText(item.quantity),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = AppPalette.TextPrimary,
+                )
+                Text(
+                    text = item.owner.text(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppPalette.TextTertiary,
+                )
+            }
         }
     }
 }

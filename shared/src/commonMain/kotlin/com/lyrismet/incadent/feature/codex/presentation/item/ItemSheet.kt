@@ -1,11 +1,14 @@
 package com.lyrismet.incadent.feature.codex.presentation.item
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -17,27 +20,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
-import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppChevron
 import com.lyrismet.incadent.core.designsystem.component.AppSelectSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSelectTexts
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.AppStepper
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
-import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
-import com.lyrismet.incadent.core.designsystem.component.ButtonSize
-import com.lyrismet.incadent.core.designsystem.component.ButtonTone
-import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
+import com.lyrismet.incadent.core.designsystem.component.FORM_AREA_MIN_LINES
+import com.lyrismet.incadent.core.designsystem.component.FormFieldHeight
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPickField
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
-import com.lyrismet.incadent.core.designsystem.component.TextLimits
+import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.formAreaInputStyle
+import com.lyrismet.incadent.core.designsystem.component.formLineInputStyle
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.kindLabelRes
 import com.lyrismet.incadent.core.selectlist.SelectOption
@@ -68,7 +72,6 @@ import dndplayerscodex.shared.generated.resources.items_sheet_title_new
 import org.jetbrains.compose.resources.stringResource
 
 private const val PRICE_DIGITS = 7
-private val FIELD_HEIGHT = 48.dp
 
 /** the one sheet that adds an item and edits it - [onDelete] is asked for an item that already exists */
 @Composable
@@ -89,13 +92,20 @@ internal fun ItemSheet(
         ) {
             AppSheetHeader(
                 title =
-                    stringResource(
-                        if (draft.isNew) Res.string.items_sheet_title_new else Res.string.items_sheet_title_edit,
-                    ),
+                    when {
+                        draft.isNew -> stringResource(Res.string.items_sheet_title_new)
+                        draft.name.isBlank() -> stringResource(Res.string.items_sheet_title_edit)
+                        else -> draft.name
+                    },
                 onClose = { onEvent(ItemEvent.SheetDismissed) },
                 overline = stringResource(EntityKind.ITEM.kindLabelRes()).uppercase(),
             )
-            ItemNameField(draft.name, onEvent)
+            FormTextField(
+                label = stringResource(Res.string.items_name_label),
+                value = draft.name,
+                onChange = { onEvent(ItemEvent.NameChanged(it)) },
+                placeholder = stringResource(Res.string.items_name_placeholder),
+            )
             ItemQuantityField(draft.quantity, draft.isNew, onEvent, onDelete)
             ItemPriceFields(draft.price, draft.coin, onEvent)
             FormPickField(
@@ -105,24 +115,31 @@ internal fun ItemSheet(
                 title = state.owner.text(),
             )
             ItemNotesField(state, onEvent)
+            if (!draft.isNew) ItemDeleteLink(onDelete)
             FormPrimaryButton(
                 text = stringResource(if (draft.isNew) Res.string.items_add_short else Res.string.items_save),
                 onClick = { onEvent(ItemEvent.SaveClicked) },
                 enabled = draft.canSave,
             )
-            if (!draft.isNew) {
-                AppButton(
-                    text = stringResource(Res.string.items_delete),
-                    onClick = onDelete,
-                    modifier = Modifier.fillMaxWidth(),
-                    tone = ButtonTone.Maroon,
-                    variant = ButtonVariant.Ghost,
-                    size = ButtonSize.Large,
-                )
-            }
         }
     }
     if (state.ownerPickerOpen) ItemOwnerPicker(state, onEvent)
+}
+
+// a bare red text action above the primary button, like the mock
+@Composable
+private fun ItemDeleteLink(onClick: () -> Unit) {
+    Text(
+        text = stringResource(Res.string.items_delete),
+        color = AppPalette.MaroonBright,
+        fontSize = AppFontSize.MediumPlus,
+        fontWeight = FontWeight.SemiBold,
+        modifier =
+            Modifier
+                .heightIn(min = 48.dp)
+                .clickable(onClick = onClick)
+                .wrapContentHeight(Alignment.CenterVertically),
+    )
 }
 
 @Composable
@@ -140,6 +157,7 @@ private fun ItemQuantityField(
         FormFieldLabel(text = stringResource(Res.string.items_quantity_label), modifier = Modifier.weight(1f))
         AppStepper(
             tiles = true,
+            removesAtOne = !isNew,
             count = quantity,
             // the last piece taken away removes the item, a new one has nothing to remove yet
             onDecrease = {
@@ -152,22 +170,6 @@ private fun ItemQuantityField(
             decreaseDescription = stringResource(Res.string.items_quantity_less),
             increaseDescription = stringResource(Res.string.items_quantity_more),
             canIncrease = quantity < ITEM_QUANTITY_RANGE.last,
-        )
-    }
-}
-
-@Composable
-private fun ItemNameField(
-    name: String,
-    onEvent: (ItemEvent) -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        FormFieldLabel(text = stringResource(Res.string.items_name_label))
-        AppTextInput(
-            value = name,
-            onValueChange = { onEvent(ItemEvent.NameChanged(it.take(TextLimits.LINE))) },
-            placeholder = stringResource(Res.string.items_name_placeholder),
-            style = AppTextInputStyle(height = FIELD_HEIGHT),
         )
     }
 }
@@ -191,14 +193,14 @@ private fun ItemPriceFields(
                 },
                 modifier = Modifier.weight(1f),
                 placeholder = EMPTY_VALUE_DASH,
-                style = AppTextInputStyle(height = FIELD_HEIGHT),
+                style = formLineInputStyle(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
             Row(
                 modifier =
                     Modifier
                         .weight(1f)
-                        .height(FIELD_HEIGHT)
+                        .height(FormFieldHeight)
                         .appCard(AppShapes.Field, AppPalette.Background, AppPalette.Border) { coinPickerOpen = true }
                         .padding(horizontal = 14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -249,7 +251,8 @@ private fun ItemNotesField(
                 source = mention.source,
                 self = mention.self,
                 placeholder = stringResource(Res.string.items_notes_placeholder),
-                minLines = 3,
+                style = formAreaInputStyle(),
+                minLines = FORM_AREA_MIN_LINES,
             )
         }
     }

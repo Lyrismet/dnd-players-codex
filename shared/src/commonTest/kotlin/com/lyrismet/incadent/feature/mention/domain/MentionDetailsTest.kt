@@ -18,7 +18,13 @@ private val quest = Quest(7, "Долг", QuestStatus.ACTIVE, "", givenByNpcId = 
 
 class MentionDetailsTest {
     private val details =
-        mentionDetails(listOf(miller), listOf(valley, village), listOf(quest), emptyList()) { "от $it" }
+        mentionDetails(
+            listOf(miller),
+            listOf(valley, village),
+            listOf(quest),
+            emptyList(),
+            questGiverLine = { "от $it" },
+        )
 
     @Test
     fun `an npc shows race and place`() {

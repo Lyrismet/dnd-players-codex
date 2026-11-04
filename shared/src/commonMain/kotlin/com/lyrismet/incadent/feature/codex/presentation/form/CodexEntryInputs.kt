@@ -2,20 +2,18 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
+import com.lyrismet.incadent.core.designsystem.component.FORM_AREA_MIN_LINES
 import com.lyrismet.incadent.core.designsystem.component.FormFieldAction
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormNumberField
 import com.lyrismet.incadent.core.designsystem.component.FormTextArea
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
+import com.lyrismet.incadent.core.designsystem.component.formAreaInputStyle
 import com.lyrismet.incadent.feature.mention.presentation.MentionField
 import com.lyrismet.incadent.feature.mention.presentation.MentionTextField
 import dndplayerscodex.shared.generated.resources.Res
@@ -71,17 +69,11 @@ internal fun CodexEntryTextArea(
             source = mention.source,
             self = mention.self,
             placeholder = placeholder,
-            style =
-                AppTextInputStyle(
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.5.sp),
-                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp),
-                ),
-            minLines = AREA_MIN_LINES,
+            style = formAreaInputStyle(),
+            minLines = FORM_AREA_MIN_LINES,
         )
     }
 }
-
-private const val AREA_MIN_LINES = 3
 
 /** a number form field that reports its value as the [field] of the entry */
 @Composable

@@ -124,9 +124,9 @@ internal class ItemsController(
 
     private fun CodexRecords.kindOf(ref: EntityRef): EntityKind? =
         when (ref) {
-            is EntityRef.Party -> EntityKind.PARTY.takeIf { parties.any { it.id == ref.id } }
-            is EntityRef.Npc -> EntityKind.NPC.takeIf { npcs.any { it.id == ref.id } }
-            is EntityRef.Location -> EntityKind.LOCATION.takeIf { locations.any { it.id == ref.id } }
+            is EntityRef.Party -> EntityKind.PARTY.takeIf { parties.any { p -> p.id == ref.id } }
+            is EntityRef.Npc -> EntityKind.NPC.takeIf { npcs.any { n -> n.id == ref.id } }
+            is EntityRef.Location -> EntityKind.LOCATION.takeIf { locations.any { l -> l.id == ref.id } }
             else -> null
         }
 

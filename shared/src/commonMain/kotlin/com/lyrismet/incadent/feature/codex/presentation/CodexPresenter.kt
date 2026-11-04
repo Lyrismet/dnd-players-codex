@@ -96,6 +96,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 
+@Suppress("LongParameterList")
 private fun mentionIndexOf(
     npcs: List<Npc>,
     locations: List<Location>,

@@ -83,6 +83,7 @@ sealed interface MentionEntity {
     }
 }
 
+@Suppress("LongParameterList")
 fun mentionEntitiesFrom(
     npcs: List<Npc>,
     locations: List<Location>,

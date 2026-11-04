@@ -31,6 +31,7 @@ object DataBindings {
         createAppDatabase(driverFactory.createDriver())
 
     @Provides
+    @Suppress("LongParameterList")
     fun provideCodexRepositories(
         partyRepository: PartyRepository,
         npcRepository: NpcRepository,

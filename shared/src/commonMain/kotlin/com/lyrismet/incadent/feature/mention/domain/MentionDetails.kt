@@ -11,6 +11,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 
 /** the grey second line that tells same named records apart - race and place, who gave a quest, the path of a place */
+@Suppress("LongParameterList")
 fun mentionDetails(
     npcs: List<Npc>,
     locations: List<Location>,

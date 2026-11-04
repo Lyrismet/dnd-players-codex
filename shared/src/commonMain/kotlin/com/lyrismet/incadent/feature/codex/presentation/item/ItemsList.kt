@@ -82,7 +82,7 @@ internal fun CodexItemsList(
                     if (state.readOnly) {
                         null
                     } else {
-                        EmptyStateAction(stringResource(Res.string.items_add), tinted = true) {
+                        EmptyStateAction(stringResource(Res.string.items_add)) {
                             state.eventSink(CodexEvent.Items(ItemEvent.AddClicked))
                         }
                     },

@@ -40,9 +40,20 @@ fun AppStepper(
     canIncrease: Boolean = true,
     // separate raised tiles with the count between them, instead of one bordered box
     tiles: Boolean = false,
+    // the tiles stepper shows a cross on one when the minus removes, a plain minus when there is nothing to remove
+    removesAtOne: Boolean = true,
 ) {
     if (tiles) {
-        TileStepper(count, onDecrease, onIncrease, decreaseDescription, increaseDescription, modifier, canIncrease)
+        TileStepper(
+            count,
+            onDecrease,
+            onIncrease,
+            decreaseDescription,
+            increaseDescription,
+            modifier,
+            canIncrease,
+            removesAtOne,
+        )
         return
     }
     Row(
@@ -90,7 +101,7 @@ private fun StepperButton(
                 .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = glyph, color = color, fontSize = AppFontSize.HeadingPlus)
+        Text(text = glyph, color = color, fontSize = AppFontSize.LeadPlus)
     }
 }
 
@@ -103,15 +114,28 @@ private fun TileStepper(
     increaseDescription: String,
     modifier: Modifier,
     canIncrease: Boolean,
+    removesAtOne: Boolean,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        StepperTile(if (count <= 1) "✕" else "−", AppPalette.TextMuted, decreaseDescription, onDecrease, true)
+        StepperTile(
+            if (count <= 1 &&
+                removesAtOne
+            ) {
+                "✕"
+            } else {
+                "−"
+            },
+            AppPalette.TextMuted,
+            decreaseDescription,
+            onDecrease,
+            true,
+        )
         Text(
             text = count.toString(),
-            modifier = Modifier.widthIn(min = 56.dp),
+            modifier = Modifier.widthIn(min = 44.dp),
             color = AppPalette.TextPrimary,
-            fontSize = AppFontSize.MediumPlus,
-            fontWeight = FontWeight.Bold,
+            fontSize = AppFontSize.Large,
+            fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
         )
         StepperTile("+", AppPalette.TextPrimary, increaseDescription, onIncrease, canIncrease)
@@ -129,7 +153,7 @@ private fun StepperTile(
     Box(
         modifier =
             Modifier
-                .size(width = 64.dp, height = 56.dp)
+                .size(44.dp)
                 .alpha(if (enabled) 1f else DISABLED_ALPHA)
                 .clip(AppShapes.Field)
                 .background(AppPalette.SurfaceElevated)
@@ -137,6 +161,6 @@ private fun StepperTile(
                 .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = glyph, color = color, fontSize = AppFontSize.HeadingPlus)
+        Text(text = glyph, color = color, fontSize = AppFontSize.LeadPlus)
     }
 }
