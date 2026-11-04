@@ -3,6 +3,8 @@ package com.lyrismet.incadent.feature.mention.domain
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
+import com.lyrismet.incadent.feature.codex.domain.model.Item
+import com.lyrismet.incadent.feature.codex.domain.model.ItemOwner
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -15,6 +17,8 @@ fun mentionDetails(
     quests: List<Quest>,
     parties: List<PartyMember>,
     questGiverLine: (String) -> String,
+    items: List<Item> = emptyList(),
+    meLabel: String = "",
 ): Map<MentionRef, String> {
     val tree = PlaceTree(locations)
     val npcById = npcs.associateBy { it.id }
@@ -37,6 +41,7 @@ fun mentionDetails(
         val giver = quest.givenByNpcId?.let { npcById[it] }?.name
         details[MentionRef(EntityKind.QUEST, quest.id)] = giver?.let(questGiverLine).orEmpty()
     }
+    details += itemDetails(items, parties, npcById, tree, meLabel)
     return details
 }
 
@@ -44,4 +49,25 @@ fun mentionDetails(
 fun mentionNicknames(npcs: List<Npc>): Map<MentionRef, List<String>> =
     buildMap {
         npcs.forEach { if (it.nicknames.isNotEmpty()) put(MentionRef(EntityKind.NPC, it.id), it.nicknames) }
+    }
+
+// who carries each item and how many there are, "Лира · ×2"
+private fun itemDetails(
+    items: List<Item>,
+    parties: List<PartyMember>,
+    npcById: Map<Long, Npc>,
+    tree: PlaceTree,
+    meLabel: String,
+): Map<MentionRef, String> =
+    items.associate { item ->
+        val holder = item.owner as? ItemOwner.Of
+        val owner =
+            when (holder?.kind) {
+                EntityKind.PARTY ->
+                    parties.find { it.id == holder.id }?.let { if (it.isPlayerCharacter) meLabel else it.name }
+                EntityKind.NPC -> npcById[holder.id]?.name
+                EntityKind.LOCATION -> tree.find(holder.id)?.name
+                else -> null
+            }.orEmpty()
+        MentionRef(EntityKind.ITEM, item.id) to joinWithDot(owner, "×${item.quantity}")
     }

@@ -49,6 +49,7 @@ import dndplayerscodex.shared.generated.resources.deleted_mention_overline
 import dndplayerscodex.shared.generated.resources.deleted_mention_search_placeholder
 import dndplayerscodex.shared.generated.resources.deleted_mention_text_hint
 import dndplayerscodex.shared.generated.resources.deleted_mention_text_title
+import dndplayerscodex.shared.generated.resources.deleted_mention_type_item
 import dndplayerscodex.shared.generated.resources.deleted_mention_type_location
 import dndplayerscodex.shared.generated.resources.deleted_mention_type_npc
 import dndplayerscodex.shared.generated.resources.deleted_mention_type_party
@@ -60,6 +61,7 @@ import dndplayerscodex.shared.generated.resources.mention_unlinked_body
 import dndplayerscodex.shared.generated.resources.mention_unlinked_create_format
 import dndplayerscodex.shared.generated.resources.mention_unlinked_link_hint
 import dndplayerscodex.shared.generated.resources.mention_unlinked_overline
+import dndplayerscodex.shared.generated.resources.session_detail_mention_type_item
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_party
@@ -255,6 +257,7 @@ internal fun EntityKind.kindLabelRes(): StringResource =
         EntityKind.QUEST -> Res.string.session_detail_mention_type_quest
         EntityKind.LOCATION -> Res.string.session_detail_mention_type_location
         EntityKind.SPECIES -> Res.string.session_detail_mention_type_species
+        EntityKind.ITEM -> Res.string.session_detail_mention_type_item
     }
 
 private fun EntityKind.typeLabelRes(): StringResource =
@@ -264,4 +267,5 @@ private fun EntityKind.typeLabelRes(): StringResource =
         EntityKind.QUEST -> Res.string.deleted_mention_type_quest
         EntityKind.LOCATION -> Res.string.deleted_mention_type_location
         EntityKind.SPECIES -> Res.string.deleted_mention_type_species
+        EntityKind.ITEM -> Res.string.deleted_mention_type_item
     }

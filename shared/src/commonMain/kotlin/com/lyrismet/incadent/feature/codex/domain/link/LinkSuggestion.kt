@@ -50,7 +50,7 @@ private fun EntityKind.linkFieldFor(): LinkField? =
         EntityKind.NPC -> LinkField.MEET_AT
         EntityKind.LOCATION -> LinkField.WHO_HERE
         EntityKind.QUEST -> LinkField.GIVER
-        EntityKind.PARTY, EntityKind.SPECIES -> null
+        EntityKind.PARTY, EntityKind.SPECIES, EntityKind.ITEM -> null
     }
 
 private fun LinkField.targetKind(): EntityKind =
@@ -69,7 +69,7 @@ fun CodexRecords.linkSuggestionsFor(
             EntityKind.NPC -> npcs.find { it.id == owner.id }?.description
             EntityKind.LOCATION -> locations.find { it.id == owner.id }?.description
             EntityKind.QUEST -> quests.find { it.id == owner.id }?.description
-            EntityKind.PARTY, EntityKind.SPECIES -> null
+            EntityKind.PARTY, EntityKind.SPECIES, EntityKind.ITEM -> null
         } ?: return emptyList()
     val mentioned = mentionsIn(listOf(notes), mentionIndex).filter { mentionIndex.has(it.ref) }
     val linked =

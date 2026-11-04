@@ -242,7 +242,7 @@ class EntitySheetInteractionsTest {
         onChanged: (EntityChange) -> Unit = {},
     ) = EntitySheetInteractions(
         selected,
-        CodexRepositories(party, npcs, quests, locations, FakeSpeciesRepository()),
+        CodexRepositories(party, npcs, quests, locations, FakeSpeciesRepository(), FakeItemRepository()),
         openSession,
         history,
         onChanged,

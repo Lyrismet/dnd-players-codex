@@ -24,6 +24,7 @@ internal class CodexEntryPersister(
             EntityKind.QUEST -> questRepository.upsert(form.toQuest())
             EntityKind.LOCATION -> saveLocation(form)
             EntityKind.SPECIES -> speciesRepository.upsert(form.toSpecies())
+            EntityKind.ITEM -> error("an item is saved by its own sheet")
         }
 
     // the places the form lists as inside move under the saved place, the ones it dropped go to the top level

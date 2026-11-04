@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.domain.repository
 
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -57,6 +58,7 @@ suspend fun CodexRepositories.createNamed(
         EntityKind.QUEST -> questRepository.upsert(quickQuest(name))
         EntityKind.LOCATION -> locationRepository.upsert(quickLocation(name))
         EntityKind.SPECIES -> speciesRepository.upsert(quickSpecies(name))
+        EntityKind.ITEM -> itemRepository.upsert(Item(id = 0, name = name))
     }
 
 suspend fun CodexRepositories.deleteRecord(
@@ -69,5 +71,6 @@ suspend fun CodexRepositories.deleteRecord(
         EntityKind.QUEST -> questRepository.delete(id)
         EntityKind.LOCATION -> locationRepository.delete(id)
         EntityKind.SPECIES -> speciesRepository.delete(id)
+        EntityKind.ITEM -> itemRepository.delete(id)
     }
 }

@@ -125,4 +125,5 @@ private fun MentionRef.toEntityRef(): EntityRef =
         EntityKind.QUEST -> EntityRef.Quest(id)
         EntityKind.LOCATION -> EntityRef.Location(id)
         EntityKind.SPECIES -> EntityRef.Species(id)
+        EntityKind.ITEM -> EntityRef.Item(id)
     }

@@ -11,4 +11,5 @@ fun EntityRef.toMentionRef(): MentionRef =
         is EntityRef.Quest -> MentionRef(EntityKind.QUEST, id)
         is EntityRef.Party -> MentionRef(EntityKind.PARTY, id)
         is EntityRef.Species -> MentionRef(EntityKind.SPECIES, id)
+        is EntityRef.Item -> MentionRef(EntityKind.ITEM, id)
     }

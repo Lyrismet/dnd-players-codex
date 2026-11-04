@@ -23,7 +23,8 @@ fun rememberMentionSource(
 ): MentionSource {
     val title = stringResource(Res.string.mention_created_title)
     val entities = records.mentionIndex.entities
-    val lookups = rememberMentionLookups(records.npcs, records.locations, records.quests, records.parties)
+    val lookups =
+        rememberMentionLookups(records.npcs, records.locations, records.quests, records.parties, records.items)
     return remember(entities, lookups, repositories, undoController, title) {
         MentionSource(entities, lookups) { kind, name ->
             val id = repositories.createNamed(kind, name)

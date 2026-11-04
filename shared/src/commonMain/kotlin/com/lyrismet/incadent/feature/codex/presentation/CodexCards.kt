@@ -40,7 +40,12 @@ import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.core.portrait.rememberPhotoBitmap
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.presentation.item.ItemCodexItem
+import com.lyrismet.incadent.feature.codex.presentation.item.itemPriceEachText
+import com.lyrismet.incadent.feature.codex.presentation.item.itemQuantityText
+import com.lyrismet.incadent.feature.codex.presentation.item.text
 import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
+import com.lyrismet.incadent.feature.codex.presentation.style.ItemMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.summary.speciesHitsLine
 import com.lyrismet.incadent.feature.codex.presentation.summary.speciesSeenLine
@@ -183,6 +188,49 @@ internal fun SpeciesCodexCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = AppPalette.TextTertiary,
                 modifier = Modifier.padding(top = 4.dp),
+            )
+        }
+    }
+}
+
+@Composable
+internal fun ItemCodexCard(
+    item: ItemCodexItem,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    CodexCardRow(
+        onClick = onClick,
+        modifier = modifier,
+        badge = { CodexInitialBadge(PortraitMark.Icon(EntityIcons.Item), ItemMentionColor, item.photo) },
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = item.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = AppPalette.TextHeading,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = itemQuantityText(item.quantity),
+                style = MaterialTheme.typography.titleMedium,
+                color = AppPalette.TextSecondary,
+            )
+        }
+        Text(
+            text = item.owner.text(),
+            style = MaterialTheme.typography.bodySmall,
+            color = AppPalette.TextTertiary,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+        if (item.price != null) {
+            Text(
+                text = itemPriceEachText(item.price, item.coin),
+                style = MaterialTheme.typography.bodySmall,
+                color = AppPalette.TextTertiary,
+                modifier = Modifier.padding(top = 2.dp),
             )
         }
     }

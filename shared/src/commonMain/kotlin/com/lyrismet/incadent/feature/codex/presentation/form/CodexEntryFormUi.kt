@@ -127,6 +127,8 @@ private fun CodexEntryFormContent(
             EntityKind.QUEST -> QuestEntryFields(form, eventSink)
             EntityKind.LOCATION -> LocationEntryFields(form, eventSink)
             EntityKind.SPECIES -> SpeciesEntryFields(form, eventSink)
+            // an item is made in its own sheet, never in this form
+            EntityKind.ITEM -> Unit
         }
         Text(
             stringResource(Res.string.codex_entry_required_note),

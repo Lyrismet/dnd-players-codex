@@ -16,4 +16,5 @@ class CodexRecords(
     val species: List<Species> = emptyList(),
     // what the saved fights say of the species and the party, for the rows and the cards
     val facts: CombatFacts = CombatFacts.EMPTY,
+    val items: List<Item> = emptyList(),
 )

@@ -16,7 +16,7 @@ import com.lyrismet.incadent.db.species.SelectAll as SpeciesSql
 
 internal fun String.toIdList(): List<Long> = split(',').mapNotNull { it.toLongOrNull() }
 
-private fun MentionRef.toExchangeRef(): ExchangeRef = ExchangeRef(type.toExchangeKind(), id)
+private fun MentionRef.toExchangeRef(): ExchangeRef? = type.toExchangeKind()?.let { ExchangeRef(it, id) }
 
 /** the rows of one campaign as they were read, [catalog] is what the picker offers from them */
 @Suppress("LongParameterList")
@@ -44,7 +44,7 @@ internal class Snapshot(
                 party = party.map { ExchangeItem(it.id, it.name) },
                 mentions =
                     entries.mapValues { (_, list) ->
-                        list.flatMap { mentionRefsIn(it.body) }.map { it.toExchangeRef() }.toSet()
+                        list.flatMap { mentionRefsIn(it.body) }.mapNotNull { it.toExchangeRef() }.toSet()
                     },
             )
         val options = rows.options()

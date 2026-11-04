@@ -30,44 +30,7 @@ internal fun PinnedOverline(
     actions: EntitySummarySheetActions,
     onClose: () -> Unit,
 ) {
-    val parts =
-        when (item) {
-            is EntitySummaryItem.NpcSummary ->
-                OverlineParts(
-                    stringResource(EntityKind.NPC.kindLabelRes()),
-                    item.statusLabel,
-                    item.emblem,
-                    item.ref,
-                )
-            is EntitySummaryItem.LocationSummary ->
-                OverlineParts(
-                    stringResource(EntityKind.LOCATION.kindLabelRes()),
-                    "",
-                    item.emblem,
-                    item.ref,
-                )
-            is EntitySummaryItem.QuestSummary ->
-                OverlineParts(
-                    stringResource(EntityKind.QUEST.kindLabelRes()),
-                    item.statusLabel,
-                    item.emblem,
-                    item.ref,
-                )
-            is EntitySummaryItem.PartySummary ->
-                OverlineParts(
-                    stringResource(Res.string.entity_sheet_party_type_label),
-                    if (item.fall != null) stringResource(Res.string.codex_party_fallen_word) else item.overlineValue,
-                    item.emblem,
-                    item.ref,
-                )
-            is EntitySummaryItem.SpeciesSummary ->
-                OverlineParts(
-                    stringResource(Res.string.codex_entry_type_species),
-                    speciesTypeLabels().of(item.type),
-                    item.emblem,
-                    item.ref,
-                )
-        }
+    val parts = overlinePartsOf(item)
     EntityOverlineRow(
         overline =
             if (parts.value.isBlank()) {
@@ -80,10 +43,60 @@ internal fun PinnedOverline(
                 )
             },
         color = parts.emblem.color.foreground,
-        onEditClicked = actions.onEditClicked?.let { edit -> { edit(parts.ref) } },
+        onEditClicked =
+            (if (item is EntitySummaryItem.ItemSummary) actions.onItemEditClicked else null)
+                .let { it ?: actions.onEditClicked }
+                ?.let { edit -> { edit(parts.ref) } },
         onClose = onClose,
     )
 }
+
+@Composable
+private fun overlinePartsOf(item: EntitySummaryItem): OverlineParts =
+    when (item) {
+        is EntitySummaryItem.NpcSummary ->
+            OverlineParts(
+                stringResource(EntityKind.NPC.kindLabelRes()),
+                item.statusLabel,
+                item.emblem,
+                item.ref,
+            )
+        is EntitySummaryItem.LocationSummary ->
+            OverlineParts(
+                stringResource(EntityKind.LOCATION.kindLabelRes()),
+                "",
+                item.emblem,
+                item.ref,
+            )
+        is EntitySummaryItem.QuestSummary ->
+            OverlineParts(
+                stringResource(EntityKind.QUEST.kindLabelRes()),
+                item.statusLabel,
+                item.emblem,
+                item.ref,
+            )
+        is EntitySummaryItem.PartySummary ->
+            OverlineParts(
+                stringResource(Res.string.entity_sheet_party_type_label),
+                if (item.fall != null) stringResource(Res.string.codex_party_fallen_word) else item.overlineValue,
+                item.emblem,
+                item.ref,
+            )
+        is EntitySummaryItem.ItemSummary ->
+            OverlineParts(
+                stringResource(EntityKind.ITEM.kindLabelRes()),
+                "",
+                item.emblem,
+                item.ref,
+            )
+        is EntitySummaryItem.SpeciesSummary ->
+            OverlineParts(
+                stringResource(Res.string.codex_entry_type_species),
+                speciesTypeLabels().of(item.type),
+                item.emblem,
+                item.ref,
+            )
+    }
 
 private class OverlineParts(
     val typeLabel: String,

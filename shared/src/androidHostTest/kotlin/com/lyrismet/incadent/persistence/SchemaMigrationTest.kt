@@ -128,6 +128,29 @@ class SchemaMigrationTest {
         file.delete()
     }
 
+    @Test
+    fun `migrating the sixth schema keeps the records and adds an empty item table`() {
+        val file = File.createTempFile("schema-v6", ".db")
+        File("src/commonMain/sqldelight/databases/6.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        driver.execute(null, "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'Old', 1, 1)", 0)
+        driver.execute(
+            null,
+            "INSERT INTO npc(name, status, description, campaign_id) VALUES ('Bob', 'FRIEND', 'kept', 'c')",
+            0,
+        )
+
+        AppDatabase.Schema.migrate(driver, 6, AppDatabase.Schema.version)
+
+        assertEquals("kept", driver.single("SELECT description FROM npc"))
+        assertEquals("0", driver.single("SELECT COUNT(*) FROM item"))
+        driver.execute(null, "INSERT INTO item(name, campaign_id) VALUES ('Potion', 'c')", 0)
+        assertEquals("1", driver.single("SELECT quantity FROM item"))
+        assertEquals("GOLD", driver.single("SELECT coin FROM item"))
+        driver.close()
+        file.delete()
+    }
+
     private fun SqlDriver.single(sql: String): String? =
         executeQuery(
             null,

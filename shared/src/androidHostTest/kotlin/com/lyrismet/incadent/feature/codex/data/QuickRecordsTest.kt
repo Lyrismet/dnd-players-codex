@@ -19,6 +19,7 @@ class QuickRecordsTest {
             QuestRepositoryImpl(db.database, db.current),
             LocationRepositoryImpl(db.database, db.current),
             SpeciesRepositoryImpl(db.database, db.current),
+            ItemRepositoryImpl(db.database, db.current),
         )
 
     @Test

@@ -14,6 +14,9 @@ import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
+import com.lyrismet.incadent.feature.codex.presentation.item.ItemEvent
+import com.lyrismet.incadent.feature.codex.presentation.item.ItemsState
+import com.lyrismet.incadent.feature.codex.presentation.item.PartyListMode
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPickState
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditState
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
@@ -199,6 +202,9 @@ data class CodexState(
     val party: List<PartyCodexItem> = emptyList(),
     val npcs: List<CodexGroup<NpcCodexItem>> = emptyList(),
     val npcMode: NpcListMode = NpcListMode.NAMED,
+    // the party tab lists the characters or their items
+    val partyMode: PartyListMode = PartyListMode.CHARACTERS,
+    val items: ItemsState = ItemsState(),
     val species: List<SpeciesCodexItem> = emptyList(),
     val quests: List<CodexGroup<QuestCodexItem>> = emptyList(),
     val locations: List<CodexGroup<LocationCodexItem>> = emptyList(),
@@ -241,6 +247,15 @@ sealed interface CodexEvent : CircuitUiEvent {
 
     data class NpcModeSelected(
         val mode: NpcListMode,
+    ) : CodexEvent
+
+    data class PartyModeSelected(
+        val mode: PartyListMode,
+    ) : CodexEvent
+
+    /** a change in the item sheet or the gear pick that opens over this screen */
+    data class Items(
+        val event: ItemEvent,
     ) : CodexEvent
 
     data class SearchQueryChanged(

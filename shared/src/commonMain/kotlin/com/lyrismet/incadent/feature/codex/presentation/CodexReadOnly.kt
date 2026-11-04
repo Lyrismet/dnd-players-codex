@@ -8,6 +8,7 @@ internal fun CodexEvent.writesCampaignData(): Boolean =
         is CodexEvent.EntitySheet -> event.writesCampaignData()
         is CodexEvent.TabSelected,
         is CodexEvent.NpcModeSelected,
+        is CodexEvent.PartyModeSelected,
         is CodexEvent.SearchQueryChanged,
         is CodexEvent.GroupBySelected,
         is CodexEvent.PlaceSectionToggled,
@@ -24,5 +25,6 @@ internal fun CodexEvent.writesCampaignData(): Boolean =
         is CodexEvent.EntityDeleteRequested,
         CodexEvent.EntityDeleteConfirmed,
         is CodexEvent.EntryForm,
+        is CodexEvent.Items,
         -> true
     }

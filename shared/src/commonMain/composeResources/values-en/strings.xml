@@ -1330,4 +1330,70 @@
         <item quantity="other">%1$d conflicts</item>
     </plurals>
     <string name="exchange_export_file">File: %1$s</string>
+    <string name="session_detail_mention_type_item">Item</string>
+    <string name="deleted_mention_type_item">an item</string>
+    <string name="items_segment_characters">Characters</string>
+    <string name="items_segment_items">Items</string>
+    <string name="items_empty">No items yet</string>
+    <string name="items_empty_search">No items found</string>
+    <string name="items_add">+ Add item</string>
+    <string name="items_quantity_format">×%1$d</string>
+    <string name="items_price_each_format">%1$s each</string>
+    <plurals name="items_coin_platinum">
+        <item quantity="one">%1$s platinum</item>
+        <item quantity="other">%1$s platinum</item>
+    </plurals>
+    <plurals name="items_coin_gold">
+        <item quantity="one">%1$s gold</item>
+        <item quantity="other">%1$s gold</item>
+    </plurals>
+    <plurals name="items_coin_electrum">
+        <item quantity="one">%1$s electrum</item>
+        <item quantity="other">%1$s electrum</item>
+    </plurals>
+    <plurals name="items_coin_silver">
+        <item quantity="one">%1$s silver</item>
+        <item quantity="other">%1$s silver</item>
+    </plurals>
+    <plurals name="items_coin_copper">
+        <item quantity="one">%1$s copper</item>
+        <item quantity="other">%1$s copper</item>
+    </plurals>
+    <string name="items_coin_platinum_short">platinum</string>
+    <string name="items_coin_gold_short">gold</string>
+    <string name="items_coin_electrum_short">electrum</string>
+    <string name="items_coin_silver_short">silver</string>
+    <string name="items_coin_copper_short">copper</string>
+    <string name="items_sheet_title_new">New item</string>
+    <string name="items_sheet_title_edit">Item</string>
+    <string name="items_name_label">Name</string>
+    <string name="items_name_placeholder">Healing potion</string>
+    <string name="items_quantity_label">Quantity</string>
+    <string name="items_price_label">Price each</string>
+    <string name="items_price_placeholder">No price</string>
+    <string name="items_owner_label">Carried by</string>
+    <string name="items_notes_label">Notes</string>
+    <string name="items_notes_placeholder">What it is and where it came from, mention with @</string>
+    <string name="items_delete">Delete item</string>
+    <string name="items_save">Save</string>
+    <string name="items_owner_me">me</string>
+    <string name="items_owner_shared">Shared</string>
+    <string name="items_owner_place_format">place “%1$s”</string>
+    <string name="items_owner_pick_title">Who carries it</string>
+    <string name="items_deleted_title">Item deleted</string>
+    <string name="items_owner_changed_title">Gear changed</string>
+    <string name="items_equipment_title">Gear</string>
+    <string name="items_equipment_empty">Nothing yet</string>
+    <string name="items_equipment_hint">Press and hold to choose</string>
+    <string name="items_equip_sheet_title">What is in the gear</string>
+    <string name="items_equip_selected">Selected</string>
+    <string name="items_equip_others">Others</string>
+    <string name="items_equip_will_move">%1$s · will move</string>
+    <string name="items_equip_done">Done · %1$d</string>
+    <string name="items_equip_none">No items yet</string>
+    <string name="items_card_quantity">Quantity</string>
+    <string name="items_card_owner">Owner</string>
+    <string name="items_card_price">Price each</string>
+    <string name="items_quantity_less">Fewer</string>
+    <string name="items_quantity_more">More</string>
 </resources>

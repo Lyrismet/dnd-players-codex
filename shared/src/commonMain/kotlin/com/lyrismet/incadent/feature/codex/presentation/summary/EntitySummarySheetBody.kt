@@ -101,6 +101,7 @@ fun EntitySummarySheetContent(
                         is EntitySummaryItem.QuestSummary -> QuestSummaryBody(item, actions)
                         is EntitySummaryItem.PartySummary -> PartySummaryBody(item, actions)
                         is EntitySummaryItem.SpeciesSummary -> SpeciesSummaryBody(item, actions)
+                        is EntitySummaryItem.ItemSummary -> ItemSummaryBody(item, actions)
                     }
                 }
             }
@@ -172,6 +173,7 @@ private fun NpcSummaryBody(
         },
     )
     EntityRelationGroups(npc.groups, actions.onEntityRefClicked, actions.quickEdit)
+    EntityGearSection(npc.ref, npc.gear, actions)
     EntityRelatedNotesSection(npc.name, npc.relatedNotes, actions.onRelatedNoteClicked)
     EntityDeleteButton(npc.ref, actions)
 }
@@ -203,6 +205,7 @@ private fun LocationSummaryBody(
     LinkOfferStrip(actions.linkOffers, actions)
     EntityFactsGrid(location.facts, actions.onEntityRefClicked, actions.quickEdit)
     EntityRelationGroups(location.groups, actions.onEntityRefClicked, actions.quickEdit)
+    EntityGearSection(location.ref, location.gear, actions)
     EntityRelatedNotesSection(location.name, location.relatedNotes, actions.onRelatedNoteClicked)
     // the two buttons share one block, so they sit close instead of one list gap apart
     if ((actions.quickEdit != null && location.canMove) || actions.onDeleteClicked != null) {

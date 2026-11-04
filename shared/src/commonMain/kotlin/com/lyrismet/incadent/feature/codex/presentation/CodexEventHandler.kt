@@ -10,6 +10,9 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroupingSelectio
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
+import com.lyrismet.incadent.feature.codex.presentation.item.ItemEvent
+import com.lyrismet.incadent.feature.codex.presentation.item.ItemsController
+import com.lyrismet.incadent.feature.codex.presentation.item.PartyListMode
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPicker
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.InlineEdit
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditInteractions
@@ -47,8 +50,12 @@ internal class CodexFields(
     val npcMode: MutableState<NpcListMode>,
     // true while the sheet to pick the player's own character is open
     val playerPickOpen: MutableState<Boolean>,
+    // which list the party tab shows
+    val partyMode: MutableState<PartyListMode>,
+    val items: ItemsController,
 ) {
     val showsSpecies: Boolean get() = activeTab.value == CodexTab.NPC && npcMode.value == NpcListMode.SPECIES
+    val showsItems: Boolean get() = activeTab.value == CodexTab.PARTY && partyMode.value == PartyListMode.ITEMS
 }
 
 /** turns every [CodexEvent] into the matching controller call or repository write */
@@ -79,6 +86,8 @@ internal class CodexEventHandler(
             }
             is CodexEvent.TabSelected -> fields.activeTab.value = event.tab
             is CodexEvent.NpcModeSelected -> fields.npcMode.value = event.mode
+            is CodexEvent.PartyModeSelected -> fields.partyMode.value = event.mode
+            is CodexEvent.Items -> fields.items.handle(event.event, scope, records)
             is CodexEvent.SearchQueryChanged -> fields.searchQuery.value = event.query
             is CodexEvent.GroupBySelected -> fields.grouping.value = fields.grouping.value.select(event.choice)
             is CodexEvent.EntitySheet -> {
@@ -86,15 +95,33 @@ internal class CodexEventHandler(
                 if (event.event is EntitySheetEvent.EntityClicked || event.event == EntitySheetEvent.Dismissed) {
                     fields.quickEdit.onSheetClosed()
                 }
-                fields.entitySheet.onEvent(scope, event.event)
+                when (val sheetEvent = event.event) {
+                    is EntitySheetEvent.ItemQuantityStepped ->
+                        fields.items.stepQuantity(scope, sheetEvent.itemId, sheetEvent.delta)
+                    is EntitySheetEvent.GearHeld ->
+                        fields.items.handle(
+                            ItemEvent.EquipmentRequested(sheetEvent.ref),
+                            scope,
+                            records,
+                        )
+                    else -> fields.entitySheet.onEvent(scope, sheetEvent)
+                }
             }
             is CodexEvent.QuickEdit -> fields.quickEdit.onEvent(scope, event.event)
-            CodexEvent.AddEntryClicked -> {
-                val type = if (fields.showsSpecies) EntityKind.SPECIES else fields.activeTab.value.toEntryType()
-                formController.onAddEntryClicked(type)
-            }
+            CodexEvent.AddEntryClicked ->
+                if (fields.showsItems) {
+                    fields.items.handle(ItemEvent.AddClicked, scope, records)
+                } else {
+                    val type = if (fields.showsSpecies) EntityKind.SPECIES else fields.activeTab.value.toEntryType()
+                    formController.onAddEntryClicked(type)
+                }
             is CodexEvent.EmptyActionClicked -> formController.onAddEntryClicked(event.entryType, event.name)
-            is CodexEvent.EditEntryRequested -> formController.onEditEntryRequested(event.ref, scope)
+            is CodexEvent.EditEntryRequested ->
+                if (event.ref is EntityRef.Item) {
+                    fields.items.open(event.ref.id, records)
+                } else {
+                    formController.onEditEntryRequested(event.ref, scope)
+                }
             is CodexEvent.PlaceSectionToggled -> {
                 val folded = fields.collapsedPlaceIds.value
                 fields.collapsedPlaceIds.value =
@@ -129,7 +156,7 @@ internal class CodexEventHandler(
     private fun CodexFields.showTabOf(type: EntityKind) {
         activeTab.value =
             when (type) {
-                EntityKind.PARTY -> CodexTab.PARTY
+                EntityKind.PARTY, EntityKind.ITEM -> CodexTab.PARTY
                 EntityKind.NPC, EntityKind.SPECIES -> CodexTab.NPC
                 EntityKind.QUEST -> CodexTab.QUEST
                 EntityKind.LOCATION -> CodexTab.LOCATION

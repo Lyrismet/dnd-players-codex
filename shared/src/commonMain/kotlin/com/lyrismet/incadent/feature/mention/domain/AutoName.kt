@@ -13,8 +13,11 @@ internal fun autoNamesOf(index: MentionIndex): List<AutoName> = index.autoNames
 
 internal fun buildAutoNames(uniqueByName: List<MentionEntity>): List<AutoName> =
     uniqueByName
-        .filter { it.name.length >= AUTO_MATCH_MIN_LENGTH && it.ref.type != EntityKind.SPECIES }
-        .map { AutoName(it.name.foldPerChar(), it) }
+        .filter {
+            it.name.length >= AUTO_MATCH_MIN_LENGTH &&
+                it.ref.type != EntityKind.SPECIES &&
+                it.ref.type != EntityKind.ITEM
+        }.map { AutoName(it.name.foldPerChar(), it) }
         .sortedByDescending { it.folded.length }
 
 /** names shorter than this are too likely to be an ordinary word to be suggested as a mention */

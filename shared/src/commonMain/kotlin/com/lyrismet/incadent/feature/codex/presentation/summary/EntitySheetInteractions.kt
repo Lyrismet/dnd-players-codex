@@ -289,6 +289,8 @@ class EntitySheetInteractions(
                         { it.withQuickEdit(field, value) },
                     ) { speciesRepository.upsert(it) }
                 is EntityRef.Party -> commitPartyChange(ref.id, field) { it.withQuickEdit(field, value) }
+                // an item is changed in its own sheet, it has no field to edit in place
+                is EntityRef.Item -> Unit
             }
         }
     }

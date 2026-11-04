@@ -2,6 +2,7 @@ package com.lyrismet.incadent.core.format
 
 import com.lyrismet.incadent.domain.model.EntityKind
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.session_detail_mention_type_item
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
 import dndplayerscodex.shared.generated.resources.session_detail_mention_type_party
@@ -17,4 +18,5 @@ fun EntityKind.kindLabelRes(): StringResource =
         EntityKind.QUEST -> Res.string.session_detail_mention_type_quest
         EntityKind.LOCATION -> Res.string.session_detail_mention_type_location
         EntityKind.SPECIES -> Res.string.session_detail_mention_type_species
+        EntityKind.ITEM -> Res.string.session_detail_mention_type_item
     }

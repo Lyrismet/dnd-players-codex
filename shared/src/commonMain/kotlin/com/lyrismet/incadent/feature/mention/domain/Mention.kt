@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.mention.domain
 
 import com.lyrismet.incadent.domain.model.EntityKind
+import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -64,6 +65,14 @@ sealed interface MentionEntity {
         override val ref: MentionRef get() = MentionRef(EntityKind.SPECIES, id)
     }
 
+    /** a thing somebody carries - a plain link with no status, never found in plain text (a common word) */
+    data class ItemMention(
+        val id: Long,
+        override val name: String,
+    ) : MentionEntity {
+        override val ref: MentionRef get() = MentionRef(EntityKind.ITEM, id)
+    }
+
     /** a record that is gone from the codex but still mentioned by notes - drawn as a "?" tag, named by its token */
     data class DeletedMention(
         val id: Long,
@@ -80,12 +89,14 @@ fun mentionEntitiesFrom(
     quests: List<Quest>,
     parties: List<PartyMember> = emptyList(),
     species: List<Species> = emptyList(),
+    items: List<Item> = emptyList(),
 ): List<MentionEntity> =
     npcs.map { MentionEntity.NpcMention(it.id, it.name, it.status, it.lifeState) } +
         parties.map { MentionEntity.PartyMention(it.id, it.name) } +
         locations.map { MentionEntity.LocationMention(it.id, it.name) } +
         quests.map { MentionEntity.QuestMention(it.id, it.title, it.status) } +
-        species.map { MentionEntity.SpeciesMention(it.id, it.name) }
+        species.map { MentionEntity.SpeciesMention(it.id, it.name) } +
+        items.map { MentionEntity.ItemMention(it.id, it.name) }
 
 /** every record a note can mention right now, looked up by [MentionRef] - names are never used to find a record */
 class MentionIndex(
@@ -101,13 +112,14 @@ class MentionIndex(
         fallbackName: String,
     ): MentionEntity = byRef[ref] ?: MentionEntity.DeletedMention(ref.id, fallbackName, ref.type)
 
-    // names only one record carries, longest first - a species never makes another record's name ambiguous
+    // names only one record carries, longest first - a species or an item never makes another record's name ambiguous
     internal val uniqueByName: List<MentionEntity> by lazy {
         entities
             .groupBy { it.name.foldPerChar() }
             .values
             .mapNotNull { group ->
-                group.singleOrNull() ?: group.singleOrNull { it !is MentionEntity.SpeciesMention }
+                group.singleOrNull()
+                    ?: group.singleOrNull { it !is MentionEntity.SpeciesMention && it !is MentionEntity.ItemMention }
             }.sortedByDescending { it.name.length }
     }
 

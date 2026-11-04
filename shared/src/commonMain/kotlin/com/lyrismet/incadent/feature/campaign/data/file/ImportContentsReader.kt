@@ -64,7 +64,9 @@ private class ContentsCollector {
 
     private fun addMentions(entry: FileRecord.Entry) {
         val found = mentions.getOrPut(entry.sessionId) { mutableSetOf() }
-        mentionRefsIn(entry.body).forEach { found.add(ExchangeRef(it.type.toExchangeKind(), it.id)) }
+        mentionRefsIn(entry.body).forEach { ref ->
+            ref.type.toExchangeKind()?.let { found.add(ExchangeRef(it, ref.id)) }
+        }
     }
 
     fun rows() =
@@ -79,11 +81,13 @@ private class ContentsCollector {
         )
 }
 
-internal fun EntityKind.toExchangeKind(): ExchangeKind =
+// items are not in a campaign file yet, so a mention of one is left out
+internal fun EntityKind.toExchangeKind(): ExchangeKind? =
     when (this) {
         EntityKind.NPC -> ExchangeKind.NPC
         EntityKind.PARTY -> ExchangeKind.PARTY
         EntityKind.LOCATION -> ExchangeKind.PLACE
         EntityKind.QUEST -> ExchangeKind.QUEST
         EntityKind.SPECIES -> ExchangeKind.SPECIES
+        EntityKind.ITEM -> null
     }

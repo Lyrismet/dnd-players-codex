@@ -1,0 +1,18 @@
+-- the things a character carries, one owner at most (a codex record by kind and id), no owner means shared
+CREATE TABLE item (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    price INTEGER,
+    coin TEXT NOT NULL DEFAULT 'GOLD',
+    owner_kind TEXT,
+    owner_id INTEGER NOT NULL DEFAULT 0,
+    notes TEXT NOT NULL DEFAULT '',
+    photo BLOB,
+    photo_thumb BLOB,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX item_campaign_id ON item(campaign_id);
+CREATE UNIQUE INDEX item_origin_id ON item(campaign_id, origin_id);

@@ -1,11 +1,14 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import com.lyrismet.incadent.feature.codex.domain.model.CustomCreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.Item
+import com.lyrismet.incadent.feature.codex.domain.model.ItemOwner
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
@@ -126,6 +129,26 @@ internal class FakeSpeciesRepository(
 
     override suspend fun deleteCustomType(id: Long) {
         customTypes.value = customTypes.value.filter { it.id != id }
+    }
+}
+
+internal class FakeItemRepository(
+    vararg initial: Item,
+) : InMemoryStore<Item>(initial.toList(), { it.id }, { item, id -> item.copy(id = id) }),
+    ItemRepository {
+    override fun observeAll(): Flow<List<Item>> = observe()
+
+    override suspend fun getById(id: Long): Item? = stored(id)
+
+    override suspend fun upsert(entity: Item): Long = put(entity)
+
+    override suspend fun delete(id: Long) = remove(id)
+
+    override suspend fun setOwner(
+        ids: Collection<Long>,
+        owner: ItemOwner,
+    ) {
+        ids.forEach { id -> stored(id)?.let { put(it.copy(owner = owner)) } }
     }
 }
 

@@ -65,6 +65,15 @@ sealed interface EntitySheetEvent {
         val delta: Int,
     ) : EntitySheetEvent
 
+    data class ItemQuantityStepped(
+        val itemId: Long,
+        val delta: Int,
+    ) : EntitySheetEvent
+
+    data class GearHeld(
+        val ref: EntityRef,
+    ) : EntitySheetEvent
+
     data class RelatedNoteClicked(
         val sessionNoteId: Long,
         val entryId: Long,
@@ -94,6 +103,8 @@ fun EntitySheetEvent.writesCampaignData(): Boolean =
         is EntitySheetEvent.NpcVulnerabilityChanged,
         is EntitySheetEvent.NpcVulnerabilitiesEdited,
         is EntitySheetEvent.SpeciesNoteQuantityStepped,
+        is EntitySheetEvent.ItemQuantityStepped,
+        is EntitySheetEvent.GearHeld,
         is EntitySheetEvent.LinkOfferApplied,
         is EntitySheetEvent.LinkOfferDismissed,
         -> true
@@ -130,6 +141,10 @@ fun EntitySheetInteractions.onEvent(
             onNpcVulnerabilityChanged(scope, event.npcId, event.type, event.state)
         is EntitySheetEvent.NpcVulnerabilitiesEdited ->
             onNpcVulnerabilitiesEdited(scope, event.npcId, event.before)
+        // the codex screen takes these two before they get here, no other host has an item stack or a gear pick
+        is EntitySheetEvent.ItemQuantityStepped,
+        is EntitySheetEvent.GearHeld,
+        -> Unit
         is EntitySheetEvent.RelatedNoteClicked -> onRelatedNoteClicked(event.sessionNoteId, event.entryId)
         is EntitySheetEvent.LinkOfferApplied -> links?.apply(scope, event.offer)
         is EntitySheetEvent.LinkOfferDismissed -> links?.dismiss(scope, event.offer)
@@ -147,6 +162,8 @@ fun entitySheetActions(
     speciesVulnerabilityEdit: Boolean = false,
     npcVulnerabilityEdit: Boolean = false,
     speciesNoteEdit: Boolean = true,
+    itemEdit: Boolean = false,
+    onItemEditClicked: ((EntityRef) -> Unit)? = null,
     onEditClicked: ((EntityRef) -> Unit)? = null,
     onDeleteClicked: ((EntityRef) -> Unit)? = null,
     statusesReadOnly: Boolean = false,
@@ -211,6 +228,21 @@ fun entitySheetActions(
             } else {
                 null
             },
+        onItemQuantityStep =
+            if (itemEdit) {
+                (
+                    {
+                        id,
+                        delta,
+                        ->
+                        send(EntitySheetEvent.ItemQuantityStepped(id, delta))
+                    }
+                )
+            } else {
+                null
+            },
+        onItemEditClicked = if (itemEdit) onItemEditClicked else null,
+        onGearHeld = if (itemEdit) ({ ref -> send(EntitySheetEvent.GearHeld(ref)) }) else null,
         statusesReadOnly = statusesReadOnly,
         quickEdit = quickEdit,
         linkOffers = linkOffers.orEmpty(),

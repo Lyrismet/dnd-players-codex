@@ -59,7 +59,11 @@ fun rememberLinkOffers(
     dismissals: LinkSuggestionDismissalRepository,
     enabled: Boolean,
 ): List<LinkOffer> {
-    val owner = ref?.takeIf { enabled && it !is EntityRef.Party && it !is EntityRef.Species }?.toMentionRef()
+    val owner =
+        ref
+            ?.takeIf {
+                enabled && it !is EntityRef.Party && it !is EntityRef.Species && it !is EntityRef.Item
+            }?.toMentionRef()
     // the set is paired with its owner, so another card never starts from the refusals of the last one
     val loaded by produceState(DismissedOf(null, emptySet()), owner) {
         owner?.let { dismissals.observeDismissed(it).collect { refs -> value = DismissedOf(owner, refs) } }

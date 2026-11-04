@@ -1,0 +1,59 @@
+import com.lyrismet.incadent.feature.codex.domain.model.Coin;
+import com.lyrismet.incadent.domain.model.EntityKind;
+
+CREATE TABLE item (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    price INTEGER,
+    coin TEXT AS Coin NOT NULL DEFAULT 'GOLD',
+    owner_kind TEXT AS EntityKind,
+    owner_id INTEGER NOT NULL DEFAULT 0,
+    notes TEXT NOT NULL DEFAULT '',
+    photo BLOB,
+    photo_thumb BLOB,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX item_campaign_id ON item(campaign_id);
+CREATE UNIQUE INDEX item_origin_id ON item(campaign_id, origin_id);
+
+-- list queries leave the full jpeg out, a row carries only its thumbnail
+selectAll:
+SELECT id, name, quantity, price, coin, owner_kind, owner_id, notes, photo_thumb, origin_id
+FROM item WHERE campaign_id = ? ORDER BY name;
+
+selectById:
+SELECT id, name, quantity, price, coin, owner_kind, owner_id, notes, photo_thumb, photo, origin_id
+FROM item WHERE id = ?;
+
+insert:
+INSERT INTO item(name, quantity, price, coin, owner_kind, owner_id, notes, photo, photo_thumb, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- puts a deleted record back under its old id, so the "@" tokens in notes find it again
+insertWithId:
+INSERT INTO item(id, name, quantity, price, coin, owner_kind, owner_id, notes, photo, photo_thumb, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- the photo is written on its own, so saving a list-level model never touches it
+update:
+UPDATE item
+SET name = ?, quantity = ?, price = ?, coin = ?, owner_kind = ?, owner_id = ?, notes = ?
+WHERE id = ?;
+
+setPhoto:
+UPDATE item SET photo = ?, photo_thumb = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM item WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+selectNotes:
+SELECT notes FROM item WHERE id = ?;
+
+setNotes:
+UPDATE item SET notes = ? WHERE id = ?;

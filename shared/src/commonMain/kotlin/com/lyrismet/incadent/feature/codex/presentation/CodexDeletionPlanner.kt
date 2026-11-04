@@ -2,11 +2,13 @@ package com.lyrismet.incadent.feature.codex.presentation
 
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
+import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
@@ -36,6 +38,7 @@ internal class CodexDeletionPlanner(
     private val questRepository: QuestRepository,
     private val locationRepository: LocationRepository,
     private val speciesRepository: SpeciesRepository,
+    private val itemRepository: ItemRepository,
 ) {
     /** the delete/restore of [ref] - undo puts the record back under its old id, so tokens in notes find it */
     fun planFor(
@@ -75,6 +78,7 @@ internal class CodexDeletionPlanner(
             is EntityRef.Quest -> questPlan(ref.id, records, labels)
             is EntityRef.Location -> locationPlan(ref.id, records, labels)
             is EntityRef.Species -> speciesPlan(ref.id, records, labels)
+            is EntityRef.Item -> itemPlan(ref.id, records, labels)
         }
 
     private fun partyPlan(
@@ -157,6 +161,24 @@ internal class CodexDeletionPlanner(
             )
         }
 
+    private fun itemPlan(
+        id: Long,
+        records: CodexRecords,
+        labels: Map<EntityKind, String>,
+    ): CodexDeletionPlan? =
+        records.items.find { it.id == id }?.let { item ->
+            // the list row carries only the thumbnail, so the stored item with its photo is read before the delete
+            var stored: Item? = null
+            CodexDeletionPlan(
+                subtitle = "${labels.getValue(EntityKind.ITEM)} · ${item.name}",
+                delete = {
+                    stored = itemRepository.getById(id)
+                    itemRepository.delete(id)
+                },
+                restore = { itemRepository.upsert(stored ?: item) },
+            )
+        }
+
     private fun locationPlan(
         id: Long,
         records: CodexRecords,
@@ -227,5 +249,9 @@ private fun mentionedAs(
         is EntityRef.Species ->
             records.species.find { it.id == ref.id }?.let {
                 MentionedRecord(MentionEntity.SpeciesMention(it.id, it.name), EntityKind.SPECIES)
+            }
+        is EntityRef.Item ->
+            records.items.find { it.id == ref.id }?.let {
+                MentionedRecord(MentionEntity.ItemMention(it.id, it.name), EntityKind.ITEM)
             }
     }
