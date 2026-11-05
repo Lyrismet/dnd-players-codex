@@ -50,15 +50,30 @@ class CharacterSheetRepositoryImpl(
         memberId: Long,
         sheet: CharacterSheet,
     ) {
+        withContext(DatabaseDispatcher) { database.transaction { write(memberId, sheet) } }
+    }
+
+    override suspend fun updateSheet(
+        memberId: Long,
+        transform: (CharacterSheet) -> CharacterSheet,
+    ) {
         withContext(DatabaseDispatcher) {
             database.transaction {
-                val value = sheet.clampedToRanges()
-                if (sheets.selectByMember(memberId).executeAsOneOrNull() != null) {
-                    update(memberId, value)
-                } else {
-                    insert(memberId, value)
-                }
+                val stored = sheets.selectByMember(memberId).executeAsOneOrNull()?.toDomain() ?: CharacterSheet()
+                write(memberId, transform(stored))
             }
+        }
+    }
+
+    private fun write(
+        memberId: Long,
+        sheet: CharacterSheet,
+    ) {
+        val value = sheet.clampedToRanges()
+        if (sheets.selectByMember(memberId).executeAsOneOrNull() != null) {
+            update(memberId, value)
+        } else {
+            insert(memberId, value)
         }
     }
 
@@ -151,6 +166,19 @@ class CharacterSheetRepositoryImpl(
         vitals: CharacterVitals,
     ) {
         withContext(DatabaseDispatcher) { writeVitals(party, memberId, vitals) }
+    }
+
+    override suspend fun updateVitals(
+        memberId: Long,
+        transform: (CharacterVitals) -> CharacterVitals,
+    ) {
+        withContext(DatabaseDispatcher) {
+            database.transaction {
+                party.selectVitals(memberId).executeAsOneOrNull()?.toDomain()?.let {
+                    writeVitals(party, memberId, transform(it))
+                }
+            }
+        }
     }
 }
 

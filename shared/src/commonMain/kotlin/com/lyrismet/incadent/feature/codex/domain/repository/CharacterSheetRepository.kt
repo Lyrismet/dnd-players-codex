@@ -15,10 +15,22 @@ interface CharacterSheetRepository {
         sheet: CharacterSheet,
     )
 
+    /** changes the stored sheet from what is stored now, in one transaction so quick edits do not undo each other */
+    suspend fun updateSheet(
+        memberId: Long,
+        transform: (CharacterSheet) -> CharacterSheet,
+    )
+
     fun observeVitals(memberId: Long): Flow<CharacterVitals?>
 
     suspend fun saveVitals(
         memberId: Long,
         vitals: CharacterVitals,
+    )
+
+    /** like [updateSheet] for the vitals, a member without vitals is left as it is */
+    suspend fun updateVitals(
+        memberId: Long,
+        transform: (CharacterVitals) -> CharacterVitals,
     )
 }
