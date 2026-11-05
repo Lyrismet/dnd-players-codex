@@ -72,10 +72,13 @@ class QuickEditApplyTest {
         val edited = member.withQuickEdit(QuickEditField.RACE, QuickEditValue.Text("  эльф "))
 
         assertEquals("Эльф", edited?.race)
-        assertEquals(
-            "Воин",
-            member.withQuickEdit(QuickEditField.CHARACTER_CLASS, QuickEditValue.Text("воин"))?.characterClass,
-        )
+        val classed =
+            member.withQuickEdit(
+                QuickEditField.CHARACTER_CLASS,
+                QuickEditValue.ClassPick("Воин", "Мастер боя"),
+            )
+        assertEquals("Воин", classed?.characterClass)
+        assertEquals("Мастер боя", classed?.subclass)
         assertEquals(
             "  заметка ",
             npc.withQuickEdit(QuickEditField.DESCRIPTION, QuickEditValue.Text("  заметка "))?.description,

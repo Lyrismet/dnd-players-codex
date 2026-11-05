@@ -80,6 +80,7 @@ import dndplayerscodex.shared.generated.resources.exchange_field_quantity
 import dndplayerscodex.shared.generated.resources.exchange_field_race
 import dndplayerscodex.shared.generated.resources.exchange_field_reward
 import dndplayerscodex.shared.generated.resources.exchange_field_status
+import dndplayerscodex.shared.generated.resources.exchange_field_subclass
 import dndplayerscodex.shared.generated.resources.exchange_field_vulnerabilities
 import dndplayerscodex.shared.generated.resources.exchange_new_sessions
 import dndplayerscodex.shared.generated.resources.exchange_new_sessions_sub
@@ -563,6 +564,7 @@ internal fun RecordField.label(): StringResource =
         RecordField.NOTES -> Res.string.exchange_field_notes
         RecordField.HIT_POINTS -> Res.string.exchange_field_hit_points
         RecordField.CHARACTER_CLASS -> Res.string.exchange_field_class
+        RecordField.SUBCLASS -> Res.string.exchange_field_subclass
         RecordField.LEVEL -> Res.string.exchange_field_level
         RecordField.REWARD -> Res.string.exchange_field_reward
         RecordField.LIFE_STATE -> Res.string.exchange_field_life_state

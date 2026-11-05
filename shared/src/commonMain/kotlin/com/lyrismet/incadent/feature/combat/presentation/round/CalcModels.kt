@@ -39,7 +39,6 @@ data class CalcState(
     val overline: String,
     val title: String,
     val sources: List<SourceChip>,
-    val sourceHint: String,
     val done: List<DoneHit>,
     val targetsHeader: String,
     val reaction: CalcReaction?,

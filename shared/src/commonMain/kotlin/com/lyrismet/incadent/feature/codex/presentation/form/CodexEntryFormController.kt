@@ -18,6 +18,7 @@ import com.lyrismet.incadent.core.portrait.recropDraft
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
+import com.lyrismet.incadent.feature.codex.domain.grouping.classLine
 import com.lyrismet.incadent.feature.codex.domain.grouping.srdSuggestions
 import com.lyrismet.incadent.feature.codex.domain.grouping.with
 import com.lyrismet.incadent.feature.codex.domain.grouping.withRecentPlaces
@@ -165,6 +166,9 @@ class CodexEntryFormController private constructor(
             is CodexEntryFormEvent.EntryPhotoRemoved -> onPhotoRemoved(event.slot)
             is CodexEntryFormEvent.EntryNumberChanged -> onNumberChanged(event.field, event.value)
             is CodexEntryFormEvent.EntryCreatureTypeChanged -> creatureTypes.onChanged(event.type)
+            CodexEntryFormEvent.EntryClassSelectOpened -> setClassSelect(true)
+            CodexEntryFormEvent.EntryClassSelectClosed -> setClassSelect(false)
+            is CodexEntryFormEvent.EntryClassChosen -> onClassChosen(event.characterClass, event.subclass)
             CodexEntryFormEvent.EntryCreatureTypeSelectOpened -> creatureTypes.onSelectToggled(true)
             CodexEntryFormEvent.EntryCreatureTypeSelectClosed -> creatureTypes.onSelectToggled(false)
             is CodexEntryFormEvent.EntryCustomTypeCreated -> creatureTypes.onCreated(scope, event.name)
@@ -267,6 +271,18 @@ class CodexEntryFormController private constructor(
         baseline.value = baseline.value?.let { withDefaults(it.copy(type = type)).copy(type = it.type) }
     }
 
+    private fun setClassSelect(isOpen: Boolean) {
+        fields.value = fields.value?.copy(classSelectOpen = isOpen)
+    }
+
+    private fun onClassChosen(
+        characterClass: String,
+        subclass: String,
+    ) {
+        fields.value =
+            fields.value?.copy(characterClass = characterClass, subclass = subclass, classSelectOpen = false)
+    }
+
     fun onFieldChanged(
         field: CodexEntryField,
         text: String,
@@ -278,7 +294,6 @@ class CodexEntryFormController private constructor(
                 CodexEntryField.DESCRIPTION -> current.copy(description = text)
                 CodexEntryField.NICKNAMES -> current.copy(nicknames = text)
                 CodexEntryField.REWARD -> current.copy(reward = text)
-                CodexEntryField.PARTY_CLASS -> current.copy(party = current.party.copy(characterClass = text))
                 CodexEntryField.PARTY_PLAYER -> current.copy(party = current.party.copy(player = text))
             }
     }
@@ -577,14 +592,14 @@ class CodexEntryFormController private constructor(
 
     // a new character with no class is an adventurer
     private suspend fun CodexEntryFormFields.withDefaultClass(): CodexEntryFormFields =
-        if (type == EntityKind.PARTY && editingRef == null && party.characterClass.isBlank()) {
-            copy(party = party.copy(characterClass = getString(Res.string.codex_party_default_class)))
+        if (type == EntityKind.PARTY && editingRef == null && characterClass.isBlank()) {
+            copy(characterClass = getString(Res.string.codex_party_default_class))
         } else {
             this
         }
 
     // one assignment per form-state field - a flat mapping, not real complexity
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     @Composable
     fun buildState(
         npcs: List<Npc>,
@@ -699,7 +714,9 @@ class CodexEntryFormController private constructor(
                 } else {
                     emptyList()
                 },
-            partyClass = party.characterClass,
+            characterClassLine = classLine(current.characterClass, current.subclass),
+            classSelect =
+                if (current.classSelectOpen) ClassSelectState(current.characterClass, current.subclass) else null,
             partyPlayer = party.player,
             partyIsPlayerCharacter = party.isPlayerCharacter,
             partyOwnerOptions =

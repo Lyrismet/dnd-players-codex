@@ -30,14 +30,7 @@ import dndplayerscodex.shared.generated.resources.combat_panel_side_neutral
 import dndplayerscodex.shared.generated.resources.combat_panel_side_party
 import dndplayerscodex.shared.generated.resources.combat_panel_source
 import dndplayerscodex.shared.generated.resources.combat_panel_source_note
-import dndplayerscodex.shared.generated.resources.combat_panel_stance_npc
-import dndplayerscodex.shared.generated.resources.combat_panel_stance_plain
-import dndplayerscodex.shared.generated.resources.combat_panel_vuln_none
-import dndplayerscodex.shared.generated.resources.combat_panel_vuln_npc
-import dndplayerscodex.shared.generated.resources.combat_panel_vuln_npc_species
-import dndplayerscodex.shared.generated.resources.combat_panel_vuln_species
 import dndplayerscodex.shared.generated.resources.combat_round_no_damage
-import dndplayerscodex.shared.generated.resources.combat_wound_say_line
 import dndplayerscodex.shared.generated.resources.combat_wound_since
 import org.jetbrains.compose.resources.stringResource
 
@@ -63,7 +56,6 @@ internal fun roundPanel(
         hp = if (tracked) panelHp(member) else null,
         wound = if (tracked) null else panelWound(combat, member, seen),
         marks = if (!tracked && !member.dead) markOptions(member) else null,
-        sayLine = if (!tracked) sayLine(member) else "",
         saves = if (dying) SavesState(member.deathSuccesses, member.deathFailures) else null,
         down =
             if (down && !member.dead) {
@@ -155,12 +147,6 @@ private fun markOptions(member: Combatant): List<MarkOption> =
     }
 
 @Composable
-private fun sayLine(member: Combatant): String {
-    val word = woundWord(member).first
-    return stringResource(Res.string.combat_wound_say_line, word, stringResource(member.state.say()))
-}
-
-@Composable
 private fun conditionGroups(member: Combatant): List<ConditionGroupItem> =
     ConditionGroup.entries.map { group ->
         ConditionGroupItem(
@@ -183,16 +169,6 @@ private fun panelMore(
     val enemy = member.side == CombatSide.ENEMY
     return PanelMore(
         stances = if (enemy) CombatStance.entries.map { StanceOption(it, it.label(), it == member.stance) } else null,
-        stanceHint =
-            stringResource(
-                if (member.npcId !=
-                    null
-                ) {
-                    Res.string.combat_panel_stance_npc
-                } else {
-                    Res.string.combat_panel_stance_plain
-                },
-            ),
         fullShown = !tracked && !party,
         full = member.enteredWhole,
         canSetHp = !tracked && !member.dead,
@@ -202,7 +178,6 @@ private fun panelMore(
                 if (party) Res.string.combat_panel_note_party else Res.string.combat_panel_note_foe,
             ),
         vulnerabilities = kin.vulnerabilities.takeIf { !party && (kin.species != null || kin.npc != null) },
-        vulnerabilitiesCaption = if (party) "" else vulnerabilitiesCaption(kin),
         naming = kin.naming,
     )
 }
@@ -214,16 +189,3 @@ internal class PanelKin(
     val vulnerabilities: Map<DamageType, DamageState>,
     val naming: NamingState?,
 )
-
-@Composable
-private fun vulnerabilitiesCaption(kin: PanelKin): String {
-    val species = kin.species
-    val npc = kin.npc
-    return when {
-        npc != null && species != null ->
-            stringResource(Res.string.combat_panel_vuln_npc_species, species.name, npc.name)
-        npc != null -> stringResource(Res.string.combat_panel_vuln_npc, npc.name)
-        species != null -> stringResource(Res.string.combat_panel_vuln_species, species.name)
-        else -> stringResource(Res.string.combat_panel_vuln_none)
-    }
-}

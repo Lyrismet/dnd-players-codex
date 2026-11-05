@@ -27,7 +27,6 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_discard_text
-import dndplayerscodex.shared.generated.resources.codex_entry_label_class
 import dndplayerscodex.shared.generated.resources.codex_entry_label_description
 import dndplayerscodex.shared.generated.resources.codex_entry_label_giver
 import dndplayerscodex.shared.generated.resources.codex_entry_label_hp_max
@@ -50,7 +49,6 @@ import dndplayerscodex.shared.generated.resources.codex_entry_pick_place_hint
 import dndplayerscodex.shared.generated.resources.codex_entry_pick_places_hint
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_location_description
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_location_name
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_class
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_name
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_notes
 import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_party_player
@@ -181,13 +179,7 @@ private fun PartyIdentityFields(
             placeholder = stringResource(Res.string.codex_entry_placeholder_party_player),
         )
     }
-    CodexEntryTextField(
-        label = stringResource(Res.string.codex_entry_label_class),
-        value = form.partyClass,
-        field = CodexEntryField.PARTY_CLASS,
-        eventSink = eventSink,
-        placeholder = stringResource(Res.string.codex_entry_placeholder_party_class),
-    )
+    ClassPickField(form, eventSink)
     FormPickField(
         label = stringResource(Res.string.codex_entry_label_race),
         placeholder = stringResource(Res.string.codex_species_pick_hint),
@@ -358,6 +350,20 @@ private fun CodexEntryTypeSwitch(
     )
 }
 
+@Composable
+private fun ClassSheet(
+    select: ClassSelectState,
+    eventSink: (CodexEntryFormEvent) -> Unit,
+) {
+    ClassSelectSheet(
+        select = select,
+        onChosen = { characterClass, subclass ->
+            eventSink(CodexEntryFormEvent.EntryClassChosen(characterClass, subclass))
+        },
+        onDismiss = { eventSink(CodexEntryFormEvent.EntryClassSelectClosed) },
+    )
+}
+
 /** the create/edit sheet with the place and "save changes?" prompts over it, [density] picks the npc layout */
 @Composable
 internal fun CodexEntryFormSheet(
@@ -401,6 +407,7 @@ internal fun CodexEntryFormSheet(
             onDismiss = { eventSink(CodexEntryFormEvent.EntryPlaceSelectClosed) },
         )
     }
+    form.classSelect?.let { ClassSheet(it, eventSink) }
     form.creatureTypeSelect?.let { select ->
         CreatureTypeSelectSheet(
             select = select,

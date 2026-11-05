@@ -93,10 +93,7 @@ private fun sheetItems(sheet: MeSheetState): List<SheetItem> {
         if (!searching) {
             add(SheetItem.Languages)
             add(SheetItem.Features)
-            if (sheet.subclass.isNotBlank() ||
-                sheet.background.isNotBlank() ||
-                sheet.alignment.isNotBlank()
-            ) {
+            if (sheet.background.isNotBlank() || sheet.alignment.isNotBlank()) {
                 add(SheetItem.About)
             }
             add(SheetItem.Personality)

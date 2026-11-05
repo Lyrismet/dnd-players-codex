@@ -54,6 +54,8 @@ class OriginIdExchangeTest {
             NpcStatus.FRIEND,
             "",
             "",
+            "",
+            "",
             NpcLifeState.ALIVE,
             "",
             null,
@@ -66,6 +68,7 @@ class OriginIdExchangeTest {
         database.questQueries.insert("Find", QuestStatus.ACTIVE, "", null, null, "", source, "quest-origin")
         database.partyMemberQueries.insert(
             "Hero",
+            "",
             "",
             "",
             null,

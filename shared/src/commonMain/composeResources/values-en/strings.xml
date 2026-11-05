@@ -407,12 +407,6 @@
     <string name="combat_wound_dying">Dying</string>
     <string name="combat_wound_dead">Dead</string>
     <string name="combat_wound_captured">Taken alive</string>
-    <string name="combat_wound_say_whole">“not a scratch”</string>
-    <string name="combat_wound_say_wounded">“grazed”, “a few scratches”</string>
-    <string name="combat_wound_say_bloodied">“covered in blood”, “breathing hard”</string>
-    <string name="combat_wound_say_barely">“swaying”, “barely on their feet”</string>
-    <string name="combat_wound_say_down">“collapsed”, “not moving”</string>
-    <string name="combat_wound_say_line">%1$s - %2$s</string>
     <string name="combat_wound_since">%1$s · from %2$d</string>
     <string name="combat_panel_side_party">PARTY · %1$s</string>
     <string name="combat_panel_side_ally">ALLY · %1$s</string>
@@ -427,9 +421,7 @@
     <string name="combat_panel_tab_conditions">Conditions</string>
     <string name="combat_panel_tab_more">More</string>
     <string name="combat_panel_mark_title">HOW THEY LOOK · THE MASTER\'S WORDS</string>
-    <string name="combat_panel_mark_auto">“Hurt” is set on the first damage. Wrong? Fix it here.</string>
     <string name="combat_panel_saves_title">DEATH SAVES</string>
-    <string name="combat_panel_saves_hint">mark them by hand</string>
     <string name="combat_panel_saves_success">Successes</string>
     <string name="combat_panel_saves_failure">Failures</string>
     <string name="combat_panel_stand_up">Up with 1</string>
@@ -439,10 +431,7 @@
     <string name="combat_panel_died_note">Died in this combat</string>
     <string name="combat_panel_undo">Undo</string>
     <string name="combat_panel_side_title">SIDE</string>
-    <string name="combat_panel_stance_npc">Linked to the codex - the NPC\'s status updates by itself</string>
-    <string name="combat_panel_stance_plain">Neutrals and friends do not count as enemies standing</string>
     <string name="combat_panel_full_title">Came into the fight unhurt</string>
-    <string name="combat_panel_full_hint">Only then does their fall count in the hit point estimate</string>
     <string name="combat_panel_set_hp">Hit points said out loud? Set them</string>
     <string name="combat_panel_note_party">Resources, spells, notes…</string>
     <string name="combat_panel_note_foe">What was noticed: vulnerabilities, resistances, tactics…</string>
@@ -464,13 +453,18 @@
     <string name="combat_condition_paralyzed">Paralyzed</string>
     <string name="combat_condition_incapacitated">Incapacitated</string>
     <string name="combat_condition_petrified">Petrified</string>
+    <string name="combat_condition_asleep">Asleep</string>
+    <string name="combat_condition_banished">Banished</string>
     <string name="combat_condition_blinded">Blinded</string>
     <string name="combat_condition_deafened">Deafened</string>
     <string name="combat_condition_poisoned">Poisoned</string>
     <string name="combat_condition_frightened">Frightened</string>
     <string name="combat_condition_charmed">Charmed</string>
+    <string name="combat_condition_silenced">Silenced</string>
+    <string name="combat_condition_slowed">Slowed</string>
     <string name="combat_condition_concentration">Concentration</string>
     <string name="combat_condition_invisible">Invisible</string>
+    <string name="combat_condition_hasted">Hasted</string>
     <string name="combat_round_toast_removed">%1$s is out of the fight</string>
     <string name="combat_round_undo_removed">Tap to put back into the fight</string>
     <string name="combat_round_toast_joined">%1$s joins the fight last in the round</string>
@@ -484,9 +478,6 @@
     <string name="combat_calc_mode_heal">Heal</string>
     <string name="combat_calc_mode_temp">Temp HP</string>
     <string name="combat_calc_source_title">FROM WHOM</string>
-    <string name="combat_calc_source_default">by default - whose turn it is</string>
-    <string name="combat_calc_source_env">a trap, a spell, a fall</string>
-    <string name="combat_calc_source_other">out of turn</string>
     <string name="combat_calc_source_environment">Environment</string>
     <string name="combat_calc_source_turn">%1$s · turn</string>
     <string name="combat_calc_done_title">DEALT THIS TURN</string>
@@ -1062,10 +1053,6 @@
     <string name="entity_sheet_npc_vulnerabilities_tip_inherited">%1$s - %2$s · from the species «%3$s»</string>
     <string name="entity_sheet_npc_vulnerabilities_step">%1$s - %2$s · tap - %3$s</string>
     <string name="entity_sheet_npc_vulnerabilities_none">none</string>
-    <string name="combat_panel_vuln_species">to the bestiary · %1$s</string>
-    <string name="combat_panel_vuln_npc_species">its own + the species «%1$s» · written to %2$s</string>
-    <string name="combat_panel_vuln_npc">to the codex · %1$s</string>
-    <string name="combat_panel_vuln_none">Resistances are written to a species of the bestiary. This one is not linked to any species.</string>
     <string name="combat_name_title">Name</string>
     <string name="combat_name_new">New NPC «%1$s»</string>
     <string name="combat_name_new_sub_species">species: %1$s · from this fight</string>
@@ -1227,6 +1214,7 @@
     <string name="exchange_field_quantity">Quantity</string>
     <string name="exchange_field_price">Price</string>
     <string name="exchange_field_class">Class</string>
+    <string name="exchange_field_subclass">Subclass</string>
     <string name="exchange_field_level">Level</string>
     <string name="exchange_field_reward">Reward</string>
     <string name="exchange_field_life_state">Condition</string>
@@ -1525,7 +1513,6 @@
     <string name="me_features_title">Features</string>
     <string name="me_features_placeholder">Feats, class and race features</string>
     <string name="me_about_title">About the character</string>
-    <string name="me_about_subclass">Subclass</string>
     <string name="me_about_background">Background</string>
     <string name="me_about_alignment">Alignment</string>
     <string name="me_personality_title">Personality</string>
@@ -1706,4 +1693,12 @@
     <string name="me_wallet_mode_minus">−</string>
     <string name="me_wallet_mode_plus">+</string>
     <string name="me_wallet_overline_format">Wallet · %1$s</string>
+    <string name="class_sheet_overline">Class</string>
+    <string name="class_sheet_title_empty">Not set</string>
+    <string name="class_sheet_search">Search or type your own</string>
+    <string name="class_sheet_not_in_srd">Not among the SRD classes</string>
+    <string name="class_sheet_custom">+ Own: “%1$s”</string>
+    <string name="class_sheet_own_badge">own</string>
+    <string name="class_sheet_subclass_label">Subclass · optional</string>
+    <string name="class_sheet_done">Done</string>
 </resources>

@@ -51,12 +51,14 @@ internal fun NpcEntryFields(
                     form.portrait != null ||
                         form.race.isNotBlank() ||
                         form.npcSpecies != null ||
+                        form.characterClassLine.isNotBlank() ||
                         form.nicknames.isNotBlank() ||
                         form.npcPlaces.isNotEmpty() ||
                         form.vulnerabilities.isNotEmpty(),
             ) {
                 PortraitField(form, eventSink)
                 NpcSpeciesField(form, eventSink)
+                ClassPickField(form, eventSink)
                 NpcLifeField(form, eventSink)
                 NpcPlacesField(form, eventSink)
                 NicknamesField(form, eventSink)

@@ -13,11 +13,6 @@ import dndplayerscodex.shared.generated.resources.combat_wound_dead
 import dndplayerscodex.shared.generated.resources.combat_wound_down
 import dndplayerscodex.shared.generated.resources.combat_wound_down_mark
 import dndplayerscodex.shared.generated.resources.combat_wound_dying
-import dndplayerscodex.shared.generated.resources.combat_wound_say_barely
-import dndplayerscodex.shared.generated.resources.combat_wound_say_bloodied
-import dndplayerscodex.shared.generated.resources.combat_wound_say_down
-import dndplayerscodex.shared.generated.resources.combat_wound_say_whole
-import dndplayerscodex.shared.generated.resources.combat_wound_say_wounded
 import dndplayerscodex.shared.generated.resources.combat_wound_whole
 import dndplayerscodex.shared.generated.resources.combat_wound_wounded
 import org.jetbrains.compose.resources.StringResource
@@ -58,15 +53,6 @@ internal fun CombatState.longLabel(): StringResource =
         CombatState.BLOODIED -> Res.string.combat_wound_bloodied
         CombatState.BARELY_STANDING -> Res.string.combat_wound_barely
         else -> Res.string.combat_wound_down
-    }
-
-internal fun CombatState.say(): StringResource =
-    when (this) {
-        CombatState.WHOLE -> Res.string.combat_wound_say_whole
-        CombatState.WOUNDED -> Res.string.combat_wound_say_wounded
-        CombatState.BLOODIED -> Res.string.combat_wound_say_bloodied
-        CombatState.BARELY_STANDING -> Res.string.combat_wound_say_barely
-        else -> Res.string.combat_wound_say_down
     }
 
 /** the word and the colour a row shows for the participant's state, a dying or a dead one has its own */

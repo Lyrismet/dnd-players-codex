@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.core.undo.UndoAction
+import com.lyrismet.incadent.feature.codex.presentation.form.ClassSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.CreatureTypeSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.SpeciesSelectState
@@ -20,6 +21,8 @@ data class QuickEditState(
     val speciesSelect: SpeciesSelectState? = null,
     // the creature type select sheet of the species field being held on a species card
     val creatureTypeSelect: CreatureTypeSelectState? = null,
+    // the class sheet of the class field being edited on a party or an npc card
+    val classSelect: ClassSelectState? = null,
     val holdTipVisible: Boolean = false,
     // the bar the card carries itself, the sheet covers the app-level one
     val undoAction: UndoAction? = null,

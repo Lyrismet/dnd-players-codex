@@ -23,6 +23,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.quickSpecies
+import com.lyrismet.incadent.feature.codex.presentation.form.ClassSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.CreatureTypeSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.PlaceSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.SpeciesSelectState
@@ -61,6 +62,28 @@ private fun PhotoSlot.field(): QuickEditField =
         PhotoSlot.COVER -> QuickEditField.COVER
     }
 
+// null unless the class of a party member or an npc card is being edited
+private fun classSelectOf(
+    edit: InlineEdit?,
+    ref: EntityRef?,
+    records: CodexRecords,
+): ClassSelectState? {
+    if (edit?.field != QuickEditField.CHARACTER_CLASS) return null
+    return when (ref) {
+        is EntityRef.Npc ->
+            records.npcs
+                .firstOrNull {
+                    it.id == ref.id
+                }?.let { ClassSelectState(it.characterClass, it.subclass) }
+        is EntityRef.Party ->
+            records.parties
+                .firstOrNull {
+                    it.id == ref.id
+                }?.let { ClassSelectState(it.characterClass, it.subclass) }
+        else -> null
+    }
+}
+
 /** the open-editor flow every card that supports quick edits delegates to - the presenter owns the state */
 @Suppress("LongParameterList")
 class QuickEditInteractions(
@@ -94,6 +117,7 @@ class QuickEditInteractions(
             placeSelect = placeSelectOf(edit, ref, records),
             speciesSelect = speciesSelectOf(edit, ref, records),
             creatureTypeSelect = creatureTypeSelectOf(edit, ref, records),
+            classSelect = classSelectOf(edit, ref, records),
             holdTipVisible = holdTipAllowed && edit == null,
             undoAction = undoAction,
             mention = mention?.let { MentionField(it, ref?.toMentionRef()) },
@@ -179,6 +203,8 @@ class QuickEditInteractions(
             QuickEditUiEvent.EditSaved -> saveDraft(scope)
             is QuickEditUiEvent.LinkChosen -> onLinkChosen(scope, event.id)
             is QuickEditUiEvent.CreatureTypeChosen -> commitChosen(scope, QuickEditValue.Creature(event.type))
+            is QuickEditUiEvent.ClassChosen ->
+                commitChosen(scope, QuickEditValue.ClassPick(event.characterClass, event.subclass))
             is QuickEditUiEvent.CustomTypeCreated -> createCustomType(scope, event.name)
             is QuickEditUiEvent.CustomTypeRenamed ->
                 scope.launch { entityWriteLock.withLock { speciesRepository.renameCustomType(event.id, event.name) } }

@@ -50,7 +50,6 @@ internal fun calcState(
         overline = overline(draft, ctx, round, sourceName(draft.sourceId, ctx)),
         title = stringResource(titleOf(draft.mode)),
         sources = sourceChips(draft, ctx),
-        sourceHint = sourceHint(draft, ctx),
         done = draft.done,
         targetsHeader = targetsHeader(targets.size),
         reaction = if (damage) reactionOf(targets, ctx) else null,

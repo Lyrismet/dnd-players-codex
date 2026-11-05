@@ -18,7 +18,8 @@ internal fun CodexEntryFormFields.toPartyMember(): PartyMember {
     return PartyMember(
         id = (editingRef as? EntityRef.Party)?.id ?: reviveId,
         name = name.trim().capitalizeFirst(),
-        characterClass = party.characterClass.trim().capitalizeFirst(),
+        characterClass = characterClass.trim().capitalizeFirst(),
+        subclass = subclass.trim().capitalizeFirst(),
         race = race.trim().capitalizeFirst(),
         level = party.level,
         // the "вы" flag replaces the player name, so a player character never keeps one
@@ -41,6 +42,8 @@ internal fun Npc.toFields(ref: EntityRef.Npc) =
         description = description,
         portrait = portrait,
         race = race,
+        characterClass = characterClass,
+        subclass = subclass,
         nicknames = nicknames.joinNicknames(),
         npcStatus = status,
         npcLife = lifeState,
@@ -58,11 +61,12 @@ internal fun PartyMember.toFields(ref: EntityRef.Party) =
         description = description,
         portrait = portrait,
         race = race,
+        characterClass = characterClass,
+        subclass = subclass,
         party =
             PartyFormFields(
                 isPlayerCharacter = isPlayerCharacter,
                 player = playerName,
-                characterClass = characterClass,
                 presence = presence,
                 level = level,
                 hpMax = hpMax,
@@ -103,6 +107,8 @@ internal fun CodexEntryFormFields.toNpc() =
         description = description.trim(),
         locationIds = npcLocationIds,
         race = race.trim().capitalizeFirst(),
+        characterClass = characterClass.trim().capitalizeFirst(),
+        subclass = subclass.trim().capitalizeFirst(),
         portrait = portrait,
         nicknames = parseNicknames(nicknames),
         speciesId = npcSpeciesId,

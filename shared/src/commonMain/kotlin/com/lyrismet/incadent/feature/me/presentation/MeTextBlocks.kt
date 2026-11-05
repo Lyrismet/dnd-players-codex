@@ -23,7 +23,6 @@ import com.lyrismet.incadent.core.designsystem.component.appCard
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.me_about_alignment
 import dndplayerscodex.shared.generated.resources.me_about_background
-import dndplayerscodex.shared.generated.resources.me_about_subclass
 import dndplayerscodex.shared.generated.resources.me_about_title
 import org.jetbrains.compose.resources.stringResource
 
@@ -50,7 +49,6 @@ internal fun AboutBlock(
 ) {
     val rows =
         listOf(
-            stringResource(Res.string.me_about_subclass) to sheet.subclass,
             stringResource(Res.string.me_about_background) to sheet.background,
             stringResource(Res.string.me_about_alignment) to sheet.alignment,
         ).filter { it.second.isNotBlank() }

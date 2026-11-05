@@ -1,0 +1,5 @@
+-- the subclass moves from the character sheet onto the record, next to the class, and an npc gets both
+ALTER TABLE party_member ADD COLUMN subclass TEXT NOT NULL DEFAULT '';
+UPDATE party_member SET subclass = COALESCE((SELECT subclass FROM character_sheet WHERE character_sheet.party_member_id = party_member.id), '');
+ALTER TABLE npc ADD COLUMN character_class TEXT NOT NULL DEFAULT '';
+ALTER TABLE npc ADD COLUMN subclass TEXT NOT NULL DEFAULT '';

@@ -176,6 +176,8 @@ class CampaignRepositoryImpl(
                 npc.status,
                 npc.description,
                 npc.race,
+                npc.character_class,
+                npc.subclass,
                 npc.life_state,
                 npc.nicknames,
                 npc.species_id?.let { copySpecies(it, targetId, speciesMap) },

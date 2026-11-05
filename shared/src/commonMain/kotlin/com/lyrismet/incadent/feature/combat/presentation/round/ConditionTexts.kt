@@ -5,6 +5,8 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.combat_condition_asleep
+import dndplayerscodex.shared.generated.resources.combat_condition_banished
 import dndplayerscodex.shared.generated.resources.combat_condition_blinded
 import dndplayerscodex.shared.generated.resources.combat_condition_charmed
 import dndplayerscodex.shared.generated.resources.combat_condition_concentration
@@ -14,6 +16,7 @@ import dndplayerscodex.shared.generated.resources.combat_condition_grappled
 import dndplayerscodex.shared.generated.resources.combat_condition_group_effect
 import dndplayerscodex.shared.generated.resources.combat_condition_group_restraint
 import dndplayerscodex.shared.generated.resources.combat_condition_group_weakening
+import dndplayerscodex.shared.generated.resources.combat_condition_hasted
 import dndplayerscodex.shared.generated.resources.combat_condition_incapacitated
 import dndplayerscodex.shared.generated.resources.combat_condition_invisible
 import dndplayerscodex.shared.generated.resources.combat_condition_paralyzed
@@ -21,6 +24,8 @@ import dndplayerscodex.shared.generated.resources.combat_condition_petrified
 import dndplayerscodex.shared.generated.resources.combat_condition_poisoned
 import dndplayerscodex.shared.generated.resources.combat_condition_prone
 import dndplayerscodex.shared.generated.resources.combat_condition_restrained
+import dndplayerscodex.shared.generated.resources.combat_condition_silenced
+import dndplayerscodex.shared.generated.resources.combat_condition_slowed
 import dndplayerscodex.shared.generated.resources.combat_condition_stunned
 import dndplayerscodex.shared.generated.resources.combat_stance_enemy
 import dndplayerscodex.shared.generated.resources.combat_stance_fled
@@ -73,6 +78,11 @@ private val ConditionLabels: Map<CombatCondition, StringResource> =
         CombatCondition.CHARMED to Res.string.combat_condition_charmed,
         CombatCondition.CONCENTRATION to Res.string.combat_condition_concentration,
         CombatCondition.INVISIBLE to Res.string.combat_condition_invisible,
+        CombatCondition.ASLEEP to Res.string.combat_condition_asleep,
+        CombatCondition.BANISHED to Res.string.combat_condition_banished,
+        CombatCondition.SILENCED to Res.string.combat_condition_silenced,
+        CombatCondition.SLOWED to Res.string.combat_condition_slowed,
+        CombatCondition.HASTED to Res.string.combat_condition_hasted,
     )
 
 @Composable

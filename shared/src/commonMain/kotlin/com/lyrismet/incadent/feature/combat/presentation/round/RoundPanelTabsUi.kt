@@ -29,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
-import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
@@ -51,7 +50,6 @@ import com.lyrismet.incadent.feature.combat.presentation.prep.HpPadState
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.combat_hp_apply
 import dndplayerscodex.shared.generated.resources.combat_hp_mode_hp
-import dndplayerscodex.shared.generated.resources.combat_panel_full_hint
 import dndplayerscodex.shared.generated.resources.combat_panel_full_title
 import dndplayerscodex.shared.generated.resources.combat_panel_remove
 import dndplayerscodex.shared.generated.resources.combat_panel_set_hp
@@ -138,12 +136,6 @@ internal fun MoreTab(
                 onSelected = { send(CombatRoundEvent.StanceSelected(it)) },
                 modifier = Modifier.fillMaxWidth(),
             )
-            Text(
-                more.stanceHint,
-                color = AppPalette.TextTertiary,
-                fontSize = AppFontSize.Caption,
-                lineHeight = AppLineHeight.Row,
-            )
         }
     }
     if (more.fullShown) FullRow(more.full) { send(CombatRoundEvent.FullToggled) }
@@ -154,22 +146,13 @@ internal fun MoreTab(
             variant = ButtonVariant.Ghost,
         )
     }
-    if (more.vulnerabilitiesCaption.isNotEmpty() || more.vulnerabilities != null) {
+    more.vulnerabilities?.let { vulnerabilities ->
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            if (more.vulnerabilities != null) {
-                FormFieldLabel(stringResource(Res.string.entity_sheet_species_vulnerabilities_title).uppercase())
-            }
-            if (more.vulnerabilitiesCaption.isNotEmpty()) {
-                Text(
-                    more.vulnerabilitiesCaption,
-                    color = AppPalette.TextTertiary,
-                    fontSize = AppFontSize.Caption,
-                    lineHeight = AppLineHeight.Row,
-                )
-            }
-            more.vulnerabilities?.let {
-                VulnerabilityGridEditor(it, { type, state -> send(CombatRoundEvent.VulnerabilityChanged(type, state)) })
-            }
+            FormFieldLabel(stringResource(Res.string.entity_sheet_species_vulnerabilities_title).uppercase())
+            VulnerabilityGridEditor(
+                vulnerabilities,
+                { type, state -> send(CombatRoundEvent.VulnerabilityChanged(type, state)) },
+            )
         }
     }
     NoteField(panel.id, more.note, more.notePlaceholder) { send(CombatRoundEvent.NoteChanged(panel.id, it)) }
@@ -203,7 +186,7 @@ private fun FullRow(
         AppCheckBox(full)
         AppTitleSubtitle(
             title = stringResource(Res.string.combat_panel_full_title),
-            subtitle = stringResource(Res.string.combat_panel_full_hint),
+            subtitle = "",
             modifier = Modifier.weight(1f),
             maxLines = 2,
         )

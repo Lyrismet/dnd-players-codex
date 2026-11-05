@@ -90,6 +90,8 @@ sealed interface FileRecord {
         val vulnerabilities: String = "",
         val placeIds: List<Long> = emptyList(),
         val originId: String? = null,
+        val characterClass: String = "",
+        val subclass: String = "",
     ) : FileRecord
 
     @Serializable
@@ -121,6 +123,7 @@ sealed interface FileRecord {
         val description: String = "",
         val fallen: Boolean = false,
         val originId: String? = null,
+        val subclass: String = "",
     ) : FileRecord
 
     /** a thing somebody carries, [ownerKind] and [ownerId] are the file's own id of the party member, npc or place */

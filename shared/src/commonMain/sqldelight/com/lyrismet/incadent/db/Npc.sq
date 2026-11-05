@@ -13,7 +13,9 @@ CREATE TABLE npc (
     portrait BLOB,
     portrait_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
-    origin_id TEXT NOT NULL DEFAULT ''
+    origin_id TEXT NOT NULL DEFAULT '',
+    character_class TEXT NOT NULL DEFAULT '',
+    subclass TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX npc_campaign_id ON npc(campaign_id);
@@ -22,7 +24,7 @@ CREATE UNIQUE INDEX npc_origin_id ON npc(campaign_id, origin_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT id, name, status, description, race, life_state, nicknames, species_id, vulnerabilities, portrait_thumb, origin_id
+SELECT id, name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait_thumb, origin_id
 FROM npc
 WHERE campaign_id = ?
 ORDER BY name;
@@ -30,7 +32,7 @@ ORDER BY name;
 -- places come along in the same query so a write to either table re-emits one consistent list
 selectAllWithLocations:
 SELECT
-    npc.id, npc.name, npc.status, npc.description, npc.race, npc.life_state, npc.nicknames,
+    npc.id, npc.name, npc.status, npc.description, npc.race, npc.character_class, npc.subclass, npc.life_state, npc.nicknames,
     npc.species_id, npc.vulnerabilities, npc.portrait_thumb, npc.origin_id,
     COALESCE((SELECT group_concat(location_id) FROM npc_location WHERE npc_id = npc.id), '') AS location_ids
 FROM npc
@@ -38,23 +40,23 @@ WHERE campaign_id = ?
 ORDER BY name;
 
 selectById:
-SELECT id, name, status, description, race, life_state, nicknames, species_id, vulnerabilities, portrait_thumb, portrait, origin_id
+SELECT id, name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait_thumb, portrait, origin_id
 FROM npc
 WHERE id = ?;
 
 insert:
-INSERT INTO npc(name, status, description, race, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO npc(name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO npc(id, name, status, description, race, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO npc(id, name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE npc
-SET name = ?, status = ?, description = ?, race = ?, life_state = ?, nicknames = ?, species_id = ?, vulnerabilities = ?
+SET name = ?, status = ?, description = ?, race = ?, character_class = ?, subclass = ?, life_state = ?, nicknames = ?, species_id = ?, vulnerabilities = ?
 WHERE id = ?;
 
 setPortrait:

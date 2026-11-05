@@ -73,6 +73,8 @@ class ItemExchangeTest {
             NpcStatus.FRIEND,
             "",
             "",
+            "",
+            "",
             NpcLifeState.ALIVE,
             "",
             null,
@@ -88,6 +90,7 @@ class ItemExchangeTest {
     private fun hero(campaignId: String): Long {
         database.partyMemberQueries.insert(
             "Hero",
+            "",
             "",
             "",
             null,

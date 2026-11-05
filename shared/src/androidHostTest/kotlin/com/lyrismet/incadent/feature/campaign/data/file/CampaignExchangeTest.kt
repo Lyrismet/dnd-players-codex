@@ -81,6 +81,8 @@ class CampaignExchangeTest {
             NpcStatus.FRIEND,
             "d",
             "elf",
+            "",
+            "",
             NpcLifeState.ALIVE,
             "bobby",
             speciesId,
@@ -96,6 +98,7 @@ class CampaignExchangeTest {
         database.partyMemberQueries.insert(
             "Hero",
             "Rogue",
+            "",
             "human",
             3L,
             "Ana",
@@ -307,6 +310,8 @@ class CampaignExchangeTest {
             NpcStatus.NEUTRAL,
             "",
             "",
+            "",
+            "",
             NpcLifeState.ALIVE,
             "",
             null,
@@ -376,7 +381,19 @@ class CampaignExchangeTest {
                 .selectAll(source)
                 .executeAsList()
                 .single()
-        database.npcQueries.update("Bob", NpcStatus.ENEMY, "edited", "orc", NpcLifeState.DEAD, "", null, "", bob.id)
+        database.npcQueries.update(
+            "Bob",
+            NpcStatus.ENEMY,
+            "edited",
+            "orc",
+            "",
+            "",
+            NpcLifeState.DEAD,
+            "",
+            null,
+            "",
+            bob.id,
+        )
         val quest =
             database.questQueries
                 .selectAll(source)

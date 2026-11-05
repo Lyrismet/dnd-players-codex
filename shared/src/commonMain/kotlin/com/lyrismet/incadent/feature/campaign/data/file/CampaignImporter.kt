@@ -364,6 +364,8 @@ internal class CampaignImporter(
                             it.species_id,
                             it.vulnerabilities,
                             it.location_ids.toIdList(),
+                            characterClass = it.character_class,
+                            subclass = it.subclass,
                         )
                     }
                 ExchangeKind.QUEST ->
@@ -393,6 +395,7 @@ internal class CampaignImporter(
                             it.hp_current?.toInt(),
                             it.description,
                             it.fallen,
+                            subclass = it.subclass,
                         )
                     }
                 ExchangeKind.ITEM ->
@@ -519,6 +522,8 @@ internal class CampaignImporter(
                         record.status,
                         record.description,
                         record.race,
+                        record.characterClass,
+                        record.subclass,
                         record.lifeState,
                         record.nicknames,
                         record.speciesId?.let(speciesMap::get),
@@ -673,6 +678,7 @@ internal class CampaignImporter(
             queries.insert(
                 nameForInsert(partyByName, record.name),
                 record.characterClass,
+                record.subclass,
                 record.race,
                 record.level?.toLong(),
                 record.playerName,
@@ -738,6 +744,7 @@ internal class CampaignImporter(
             queries.update(
                 row.name,
                 row.character_class,
+                row.subclass,
                 row.race,
                 row.level,
                 playerName.ifBlank { row.player_name },
@@ -816,6 +823,8 @@ internal class CampaignImporter(
                     took(ExchangeKind.NPC, id, current.description, it, record.description)
                 },
                 pick.text(RecordField.RACE, current.race, record.race),
+                pick.text(RecordField.CHARACTER_CLASS, current.character_class, record.characterClass),
+                pick.text(RecordField.SUBCLASS, current.subclass, record.subclass),
                 pick.value(RecordField.LIFE_STATE, current.life_state, record.lifeState),
                 pick.text(RecordField.NICKNAMES, current.nicknames, record.nicknames),
                 link(record.speciesId, speciesMap, current.species_id),
@@ -858,6 +867,7 @@ internal class CampaignImporter(
             database.partyMemberQueries.update(
                 pick.text(RecordField.NAME, current.name, record.name),
                 pick.text(RecordField.CHARACTER_CLASS, current.character_class, record.characterClass),
+                pick.text(RecordField.SUBCLASS, current.subclass, record.subclass),
                 pick.text(RecordField.RACE, current.race, record.race),
                 pick.number(RecordField.LEVEL, current.level?.toInt(), record.level)?.toLong(),
                 current.player_name,

@@ -41,6 +41,12 @@ sealed interface QuickEditUiEvent {
         val type: SpeciesType,
     ) : QuickEditUiEvent
 
+    /** "Готово" in the class sheet, both parts are empty when the class was cleared */
+    data class ClassChosen(
+        val characterClass: String,
+        val subclass: String,
+    ) : QuickEditUiEvent
+
     /** a type made in the creature type sheet, the card's species takes it */
     data class CustomTypeCreated(
         val name: String,

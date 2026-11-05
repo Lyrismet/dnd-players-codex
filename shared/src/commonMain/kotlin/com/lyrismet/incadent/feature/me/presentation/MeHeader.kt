@@ -36,7 +36,9 @@ import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.sheet.SheetIcons
 import com.lyrismet.incadent.core.designsystem.numeral
+import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.orDash
+import com.lyrismet.incadent.feature.codex.domain.grouping.classLine
 import com.lyrismet.incadent.feature.me.domain.isDown
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.campaign_player_level_format
@@ -94,13 +96,7 @@ internal fun MeNameRow(
 @Composable
 private fun characterLine(character: MeCharacter): String {
     val level = character.level?.let { stringResource(Res.string.campaign_player_level_format, it) }
-    return listOfNotNull(
-        character.characterClass.takeIf {
-            it.isNotBlank()
-        },
-        level,
-        character.race.takeIf { it.isNotBlank() },
-    ).joinToString(" · ")
+    return joinWithDot(character.race, classLine(character.characterClass, character.subclass), level.orEmpty())
 }
 
 @Composable

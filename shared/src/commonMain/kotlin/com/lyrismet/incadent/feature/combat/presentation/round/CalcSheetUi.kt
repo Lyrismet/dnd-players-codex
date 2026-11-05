@@ -172,14 +172,7 @@ private fun CalcSourceChips(
     emit: (CalcEvent) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            FormFieldLabel(stringResource(Res.string.combat_calc_source_title), Modifier.weight(1f))
-            Text(calc.sourceHint, color = AppPalette.TextSecondary, fontSize = AppFontSize.Caption)
-        }
+        FormFieldLabel(stringResource(Res.string.combat_calc_source_title))
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(6.dp),

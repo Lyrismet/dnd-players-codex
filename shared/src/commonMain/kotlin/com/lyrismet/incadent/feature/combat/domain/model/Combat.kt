@@ -30,13 +30,18 @@ enum class CombatCondition(
     PARALYZED(ConditionGroup.RESTRAINT),
     INCAPACITATED(ConditionGroup.RESTRAINT),
     PETRIFIED(ConditionGroup.RESTRAINT),
+    ASLEEP(ConditionGroup.RESTRAINT),
+    BANISHED(ConditionGroup.RESTRAINT),
     BLINDED(ConditionGroup.WEAKENING),
     DEAFENED(ConditionGroup.WEAKENING),
     POISONED(ConditionGroup.WEAKENING),
     FRIGHTENED(ConditionGroup.WEAKENING),
     CHARMED(ConditionGroup.WEAKENING),
+    SILENCED(ConditionGroup.WEAKENING),
+    SLOWED(ConditionGroup.WEAKENING),
     CONCENTRATION(ConditionGroup.EFFECT),
     INVISIBLE(ConditionGroup.EFFECT),
+    HASTED(ConditionGroup.EFFECT),
 }
 
 /** how a hit was corrected after the fact, half for resistance, none for immunity, double for vulnerability */
