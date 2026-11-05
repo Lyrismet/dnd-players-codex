@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.me.presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,6 +42,8 @@ internal class MePresenter(
         val list = party
         val member = list?.firstOrNull { it.isPlayerCharacter }
         val ui = rememberMeUiState()
+        // the open level belongs to one character, the next one starts closed
+        LaunchedEffect(member?.id) { ui.slotLevel = null }
         val characterContent = member?.let { characterContent(it, ui, readOnly) }
         val content =
             when {
@@ -50,7 +53,8 @@ internal class MePresenter(
             }
         val eventScope = MeEventScope(member, list.orEmpty(), (content as? MeContent.Character)?.character, readOnly)
         val latestScope by rememberUpdatedState(eventScope)
-        val handler = remember { MeEventHandler({ latestScope }, ui, actions, picker, scope) }
+        val counters = remember { MeCounterActions(scope, resourceRepository, sheetRepository, undoController) }
+        val handler = remember { MeEventHandler({ latestScope }, ui, actions, counters, picker, scope) }
         val eventSink = remember(handler) { handler::handle }
         return MeState(content = content, eventSink = eventSink)
     }
@@ -73,7 +77,7 @@ internal class MePresenter(
         // the skill names are only read while the search is open
         val searchTexts = if (ui.searchOpen) rememberSkillSearchTexts() else emptyMap()
         val query = if (ui.searchOpen) ui.query.trim().lowercase() else ""
-        val hasSpells = isSpellTabVisible(sheet, resources)
+        val hasSpells = isSpellTabVisible(sheet)
         val tabs = remember(hasSpells) { meTabs(hasSpells) }
         val figures = remember(sheet, shownVitals.armorClass, level) { MeSheetFigures(sheet, shownVitals, level) }
         val strips =
@@ -90,7 +94,9 @@ internal class MePresenter(
                     },
                 )
             }
-        return MeContent.Character(buildMeCharacter(member, shownVitals, sheet, figures, strips, tabs, ui, readOnly))
+        return MeContent.Character(
+            buildMeCharacter(member, shownVitals, sheet, figures, strips, resources, tabs, ui, readOnly),
+        )
     }
 
     private fun pickOptions(party: List<PartyMember>?): List<MePickOption> =

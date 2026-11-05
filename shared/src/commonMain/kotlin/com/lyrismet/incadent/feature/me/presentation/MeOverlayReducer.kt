@@ -30,7 +30,9 @@ internal fun MeOverlay.reduce(event: OverlayEvent): MeOverlay =
             }
         is MeOverlay.Fill -> copy(draft = draft.reduce(event))
         is MeOverlay.EditCharacter -> reduceEdit(event)
-        is MeOverlay.HitPoints -> this
+        is MeOverlay.Slots -> reduceSlots(event)
+        is MeOverlay.Resource -> reduceResource(event)
+        is MeOverlay.HitPoints, is MeOverlay.SpellAbility, MeOverlay.Templates -> this
     }
 
 private fun MeOverlay.AbilityEdit.reduceAbility(event: OverlayEvent): MeOverlay =
@@ -87,7 +89,7 @@ private fun MeOverlay.EditCharacter.reduceEdit(event: OverlayEvent): MeOverlay =
                         OverlayField.BACKGROUND -> draft.copy(background = event.value)
                         OverlayField.ALIGNMENT -> draft.copy(alignment = event.value)
                         OverlayField.PLAYER_NAME -> draft.copy(playerName = event.value)
-                        OverlayField.ARMOR_CLASS_FROM -> draft
+                        OverlayField.ARMOR_CLASS_FROM, OverlayField.RESOURCE_NAME -> draft
                     },
             )
         else -> this

@@ -25,11 +25,8 @@ data class CharacterResource(
 val RESOURCE_MAX_RANGE = 0..99
 val SPELL_LEVELS = 1..9
 
-/** the spell tab shows only for a caster, one that chose a spell ability or has slots */
-fun isSpellTabVisible(
-    sheet: CharacterSheet,
-    resources: List<CharacterResource>,
-): Boolean = sheet.spellAbility != null || resources.any { it.isSpellSlot }
+/** the spell tab is shown unless the player hid it, a hidden tab stays reachable from the menu */
+fun isSpellTabVisible(sheet: CharacterSheet): Boolean = !sheet.spellsHidden
 
 /** a ready made name from the SRD 5.1, the maximum is always typed by the player */
 enum class ResourceTemplate {

@@ -26,6 +26,7 @@ internal class MeUiState(
     var menuOpen by mutableStateOf(false)
     var edit by mutableStateOf<MeOverlay?>(null)
     var hitPad by mutableStateOf<HitPad?>(null)
+    var slotLevel by mutableStateOf<Int?>(null)
 
     // a text is shown from here while it is typed, so the stored copy coming back does not move the cursor
     val textDrafts = mutableStateMapOf<MeText, String>()

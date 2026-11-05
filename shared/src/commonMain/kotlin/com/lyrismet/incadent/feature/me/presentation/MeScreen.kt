@@ -2,14 +2,17 @@ package com.lyrismet.incadent.feature.me.presentation
 
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
+import com.lyrismet.incadent.feature.codex.domain.model.CharacterResource
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterVitals
 import com.lyrismet.incadent.feature.codex.domain.model.FifthEditionRules
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
+import com.lyrismet.incadent.feature.codex.domain.model.ResourceTemplate
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.feature.me.domain.AbilityStrip
 import com.lyrismet.incadent.feature.me.domain.HeaderNumbers
 import com.lyrismet.incadent.feature.me.domain.HitPointMode
+import com.lyrismet.incadent.feature.me.domain.SlotColumn
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -46,7 +49,7 @@ data class MePickOption(
     val level: Int?,
 )
 
-/** the tabs under the header, the sheet is always there, spells only for a caster */
+/** the tabs under the header, the sheet is always there, spells unless the player hid them */
 enum class MeTab { SHEET, SPELLS, RESOURCES, ITEMS }
 
 /** the tiles under the hit points that explain themselves in a card on a press */
@@ -64,12 +67,25 @@ data class MeCharacter(
     val numbers: HeaderNumbers,
     val tab: MeTab,
     val tabs: List<MeTab>,
+    val spellsHidden: Boolean,
     val sheet: MeSheetState,
+    val spells: MeSpellsState,
+    val resources: List<CharacterResource>,
     val breakdown: MeBreakdown,
     val popover: MeTile?,
     val overlay: MeOverlay?,
     val menuOpen: Boolean,
     val readOnly: Boolean,
+)
+
+/** the spell tab: the chosen ability with what it gives and the slot columns */
+data class MeSpellsState(
+    val ability: Ability?,
+    val saveDc: Int?,
+    val attack: Int?,
+    val columns: List<SlotColumn>,
+    // the level whose cells are open under its tile
+    val openLevel: Int?,
 )
 
 /** what the explanation cards of the tiles list */
@@ -154,6 +170,27 @@ sealed interface MeOverlay {
     data class EditCharacter(
         val draft: CharacterDraft,
     ) : MeOverlay
+
+    /** the slots per level, 0 for none */
+    data class Slots(
+        val maxima: Map<Int, Int>,
+    ) : MeOverlay
+
+    data class SpellAbility(
+        val selected: Ability?,
+    ) : MeOverlay
+
+    /** [id] is 0 for a resource not stored yet */
+    data class Resource(
+        val id: Long,
+        val name: String,
+        val max: Int,
+        val current: Int,
+        val position: Int,
+        val originId: String,
+    ) : MeOverlay
+
+    data object Templates : MeOverlay
 }
 
 /** the four steps of the first fill, every number is what the paper sheet says */
@@ -222,6 +259,10 @@ sealed interface MeEvent : CircuitUiEvent {
 
     data class Overlay(
         val event: OverlayEvent,
+    ) : MeEvent
+
+    data class Counters(
+        val event: CounterEvent,
     ) : MeEvent
 
     data object MenuToggled : MeEvent
@@ -304,6 +345,43 @@ sealed interface SheetEvent {
     data object AboutTapped : SheetEvent
 }
 
+sealed interface CounterEvent {
+    data class SlotLevelToggled(
+        val level: Int,
+    ) : CounterEvent
+
+    /** a press on the cell at [index] of the counter [id], a slot level or a resource */
+    data class CellPressed(
+        val id: Long,
+        val index: Int,
+    ) : CounterEvent
+
+    data class PipHeld(
+        val id: Long,
+    ) : CounterEvent
+
+    data object ResourceAdded : CounterEvent
+
+    data object TemplatesRequested : CounterEvent
+
+    data class TemplateChosen(
+        val template: ResourceTemplate,
+        val name: String,
+    ) : CounterEvent
+
+    data object ResourceDeleted : CounterEvent
+
+    data object SlotsRequested : CounterEvent
+
+    data object SpellAbilityRequested : CounterEvent
+
+    data object SpellsHidden : CounterEvent
+
+    data class SpellAbilityChosen(
+        val ability: Ability?,
+    ) : CounterEvent
+}
+
 sealed interface OverlayEvent {
     data object Closed : OverlayEvent
 
@@ -356,6 +434,11 @@ sealed interface OverlayEvent {
     data object FillSkip : OverlayEvent
 
     data object FillBack : OverlayEvent
+
+    data class SlotStepped(
+        val level: Int,
+        val delta: Int,
+    ) : OverlayEvent
 }
 
 /** the typed fields of the sheets, the number sheets use [OverlayEvent.NumberStepped] */
@@ -368,6 +451,7 @@ enum class OverlayField {
     BACKGROUND,
     ALIGNMENT,
     PLAYER_NAME,
+    RESOURCE_NAME,
 }
 
-enum class MenuAction { EDIT, FILL, NOT_MINE }
+enum class MenuAction { EDIT, FILL, TOGGLE_SPELLS, NOT_MINE }

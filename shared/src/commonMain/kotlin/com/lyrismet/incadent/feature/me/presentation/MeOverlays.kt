@@ -84,6 +84,21 @@ internal fun MeOverlays(
         is MeOverlay.Adjustment -> AdjustmentSheet(overlay, send)
         is MeOverlay.Fill -> MeFillSheet(overlay.draft, send)
         is MeOverlay.EditCharacter -> MeEditSheet(overlay.draft, send)
+        is MeOverlay.Slots -> SlotsSheet(overlay, send)
+        is MeOverlay.Resource ->
+            ResourceSheet(overlay, send) { onEvent(MeEvent.Counters(CounterEvent.ResourceDeleted)) }
+        is MeOverlay.SpellAbility ->
+            SpellAbilitySheet(
+                overlay,
+                onChoose = { onEvent(MeEvent.Counters(CounterEvent.SpellAbilityChosen(it))) },
+                onClose = { send(OverlayEvent.Closed) },
+            )
+        MeOverlay.Templates ->
+            TemplatesSheet(
+                character.resources + character.spells.columns.map { it.resource },
+                onChoose = { template, name -> onEvent(MeEvent.Counters(CounterEvent.TemplateChosen(template, name))) },
+                onClose = { send(OverlayEvent.Closed) },
+            )
     }
 }
 
@@ -253,6 +268,7 @@ internal fun EditSheet(
     onDone: () -> Unit,
     subtitle: String? = null,
     doneLabel: String = stringResource(Res.string.me_done),
+    doneEnabled: Boolean = true,
     content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = onClose) {
@@ -261,7 +277,7 @@ internal fun EditSheet(
             header = { AppSheetHeader(title = title, onClose = onClose, overline = overline, subtitle = subtitle) },
         ) {
             content()
-            FormPrimaryButton(text = doneLabel, onClick = onDone)
+            FormPrimaryButton(text = doneLabel, onClick = onDone, enabled = doneEnabled)
         }
     }
 }
@@ -271,6 +287,7 @@ internal fun NumberRow(
     value: Int,
     send: (OverlayEvent) -> Unit,
     step: Int = 1,
+    spread: Boolean = false,
 ) {
     AppStepper(
         count = value,
@@ -280,6 +297,7 @@ internal fun NumberRow(
         increaseDescription = stringResource(Res.string.me_step_more),
         tiles = true,
         removesAtOne = false,
+        spread = spread,
     )
 }
 

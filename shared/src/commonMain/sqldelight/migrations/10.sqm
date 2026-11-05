@@ -1,0 +1,2 @@
+-- the spell tab is shown to everyone, a player who has no spells hides it
+ALTER TABLE character_sheet ADD COLUMN spells_hidden INTEGER NOT NULL DEFAULT 0;

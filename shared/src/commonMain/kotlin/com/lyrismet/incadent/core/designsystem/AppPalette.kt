@@ -72,6 +72,16 @@ object AppPalette {
     val WeakeningTitle = Color(0xFFBFA3EE)
     val WeakeningOn = Color(0xFFDCCBF7)
     val WeakeningTint = Color(0x33966EDC)
+
+    // spell cells
+    val Arcane = Color(0xFFB9A2F2)
+    val ArcaneCell = Color(0xFFA98BF0)
+    val ArcaneCellGlow = Color(0x8CA98BF0)
+    val ArcaneCellOff = Color(0xFF221C30)
+    val ArcaneCellBorder = Color(0xFF3E3358)
+    val GoldCellOff = Color(0xFF211D0F)
+    val GoldCellBorder = Color(0xFF4A3F1C)
+
     val WeakeningOnFill = Color(0x3D966EDC)
     val WeakeningOnBorder = Color(0xB3966EDC)
 

@@ -93,4 +93,24 @@ class MeOverlayReducerTest {
         assertEquals(setOf(Ability.WISDOM), draft.saves)
         assertEquals(Proficiency.EXPERTISE, draft.marks[Skill.HISTORY])
     }
+
+    @Test
+    fun `slots of a level are held between 0 and 99`() {
+        val sheet = MeOverlay.Slots(mapOf(1 to 0, 2 to 99))
+        assertEquals(0, (sheet.reduce(OverlayEvent.SlotStepped(1, -1)) as MeOverlay.Slots).maxima[1])
+        assertEquals(99, (sheet.reduce(OverlayEvent.SlotStepped(2, 1)) as MeOverlay.Slots).maxima[2])
+        assertEquals(1, (sheet.reduce(OverlayEvent.SlotStepped(1, 1)) as MeOverlay.Slots).maxima[1])
+    }
+
+    @Test
+    fun `a resource takes a name and a maximum`() {
+        val draft = MeOverlay.Resource(0, "", 1, 1, 0, "")
+        val changed =
+            draft
+                .reduce(OverlayEvent.TextChanged(OverlayField.RESOURCE_NAME, "Rage"))
+                .reduce(OverlayEvent.NumberStepped(2)) as MeOverlay.Resource
+        assertEquals("Rage", changed.name)
+        assertEquals(3, changed.max)
+        assertEquals(1, changed.current)
+    }
 }
