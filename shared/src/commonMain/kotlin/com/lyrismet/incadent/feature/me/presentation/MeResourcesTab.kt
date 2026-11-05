@@ -81,8 +81,8 @@ internal fun MeResourcesTab(
 private fun ResourcesHeader() {
     MeSectionTitle(
         stringResource(Res.string.me_resources_title),
-        stringResource(Res.string.me_help_resources_title),
-        stringResource(Res.string.me_help_resources_body),
+        helpTitle = stringResource(Res.string.me_help_resources_title),
+        helpBody = stringResource(Res.string.me_help_resources_body),
     )
 }
 

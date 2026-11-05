@@ -28,8 +28,6 @@ import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayba
 import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
-import com.lyrismet.incadent.feature.codex.presentation.item.CodexItemSheets
-import com.lyrismet.incadent.feature.codex.presentation.item.CodexItemsList
 import com.lyrismet.incadent.feature.codex.presentation.item.ItemEvent
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPickSheet
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityCardSheet

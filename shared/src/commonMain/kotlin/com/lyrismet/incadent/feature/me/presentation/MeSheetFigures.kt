@@ -34,6 +34,8 @@ internal fun buildMeCharacter(
     tabs: List<MeTab>,
     ui: MeUiState,
     readOnly: Boolean,
+    items: MeItems,
+    liveSessionTitle: String?,
 ): MeCharacter =
     MeCharacter(
         id = member.id,
@@ -53,7 +55,12 @@ internal fun buildMeCharacter(
         resources = featureResources(resources),
         breakdown = figures.breakdown,
         popover = ui.popover,
-        overlay = ui.overlay(vitals),
+        overlay =
+            ui.overlay(vitals)
+                ?: ui.rest?.overlay(vitals, resources, liveSessionTitle)
+                ?: ui.wallet?.let { MeOverlay.Wallet(it, it.change(sheet.purse)) },
+        items = items,
+        liveSessionTitle = liveSessionTitle,
         menuOpen = ui.menuOpen,
         readOnly = readOnly,
     )

@@ -68,6 +68,7 @@ import org.jetbrains.compose.resources.stringResource
 private const val SPEED_STEP = 5
 
 /** the sheet over the screen that belongs to the open [MeCharacter.overlay], nothing while there is none */
+@Suppress("CyclomaticComplexMethod")
 @Composable
 internal fun MeOverlays(
     character: MeCharacter,
@@ -93,6 +94,8 @@ internal fun MeOverlays(
                 onChoose = { onEvent(MeEvent.Counters(CounterEvent.SpellAbilityChosen(it))) },
                 onClose = { send(OverlayEvent.Closed) },
             )
+        is MeOverlay.Rest -> MeRestSheet(character.name, overlay) { onEvent(MeEvent.Rest(it)) }
+        is MeOverlay.Wallet -> MeWalletSheet(character.name, overlay) { onEvent(MeEvent.Wallet(it)) }
         MeOverlay.Templates ->
             TemplatesSheet(
                 character.resources + character.spells.columns.map { it.resource },

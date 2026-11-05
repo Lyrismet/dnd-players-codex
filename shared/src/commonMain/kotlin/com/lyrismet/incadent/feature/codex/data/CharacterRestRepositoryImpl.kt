@@ -40,7 +40,19 @@ class CharacterRestRepositoryImpl(
     ) {
         withContext(DatabaseDispatcher) {
             database.transaction {
-                writeVitals(party, memberId, undo.vitals)
+                // only what the rest changed goes back, an armor class edited since stays
+                party.selectVitals(memberId).executeAsOneOrNull()?.toDomain()?.let { now ->
+                    writeVitals(
+                        party,
+                        memberId,
+                        now.copy(
+                            hpCurrent = undo.vitals.hpCurrent,
+                            tempHp = undo.vitals.tempHp,
+                            deathSavesSuccess = undo.vitals.deathSavesSuccess,
+                            deathSavesFailure = undo.vitals.deathSavesFailure,
+                        ),
+                    )
+                }
                 undo.resourceCounts.forEach { (id, count) -> resources.restoreCurrent(count.toLong(), id) }
             }
         }

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,7 +32,6 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.me.domain.DeathSaveState
 import com.lyrismet.incadent.feature.me.domain.deathSaveState
-import com.lyrismet.incadent.feature.me.domain.isDown
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.me_death_add_failure
 import dndplayerscodex.shared.generated.resources.me_death_add_success
@@ -45,7 +43,6 @@ import dndplayerscodex.shared.generated.resources.me_death_stable_title
 import dndplayerscodex.shared.generated.resources.me_death_successes
 import dndplayerscodex.shared.generated.resources.me_death_title
 import dndplayerscodex.shared.generated.resources.me_death_undo_failure
-import dndplayerscodex.shared.generated.resources.me_tab_soon
 import org.jetbrains.compose.resources.stringResource
 
 private const val DOTS = 3
@@ -180,22 +177,5 @@ private fun DotsRow(
                 }
             }
         }
-    }
-}
-
-/** the tabs that are still to come show a short note under the header */
-@Composable
-internal fun MeTabSoon(
-    character: MeCharacter,
-    onEvent: (MeEvent) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        if (character.vitals.isDown) MeDeathSaves(character, onEvent)
-        Text(
-            stringResource(Res.string.me_tab_soon),
-            style = MaterialTheme.typography.bodyMedium,
-            color = AppPalette.TextSecondary,
-        )
     }
 }

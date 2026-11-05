@@ -32,7 +32,12 @@ internal fun MeOverlay.reduce(event: OverlayEvent): MeOverlay =
         is MeOverlay.EditCharacter -> reduceEdit(event)
         is MeOverlay.Slots -> reduceSlots(event)
         is MeOverlay.Resource -> reduceResource(event)
-        is MeOverlay.HitPoints, is MeOverlay.SpellAbility, MeOverlay.Templates -> this
+        is MeOverlay.HitPoints,
+        is MeOverlay.SpellAbility,
+        is MeOverlay.Rest,
+        is MeOverlay.Wallet,
+        MeOverlay.Templates,
+        -> this
     }
 
 private fun MeOverlay.AbilityEdit.reduceAbility(event: OverlayEvent): MeOverlay =

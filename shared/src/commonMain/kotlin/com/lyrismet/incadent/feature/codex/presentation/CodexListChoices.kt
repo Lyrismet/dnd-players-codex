@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lyrismet.incadent.feature.codex.presentation.item.CodexPartyModeSwitch
 import com.lyrismet.incadent.feature.codex.presentation.item.PartyListMode
 
 // what narrows the active tab - the named or species switch of the npc tab, the group chips of the tabs that group

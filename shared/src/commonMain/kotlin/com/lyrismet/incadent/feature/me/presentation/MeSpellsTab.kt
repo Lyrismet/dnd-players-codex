@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -189,17 +188,13 @@ private val HINT_SLOT = 28.dp
 
 @Composable
 private fun SlotsHeader() {
-    // the row is only as tall as the caption, the hint target overflows it like the negative margin in the mockup
     MeSectionTitle(
         stringResource(Res.string.me_spells_slots_title),
-        stringResource(Res.string.me_help_slots_title),
-        stringResource(Res.string.me_help_slots_body),
-        Modifier.height(SLOTS_CAPTION_HEIGHT),
-        Modifier.requiredSize(HINT_SLOT),
+        helpTitle = stringResource(Res.string.me_help_slots_title),
+        helpBody = stringResource(Res.string.me_help_slots_body),
     )
 }
 
-private val SLOTS_CAPTION_HEIGHT = 12.dp
 private const val SLOT_TILES_IN_ROW = 3
 
 @Composable
