@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Text
@@ -18,12 +19,16 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 
 private const val DISABLED_ALPHA = 0.25f
+private val SPREAD_TILE = 52.dp
+private val SPREAD_COUNT_SIZE = 32.sp
 
 /**
  * the "- 3 +" count control: the minus turns into a cross when one more press removes the last one, the plus dims
@@ -42,6 +47,8 @@ fun AppStepper(
     tiles: Boolean = false,
     // the tiles stepper shows a cross on one when the minus removes, a plain minus when there is nothing to remove
     removesAtOne: Boolean = true,
+    // the tiles go to the edges and a big count sits between them, for a sheet whose only job is the number
+    spread: Boolean = false,
 ) {
     if (tiles) {
         TileStepper(
@@ -53,6 +60,7 @@ fun AppStepper(
             modifier,
             canIncrease,
             removesAtOne,
+            spread,
         )
         return
     }
@@ -115,24 +123,30 @@ private fun TileStepper(
     modifier: Modifier,
     canIncrease: Boolean,
     removesAtOne: Boolean,
+    spread: Boolean,
 ) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+    val tile = if (spread) SPREAD_TILE else 44.dp
+    Row(
+        modifier = if (spread) modifier.fillMaxWidth() else modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         StepperTile(
             if (count <= 1 && removesAtOne) "✕" else "−",
             AppPalette.TextMuted,
             decreaseDescription,
             onDecrease,
             true,
+            tile,
         )
         Text(
             text = count.toString(),
-            modifier = Modifier.widthIn(min = 44.dp),
-            color = AppPalette.TextPrimary,
-            fontSize = AppFontSize.Large,
-            fontWeight = FontWeight.SemiBold,
+            modifier = if (spread) Modifier.weight(1f) else Modifier.widthIn(min = 44.dp),
+            color = if (spread) AppPalette.TextHeading else AppPalette.TextPrimary,
+            fontSize = if (spread) SPREAD_COUNT_SIZE else AppFontSize.Large,
+            fontWeight = if (spread) FontWeight.Bold else FontWeight.SemiBold,
             textAlign = TextAlign.Center,
         )
-        StepperTile("+", AppPalette.TextPrimary, increaseDescription, onIncrease, canIncrease)
+        StepperTile("+", AppPalette.TextPrimary, increaseDescription, onIncrease, canIncrease, tile)
     }
 }
 
@@ -143,11 +157,12 @@ private fun StepperTile(
     description: String,
     onClick: () -> Unit,
     enabled: Boolean,
+    size: Dp = 44.dp,
 ) {
     Box(
         modifier =
             Modifier
-                .size(44.dp)
+                .size(size)
                 .alpha(if (enabled) 1f else DISABLED_ALPHA)
                 .clip(AppShapes.Field)
                 .background(AppPalette.SurfaceElevated)

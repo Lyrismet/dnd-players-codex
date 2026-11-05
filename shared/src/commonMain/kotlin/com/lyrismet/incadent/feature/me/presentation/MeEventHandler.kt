@@ -25,6 +25,7 @@ internal class MeEventHandler(
     private val currentScope: () -> MeEventScope,
     private val ui: MeUiState,
     private val actions: MeActions,
+    private val counters: MeCounterActions,
     private val picker: PlayerCharacterPicker,
     private val scope: CoroutineScope,
 ) {
@@ -54,7 +55,8 @@ internal class MeEventHandler(
             is MeEvent.TileTapped -> tile(event.tile, character)
             MeEvent.AdjustmentRequested -> adjustment(character)
             is MeEvent.Sheet -> sheet(event.event, member, character)
-            is MeEvent.Overlay -> overlay(event.event, member)
+            is MeEvent.Overlay -> overlay(event.event, member, character)
+            is MeEvent.Counters -> MeCounterHandler(ui, actions, counters).handle(event.event, member, character)
             is MeEvent.Menu -> menu(event.action, member, character)
             else -> Unit
         }
@@ -182,16 +184,31 @@ internal class MeEventHandler(
     private fun overlay(
         event: OverlayEvent,
         member: PartyMember,
+        character: MeCharacter,
     ) {
         val open = ui.edit
         when {
             event == OverlayEvent.Closed -> ui.edit = null
             open == null -> Unit
             event == OverlayEvent.Applied -> {
-                actions.commit(member, open)
+                // a resource without a name keeps its sheet open
+                if (open is MeOverlay.Resource && open.name.isBlank()) return
+                commit(member, open, character)
                 ui.edit = null
             }
             else -> ui.edit = open.reduce(event)
+        }
+    }
+
+    private fun commit(
+        member: PartyMember,
+        open: MeOverlay,
+        character: MeCharacter,
+    ) {
+        when (open) {
+            is MeOverlay.Resource -> counters.save(member.id, open)
+            is MeOverlay.Slots -> counters.saveSlots(member.id, character.spells.columns, open.maxima)
+            else -> actions.commit(member, open)
         }
     }
 
@@ -204,6 +221,7 @@ internal class MeEventHandler(
         when (action) {
             MenuAction.EDIT -> ui.edit = MeOverlay.EditCharacter(characterDraft(member, character.sheet.source))
             MenuAction.FILL -> ui.edit = MeOverlay.Fill(fillDraft(member, character))
+            MenuAction.TOGGLE_SPELLS -> counters.setSpellsHidden(member, !character.spellsHidden)
             MenuAction.NOT_MINE -> actions.releaseMark(member)
         }
     }
@@ -267,6 +285,7 @@ private fun MeEvent.writes(): Boolean =
                 else -> true
             }
         is MeEvent.Overlay -> event != OverlayEvent.Closed
+        is MeEvent.Counters -> event !is CounterEvent.SlotLevelToggled
         else -> true
     }
 

@@ -10,10 +10,10 @@ class ResourceRulesTest {
     private val rage = CharacterResource(2, "Rage", max = 3, current = 3)
 
     @Test
-    fun `the spell tab shows for a spell ability or for slots`() {
-        assertFalse(isSpellTabVisible(CharacterSheet(), listOf(rage)))
-        assertTrue(isSpellTabVisible(CharacterSheet(spellAbility = Ability.WISDOM), emptyList()))
-        assertTrue(isSpellTabVisible(CharacterSheet(), listOf(slots)))
+    fun `the spell tab is shown unless the player hid it`() {
+        assertTrue(isSpellTabVisible(CharacterSheet()))
+        assertTrue(isSpellTabVisible(CharacterSheet(spellAbility = Ability.WISDOM)))
+        assertFalse(isSpellTabVisible(CharacterSheet(spellsHidden = true)))
     }
 
     @Test

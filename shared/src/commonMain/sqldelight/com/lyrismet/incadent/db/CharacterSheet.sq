@@ -35,7 +35,8 @@ CREATE TABLE character_sheet (
     coin_silver INTEGER NOT NULL DEFAULT 0,
     coin_copper INTEGER NOT NULL DEFAULT 0,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
-    origin_id TEXT NOT NULL DEFAULT ''
+    origin_id TEXT NOT NULL DEFAULT '',
+    spells_hidden INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
 CREATE INDEX character_sheet_campaign_id ON character_sheet(campaign_id);
@@ -44,22 +45,22 @@ CREATE UNIQUE INDEX character_sheet_origin_id ON character_sheet(campaign_id, or
 selectByMember:
 SELECT id, party_member_id, ability_str, ability_dex, ability_con, ability_int, ability_wis, ability_cha, saves,
     skill_marks, skill_adjustments, initiative_adjustment, passive_perception_adjustment, spell_ability, speed,
-    inspiration, subclass, background, alignment, personality, languages, features, notes,
+    inspiration, spells_hidden, subclass, background, alignment, personality, languages, features, notes,
     coin_platinum, coin_gold, coin_electrum, coin_silver, coin_copper, origin_id
 FROM character_sheet WHERE party_member_id = ?;
 
 insert:
 INSERT INTO character_sheet(party_member_id, ability_str, ability_dex, ability_con, ability_int, ability_wis, ability_cha,
     saves, skill_marks, skill_adjustments, initiative_adjustment, passive_perception_adjustment, spell_ability, speed,
-    inspiration, subclass, background, alignment, personality, languages, features, notes,
+    inspiration, spells_hidden, subclass, background, alignment, personality, languages, features, notes,
     coin_platinum, coin_gold, coin_electrum, coin_silver, coin_copper, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE character_sheet
 SET ability_str = ?, ability_dex = ?, ability_con = ?, ability_int = ?, ability_wis = ?, ability_cha = ?,
     saves = ?, skill_marks = ?, skill_adjustments = ?, initiative_adjustment = ?, passive_perception_adjustment = ?,
-    spell_ability = ?, speed = ?, inspiration = ?, subclass = ?, background = ?, alignment = ?, personality = ?,
+    spell_ability = ?, speed = ?, inspiration = ?, spells_hidden = ?, subclass = ?, background = ?, alignment = ?, personality = ?,
     languages = ?, features = ?, notes = ?,
     coin_platinum = ?, coin_gold = ?, coin_electrum = ?, coin_silver = ?, coin_copper = ?
 WHERE party_member_id = ?;

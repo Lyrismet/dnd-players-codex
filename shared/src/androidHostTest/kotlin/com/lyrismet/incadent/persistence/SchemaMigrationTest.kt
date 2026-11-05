@@ -263,4 +263,24 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the tenth schema keeps the sheets and shows the spell tab`() {
+        val file = File.createTempFile("schema-v10", ".db")
+        File("src/commonMain/sqldelight/databases/10.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(id, name, campaign_id, origin_id) VALUES (1, 'Lira', 'c', 'lira')",
+            "INSERT INTO character_sheet(party_member_id, ability_int, campaign_id, origin_id) " +
+                "VALUES (1, 18, 'c', 's')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 10, AppDatabase.Schema.version)
+
+        assertEquals("18", driver.single("SELECT ability_int FROM character_sheet"))
+        assertEquals("0", driver.single("SELECT spells_hidden FROM character_sheet"))
+        driver.close()
+        file.delete()
+    }
 }

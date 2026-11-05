@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
-import com.lyrismet.incadent.core.designsystem.component.AppHelpHint
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
@@ -114,7 +113,9 @@ internal fun MeTabContent(
 ) {
     when (character.tab) {
         MeTab.SHEET -> MeSheetTab(character, listState, onEvent, modifier)
-        else -> MeTabSoon(character, onEvent, modifier)
+        MeTab.SPELLS -> MeSpellsTab(character, listState, onEvent, modifier)
+        MeTab.RESOURCES -> MeResourcesTab(character, listState, onEvent, modifier)
+        MeTab.ITEMS -> MeTabSoon(character, onEvent, modifier)
     }
 }
 
@@ -243,14 +244,11 @@ private fun SectionHeader(
         verticalArrangement = Arrangement.Center,
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                stringResource(Res.string.me_sheet_section).uppercase(),
-                style = AppText.fieldOverline,
-                color = AppPalette.TextTertiary,
-            )
-            AppHelpHint(stringResource(Res.string.me_help_skills_title), stringResource(Res.string.me_help_skills_body))
-        }
+        MeSectionTitle(
+            stringResource(Res.string.me_sheet_section),
+            stringResource(Res.string.me_help_skills_title),
+            stringResource(Res.string.me_help_skills_body),
+        )
         InspirationToggle(inspiration, onInspiration)
     }
 }

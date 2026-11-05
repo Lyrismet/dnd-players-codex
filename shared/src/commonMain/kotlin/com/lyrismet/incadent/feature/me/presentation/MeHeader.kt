@@ -49,6 +49,8 @@ import dndplayerscodex.shared.generated.resources.me_menu_description
 import dndplayerscodex.shared.generated.resources.me_menu_edit
 import dndplayerscodex.shared.generated.resources.me_menu_fill
 import dndplayerscodex.shared.generated.resources.me_menu_not_mine
+import dndplayerscodex.shared.generated.resources.me_menu_spells_hide
+import dndplayerscodex.shared.generated.resources.me_menu_spells_show
 import org.jetbrains.compose.resources.stringResource
 
 private val PartyBlue = StatusColor(AppPalette.Azure, AppPalette.Surface, AppPalette.PartyRowBorder)
@@ -85,7 +87,7 @@ internal fun MeNameRow(
             MenuButton(character.menuOpen) { onEvent(MeEvent.MenuToggled) }
         }
         if (character.fallen) FallenNote()
-        if (character.menuOpen) MeMenu(character.readOnly, onEvent)
+        if (character.menuOpen) MeMenu(character.readOnly, character.spellsHidden, onEvent)
     }
 }
 
@@ -142,6 +144,7 @@ private fun FallenNote() {
 @Composable
 private fun MeMenu(
     readOnly: Boolean,
+    spellsHidden: Boolean,
     onEvent: (MeEvent) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth().appCard(background = AppPalette.SurfacePopover, border = AppPalette.BorderPopover)) {
@@ -154,6 +157,12 @@ private fun MeMenu(
                 stringResource(Res.string.me_menu_fill),
                 AppPalette.TextPrimary,
             ) { onEvent(MeEvent.Menu(MenuAction.FILL)) }
+            MenuRow(
+                stringResource(
+                    if (spellsHidden) Res.string.me_menu_spells_show else Res.string.me_menu_spells_hide,
+                ),
+                AppPalette.TextPrimary,
+            ) { onEvent(MeEvent.Menu(MenuAction.TOGGLE_SPELLS)) }
             MenuRow(stringResource(Res.string.me_menu_not_mine), AppPalette.MaroonBright) {
                 onEvent(MeEvent.Menu(MenuAction.NOT_MINE))
             }

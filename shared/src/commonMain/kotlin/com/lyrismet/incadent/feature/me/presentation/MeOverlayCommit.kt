@@ -39,7 +39,12 @@ internal fun MeActions.commit(
             }
         is MeOverlay.Fill -> commitFill(member, overlay.draft)
         is MeOverlay.EditCharacter -> commitEdit(id, overlay.draft)
-        is MeOverlay.HitPoints -> Unit
+        is MeOverlay.HitPoints,
+        is MeOverlay.Slots,
+        is MeOverlay.Resource,
+        is MeOverlay.SpellAbility,
+        MeOverlay.Templates,
+        -> Unit
     }
 }
 
