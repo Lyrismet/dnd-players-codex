@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.me.presentation
 
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
+import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.codex.domain.model.SheetRanges
@@ -18,15 +19,19 @@ internal class MeEventScope(
     val party: List<PartyMember>,
     val character: MeCharacter?,
     val readOnly: Boolean,
+    val records: CodexRecords,
+    val liveSessionId: Long?,
 )
 
 /** reacts to every [MeEvent] - UI-only ones change the remembered state, the rest become writes */
+@Suppress("LongParameterList")
 internal class MeEventHandler(
     private val currentScope: () -> MeEventScope,
     private val ui: MeUiState,
     private val actions: MeActions,
     private val counters: MeCounterActions,
     private val picker: PlayerCharacterPicker,
+    private val things: MeThingsHandler,
     private val scope: CoroutineScope,
 ) {
     fun handle(event: MeEvent) {
@@ -40,7 +45,7 @@ internal class MeEventHandler(
             is MeEvent.TabSelected -> ui.tab = event.tab
             MeEvent.PopoverClosed -> ui.popover = null
             MeEvent.MenuToggled -> ui.menuOpen = !ui.menuOpen
-            else -> if (member != null && character != null) handleCharacter(event, member, character)
+            else -> if (member != null && character != null) handleCharacter(event, member, character, data)
         }
     }
 
@@ -48,6 +53,7 @@ internal class MeEventHandler(
         event: MeEvent,
         member: PartyMember,
         character: MeCharacter,
+        data: MeEventScope,
     ) {
         when (event) {
             is MeEvent.Hp -> hitPoints(event.event, member, character)
@@ -58,6 +64,12 @@ internal class MeEventHandler(
             is MeEvent.Overlay -> overlay(event.event, member)
             is MeEvent.Counters -> MeCounterHandler(ui, actions, counters).handle(event.event, member, character)
             is MeEvent.Menu -> menu(event.action, member, character)
+            is MeEvent.Rest,
+            is MeEvent.Wallet,
+            is MeEvent.Items,
+            is MeEvent.ItemStepped,
+            is MeEvent.ItemDeleted,
+            -> things.handle(event, member, data)
             else -> Unit
         }
     }
@@ -236,6 +248,7 @@ private fun CharacterSheet.withText(
         MeText.LANGUAGES -> copy(languages = value)
         MeText.FEATURES -> copy(features = value)
         MeText.PERSONALITY -> copy(personality = value)
+        MeText.NOTES -> copy(notes = value)
     }
 
 private fun fillDraft(

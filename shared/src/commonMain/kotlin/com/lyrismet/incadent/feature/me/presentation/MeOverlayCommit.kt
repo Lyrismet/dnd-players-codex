@@ -43,6 +43,8 @@ internal fun MeActions.commit(
         is MeOverlay.Slots,
         is MeOverlay.Resource,
         is MeOverlay.SpellAbility,
+        is MeOverlay.Rest,
+        is MeOverlay.Wallet,
         MeOverlay.Templates,
         -> Unit
     }

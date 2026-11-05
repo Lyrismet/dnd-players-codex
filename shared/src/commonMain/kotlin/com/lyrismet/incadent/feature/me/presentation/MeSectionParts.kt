@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,18 +19,20 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppHelpHint
 
-/** the small caption of a sheet section with its help hint */
+private val CAPTION_HEIGHT = 12.dp
+private val HINT_SIZE = 28.dp
+
+/** the small caption of a section with its help hint when there is one */
 @Composable
 internal fun MeSectionTitle(
     title: String,
-    helpTitle: String,
-    helpBody: String,
     modifier: Modifier = Modifier,
-    hintModifier: Modifier = Modifier,
+    helpTitle: String? = null,
+    helpBody: String? = null,
 ) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier.height(CAPTION_HEIGHT), verticalAlignment = Alignment.CenterVertically) {
         Text(title.uppercase(), style = AppText.fieldOverline, color = AppPalette.TextTertiary)
-        AppHelpHint(helpTitle, helpBody, hintModifier)
+        if (helpTitle != null && helpBody != null) AppHelpHint(helpTitle, helpBody, Modifier.requiredSize(HINT_SIZE))
     }
 }
 

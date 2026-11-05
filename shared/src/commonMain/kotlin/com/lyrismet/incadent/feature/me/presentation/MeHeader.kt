@@ -195,12 +195,13 @@ private fun MenuRow(
 internal fun MeHitPointsCard(
     character: MeCharacter,
     onEvent: (MeEvent) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val vitals = character.vitals
     val down = vitals.isDown
     Column(
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .appCard(
                     shape = AppShapes.Card,

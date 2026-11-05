@@ -1484,7 +1484,6 @@
     <string name="me_tab_spells">Spells</string>
     <string name="me_tab_resources">Resources</string>
     <string name="me_tab_items">Items</string>
-    <string name="me_tab_soon">This tab comes in the next update.</string>
     <string name="me_popover_initiative">Initiative</string>
     <string name="me_popover_dexterity">Dexterity</string>
     <string name="me_popover_adjustment">Adjustment</string>
@@ -1654,4 +1653,57 @@
     <string name="me_template_lay_on_hands">Lay on Hands</string>
     <string name="me_template_divine_sense">Divine Sense</string>
     <string name="me_template_arcane_recovery">Arcane Recovery</string>
+    <string name="me_rest_button">Rest</string>
+    <string name="me_rest_overline_format">Rest · %1$s</string>
+    <string name="me_rest_title">Long rest</string>
+    <string name="me_rest_with_temp_format">%1$s %2$s</string>
+    <string name="me_wallet_coin_separator"> · </string>
+    <string name="me_rest_summary_format">%1$s · %2$s.</string>
+    <string name="me_rest_hp_change_format">hit points %1$d → %2$d</string>
+    <string name="me_rest_hp_full">hit points full</string>
+    <string name="me_rest_join_format">%1$s, %2$s</string>
+    <string name="me_rest_nothing">nothing to restore</string>
+    <string name="me_rest_slots">all spell slots come back</string>
+    <plurals name="me_rest_resources">
+        <item quantity="one">%1$d resource comes back</item>
+        <item quantity="other">%1$d resources come back</item>
+    </plurals>
+    <plurals name="me_rest_slots_resources">
+        <item quantity="one">all spell slots and %1$d resource come back</item>
+        <item quantity="other">all spell slots and %1$d resources come back</item>
+    </plurals>
+    <string name="me_rest_temp_note">Temporary hit points go away.</string>
+    <string name="me_rest_log_title">Write to the session</string>
+    <string name="me_rest_log_live_format">A “Long rest” note in “%1$s”</string>
+    <string name="me_rest_log_none">No session in progress</string>
+    <string name="me_rest_confirm">Take the rest</string>
+    <string name="me_rest_undo_hint">Afterwards, “Undo” in the toast</string>
+    <string name="me_rest_note">Long rest</string>
+    <string name="me_rest_done_title">Long rest</string>
+    <string name="me_items_add">+ Item</string>
+    <string name="me_wallet_title">Wallet</string>
+    <string name="me_wallet_change">Change</string>
+    <string name="me_help_wallet_title">Wallet</string>
+    <string name="me_help_wallet_body">Five kinds of coins, up to 9,999,999 of each. Gold is shown big, the other coins under it when there are any. “Change” opens the calculator: spend or gain, pick the coin above the keys.</string>
+    <plurals name="me_wallet_gold_word">
+        <item quantity="one">gold</item>
+        <item quantity="other">gold</item>
+    </plurals>
+    <string name="me_wallet_spend">Spend</string>
+    <string name="me_wallet_gain">Gain</string>
+    <string name="me_wallet_more">More ▾</string>
+    <string name="me_wallet_apply">Apply</string>
+    <string name="me_wallet_coin_change_format">%1$s: %2$s → %3$s</string>
+    <string name="me_wallet_total_change_format">Total ≈ %1$s → %2$s gold</string>
+    <string name="me_wallet_rate_platinum">1 platinum = 10 gold</string>
+    <string name="me_wallet_rate_gold">1 gold = 10 silver</string>
+    <string name="me_wallet_rate_electrum">1 electrum = 5 silver</string>
+    <string name="me_wallet_rate_silver">1 silver = 10 copper</string>
+    <string name="me_wallet_rate_copper">10 copper = 1 silver</string>
+    <string name="me_notes_title">Character notes</string>
+    <string name="me_notes_placeholder">Debts, oaths, promises</string>
+    <string name="me_items_title_format">Items · %1$d</string>
+    <string name="me_wallet_mode_minus">−</string>
+    <string name="me_wallet_mode_plus">+</string>
+    <string name="me_wallet_overline_format">Wallet · %1$s</string>
 </resources>

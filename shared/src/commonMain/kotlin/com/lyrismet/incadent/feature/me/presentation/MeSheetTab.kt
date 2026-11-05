@@ -115,7 +115,7 @@ internal fun MeTabContent(
         MeTab.SHEET -> MeSheetTab(character, listState, onEvent, modifier)
         MeTab.SPELLS -> MeSpellsTab(character, listState, onEvent, modifier)
         MeTab.RESOURCES -> MeResourcesTab(character, listState, onEvent, modifier)
-        MeTab.ITEMS -> MeTabSoon(character, onEvent, modifier)
+        MeTab.ITEMS -> MeItemsTab(character, listState, onEvent, modifier)
     }
 }
 
@@ -246,8 +246,8 @@ private fun SectionHeader(
     ) {
         MeSectionTitle(
             stringResource(Res.string.me_sheet_section),
-            stringResource(Res.string.me_help_skills_title),
-            stringResource(Res.string.me_help_skills_body),
+            helpTitle = stringResource(Res.string.me_help_skills_title),
+            helpBody = stringResource(Res.string.me_help_skills_body),
         )
         InspirationToggle(inspiration, onInspiration)
     }

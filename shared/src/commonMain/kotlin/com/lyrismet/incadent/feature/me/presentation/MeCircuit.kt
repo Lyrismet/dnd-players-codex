@@ -4,8 +4,12 @@ import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterResourceRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterRestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
+import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
+import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.CircuitContext
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
@@ -23,11 +27,16 @@ import dev.zacsweers.metro.Provides
 
 @Inject
 @ContributesIntoSet(AppScope::class)
+@Suppress("LongParameterList")
 class MePresenterFactory(
     private val partyRepository: PartyRepository,
     private val sheetRepository: CharacterSheetRepository,
     private val resourceRepository: CharacterResourceRepository,
     private val campaignRepository: CampaignRepository,
+    private val codexRepositories: CodexRepositories,
+    private val restRepository: CharacterRestRepository,
+    private val sessionNoteRepository: SessionNoteRepository,
+    private val sessionEntryRepository: SessionEntryRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
 ) : Presenter.Factory {
@@ -43,6 +52,10 @@ class MePresenterFactory(
                     sheetRepository,
                     resourceRepository,
                     campaignRepository,
+                    codexRepositories,
+                    restRepository,
+                    sessionNoteRepository,
+                    sessionEntryRepository,
                     undoController,
                     appPreferencesRepository,
                 )

@@ -1558,7 +1558,6 @@
     <string name="me_tab_spells">Заклинания</string>
     <string name="me_tab_resources">Ресурсы</string>
     <string name="me_tab_items">Вещи</string>
-    <string name="me_tab_soon">Эта вкладка появится в следующем обновлении.</string>
     <string name="me_popover_initiative">Инициатива</string>
     <string name="me_popover_dexterity">Ловкость</string>
     <string name="me_popover_adjustment">Поправка</string>
@@ -1730,4 +1729,63 @@
     <string name="me_template_lay_on_hands">Наложение рук</string>
     <string name="me_template_divine_sense">Божественное чувство</string>
     <string name="me_template_arcane_recovery">Магическое восстановление</string>
+    <string name="me_rest_button">Отдых</string>
+    <string name="me_rest_overline_format">Отдых · %1$s</string>
+    <string name="me_rest_title">Долгий отдых</string>
+    <string name="me_rest_with_temp_format">%1$s %2$s</string>
+    <string name="me_wallet_coin_separator"> · </string>
+    <string name="me_rest_summary_format">%1$s · %2$s.</string>
+    <string name="me_rest_hp_change_format">хиты %1$d → %2$d</string>
+    <string name="me_rest_hp_full">хиты полные</string>
+    <string name="me_rest_join_format">%1$s, %2$s</string>
+    <string name="me_rest_nothing">нечего восстанавливать</string>
+    <string name="me_rest_slots">все ячейки восстановятся</string>
+    <plurals name="me_rest_resources">
+        <item quantity="one">%1$d ресурс восстановится</item>
+        <item quantity="few">%1$d ресурса восстановятся</item>
+        <item quantity="many">%1$d ресурсов восстановятся</item>
+        <item quantity="other">%1$d ресурса восстановятся</item>
+    </plurals>
+    <plurals name="me_rest_slots_resources">
+        <item quantity="one">все ячейки и %1$d ресурс восстановятся</item>
+        <item quantity="few">все ячейки и %1$d ресурса восстановятся</item>
+        <item quantity="many">все ячейки и %1$d ресурсов восстановятся</item>
+        <item quantity="other">все ячейки и %1$d ресурса восстановятся</item>
+    </plurals>
+    <string name="me_rest_temp_note">Временные хиты уйдут.</string>
+    <string name="me_rest_log_title">Записать в сессию</string>
+    <string name="me_rest_log_live_format">Заметка «Долгий отдых» в «%1$s»</string>
+    <string name="me_rest_log_none">Нет идущей сессии</string>
+    <string name="me_rest_confirm">Отдохнуть</string>
+    <string name="me_rest_undo_hint">После — «Отменить» в тосте</string>
+    <string name="me_rest_note">Долгий отдых</string>
+    <string name="me_rest_done_title">Долгий отдых</string>
+    <string name="me_items_add">+ Предмет</string>
+    <string name="me_wallet_title">Кошелёк</string>
+    <string name="me_wallet_change">Изменить</string>
+    <string name="me_help_wallet_title">Кошелёк</string>
+    <string name="me_help_wallet_body">Пять видов монет, до 9 999 999 каждой. Золото показано крупно, остальные монеты под ним, если они есть. «Изменить» открывает калькулятор: потратить или получить, монету выбирайте над клавишами.</string>
+    <plurals name="me_wallet_gold_word">
+        <item quantity="one">золотой</item>
+        <item quantity="few">золотых</item>
+        <item quantity="many">золотых</item>
+        <item quantity="other">золотых</item>
+    </plurals>
+    <string name="me_wallet_spend">Потратить</string>
+    <string name="me_wallet_gain">Получить</string>
+    <string name="me_wallet_more">Ещё ▾</string>
+    <string name="me_wallet_apply">Применить</string>
+    <string name="me_wallet_coin_change_format">%1$s: %2$s → %3$s</string>
+    <string name="me_wallet_total_change_format">Всего ≈ %1$s → %2$s золотых</string>
+    <string name="me_wallet_rate_platinum">1 платиновая = 10 золотых</string>
+    <string name="me_wallet_rate_gold">1 золотая = 10 серебряных</string>
+    <string name="me_wallet_rate_electrum">1 электрумовая = 5 серебряных</string>
+    <string name="me_wallet_rate_silver">1 серебряная = 10 медных</string>
+    <string name="me_wallet_rate_copper">10 медных = 1 серебряная</string>
+    <string name="me_notes_title">Заметки персонажа</string>
+    <string name="me_notes_placeholder">Долги, клятвы, обещания</string>
+    <string name="me_items_title_format">Предметы · %1$d</string>
+    <string name="me_wallet_mode_minus">−</string>
+    <string name="me_wallet_mode_plus">+</string>
+    <string name="me_wallet_overline_format">Кошелёк · %1$s</string>
 </resources>

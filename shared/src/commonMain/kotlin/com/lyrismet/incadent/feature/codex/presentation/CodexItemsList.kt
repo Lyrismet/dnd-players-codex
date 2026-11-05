@@ -1,4 +1,4 @@
-package com.lyrismet.incadent.feature.codex.presentation.item
+package com.lyrismet.incadent.feature.codex.presentation
 
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -10,14 +10,13 @@ import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.domain.model.EntityKind
-import com.lyrismet.incadent.feature.codex.presentation.CodexDeletableRow
-import com.lyrismet.incadent.feature.codex.presentation.CodexEvent
-import com.lyrismet.incadent.feature.codex.presentation.CodexLazyColumn
-import com.lyrismet.incadent.feature.codex.presentation.CodexState
-import com.lyrismet.incadent.feature.codex.presentation.ItemCodexCard
+import com.lyrismet.incadent.feature.codex.presentation.item.EquipmentSheet
+import com.lyrismet.incadent.feature.codex.presentation.item.ItemCodexItem
+import com.lyrismet.incadent.feature.codex.presentation.item.ItemEvent
+import com.lyrismet.incadent.feature.codex.presentation.item.ItemSheet
+import com.lyrismet.incadent.feature.codex.presentation.item.PartyListMode
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
-import com.lyrismet.incadent.feature.codex.presentation.swipeEditEnabled
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_search_empty_reset
 import dndplayerscodex.shared.generated.resources.codex_search_empty_text

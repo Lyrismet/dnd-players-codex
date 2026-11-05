@@ -5,14 +5,18 @@ import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterResource
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterVitals
+import com.lyrismet.incadent.feature.codex.domain.model.CoinPurseChange
 import com.lyrismet.incadent.feature.codex.domain.model.FifthEditionRules
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
 import com.lyrismet.incadent.feature.codex.domain.model.ResourceTemplate
+import com.lyrismet.incadent.feature.codex.domain.model.RestSummary
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
+import com.lyrismet.incadent.feature.codex.presentation.item.ItemEvent
 import com.lyrismet.incadent.feature.me.domain.AbilityStrip
 import com.lyrismet.incadent.feature.me.domain.HeaderNumbers
 import com.lyrismet.incadent.feature.me.domain.HitPointMode
 import com.lyrismet.incadent.feature.me.domain.SlotColumn
+import com.lyrismet.incadent.feature.me.domain.WalletPad
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -74,6 +78,9 @@ data class MeCharacter(
     val breakdown: MeBreakdown,
     val popover: MeTile?,
     val overlay: MeOverlay?,
+    val items: MeItems,
+    // the title of the session going on now, null when none is
+    val liveSessionTitle: String?,
     val menuOpen: Boolean,
     val readOnly: Boolean,
 )
@@ -114,8 +121,8 @@ data class MeSheetState(
     val personality: String,
 )
 
-/** the free texts of the sheet that are typed in place */
-enum class MeText { LANGUAGES, FEATURES, PERSONALITY }
+/** the free texts of the sheet and the things tab that are typed in place */
+enum class MeText { LANGUAGES, FEATURES, PERSONALITY, NOTES }
 
 sealed interface MeOverlay {
     /** the hit point keypad, [result] is what the keys typed, [before] and [after] the hit points now and then */
@@ -191,6 +198,20 @@ sealed interface MeOverlay {
     ) : MeOverlay
 
     data object Templates : MeOverlay
+
+    /** [summary] is what the rest would change, [log] is on only while a session is going on */
+    data class Rest(
+        val summary: RestSummary,
+        val hasTemp: Boolean,
+        val liveSessionTitle: String?,
+        val log: Boolean,
+    ) : MeOverlay
+
+    /** the wallet keypad, [change] the purse before and after the typed amount */
+    data class Wallet(
+        val pad: WalletPad,
+        val change: CoinPurseChange,
+    ) : MeOverlay
 }
 
 /** the four steps of the first fill, every number is what the paper sheet says */
@@ -269,6 +290,28 @@ sealed interface MeEvent : CircuitUiEvent {
 
     data class Menu(
         val action: MenuAction,
+    ) : MeEvent
+
+    data class Rest(
+        val event: RestEvent,
+    ) : MeEvent
+
+    data class Wallet(
+        val event: WalletEvent,
+    ) : MeEvent
+
+    /** the item sheet of the things tab, the same events as in the codex */
+    data class Items(
+        val event: ItemEvent,
+    ) : MeEvent
+
+    data class ItemStepped(
+        val id: Long,
+        val delta: Int,
+    ) : MeEvent
+
+    data class ItemDeleted(
+        val id: Long,
     ) : MeEvent
 }
 
