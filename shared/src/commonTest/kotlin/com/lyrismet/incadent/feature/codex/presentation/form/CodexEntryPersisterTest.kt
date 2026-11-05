@@ -83,11 +83,12 @@ class CodexEntryPersisterTest {
         runTest {
             persister.save(
                 form(EntityKind.PARTY, "бран").copy(
+                    characterClass = "воин",
+                    subclass = "мастер боя",
                     party =
                         PartyFormFields(
                             isPlayerCharacter = true,
                             player = "Аня",
-                            characterClass = "воин",
                             presence = PartyPresence.IN,
                             level = 99,
                             hpMax = 30,
@@ -100,6 +101,7 @@ class CodexEntryPersisterTest {
             assertEquals(20, saved.level)
             assertEquals(30, saved.hpCurrent)
             assertEquals("Воин", saved.characterClass)
+            assertEquals("Мастер боя", saved.subclass)
         }
 
     @Test

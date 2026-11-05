@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.file.FileSink
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.db.Combat_event
 import com.lyrismet.incadent.db.Combatant
+import com.lyrismet.incadent.db.SelectAllWithLocations
 import com.lyrismet.incadent.feature.campaign.domain.exchange.resolve
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
@@ -195,6 +196,30 @@ class CampaignExporter(
             }
     }
 
+    private fun npcRecord(
+        npc: SelectAllWithLocations,
+        scope: RecordScope,
+        ids: FileIds,
+    ) = FileRecord.Npc(
+        id = ids.npc(npc.id),
+        name = npc.name,
+        status = npc.status,
+        description = ids.text(npc.description),
+        race = npc.race,
+        lifeState = npc.life_state,
+        nicknames = npc.nicknames,
+        speciesId = npc.species_id?.let(ids::species),
+        vulnerabilities = npc.vulnerabilities,
+        placeIds =
+            npc.location_ids
+                .toIdList()
+                .filter { it in scope.places }
+                .map(ids::place),
+        originId = npc.origin_id,
+        characterClass = npc.character_class,
+        subclass = npc.subclass,
+    )
+
     private fun writeCast(
         snapshot: Snapshot,
         selection: RecordSelection,
@@ -202,27 +227,7 @@ class CampaignExporter(
         ids: FileIds,
         writer: CampaignFileWriter,
     ) {
-        snapshot.npcs.filter { it.id in scope.npcs }.forEach { npc ->
-            writer.write(
-                FileRecord.Npc(
-                    id = ids.npc(npc.id),
-                    name = npc.name,
-                    status = npc.status,
-                    description = ids.text(npc.description),
-                    race = npc.race,
-                    lifeState = npc.life_state,
-                    nicknames = npc.nicknames,
-                    speciesId = npc.species_id?.let(ids::species),
-                    vulnerabilities = npc.vulnerabilities,
-                    placeIds =
-                        npc.location_ids
-                            .toIdList()
-                            .filter { it in scope.places }
-                            .map(ids::place),
-                    originId = npc.origin_id,
-                ),
-            )
-        }
+        snapshot.npcs.filter { it.id in scope.npcs }.forEach { writer.write(npcRecord(it, scope, ids)) }
         snapshot.quests.filter { it.id in scope.quests }.forEach {
             writer.write(
                 FileRecord.Quest(
@@ -244,6 +249,7 @@ class CampaignExporter(
                         id = ids.party(it.id),
                         name = it.name,
                         characterClass = it.character_class,
+                        subclass = it.subclass,
                         race = it.race,
                         level = it.level?.toInt(),
                         playerName = it.player_name,

@@ -16,7 +16,6 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 internal data class PartyFormFields(
     val isPlayerCharacter: Boolean = false,
     val player: String = "",
-    val characterClass: String = "",
     val presence: PartyPresence = PartyPresence.IN,
     // a number the user has not filled in stays null and shows as a dash
     val level: Int? = null,
@@ -36,6 +35,9 @@ internal data class CodexEntryFormFields(
     // shared between npc and party - the only two types the mockup gives a portrait frame to
     val portrait: Photo? = null,
     val race: String = "",
+    // shared between npc and party, set together in the class sheet
+    val characterClass: String = "",
+    val subclass: String = "",
     // the nicknames as typed, comma separated
     val nicknames: String = "",
     val npcStatus: NpcStatus = NpcStatus.NEUTRAL,
@@ -62,6 +64,8 @@ internal data class CodexEntryFormFields(
     val speciesSelectOpen: Boolean = false,
     // true while the creature type select sheet is open
     val creatureTypeSelectOpen: Boolean = false,
+    // true while the class sheet is open
+    val classSelectOpen: Boolean = false,
     // null means no "+ New X" quick-add input is open - see onQuickAddOpened
     val quickAddField: CodexEntryChipField? = null,
     val quickAddDraft: String = "",
@@ -78,6 +82,7 @@ internal data class CodexEntryFormFields(
             placeSelectField = baseline.placeSelectField,
             speciesSelectOpen = baseline.speciesSelectOpen,
             creatureTypeSelectOpen = baseline.creatureTypeSelectOpen,
+            classSelectOpen = baseline.classSelectOpen,
             quickAddField = baseline.quickAddField,
             quickAddDraft = baseline.quickAddDraft,
             photoCrop = baseline.photoCrop,

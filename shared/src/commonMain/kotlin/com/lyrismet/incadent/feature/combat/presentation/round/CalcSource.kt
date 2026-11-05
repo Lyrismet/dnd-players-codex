@@ -4,10 +4,7 @@ import androidx.compose.runtime.Composable
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.combat_calc_overline_damage
 import dndplayerscodex.shared.generated.resources.combat_calc_overline_round
-import dndplayerscodex.shared.generated.resources.combat_calc_source_default
-import dndplayerscodex.shared.generated.resources.combat_calc_source_env
 import dndplayerscodex.shared.generated.resources.combat_calc_source_environment
-import dndplayerscodex.shared.generated.resources.combat_calc_source_other
 import dndplayerscodex.shared.generated.resources.combat_calc_source_turn
 import dndplayerscodex.shared.generated.resources.combat_calc_title_damage
 import dndplayerscodex.shared.generated.resources.combat_calc_title_heal
@@ -78,16 +75,3 @@ internal fun sourceChips(
         )
     return members + env
 }
-
-@Composable
-internal fun sourceHint(
-    draft: CalcDraft,
-    ctx: CalcContext,
-): String =
-    stringResource(
-        when {
-            draft.sourceId == null -> Res.string.combat_calc_source_env
-            draft.sourceId == ctx.mover?.id -> Res.string.combat_calc_source_default
-            else -> Res.string.combat_calc_source_other
-        },
-    )

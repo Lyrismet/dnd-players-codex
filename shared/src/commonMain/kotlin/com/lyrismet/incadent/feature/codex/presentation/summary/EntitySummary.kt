@@ -7,6 +7,7 @@ import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
+import com.lyrismet.incadent.feature.codex.domain.grouping.classLine
 import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
@@ -140,6 +141,11 @@ private fun npcFacts(
                 QuickEditField.SPECIES,
             )
         } ?: FactRow(Res.string.entity_sheet_npc_species_label, FactValue.Text(npc.race), QuickEditField.SPECIES),
+        FactRow(
+            Res.string.entity_sheet_party_class_label,
+            FactValue.Text(classLine(npc.characterClass, npc.subclass)),
+            QuickEditField.CHARACTER_CLASS,
+        ),
         nicknamesFact(npc.nicknames),
         FactRow(
             Res.string.entity_sheet_npc_location_label,
@@ -226,7 +232,7 @@ private fun buildPartySummary(
                 ),
                 FactRow(
                     Res.string.entity_sheet_party_class_label,
-                    FactValue.Text(member.characterClass),
+                    FactValue.Text(classLine(member.characterClass, member.subclass)),
                     QuickEditField.CHARACTER_CLASS,
                 ),
                 FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(member.race), QuickEditField.RACE),

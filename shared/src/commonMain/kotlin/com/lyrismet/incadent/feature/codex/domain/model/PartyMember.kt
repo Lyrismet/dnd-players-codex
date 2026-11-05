@@ -19,6 +19,7 @@ data class PartyMember(
     val fallen: Boolean = false,
     val fellCombatId: Long? = null,
     val originId: String = "",
+    val subclass: String = "",
 )
 
 enum class PartyPresence {

@@ -49,7 +49,6 @@ data class CharacterSheet(
     val inspiration: Boolean = false,
     // the player has no spells and hid the tab, it is shown to everyone else
     val spellsHidden: Boolean = false,
-    val subclass: String = "",
     val background: String = "",
     val alignment: String = "",
     val personality: String = "",

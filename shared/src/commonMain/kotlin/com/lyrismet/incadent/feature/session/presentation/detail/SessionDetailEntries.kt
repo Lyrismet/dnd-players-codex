@@ -4,6 +4,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
@@ -120,7 +122,7 @@ internal fun SessionEntryRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             EntryTimeColumn(timeLabel = entry.timeLabel, edited = entry.edited)
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(modifier = Modifier.weight(1f)) {
                 SessionEntryBody(
                     segments = entry.segments,
                     onMentionClick = onMentionClick,
@@ -142,15 +144,15 @@ internal fun SessionEntryRow(
                         count = entry.autoMatchCount,
                         onLink = mentionActions.onAutoLink,
                         onDismiss = mentionActions.onAutoDismiss,
+                        modifier = Modifier.padding(top = 8.dp),
                     )
                 }
-                if (isSelected) {
-                    EntryActions(
-                        onEditClick = onEditClick,
-                        onSavePhraseClick = onSavePhraseClick,
-                        onDeleteClick = { isRemoving = true },
-                    )
-                }
+                EntryActions(
+                    visible = isSelected,
+                    onEditClick = onEditClick,
+                    onSavePhraseClick = onSavePhraseClick,
+                    onDeleteClick = { isRemoving = true },
+                )
             }
         }
     }
@@ -158,11 +160,29 @@ internal fun SessionEntryRow(
 
 @Composable
 private fun EntryActions(
+    visible: Boolean,
+    onEditClick: () -> Unit,
+    onSavePhraseClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+) {
+    // grows and shrinks smoothly, an instant collapse at the end of the list made the whole feed jump
+    AnimatedVisibility(
+        visible = visible,
+        enter = expandVertically() + fadeIn(),
+        exit = shrinkVertically() + fadeOut(),
+    ) {
+        EntryActionButtons(onEditClick, onSavePhraseClick, onDeleteClick)
+    }
+}
+
+@Composable
+private fun EntryActionButtons(
     onEditClick: () -> Unit,
     onSavePhraseClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
     FlowRow(
+        modifier = Modifier.padding(top = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -276,12 +296,13 @@ private fun AutoMentionBar(
     count: Int,
     onLink: () -> Unit,
     onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val label = pluralStringResource(Res.plurals.auto_mention_matches, count, count)
     // the leading number is the gold one, the rest of the sentence stays quiet
     val numberEnd = label.indexOf(' ').let { if (it < 0) label.length else it }
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

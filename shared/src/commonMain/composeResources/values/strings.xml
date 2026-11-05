@@ -423,12 +423,6 @@
     <string name="combat_wound_dying">При смерти</string>
     <string name="combat_wound_dead">Пал</string>
     <string name="combat_wound_captured">Взят живым</string>
-    <string name="combat_wound_say_whole">«без единой царапины»</string>
-    <string name="combat_wound_say_wounded">«задет», «пара царапин»</string>
-    <string name="combat_wound_say_bloodied">«весь в крови», «тяжело дышит»</string>
-    <string name="combat_wound_say_barely">«шатается», «еле держится на ногах»</string>
-    <string name="combat_wound_say_down">«рухнул», «не двигается»</string>
-    <string name="combat_wound_say_line">%1$s - %2$s</string>
     <string name="combat_wound_since">%1$s · с %2$d</string>
     <string name="combat_panel_side_party">ОТРЯД · %1$s</string>
     <string name="combat_panel_side_ally">СОЮЗНИК · %1$s</string>
@@ -443,9 +437,7 @@
     <string name="combat_panel_tab_conditions">Состояния</string>
     <string name="combat_panel_tab_more">Ещё</string>
     <string name="combat_panel_mark_title">КАК ВЫГЛЯДИТ · СО СЛОВ МАСТЕРА</string>
-    <string name="combat_panel_mark_auto">«Ранен» ставится сам при первом уроне. Ошиблись - поправьте здесь.</string>
     <string name="combat_panel_saves_title">СПАСБРОСКИ ОТ СМЕРТИ</string>
-    <string name="combat_panel_saves_hint">отмечайте вручную</string>
     <string name="combat_panel_saves_success">Успехи</string>
     <string name="combat_panel_saves_failure">Провалы</string>
     <string name="combat_panel_stand_up">Встал с 1</string>
@@ -455,10 +447,7 @@
     <string name="combat_panel_died_note">Погиб в этом бою</string>
     <string name="combat_panel_undo">Отменить</string>
     <string name="combat_panel_side_title">СТОРОНА</string>
-    <string name="combat_panel_stance_npc">Связан с кодексом - статус NPC обновится автоматически</string>
-    <string name="combat_panel_stance_plain">Нейтралы и друзья не считаются врагами в строю</string>
     <string name="combat_panel_full_title">Вошёл в бой целым</string>
-    <string name="combat_panel_full_hint">Только тогда его падение пойдёт в оценку хитов</string>
     <string name="combat_panel_set_hp">Хиты назвали вслух? Задать</string>
     <string name="combat_panel_note_party">Ресурсы, заклинания, заметки…</string>
     <string name="combat_panel_note_foe">Что заметили: уязвимости, сопротивления, тактика…</string>
@@ -480,13 +469,18 @@
     <string name="combat_condition_paralyzed">Паралич</string>
     <string name="combat_condition_incapacitated">Недееспособен</string>
     <string name="combat_condition_petrified">Окаменение</string>
+    <string name="combat_condition_asleep">Спит</string>
+    <string name="combat_condition_banished">Изгнан</string>
     <string name="combat_condition_blinded">Ослеплён</string>
     <string name="combat_condition_deafened">Оглох</string>
     <string name="combat_condition_poisoned">Отравлен</string>
     <string name="combat_condition_frightened">Испуган</string>
     <string name="combat_condition_charmed">Очарован</string>
+    <string name="combat_condition_silenced">Немота</string>
+    <string name="combat_condition_slowed">Замедлен</string>
     <string name="combat_condition_concentration">Концентрация</string>
     <string name="combat_condition_invisible">Невидим</string>
+    <string name="combat_condition_hasted">Ускорен</string>
     <string name="combat_round_toast_removed">%1$s убран из боя</string>
     <string name="combat_round_undo_removed">Нажмите, чтобы вернуть в бой</string>
     <string name="combat_round_toast_joined">%1$s вступает в бой последним в раунде</string>
@@ -500,9 +494,6 @@
     <string name="combat_calc_mode_heal">Лечение</string>
     <string name="combat_calc_mode_temp">Врем. HP</string>
     <string name="combat_calc_source_title">ОТ КОГО</string>
-    <string name="combat_calc_source_default">по умолчанию - чей ход</string>
-    <string name="combat_calc_source_env">ловушка, заклинание, падение</string>
-    <string name="combat_calc_source_other">вне своего хода</string>
     <string name="combat_calc_source_environment">Среда</string>
     <string name="combat_calc_source_turn">%1$s · ход</string>
     <string name="combat_calc_done_title">НАНЕСЕНО В ЭТОМ ХОДУ</string>
@@ -1100,10 +1091,6 @@
     <string name="entity_sheet_npc_vulnerabilities_tip_inherited">%1$s - %2$s · от вида «%3$s»</string>
     <string name="entity_sheet_npc_vulnerabilities_step">%1$s - %2$s · нажатие - %3$s</string>
     <string name="entity_sheet_npc_vulnerabilities_none">нет</string>
-    <string name="combat_panel_vuln_species">в бестиарий · %1$s</string>
-    <string name="combat_panel_vuln_npc_species">свои + вида «%1$s» · пишем в %2$s</string>
-    <string name="combat_panel_vuln_npc">в кодекс · %1$s</string>
-    <string name="combat_panel_vuln_none">Сопротивления записываются в вид из бестиария. Этот участник ни с каким видом не связан.</string>
     <string name="combat_name_title">Имя</string>
     <string name="combat_name_new">Новый NPC «%1$s»</string>
     <string name="combat_name_new_sub_species">вид: %1$s · из этого боя</string>
@@ -1265,6 +1252,7 @@
     <string name="exchange_field_quantity">Количество</string>
     <string name="exchange_field_price">Цена</string>
     <string name="exchange_field_class">Класс</string>
+    <string name="exchange_field_subclass">Подкласс</string>
     <string name="exchange_field_level">Уровень</string>
     <string name="exchange_field_reward">Награда</string>
     <string name="exchange_field_life_state">Состояние</string>
@@ -1599,7 +1587,6 @@
     <string name="me_features_title">Особенности</string>
     <string name="me_features_placeholder">Черты, умения класса и расы</string>
     <string name="me_about_title">О персонаже</string>
-    <string name="me_about_subclass">Подкласс</string>
     <string name="me_about_background">Предыстория</string>
     <string name="me_about_alignment">Мировоззрение</string>
     <string name="me_personality_title">Личность</string>
@@ -1788,4 +1775,12 @@
     <string name="me_wallet_mode_minus">−</string>
     <string name="me_wallet_mode_plus">+</string>
     <string name="me_wallet_overline_format">Кошелёк · %1$s</string>
+    <string name="class_sheet_overline">Класс</string>
+    <string name="class_sheet_title_empty">Не выбран</string>
+    <string name="class_sheet_search">Найти или вписать свой</string>
+    <string name="class_sheet_not_in_srd">Среди классов SRD нет</string>
+    <string name="class_sheet_custom">+ Свой: «%1$s»</string>
+    <string name="class_sheet_own_badge">свой</string>
+    <string name="class_sheet_subclass_label">Подкласс · необязательно</string>
+    <string name="class_sheet_done">Готово</string>
 </resources>

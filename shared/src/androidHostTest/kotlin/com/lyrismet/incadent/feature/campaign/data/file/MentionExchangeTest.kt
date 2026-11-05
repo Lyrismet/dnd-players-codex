@@ -53,6 +53,8 @@ class MentionExchangeTest {
             NpcStatus.FRIEND,
             description,
             "",
+            "",
+            "",
             NpcLifeState.ALIVE,
             "",
             null,

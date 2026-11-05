@@ -144,7 +144,7 @@ class EntitySummaryTest {
 
         assertEquals("Рагнар", summary.name)
         assertEquals("Дварф", summary.subtitle)
-        assertEquals(3, summary.facts.size)
+        assertEquals(4, summary.facts.size)
         val shown = summary.groups.filter { it.items.isNotEmpty() }
         assertEquals(1, shown.size)
         assertEquals(1, shown.single().items.size)
@@ -155,7 +155,7 @@ class EntitySummaryTest {
         val loner = ragnar.copy(id = 5, locationIds = emptyList())
         val summary = buildEntitySummary(EntityRef.Npc(5), lookup(npcs = listOf(loner))) as EntitySummaryItem.NpcSummary
 
-        assertEquals(3, summary.facts.size)
+        assertEquals(4, summary.facts.size)
         assertEquals(FactValue.Links(emptyList()), summary.facts.last().value)
         // the quests group stays so it can be filled by holding it, but it lists nothing
         assertTrue(summary.groups.none { it.items.isNotEmpty() })

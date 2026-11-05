@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -184,6 +187,11 @@ private fun SessionFeed(
             }
         }
     }
+    LaunchedEffect(state.selectedEntryId) {
+        val id = state.selectedEntryId ?: return@LaunchedEffect
+        val index = state.items.indexOfFirst { it is SessionFeedItem.Note && it.entry.id == id }
+        if (index >= 0) listState.revealItem(index)
+    }
     // tracks whether this highlight request ever found its target, reset whenever a new one starts
     var focusResolved by remember { mutableStateOf(false) }
     LaunchedEffect(state.highlightedEntryId) {
@@ -205,6 +213,25 @@ private fun SessionFeed(
         }
     }
 }
+
+// the buttons of a selected note grow it downwards, so the list moves up until the whole note shows
+private suspend fun LazyListState.revealItem(index: Int) {
+    // the buttons expand over a few frames, so the note is kept in view until it stops growing
+    val end = withFrameNanos { it } + REVEAL_FOLLOW_NANOS
+    do {
+        val info = layoutInfo
+        val item = info.visibleItemsInfo.firstOrNull { it.index == index }
+        if (item == null) {
+            animateScrollToItem(index)
+        } else {
+            val hidden = item.offset + item.size - (info.viewportEndOffset - info.afterContentPadding)
+            val room = (item.offset - info.viewportStartOffset).coerceAtLeast(0)
+            if (hidden > 0) scrollBy(hidden.coerceAtMost(room).toFloat())
+        }
+    } while (withFrameNanos { it } < end)
+}
+
+private const val REVEAL_FOLLOW_NANOS = 350_000_000L
 
 @Composable
 private fun NoteRow(

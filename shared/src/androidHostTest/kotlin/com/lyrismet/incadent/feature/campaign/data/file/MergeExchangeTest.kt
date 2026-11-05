@@ -85,6 +85,8 @@ class MergeExchangeTest {
             status,
             description,
             "",
+            "",
+            "",
             NpcLifeState.ALIVE,
             "",
             null,
@@ -107,6 +109,7 @@ class MergeExchangeTest {
         database.partyMemberQueries.insert(
             "Hero",
             "Rogue",
+            "",
             "human",
             3L,
             "Ana",
@@ -540,7 +543,19 @@ class MergeExchangeTest {
         race: String = "",
         originId: String = "file-origin",
     ) = npc(THEIRS, name, originId, description).also {
-        database.npcQueries.update(name, NpcStatus.FRIEND, description, race, NpcLifeState.ALIVE, "", null, "", it)
+        database.npcQueries.update(
+            name,
+            NpcStatus.FRIEND,
+            description,
+            race,
+            "",
+            "",
+            NpcLifeState.ALIVE,
+            "",
+            null,
+            "",
+            it,
+        )
     }
 
     @Test
@@ -570,7 +585,19 @@ class MergeExchangeTest {
     @Test
     fun `a field the file leaves empty never clears the one in the campaign`() {
         val local = npc(MINE, "Bob", "bob", description = "mine")
-        database.npcQueries.update("Bob", NpcStatus.FRIEND, "mine", "dwarf", NpcLifeState.ALIVE, "", null, "", local)
+        database.npcQueries.update(
+            "Bob",
+            NpcStatus.FRIEND,
+            "mine",
+            "dwarf",
+            "",
+            "",
+            NpcLifeState.ALIVE,
+            "",
+            null,
+            "",
+            local,
+        )
         fileNpc("Bob", "file text", race = "", originId = "bob")
 
         import(export()) { ImportRequest(it, ConflictMode.SKIP, replace = setOf(ExchangeRef(ExchangeKind.NPC, 1))) }

@@ -147,7 +147,7 @@ private fun FileRecord.Species.fits() =
 private fun FileRecord.Place.fits() = fits(MAX_SHORT_CHARS, name) && fits(MAX_LONG_CHARS, description)
 
 private fun FileRecord.Npc.fits() =
-    fits(MAX_SHORT_CHARS, name, race) &&
+    fits(MAX_SHORT_CHARS, name, race, characterClass, subclass) &&
         fits(MAX_LONG_CHARS, description, vulnerabilities) &&
         fits(MAX_NICKNAMES_CHARS, nicknames) &&
         placeIds.size <= MAX_LINKS
@@ -155,7 +155,7 @@ private fun FileRecord.Npc.fits() =
 private fun FileRecord.Quest.fits() = fits(MAX_SHORT_CHARS, title, reward) && fits(MAX_LONG_CHARS, description)
 
 private fun FileRecord.Party.fits() =
-    fits(MAX_SHORT_CHARS, name, characterClass, race, playerName) &&
+    fits(MAX_SHORT_CHARS, name, characterClass, subclass, race, playerName) &&
         fits(MAX_LONG_CHARS, description) &&
         (level == null || level in PartyStatRanges.level) &&
         (hpMax == null || hpMax in PartyStatRanges.hpMax) &&

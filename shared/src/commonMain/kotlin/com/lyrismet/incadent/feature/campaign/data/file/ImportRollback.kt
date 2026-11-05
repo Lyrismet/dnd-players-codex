@@ -71,6 +71,7 @@ internal class ImportRollback(
         queries.update(
             row.name,
             row.character_class,
+            row.subclass,
             row.race,
             row.level,
             row.player_name,
@@ -150,6 +151,8 @@ internal class ImportRollback(
                     record.status,
                     record.description,
                     record.race,
+                    record.characterClass,
+                    record.subclass,
                     record.lifeState,
                     record.nicknames,
                     record.speciesId,
@@ -173,6 +176,7 @@ internal class ImportRollback(
                 database.partyMemberQueries.update(
                     record.name,
                     record.characterClass,
+                    record.subclass,
                     record.race,
                     record.level?.toLong(),
                     record.playerName,

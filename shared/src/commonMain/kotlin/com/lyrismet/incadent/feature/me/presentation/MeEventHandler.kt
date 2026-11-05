@@ -258,7 +258,7 @@ private fun fillDraft(
     val sheet = character.sheet.source
     return FillDraft(
         characterClass = member.characterClass,
-        subclass = sheet.subclass,
+        subclass = member.subclass,
         level = (member.level ?: 1).coerceIn(PartyStatRanges.level),
         abilities = FillDraft().abilities + sheet.abilities,
         saves = sheet.saves,
@@ -276,7 +276,7 @@ private fun characterDraft(
     CharacterDraft(
         name = member.name,
         characterClass = member.characterClass,
-        subclass = sheet.subclass,
+        subclass = member.subclass,
         level = (member.level ?: 1).coerceIn(PartyStatRanges.level),
         race = member.race,
         background = sheet.background,

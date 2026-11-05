@@ -60,6 +60,7 @@ private fun MeActions.commitEdit(
                 it.copy(
                     name = draft.name.trim().ifBlank { it.name },
                     characterClass = draft.characterClass.trim(),
+                    subclass = draft.subclass.trim(),
                     race = draft.race.trim(),
                     level = draft.level,
                     playerName = draft.playerName.trim(),
@@ -68,7 +69,6 @@ private fun MeActions.commitEdit(
         }
         sheets.updateSheet(id) {
             it.copy(
-                subclass = draft.subclass.trim(),
                 background = draft.background.trim(),
                 alignment = draft.alignment.trim(),
             )
@@ -88,11 +88,11 @@ private fun MeActions.commitFill(
                 party.upsert(
                     it.copy(
                         characterClass = draft.characterClass.trim().ifBlank { it.characterClass },
+                        subclass = draft.subclass.trim(),
                         level = draft.level,
                     ),
                 )
             }
-            sheets.updateSheet(id) { it.copy(subclass = draft.subclass.trim()) }
         }
         if (FillDraft.STEP_ABILITIES !in draft.skipped) sheets.updateSheet(id) { it.copy(abilities = draft.abilities) }
         if (FillDraft.STEP_SKILLS !in draft.skipped) {

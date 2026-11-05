@@ -62,7 +62,10 @@ data class CodexEntryFormState(
     val speciesSelect: SpeciesSelectState? = null,
     // the SRD names that match the species name typed so far
     val srdSuggestions: List<SrdSuggestion> = emptyList(),
-    val partyClass: String = "",
+    // the class and the subclass as one line, empty while none is set
+    val characterClassLine: String = "",
+    // non-null while the class sheet is open over the form
+    val classSelect: ClassSelectState? = null,
     val partyPlayer: String = "",
     val partyIsPlayerCharacter: Boolean = false,
     val partyOwnerOptions: List<FormChipOption<Boolean>> = emptyList(),
@@ -89,7 +92,6 @@ enum class CodexEntryField {
     DESCRIPTION,
     NICKNAMES,
     REWARD,
-    PARTY_CLASS,
     PARTY_PLAYER,
 }
 
@@ -177,6 +179,15 @@ sealed interface CodexEntryFormEvent {
 
     data class EntryCreatureTypeChanged(
         val type: SpeciesType,
+    ) : CodexEntryFormEvent
+
+    data object EntryClassSelectOpened : CodexEntryFormEvent
+
+    data object EntryClassSelectClosed : CodexEntryFormEvent
+
+    data class EntryClassChosen(
+        val characterClass: String,
+        val subclass: String,
     ) : CodexEntryFormEvent
 
     data object EntryCreatureTypeSelectOpened : CodexEntryFormEvent

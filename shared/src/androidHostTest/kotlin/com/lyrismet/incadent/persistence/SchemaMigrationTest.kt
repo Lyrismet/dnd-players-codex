@@ -283,4 +283,31 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the eleventh schema moves the sheet subclass onto the party member and adds the npc class`() {
+        val file = File.createTempFile("schema-v11", ".db")
+        File("src/commonMain/sqldelight/databases/11.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(id, name, character_class, campaign_id, origin_id) " +
+                "VALUES (1, 'Lira', 'Wizard', 'c', 'lira'), (2, 'Bran', 'Fighter', 'c', 'bran')",
+            "INSERT INTO character_sheet(party_member_id, subclass, campaign_id, origin_id) " +
+                "VALUES (1, 'Evoker', 'c', 's')",
+            "INSERT INTO npc(id, name, status, description, campaign_id, origin_id) " +
+                "VALUES (1, 'Old Bob', 'FRIEND', '', 'c', 'bob')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 11, AppDatabase.Schema.version)
+
+        assertEquals("Evoker", driver.single("SELECT subclass FROM party_member WHERE id = 1"))
+        assertEquals("", driver.single("SELECT subclass FROM party_member WHERE id = 2"))
+        assertEquals("Wizard", driver.single("SELECT character_class FROM party_member WHERE id = 1"))
+        assertEquals("Old Bob", driver.single("SELECT name FROM npc"))
+        assertEquals("", driver.single("SELECT character_class FROM npc"))
+        assertEquals("", driver.single("SELECT subclass FROM npc"))
+        driver.close()
+        file.delete()
+    }
 }

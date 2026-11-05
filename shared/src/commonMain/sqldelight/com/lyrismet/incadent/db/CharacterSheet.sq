@@ -22,6 +22,7 @@ CREATE TABLE character_sheet (
     spell_ability TEXT AS Ability,
     speed INTEGER,
     inspiration INTEGER AS Boolean NOT NULL DEFAULT 0,
+    -- no longer read, the subclass is kept on the party record since schema 12
     subclass TEXT NOT NULL DEFAULT '',
     background TEXT NOT NULL DEFAULT '',
     alignment TEXT NOT NULL DEFAULT '',
@@ -45,22 +46,22 @@ CREATE UNIQUE INDEX character_sheet_origin_id ON character_sheet(campaign_id, or
 selectByMember:
 SELECT id, party_member_id, ability_str, ability_dex, ability_con, ability_int, ability_wis, ability_cha, saves,
     skill_marks, skill_adjustments, initiative_adjustment, passive_perception_adjustment, spell_ability, speed,
-    inspiration, spells_hidden, subclass, background, alignment, personality, languages, features, notes,
+    inspiration, spells_hidden, background, alignment, personality, languages, features, notes,
     coin_platinum, coin_gold, coin_electrum, coin_silver, coin_copper, origin_id
 FROM character_sheet WHERE party_member_id = ?;
 
 insert:
 INSERT INTO character_sheet(party_member_id, ability_str, ability_dex, ability_con, ability_int, ability_wis, ability_cha,
     saves, skill_marks, skill_adjustments, initiative_adjustment, passive_perception_adjustment, spell_ability, speed,
-    inspiration, spells_hidden, subclass, background, alignment, personality, languages, features, notes,
+    inspiration, spells_hidden, background, alignment, personality, languages, features, notes,
     coin_platinum, coin_gold, coin_electrum, coin_silver, coin_copper, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE character_sheet
 SET ability_str = ?, ability_dex = ?, ability_con = ?, ability_int = ?, ability_wis = ?, ability_cha = ?,
     saves = ?, skill_marks = ?, skill_adjustments = ?, initiative_adjustment = ?, passive_perception_adjustment = ?,
-    spell_ability = ?, speed = ?, inspiration = ?, spells_hidden = ?, subclass = ?, background = ?, alignment = ?, personality = ?,
+    spell_ability = ?, speed = ?, inspiration = ?, spells_hidden = ?, background = ?, alignment = ?, personality = ?,
     languages = ?, features = ?, notes = ?,
     coin_platinum = ?, coin_gold = ?, coin_electrum = ?, coin_silver = ?, coin_copper = ?
 WHERE party_member_id = ?;

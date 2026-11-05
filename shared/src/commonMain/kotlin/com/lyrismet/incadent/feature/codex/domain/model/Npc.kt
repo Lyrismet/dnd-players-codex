@@ -19,6 +19,8 @@ data class Npc(
     val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
     // the stable id that travels in files, empty until the record is stored
     val originId: String = "",
+    val characterClass: String = "",
+    val subclass: String = "",
 )
 
 /** the party's relation to this npc - independent of whether the npc is still alive */

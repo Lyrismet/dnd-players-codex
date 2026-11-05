@@ -58,6 +58,8 @@ internal fun diffNpc(
         text(RecordField.NAME, mine.name, file.name),
         text(RecordField.DESCRIPTION, mine.description, file.description),
         text(RecordField.RACE, mine.race, file.race),
+        text(RecordField.CHARACTER_CLASS, mine.character_class, file.characterClass),
+        text(RecordField.SUBCLASS, mine.subclass, file.subclass),
         text(RecordField.NICKNAMES, mine.nicknames, file.nicknames),
         text(RecordField.VULNERABILITIES, mine.vulnerabilities, file.vulnerabilities),
         kind(RecordField.STATUS, mine.status.name, file.status.name),
@@ -84,6 +86,7 @@ internal fun diffParty(
     listOfNotNull(
         text(RecordField.NAME, mine.name, file.name),
         text(RecordField.CHARACTER_CLASS, mine.character_class, file.characterClass),
+        text(RecordField.SUBCLASS, mine.subclass, file.subclass),
         text(RecordField.RACE, mine.race, file.race),
         file.level?.let { text(RecordField.LEVEL, mine.level?.toString().orEmpty(), it.toString()) },
         if (withNotes) text(RecordField.DESCRIPTION, mine.description, file.description) else null,

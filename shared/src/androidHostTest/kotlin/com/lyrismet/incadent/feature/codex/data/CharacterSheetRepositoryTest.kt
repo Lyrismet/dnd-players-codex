@@ -63,7 +63,7 @@ class CharacterSheetRepositoryTest {
                     spellAbility = Ability.INTELLIGENCE,
                     speed = 30,
                     inspiration = true,
-                    subclass = "Evoker",
+                    background = "Sage",
                     purse = CoinPurse(gold = 34, silver = 18, copper = 25),
                 ),
             )
@@ -76,7 +76,7 @@ class CharacterSheetRepositoryTest {
             assertEquals(Ability.INTELLIGENCE, stored.spellAbility)
             assertEquals(30, stored.speed)
             assertTrue(stored.inspiration)
-            assertEquals("Evoker", stored.subclass)
+            assertEquals("Sage", stored.background)
             assertEquals(CoinPurse(gold = 34, silver = 18, copper = 25), stored.purse)
             assertTrue(stored.originId.isNotBlank())
         }
@@ -202,12 +202,12 @@ class CharacterSheetRepositoryTest {
             assertEquals(0, rested.deathSavesFailure)
             assertEquals(listOf(2, 3), resources.observe(id).first().map { it.current })
 
-            sheets.saveSheet(id, CharacterSheet(subclass = "Evoker"))
+            sheets.saveSheet(id, CharacterSheet(background = "Sage"))
             rest.undo(id, plan.undo)
             assertEquals(22, sheets.observeVitals(id).first()?.hpCurrent)
             assertEquals(3, sheets.observeVitals(id).first()?.tempHp)
             assertEquals(listOf(0, 1), resources.observe(id).first().map { it.current })
-            assertEquals("Evoker", sheets.getSheet(id).subclass)
+            assertEquals("Sage", sheets.getSheet(id).background)
             assertEquals(
                 rage,
                 resources

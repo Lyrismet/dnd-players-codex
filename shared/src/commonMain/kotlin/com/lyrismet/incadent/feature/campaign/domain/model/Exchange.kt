@@ -212,6 +212,7 @@ enum class RecordField {
     NOTES,
     HIT_POINTS,
     CHARACTER_CLASS,
+    SUBCLASS,
     LEVEL,
     REWARD,
     LIFE_STATE,

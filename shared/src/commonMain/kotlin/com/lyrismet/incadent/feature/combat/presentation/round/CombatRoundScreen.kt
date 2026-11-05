@@ -129,7 +129,6 @@ data class RoundPanel(
     val hp: PanelHp?,
     val wound: PanelWound?,
     val marks: List<MarkOption>?,
-    val sayLine: String,
     val saves: SavesState?,
     val down: DownState?,
     val died: Boolean,
@@ -185,7 +184,6 @@ data class ConditionItem(
 
 data class PanelMore(
     val stances: List<StanceOption>?,
-    val stanceHint: String,
     val fullShown: Boolean,
     val full: Boolean,
     val canSetHp: Boolean,
@@ -193,8 +191,6 @@ data class PanelMore(
     val notePlaceholder: String,
     // the bestiary damage of the kind this participant is made of, null when it has none to edit
     val vulnerabilities: Map<DamageType, DamageState>?,
-    // under the grid: where a change goes, or why there is no grid
-    val vulnerabilitiesCaption: String,
     // set for a participant that can still be given a name of the codex
     val naming: NamingState?,
 )

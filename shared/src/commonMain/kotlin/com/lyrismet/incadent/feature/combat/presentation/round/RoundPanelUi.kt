@@ -51,10 +51,8 @@ import dndplayerscodex.shared.generated.resources.combat_panel_capture
 import dndplayerscodex.shared.generated.resources.combat_panel_captured
 import dndplayerscodex.shared.generated.resources.combat_panel_died
 import dndplayerscodex.shared.generated.resources.combat_panel_died_note
-import dndplayerscodex.shared.generated.resources.combat_panel_mark_auto
 import dndplayerscodex.shared.generated.resources.combat_panel_mark_title
 import dndplayerscodex.shared.generated.resources.combat_panel_saves_failure
-import dndplayerscodex.shared.generated.resources.combat_panel_saves_hint
 import dndplayerscodex.shared.generated.resources.combat_panel_saves_success
 import dndplayerscodex.shared.generated.resources.combat_panel_saves_title
 import dndplayerscodex.shared.generated.resources.combat_panel_stand_up
@@ -162,7 +160,7 @@ private fun ActionsTab(
     panel: RoundPanel,
     send: (CombatRoundEvent) -> Unit,
 ) {
-    panel.marks?.let { MarksBlock(it, panel.sayLine, send) }
+    panel.marks?.let { MarksBlock(it, send) }
     panel.saves?.let { SavesBlock(it, send) }
     panel.down?.let { DownButtons(it, send) }
     if (panel.died) DiedNote(send)
@@ -172,7 +170,6 @@ private fun ActionsTab(
 @Composable
 private fun MarksBlock(
     marks: List<MarkOption>,
-    sayLine: String,
     send: (CombatRoundEvent) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -196,13 +193,6 @@ private fun MarksBlock(
                 textAlign = TextAlign.Center,
             )
         }
-        Text(sayLine, color = AppPalette.TextDescription, fontSize = AppFontSize.Small, lineHeight = AppLineHeight.Row)
-        Text(
-            stringResource(Res.string.combat_panel_mark_auto),
-            color = AppPalette.TextTertiary,
-            fontSize = AppFontSize.Caption,
-            lineHeight = AppLineHeight.Row,
-        )
     }
 }
 
@@ -222,20 +212,13 @@ private fun SavesBlock(
                 ).padding(horizontal = 12.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                stringResource(Res.string.combat_panel_saves_title),
-                color = AppPalette.MaroonBright,
-                fontSize = AppFontSize.Tiny,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 1.4.sp,
-            )
-            Text(
-                stringResource(Res.string.combat_panel_saves_hint),
-                color = AppPalette.TextSecondary,
-                fontSize = AppFontSize.Caption,
-            )
-        }
+        Text(
+            stringResource(Res.string.combat_panel_saves_title),
+            color = AppPalette.MaroonBright,
+            fontSize = AppFontSize.Tiny,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 1.4.sp,
+        )
         SaveRow(stringResource(Res.string.combat_panel_saves_success), saves.successes, RoundColors.Success) {
             send(CombatRoundEvent.SaveToggled(SaveKind.SUCCESS, it))
         }

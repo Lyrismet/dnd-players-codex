@@ -23,6 +23,7 @@ private fun QuickEditValue.link(): QuickEditValue.Link? = this as? QuickEditValu
 
 // the functions below return null for a field this entity does not have, so a wrong field never writes anything
 
+@Suppress("CyclomaticComplexMethod")
 fun Npc.withQuickEdit(
     field: QuickEditField,
     value: QuickEditValue,
@@ -32,6 +33,10 @@ fun Npc.withQuickEdit(
         QuickEditField.DESCRIPTION -> value.text()?.let { copy(description = it) }
         QuickEditField.NICKNAMES -> value.text()?.let { copy(nicknames = parseNicknames(it)) }
         QuickEditField.SPECIES -> value.link()?.let { copy(speciesId = it.id) }
+        QuickEditField.CHARACTER_CLASS ->
+            (value as? QuickEditValue.ClassPick)?.let {
+                copy(characterClass = it.characterClass, subclass = it.subclass)
+            }
         QuickEditField.PLACE -> value.places()?.let { copy(locationIds = it.ids) }
         QuickEditField.PORTRAIT -> value.picture()?.let { copy(portrait = it.photo) }
         else -> null
@@ -86,7 +91,10 @@ private fun PartyMember.withPartyOnlyQuickEdit(
     value: QuickEditValue,
 ): PartyMember? =
     when (field) {
-        QuickEditField.CHARACTER_CLASS -> value.name?.let { copy(characterClass = it) }
+        QuickEditField.CHARACTER_CLASS ->
+            (value as? QuickEditValue.ClassPick)?.let {
+                copy(characterClass = it.characterClass, subclass = it.subclass)
+            }
         QuickEditField.PLAYER_NAME -> value.name?.let { copy(playerName = it) }
         QuickEditField.LEVEL -> value.number()?.let { copy(level = it.number) }
         QuickEditField.HP_MAX -> value.number()?.let { copy(hpMax = it.number) }

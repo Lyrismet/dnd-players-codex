@@ -26,6 +26,9 @@ sealed interface QuickEditKind {
     /** the creature type picked in the select sheet over the card, own types are made and kept there */
     data object TypeSheet : QuickEditKind
 
+    /** the class and the subclass set together in one sheet over the card */
+    data object ClassSheet : QuickEditKind
+
     /** a group of linked entities on the card - every tap on a candidate toggles its link at once */
     data object Relations : QuickEditKind
 
@@ -43,7 +46,7 @@ enum class QuickEditField(
     NICKNAMES(QuickEditKind.Text),
     RACE(QuickEditKind.Species),
     SPECIES(QuickEditKind.Species),
-    CHARACTER_CLASS(QuickEditKind.Text),
+    CHARACTER_CLASS(QuickEditKind.ClassSheet),
     PLAYER_NAME(QuickEditKind.Text),
     REWARD(QuickEditKind.Text),
     LEVEL(QuickEditKind.Number(PartyStatRanges.level)),
@@ -85,7 +88,8 @@ enum class QuickEditField(
 val QuickEditField.editsInSheet: Boolean get() =
     kind is QuickEditKind.Places ||
         kind == QuickEditKind.Species ||
-        kind == QuickEditKind.TypeSheet
+        kind == QuickEditKind.TypeSheet ||
+        kind == QuickEditKind.ClassSheet
 
 /** the typed-in or tapped value of one [QuickEditField], always matching that field's [QuickEditKind] */
 sealed interface QuickEditValue {
@@ -112,6 +116,12 @@ sealed interface QuickEditValue {
         val type: SpeciesType,
     ) : QuickEditValue
 
+    /** the class with its subclass, both empty clears them */
+    data class ClassPick(
+        val characterClass: String,
+        val subclass: String,
+    ) : QuickEditValue
+
     /** null removes the photo */
     data class Picture(
         val photo: Photo?,
@@ -135,6 +145,7 @@ fun quickEditValueFromDraft(
         QuickEditKind.Link,
         QuickEditKind.Species,
         QuickEditKind.TypeSheet,
+        QuickEditKind.ClassSheet,
         QuickEditKind.Places,
         QuickEditKind.Choice,
         QuickEditKind.Photo,
