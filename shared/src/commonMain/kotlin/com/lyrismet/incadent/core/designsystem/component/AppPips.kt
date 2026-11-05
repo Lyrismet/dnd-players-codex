@@ -51,10 +51,7 @@ enum class CellSize(
     Big(30.dp, 7.dp, 9.dp, 52.dp, 48.dp, 4.dp),
 }
 
-/**
- * [total] squares in a row (wrapping), the first [filled] lit with a soft glow. Without [onPress] they are only drawn,
- * with it each one is a target that gives its index, a hold calls [onHold]
- */
+/** [total] squares in a row, the first [filled] lit, with [onPress] each gives its index and a hold calls [onHold] */
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun AppCells(

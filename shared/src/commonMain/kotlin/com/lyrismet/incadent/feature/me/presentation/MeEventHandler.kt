@@ -55,7 +55,7 @@ internal class MeEventHandler(
             is MeEvent.TileTapped -> tile(event.tile, character)
             MeEvent.AdjustmentRequested -> adjustment(character)
             is MeEvent.Sheet -> sheet(event.event, member, character)
-            is MeEvent.Overlay -> overlay(event.event, member, character)
+            is MeEvent.Overlay -> overlay(event.event, member)
             is MeEvent.Counters -> MeCounterHandler(ui, actions, counters).handle(event.event, member, character)
             is MeEvent.Menu -> menu(event.action, member, character)
             else -> Unit
@@ -184,7 +184,6 @@ internal class MeEventHandler(
     private fun overlay(
         event: OverlayEvent,
         member: PartyMember,
-        character: MeCharacter,
     ) {
         val open = ui.edit
         when {
@@ -193,7 +192,7 @@ internal class MeEventHandler(
             event == OverlayEvent.Applied -> {
                 // a resource without a name keeps its sheet open
                 if (open is MeOverlay.Resource && open.name.isBlank()) return
-                commit(member, open, character)
+                commit(member, open)
                 ui.edit = null
             }
             else -> ui.edit = open.reduce(event)
@@ -203,11 +202,10 @@ internal class MeEventHandler(
     private fun commit(
         member: PartyMember,
         open: MeOverlay,
-        character: MeCharacter,
     ) {
         when (open) {
             is MeOverlay.Resource -> counters.save(member.id, open)
-            is MeOverlay.Slots -> counters.saveSlots(member.id, character.spells.columns, open.maxima)
+            is MeOverlay.Slots -> counters.saveSlots(member.id, open.maxima)
             else -> actions.commit(member, open)
         }
     }

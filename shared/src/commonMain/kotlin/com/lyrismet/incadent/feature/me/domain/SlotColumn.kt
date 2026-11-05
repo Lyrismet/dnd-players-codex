@@ -21,12 +21,6 @@ fun slotColumns(resources: List<CharacterResource>): List<SlotColumn> =
 fun featureResources(resources: List<CharacterResource>): List<CharacterResource> =
     resources.filter { !it.isSpellSlot }.sortedWith(compareBy({ it.position }, { it.id }))
 
-/** the left count after a press on the cell at [index], a lit cell is spent and a dark one comes back */
-fun cellPressed(
-    current: Int,
-    index: Int,
-): Int = if (index < current) current - 1 else current + 1
-
 /** the maxima per level to start the slot sheet from, 0 for a level the character has no slots of */
 fun slotMaxima(resources: List<CharacterResource>): Map<Int, Int> {
     val byLevel = resources.mapNotNull { resource -> resource.slotLevel?.let { it to resource.max } }.toMap()

@@ -49,7 +49,7 @@ data class MePickOption(
     val level: Int?,
 )
 
-/** the tabs under the header, the sheet is always there, spells only for a caster */
+/** the tabs under the header, the sheet is always there, spells unless the player hid them */
 enum class MeTab { SHEET, SPELLS, RESOURCES, ITEMS }
 
 /** the tiles under the hit points that explain themselves in a card on a press */

@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.me.presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,6 +42,8 @@ internal class MePresenter(
         val list = party
         val member = list?.firstOrNull { it.isPlayerCharacter }
         val ui = rememberMeUiState()
+        // the open level belongs to one character, the next one starts closed
+        LaunchedEffect(member?.id) { ui.slotLevel = null }
         val characterContent = member?.let { characterContent(it, ui, readOnly) }
         val content =
             when {

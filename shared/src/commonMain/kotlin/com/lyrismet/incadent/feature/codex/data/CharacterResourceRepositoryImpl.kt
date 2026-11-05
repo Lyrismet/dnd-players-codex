@@ -66,6 +66,21 @@ class CharacterResourceRepositoryImpl(
         withContext(DatabaseDispatcher) { queries.setCurrent(value.toLong(), id) }
     }
 
+    override suspend fun pressCell(
+        id: Long,
+        index: Int,
+    ) {
+        withContext(DatabaseDispatcher) { queries.pressCell(index.toLong(), id) }
+    }
+
+    override suspend fun edit(
+        id: Long,
+        name: String,
+        max: Int,
+    ) {
+        withContext(DatabaseDispatcher) { queries.edit(name, max.toLong(), id) }
+    }
+
     override suspend fun delete(id: Long) {
         withContext(DatabaseDispatcher) { queries.deleteById(id) }
     }

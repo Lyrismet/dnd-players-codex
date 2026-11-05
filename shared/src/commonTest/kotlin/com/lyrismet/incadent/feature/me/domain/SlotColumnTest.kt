@@ -64,12 +64,4 @@ class SlotColumnTest {
         assertEquals(99, 99.steppedMax(1))
         assertEquals(5, 4.steppedMax(1))
     }
-
-    @Test
-    fun `a lit cell is spent and a dark one comes back`() {
-        assertEquals(2, cellPressed(current = 3, index = 0))
-        assertEquals(2, cellPressed(current = 3, index = 2))
-        assertEquals(3, cellPressed(current = 2, index = 2))
-        assertEquals(1, cellPressed(current = 0, index = 3))
-    }
 }

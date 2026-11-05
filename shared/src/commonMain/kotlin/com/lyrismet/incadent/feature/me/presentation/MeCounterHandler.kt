@@ -3,7 +3,6 @@ package com.lyrismet.incadent.feature.me.presentation
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterResource
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.ResourceTemplate
-import com.lyrismet.incadent.feature.me.domain.cellPressed
 import com.lyrismet.incadent.feature.me.domain.nextPosition
 import com.lyrismet.incadent.feature.me.domain.slotMaxima
 
@@ -23,9 +22,7 @@ internal class MeCounterHandler(
         val all = character.spells.columns.map { it.resource } + character.resources
         when (event) {
             is CounterEvent.CellPressed ->
-                all.firstOrNull { it.id == event.id }?.let {
-                    counters.setCurrent(it.id, cellPressed(it.current, event.index))
-                }
+                all.firstOrNull { it.id == event.id }?.let { counters.pressCell(it.id, event.index) }
             is CounterEvent.SlotLevelToggled -> ui.slotLevel = event.level.takeIf { it != ui.slotLevel }
             is CounterEvent.PipHeld -> all.firstOrNull { it.id == event.id }?.let { hold(it, all) }
             CounterEvent.ResourceAdded -> ui.edit = newResource("", all)

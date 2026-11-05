@@ -18,5 +18,18 @@ interface CharacterResourceRepository {
         value: Int,
     )
 
+    /** a lit cell at [index] is spent and a dark one comes back, in one step so quick presses add up */
+    suspend fun pressCell(
+        id: Long,
+        index: Int,
+    )
+
+    /** renames a resource and moves its max, the count left is kept and cut to the new max */
+    suspend fun edit(
+        id: Long,
+        name: String,
+        max: Int,
+    )
+
     suspend fun delete(id: Long)
 }

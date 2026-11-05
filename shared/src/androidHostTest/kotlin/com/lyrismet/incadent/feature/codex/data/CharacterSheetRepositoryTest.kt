@@ -123,6 +123,39 @@ class CharacterSheetRepositoryTest {
         }
 
     @Test
+    fun `quick presses add up and an edit keeps the count`() =
+        runTest {
+            val id = lira()
+            val rage = resources.upsert(id, CharacterResource(0, "Rage", max = 3, current = 3))
+            resources.pressCell(rage, 2)
+            resources.pressCell(rage, 1)
+            assertEquals(
+                1,
+                resources
+                    .observe(id)
+                    .first()
+                    .single()
+                    .current,
+            )
+            resources.pressCell(rage, 2)
+            resources.pressCell(rage, 2)
+            assertEquals(
+                3,
+                resources
+                    .observe(id)
+                    .first()
+                    .single()
+                    .current,
+            )
+            resources.pressCell(rage, 0)
+            resources.edit(rage, "Fury", max = 1)
+            val edited = resources.observe(id).first().single()
+            assertEquals("Fury", edited.name)
+            assertEquals(1, edited.max)
+            assertEquals(1, edited.current)
+        }
+
+    @Test
     fun `resources keep their counts and slots sort after features`() =
         runTest {
             val id = lira()
