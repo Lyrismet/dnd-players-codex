@@ -24,6 +24,7 @@ import com.lyrismet.incadent.feature.codex.presentation.item.ItemsController
 import com.lyrismet.incadent.feature.codex.presentation.item.rememberItemsController
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPicker
 import com.lyrismet.incadent.feature.me.domain.abilityStrips
+import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.presenter.Presenter
@@ -54,10 +55,15 @@ internal class MePresenter(
         val list = party
         val member = list?.firstOrNull { it.isPlayerCharacter }
         val ui = rememberMeUiState()
-        val records = rememberMeRecords(codexRepositories, list.orEmpty())
+        // the records and the notes are only read once a character is picked
+        val records =
+            if (member != null) {
+                rememberMeRecords(codexRepositories, list)
+            } else {
+                CodexRecords(emptyList(), emptyList(), emptyList(), emptyList())
+            }
         val itemsController = rememberItemsController(codexRepositories.itemRepository, undoController)
-        val sessionNotes by remember { sessionNoteRepository.observeAll() }.collectAsState(initial = emptyList())
-        val live = sessionNotes.firstOrNull { it.isLive }
+        val live = if (member != null) rememberLiveSession() else null
         // the open level belongs to one character, the next one starts closed
         LaunchedEffect(member?.id) { ui.slotLevel = null }
         val characterContent =
@@ -95,6 +101,12 @@ internal class MePresenter(
         val handler = remember { MeEventHandler({ latestScope }, ui, actions, counters, picker, things, scope) }
         val eventSink = remember(handler) { handler::handle }
         return MeState(content = content, eventSink = eventSink)
+    }
+
+    @Composable
+    private fun rememberLiveSession(): SessionNote? {
+        val sessionNotes by remember { sessionNoteRepository.observeAll() }.collectAsState(initial = emptyList())
+        return sessionNotes.firstOrNull { it.isLive }
     }
 
     @Composable

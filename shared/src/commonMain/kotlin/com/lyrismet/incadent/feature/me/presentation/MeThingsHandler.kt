@@ -40,8 +40,9 @@ internal class MeThingsHandler(
             RestEvent.LogToggled -> ui.rest = pad?.copy(log = !pad.log)
             RestEvent.Closed -> ui.rest = null
             RestEvent.Confirmed -> {
-                rests.rest(member, liveSessionId, pad?.log == true)
+                val open = pad ?: return
                 ui.rest = null
+                rests.rest(member, liveSessionId, open.log)
             }
         }
     }

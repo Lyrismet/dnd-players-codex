@@ -22,10 +22,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppHelpHint
 private val CAPTION_HEIGHT = 12.dp
 private val HINT_SIZE = 28.dp
 
-/**
- * the small caption of a section, with its help hint when there is one; the row is only as tall as the caption and
- * the hint target overflows it, like the negative margin in the mockup, so every section sits at the same distance
- */
+/** the small caption of a section with its help hint when there is one */
 @Composable
 internal fun MeSectionTitle(
     title: String,

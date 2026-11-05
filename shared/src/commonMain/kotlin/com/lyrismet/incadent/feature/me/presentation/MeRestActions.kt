@@ -27,7 +27,11 @@ internal class MeRestActions(
     ) {
         scope.launch {
             val plan = rests.longRest(member.id) ?: return@launch
-            val entryId = liveSessionId?.takeIf { log }?.let { entries.add(it, getString(Res.string.me_rest_note)) }
+            // a session that ended meanwhile must not cost the user the undo
+            val entryId =
+                liveSessionId?.takeIf { log }?.let {
+                    runCatching { entries.add(it, getString(Res.string.me_rest_note)) }.getOrNull()
+                }
             undoController.show(getString(Res.string.me_rest_done_title), member.name) {
                 rests.undo(member.id, plan.undo)
                 entryId?.let { entries.delete(it) }

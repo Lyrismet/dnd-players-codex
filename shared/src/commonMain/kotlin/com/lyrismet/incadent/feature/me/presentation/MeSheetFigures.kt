@@ -55,6 +55,7 @@ internal fun buildMeCharacter(
         resources = featureResources(resources),
         breakdown = figures.breakdown,
         popover = ui.popover,
+        // one sheet at a time, the first open one in this order wins
         overlay =
             ui.overlay(vitals)
                 ?: ui.rest?.overlay(vitals, resources, liveSessionTitle)

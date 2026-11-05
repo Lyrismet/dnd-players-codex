@@ -1656,6 +1656,8 @@
     <string name="me_rest_button">Rest</string>
     <string name="me_rest_overline_format">Rest · %1$s</string>
     <string name="me_rest_title">Long rest</string>
+    <string name="me_rest_with_temp_format">%1$s %2$s</string>
+    <string name="me_wallet_coin_separator"> · </string>
     <string name="me_rest_summary_format">%1$s · %2$s.</string>
     <string name="me_rest_hp_change_format">hit points %1$d → %2$d</string>
     <string name="me_rest_hp_full">hit points full</string>
@@ -1689,7 +1691,7 @@
     </plurals>
     <string name="me_wallet_spend">Spend</string>
     <string name="me_wallet_gain">Gain</string>
-    <string name="me_wallet_more">More</string>
+    <string name="me_wallet_more">More ▾</string>
     <string name="me_wallet_apply">Apply</string>
     <string name="me_wallet_coin_change_format">%1$s: %2$s → %3$s</string>
     <string name="me_wallet_total_change_format">Total ≈ %1$s → %2$s gold</string>

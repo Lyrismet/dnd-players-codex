@@ -42,6 +42,7 @@ import dndplayerscodex.shared.generated.resources.me_rest_summary_format
 import dndplayerscodex.shared.generated.resources.me_rest_temp_note
 import dndplayerscodex.shared.generated.resources.me_rest_title
 import dndplayerscodex.shared.generated.resources.me_rest_undo_hint
+import dndplayerscodex.shared.generated.resources.me_rest_with_temp_format
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -180,5 +181,13 @@ private fun restText(
     rest: MeOverlay.Rest,
 ): String {
     val summary = restSummaryText(name, rest.summary)
-    return if (rest.hasTemp) "$summary ${stringResource(Res.string.me_rest_temp_note)}" else summary
+    return if (rest.hasTemp) {
+        stringResource(
+            Res.string.me_rest_with_temp_format,
+            summary,
+            stringResource(Res.string.me_rest_temp_note),
+        )
+    } else {
+        summary
+    }
 }

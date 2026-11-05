@@ -51,6 +51,7 @@ import dndplayerscodex.shared.generated.resources.me_help_wallet_title
 import dndplayerscodex.shared.generated.resources.me_wallet_apply
 import dndplayerscodex.shared.generated.resources.me_wallet_change
 import dndplayerscodex.shared.generated.resources.me_wallet_coin_change_format
+import dndplayerscodex.shared.generated.resources.me_wallet_coin_separator
 import dndplayerscodex.shared.generated.resources.me_wallet_gain
 import dndplayerscodex.shared.generated.resources.me_wallet_gold_word
 import dndplayerscodex.shared.generated.resources.me_wallet_mode_minus
@@ -110,7 +111,7 @@ internal fun MeWalletCard(
             }
             if (rest.isNotEmpty()) {
                 Text(
-                    rest.joinToString(" · "),
+                    rest.joinToString(stringResource(Res.string.me_wallet_coin_separator)),
                     style = AppText.footnote,
                     color = AppPalette.TextSecondary,
                 )
@@ -158,19 +159,15 @@ internal fun MeWalletSheet(
         } else {
             ""
         }
+    val titleRes =
+        when (pad.mode) {
+            WalletMode.SPEND -> Res.string.me_wallet_spend
+            WalletMode.GAIN -> Res.string.me_wallet_gain
+        }
     AppBottomSheet(onDismissRequest = { onEvent(WalletEvent.Closed) }) {
         NumberPadSheet(
             overline = stringResource(Res.string.me_wallet_overline_format, name).uppercase(),
-            title =
-                stringResource(
-                    if (pad.mode ==
-                        WalletMode.SPEND
-                    ) {
-                        Res.string.me_wallet_spend
-                    } else {
-                        Res.string.me_wallet_gain
-                    },
-                ),
+            title = stringResource(titleRes),
             expr = "",
             result = pad.amount.withThousands(),
             rangeHint =
@@ -224,7 +221,7 @@ private fun WalletModes(
             }
             if (!moreShown) {
                 SelectablePill(
-                    text = stringResource(Res.string.me_wallet_more) + " ▾",
+                    text = stringResource(Res.string.me_wallet_more),
                     selected = false,
                     onClick = { onEvent(WalletEvent.MoreToggled) },
                     size = PillSize.Regular,

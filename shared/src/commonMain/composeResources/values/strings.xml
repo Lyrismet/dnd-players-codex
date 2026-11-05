@@ -1732,6 +1732,8 @@
     <string name="me_rest_button">Отдых</string>
     <string name="me_rest_overline_format">Отдых · %1$s</string>
     <string name="me_rest_title">Долгий отдых</string>
+    <string name="me_rest_with_temp_format">%1$s %2$s</string>
+    <string name="me_wallet_coin_separator"> · </string>
     <string name="me_rest_summary_format">%1$s · %2$s.</string>
     <string name="me_rest_hp_change_format">хиты %1$d → %2$d</string>
     <string name="me_rest_hp_full">хиты полные</string>
@@ -1771,7 +1773,7 @@
     </plurals>
     <string name="me_wallet_spend">Потратить</string>
     <string name="me_wallet_gain">Получить</string>
-    <string name="me_wallet_more">Ещё</string>
+    <string name="me_wallet_more">Ещё ▾</string>
     <string name="me_wallet_apply">Применить</string>
     <string name="me_wallet_coin_change_format">%1$s: %2$s → %3$s</string>
     <string name="me_wallet_total_change_format">Всего ≈ %1$s → %2$s золотых</string>
