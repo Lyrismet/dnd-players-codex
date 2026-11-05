@@ -9,6 +9,12 @@ data class SrdClass(
     val nameEn: String,
 ) {
     fun name(russian: Boolean): String = if (russian) nameRu else nameEn
+
+    /** true when [name] is this class in either language */
+    fun isNamed(name: String): Boolean {
+        val typed = name.trim().foldForSearch()
+        return typed.isNotEmpty() && (typed == nameRu.foldForSearch() || typed == nameEn.foldForSearch())
+    }
 }
 
 /** the twelve classes the class sheet offers, in no particular order */
@@ -42,11 +48,7 @@ fun srdClassesMatching(
 }
 
 /** true when [name] is a class of the SRD, in either language */
-fun isSrdClass(name: String): Boolean {
-    val typed = name.trim().foldForSearch()
-    return typed.isNotEmpty() &&
-        SrdClasses.all.any { typed == it.nameRu.foldForSearch() || typed == it.nameEn.foldForSearch() }
-}
+fun isSrdClass(name: String): Boolean = SrdClasses.all.any { it.isNamed(name) }
 
 /** "Паладин · Клятва преданности", only the filled parts */
 fun classLine(

@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.session.presentation.detail
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -165,13 +166,18 @@ private fun EntryActions(
     onSavePhraseClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
+    val transition = remember { MutableTransitionState(false) }
+    transition.targetState = visible
     // grows and shrinks smoothly, an instant collapse at the end of the list made the whole feed jump
-    AnimatedVisibility(
-        visible = visible,
-        enter = expandVertically() + fadeIn(),
-        exit = shrinkVertically() + fadeOut(),
-    ) {
-        EntryActionButtons(onEditClick, onSavePhraseClick, onDeleteClick)
+    // the buttons are composed only while open or animating, so a long feed does not carry them on every row
+    if (visible || !transition.isIdle || transition.currentState) {
+        AnimatedVisibility(
+            visibleState = transition,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut(),
+        ) {
+            EntryActionButtons(onEditClick, onSavePhraseClick, onDeleteClick)
+        }
     }
 }
 

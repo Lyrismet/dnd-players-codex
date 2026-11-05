@@ -32,7 +32,6 @@ import com.lyrismet.incadent.core.designsystem.component.PillFill
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.format.capitalizeFirst
-import com.lyrismet.incadent.core.format.foldForSearch
 import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.feature.codex.domain.grouping.isSrdClass
@@ -93,7 +92,7 @@ private fun ColumnScope.ClassPicker(
     val matches = srdClassesMatching(query, russian)
     val typed = query.trim()
     val ownName = typed.capitalizeFirst()
-    val offersOwn = typed.isNotEmpty() && matches.none { it.name(russian).foldForSearch() == typed.foldForSearch() }
+    val offersOwn = typed.isNotEmpty() && matches.none { it.isNamed(typed) }
     AppSearchField(
         query = query,
         onQueryChange = { query = it },
@@ -110,13 +109,14 @@ private fun ColumnScope.ClassPicker(
             modifier = Modifier.padding(horizontal = 4.dp),
         )
     }
-    matches.map { it.name(russian) }.chunked(GRID_COLUMNS).forEach { row ->
+    matches.chunked(GRID_COLUMNS).forEach { row ->
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            row.forEach { name ->
+            row.forEach { srd ->
+                val selected = srd.isNamed(picked)
                 SelectablePill(
-                    text = name,
-                    selected = name.foldForSearch() == picked.foldForSearch(),
-                    onClick = { onPicked(if (name.foldForSearch() == picked.foldForSearch()) "" else name) },
+                    text = srd.name(russian),
+                    selected = selected,
+                    onClick = { onPicked(if (selected) "" else srd.name(russian)) },
                     modifier = Modifier.weight(1f),
                     selectedFill = PillFill.GoldTint,
                 )

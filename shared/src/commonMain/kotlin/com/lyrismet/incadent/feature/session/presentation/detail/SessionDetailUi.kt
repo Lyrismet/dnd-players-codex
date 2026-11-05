@@ -31,7 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -69,6 +69,7 @@ import dndplayerscodex.shared.generated.resources.combat_results_delete_text
 import dndplayerscodex.shared.generated.resources.combat_results_delete_title
 import dndplayerscodex.shared.generated.resources.session_detail_empty_feed
 import dndplayerscodex.shared.generated.resources.session_detail_empty_feed_hint
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -214,24 +215,24 @@ private fun SessionFeed(
     }
 }
 
-// the buttons of a selected note grow it downwards, so the list moves up until the whole note shows
+// the buttons of a selected note grow it downwards, so the list follows its size until the whole note shows
 private suspend fun LazyListState.revealItem(index: Int) {
-    // the buttons expand over a few frames, so the note is kept in view until it stops growing
-    val end = withFrameNanos { it } + REVEAL_FOLLOW_NANOS
-    do {
-        val info = layoutInfo
-        val item = info.visibleItemsInfo.firstOrNull { it.index == index }
-        if (item == null) {
-            animateScrollToItem(index)
-        } else {
-            val hidden = item.offset + item.size - (info.viewportEndOffset - info.afterContentPadding)
-            val room = (item.offset - info.viewportStartOffset).coerceAtLeast(0)
-            if (hidden > 0) scrollBy(hidden.coerceAtMost(room).toFloat())
+    if (layoutInfo.visibleItemsInfo.none { it.index == index }) animateScrollToItem(index)
+    // the flow never ends on its own, so the follow is bounded and a user drag is left alone
+    withTimeoutOrNull(REVEAL_FOLLOW_MILLIS) {
+        snapshotFlow { layoutInfo.visibleItemsInfo.firstOrNull { visible -> visible.index == index }?.size }.collect {
+            val info = layoutInfo
+            val item = info.visibleItemsInfo.firstOrNull { visible -> visible.index == index }
+            if (item != null && !isScrollInProgress) {
+                val hidden = item.offset + item.size - (info.viewportEndOffset - info.afterContentPadding)
+                val room = (item.offset - info.viewportStartOffset).coerceAtLeast(0)
+                if (hidden > 0) scrollBy(hidden.coerceAtMost(room).toFloat())
+            }
         }
-    } while (withFrameNanos { it } < end)
+    }
 }
 
-private const val REVEAL_FOLLOW_NANOS = 350_000_000L
+private const val REVEAL_FOLLOW_MILLIS = 600L
 
 @Composable
 private fun NoteRow(
