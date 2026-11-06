@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.settings.presentation
 
+import com.lyrismet.incadent.core.appinfo.UpdateStatus
 import com.lyrismet.incadent.core.language.LanguageSheetEvent
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.preferences.EntityEditMode
@@ -27,6 +28,7 @@ data class SettingsState(
     val campaignName: String,
     val campaignSheet: CampaignSheetState,
     val version: String,
+    val updateStatus: UpdateStatus = UpdateStatus.Unknown,
     val toast: String?,
     val pinnedPhraseCount: Int,
     val frequentPhraseCount: Int,
@@ -62,6 +64,8 @@ sealed interface SettingsEvent : CircuitUiEvent {
     data class FollowPartyLevelToggled(
         val follow: Boolean,
     ) : SettingsEvent
+
+    data object UpdateRequested : SettingsEvent
 
     data object SwipeHintsShowRequested : SettingsEvent
 

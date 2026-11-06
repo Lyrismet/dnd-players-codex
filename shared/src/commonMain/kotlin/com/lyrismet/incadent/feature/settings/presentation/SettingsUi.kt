@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lyrismet.incadent.core.appinfo.UpdateStatus
 import com.lyrismet.incadent.core.attribution.SrdAttribution
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
@@ -58,6 +59,8 @@ import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.rememberImportPicker
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.settings_about_update_action
+import dndplayerscodex.shared.generated.resources.settings_about_update_title
 import dndplayerscodex.shared.generated.resources.settings_about_version_title
 import dndplayerscodex.shared.generated.resources.settings_all_campaigns_title
 import dndplayerscodex.shared.generated.resources.settings_campaign_name_title
@@ -149,7 +152,11 @@ fun SettingsUi(
                         onRenameClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.RenameClicked)) },
                         onAllCampaignsClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.LibraryOpened)) },
                     )
-                    AboutSection(version = state.version)
+                    AboutSection(
+                        version = state.version,
+                        updateAvailable = state.updateStatus is UpdateStatus.Available,
+                        onUpdateClick = { state.eventSink(SettingsEvent.UpdateRequested) },
+                    )
                 }
             }
         }
@@ -271,9 +278,21 @@ private fun CampaignSection(
 }
 
 @Composable
-private fun AboutSection(version: String) {
+private fun AboutSection(
+    version: String,
+    updateAvailable: Boolean,
+    onUpdateClick: () -> Unit,
+) {
     SettingsGroup(overline = stringResource(Res.string.settings_section_about), topSpacing = 12.dp) {
         InfoRow(title = stringResource(Res.string.settings_about_version_title), value = version)
+        if (updateAvailable) {
+            AppDivider()
+            AppListRow(
+                title = stringResource(Res.string.settings_about_update_title),
+                value = stringResource(Res.string.settings_about_update_action),
+                onClick = onUpdateClick,
+            )
+        }
         AppDivider()
         SrdAttribution()
     }

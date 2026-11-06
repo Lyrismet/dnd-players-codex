@@ -877,6 +877,8 @@
     <string name="settings_section_about">О ПРИЛОЖЕНИИ</string>
     <string name="settings_about_srd_title">Материалы SRD 5.1</string>
     <string name="settings_about_version_title">Версия</string>
+    <string name="settings_about_update_title">Доступна новая версия</string>
+    <string name="settings_about_update_action">Обновить</string>
     <string name="settings_about_srd_value">Это приложение использует материалы из System Reference Document 5.1 (SRD 5.1) компании Wizards of the Coast LLC, доступного по адресу https://dnd.wizards.com/resources/systems-reference-document. SRD 5.1 распространяется по лицензии Creative Commons Attribution 4.0 International, доступной по адресу https://creativecommons.org/licenses/by/4.0/legalcode. Названия существ и шаблоны ресурсов переведены и адаптированы. Wizards of the Coast не поддерживает это приложение.</string>
     <string name="entity_sheet_species_note_quantity">В этой заметке</string>
     <string name="session_detail_quantity_hint">○ %1$s ×… цифра - сколько их</string>
