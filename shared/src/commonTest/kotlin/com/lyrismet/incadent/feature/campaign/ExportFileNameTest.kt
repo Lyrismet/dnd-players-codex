@@ -45,6 +45,12 @@ class ExportFileNameTest {
     }
 
     @Test
+    fun `a typed name ending with the app extension or a dot gets one extension`() {
+        assertEquals("My_campaign.incadent.json", typedFileName("My  campaign.incadent"))
+        assertEquals("name.incadent.json", typedFileName("name."))
+    }
+
+    @Test
     fun `a typed name loses path signs and a leading dot`() {
         assertEquals("a_b.incadent.json", typedFileName("a/b"))
         assertEquals("hidden.incadent.json", typedFileName("..hidden"))

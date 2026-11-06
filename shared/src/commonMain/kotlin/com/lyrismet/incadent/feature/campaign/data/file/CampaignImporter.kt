@@ -124,8 +124,10 @@ internal class CampaignImporter(
 
         // the sheet, the counters and what a character carries come with the mark, a file before them has none
         private val takeSheet = takeLabel
-        private val takeExtras = header.mode == ExportMode.SELF && request.takeVitals && header.version >= SHEET_VERSION
+        private val takeExtras =
+            header.mode == ExportMode.SELF && request.takeVitals && header.version >= SHEET_VERSION
         private val sheetTaken = mutableSetOf<Long>()
+        private val sheetOrigins by lazy { SheetOrigins(database, campaignId) }
         private val partyJournaled = mutableSetOf<Long>()
 
         private val speciesMap = mutableMapOf<Long, Long>()
@@ -801,7 +803,7 @@ internal class CampaignImporter(
                 }
                 clearSheet(database, memberId)
             }
-            writeSheetRecord(database, campaignId, memberId, record)
+            writeSheetRecord(database, campaignId, memberId, record, sheetOrigins)
         }
 
         // the mark "я" is one per campaign, the one it leaves is put back when the import is taken back

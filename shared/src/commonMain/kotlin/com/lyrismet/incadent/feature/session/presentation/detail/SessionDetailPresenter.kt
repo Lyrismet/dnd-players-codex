@@ -480,14 +480,22 @@ private fun rememberTextSource(
             EntityKind.PARTY to stringResource(Res.string.session_text_actors_party),
             EntityKind.ITEM to stringResource(Res.string.session_text_actors_items),
         )
-    return SessionTextSource(overline, character, named, plain) {
-        SessionTextParts(
-            heading = listOf(overline, title, dateLabel).filter { it.isNotBlank() }.joinToString(" · "),
-            intro = null,
-            notes = entries.sortedBy { it.createdAt }.map { SessionTextNote(it.createdAt.toDisplayTime(), it.body) },
-            actorsTitle = actorsTitle,
-            actors = sessionActors(mentioned, entries.map { it.body }, labels),
-        )
+    return remember(overline, title, dateLabel, character, entries, mentioned, named, plain, actorsTitle, labels) {
+        SessionTextSource(overline, character, named, plain) {
+            SessionTextParts(
+                heading = listOf(overline, title, dateLabel).filter { it.isNotBlank() }.joinToString(" · "),
+                intro = null,
+                notes =
+                    entries.sortedBy { it.createdAt }.map {
+                        SessionTextNote(
+                            it.createdAt.toDisplayTime(),
+                            it.body,
+                        )
+                    },
+                actorsTitle = actorsTitle,
+                actors = sessionActors(mentioned, entries.map { it.body }, labels),
+            )
+        }
     }
 }
 

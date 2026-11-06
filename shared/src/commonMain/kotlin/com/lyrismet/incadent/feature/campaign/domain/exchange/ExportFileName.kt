@@ -24,6 +24,7 @@ fun exportFileName(
 }
 
 private const val JSON_EXTENSION = ".json"
+private const val APP_EXTENSION = ".incadent"
 const val MAX_TYPED_CHARS = 120
 
 /** the name a person typed in the save sheet made safe for a file system, empty when nothing usable is left */
@@ -34,11 +35,15 @@ fun typedFileName(typed: String): String {
             .map { if (it in "/\\:*?\"<>|" || it.isISOControl()) '_' else it }
             .joinToString("")
             .trim()
-            .trimStart('.')
+            .trim('.')
             .trim()
             .withoutSpaces()
     if (clean.isEmpty() || clean.all { it == '_' }) return ""
-    return if (clean.endsWith(JSON_EXTENSION, ignoreCase = true)) clean else clean + EXPORT_FILE_EXTENSION
+    return when {
+        clean.endsWith(JSON_EXTENSION, ignoreCase = true) -> clean
+        clean.endsWith(APP_EXTENSION, ignoreCase = true) -> clean + JSON_EXTENSION
+        else -> clean + EXPORT_FILE_EXTENSION
+    }
 }
 
 private fun String.safeName(): String =

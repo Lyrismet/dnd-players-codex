@@ -39,16 +39,26 @@ internal fun clearSheet(
     database.characterResourceQueries.deleteByMember(memberId)
 }
 
+/** the origin ids a sheet and a counter may still take, read once for a whole import */
+internal class SheetOrigins(
+    database: AppDatabase,
+    campaignId: String,
+) {
+    val sheets = OriginSet(database.characterSheetQueries.selectOrigins(campaignId).executeAsList())
+    val resources = OriginSet(database.characterResourceQueries.selectOrigins(campaignId).executeAsList())
+}
+
 /** writes a sheet or a counter of a file to [memberId], every number pinned to the range the forms allow */
 internal fun writeSheetRecord(
     database: AppDatabase,
     campaignId: String,
     memberId: Long,
     record: FileRecord,
+    origins: SheetOrigins = SheetOrigins(database, campaignId),
 ) {
     when (record) {
-        is FileRecord.Sheet -> writeSheet(database, campaignId, memberId, record)
-        is FileRecord.Resource -> writeResource(database, campaignId, memberId, record)
+        is FileRecord.Sheet -> writeSheet(database, campaignId, memberId, record, origins.sheets)
+        is FileRecord.Resource -> writeResource(database, campaignId, memberId, record, origins.resources)
         else -> Unit
     }
 }
@@ -59,6 +69,7 @@ private fun writeSheet(
     campaignId: String,
     memberId: Long,
     record: FileRecord.Sheet,
+    origins: OriginSet,
 ) {
     val queries = database.characterSheetQueries
 
@@ -97,7 +108,7 @@ private fun writeSheet(
         coin_silver = coin(record.silver),
         coin_copper = coin(record.copper),
         campaign_id = campaignId,
-        origin_id = OriginSet(queries.selectOrigins(campaignId).executeAsList()).claim(record.originId),
+        origin_id = origins.claim(record.originId),
     )
 }
 
@@ -106,6 +117,7 @@ private fun writeResource(
     campaignId: String,
     memberId: Long,
     record: FileRecord.Resource,
+    origins: OriginSet,
 ) {
     val queries = database.characterResourceQueries
     val limit = record.max.coerceIn(RESOURCE_MAX_RANGE)
@@ -117,7 +129,7 @@ private fun writeResource(
         record.slotLevel?.coerceIn(SPELL_LEVELS)?.toLong(),
         record.position.toLong(),
         campaignId,
-        OriginSet(queries.selectOrigins(campaignId).executeAsList()).claim(record.originId),
+        origins.claim(record.originId),
     )
 }
 

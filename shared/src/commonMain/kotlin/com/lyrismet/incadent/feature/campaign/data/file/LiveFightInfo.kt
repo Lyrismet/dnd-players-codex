@@ -30,10 +30,9 @@ internal fun readLiveFight(
         minutes = minutesSince(row.started_at, now),
         fighters =
             database.combatantQueries
-                .selectByCampaign(
-                    campaignId,
-                ).executeAsList()
-                .count { it.combat_id == row.id },
+                .selectByCombat(row.id)
+                .executeAsList()
+                .size,
     )
 }
 

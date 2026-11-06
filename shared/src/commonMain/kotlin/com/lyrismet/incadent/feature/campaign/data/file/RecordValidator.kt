@@ -129,7 +129,6 @@ private enum class Section {
     QUEST,
     PARTY,
     SHEET,
-    RESOURCE,
     ITEM,
     TAG,
     PHRASE,
@@ -148,7 +147,7 @@ private fun FileRecord.rank(): Int =
         is FileRecord.Quest -> Section.QUEST
         is FileRecord.Party -> Section.PARTY
         is FileRecord.Sheet -> Section.SHEET
-        is FileRecord.Resource -> Section.RESOURCE
+        is FileRecord.Resource -> Section.SHEET
         is FileRecord.Item -> Section.ITEM
         is FileRecord.Tag -> Section.TAG
         is FileRecord.Phrase -> Section.PHRASE
