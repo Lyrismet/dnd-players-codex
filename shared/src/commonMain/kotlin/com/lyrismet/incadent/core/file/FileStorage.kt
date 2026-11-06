@@ -4,4 +4,7 @@ package com.lyrismet.incadent.core.file
 expect class FileStorage {
     /** an empty file named [fileName] to write lines to, an older one of that name is replaced */
     fun createSink(fileName: String): FileSink
+
+    /** the size in bytes of the written file named [fileName] */
+    fun sizeOf(fileName: String): Long
 }

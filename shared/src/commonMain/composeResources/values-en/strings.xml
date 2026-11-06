@@ -888,6 +888,25 @@
     <string name="exchange_writing">Making the file…</string>
     <string name="exchange_share">Share file</string>
     <string name="exchange_save">Save to device</string>
+    <string name="exchange_save_title">Save file</string>
+    <string name="exchange_save_name">File name</string>
+    <string name="exchange_save_folder">Folder</string>
+    <string name="exchange_save_folder_downloads">Downloads</string>
+    <string name="exchange_save_folder_ask">Choose when saving</string>
+    <string name="exchange_save_download">Download · %1$s</string>
+    <string name="exchange_save_cancel">Cancel</string>
+    <string name="exchange_live_title_ongoing">A fight is under way</string>
+    <string name="exchange_live_title_prep">A fight is being prepared</string>
+    <string name="exchange_live_line_minutes">Round %1$d · %2$d min · %3$s</string>
+    <string name="exchange_live_line_round">Round %1$d · %2$s</string>
+    <plurals name="exchange_live_fighters">
+        <item quantity="one">%1$d fighter</item>
+        <item quantity="other">%1$d fighters</item>
+    </plurals>
+    <string name="exchange_live_export_note">The fight can be carried on from the same spot</string>
+    <string name="exchange_live_import_new">The fight will carry on here from the same spot</string>
+    <string name="exchange_live_import_busy">A fight is already under way on this device, this one is left out</string>
+    <string name="exchange_live_import_same">This device already holds this fight</string>
     <string name="exchange_done">Done</string>
     <string name="exchange_size_kb">%1$s KB</string>
     <string name="exchange_size_mb">%1$s MB</string>
@@ -1701,4 +1720,41 @@
     <string name="class_sheet_own_badge">own</string>
     <string name="class_sheet_subclass_label">Subclass · optional</string>
     <string name="class_sheet_done">Done</string>
+
+    <string name="session_text_button">As text</string>
+    <string name="session_text_title">Send as text</string>
+    <string name="session_text_intro_toggle">With an intro</string>
+    <string name="session_text_intro_hint">A joke at the start</string>
+    <string name="session_text_intro_hint_named">A joke at the start, with your character</string>
+    <string name="session_text_actors_toggle">Cast</string>
+    <string name="session_text_actors_hint">A list of who was mentioned at the end</string>
+    <string name="session_text_preview">Preview</string>
+    <string name="session_text_send">Send</string>
+    <string name="session_text_actors_title">Cast</string>
+    <string name="session_text_actors_npc">NPCs</string>
+    <string name="session_text_actors_places">Places</string>
+    <string name="session_text_actors_quests">Quests</string>
+    <string name="session_text_actors_species">Species</string>
+    <string name="session_text_actors_party">Party</string>
+    <string name="session_text_actors_items">Items</string>
+    <string-array name="session_text_intros_named">
+        <item>{name} unrolls a scroll: here is the truth about the trip.</item>
+        <item>{name} swears this is exactly how it goes.</item>
+        <item>A tavern tale. Author - {name}. Any resemblance to reality is a coincidence.</item>
+        <item>A chronicle by candlelight. Author - {name}.</item>
+        <item>{name} dictates the chronicle, the ink still wet.</item>
+        <item>{name} opens the journal and pretends to remember everything.</item>
+        <item>The campaign chronicle. {name} holds the quill, the party does not argue.</item>
+        <item>{name} takes up the quill, the dice are waiting.</item>
+    </string-array>
+    <string-array name="session_text_intros_plain">
+        <item>A tavern tale. Any resemblance to reality is a coincidence.</item>
+        <item>A chronicle by candlelight.</item>
+        <item>The campaign chronicle, the ink still wet.</item>
+        <item>The party is back in action, the game master smiles suspiciously.</item>
+        <item>The dice roll, the quill scratches, the party moves on.</item>
+        <item>The scroll unrolls, the candles burn.</item>
+        <item>The record is kept as it is. Well, almost as it is.</item>
+        <item>The game master is silent, the party writes it down.</item>
+    </string-array>
 </resources>

@@ -3,7 +3,9 @@ package com.lyrismet.incadent.core.file
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,68 +37,110 @@ actual fun rememberFilePicker(onPicked: (FileOrigin) -> Unit): () -> Unit {
 }
 
 @Composable
-actual fun rememberFileSharing(onSaved: (Boolean) -> Unit): FileSharing {
+actual fun rememberFileSharing(): (String) -> Unit {
+    val context = LocalContext.current
+    return { name ->
+        val uri =
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                context.exportFile(name),
+            )
+        val send =
+            Intent(Intent.ACTION_SEND)
+                .setType(JSON_MIME)
+                .putExtra(Intent.EXTRA_STREAM, uri)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        context.startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+}
+
+@Composable
+actual fun rememberFileSaver(
+    onFolder: (SaveFolder) -> Unit,
+    onSaved: (Boolean) -> Unit,
+): FileSaver {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val savingName = remember { mutableStateOf<String?>(null) }
-    val saver =
+    val dialogSource = remember { mutableStateOf<String?>(null) }
+    // before Android 10 there is no folder that takes a copy unasked, so the system dialog asks for the place
+    val dialog =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(JSON_MIME)) { uri ->
-            val name = savingName.value
-            savingName.value = null
-            if (uri == null || name == null) return@rememberLauncherForActivityResult
-            scope.launch {
-                val copied =
-                    withContext(Dispatchers.IO) {
-                        runCatching {
-                            context.contentResolver.openOutputStream(uri)?.use { out ->
-                                context.exportFile(name).inputStream().use { it.copyTo(out) }
-                            } != null
-                        }.getOrDefault(false)
-                    }
-                onSaved(copied)
-            }
+            val source = dialogSource.value
+            dialogSource.value = null
+            if (uri == null || source == null) return@rememberLauncherForActivityResult
+            scope.launch { onSaved(withContext(Dispatchers.IO) { context.copyExportTo(source, uri) }) }
         }
-    return FileSharing(
-        share = { name ->
-            val uri =
-                FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.fileprovider",
-                    context.exportFile(name),
-                )
-            val send =
-                Intent(Intent.ACTION_SEND)
-                    .setType(JSON_MIME)
-                    .putExtra(Intent.EXTRA_STREAM, uri)
-                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            context.startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        },
-        save = { name ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                scope.launch { onSaved(withContext(Dispatchers.IO) { context.saveToDownloads(name) }) }
-            } else {
-                savingName.value = name
-                saver.launch(name)
+    val tree =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+            uri?.let { onFolder(SaveFolder(it.toString(), context.folderName(it))) }
+        }
+    return FileSaver(
+        hasDefaultFolder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
+        pickFolder = { tree.launch(null) },
+        save = { source, target, folder ->
+            when {
+                folder != null ->
+                    scope.launch {
+                        onSaved(withContext(Dispatchers.IO) { context.saveToTree(source, target, folder.key.toUri()) })
+                    }
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ->
+                    scope.launch { onSaved(withContext(Dispatchers.IO) { context.saveToDownloads(source, target) }) }
+                else -> {
+                    dialogSource.value = source
+                    dialog.launch(target)
+                }
             }
         },
     )
 }
 
+private fun Context.copyExportTo(
+    source: String,
+    uri: Uri,
+): Boolean =
+    runCatching {
+        contentResolver.openOutputStream(uri)?.use { out ->
+            exportFile(source).inputStream().use { it.copyTo(out) }
+        } != null
+    }.getOrDefault(false)
+
+private fun Context.folderName(tree: Uri): String =
+    runCatching {
+        val folder = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
+        contentResolver
+            .query(folder, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)
+            ?.use { if (it.moveToFirst()) it.getString(0) else null }
+    }.getOrNull() ?: tree.lastPathSegment.orEmpty()
+
+// the provider renames a clashing file itself, so an older export in the folder is never overwritten
+private fun Context.saveToTree(
+    source: String,
+    target: String,
+    tree: Uri,
+): Boolean =
+    runCatching {
+        val folder = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
+        val uri = DocumentsContract.createDocument(contentResolver, folder, JSON_MIME, target)
+        val copied = uri != null && copyExportTo(source, uri)
+        if (!copied && uri != null) DocumentsContract.deleteDocument(contentResolver, uri)
+        copied
+    }.getOrDefault(false)
+
 // the store renames a clashing file itself, so an older export is never overwritten
 @RequiresApi(Build.VERSION_CODES.Q)
-private fun Context.saveToDownloads(name: String): Boolean =
+private fun Context.saveToDownloads(
+    source: String,
+    target: String,
+): Boolean =
     runCatching {
         val values =
             ContentValues().apply {
-                put(MediaStore.Downloads.DISPLAY_NAME, name)
+                put(MediaStore.Downloads.DISPLAY_NAME, target)
                 put(MediaStore.Downloads.MIME_TYPE, JSON_MIME)
             }
         val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-        val copied =
-            uri != null &&
-                contentResolver.openOutputStream(uri)?.use { out ->
-                    exportFile(name).inputStream().use { it.copyTo(out) }
-                } != null
+        val copied = uri != null && copyExportTo(source, uri)
         if (!copied && uri != null) contentResolver.delete(uri, null, null)
         copied
     }.getOrDefault(false)

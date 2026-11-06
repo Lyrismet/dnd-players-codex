@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.designsystem.component.StatusKind
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.file.FileStorage
+import com.lyrismet.incadent.core.file.SaveFolder
 import com.lyrismet.incadent.core.toast.TOAST_DURATION_MS
 import com.lyrismet.incadent.feature.campaign.domain.exchange.exportFileName
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
@@ -41,12 +42,16 @@ class ExportPresenter(
         val catalog by produceState<ExchangeCatalog?>(null) { value = repository.loadCatalog(screen.campaignId) }
         var mode by remember { mutableStateOf(ExportMode.FRIEND) }
         var partyNotes by remember { mutableStateOf(false) }
+        var liveFightOn by remember { mutableStateOf(true) }
         var whole by remember { mutableStateOf(true) }
         var hand by remember(catalog) { mutableStateOf(catalog?.let { ExchangePick.handPick(it.options, it.graph) }) }
         var photos by remember { mutableStateOf(true) }
         var writing by remember { mutableStateOf(false) }
-        var file by remember { mutableStateOf<ExportedFile?>(null) }
+        var file by remember { mutableStateOf<String?>(null) }
         var status by remember { mutableStateOf<DeliveryStatus?>(null) }
+        var savePrompt by remember { mutableStateOf<SavePrompt?>(null) }
+        // the folder stays chosen for the next save of this screen
+        var saveFolder by remember { mutableStateOf<SaveFolder?>(null) }
         var delivering by remember { mutableStateOf(ExportDelivery.SHARE) }
         // a finished mark fades out on its own, the spinner stays until the work is over
         LaunchedEffect(status) {
@@ -65,7 +70,7 @@ class ExportPresenter(
         val everything = remember(loaded) { loaded?.let { ExchangePick.everything(it.options, it.graph) } }
         val active = (if (whole || mode == ExportMode.SELF) everything else hand)?.withMode(mode)
         // the text of the file does not depend on the photos switch, so a flip of it does not measure again
-        val measured = active?.selection?.copy(mode = mode, partyNotes = partyNotes)
+        val measured = active?.selection?.copy(mode = mode, partyNotes = partyNotes, liveFight = liveFightOn)
         val estimate by produceState<ExportEstimate?>(null, measured) {
             // the first measure comes at once, only a run of later picks waits
             if (value != null) delay(ESTIMATE_DEBOUNCE_MILLIS)
@@ -96,13 +101,17 @@ class ExportPresenter(
             sessionCount = active?.sessionCount ?: 0,
             photos = photos,
             estimate = estimate,
+            liveFight = loaded?.liveFight,
+            liveFightOn = liveFightOn,
             canExport = loaded != null && (whole || mode == ExportMode.SELF || active?.isEmpty == false),
             file = file,
+            savePrompt = savePrompt?.copy(folder = saveFolder),
             status = status,
         ) { event ->
             when (event) {
                 is ExportEvent.ModeSelected -> mode = event.mode
                 ExportEvent.PartyNotesToggled -> partyNotes = !partyNotes
+                ExportEvent.LiveFightToggled -> liveFightOn = !liveFightOn
                 is ExportEvent.WholeSelected -> whole = event.whole
                 is ExportEvent.Pick -> hand = hand?.reduce(event.event)
                 ExportEvent.PhotosToggled -> photos = !photos
@@ -118,12 +127,22 @@ class ExportPresenter(
                                 measured.copy(photos = photos),
                                 storage.createSink(fileName),
                             )
-                            file = ExportedFile(fileName, event.delivery)
+                            when (event.delivery) {
+                                ExportDelivery.SHARE -> file = fileName
+                                ExportDelivery.SAVE -> {
+                                    savePrompt = SavePrompt(fileName, fileName, saveFolder, storage.sizeOf(fileName))
+                                    status = null
+                                }
+                            }
                             writing = false
                         }
                     }
+                is ExportEvent.SaveNameChanged -> savePrompt = savePrompt?.copy(name = event.name)
+                is ExportEvent.SaveFolderPicked -> saveFolder = event.folder
+                ExportEvent.SaveCancelled -> savePrompt = null
                 is ExportEvent.Delivered -> {
                     file = null
+                    savePrompt = null
                     // a share or a cancelled dialog has no outcome to show
                     status =
                         event.saved?.let {

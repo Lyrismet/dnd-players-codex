@@ -31,6 +31,8 @@ import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.FieldChoice
+import com.lyrismet.incadent.feature.campaign.domain.model.LiveFightPlan
+import com.lyrismet.incadent.feature.campaign.domain.model.LiveFightStatus
 import com.lyrismet.incadent.feature.campaign.domain.model.Resolution
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.exchange_auto_fills
@@ -65,6 +67,9 @@ import dndplayerscodex.shared.generated.resources.exchange_compare_summary
 import dndplayerscodex.shared.generated.resources.exchange_compare_summary_short
 import dndplayerscodex.shared.generated.resources.exchange_compare_take_all
 import dndplayerscodex.shared.generated.resources.exchange_import_reading
+import dndplayerscodex.shared.generated.resources.exchange_live_import_busy
+import dndplayerscodex.shared.generated.resources.exchange_live_import_new
+import dndplayerscodex.shared.generated.resources.exchange_live_import_same
 import dndplayerscodex.shared.generated.resources.exchange_new_item
 import dndplayerscodex.shared.generated.resources.exchange_new_npc
 import dndplayerscodex.shared.generated.resources.exchange_new_party
@@ -101,6 +106,7 @@ private fun CompareList(
     sink: (ImportEvent) -> Unit,
 ) {
     CompareSummary(view)
+    view.liveFight?.let { LiveFightImportCard(it) }
     view.personal?.let { PersonalSection(it, sink) }
     if (view.hasNeed) NeedSection(view, sink)
     AutoSection(view, sink)
@@ -108,6 +114,17 @@ private fun CompareList(
     if (view.deleted.isNotEmpty()) DeletedSection(view.deleted, sink)
     CompareStatus(view) { sink(ImportEvent.ImportConfirmed) }
     BackLink { sink(ImportEvent.Back) }
+}
+
+@Composable
+private fun LiveFightImportCard(plan: LiveFightPlan) {
+    val note =
+        when (plan.status) {
+            LiveFightStatus.NEW -> Res.string.exchange_live_import_new
+            LiveFightStatus.BUSY -> Res.string.exchange_live_import_busy
+            LiveFightStatus.SAME -> Res.string.exchange_live_import_same
+        }
+    LiveFightCard(plan.fight, note = stringResource(note))
 }
 
 @Composable

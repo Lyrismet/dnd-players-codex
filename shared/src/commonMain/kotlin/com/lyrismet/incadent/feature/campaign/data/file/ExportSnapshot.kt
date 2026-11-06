@@ -7,6 +7,7 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeItem
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
+import com.lyrismet.incadent.feature.campaign.domain.model.LiveFight
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.domain.mentionRefsIn
 import com.lyrismet.incadent.db.item.SelectAll as ItemSql
@@ -41,6 +42,7 @@ internal class Snapshot(
     val items: List<ItemSql>,
     val entries: Map<Long, List<Session_entry>>,
     val tagNames: Map<Long, List<String>>,
+    val liveFight: LiveFight? = null,
 ) {
     /** who carries each item, by item id */
     val owners: Map<Long, ExchangeRef> by lazy { items.mapNotNull { row -> row.owner()?.let { row.id to it } }.toMap() }
@@ -61,6 +63,6 @@ internal class Snapshot(
                     },
             )
         val options = rows.options()
-        ExchangeCatalog(name, options, rows.graph().withKnownMentionsOnly(options))
+        ExchangeCatalog(name, options, rows.graph().withKnownMentionsOnly(options), liveFight)
     }
 }

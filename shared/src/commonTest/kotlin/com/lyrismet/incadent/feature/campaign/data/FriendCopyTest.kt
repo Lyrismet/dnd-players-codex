@@ -24,6 +24,11 @@ class FriendCopyTest {
             hpCurrent = 12,
             description = "afraid of fire",
             fallen = true,
+            tempHp = 3,
+            armorClass = 12,
+            armorClassFrom = "mage armor",
+            deathSuccesses = 1,
+            deathFailures = 2,
         )
 
     @Test
@@ -40,6 +45,11 @@ class FriendCopyTest {
         assertNull(copy.hpCurrent)
         assertEquals("", copy.description)
         assertFalse(copy.isPlayerCharacter)
+        assertEquals(0, copy.tempHp)
+        assertNull(copy.armorClass)
+        assertEquals("", copy.armorClassFrom)
+        assertEquals(0, copy.deathSuccesses)
+        assertEquals(0, copy.deathFailures)
     }
 
     @Test

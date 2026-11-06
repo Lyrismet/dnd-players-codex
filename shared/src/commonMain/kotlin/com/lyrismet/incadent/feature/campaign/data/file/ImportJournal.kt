@@ -10,6 +10,7 @@ internal object JournalAction {
     const val PHOTO = "PHOTO"
     const val LABEL = "LABEL"
     const val COMBAT = "COMBAT"
+    const val SHEET = "SHEET"
 }
 
 /** collects what an import changes, so the last import into a campaign can be taken back */
@@ -70,6 +71,12 @@ internal class ImportJournal(
 
     /** the "я" mark moved off [previousId] (0 when nobody had it) */
     fun label(previousId: Long) = add(JournalAction.LABEL, "PARTY", previousId)
+
+    /** the sheet and counters [memberId] had before a file's were written over them, as a json list of records */
+    fun sheet(
+        memberId: Long,
+        snapshot: String,
+    ) = add(JournalAction.SHEET, "PARTY", memberId, snapshot = snapshot)
 
     /** replaces the journal of the campaign with this import's, an import that changed nothing keeps the old one */
     fun write(

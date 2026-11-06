@@ -920,6 +920,27 @@
     <string name="exchange_writing">Собираю файл…</string>
     <string name="exchange_share">Поделиться файлом</string>
     <string name="exchange_save">Сохранить на устройство</string>
+    <string name="exchange_save_title">Сохранение файла</string>
+    <string name="exchange_save_name">Имя файла</string>
+    <string name="exchange_save_folder">Папка</string>
+    <string name="exchange_save_folder_downloads">Загрузки</string>
+    <string name="exchange_save_folder_ask">Выбрать при сохранении</string>
+    <string name="exchange_save_download">Загрузить · %1$s</string>
+    <string name="exchange_save_cancel">Отмена</string>
+    <string name="exchange_live_title_ongoing">Идёт бой</string>
+    <string name="exchange_live_title_prep">Бой в подготовке</string>
+    <string name="exchange_live_line_minutes">Раунд %1$d · %2$d мин · %3$s</string>
+    <string name="exchange_live_line_round">Раунд %1$d · %2$s</string>
+    <plurals name="exchange_live_fighters">
+        <item quantity="one">%1$d участник</item>
+        <item quantity="few">%1$d участника</item>
+        <item quantity="many">%1$d участников</item>
+        <item quantity="other">%1$d участника</item>
+    </plurals>
+    <string name="exchange_live_export_note">Бой можно будет продолжить с того же места</string>
+    <string name="exchange_live_import_new">Бой продолжится здесь с того же места</string>
+    <string name="exchange_live_import_busy">На устройстве уже идёт бой, этот не будет взят</string>
+    <string name="exchange_live_import_same">Такой бой уже есть на устройстве</string>
     <string name="exchange_done">Готово</string>
     <string name="exchange_size_kb">%1$s КБ</string>
     <string name="exchange_size_mb">%1$s МБ</string>
@@ -1783,4 +1804,41 @@
     <string name="class_sheet_own_badge">свой</string>
     <string name="class_sheet_subclass_label">Подкласс · необязательно</string>
     <string name="class_sheet_done">Готово</string>
+
+    <string name="session_text_button">Текстом</string>
+    <string name="session_text_title">Отправить текстом</string>
+    <string name="session_text_intro_toggle">С вступлением</string>
+    <string name="session_text_intro_hint">Шутка в начале</string>
+    <string name="session_text_intro_hint_named">Шутка в начале, с вашим персонажем</string>
+    <string name="session_text_actors_toggle">Действующие лица</string>
+    <string name="session_text_actors_hint">Список упомянутых в конце</string>
+    <string name="session_text_preview">Предпросмотр</string>
+    <string name="session_text_send">Отправить</string>
+    <string name="session_text_actors_title">Действующие лица</string>
+    <string name="session_text_actors_npc">NPC</string>
+    <string name="session_text_actors_places">Места</string>
+    <string name="session_text_actors_quests">Квесты</string>
+    <string name="session_text_actors_species">Виды</string>
+    <string name="session_text_actors_party">Отряд</string>
+    <string name="session_text_actors_items">Предметы</string>
+    <string-array name="session_text_intros_named">
+        <item>{name} разворачивает свиток: вот правда о походе.</item>
+        <item>{name} уверяет, что всё именно так и происходит.</item>
+        <item>Трактирная байка. Автор - {name}. Совпадения с реальностью случайны.</item>
+        <item>Летопись при свете свечи. Автор - {name}.</item>
+        <item>{name} диктует хронику, чернила ещё влажные.</item>
+        <item>{name} открывает дневник и делает вид, что всё помнит.</item>
+        <item>Хроника похода. Перо у {name}, отряд не спорит.</item>
+        <item>{name} берёт перо, кубики уже ждут.</item>
+    </string-array>
+    <string-array name="session_text_intros_plain">
+        <item>Трактирная байка. Совпадения с реальностью случайны.</item>
+        <item>Летопись при свете свечи.</item>
+        <item>Хроника похода, чернила ещё влажные.</item>
+        <item>Отряд снова в деле, мастер подозрительно улыбается.</item>
+        <item>Кубики катятся, перо скрипит, отряд идёт дальше.</item>
+        <item>Свиток разворачивается, свечи горят.</item>
+        <item>Запись ведётся как есть. Ну, почти как есть.</item>
+        <item>Мастер молчит, отряд записывает.</item>
+    </string-array>
 </resources>

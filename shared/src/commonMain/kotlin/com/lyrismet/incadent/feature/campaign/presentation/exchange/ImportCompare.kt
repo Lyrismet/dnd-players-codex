@@ -6,6 +6,8 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.FieldChange
 import com.lyrismet.incadent.feature.campaign.domain.model.FieldChoice
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportPlan
+import com.lyrismet.incadent.feature.campaign.domain.model.LiveFightPlan
+import com.lyrismet.incadent.feature.campaign.domain.model.LiveFightStatus
 import com.lyrismet.incadent.feature.campaign.domain.model.PlannedRecord
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordField
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
@@ -101,6 +103,7 @@ data class CompareView(
     val newSessions: List<LocalDate>,
     val deleted: List<CompareDeleted>,
     val personal: ComparePersonal?,
+    val liveFight: LiveFightPlan?,
     val detail: CompareDetail?,
     val nothingNew: Boolean,
     val emptyRecords: Int,
@@ -132,7 +135,7 @@ private fun PlannedRecord.conflicts(): List<FieldChange> = changes.filter { !it.
 private fun PlannedRecord.fills(): List<FieldChange> = changes.filter { it.isFill }
 
 /** the comparison of [plan] limited to what [scope] takes, with the answers [answers] applied */
-@Suppress("LongMethod")
+@Suppress("LongMethod", "CyclomaticComplexMethod")
 fun buildCompare(
     plan: ImportPlan,
     scope: RecordScope?,
@@ -204,9 +207,11 @@ fun buildCompare(
                     answers.takeVitals,
                 )
             },
+        liveFight = plan.liveFight,
         detail = both.firstOrNull { it.ref == answers.open }?.toDetail(answers),
         nothingNew =
-            both.all { it.changes.isEmpty() } &&
+            plan.liveFight?.status != LiveFightStatus.NEW &&
+                both.all { it.changes.isEmpty() } &&
                 similar.isEmpty() &&
                 fresh.isEmpty() &&
                 deleted.isEmpty() &&

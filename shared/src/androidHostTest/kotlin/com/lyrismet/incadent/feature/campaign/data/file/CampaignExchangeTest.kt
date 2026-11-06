@@ -1,7 +1,5 @@
 package com.lyrismet.incadent.feature.campaign.data.file
 
-import com.lyrismet.incadent.core.file.FileOrigin
-import com.lyrismet.incadent.core.file.FileSource
 import com.lyrismet.incadent.core.file.MemoryFile
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
@@ -48,13 +46,6 @@ class CampaignExchangeTest {
     // a bare jpeg header that reads as 16 by 32 pixels
     private val jpeg =
         byteArrayOf(-1, -40, -1, -64, 0, 17, 8, 0, 32, 0, 16, 3, 1, 34, 0, 2, 17, 1, 3, 17, 1, -1, -39)
-
-    private fun origin(file: MemoryFile) =
-        object : FileOrigin {
-            override val name = "test.incadent.json"
-
-            override fun open(): FileSource = MemoryFile(file.text.lines())
-        }
 
     private var npcId: Long = 0L
 

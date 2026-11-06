@@ -1,7 +1,5 @@
 package com.lyrismet.incadent.feature.campaign.data.file
 
-import com.lyrismet.incadent.core.file.FileOrigin
-import com.lyrismet.incadent.core.file.FileSource
 import com.lyrismet.incadent.core.file.MemoryFile
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.db.item.SelectAll
@@ -33,13 +31,6 @@ class ItemExchangeTest {
     private val importer = CampaignImporter(database) { _, _ -> byteArrayOf(7) }
     private val planner = ImportPlanner(database)
     private val rollback = ImportRollback(database) { _, _ -> byteArrayOf(7) }
-
-    private fun origin(file: MemoryFile) =
-        object : FileOrigin {
-            override val name = "test.incadent.json"
-
-            override fun open(): FileSource = MemoryFile(file.text.lines())
-        }
 
     private fun export(mode: ExportMode = ExportMode.FRIEND): MemoryFile {
         val options = CampaignExporter(database).catalog(THEIRS).options
@@ -173,7 +164,10 @@ class ItemExchangeTest {
     @Test
     fun `a personal copy brings the things of a character with their owner`() {
         seed()
-        val target = import(export(ExportMode.SELF), ImportTarget.NewCampaign("Fallback")).campaignId
+        val target =
+            import(export(ExportMode.SELF), ImportTarget.NewCampaign("Fallback")) {
+                ImportRequest(it, ConflictMode.SKIP, takeAsMine = true)
+            }.campaignId
 
         val hero =
             database.partyMemberQueries

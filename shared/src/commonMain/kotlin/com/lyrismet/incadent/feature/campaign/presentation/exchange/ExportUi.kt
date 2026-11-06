@@ -26,6 +26,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
+import com.lyrismet.incadent.core.designsystem.component.AppToggleCard
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
@@ -40,6 +41,7 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.exchange_export_file
 import dndplayerscodex.shared.generated.resources.exchange_export_overline
 import dndplayerscodex.shared.generated.resources.exchange_friend_banner
+import dndplayerscodex.shared.generated.resources.exchange_live_export_note
 import dndplayerscodex.shared.generated.resources.exchange_mode_friend
 import dndplayerscodex.shared.generated.resources.exchange_mode_self
 import dndplayerscodex.shared.generated.resources.exchange_mode_self_note
@@ -67,21 +69,12 @@ fun ExportUi(
     modifier: Modifier = Modifier,
 ) {
     val sink = state.eventSink
-    val sharing = rememberFileSharing(onSaved = { sink(ExportEvent.Delivered(it)) })
-    // the presenter has written the file, only the view can open the system dialog for it
+    val share = rememberFileSharing()
+    // the presenter has written the file, only the view can open the system share sheet for it
     LaunchedEffect(state.file) {
         val file = state.file ?: return@LaunchedEffect
-        when (file.delivery) {
-            ExportDelivery.SHARE -> {
-                sharing.share(file.fileName)
-                sink(ExportEvent.Delivered(saved = null))
-            }
-            ExportDelivery.SAVE -> {
-                sharing.save(file.fileName)
-                // the dialog answers through onSaved, a cancelled one only frees the buttons
-                sink(ExportEvent.Delivered(saved = null))
-            }
-        }
+        share(file)
+        sink(ExportEvent.Delivered(saved = null))
     }
     Box(modifier = modifier) {
         AppBottomSheet(onDismissRequest = { sink(ExportEvent.Closed) }) {
@@ -95,6 +88,7 @@ fun ExportUi(
                 ExportBody(state)
             }
         }
+        state.savePrompt?.let { ExportSaveSheet(it, onEvent = sink) }
     }
 }
 
@@ -130,6 +124,14 @@ private fun ExportBody(state: ExportState) {
     if (state.whole || !friend) {
         val hint = if (friend) Res.string.exchange_summary_hint else Res.string.exchange_mode_self_note
         ExchangeSummary(state.recordCount, state.sessionCount, stringResource(hint))
+    }
+    state.liveFight?.let {
+        LiveFightCard(
+            fight = it,
+            note = stringResource(Res.string.exchange_live_export_note),
+            checked = state.liveFightOn,
+            onToggle = { sink(ExportEvent.LiveFightToggled) },
+        )
     }
     state.pick?.let { view -> ExchangePickSection(view, onEvent = { sink(ExportEvent.Pick(it)) }) }
     if (friend) FriendNotice(state)
@@ -186,7 +188,7 @@ private fun ExportBody(state: ExportState) {
 // the switch that lets the notes about the party go too, and what a friend does not get with the "?" that lists it
 @Composable
 private fun FriendNotice(state: ExportState) {
-    ExchangeToggleCard(
+    AppToggleCard(
         title = stringResource(Res.string.exchange_party_notes_title),
         hint = stringResource(Res.string.exchange_party_notes_hint),
         checked = state.partyNotes,

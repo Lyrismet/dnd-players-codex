@@ -16,6 +16,8 @@ import com.lyrismet.incadent.feature.mention.presentation.MentionCreateSheetStat
 import com.lyrismet.incadent.feature.mention.presentation.MentionDropdownItem
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSheetEvent
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSheetState
+import com.lyrismet.incadent.feature.session.presentation.text.SessionTextEvent
+import com.lyrismet.incadent.feature.session.presentation.text.SessionTextSheetState
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 
@@ -54,6 +56,8 @@ data class SessionDetailState(
     val mentionCreateSheet: MentionCreateSheetState? = null,
     // the codex form sheet, opened prefilled from the "?" tag sheet
     val entryForm: CodexEntryFormState? = null,
+    // the sheet that sends the session out as a text
+    val textSheet: SessionTextSheetState? = null,
     val eventSink: (SessionDetailEvent) -> Unit = {},
 ) : CircuitUiState {
     val isEditingEntry: Boolean get() = editingEntryTimeLabel != null
@@ -238,6 +242,13 @@ sealed interface SessionDetailEvent : CircuitUiEvent {
     data object CombatDeleteConfirmed : SessionDetailEvent
 
     data object CombatDeleteDismissed : SessionDetailEvent
+
+    /** the "Текстом" button of the header */
+    data object TextClicked : SessionDetailEvent
+
+    data class Text(
+        val event: SessionTextEvent,
+    ) : SessionDetailEvent
 
     data object EndSessionClicked : SessionDetailEvent
 

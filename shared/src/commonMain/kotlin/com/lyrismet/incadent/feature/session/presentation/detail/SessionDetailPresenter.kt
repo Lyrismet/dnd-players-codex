@@ -21,6 +21,7 @@ import com.lyrismet.incadent.core.preferences.HoldHintState
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
@@ -40,6 +41,7 @@ import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
 import com.lyrismet.incadent.feature.combat.presentation.summary.toCardItem
+import com.lyrismet.incadent.feature.mention.domain.MentionEntity
 import com.lyrismet.incadent.feature.mention.domain.mentionsIn
 import com.lyrismet.incadent.feature.mention.domain.pendingQuantityName
 import com.lyrismet.incadent.feature.mention.presentation.MentionSessionBodies
@@ -53,22 +55,37 @@ import com.lyrismet.incadent.feature.phrases.domain.repository.PhraseSnippetRepo
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSheetController
 import com.lyrismet.incadent.feature.phrases.presentation.rememberFrequentPhrases
 import com.lyrismet.incadent.feature.phrases.presentation.sheetState
+import com.lyrismet.incadent.feature.session.domain.SessionTextNote
+import com.lyrismet.incadent.feature.session.domain.SessionTextParts
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.feature.session.domain.repository.TagRepository
+import com.lyrismet.incadent.feature.session.domain.sessionActors
 import com.lyrismet.incadent.feature.session.domain.sessionNumberLabels
 import com.lyrismet.incadent.feature.session.presentation.route.SessionDetailScreen
 import com.lyrismet.incadent.feature.session.presentation.route.sessionEntryOpener
+import com.lyrismet.incadent.feature.session.presentation.text.SessionTextController
+import com.lyrismet.incadent.feature.session.presentation.text.SessionTextSource
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.session_detail_phrase_saved_toast
 import dndplayerscodex.shared.generated.resources.session_detail_undo_deleted_entry_title
 import dndplayerscodex.shared.generated.resources.session_overline_format
+import dndplayerscodex.shared.generated.resources.session_text_actors_items
+import dndplayerscodex.shared.generated.resources.session_text_actors_npc
+import dndplayerscodex.shared.generated.resources.session_text_actors_party
+import dndplayerscodex.shared.generated.resources.session_text_actors_places
+import dndplayerscodex.shared.generated.resources.session_text_actors_quests
+import dndplayerscodex.shared.generated.resources.session_text_actors_species
+import dndplayerscodex.shared.generated.resources.session_text_actors_title
+import dndplayerscodex.shared.generated.resources.session_text_intros_named
+import dndplayerscodex.shared.generated.resources.session_text_intros_plain
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -271,6 +288,15 @@ class SessionDetailPresenter(
                 highlightedEntryId = highlightedEntryId.value,
                 focusIndex = focusIndex,
             )
+        val textSource =
+            rememberTextSource(
+                header.overline,
+                titleText,
+                header.dateLabel,
+                parties.firstOrNull { it.isPlayerCharacter }?.name,
+                entries,
+                entryMentions,
+            )
         // the sink keeps one identity for the whole screen, so a keystroke does not recompose every note
         val latestEvents =
             rememberUpdatedState { event: SessionDetailEvent ->
@@ -283,6 +309,7 @@ class SessionDetailPresenter(
                         scope,
                         readOnly,
                         combatToDelete,
+                        textSource,
                     )
                 events.handle(event, context, fields, assignedTags, tagSuggestions, mentionData)
             }
@@ -323,6 +350,7 @@ class SessionDetailPresenter(
             deletedMentionSheet = fields.deleted.state(mentionData),
             mentionCreateSheet = fields.create.state(mentionData),
             entryForm = fields.formController.buildState(npcs, locations, species),
+            textSheet = fields.text.state(textSource),
             eventSink = eventSink,
         )
     }
@@ -392,6 +420,7 @@ class SessionDetailPresenter(
             toast = remember(noteId) { mutableStateOf(null) },
             formController = formController,
             quickEdit = quickEditInteractions(noteId, selectedEntityRef, entitySheet, recentPlaceIds),
+            text = SessionTextController(remember(noteId) { mutableStateOf(null) }, appPreferencesRepository),
         )
     }
 
@@ -427,6 +456,39 @@ class SessionDetailPresenter(
         onChanged = reportChange,
         followsPartyLevel = { appPreferencesRepository.observeFollowPartyLevel().first() },
     )
+}
+
+/** the pieces the text of the session is made of, the notes and who they mention are only gathered once it is needed */
+@Composable
+private fun rememberTextSource(
+    overline: String,
+    title: String,
+    dateLabel: String,
+    character: String?,
+    entries: List<SessionEntry>,
+    mentioned: List<MentionEntity>,
+): SessionTextSource {
+    val named = stringArrayResource(Res.array.session_text_intros_named)
+    val plain = stringArrayResource(Res.array.session_text_intros_plain)
+    val actorsTitle = stringResource(Res.string.session_text_actors_title)
+    val labels =
+        listOf(
+            EntityKind.NPC to stringResource(Res.string.session_text_actors_npc),
+            EntityKind.LOCATION to stringResource(Res.string.session_text_actors_places),
+            EntityKind.QUEST to stringResource(Res.string.session_text_actors_quests),
+            EntityKind.SPECIES to stringResource(Res.string.session_text_actors_species),
+            EntityKind.PARTY to stringResource(Res.string.session_text_actors_party),
+            EntityKind.ITEM to stringResource(Res.string.session_text_actors_items),
+        )
+    return SessionTextSource(overline, character, named, plain) {
+        SessionTextParts(
+            heading = listOf(overline, title, dateLabel).filter { it.isNotBlank() }.joinToString(" · "),
+            intro = null,
+            notes = entries.sortedBy { it.createdAt }.map { SessionTextNote(it.createdAt.toDisplayTime(), it.body) },
+            actorsTitle = actorsTitle,
+            actors = sessionActors(mentioned, entries.map { it.body }, labels),
+        )
+    }
 }
 
 private fun PhraseOption.toItem() =

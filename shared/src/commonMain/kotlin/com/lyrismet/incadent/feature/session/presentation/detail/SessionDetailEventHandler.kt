@@ -18,6 +18,8 @@ import com.lyrismet.incadent.feature.phrases.presentation.PhraseSheetController
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
+import com.lyrismet.incadent.feature.session.presentation.text.SessionTextController
+import com.lyrismet.incadent.feature.session.presentation.text.SessionTextSource
 import com.slack.circuit.runtime.Navigator
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_toast_format
@@ -44,6 +46,7 @@ internal class SessionDetailFields(
     val toast: MutableState<String?>,
     val formController: CodexEntryFormController,
     val quickEdit: QuickEditInteractions,
+    val text: SessionTextController,
 )
 
 /** everything an event handler reads besides the editable fields - one value instead of five parameters */
@@ -55,6 +58,7 @@ internal data class EventContext(
     val scope: CoroutineScope,
     val readOnly: Boolean,
     val combatToDelete: MutableState<Long?>,
+    val textSource: SessionTextSource,
 )
 
 /** turns every [SessionDetailEvent] into the matching controller call or repository write */
@@ -146,6 +150,8 @@ internal class SessionDetailEventHandler(
                 context.combatToDelete.value = null
                 if (id != null) scope.launch { combatRepository.delete(id) }
             }
+            SessionDetailEvent.TextClicked -> fields.text.open(context.textSource)
+            is SessionDetailEvent.Text -> fields.text.onEvent(event.event)
             SessionDetailEvent.EndSessionClicked -> onEndSession(currentNote, scope)
             SessionDetailEvent.ResumeSessionClicked -> onResumeSession(currentNote, scope)
             SessionDetailEvent.TagButtonClicked -> fields.tags.open()

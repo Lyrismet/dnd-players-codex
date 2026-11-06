@@ -4,6 +4,8 @@ import com.lyrismet.incadent.core.portrait.toNSData
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSFileHandle
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSFileSize
+import platform.Foundation.NSNumber
 import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import platform.Foundation.closeFile
@@ -27,5 +29,11 @@ actual class FileStorage {
         manager.createFileAtPath(path, contents = null, attributes = null)
         val handle = NSFileHandle.fileHandleForWritingAtPath(path) ?: error("the export file cannot be opened")
         return LineWriterSink({ handle.writeData(it.toNSData()) }, { handle.closeFile() })
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    actual fun sizeOf(fileName: String): Long {
+        val attributes = NSFileManager.defaultManager.attributesOfItemAtPath(exportPath(fileName), error = null)
+        return (attributes?.get(NSFileSize) as? NSNumber)?.longLongValue ?: 0L
     }
 }

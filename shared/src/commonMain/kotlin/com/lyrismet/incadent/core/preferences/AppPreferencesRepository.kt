@@ -45,6 +45,11 @@ interface AppPreferencesRepository {
         hidden: Boolean,
     )
 
+    /** which joke opened the last session text that was sent, -1 before the first one */
+    fun lastSessionTextIntro(): Int
+
+    fun setLastSessionTextIntro(index: Int)
+
     /** drops what is stored for a deleted campaign */
     fun forgetCampaign(campaignId: String)
 }
