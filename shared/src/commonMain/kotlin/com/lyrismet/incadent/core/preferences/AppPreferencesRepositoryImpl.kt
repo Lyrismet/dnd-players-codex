@@ -24,6 +24,7 @@ private const val KEY_HOLD_HINT_STATE = "hold_hint_state"
 private const val KEY_SESSION_LIST_SWIPE_HINT_STATE = "session_list_swipe_hint_state"
 private const val KEY_CODEX_SWIPE_HINT_STATE = "codex_swipe_hint_state"
 private const val KEY_FOLLOW_PARTY_LEVEL = "follow_party_level"
+private const val KEY_LAST_SESSION_TEXT_INTRO = "last_session_text_intro"
 private const val KEY_ME_BANNER_HIDDEN_PREFIX = "me_banner_hidden_"
 
 @Inject
@@ -108,6 +109,12 @@ class AppPreferencesRepositoryImpl(
         hidden: Boolean,
     ) {
         settings.putBoolean(KEY_ME_BANNER_HIDDEN_PREFIX + campaignId, hidden)
+    }
+
+    override fun lastSessionTextIntro(): Int = settings.getInt(KEY_LAST_SESSION_TEXT_INTRO, -1)
+
+    override fun setLastSessionTextIntro(index: Int) {
+        settings.putInt(KEY_LAST_SESSION_TEXT_INTRO, index)
     }
 
     override fun forgetCampaign(campaignId: String) {

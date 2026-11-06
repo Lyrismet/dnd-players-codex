@@ -25,9 +25,11 @@ class RecordValidator {
     private val quests = mutableSetOf<Long>()
     private val party = mutableSetOf<Long>()
     private val items = mutableSetOf<Long>()
+    private val sheets = mutableSetOf<Long>()
     private val sessions = mutableSetOf<Long>()
     private val fights = FightRules(species, npcs, party, sessions)
 
+    @Suppress("CyclomaticComplexMethod")
     fun accept(record: FileRecord) {
         val next = record.rank()
         must(next >= rank)
@@ -41,6 +43,8 @@ class RecordValidator {
             is FileRecord.Npc -> checkNpc(record)
             is FileRecord.Quest -> checkQuest(record)
             is FileRecord.Party -> must(party.add(record.id))
+            is FileRecord.Sheet -> must(record.partyId in party && sheets.add(record.partyId))
+            is FileRecord.Resource -> must(record.partyId in party)
             is FileRecord.Item -> checkItem(record)
             is FileRecord.Session -> must(sessions.add(record.id))
             is FileRecord.Entry -> must(record.sessionId in sessions)
@@ -90,6 +94,8 @@ class RecordValidator {
                 is FileRecord.Npc -> record.fits()
                 is FileRecord.Quest -> record.fits()
                 is FileRecord.Party -> record.fits()
+                is FileRecord.Sheet -> record.fits()
+                is FileRecord.Resource -> fits(MAX_SHORT_CHARS, record.name)
                 is FileRecord.Item -> fits(MAX_SHORT_CHARS, record.name) && fits(MAX_LONG_CHARS, record.notes)
                 is FileRecord.Tag -> fits(MAX_SHORT_CHARS, record.name)
                 is FileRecord.Phrase -> fits(MAX_LONG_CHARS, record.text)
@@ -116,8 +122,23 @@ class RecordValidator {
 }
 
 // a place's parent, an npc's species and places, a quest's npc and place all sit in sections above them
-private enum class Section { SPECIES, PLACE, NPC, QUEST, PARTY, ITEM, TAG, PHRASE, SESSION, ENTRY, FIGHT, PHOTO }
+private enum class Section {
+    SPECIES,
+    PLACE,
+    NPC,
+    QUEST,
+    PARTY,
+    SHEET,
+    ITEM,
+    TAG,
+    PHRASE,
+    SESSION,
+    ENTRY,
+    FIGHT,
+    PHOTO,
+}
 
+@Suppress("CyclomaticComplexMethod")
 private fun FileRecord.rank(): Int =
     when (this) {
         is FileRecord.Species -> Section.SPECIES
@@ -125,6 +146,8 @@ private fun FileRecord.rank(): Int =
         is FileRecord.Npc -> Section.NPC
         is FileRecord.Quest -> Section.QUEST
         is FileRecord.Party -> Section.PARTY
+        is FileRecord.Sheet -> Section.SHEET
+        is FileRecord.Resource -> Section.SHEET
         is FileRecord.Item -> Section.ITEM
         is FileRecord.Tag -> Section.TAG
         is FileRecord.Phrase -> Section.PHRASE
@@ -160,6 +183,9 @@ private fun FileRecord.Party.fits() =
         (level == null || level in PartyStatRanges.level) &&
         (hpMax == null || hpMax in PartyStatRanges.hpMax) &&
         (hpCurrent == null || hpCurrent in 0..(hpMax ?: MAX_HP_WITHOUT_MAX))
+
+private fun FileRecord.Sheet.fits() =
+    fits(MAX_SHORT_CHARS, background, alignment, languages) && fits(MAX_LONG_CHARS, personality, features, notes)
 
 private fun FileRecord.Session.fits() =
     fits(MAX_SHORT_CHARS, title) && tags.size <= MAX_LINKS && tags.all { it.length <= MAX_SHORT_CHARS }

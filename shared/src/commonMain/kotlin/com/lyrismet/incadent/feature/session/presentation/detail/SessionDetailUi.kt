@@ -62,6 +62,7 @@ import com.lyrismet.incadent.feature.combat.presentation.summary.CombatFeedCard
 import com.lyrismet.incadent.feature.mention.presentation.MentionCreateActions
 import com.lyrismet.incadent.feature.mention.presentation.MentionCreateSheet
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
+import com.lyrismet.incadent.feature.session.presentation.text.SessionTextSheet
 import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.combat_results_delete_confirm
 import dndplayerscodex.shared.generated.resources.combat_results_delete_keep
@@ -101,6 +102,9 @@ fun SessionDetailUi(
         )
     }
     state.tagSheet?.let { sheet -> SessionDetailTagsSheet(sheet, state.eventSink) }
+    state.textSheet?.let { sheet ->
+        SessionTextSheet(sheet, onEvent = { state.eventSink(SessionDetailEvent.Text(it)) })
+    }
     state.deletedMentionSheet?.let { sheet -> DeletedMentionSheet(sheet, state.eventSink) }
     state.mentionCreateSheet?.let { sheet ->
         MentionCreateSheet(

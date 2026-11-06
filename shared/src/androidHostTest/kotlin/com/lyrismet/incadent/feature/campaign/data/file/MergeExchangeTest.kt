@@ -1,7 +1,5 @@
 package com.lyrismet.incadent.feature.campaign.data.file
 
-import com.lyrismet.incadent.core.file.FileOrigin
-import com.lyrismet.incadent.core.file.FileSource
 import com.lyrismet.incadent.core.file.MemoryFile
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
@@ -34,13 +32,6 @@ class MergeExchangeTest {
     private val planner = ImportPlanner(database)
     private val rollback = ImportRollback(database) { _, _ -> byteArrayOf(7) }
     private val day = LocalDateTime.parse("2026-10-24T18:00")
-
-    private fun origin(file: MemoryFile) =
-        object : FileOrigin {
-            override val name = "test.incadent.json"
-
-            override fun open(): FileSource = MemoryFile(file.text.lines())
-        }
 
     private fun everything(campaignId: String): RecordSelection {
         val options = CampaignExporter(database).catalog(campaignId).options

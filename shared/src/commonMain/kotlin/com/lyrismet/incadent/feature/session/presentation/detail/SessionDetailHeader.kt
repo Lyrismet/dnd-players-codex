@@ -70,6 +70,7 @@ import dndplayerscodex.shared.generated.resources.session_detail_end_button
 import dndplayerscodex.shared.generated.resources.session_detail_ended_badge
 import dndplayerscodex.shared.generated.resources.session_detail_live_badge
 import dndplayerscodex.shared.generated.resources.session_detail_resume_button
+import dndplayerscodex.shared.generated.resources.session_text_button
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -154,6 +155,11 @@ private fun SessionHeaderTopRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            AppButton(
+                text = stringResource(Res.string.session_text_button),
+                onClick = { eventSink(SessionDetailEvent.TextClicked) },
+                tone = ButtonTone.Neutral,
+            )
             SessionStatusBadge(isLive = header.isLive)
             if (header.isLive) {
                 AppButton(

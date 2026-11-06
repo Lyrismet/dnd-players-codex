@@ -53,6 +53,8 @@ data class RecordSelection(
     val party: Set<Long> = emptySet(),
     val items: Set<Long> = emptySet(),
     val tags: Boolean = false,
+    /** the fight that is not over goes along, it is not a record to pick so it has its own switch */
+    val liveFight: Boolean = true,
     val phrases: Boolean = false,
     val photos: Boolean = true,
     val mode: ExportMode = ExportMode.SELF,
@@ -167,6 +169,34 @@ data class ExchangeCatalog(
     val campaignName: String,
     val options: ExchangeOptions,
     val graph: ExchangeGraph,
+    /** the fight that is not over, it goes in the file whatever is picked */
+    val liveFight: LiveFight? = null,
+)
+
+/** a fight that is not over, as the card of it tells: [ongoing] is false while it is still being prepared */
+data class LiveFight(
+    val ongoing: Boolean,
+    val round: Int,
+    /** how long it has been going, none for the fight of a file whose clock is not this one */
+    val minutes: Int?,
+    val fighters: Int,
+)
+
+/** what an import does with the fight of a file that is not over */
+enum class LiveFightStatus {
+    /** it is written and goes on from where it stopped */
+    NEW,
+
+    /** the device already has a fight under way, this one is left out */
+    BUSY,
+
+    /** the device already holds this very fight */
+    SAME,
+}
+
+data class LiveFightPlan(
+    val fight: LiveFight,
+    val status: LiveFightStatus,
 )
 
 /** what an export writes: [SELF] is the full copy of a person's own campaign, [FRIEND] hides what is private */
@@ -255,6 +285,7 @@ data class ImportPlan(
     val records: List<PlannedRecord>,
     val sessions: List<PlannedSession>,
     val personal: PersonalCopy?,
+    val liveFight: LiveFightPlan? = null,
 ) {
     /** the ones a person has to answer for before the merge */
     val toResolve: List<PlannedRecord>
@@ -269,5 +300,6 @@ data class ImportPlan(
             records.all {
                 it.status == RecordStatus.SAME || (it.status == RecordStatus.SAME_NAME && it.changes.isEmpty())
             } &&
-                sessions.all { it.status == SessionStatus.SAME }
+                sessions.all { it.status == SessionStatus.SAME } &&
+                liveFight?.status != LiveFightStatus.NEW
 }

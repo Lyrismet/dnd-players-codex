@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.campaign.data.file
 
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
+import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.Coin
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
@@ -9,10 +10,12 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
+import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
@@ -26,8 +29,9 @@ import kotlinx.serialization.json.JsonNames
 const val FILE_FORMAT = "incadent"
 
 // 2 added the saved fights, 3 the origin ids, 4 the export mode, a file of an older version reads as a friend copy
-// 5 added the items
-const val FILE_VERSION = 5
+// 5 added the items, 6 the character sheet, the counters and the vitals of a personal copy
+// 7 added the fight that is under way
+const val FILE_VERSION = 7
 
 /** the first line of a file, what the preview shows is read from here before anything else */
 @Serializable
@@ -124,6 +128,54 @@ sealed interface FileRecord {
         val fallen: Boolean = false,
         val originId: String? = null,
         val subclass: String = "",
+        // the numbers beside the hit points, a personal copy only
+        val tempHp: Int = 0,
+        val armorClass: Int? = null,
+        val armorClassFrom: String = "",
+        val deathSuccesses: Int = 0,
+        val deathFailures: Int = 0,
+    ) : FileRecord
+
+    /** the sheet of a party member of a personal copy, the wallet is part of it */
+    @Serializable
+    @SerialName("sheet")
+    data class Sheet(
+        val partyId: Long,
+        val abilities: Map<Ability, Int> = emptyMap(),
+        val saves: Set<Ability> = emptySet(),
+        val skillMarks: Map<Skill, Int> = emptyMap(),
+        val skillAdjustments: Map<Skill, Int> = emptyMap(),
+        val initiativeAdjustment: Int = 0,
+        val passivePerceptionAdjustment: Int = 0,
+        val spellAbility: Ability? = null,
+        val speed: Int? = null,
+        val inspiration: Boolean = false,
+        val spellsHidden: Boolean = false,
+        val background: String = "",
+        val alignment: String = "",
+        val personality: String = "",
+        val languages: String = "",
+        val features: String = "",
+        val notes: String = "",
+        val platinum: Int = 0,
+        val gold: Int = 0,
+        val electrum: Int = 0,
+        val silver: Int = 0,
+        val copper: Int = 0,
+        val originId: String? = null,
+    ) : FileRecord
+
+    /** a counter or a spell slot level of a party member of a personal copy */
+    @Serializable
+    @SerialName("resource")
+    data class Resource(
+        val partyId: Long,
+        val name: String,
+        val max: Int = 1,
+        val current: Int = 0,
+        val slotLevel: Int? = null,
+        val position: Int = 0,
+        val originId: String? = null,
     ) : FileRecord
 
     /** a thing somebody carries, [ownerKind] and [ownerId] are the file's own id of the party member, npc or place */
@@ -176,13 +228,17 @@ sealed interface FileRecord {
         val originId: String? = null,
     ) : FileRecord
 
-    /** a fight saved to [sessionId], its fighters, blows and species observations follow below the notes */
+    /**
+     * a fight saved to [sessionId], its fighters, blows and species observations follow below the notes.
+     * A fight that is not over has no outcome to speak of and may have no session yet.
+     */
     @Serializable
     @SerialName("combat")
     data class Combat(
         val id: Long,
-        val sessionId: Long,
+        val sessionId: Long?,
         val outcome: CombatOutcome,
+        val phase: CombatPhase = CombatPhase.FINISHED,
         val startedAt: LocalDateTime,
         val finishedAt: LocalDateTime? = null,
         val rounds: Int = 1,
@@ -214,6 +270,8 @@ sealed interface FileRecord {
         val note: String = "",
         val hpCurrent: Int? = null,
         val hpMax: Int? = null,
+        val turnOrder: Int? = null,
+        val reactionAvailable: Boolean = true,
     ) : FightRecord
 
     /** one event of a fight, the source and the target are fighter numbers of that fight */

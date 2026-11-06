@@ -14,6 +14,8 @@ actual class FileStorage(
         val stream = file.outputStream().buffered()
         return LineWriterSink(stream::write, stream::close)
     }
+
+    actual fun sizeOf(fileName: String): Long = context.exportFile(fileName).length()
 }
 
 internal fun Context.exportFile(fileName: String): File =

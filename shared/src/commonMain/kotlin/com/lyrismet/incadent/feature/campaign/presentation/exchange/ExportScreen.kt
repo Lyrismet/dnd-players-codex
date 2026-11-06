@@ -1,8 +1,10 @@
 package com.lyrismet.incadent.feature.campaign.presentation.exchange
 
 import com.lyrismet.incadent.core.designsystem.component.StatusKind
+import com.lyrismet.incadent.core.file.SaveFolder
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
+import com.lyrismet.incadent.feature.campaign.domain.model.LiveFight
 import com.lyrismet.incadent.feature.campaign.domain.model.MAX_FILE_BYTES
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
@@ -14,12 +16,15 @@ data class ExportScreen(
     val campaignId: String,
 ) : Screen
 
-/** what the finished file is handed to, the view opens the system dialog and answers with [ExportEvent.Delivered] */
+/** what the finished file is handed to, a share opens the system sheet and a save opens [SavePrompt] first */
 enum class ExportDelivery { SHARE, SAVE }
 
-data class ExportedFile(
-    val fileName: String,
-    val delivery: ExportDelivery,
+/** the sheet that asks where the finished file [source] goes and under which name, before it is copied */
+data class SavePrompt(
+    val source: String,
+    val name: String,
+    val folder: SaveFolder?,
+    val sizeBytes: Long,
 )
 
 /** how the delivery the person asked for is going, shown as a mark inside its own button */
@@ -41,8 +46,11 @@ data class ExportState(
     val sessionCount: Int = 0,
     val photos: Boolean = true,
     val estimate: ExportEstimate? = null,
+    val liveFight: LiveFight? = null,
+    val liveFightOn: Boolean = true,
     val canExport: Boolean = false,
-    val file: ExportedFile? = null,
+    val file: String? = null,
+    val savePrompt: SavePrompt? = null,
     val status: DeliveryStatus? = null,
     val eventSink: (ExportEvent) -> Unit = {},
 ) : CircuitUiState {
@@ -60,6 +68,8 @@ sealed interface ExportEvent : CircuitUiEvent {
 
     data object PartyNotesToggled : ExportEvent
 
+    data object LiveFightToggled : ExportEvent
+
     data class WholeSelected(
         val whole: Boolean,
     ) : ExportEvent
@@ -74,7 +84,17 @@ sealed interface ExportEvent : CircuitUiEvent {
         val delivery: ExportDelivery,
     ) : ExportEvent
 
-    /** the file was handed to the share sheet or the save dialog, [saved] is null for a share */
+    data class SaveNameChanged(
+        val name: String,
+    ) : ExportEvent
+
+    data class SaveFolderPicked(
+        val folder: SaveFolder,
+    ) : ExportEvent
+
+    data object SaveCancelled : ExportEvent
+
+    /** the file was handed to the share sheet or copied by the save sheet, [saved] is null for a share */
     data class Delivered(
         val saved: Boolean?,
     ) : ExportEvent

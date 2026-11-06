@@ -68,3 +68,6 @@ WHERE party_member_id = ?;
 
 deleteByMember:
 DELETE FROM character_sheet WHERE party_member_id = ?;
+
+selectOrigins:
+SELECT origin_id FROM character_sheet WHERE campaign_id = ?;

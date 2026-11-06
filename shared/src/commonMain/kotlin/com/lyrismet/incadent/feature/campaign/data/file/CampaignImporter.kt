@@ -21,8 +21,10 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ImportResult
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportTarget
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordField
 import com.lyrismet.incadent.feature.campaign.domain.model.Resolution
+import com.lyrismet.incadent.feature.codex.domain.model.SheetRanges
 import com.lyrismet.incadent.feature.mention.domain.remapMentionTokens
 import com.lyrismet.incadent.persistence.creatureTypeIdIn
+import kotlinx.serialization.builtins.ListSerializer
 import kotlin.io.encoding.Base64
 import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
@@ -33,6 +35,7 @@ private const val DEFAULT_CAMPAIGN_NAME = "Incadent"
 private const val MAX_NAME_CHARS = 80
 private const val COPY_SUFFIX = " (2)"
 private const val MAX_PLACE_DEPTH = 1000
+private const val SHEET_VERSION = 6
 
 // a link the file leaves empty is cleared too, only one that cannot be followed keeps what the record has now
 private fun link(
@@ -119,6 +122,14 @@ internal class CampaignImporter(
         private val notes = (header.mode == ExportMode.FRIEND && header.partyNotes) || request.takeVitals
         private val takeLabel = header.mode == ExportMode.SELF && request.takeAsMine
 
+        // the sheet, the counters and what a character carries come with the mark, a file before them has none
+        private val takeSheet = takeLabel
+        private val takeExtras =
+            header.mode == ExportMode.SELF && request.takeVitals && header.version >= SHEET_VERSION
+        private val sheetTaken = mutableSetOf<Long>()
+        private val sheetOrigins by lazy { SheetOrigins(database, campaignId) }
+        private val partyJournaled = mutableSetOf<Long>()
+
         private val speciesMap = mutableMapOf<Long, Long>()
         private val placeMap = mutableMapOf<Long, Long>()
         private val npcMap = mutableMapOf<Long, Long>()
@@ -183,6 +194,8 @@ internal class CampaignImporter(
         private val mergedSessions = mutableSetOf<Long>()
         private val overwritten = mutableSetOf<Pair<PhotoOwner, Long>>()
 
+        // flat dispatch over the kinds of record, one branch each
+        @Suppress("CyclomaticComplexMethod")
         fun accept(record: FileRecord) {
             if (!isWanted(record)) return
             when (record) {
@@ -192,6 +205,7 @@ internal class CampaignImporter(
                 is FileRecord.Quest -> addQuest(record)
                 is FileRecord.Party -> addParty(record)
                 is FileRecord.Item -> addItem(record)
+                is FileRecord.Sheet, is FileRecord.Resource -> addSheetRecord(record)
                 is FileRecord.Tag -> database.tagQueries.insert(record.name, campaignId)
                 is FileRecord.Phrase -> database.phraseSnippetQueries.insert(record.text, campaignId)
                 is FileRecord.Session -> addSession(record)
@@ -202,6 +216,7 @@ internal class CampaignImporter(
         }
 
         // a record outside the pick is skipped, its notes and photo then find no owner and are skipped too
+        @Suppress("CyclomaticComplexMethod")
         private fun isWanted(record: FileRecord): Boolean =
             when (record) {
                 is FileRecord.Species -> scope?.species?.contains(record.id) != false
@@ -210,6 +225,8 @@ internal class CampaignImporter(
                 is FileRecord.Quest -> scope?.quests?.contains(record.id) != false
                 is FileRecord.Party -> scope?.party?.contains(record.id) != false
                 is FileRecord.Item -> scope?.items?.contains(record.id) != false
+                is FileRecord.Sheet -> takeSheet && scope?.party?.contains(record.partyId) != false
+                is FileRecord.Resource -> takeSheet && scope?.party?.contains(record.partyId) != false
                 is FileRecord.Session -> scope?.sessions?.contains(record.id) != false
                 is FileRecord.Tag -> request.selection?.tags != false
                 is FileRecord.Phrase -> request.selection?.phrases != false
@@ -382,21 +399,22 @@ internal class CampaignImporter(
                     }
                 ExchangeKind.PARTY ->
                     existingPartyById.getValue(id).let {
-                        FileRecord.Party(
-                            id,
-                            it.name,
-                            it.character_class,
-                            it.race,
-                            it.level?.toInt(),
-                            it.player_name,
-                            it.is_player_character,
-                            it.presence,
-                            it.hp_max?.toInt(),
-                            it.hp_current?.toInt(),
-                            it.description,
-                            it.fallen,
-                            subclass = it.subclass,
-                        )
+                        FileRecord
+                            .Party(
+                                id,
+                                it.name,
+                                it.character_class,
+                                it.race,
+                                it.level?.toInt(),
+                                it.player_name,
+                                it.is_player_character,
+                                it.presence,
+                                it.hp_max?.toInt(),
+                                it.hp_current?.toInt(),
+                                it.description,
+                                it.fallen,
+                                subclass = it.subclass,
+                            ).withVitals(id)
                     }
                 ExchangeKind.ITEM ->
                     existingItemsById.getValue(id).let {
@@ -604,9 +622,13 @@ internal class CampaignImporter(
             when (outcome) {
                 is Outcome.Use -> {
                     partyMap[record.id] = outcome.id
-                    if (takeLabel && record.isPlayerCharacter) {
-                        journal.changed(ExchangeKind.PARTY.name, outcome.id, before(ExchangeKind.PARTY, outcome.id))
-                        markAsMine(outcome.id, record.playerName)
+                    if (takeExtras || (takeLabel && record.isPlayerCharacter)) {
+                        // once per member, the first state is the one an undo goes back to
+                        if (partyJournaled.add(outcome.id)) {
+                            journal.changed(ExchangeKind.PARTY.name, outcome.id, before(ExchangeKind.PARTY, outcome.id))
+                        }
+                        takeExtras(outcome.id, record)
+                        if (takeLabel && record.isPlayerCharacter) markAsMine(outcome.id, record.playerName)
                     }
                 }
                 Outcome.Skip -> Unit
@@ -617,6 +639,8 @@ internal class CampaignImporter(
         private fun addItem(record: FileRecord.Item) {
             // what a character of the file carries is not written when that character did not come along
             if (record.ownerKind == ExchangeKind.PARTY && ownerOf(record) == null) return
+            // what a character carries is theirs, it comes with the character and not with the records
+            if (header.mode == ExportMode.SELF && record.ownerKind == ExchangeKind.PARTY && !takeSheet) return
             val outcome =
                 decide(
                     Candidate(
@@ -696,6 +720,7 @@ internal class CampaignImporter(
             val id = queries.lastInsertRowId().executeAsOne()
             // the fight that felled them is not in the file's party record, so only the fact is kept
             if (record.fallen) queries.setFallen(true, null, id)
+            takeExtras(id, record)
             partyMap[record.id] =
                 inserted(
                     ExchangeKind.PARTY,
@@ -730,6 +755,55 @@ internal class CampaignImporter(
                 },
                 id,
             )
+        }
+
+        private fun FileRecord.Party.withVitals(id: Long): FileRecord.Party {
+            val vitals = database.partyMemberQueries.selectVitals(id).executeAsOne()
+            return copy(
+                tempHp = vitals.temp_hp.toInt(),
+                armorClass = vitals.armor_class?.toInt(),
+                armorClassFrom = vitals.armor_class_from,
+                deathSuccesses = vitals.death_saves_success.toInt(),
+                deathFailures = vitals.death_saves_failure.toInt(),
+            )
+        }
+
+        // the numbers beside the hit points of a personal copy, a missing armor class leaves the one there
+        private fun takeExtras(
+            id: Long,
+            record: FileRecord.Party,
+        ) {
+            if (!takeExtras) return
+            val queries = database.partyMemberQueries
+            val current = queries.selectVitals(id).executeAsOne()
+            queries.setVitals(
+                current.hp_current,
+                record.tempHp.coerceIn(SheetRanges.tempHp).toLong(),
+                record.armorClass?.coerceIn(SheetRanges.armorClass)?.toLong() ?: current.armor_class,
+                if (record.armorClass != null) record.armorClassFrom else current.armor_class_from,
+                record.deathSuccesses.coerceIn(SheetRanges.deathSaves).toLong(),
+                record.deathFailures.coerceIn(SheetRanges.deathSaves).toLong(),
+                id,
+            )
+        }
+
+        // a sheet of the file replaces the one there with its counters, the old ones go to the journal
+        private fun addSheetRecord(record: FileRecord) {
+            val partyNumber =
+                when (record) {
+                    is FileRecord.Sheet -> record.partyId
+                    is FileRecord.Resource -> record.partyId
+                    else -> return
+                }
+            val memberId = partyMap[partyNumber] ?: return
+            if (sheetTaken.add(memberId)) {
+                if (memberId in existingPartyById) {
+                    val before = readSheetRecords(database, memberId, memberId)
+                    journal.sheet(memberId, FileJson.encodeToString(ListSerializer(FileRecord.serializer()), before))
+                }
+                clearSheet(database, memberId)
+            }
+            writeSheetRecord(database, campaignId, memberId, record, sheetOrigins)
         }
 
         // the mark "я" is one per campaign, the one it leaves is put back when the import is taken back
@@ -864,6 +938,8 @@ internal class CampaignImporter(
             pick: FieldPick,
         ) {
             val current = existingPartyById.getValue(id)
+            partyJournaled += id
+            takeExtras(id, record)
             database.partyMemberQueries.update(
                 pick.text(RecordField.NAME, current.name, record.name),
                 pick.text(RecordField.CHARACTER_CLASS, current.character_class, record.characterClass),

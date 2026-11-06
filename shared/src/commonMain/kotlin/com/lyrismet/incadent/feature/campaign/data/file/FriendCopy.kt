@@ -12,6 +12,11 @@ internal fun FileRecord.Party.forMode(selection: RecordSelection): FileRecord.Pa
             isPlayerCharacter = false,
             hpMax = null,
             hpCurrent = null,
+            tempHp = 0,
+            armorClass = null,
+            armorClassFrom = "",
+            deathSuccesses = 0,
+            deathFailures = 0,
             description = if (selection.partyNotes) description else "",
         )
     }

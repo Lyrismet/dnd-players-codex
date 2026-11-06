@@ -30,6 +30,8 @@ internal fun SessionDetailEvent.writesCampaignData(): Boolean =
         SessionDetailEvent.TitleEditFinished,
         SessionDetailEvent.OutsideTapped,
         SessionDetailEvent.CombatDeleteDismissed,
+        SessionDetailEvent.TextClicked,
+        is SessionDetailEvent.Text,
         -> false
         is SessionDetailEvent.QuickEdit,
         is SessionDetailEvent.TitleChanged,

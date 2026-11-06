@@ -1,7 +1,5 @@
 package com.lyrismet.incadent.feature.campaign.data.file
 
-import com.lyrismet.incadent.core.file.FileOrigin
-import com.lyrismet.incadent.core.file.FileSource
 import com.lyrismet.incadent.core.file.MemoryFile
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
@@ -25,13 +23,6 @@ class MentionExchangeTest {
     private val db = TestDatabase().also { it.addCampaign(MINE) }
     private val database: AppDatabase = db.database
     private val importer = CampaignImporter(database) { _, _ -> byteArrayOf(7) }
-
-    private fun origin(file: MemoryFile) =
-        object : FileOrigin {
-            override val name = "test.incadent.json"
-
-            override fun open(): FileSource = MemoryFile(file.text.lines())
-        }
 
     private fun place(
         campaignId: String,

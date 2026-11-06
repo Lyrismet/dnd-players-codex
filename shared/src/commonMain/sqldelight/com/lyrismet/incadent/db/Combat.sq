@@ -36,6 +36,11 @@ insertFinished:
 INSERT INTO combat(session_note_id, phase, started_at, round, turn, outcome, finished_at, campaign_id, origin_id)
 VALUES (?, 'FINISHED', ?, ?, ?, ?, ?, ?, ?);
 
+-- a fight that is not over comes in as it stands
+insertLive:
+INSERT INTO combat(session_note_id, phase, started_at, round, turn, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
 updateTurn:
 UPDATE combat SET round = ?, turn = ? WHERE id = ?;
 

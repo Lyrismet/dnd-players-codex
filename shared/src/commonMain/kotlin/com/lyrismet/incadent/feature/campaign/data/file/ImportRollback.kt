@@ -6,6 +6,7 @@ import com.lyrismet.incadent.db.importJournal.SelectByCampaign
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
 import com.lyrismet.incadent.persistence.creatureTypeIdIn
+import kotlinx.serialization.builtins.ListSerializer
 import kotlin.io.encoding.Base64
 
 /** puts a campaign back as it was before its last import, every row the journal names is added or restored */
@@ -34,6 +35,7 @@ internal class ImportRollback(
             JournalAction.ALIAS ->
                 database.originAliasQueries.delete(campaignId, ExchangeKind.valueOf(row.kind), row.ref)
             JournalAction.LABEL -> restoreLabel(campaignId, row.row_id)
+            JournalAction.SHEET -> restoreSheet(campaignId, row)
             JournalAction.PHOTO -> restorePhoto(row)
             JournalAction.CHANGED ->
                 restoreRecord(
@@ -82,6 +84,46 @@ internal class ImportRollback(
             row.description,
             previousId,
         )
+    }
+
+    private fun restoreParty(record: FileRecord.Party) {
+        val queries = database.partyMemberQueries
+        queries.update(
+            record.name,
+            record.characterClass,
+            record.subclass,
+            record.race,
+            record.level?.toLong(),
+            record.playerName,
+            record.isPlayerCharacter,
+            record.presence,
+            record.hpMax?.toLong(),
+            record.hpCurrent?.toLong(),
+            record.description,
+            record.id,
+        )
+        queries.setVitals(
+            record.hpCurrent?.toLong(),
+            record.tempHp.toLong(),
+            record.armorClass?.toLong(),
+            record.armorClassFrom,
+            record.deathSuccesses.toLong(),
+            record.deathFailures.toLong(),
+            record.id,
+        )
+    }
+
+    // a member the import added is gone by now, its sheet went with it
+    private fun restoreSheet(
+        campaignId: String,
+        row: SelectByCampaign,
+    ) {
+        val memberId = row.row_id
+        if (database.partyMemberQueries.selectById(memberId).executeAsOneOrNull() == null) return
+        clearSheet(database, memberId)
+        FileJson
+            .decodeFromString(ListSerializer(FileRecord.serializer()), row.snapshot)
+            .forEach { writeSheetRecord(database, campaignId, memberId, it) }
     }
 
     private fun restorePhoto(row: SelectByCampaign) {
@@ -172,21 +214,7 @@ internal class ImportRollback(
                     record.description,
                     record.id,
                 )
-            is FileRecord.Party ->
-                database.partyMemberQueries.update(
-                    record.name,
-                    record.characterClass,
-                    record.subclass,
-                    record.race,
-                    record.level?.toLong(),
-                    record.playerName,
-                    record.isPlayerCharacter,
-                    record.presence,
-                    record.hpMax?.toLong(),
-                    record.hpCurrent?.toLong(),
-                    record.description,
-                    record.id,
-                )
+            is FileRecord.Party -> restoreParty(record)
             is FileRecord.Item ->
                 database.itemQueries.update(
                     record.name,

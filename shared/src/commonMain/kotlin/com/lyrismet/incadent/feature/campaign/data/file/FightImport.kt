@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.campaign.data.file
 
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordScope
+import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 
 /** writes the fights of a file, every link follows the maps of the records the import made or matched */
 @Suppress("LongParameterList")
@@ -28,7 +29,10 @@ internal class FightImport(
     fun isWanted(
         record: FightRecord,
         scope: RecordScope?,
-    ): Boolean = record !is FileRecord.Combat || scope?.sessions?.contains(record.sessionId) != false
+    ): Boolean =
+        record !is FileRecord.Combat ||
+            record.phase != CombatPhase.FINISHED ||
+            scope?.sessions?.contains(record.sessionId) != false
 
     fun accept(record: FightRecord) {
         when (record) {
@@ -40,9 +44,19 @@ internal class FightImport(
     }
 
     private fun addCombat(record: FileRecord.Combat) {
-        val sessionId = sessionMap[record.sessionId] ?: return
         // a fight this campaign already holds comes back with every import of the same file
         if (dedupe && !record.originId.isNullOrBlank() && record.originId in known) return
+        if (record.phase != CombatPhase.FINISHED) {
+            addLive(record)
+        } else {
+            record.sessionId?.let(sessionMap::get)?.let { addFinished(record, it) }
+        }
+    }
+
+    private fun addFinished(
+        record: FileRecord.Combat,
+        sessionId: Long,
+    ) {
         database.combatQueries.insertFinished(
             sessionId,
             record.startedAt,
@@ -50,6 +64,22 @@ internal class FightImport(
             record.turn.toLong(),
             record.outcome,
             record.finishedAt,
+            campaignId,
+            origins.claim(record.originId),
+        )
+        combatMap[record.id] = database.combatQueries.lastInsertRowId().executeAsOne()
+        journal.combat(combatMap.getValue(record.id))
+    }
+
+    // the fight goes on from where it stopped, unless this device already has one under way
+    private fun addLive(record: FileRecord.Combat) {
+        if (liveFightBlocked(database, campaignId, record.phase)) return
+        database.combatQueries.insertLive(
+            record.sessionId?.let(sessionMap::get),
+            record.phase,
+            record.startedAt,
+            record.rounds.toLong(),
+            record.turn.toLong(),
             campaignId,
             origins.claim(record.originId),
         )
@@ -72,13 +102,13 @@ internal class FightImport(
             death_successes = record.deathSuccesses.toLong(),
             death_failures = record.deathFailures.toLong(),
             temp_hp = record.tempHp.toLong(),
-            turn_order = null,
+            turn_order = record.turnOrder?.toLong(),
             stance = record.stance,
             captured = if (record.captured) 1L else 0L,
             dead = if (record.dead) 1L else 0L,
             conditions = record.conditions.toSet(),
             note = record.note,
-            reaction_available = 1L,
+            reaction_available = if (record.reactionAvailable) 1L else 0L,
             hp_current = record.hpCurrent?.toLong(),
             hp_max = record.hpMax?.toLong(),
         )

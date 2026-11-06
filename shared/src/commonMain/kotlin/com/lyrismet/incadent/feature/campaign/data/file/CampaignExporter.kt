@@ -103,6 +103,7 @@ class CampaignExporter(
                     .selectAllSessionTagNames(campaignId)
                     .executeAsList()
                     .groupBy({ it.session_note_id }, { it.name }),
+            liveFight = readLiveFight(database, campaignId),
         )
 
     private fun write(
@@ -242,7 +243,9 @@ class CampaignExporter(
                 ),
             )
         }
+        val personal = selection.mode == ExportMode.SELF
         snapshot.party.filter { it.id in scope.party }.forEach {
+            val vitals = partyQueries.selectVitals(it.id).executeAsOne()
             writer.write(
                 FileRecord
                     .Party(
@@ -260,10 +263,28 @@ class CampaignExporter(
                         description = ids.text(it.description),
                         fallen = it.fallen,
                         originId = it.origin_id,
+                        tempHp = vitals.temp_hp.toInt(),
+                        armorClass = vitals.armor_class?.toInt(),
+                        armorClassFrom = vitals.armor_class_from,
+                        deathSuccesses = vitals.death_saves_success.toInt(),
+                        deathFailures = vitals.death_saves_failure.toInt(),
                     ).forMode(selection),
             )
         }
+        if (personal) writeSheets(snapshot, scope, ids, writer)
         writeItems(snapshot, scope, ids, writer)
+    }
+
+    // the sheet and the counters of a character go only in a personal copy, a friend never sees them
+    private fun writeSheets(
+        snapshot: Snapshot,
+        scope: RecordScope,
+        ids: FileIds,
+        writer: CampaignFileWriter,
+    ) {
+        snapshot.party.filter { it.id in scope.party }.forEach { member ->
+            readSheetRecords(database, member.id, ids.party(member.id)).forEach(writer::write)
+        }
     }
 
     // after the records that carry them, an owner that did not come along leaves the item shared
@@ -336,12 +357,19 @@ class CampaignExporter(
         ids: FileIds,
         writer: CampaignFileWriter,
     ) {
+        val all = database.combatQueries.selectAll(campaignId).executeAsList()
+        val live = all.liveRow()?.id?.takeIf { selection.liveFight }
         val combats =
-            database.combatQueries
-                .selectAll(campaignId)
-                .executeAsList()
-                .filter { it.phase == CombatPhase.FINISHED && it.session_note_id in scope.sessions }
-                .sortedBy { it.id }
+            all
+                .filter {
+                    if (it.phase ==
+                        CombatPhase.FINISHED
+                    ) {
+                        it.session_note_id in scope.sessions
+                    } else {
+                        it.id == live
+                    }
+                }.sortedBy { it.id }
         if (combats.isEmpty()) return
         val fighters =
             database.combatantQueries
@@ -360,14 +388,15 @@ class CampaignExporter(
                 .groupBy { it.combat_id }
         val numbers = combats.withIndex().associate { (index, row) -> row.id to index + 1L }
         combats.forEach { row ->
-            writer.write(row.toFileRecord(numbers.getValue(row.id), ids.session(checkNotNull(row.session_note_id))))
+            val session = row.session_note_id?.takeIf { it in scope.sessions }?.let(ids::session)
+            writer.write(row.toFileRecord(numbers.getValue(row.id), session))
         }
         combats.forEach { row ->
             val members = fighters[row.id].orEmpty().withIndex().associate { (index, it) -> it.id to index + 1L }
             fighters[row.id].orEmpty().forEach {
-                writer.write(
-                    it.toFighter(numbers.getValue(row.id), members, scope, ids).forMode(selection),
-                )
+                val fighter = it.toFighter(numbers.getValue(row.id), members, scope, ids)
+                // a fight under way goes whole to a friend, the hit points are what it is made of
+                writer.write(if (row.phase == CombatPhase.FINISHED) fighter.forMode(selection) else fighter)
             }
             events[row.id].orEmpty().forEach { event ->
                 members[event.target_id]?.let { writer.write(event.toBlow(numbers.getValue(row.id), it, members)) }
@@ -451,6 +480,8 @@ private fun Combatant.toFighter(
     note = note,
     hpCurrent = hp_current?.toInt(),
     hpMax = hp_max?.toInt(),
+    turnOrder = turn_order?.toInt(),
+    reactionAvailable = reaction_available != 0L,
 )
 
 private fun Combat_event.toBlow(
@@ -476,10 +507,11 @@ private fun Combat_event.toBlow(
 
 private fun CombatRow.toFileRecord(
     number: Long,
-    sessionNumber: Long,
+    sessionNumber: Long?,
 ) = FileRecord.Combat(
     id = number,
     sessionId = sessionNumber,
+    phase = phase,
     outcome = outcome ?: CombatOutcome.INTERRUPTED,
     startedAt = started_at,
     finishedAt = finished_at,

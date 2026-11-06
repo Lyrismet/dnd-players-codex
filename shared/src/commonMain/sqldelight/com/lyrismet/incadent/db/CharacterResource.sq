@@ -51,3 +51,9 @@ DELETE FROM character_resource WHERE id = ?;
 
 lastInsertRowId:
 SELECT last_insert_rowid();
+
+selectOrigins:
+SELECT origin_id FROM character_resource WHERE campaign_id = ?;
+
+deleteByMember:
+DELETE FROM character_resource WHERE party_member_id = ?;

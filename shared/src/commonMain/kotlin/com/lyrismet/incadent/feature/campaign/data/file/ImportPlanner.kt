@@ -9,12 +9,16 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeRef
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
 import com.lyrismet.incadent.feature.campaign.domain.model.FieldChange
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportPlan
+import com.lyrismet.incadent.feature.campaign.domain.model.LiveFight
+import com.lyrismet.incadent.feature.campaign.domain.model.LiveFightPlan
+import com.lyrismet.incadent.feature.campaign.domain.model.LiveFightStatus
 import com.lyrismet.incadent.feature.campaign.domain.model.PersonalCopy
 import com.lyrismet.incadent.feature.campaign.domain.model.PlannedRecord
 import com.lyrismet.incadent.feature.campaign.domain.model.PlannedSession
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordField
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordStatus
 import com.lyrismet.incadent.feature.campaign.domain.model.SessionStatus
+import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 
 /** holds a file up against a campaign and says what each record of it would be, nothing is written */
 internal class ImportPlanner(
@@ -48,7 +52,35 @@ internal class ImportPlanner(
             records = records,
             sessions = sessions,
             personal = if (header.mode == ExportMode.SELF) PersonalCopy(me?.name, ownCopy(me, locals)) else null,
+            liveFight = plannedLiveFight(file, locals.campaignId),
         )
+    }
+
+    private fun plannedLiveFight(
+        file: List<FileRecord>,
+        campaignId: String,
+    ): LiveFightPlan? {
+        val combat = file.filterIsInstance<FileRecord.Combat>().firstOrNull { it.phase != CombatPhase.FINISHED }
+        combat ?: return null
+        val fight =
+            LiveFight(
+                ongoing = combat.phase == CombatPhase.ONGOING,
+                round = combat.rounds,
+                minutes = null,
+                fighters = file.count { it is FileRecord.Fighter && it.combatId == combat.id },
+            )
+        val known =
+            database.combatQueries
+                .selectAll(campaignId)
+                .executeAsList()
+                .map { it.origin_id }
+        val status =
+            when {
+                !combat.originId.isNullOrBlank() && combat.originId in known -> LiveFightStatus.SAME
+                liveFightBlocked(database, campaignId, combat.phase) -> LiveFightStatus.BUSY
+                else -> LiveFightStatus.NEW
+            }
+        return LiveFightPlan(fight, status)
     }
 
     @Suppress("CyclomaticComplexMethod", "LongMethod")

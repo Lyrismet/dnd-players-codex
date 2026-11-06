@@ -21,6 +21,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppNoticeBar
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
+import com.lyrismet.incadent.core.designsystem.component.AppToggleCard
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
@@ -347,7 +348,7 @@ internal fun PersonalSection(
         )
     }
     val name = personal.characterName
-    ExchangeToggleCard(
+    AppToggleCard(
         title =
             if (name == null) {
                 stringResource(Res.string.exchange_take_as_mine_anon)
@@ -358,7 +359,7 @@ internal fun PersonalSection(
         checked = personal.takeAsMine,
         onToggle = { sink(ImportEvent.TakeAsMineToggled) },
     )
-    ExchangeToggleCard(
+    AppToggleCard(
         title = stringResource(Res.string.exchange_take_vitals),
         hint = stringResource(Res.string.exchange_take_vitals_hint),
         checked = personal.takeVitals,
