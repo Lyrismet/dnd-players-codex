@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.di
 
+import com.lyrismet.incadent.core.appinfo.LatestVersionSource
+import com.lyrismet.incadent.core.appinfo.UpdatePolicy
 import com.lyrismet.incadent.core.coroutines.AppCoroutineScope
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.db.AppDatabase
@@ -48,6 +50,17 @@ object DataBindings {
             speciesRepository,
             itemRepository,
         )
+
+    @Provides
+    fun provideUpdatePolicy(): UpdatePolicy = UpdatePolicy()
+
+    // stub until the Firebase source lands in data/remote, null keeps the update row hidden
+    @Provides
+    @SingleIn(AppScope::class)
+    fun provideLatestVersionSource(): LatestVersionSource =
+        object : LatestVersionSource {
+            override suspend fun latest() = null
+        }
 
     @Provides
     @SingleIn(AppScope::class)

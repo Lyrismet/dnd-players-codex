@@ -849,6 +849,8 @@
     <string name="settings_section_about">ABOUT</string>
     <string name="settings_about_srd_title">SRD 5.1 materials</string>
     <string name="settings_about_version_title">Version</string>
+    <string name="settings_about_update_title">A new version is available</string>
+    <string name="settings_about_update_action">Update</string>
     <string name="settings_about_srd_value">This work includes material taken from the System Reference Document 5.1 (SRD 5.1) by Wizards of the Coast LLC, available at https://dnd.wizards.com/resources/systems-reference-document. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode. Creature names and resource templates were translated and adapted. Wizards of the Coast does not endorse this app.</string>
     <string name="entity_sheet_species_note_quantity">In this note</string>
     <string name="session_detail_quantity_hint">○ %1$s ×…  a digit is how many</string>

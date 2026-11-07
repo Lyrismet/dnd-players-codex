@@ -4,8 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.lyrismet.incadent.core.appinfo.LatestVersionSource
+import com.lyrismet.incadent.core.appinfo.UpdatePolicy
+import com.lyrismet.incadent.core.appinfo.UpdateStatus
+import com.lyrismet.incadent.core.appinfo.VersionNumber
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.language.LanguageSheet
@@ -47,6 +52,8 @@ class SettingsPresenter(
     private val importSource: ImportSource,
     private val exchangeRepository: CampaignExchangeRepository,
     private val versionName: String,
+    private val latestVersionSource: LatestVersionSource,
+    private val updatePolicy: UpdatePolicy,
 ) : Presenter<SettingsState> {
     @Suppress("CyclomaticComplexMethod", "LongMethod")
     @Composable
@@ -60,6 +67,9 @@ class SettingsPresenter(
             .observeEntityEditMode()
             .collectAsState(initial = EntityEditMode.QUICK)
         val followPartyLevel by appPreferencesRepository.observeFollowPartyLevel().collectAsState(initial = false)
+        val updateStatus by produceState<UpdateStatus>(UpdateStatus.Unknown) {
+            value = updatePolicy.statusOf(VersionNumber.parse(versionName), latestVersionSource.latest())
+        }
         val toast = remember { mutableStateOf<String?>(null) }
         toast.autoDismiss()
         val failedText = stringResource(Res.string.error_action_failed)
@@ -88,6 +98,7 @@ class SettingsPresenter(
             campaignName = campaignHost.current?.name.orEmpty(),
             campaignSheet = campaignHost.sheet,
             version = versionName,
+            updateStatus = updateStatus,
             toast = toast.value,
             pinnedPhraseCount = pinnedPhrases.size,
             frequentPhraseCount = phrasePool(pinnedPhrases, frequentPhrases).count { !it.isPinned },
@@ -119,6 +130,8 @@ class SettingsPresenter(
                     // mirrors the mockup's replayHints - jump to the sessions tab so the hint actually plays
                     swipeHintReplayController.requestSessionsReplay()
                 }
+                // the store page opens through expect/actual once a real version source exists
+                SettingsEvent.UpdateRequested -> Unit
                 SettingsEvent.PhrasesOpened -> phrases.open()
                 is SettingsEvent.PhraseSheet -> phrases.onEvent(event.event, scope)
                 is SettingsEvent.CampaignSheet -> campaignHost.onEvent(event.event)

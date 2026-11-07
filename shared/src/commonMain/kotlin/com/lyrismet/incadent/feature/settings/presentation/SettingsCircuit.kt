@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.feature.settings.presentation
 
 import com.lyrismet.incadent.core.appinfo.AppVersion
+import com.lyrismet.incadent.core.appinfo.LatestVersionSource
+import com.lyrismet.incadent.core.appinfo.UpdatePolicy
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.LanguageRepository
@@ -37,6 +39,8 @@ class SettingsPresenterFactory(
     private val importSource: ImportSource,
     private val exchangeRepository: CampaignExchangeRepository,
     private val appVersion: AppVersion,
+    private val latestVersionSource: LatestVersionSource,
+    private val updatePolicy: UpdatePolicy,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -55,6 +59,8 @@ class SettingsPresenterFactory(
                     importSource,
                     exchangeRepository,
                     appVersion.name,
+                    latestVersionSource,
+                    updatePolicy,
                 )
             else -> null
         }
