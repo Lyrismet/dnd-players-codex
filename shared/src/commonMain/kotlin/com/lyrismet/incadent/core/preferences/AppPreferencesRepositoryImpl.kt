@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.core.preferences
 
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
-import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.preferences.HoldHintState
 import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.core.preferences.SessionNumbering
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.map
 
 private const val KEY_SESSION_NUMBERING = "session_numbering"
 private const val KEY_MENTION_STYLE = "mention_style"
-private const val KEY_ENTITY_EDIT_MODE = "entity_edit_mode"
 private const val KEY_HOLD_HINT_STATE = "hold_hint_state"
 private const val KEY_SESSION_LIST_SWIPE_HINT_STATE = "session_list_swipe_hint_state"
 private const val KEY_CODEX_SWIPE_HINT_STATE = "codex_swipe_hint_state"
@@ -51,16 +49,6 @@ class AppPreferencesRepositoryImpl(
 
     override fun setMentionStyle(style: MentionStyle) {
         settings.putString(KEY_MENTION_STYLE, style.tag)
-    }
-
-    @OptIn(ExperimentalSettingsApi::class)
-    override fun observeEntityEditMode(): Flow<EntityEditMode> =
-        settings.getStringFlow(KEY_ENTITY_EDIT_MODE, EntityEditMode.QUICK.tag).map { tag ->
-            EntityEditMode.entries.find { it.tag == tag } ?: EntityEditMode.QUICK
-        }
-
-    override fun setEntityEditMode(mode: EntityEditMode) {
-        settings.putString(KEY_ENTITY_EDIT_MODE, mode.tag)
     }
 
     @OptIn(ExperimentalSettingsApi::class)

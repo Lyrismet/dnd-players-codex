@@ -13,6 +13,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
@@ -24,6 +25,9 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
 import kotlin.enums.enumEntries
 
 private const val LOG_COMPONENT = "Database"
@@ -111,5 +115,29 @@ val skillValuesAdapter =
         override fun encode(value: Map<Skill, Int>): String =
             value.entries.joinToString(",") { "${it.key.name}:${it.value}" }
     }
+
+/** notes of a sheet kept as json under the enum names, an unknown name or broken text reads as no notes */
+private fun <K : Enum<K>> noteMapAdapter(entries: List<K>) =
+    object : ColumnAdapter<Map<K, String>, String> {
+        private val serializer = MapSerializer(String.serializer(), String.serializer())
+
+        override fun decode(databaseValue: String): Map<K, String> {
+            val stored =
+                databaseValue
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { runCatching { Json.decodeFromString(serializer, it) }.getOrNull() }
+                    .orEmpty()
+            return stored
+                .mapNotNull { (name, note) -> entries.firstOrNull { it.name == name }?.let { it to note } }
+                .toMap()
+        }
+
+        override fun encode(value: Map<K, String>): String =
+            if (value.isEmpty()) "" else Json.encodeToString(serializer, value.mapKeys { it.key.name })
+    }
+
+val skillNotesAdapter = noteMapAdapter(Skill.entries)
+
+val sheetAdjustmentNotesAdapter = noteMapAdapter(SheetAdjustment.entries)
 
 val abilityAdapter = enumColumnAdapter(Ability.STRENGTH)

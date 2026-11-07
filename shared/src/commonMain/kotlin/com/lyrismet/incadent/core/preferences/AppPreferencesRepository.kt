@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.core.preferences
 
-import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.preferences.HoldHintState
 import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.core.preferences.SessionNumbering
@@ -15,10 +14,6 @@ interface AppPreferencesRepository {
     fun observeMentionStyle(): Flow<MentionStyle>
 
     fun setMentionStyle(style: MentionStyle)
-
-    fun observeEntityEditMode(): Flow<EntityEditMode>
-
-    fun setEntityEditMode(mode: EntityEditMode)
 
     fun observeHoldHintState(): Flow<HoldHintState>
 

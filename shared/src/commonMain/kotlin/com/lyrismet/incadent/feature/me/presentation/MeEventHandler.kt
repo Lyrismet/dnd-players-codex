@@ -4,6 +4,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
+import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment
 import com.lyrismet.incadent.feature.codex.domain.model.SheetRanges
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPicker
 import com.lyrismet.incadent.feature.me.domain.HitPointMode
@@ -140,16 +141,9 @@ internal class MeEventHandler(
 
     private fun adjustment(character: MeCharacter) {
         val tile = ui.popover ?: return
-        val value =
-            if (tile ==
-                MeTile.INITIATIVE
-            ) {
-                character.breakdown.initiativeAdjustment
-            } else {
-                character.breakdown.passiveAdjustment
-            }
+        val target = if (tile == MeTile.INITIATIVE) SheetAdjustment.INITIATIVE else SheetAdjustment.PASSIVE_PERCEPTION
         ui.popover = null
-        ui.edit = MeOverlay.Adjustment(tile, value)
+        ui.edit = MeOverlay.Adjustment.of(character.sheet.source, target)
     }
 
     private fun sheet(

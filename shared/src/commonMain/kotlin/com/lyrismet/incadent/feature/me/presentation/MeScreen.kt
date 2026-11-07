@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.FifthEditionRules
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
 import com.lyrismet.incadent.feature.codex.domain.model.ResourceTemplate
 import com.lyrismet.incadent.feature.codex.domain.model.RestSummary
+import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.feature.codex.presentation.item.ItemEvent
 import com.lyrismet.incadent.feature.me.domain.AbilityStrip
@@ -166,9 +167,17 @@ sealed interface MeOverlay {
     ) : MeOverlay
 
     data class Adjustment(
-        val tile: MeTile,
+        val target: SheetAdjustment,
         val value: Int,
-    ) : MeOverlay
+        val note: String,
+    ) : MeOverlay {
+        companion object {
+            fun of(
+                sheet: CharacterSheet,
+                target: SheetAdjustment,
+            ) = Adjustment(target, sheet.adjustment(target), sheet.note(target))
+        }
+    }
 
     data class Fill(
         val draft: FillDraft,
@@ -418,6 +427,10 @@ sealed interface CounterEvent {
 
     data object SpellAbilityRequested : CounterEvent
 
+    data class SpellAdjustmentRequested(
+        val target: SheetAdjustment,
+    ) : CounterEvent
+
     data object SpellsHidden : CounterEvent
 
     data class SpellAbilityChosen(
@@ -487,6 +500,7 @@ sealed interface OverlayEvent {
 /** the typed fields of the sheets, the number sheets use [OverlayEvent.NumberStepped] */
 enum class OverlayField {
     ARMOR_CLASS_FROM,
+    ADJUSTMENT_NOTE,
     CLASS,
     SUBCLASS,
     NAME,

@@ -14,8 +14,8 @@ kotlin {
 }
 
 fun versionCodeOf(versionName: String): Int {
-    val (major, minor, patch) = versionName.split(".").map { it.toIntOrNull() ?: 0 } + listOf(0, 0, 0)
-    return major * 10_000 + minor * 100 + patch
+    val (major, minor, patch, revision) = versionName.split(".").map { it.toIntOrNull() ?: 0 } + listOf(0, 0, 0, 0)
+    return major * 1_000_000 + minor * 10_000 + patch * 100 + revision
 }
 
 dependencies {
@@ -46,8 +46,8 @@ android {
             libs.versions.android.targetSdk
                 .get()
                 .toInt()
-        versionName = "0.9.0"
-        // 0.8 -> 800, 1.2.3 -> 10203, so every new versionName installs over the one before it
+        versionName = "0.9.0.1"
+        // 0.8 -> 80000, 1.2.3 -> 1020300, 0.9.0.1 -> 90001, so every new versionName installs over the one before it
         versionCode = versionCodeOf(versionName.orEmpty())
     }
     // the release key comes from the environment, a build without it is simply unsigned

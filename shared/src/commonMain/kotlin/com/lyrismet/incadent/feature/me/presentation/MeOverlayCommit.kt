@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.me.presentation
 
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
+import com.lyrismet.incadent.feature.codex.domain.model.withNote
 
 /** writes what an edit sheet collected, the keypad of the hit points has its own way in [MeActions.hit] */
 internal fun MeActions.commit(
@@ -22,6 +23,7 @@ internal fun MeActions.commit(
                 it.copy(
                     skillMarks = it.skillMarks + (overlay.skill to overlay.proficiency),
                     skillAdjustments = it.skillAdjustments + (overlay.skill to overlay.adjustment),
+                    skillNotes = it.skillNotes.withNote(overlay.skill, overlay.sheet.note(overlay.skill)),
                 )
             }
         is MeOverlay.ArmorClass ->
@@ -29,14 +31,7 @@ internal fun MeActions.commit(
                 id,
             ) { it.copy(armorClass = overlay.value, armorClassFrom = overlay.from.trim()) }
         is MeOverlay.Speed -> sheet(id) { it.copy(speed = overlay.value) }
-        is MeOverlay.Adjustment ->
-            sheet(id) {
-                if (overlay.tile == MeTile.INITIATIVE) {
-                    it.copy(initiativeAdjustment = overlay.value)
-                } else {
-                    it.copy(passivePerceptionAdjustment = overlay.value)
-                }
-            }
+        is MeOverlay.Adjustment -> sheet(id) { it.withAdjustment(overlay.target, overlay.value, overlay.note) }
         is MeOverlay.Fill -> commitFill(member, overlay.draft)
         is MeOverlay.EditCharacter -> commitEdit(id, overlay.draft)
         is MeOverlay.HitPoints,

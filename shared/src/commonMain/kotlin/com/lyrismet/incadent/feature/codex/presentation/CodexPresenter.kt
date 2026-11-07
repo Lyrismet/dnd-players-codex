@@ -184,7 +184,8 @@ class CodexPresenter(
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
-        val editMode by appPreferencesRepository.observeEntityEditMode().collectAsState(initial = EntityEditMode.QUICK)
+        // the form mode was removed on purpose as unfinished, whether it comes back is open
+        val editMode = EntityEditMode.QUICK
         val holdHint by appPreferencesRepository.observeHoldHintState().collectAsState(initial = HoldHintState.SEEN)
         val undoAction by undoController.current.collectAsState()
         val failure = remember { mutableStateOf<Throwable?>(null) }

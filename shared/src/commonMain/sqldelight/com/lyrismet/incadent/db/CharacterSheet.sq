@@ -1,7 +1,9 @@
 import com.lyrismet.incadent.feature.codex.domain.model.Ability;
+import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment;
 import com.lyrismet.incadent.feature.codex.domain.model.Skill;
 import kotlin.Boolean;
 import kotlin.Int;
+import kotlin.String;
 import kotlin.collections.Map;
 import kotlin.collections.Set;
 
@@ -37,7 +39,11 @@ CREATE TABLE character_sheet (
     coin_copper INTEGER NOT NULL DEFAULT 0,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
     origin_id TEXT NOT NULL DEFAULT '',
-    spells_hidden INTEGER AS Boolean NOT NULL DEFAULT 0
+    spells_hidden INTEGER AS Boolean NOT NULL DEFAULT 0,
+    spell_dc_adjustment INTEGER NOT NULL DEFAULT 0,
+    spell_attack_adjustment INTEGER NOT NULL DEFAULT 0,
+    skill_notes TEXT AS Map<Skill, String> NOT NULL DEFAULT '',
+    adjustment_notes TEXT AS Map<SheetAdjustment, String> NOT NULL DEFAULT ''
 );
 
 CREATE INDEX character_sheet_campaign_id ON character_sheet(campaign_id);
@@ -45,23 +51,25 @@ CREATE UNIQUE INDEX character_sheet_origin_id ON character_sheet(campaign_id, or
 
 selectByMember:
 SELECT id, party_member_id, ability_str, ability_dex, ability_con, ability_int, ability_wis, ability_cha, saves,
-    skill_marks, skill_adjustments, initiative_adjustment, passive_perception_adjustment, spell_ability, speed,
+    skill_marks, skill_adjustments, initiative_adjustment, passive_perception_adjustment, spell_dc_adjustment,
+    spell_attack_adjustment, skill_notes, adjustment_notes, spell_ability, speed,
     inspiration, spells_hidden, background, alignment, personality, languages, features, notes,
     coin_platinum, coin_gold, coin_electrum, coin_silver, coin_copper, origin_id
 FROM character_sheet WHERE party_member_id = ?;
 
 insert:
 INSERT INTO character_sheet(party_member_id, ability_str, ability_dex, ability_con, ability_int, ability_wis, ability_cha,
-    saves, skill_marks, skill_adjustments, initiative_adjustment, passive_perception_adjustment, spell_ability, speed,
+    saves, skill_marks, skill_adjustments, initiative_adjustment, passive_perception_adjustment, spell_dc_adjustment,
+    spell_attack_adjustment, skill_notes, adjustment_notes, spell_ability, speed,
     inspiration, spells_hidden, background, alignment, personality, languages, features, notes,
     coin_platinum, coin_gold, coin_electrum, coin_silver, coin_copper, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE character_sheet
 SET ability_str = ?, ability_dex = ?, ability_con = ?, ability_int = ?, ability_wis = ?, ability_cha = ?,
     saves = ?, skill_marks = ?, skill_adjustments = ?, initiative_adjustment = ?, passive_perception_adjustment = ?,
-    spell_ability = ?, speed = ?, inspiration = ?, spells_hidden = ?, background = ?, alignment = ?, personality = ?,
+    spell_dc_adjustment = ?, spell_attack_adjustment = ?, skill_notes = ?, adjustment_notes = ?, spell_ability = ?, speed = ?, inspiration = ?, spells_hidden = ?, background = ?, alignment = ?, personality = ?,
     languages = ?, features = ?, notes = ?,
     coin_platinum = ?, coin_gold = ?, coin_electrum = ?, coin_silver = ?, coin_copper = ?
 WHERE party_member_id = ?;

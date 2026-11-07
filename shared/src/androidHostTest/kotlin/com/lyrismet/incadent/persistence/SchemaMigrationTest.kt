@@ -310,4 +310,27 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the twelfth schema keeps the sheets and adds empty adjustments and notes`() {
+        val file = File.createTempFile("schema-v12", ".db")
+        File("src/commonMain/sqldelight/databases/12.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(id, name, campaign_id, origin_id) VALUES (1, 'Lira', 'c', 'lira')",
+            "INSERT INTO character_sheet(party_member_id, initiative_adjustment, campaign_id, origin_id) " +
+                "VALUES (1, 2, 'c', 's')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 12, AppDatabase.Schema.version)
+
+        assertEquals("2", driver.single("SELECT initiative_adjustment FROM character_sheet"))
+        assertEquals("0", driver.single("SELECT spell_dc_adjustment FROM character_sheet"))
+        assertEquals("0", driver.single("SELECT spell_attack_adjustment FROM character_sheet"))
+        assertEquals("", driver.single("SELECT skill_notes FROM character_sheet"))
+        assertEquals("", driver.single("SELECT adjustment_notes FROM character_sheet"))
+        driver.close()
+        file.delete()
+    }
 }

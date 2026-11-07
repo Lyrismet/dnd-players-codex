@@ -17,7 +17,6 @@ import com.lyrismet.incadent.core.language.LanguageSheet
 import com.lyrismet.incadent.core.language.LanguageSheetController
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
-import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.preferences.LanguageRepository
 import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.core.preferences.SessionNumbering
@@ -63,9 +62,6 @@ class SettingsPresenter(
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
         val mentionStyle by appPreferencesRepository.observeMentionStyle().collectAsState(initial = MentionStyle.FILLED)
-        val editMode by appPreferencesRepository
-            .observeEntityEditMode()
-            .collectAsState(initial = EntityEditMode.QUICK)
         val followPartyLevel by appPreferencesRepository.observeFollowPartyLevel().collectAsState(initial = false)
         val updateStatus by produceState<UpdateStatus>(UpdateStatus.Unknown) {
             value = updatePolicy.statusOf(VersionNumber.parse(versionName), latestVersionSource.latest())
@@ -93,7 +89,6 @@ class SettingsPresenter(
             languageSheetOpen = languageSheet.isOpen.value,
             numbering = numbering,
             mentionStyle = mentionStyle,
-            editMode = editMode,
             followPartyLevel = followPartyLevel,
             campaignName = campaignHost.current?.name.orEmpty(),
             campaignSheet = campaignHost.sheet,
@@ -121,7 +116,6 @@ class SettingsPresenter(
                 is SettingsEvent.LanguageSheet -> languageSheet.onEvent(event.event)
                 is SettingsEvent.NumberingSelected -> appPreferencesRepository.setSessionNumbering(event.numbering)
                 is SettingsEvent.MentionStyleSelected -> appPreferencesRepository.setMentionStyle(event.style)
-                is SettingsEvent.EditModeSelected -> appPreferencesRepository.setEntityEditMode(event.mode)
                 is SettingsEvent.FollowPartyLevelToggled -> appPreferencesRepository.setFollowPartyLevel(event.follow)
                 SettingsEvent.SwipeHintsShowRequested -> {
                     // the row teaches the swipe-to-delete/edit peek, not the unrelated hold-to-edit pin card

@@ -88,6 +88,21 @@ class FifthEditionRulesTest {
     }
 
     @Test
+    fun `spell adjustments add to the save dc and the attack`() {
+        val adjusted = lira.copy(spellDcAdjustment = 1, spellAttackAdjustment = 2)
+        assertEquals(16, FifthEditionRules.spellSaveDc(adjusted, 5))
+        assertEquals(9, FifthEditionRules.spellAttack(adjusted, 5))
+    }
+
+    @Test
+    fun `an adjustment with a blank note keeps no note and a typed one is trimmed`() {
+        val noted = lira.withAdjustment(SheetAdjustment.SPELL_DC, 1, "  ring ")
+        assertEquals(1, noted.spellDcAdjustment)
+        assertEquals("ring", noted.note(SheetAdjustment.SPELL_DC))
+        assertEquals("", noted.withAdjustment(SheetAdjustment.SPELL_DC, 1, " ").note(SheetAdjustment.SPELL_DC))
+    }
+
+    @Test
     fun `level 9 raises every number that depends on the proficiency bonus`() {
         assertEquals(8, FifthEditionRules.saveBonus(lira, Ability.INTELLIGENCE, 9))
         assertEquals(12, FifthEditionRules.skillBonus(lira, Skill.HISTORY, 9))

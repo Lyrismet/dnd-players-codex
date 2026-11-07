@@ -31,11 +31,27 @@ internal class MeCounterHandler(
             CounterEvent.ResourceDeleted -> delete(member, ui.edit, all)
             CounterEvent.SlotsRequested -> ui.edit = MeOverlay.Slots(slotMaxima(all))
             CounterEvent.SpellsHidden -> counters.setSpellsHidden(member, true)
+            CounterEvent.SpellAbilityRequested,
+            is CounterEvent.SpellAdjustmentRequested,
+            is CounterEvent.SpellAbilityChosen,
+            -> spellEvent(event, member, character)
+        }
+    }
+
+    private fun spellEvent(
+        event: CounterEvent,
+        member: PartyMember,
+        character: MeCharacter,
+    ) {
+        when (event) {
             CounterEvent.SpellAbilityRequested -> ui.edit = MeOverlay.SpellAbility(character.spells.ability)
+            is CounterEvent.SpellAdjustmentRequested ->
+                ui.edit = MeOverlay.Adjustment.of(character.sheet.source, event.target)
             is CounterEvent.SpellAbilityChosen -> {
                 actions.sheet(member.id) { it.copy(spellAbility = event.ability) }
                 ui.edit = null
             }
+            else -> Unit
         }
     }
 
