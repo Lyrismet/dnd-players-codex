@@ -50,14 +50,15 @@ object FifthEditionRules {
     ): Int? =
         sheet.spellAbility?.let { ability ->
             abilityBonus(sheet, ability)?.let {
-                SPELL_DC_BASE +
-                    proficiencyBonus(level) +
-                    it
+                SPELL_DC_BASE + proficiencyBonus(level) + it + sheet.spellDcAdjustment
             }
         }
 
     fun spellAttack(
         sheet: CharacterSheet,
         level: Int,
-    ): Int? = sheet.spellAbility?.let { ability -> abilityBonus(sheet, ability)?.let { proficiencyBonus(level) + it } }
+    ): Int? =
+        sheet.spellAbility?.let { ability ->
+            abilityBonus(sheet, ability)?.let { proficiencyBonus(level) + it + sheet.spellAttackAdjustment }
+        }
 }

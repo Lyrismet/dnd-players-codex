@@ -19,60 +19,25 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppSwitch
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
-import com.lyrismet.incadent.core.designsystem.component.RadioOptionRow
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.core.preferences.EntityEditMode
 import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.settings_edit_mode_desc
-import dndplayerscodex.shared.generated.resources.settings_edit_mode_form
-import dndplayerscodex.shared.generated.resources.settings_edit_mode_form_desc
-import dndplayerscodex.shared.generated.resources.settings_edit_mode_quick
-import dndplayerscodex.shared.generated.resources.settings_edit_mode_quick_desc
-import dndplayerscodex.shared.generated.resources.settings_edit_mode_title
 import dndplayerscodex.shared.generated.resources.settings_follow_level_desc
 import dndplayerscodex.shared.generated.resources.settings_follow_level_title
 import dndplayerscodex.shared.generated.resources.settings_section_codex
 import org.jetbrains.compose.resources.stringResource
 
-/** the Codex group - mockup - overline, then a Surface card with a title block and one radio row per mode */
+/** the Codex group - mockup - overline, then a Surface card with the follow-the-party-level switch */
 @Composable
 internal fun CodexSection(
-    editMode: EntityEditMode,
     followPartyLevel: Boolean,
     sink: (SettingsEvent) -> Unit,
 ) {
-    val onEditModeSelected = { mode: EntityEditMode -> sink(SettingsEvent.EditModeSelected(mode)) }
     val onFollowPartyLevelToggled = { follow: Boolean -> sink(SettingsEvent.FollowPartyLevelToggled(follow)) }
     Column(
         modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         ListSectionHeader(text = stringResource(Res.string.settings_section_codex), fontSize = AppFontSize.Caption)
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .appCard(shape = AppShapes.Card, background = AppPalette.Surface)
-                    .padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            ModeTitleBlock(
-                title = stringResource(Res.string.settings_edit_mode_title),
-                description = stringResource(Res.string.settings_edit_mode_desc),
-            )
-            RadioOptionRow(
-                title = stringResource(Res.string.settings_edit_mode_quick),
-                description = stringResource(Res.string.settings_edit_mode_quick_desc),
-                selected = editMode == EntityEditMode.QUICK,
-                onClick = { onEditModeSelected(EntityEditMode.QUICK) },
-            )
-            RadioOptionRow(
-                title = stringResource(Res.string.settings_edit_mode_form),
-                description = stringResource(Res.string.settings_edit_mode_form_desc),
-                selected = editMode == EntityEditMode.FORM,
-                onClick = { onEditModeSelected(EntityEditMode.FORM) },
-            )
-        }
         Row(
             modifier =
                 Modifier

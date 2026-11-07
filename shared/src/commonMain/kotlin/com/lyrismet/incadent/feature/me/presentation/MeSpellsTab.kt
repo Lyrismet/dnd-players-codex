@@ -40,6 +40,7 @@ import com.lyrismet.incadent.core.designsystem.numeral
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.core.format.signed
 import com.lyrismet.incadent.core.format.toRomanNumeral
+import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment
 import com.lyrismet.incadent.feature.me.domain.SlotColumn
 import com.lyrismet.incadent.feature.me.domain.isDown
 import dndplayerscodex.shared.generated.resources.Res
@@ -136,6 +137,7 @@ private fun SpellTiles(
                     Res.string.me_help_spell_dc_title,
                 ) to stringResource(Res.string.me_help_spell_dc_body),
             modifier = Modifier.weight(1f),
+            onClick = adjustClick(readOnly, spells.saveDc, SheetAdjustment.SPELL_DC, send),
         )
         SpellTile(
             value = spells.attack.signed(),
@@ -144,9 +146,18 @@ private fun SpellTiles(
                 stringResource(Res.string.me_help_spell_attack_title) to
                     stringResource(Res.string.me_help_spell_attack_body),
             modifier = Modifier.weight(1f),
+            onClick = adjustClick(readOnly, spells.attack, SheetAdjustment.SPELL_ATTACK, send),
         )
     }
 }
+
+// a number that is not calculated yet (no spell ability) has nothing to adjust
+private fun adjustClick(
+    readOnly: Boolean,
+    value: Int?,
+    target: SheetAdjustment,
+    send: (CounterEvent) -> Unit,
+): (() -> Unit)? = if (readOnly || value == null) null else ({ send(CounterEvent.SpellAdjustmentRequested(target)) })
 
 @Composable
 private fun SpellTile(

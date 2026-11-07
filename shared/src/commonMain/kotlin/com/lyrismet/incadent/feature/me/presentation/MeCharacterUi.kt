@@ -1,7 +1,5 @@
 package com.lyrismet.incadent.feature.me.presentation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,16 +10,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
@@ -31,32 +34,33 @@ import dndplayerscodex.shared.generated.resources.me_tab_resources
 import dndplayerscodex.shared.generated.resources.me_tab_sheet
 import dndplayerscodex.shared.generated.resources.me_tab_spells
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
 
-private const val COLLAPSE_AFTER_PX = 120
-private const val EXPAND_BELOW_PX = 12
+private val FOLD_DISTANCE = 150.dp
+private val BLOCK_GAP = 12.dp
 
-/** the pinned header over the tab of the character, the header folds up while the sheet scrolls */
+/** the header over the tab, its name and tiles fold up with the scroll gesture before the list moves */
 @Composable
 internal fun MeCharacterUi(
     character: MeCharacter,
     onEvent: (MeEvent) -> Unit,
 ) {
     val listState = rememberLazyListState()
-    val folded = rememberFolded(listState)
+    val distance = with(LocalDensity.current) { FOLD_DISTANCE.toPx() }
+    var folded by remember { mutableFloatStateOf(0f) }
+    val connection = remember(distance) { FoldConnection(distance, { folded }, { folded = it }) }
+    val fraction = (folded / distance).coerceIn(0f, 1f)
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 6.dp).animateContentSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                AnimatedVisibility(!folded) { MeNameRow(character, onEvent) }
+        Column(Modifier.fillMaxSize().nestedScroll(connection)) {
+            Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 6.dp)) {
+                Box(Modifier.foldable(fraction)) { MeNameRow(character, onEvent) }
                 Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     MeHitPointsCard(character, onEvent, Modifier.weight(1f))
                     if (!character.readOnly) {
                         MeRestButton({ onEvent(MeEvent.Rest(RestEvent.Opened)) }, Modifier.fillMaxHeight())
                     }
                 }
-                AnimatedVisibility(!folded) { MeTiles(character, onEvent) }
+                Box(Modifier.foldable(fraction)) { MeTiles(character, onEvent) }
                 MeTabs(character, onEvent)
             }
             MeTabContent(character, listState, onEvent, Modifier.weight(1f))
@@ -65,22 +69,49 @@ internal fun MeCharacterUi(
     }
 }
 
-@Composable
-private fun rememberFolded(listState: LazyListState): Boolean {
-    var folded by remember { mutableStateOf(false) }
-    // two thresholds, so the list growing when the header folds does not fold it back at once
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
-            .collect { (index, offset) ->
-                if (index > 0 || offset > COLLAPSE_AFTER_PX) {
-                    folded = true
-                } else if (offset < EXPAND_BELOW_PX) {
-                    folded = false
-                }
-            }
+/** takes the scroll up first while folding and gives it back last while unfolding, so the list never decides it */
+private class FoldConnection(
+    private val distance: Float,
+    private val read: () -> Float,
+    private val write: (Float) -> Unit,
+) : NestedScrollConnection {
+    override fun onPreScroll(
+        available: Offset,
+        source: NestedScrollSource,
+    ): Offset {
+        val before = read()
+        if (available.y >= 0f || before >= distance) return Offset.Zero
+        val after = (before - available.y).coerceAtMost(distance)
+        write(after)
+        return Offset(0f, before - after)
     }
-    return folded
+
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource,
+    ): Offset {
+        val before = read()
+        if (available.y <= 0f || before <= 0f) return Offset.Zero
+        val after = (before - available.y).coerceAtLeast(0f)
+        write(after)
+        return Offset(0f, before - after)
+    }
 }
+
+/** shrinks to nothing as [fraction] goes to 1, the gap under the block shrinks with it */
+private fun Modifier.foldable(fraction: Float): Modifier =
+    this.then(
+        Modifier
+            .clipToBounds()
+            .alpha(1f - fraction)
+            .layout { measurable, constraints ->
+                val gap = BLOCK_GAP.roundToPx()
+                val placeable = measurable.measure(constraints)
+                val height = ((placeable.height + gap) * (1f - fraction)).roundToInt()
+                layout(placeable.width, height) { placeable.placeRelative(0, 0) }
+            },
+    )
 
 @Composable
 private fun MeTabs(

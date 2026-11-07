@@ -8,6 +8,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.CoinPurse
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
+import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.persistence.TestDatabase
 import kotlinx.coroutines.flow.first
@@ -79,6 +80,28 @@ class CharacterSheetRepositoryTest {
             assertEquals("Sage", stored.background)
             assertEquals(CoinPurse(gold = 34, silver = 18, copper = 25), stored.purse)
             assertTrue(stored.originId.isNotBlank())
+        }
+
+    @Test
+    fun `spell adjustments and the notes of every adjustment are kept`() =
+        runTest {
+            val id = lira()
+            sheets.saveSheet(
+                id,
+                CharacterSheet(
+                    spellDcAdjustment = 1,
+                    spellAttackAdjustment = -1,
+                    skillNotes = mapOf(Skill.STEALTH to "boots, \"quiet\""),
+                    adjustmentNotes = mapOf(SheetAdjustment.SPELL_DC to "ring", SheetAdjustment.INITIATIVE to "feat"),
+                ),
+            )
+            val stored = sheets.getSheet(id)
+            assertEquals(1, stored.spellDcAdjustment)
+            assertEquals(-1, stored.spellAttackAdjustment)
+            assertEquals("boots, \"quiet\"", stored.note(Skill.STEALTH))
+            assertEquals("ring", stored.note(SheetAdjustment.SPELL_DC))
+            assertEquals("feat", stored.note(SheetAdjustment.INITIATIVE))
+            assertEquals("", stored.note(SheetAdjustment.SPELL_ATTACK))
         }
 
     @Test

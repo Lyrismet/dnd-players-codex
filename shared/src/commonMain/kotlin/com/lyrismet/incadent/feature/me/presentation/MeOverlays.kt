@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppHelpHint
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
@@ -30,14 +31,14 @@ import com.lyrismet.incadent.core.format.signed
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
 import com.lyrismet.incadent.feature.me.domain.HitPointMode
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.help_ac_body
+import dndplayerscodex.shared.generated.resources.help_ac_title
 import dndplayerscodex.shared.generated.resources.me_ability_hint
 import dndplayerscodex.shared.generated.resources.me_ability_overline
 import dndplayerscodex.shared.generated.resources.me_ac_from_hint
 import dndplayerscodex.shared.generated.resources.me_ac_from_label
 import dndplayerscodex.shared.generated.resources.me_ac_from_placeholder
-import dndplayerscodex.shared.generated.resources.me_ac_overline
 import dndplayerscodex.shared.generated.resources.me_ac_title
-import dndplayerscodex.shared.generated.resources.me_adjustment_hint
 import dndplayerscodex.shared.generated.resources.me_calc_bonus
 import dndplayerscodex.shared.generated.resources.me_calc_save
 import dndplayerscodex.shared.generated.resources.me_done
@@ -47,19 +48,16 @@ import dndplayerscodex.shared.generated.resources.me_hp_mode_plus
 import dndplayerscodex.shared.generated.resources.me_hp_mode_temp
 import dndplayerscodex.shared.generated.resources.me_hp_pad_overline
 import dndplayerscodex.shared.generated.resources.me_hp_preview_format
-import dndplayerscodex.shared.generated.resources.me_popover_adjustment
-import dndplayerscodex.shared.generated.resources.me_popover_initiative
-import dndplayerscodex.shared.generated.resources.me_popover_passive
 import dndplayerscodex.shared.generated.resources.me_proficiency_expertise
 import dndplayerscodex.shared.generated.resources.me_proficiency_none
 import dndplayerscodex.shared.generated.resources.me_proficiency_proficient
 import dndplayerscodex.shared.generated.resources.me_save_proficiency
+import dndplayerscodex.shared.generated.resources.me_sheet_overline
 import dndplayerscodex.shared.generated.resources.me_skill_adjustment
 import dndplayerscodex.shared.generated.resources.me_skill_adjustment_hint
 import dndplayerscodex.shared.generated.resources.me_skill_bonus
 import dndplayerscodex.shared.generated.resources.me_skill_overline
 import dndplayerscodex.shared.generated.resources.me_speed_hint
-import dndplayerscodex.shared.generated.resources.me_speed_overline
 import dndplayerscodex.shared.generated.resources.me_speed_title
 import dndplayerscodex.shared.generated.resources.me_step_less
 import dndplayerscodex.shared.generated.resources.me_step_more
@@ -153,7 +151,7 @@ private fun AbilitySheet(
         onClose = { send(OverlayEvent.Closed) },
         onDone = { send(OverlayEvent.Applied) },
     ) {
-        NumberRow(edit.score, send)
+        NumberRow(edit.score, send, spread = true)
         Text(stringResource(Res.string.me_ability_hint), style = AppText.footnote, color = AppPalette.TextSecondary)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CalcCard(stringResource(Res.string.me_calc_bonus), edit.bonus.signed(), Modifier.weight(1f))
@@ -194,13 +192,14 @@ private fun SkillSheet(
                 style = MaterialTheme.typography.bodyLarge,
                 color = AppPalette.TextPrimary,
             )
-            NumberRow(edit.adjustment, send)
+            NumberRow(edit.adjustment, send, signed = true)
         }
         Text(
             stringResource(Res.string.me_skill_adjustment_hint),
             style = AppText.footnote,
             color = AppPalette.TextSecondary,
         )
+        AdjustmentNote(edit.sheet.note(edit.skill), send)
         CalcCard(stringResource(Res.string.me_skill_bonus), edit.bonus.signed(), Modifier.fillMaxWidth())
     }
 }
@@ -211,12 +210,13 @@ private fun ArmorClassSheet(
     send: (OverlayEvent) -> Unit,
 ) {
     EditSheet(
-        overline = stringResource(Res.string.me_ac_overline),
+        overline = stringResource(Res.string.me_sheet_overline),
         title = stringResource(Res.string.me_ac_title),
         onClose = { send(OverlayEvent.Closed) },
         onDone = { send(OverlayEvent.Applied) },
+        help = stringResource(Res.string.help_ac_title) to stringResource(Res.string.help_ac_body),
     ) {
-        NumberRow(edit.value, send)
+        NumberRow(edit.value, send, spread = true)
         FormTextField(
             label = stringResource(Res.string.me_ac_from_label),
             value = edit.from,
@@ -233,32 +233,13 @@ private fun SpeedSheet(
     send: (OverlayEvent) -> Unit,
 ) {
     EditSheet(
-        overline = stringResource(Res.string.me_speed_overline),
+        overline = stringResource(Res.string.me_sheet_overline),
         title = stringResource(Res.string.me_speed_title),
         onClose = { send(OverlayEvent.Closed) },
         onDone = { send(OverlayEvent.Applied) },
     ) {
-        NumberRow(edit.value, send, step = SPEED_STEP)
+        NumberRow(edit.value, send, step = SPEED_STEP, spread = true)
         Text(stringResource(Res.string.me_speed_hint), style = AppText.footnote, color = AppPalette.TextSecondary)
-    }
-}
-
-@Composable
-private fun AdjustmentSheet(
-    edit: MeOverlay.Adjustment,
-    send: (OverlayEvent) -> Unit,
-) {
-    EditSheet(
-        overline = stringResource(Res.string.me_popover_adjustment),
-        title =
-            stringResource(
-                if (edit.tile == MeTile.INITIATIVE) Res.string.me_popover_initiative else Res.string.me_popover_passive,
-            ),
-        onClose = { send(OverlayEvent.Closed) },
-        onDone = { send(OverlayEvent.Applied) },
-    ) {
-        NumberRow(edit.value, send)
-        Text(stringResource(Res.string.me_adjustment_hint), style = AppText.footnote, color = AppPalette.TextSecondary)
     }
 }
 
@@ -270,6 +251,7 @@ internal fun EditSheet(
     onClose: () -> Unit,
     onDone: () -> Unit,
     subtitle: String? = null,
+    help: Pair<String, String>? = null,
     doneLabel: String = stringResource(Res.string.me_done),
     doneEnabled: Boolean = true,
     content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
@@ -277,7 +259,15 @@ internal fun EditSheet(
     AppBottomSheet(onDismissRequest = onClose) {
         AppSheetColumn(
             scroll = true,
-            header = { AppSheetHeader(title = title, onClose = onClose, overline = overline, subtitle = subtitle) },
+            header = {
+                AppSheetHeader(
+                    title = title,
+                    onClose = onClose,
+                    overline = overline,
+                    subtitle = subtitle,
+                    overlineTrailing = help?.let { (hintTitle, hintBody) -> { AppHelpHint(hintTitle, hintBody) } },
+                )
+            },
         ) {
             content()
             FormPrimaryButton(text = doneLabel, onClick = onDone, enabled = doneEnabled)
@@ -291,9 +281,12 @@ internal fun NumberRow(
     send: (OverlayEvent) -> Unit,
     step: Int = 1,
     spread: Boolean = false,
+    // a value that is added to a number reads "+1", a number that is set reads as it is
+    signed: Boolean = false,
 ) {
     AppStepper(
         count = value,
+        countText = if (signed) value.signed() else value.toString(),
         onDecrease = { send(OverlayEvent.NumberStepped(-step)) },
         onIncrease = { send(OverlayEvent.NumberStepped(step)) },
         decreaseDescription = stringResource(Res.string.me_step_less),

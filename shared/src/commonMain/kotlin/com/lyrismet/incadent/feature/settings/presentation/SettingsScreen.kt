@@ -3,7 +3,6 @@ package com.lyrismet.incadent.feature.settings.presentation
 import com.lyrismet.incadent.core.appinfo.UpdateStatus
 import com.lyrismet.incadent.core.language.LanguageSheetEvent
 import com.lyrismet.incadent.core.preferences.AppLanguage
-import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
@@ -23,7 +22,6 @@ data class SettingsState(
     val languageSheetOpen: Boolean,
     val numbering: SessionNumbering,
     val mentionStyle: MentionStyle,
-    val editMode: EntityEditMode,
     val followPartyLevel: Boolean,
     val campaignName: String,
     val campaignSheet: CampaignSheetState,
@@ -55,10 +53,6 @@ sealed interface SettingsEvent : CircuitUiEvent {
 
     data class MentionStyleSelected(
         val style: MentionStyle,
-    ) : SettingsEvent
-
-    data class EditModeSelected(
-        val mode: EntityEditMode,
     ) : SettingsEvent
 
     data class FollowPartyLevelToggled(

@@ -20,14 +20,7 @@ internal fun MeOverlay.reduce(event: OverlayEvent): MeOverlay =
             } else {
                 this
             }
-        is MeOverlay.Adjustment ->
-            if (event is OverlayEvent.NumberStepped) {
-                copy(
-                    value = value.stepped(event.delta, SheetRanges.adjustment),
-                )
-            } else {
-                this
-            }
+        is MeOverlay.Adjustment -> reduceAdjustment(event)
         is MeOverlay.Fill -> copy(draft = draft.reduce(event))
         is MeOverlay.EditCharacter -> reduceEdit(event)
         is MeOverlay.Slots -> reduceSlots(event)
@@ -68,6 +61,26 @@ private fun MeOverlay.SkillEdit.reduceSkill(event: OverlayEvent): MeOverlay =
                     ),
             )
         OverlayEvent.AdjustmentCleared -> copy(sheet = sheet.copy(skillAdjustments = sheet.skillAdjustments - skill))
+        is OverlayEvent.TextChanged ->
+            if (event.field == OverlayField.ADJUSTMENT_NOTE) {
+                copy(sheet = sheet.copy(skillNotes = sheet.skillNotes + (skill to event.value)))
+            } else {
+                this
+            }
+        else -> this
+    }
+
+private fun MeOverlay.Adjustment.reduceAdjustment(event: OverlayEvent): MeOverlay =
+    when (event) {
+        is OverlayEvent.NumberStepped -> copy(value = value.stepped(event.delta, SheetRanges.adjustment))
+        is OverlayEvent.TextChanged ->
+            if (event.field ==
+                OverlayField.ADJUSTMENT_NOTE
+            ) {
+                copy(note = event.value)
+            } else {
+                this
+            }
         else -> this
     }
 
@@ -94,7 +107,7 @@ private fun MeOverlay.EditCharacter.reduceEdit(event: OverlayEvent): MeOverlay =
                         OverlayField.BACKGROUND -> draft.copy(background = event.value)
                         OverlayField.ALIGNMENT -> draft.copy(alignment = event.value)
                         OverlayField.PLAYER_NAME -> draft.copy(playerName = event.value)
-                        OverlayField.ARMOR_CLASS_FROM, OverlayField.RESOURCE_NAME -> draft
+                        OverlayField.ARMOR_CLASS_FROM, OverlayField.ADJUSTMENT_NOTE, OverlayField.RESOURCE_NAME -> draft
                     },
             )
         else -> this

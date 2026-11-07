@@ -19,7 +19,8 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 
 /**
  * the top of a bottom sheet: an overline (optional, gold unless [overlineColor] says otherwise), the 26sp serif
- * [title], a [subtitle] under it and the round close button. An [intro] paragraph sits below the whole row.
+ * [title], a [subtitle] under it and the round close button. [overlineTrailing] follows the overline, e.g. a help
+ * hint. An [intro] paragraph sits below the whole row.
  */
 @Composable
 fun AppSheetHeader(
@@ -31,12 +32,16 @@ fun AppSheetHeader(
     subtitle: String? = null,
     intro: String? = null,
     closeSize: Dp = 40.dp,
+    overlineTrailing: (@Composable () -> Unit)? = null,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
             Column(modifier = Modifier.weight(1f)) {
                 if (overline != null) {
-                    SectionOverline(text = overline, color = overlineColor, style = OverlineStyle.Section)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        SectionOverline(text = overline, color = overlineColor, style = OverlineStyle.Section)
+                        overlineTrailing?.invoke()
+                    }
                 }
                 Text(
                     text = title,
@@ -75,6 +80,17 @@ fun AppSheetHeader(
     subtitle: String? = null,
     intro: String? = null,
     closeSize: Dp = 40.dp,
+    overlineTrailing: (@Composable () -> Unit)? = null,
 ) {
-    AppSheetHeader(AnnotatedString(title), onClose, modifier, overline, overlineColor, subtitle, intro, closeSize)
+    AppSheetHeader(
+        AnnotatedString(title),
+        onClose,
+        modifier,
+        overline,
+        overlineColor,
+        subtitle,
+        intro,
+        closeSize,
+        overlineTrailing,
+    )
 }

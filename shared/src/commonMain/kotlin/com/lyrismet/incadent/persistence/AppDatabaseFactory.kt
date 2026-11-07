@@ -58,6 +58,8 @@ fun createAppDatabase(driver: SqlDriver): AppDatabase {
                 savesAdapter = abilitySetAdapter,
                 skill_marksAdapter = skillValuesAdapter,
                 skill_adjustmentsAdapter = skillValuesAdapter,
+                skill_notesAdapter = skillNotesAdapter,
+                adjustment_notesAdapter = sheetAdjustmentNotesAdapter,
                 spell_abilityAdapter = abilityAdapter,
             ),
         itemAdapter = Item.Adapter(coinAdapter = coinAdapter, owner_kindAdapter = entityKindAdapter),

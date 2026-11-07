@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
+import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
@@ -147,6 +148,10 @@ sealed interface FileRecord {
         val skillAdjustments: Map<Skill, Int> = emptyMap(),
         val initiativeAdjustment: Int = 0,
         val passivePerceptionAdjustment: Int = 0,
+        val spellDcAdjustment: Int = 0,
+        val spellAttackAdjustment: Int = 0,
+        val skillNotes: Map<Skill, String> = emptyMap(),
+        val adjustmentNotes: Map<SheetAdjustment, String> = emptyMap(),
         val spellAbility: Ability? = null,
         val speed: Int? = null,
         val inspiration: Boolean = false,

@@ -146,7 +146,7 @@ fun SettingsUi(
                         onPhrasesClick = { sink(SettingsEvent.PhrasesOpened) },
                         onShowHintsClick = { sink(SettingsEvent.SwipeHintsShowRequested) },
                     )
-                    CodexSection(state.editMode, state.followPartyLevel, sink)
+                    CodexSection(state.followPartyLevel, sink)
                     CampaignSection(
                         name = state.campaignName,
                         onRenameClick = { sink(SettingsEvent.CampaignSheet(CampaignSheetEvent.RenameClicked)) },

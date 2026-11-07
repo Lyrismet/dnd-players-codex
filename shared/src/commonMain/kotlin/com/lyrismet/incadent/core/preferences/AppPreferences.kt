@@ -14,7 +14,7 @@ enum class MentionStyle(
     UNDERLINE("underline"),
 }
 
-/** how a codex card is edited - in place with holds ([QUICK]) or read-only with the form ([FORM]) */
+/** how a codex card is edited, [FORM] is removed on purpose as unfinished and may come back or go for good */
 enum class EntityEditMode(
     val tag: String,
 ) {

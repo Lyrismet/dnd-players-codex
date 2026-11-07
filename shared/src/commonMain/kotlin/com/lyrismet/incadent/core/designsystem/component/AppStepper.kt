@@ -49,6 +49,8 @@ fun AppStepper(
     removesAtOne: Boolean = true,
     // the tiles go to the edges and a big count sits between them, for a sheet whose only job is the number
     spread: Boolean = false,
+    // replaces the plain number in the middle, e.g. a signed "+1" for a value that is added to another
+    countText: String = count.toString(),
 ) {
     if (tiles) {
         TileStepper(
@@ -61,6 +63,7 @@ fun AppStepper(
             canIncrease,
             removesAtOne,
             spread,
+            countText,
         )
         return
     }
@@ -124,6 +127,7 @@ private fun TileStepper(
     canIncrease: Boolean,
     removesAtOne: Boolean,
     spread: Boolean,
+    countText: String,
 ) {
     val tile = if (spread) SPREAD_TILE else 44.dp
     Row(
@@ -139,7 +143,7 @@ private fun TileStepper(
             tile,
         )
         Text(
-            text = count.toString(),
+            text = countText,
             modifier = if (spread) Modifier.weight(1f) else Modifier.widthIn(min = 44.dp),
             color = if (spread) AppPalette.TextHeading else AppPalette.TextPrimary,
             fontSize = if (spread) SPREAD_COUNT_SIZE else AppFontSize.Large,

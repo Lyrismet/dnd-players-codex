@@ -18,9 +18,19 @@ class UpdatePolicyTest {
 
     @Test
     fun `broken strings are not parsed`() {
-        listOf("", "9", "9.0", "9.0.0.1", "a.b.c", "1.-2.3", "1..3", "1.2.x").forEach {
+        listOf("", "9", "9.0", "a.b.c", "1.-2.3", "1..3", "1.2.x").forEach {
             assertNull(VersionNumber.parse(it), it)
         }
+    }
+
+    @Test
+    fun `a fourth number is the revision and a missing one is zero`() {
+        assertEquals(VersionNumber(0, 9, 0, 1), VersionNumber.parse("0.9.0.1"))
+        assertEquals(VersionNumber.parse("0.9.0"), VersionNumber.parse("0.9.0.0"))
+        assertTrue(v("0.9.0.1") > v("0.9.0"))
+        assertTrue(v("0.9.1") > v("0.9.0.9"))
+        assertEquals("0.9.0.1", v("0.9.0.1").toString())
+        assertNull(VersionNumber.parse("0.9.0.1.2"))
     }
 
     @Test
