@@ -15,8 +15,10 @@ stays on the device (SQLDelight).
     implementations of platform-only code.
   - [commonTest](./shared/src/commonTest/kotlin) and [androidHostTest](./shared/src/androidHostTest/kotlin) hold the tests.
 
-More detail: [CLAUDE.md](./CLAUDE.md) (architecture, DI, rules for code), [CORE_COMPONENTS.md](./CORE_COMPONENTS.md)
-(reusable UI building blocks) and [FEATURES.md](./FEATURES.md) (feature map and what is done).
+How versions are specified and built: [docs/README.md](./docs/README.md) (process, spec files, commands).
+
+More detail: [CLAUDE.md](./CLAUDE.md) (architecture, DI, rules for code), [docs/CORE_COMPONENTS.md](./docs/CORE_COMPONENTS.md)
+(reusable UI building blocks) and [docs/FEATURES.md](./docs/FEATURES.md) (feature map and what is done).
 
 ## Running the apps
 

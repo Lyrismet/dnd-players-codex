@@ -6,7 +6,7 @@
 
 ## Задачи
 
-| Пункт | Строки `DESIGN_V9.md` | Суть |
+| Пункт | Строки `docs/v9/DESIGN.md` | Суть |
 |---|---|---|
 | 7.3 (данные и формулы) | 410-450 | шесть значений, бонус `floor((v-10)/2)`, мастерство +2..+6 по уровню, спасброски и 18 навыков (нет / владею / компетентность x2, поправка), инициатива, пассивное восприятие 10 + бонус Внимательности, СЛ 8 + мастерство + бонус, атака; КД и скорость числом, "Откуда" у КД, вдохновение, подкласс, предыстория, мировоззрение, личность, подпись игрока; значения вне 1-30 отсекаются |
 | 7.4 (данные) | 451-463 | ресурсы: название, максимум, текущее, группа, порядок; ячейки заклинаний частный случай (группа по кругам); шаблоны из SRD 5.1 как данные |
@@ -18,21 +18,21 @@
 
 | Файл : диапазон : зачем |
 |---|
-| `DESIGN_V9.md:27-59` готовность задачи, сквозные правила (правила системы в одном месте, Inter, "я") |
-| `DESIGN_V9.md:410-507` 7.3-7.7; `:599-617` приложение Б (строки 7.3, 7.4, 7.7); `:618-636` приложение В (`FifthEditionRules`, отдых, монеты); `:652-667` приложение Д сценарии 1, 3-5 (числа Лиры для тестов) |
+| `docs/v9/DESIGN.md:27-59` готовность задачи, сквозные правила (правила системы в одном месте, Inter, "я") |
+| `docs/v9/DESIGN.md:410-507` 7.3-7.7; `:599-617` приложение Б (строки 7.3, 7.4, 7.7); `:618-636` приложение В (`FifthEditionRules`, отдых, монеты); `:652-667` приложение Д сценарии 1, 3-5 (числа Лиры для тестов) |
 | `Players Codex v9.dc.html:1867-1883` `SKILLS`, `SHEET0` (поле `fav` не переносить), `profB`, `SYN`, `COINS` |
 | `Players Codex v9.dc.html:2361-2368` `meRest` (откат в прототипе откатывает весь снимок, делать только изменения отдыха) |
 | `Players Codex v9.dc.html:2369-2430` расчёты листа `meSheet`, `sg`, навыки, спасброски, `dsS/dsF/dsOpen` (2426), КД и `acFrom` (1761, 2379) |
 | `Players Codex v9.dc.html:2446` сводка отдыха; `:3700-3712` калькулятор кошелька, `padX.total` |
-| `CORE_COMPONENTS.md:10-19` токены (для понимания, UI в шаге нет) |
+| `docs/CORE_COMPONENTS.md:10-19` токены (для понимания, UI в шаге нет) |
 | `CLAUDE.md` разделы "Schema changes", "Dependency injection", "Tests", "Kotlin typing rules" |
 
 ## Код (где работать)
 
 - Модель отряда: `shared/src/commonMain/kotlin/com/lyrismet/incadent/feature/codex/domain/model/PartyMember.kt` (`PartyStatRanges` level 1..20, hpMax 1..999, `clampedToRanges`, `PartyPresence`; `isPlayerCharacter` = метка "я", `hpMax`, `hpCurrent`, `fallen`).
-- Репозитории: `.../feature/codex/domain/repository/` (`PartyRepository.kt`, `EntityRepository.kt`, `CodexRepositories.kt`), реализации `.../feature/codex/data/PartyRepositoryImpl.kt`. Новое (лист, ресурсы, правила) по `DESIGN_V9.md` приложению Г (`:637-651`) кладётся в `feature/codex/domain` и `feature/codex/data`, например `FifthEditionRules` рядом с моделями.
+- Репозитории: `.../feature/codex/domain/repository/` (`PartyRepository.kt`, `EntityRepository.kt`, `CodexRepositories.kt`), реализации `.../feature/codex/data/PartyRepositoryImpl.kt`. Новое (лист, ресурсы, правила) по `docs/v9/DESIGN.md` приложению Г (`:637-651`) кладётся в `feature/codex/domain` и `feature/codex/data`, например `FifthEditionRules` рядом с моделями.
 - Схема: `shared/src/commonMain/sqldelight/com/lyrismet/incadent/db/PartyMember.sq` (образец), адаптеры `.../persistence/Adapters.kt`.
-- Хиты, КД, спасброски от смерти остаются в записи отряда, один источник с боем (`DESIGN_V9.md:614`, последняя строка таблицы Б).
+- Хиты, КД, спасброски от смерти остаются в записи отряда, один источник с боем (`docs/v9/DESIGN.md:614`, последняя строка таблицы Б).
 - Метка "я" сейчас `is_player_character` и называется "вы" в UI; в шаге 9 переименование смысла без смены данных.
 - Тесты: `shared/src/commonTest/kotlin/com/lyrismet/incadent/feature/codex/domain/model/` (образец `NicknamesTest.kt`, добавлять `FifthEditionRulesTest`, `RestTest`, `CoinsTest` рядом); `shared/src/androidHostTest/kotlin/com/lyrismet/incadent/feature/codex/data/` (репозитории на `TestDatabase`); `.../persistence/SchemaMigrationTest.kt`.
 
@@ -43,7 +43,7 @@
 
 ## Не трогать
 
-Любые экраны, Circuit-фабрики, `CORE_COMPONENTS.md`, `strings.xml`, таб-бар, экран "Я" (шаги 10-12), импорт и экспорт (шаги 7 и 13), `AppGraph` (только биндинги новых репозиториев через `DataBindings`/`@ContributesBinding`, аккуратно).
+Любые экраны, Circuit-фабрики, `docs/CORE_COMPONENTS.md`, `strings.xml`, таб-бар, экран "Я" (шаги 10-12), импорт и экспорт (шаги 7 и 13), `AppGraph` (только биндинги новых репозиториев через `DataBindings`/`@ContributesBinding`, аккуратно).
 
 ## Приёмка
 
@@ -59,4 +59,4 @@
 
 ## Готово, когда
 
-Выполнен чек-лист `DESIGN_V9.md:27-39` (сборка без iOS-линков, `ktlintFormat`, `detekt`, миграции с тестами, чистая логика с тестами в `commonTest`), шаг 9 отмечен `[x]` в приложении А (`DESIGN_V9.md:577-591`), пункты `FEATURES.md` (разделы 15-16) остаются `[ ]` до экранов шагов 10-12.
+Выполнен чек-лист `docs/v9/DESIGN.md:27-39` (сборка без iOS-линков, `ktlintFormat`, `detekt`, миграции с тестами, чистая логика с тестами в `commonTest`), шаг 9 отмечен `[x]` в приложении А (`docs/v9/DESIGN.md:577-591`), пункты `docs/FEATURES.md` (разделы 15-16) остаются `[ ]` до экранов шагов 10-12.
