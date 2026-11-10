@@ -1,4 +1,4 @@
-# CORE_COMPONENTS.md
+# docs/CORE_COMPONENTS.md
 
 Catalog of everything already built in `shared/src/commonMain/kotlin/com/lyrismet/incadent/core/designsystem/`.
 
