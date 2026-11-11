@@ -17,9 +17,11 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
+import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.AppToggleCard
+import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
@@ -30,6 +32,7 @@ import dndplayerscodex.shared.generated.resources.session_text_actors_hint
 import dndplayerscodex.shared.generated.resources.session_text_actors_toggle
 import dndplayerscodex.shared.generated.resources.session_text_intro_hint
 import dndplayerscodex.shared.generated.resources.session_text_intro_hint_named
+import dndplayerscodex.shared.generated.resources.session_text_intro_next
 import dndplayerscodex.shared.generated.resources.session_text_intro_toggle
 import dndplayerscodex.shared.generated.resources.session_text_preview
 import dndplayerscodex.shared.generated.resources.session_text_send
@@ -46,6 +49,7 @@ data class SessionTextSheetState(
     val withActors: Boolean,
     // the intro joke names the character marked "я", the hint says so
     val hasCharacter: Boolean,
+    val canChangeIntro: Boolean,
     val preview: String,
     val shareNow: String? = null,
 )
@@ -54,6 +58,9 @@ sealed interface SessionTextEvent {
     data object IntroToggled : SessionTextEvent
 
     data object ActorsToggled : SessionTextEvent
+
+    /** another intro than the one on show */
+    data object IntroChanged : SessionTextEvent
 
     data object SendClicked : SessionTextEvent
 
@@ -85,19 +92,7 @@ fun SessionTextSheet(
                 onClose = { onEvent(SessionTextEvent.Dismissed) },
             )
         }) {
-            AppToggleCard(
-                title = stringResource(Res.string.session_text_intro_toggle),
-                hint =
-                    stringResource(
-                        if (state.hasCharacter) {
-                            Res.string.session_text_intro_hint_named
-                        } else {
-                            Res.string.session_text_intro_hint
-                        },
-                    ),
-                checked = state.withIntro,
-                onToggle = { onEvent(SessionTextEvent.IntroToggled) },
-            )
+            IntroControls(state, onEvent)
             AppToggleCard(
                 title = stringResource(Res.string.session_text_actors_toggle),
                 hint = stringResource(Res.string.session_text_actors_hint),
@@ -125,5 +120,33 @@ fun SessionTextSheet(
                 onClick = { onEvent(SessionTextEvent.SendClicked) },
             )
         }
+    }
+}
+
+@Composable
+private fun IntroControls(
+    state: SessionTextSheetState,
+    onEvent: (SessionTextEvent) -> Unit,
+) {
+    AppToggleCard(
+        title = stringResource(Res.string.session_text_intro_toggle),
+        hint =
+            stringResource(
+                if (state.hasCharacter) {
+                    Res.string.session_text_intro_hint_named
+                } else {
+                    Res.string.session_text_intro_hint
+                },
+            ),
+        checked = state.withIntro,
+        onToggle = { onEvent(SessionTextEvent.IntroToggled) },
+    )
+    if (state.canChangeIntro) {
+        AppButton(
+            text = stringResource(Res.string.session_text_intro_next),
+            onClick = { onEvent(SessionTextEvent.IntroChanged) },
+            tone = ButtonTone.Neutral,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }

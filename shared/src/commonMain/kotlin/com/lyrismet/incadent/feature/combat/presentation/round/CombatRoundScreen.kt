@@ -18,7 +18,6 @@ import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
 import kotlinx.serialization.Serializable
-import kotlin.time.Instant
 
 @Serializable
 data class CombatRoundScreen(
@@ -44,9 +43,8 @@ enum class ChipKind { CAPTURED, NEUTRAL, FRIEND, FLED, RESTRAINT, WEAKENING, EFF
 data class CombatRoundState(
     // the fight has not arrived yet
     val isLoading: Boolean = true,
-    // the fight clock is drawn by the header from this, so the presenter does not tick every second
-    val startedAt: Instant? = null,
     val round: Int = 1,
+    val canGoBack: Boolean = false,
     val currentName: String = "",
     val hostile: String = "",
     val allClear: Boolean = false,
@@ -223,6 +221,9 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
         val id: Long,
     ) : CombatRoundEvent
 
+    /** the panel was swiped down */
+    data object PanelDismissed : CombatRoundEvent
+
     data class TabSelected(
         val tab: PanelTab,
     ) : CombatRoundEvent
@@ -254,6 +255,8 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
     ) : CombatRoundEvent
 
     data object NextTurn : CombatRoundEvent
+
+    data object PreviousTurn : CombatRoundEvent
 
     data object MenuToggled : CombatRoundEvent
 

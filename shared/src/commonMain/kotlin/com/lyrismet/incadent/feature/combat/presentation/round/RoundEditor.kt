@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.preparation.MemberSource
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
+import com.lyrismet.incadent.feature.combat.domain.round.CombatTurnBack
 import com.lyrismet.incadent.feature.combat.domain.round.DamageActions
 import com.lyrismet.incadent.feature.combat.domain.round.RoundActions
 import com.lyrismet.incadent.feature.combat.domain.round.TurnPosition
@@ -17,6 +18,7 @@ import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
 import com.lyrismet.incadent.feature.combat.domain.round.nextTurn
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeAdder
 import dndplayerscodex.shared.generated.resources.Res
+import dndplayerscodex.shared.generated.resources.combat_round_toast_again
 import dndplayerscodex.shared.generated.resources.combat_round_toast_joined
 import dndplayerscodex.shared.generated.resources.combat_round_toast_removed
 import dndplayerscodex.shared.generated.resources.combat_round_undo_removed
@@ -38,6 +40,7 @@ internal class RoundEditor(
 ) : FoeAdder {
     val actions = RoundActions(combatRepository)
     val damage = DamageActions(combatRepository)
+    private val turnBack = CombatTurnBack(combatRepository)
 
     /** the combat as it stands now, after the writes before it */
     suspend fun fresh(): Combat? = combatRepository.observe(combatId).first()
@@ -59,6 +62,17 @@ internal class RoundEditor(
         val ordered = combat.combatants.inTurnOrder()
         actions.next(combat, ownIds)
         onMoved(ordered.getOrNull(nextTurn(ordered, TurnPosition(combat.round, combat.turn)).turn)?.id)
+    }
+
+    /** the turn goes back, a step into the round before is told */
+    fun previous(
+        ownIds: Set<Long>,
+        onMoved: (Long?) -> Unit,
+    ) = edit { combat ->
+        val ordered = combat.combatants.inTurnOrder()
+        val position = turnBack.previous(combat, ownIds) ?: return@edit
+        onMoved(ordered.getOrNull(position.turn)?.id)
+        if (position.round < combat.round) showToast(getString(Res.string.combat_round_toast_again, position.round))
     }
 
     fun remove(

@@ -5,22 +5,27 @@ import kotlin.test.assertEquals
 
 class ElapsedFormatTest {
     @Test
-    fun `under a minute is padded`() {
-        assertEquals("00:07", formatElapsed(7))
+    fun `the first round is zero seconds`() {
+        assertEquals(GameTime(0, 0), gameTime(1))
     }
 
     @Test
-    fun `minutes and seconds`() {
-        assertEquals("03:07", formatElapsed(187))
+    fun `round four is eighteen seconds`() {
+        assertEquals(GameTime(0, 18), gameTime(4))
     }
 
     @Test
-    fun `an hour adds the hours place`() {
-        assertEquals("1:02:09", formatElapsed(3729))
+    fun `round twelve is a minute and six seconds`() {
+        assertEquals(GameTime(1, 6), gameTime(12))
     }
 
     @Test
-    fun `a negative span reads as zero`() {
-        assertEquals("00:00", formatElapsed(-5))
+    fun `round a hundred is nine minutes and fifty four seconds`() {
+        assertEquals(GameTime(9, 54), gameTime(100))
+    }
+
+    @Test
+    fun `a round below one reads as the start`() {
+        assertEquals(GameTime(0, 0), gameTime(0))
     }
 }

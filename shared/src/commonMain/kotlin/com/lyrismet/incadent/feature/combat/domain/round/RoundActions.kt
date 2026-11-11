@@ -30,7 +30,11 @@ class RoundActions(
     ) {
         combat.combatants.forEach { member ->
             val hp = member.partyMemberId?.let(partyHp::get)
-            if (hp != null) repository.updateCombatant(member.copy(hpCurrent = hp.current, hpMax = hp.max))
+            hp?.let {
+                repository.updateCombatant(
+                    member.copy(hpCurrent = it.current, hpMax = it.max, tempHp = it.temp),
+                )
+            }
         }
         repository.start(combat.id, startedAt)
     }

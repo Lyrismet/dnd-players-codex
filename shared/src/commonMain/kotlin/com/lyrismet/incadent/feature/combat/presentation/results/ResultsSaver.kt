@@ -4,6 +4,7 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.with
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
@@ -29,6 +30,7 @@ internal class ResultsSaver(
     private val sessionNoteRepository: SessionNoteRepository,
     private val hitObservations: HitObservationRepository,
     private val codex: CodexRepositories,
+    private val sheets: CharacterSheetRepository,
 ) {
     @Suppress("LongParameterList")
     suspend fun save(
@@ -80,6 +82,9 @@ internal class ResultsSaver(
                 val now = member.hpCurrent?.coerceIn(0, member.hpMax ?: return@forEach) ?: return@forEach
                 codex.partyRepository.upsert(before.copy(hpMax = member.hpMax, hpCurrent = now))
                 rollbacks += { codex.partyRepository.upsert(before) }
+                val tempBefore = sheets.observeVitals(before.id).first()?.tempHp ?: return@forEach
+                sheets.updateVitals(before.id) { it.copy(tempHp = member.tempHp) }
+                rollbacks += { sheets.updateVitals(before.id) { it.copy(tempHp = tempBefore) } }
             }
     }
 

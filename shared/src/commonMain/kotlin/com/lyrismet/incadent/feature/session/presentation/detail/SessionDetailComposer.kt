@@ -1,5 +1,10 @@
 package com.lyrismet.incadent.feature.session.presentation.detail
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -118,7 +123,11 @@ internal fun SessionComposer(
             if (mentionsOpen) MentionSuggestionsPopover(state, composerWidthPx)
             if (completionsOpen) PhraseCompletionsPopover(state, composerWidthPx)
             state.editingEntryTimeLabel?.let { EditingEntryBanner(it, state.eventSink) }
-            if (!mentionsOpen && !completionsOpen) {
+            AnimatedVisibility(
+                visible = !mentionsOpen && !completionsOpen,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically(),
+            ) {
                 PhraseStrip(
                     items = state.phraseStrip,
                     onPick = {

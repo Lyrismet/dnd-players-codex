@@ -11,7 +11,7 @@ fun CharacterVitals.hit(
     amount: Int,
 ): CharacterVitals {
     val value = amount.coerceAtLeast(0)
-    val current = hpCurrent ?: 0
+    val current = hpCurrent ?: hpMax ?: 0
     return when (mode) {
         HitPointMode.DAMAGE -> {
             val soaked = minOf(tempHp, value)

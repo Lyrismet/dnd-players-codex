@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.combat.presentation.results
 
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
@@ -29,6 +30,7 @@ class CombatResultsPresenterFactory(
     private val sessionNoteRepository: SessionNoteRepository,
     private val hitObservationRepository: HitObservationRepository,
     private val codexRepositories: CodexRepositories,
+    private val sheets: CharacterSheetRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val undoController: UndoController,
 ) : Presenter.Factory {
@@ -46,6 +48,7 @@ class CombatResultsPresenterFactory(
                     sessionNoteRepository,
                     hitObservationRepository,
                     codexRepositories,
+                    sheets,
                     appPreferencesRepository,
                     undoController,
                 )

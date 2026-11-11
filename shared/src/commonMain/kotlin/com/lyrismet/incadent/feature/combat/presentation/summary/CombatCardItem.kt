@@ -4,7 +4,8 @@ import com.lyrismet.incadent.core.format.toDisplayTime
 import com.lyrismet.incadent.feature.combat.domain.grouping.enemyTitle
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
-import com.lyrismet.incadent.feature.combat.domain.results.minutesUntil
+import com.lyrismet.incadent.feature.combat.domain.results.FightDuration
+import com.lyrismet.incadent.feature.combat.domain.results.fightDuration
 import kotlinx.datetime.LocalDateTime
 
 /** a finished fight as the session feed shows it */
@@ -13,7 +14,7 @@ data class CombatCardItem(
     val finishedAt: LocalDateTime,
     val timeLabel: String,
     val rounds: Int,
-    val minutes: Int,
+    val duration: FightDuration,
     val title: String,
     val outcome: CombatOutcome,
     val summary: CombatSummary,
@@ -28,7 +29,7 @@ fun Combat.toCardItem(): CombatCardItem? =
                 finishedAt = end,
                 timeLabel = end.toDisplayTime(),
                 rounds = round,
-                minutes = minutesUntil(end),
+                duration = fightDuration(round),
                 title = combatants.enemyTitle(),
                 outcome = result,
                 summary = summaryOf(this),

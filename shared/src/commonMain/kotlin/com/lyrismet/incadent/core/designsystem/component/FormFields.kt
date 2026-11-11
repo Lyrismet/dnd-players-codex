@@ -15,6 +15,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -22,6 +26,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -240,6 +245,7 @@ private fun FormFieldColumn(
     }
 }
 
+/** keeps its own selection while focused, so a value that comes back late from storage never moves the caret */
 @Composable
 private fun FormInput(
     value: String,
@@ -249,10 +255,17 @@ private fun FormInput(
     singleLine: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    var field by remember { mutableStateOf(TextFieldValue(value)) }
+    var focused by remember { mutableStateOf(false) }
+    val shown = if (focused || field.text == value) field else TextFieldValue(value)
     AppTextInput(
-        value = value,
-        onValueChange = onChange,
-        modifier = modifier,
+        value = shown,
+        onValueChange = { typed ->
+            val capped = if (typed.text.length > maxLength) typed.copy(text = typed.text.take(maxLength)) else typed
+            field = capped
+            if (capped.text != shown.text) onChange(capped.text)
+        },
+        modifier = modifier.onFocusChanged { focused = it.isFocused },
         placeholder = placeholder,
         style =
             if (singleLine) formLineInputStyle() else formAreaInputStyle(),

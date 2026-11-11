@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -19,14 +20,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -40,6 +45,7 @@ import com.lyrismet.incadent.core.designsystem.component.Dot
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
+import com.lyrismet.incadent.core.designsystem.component.SheetGrabber
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.CalculatorIcon
 import com.lyrismet.incadent.core.designsystem.component.sheetTopEdge
@@ -61,6 +67,7 @@ import dndplayerscodex.shared.generated.resources.combat_panel_tab_conditions
 import dndplayerscodex.shared.generated.resources.combat_panel_tab_more
 import dndplayerscodex.shared.generated.resources.combat_panel_undo
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
 
 private const val SAVE_PIPS = 3
 private const val DAMAGE_FILL_ALPHA = 0.18f
@@ -77,18 +84,26 @@ internal fun RoundPanelUi(
     maxHeight: Dp,
     send: (CombatRoundEvent) -> Unit,
 ) {
+    var pulled by remember { mutableFloatStateOf(0f) }
+    val swipeDown =
+        remember {
+            SwipeDownToDismiss(onPull = { pulled = it }, onDismiss = { send(CombatRoundEvent.PanelDismissed) })
+        }
     Column(
         modifier =
             Modifier
+                .offset { IntOffset(0, pulled.roundToInt()) }
+                .nestedScroll(swipeDown)
                 .fillMaxWidth()
                 .heightIn(max = maxHeight)
                 .clip(PanelShape)
                 .background(AppPalette.Surface)
                 .sheetTopEdge(PANEL_RADIUS)
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 14.dp),
+                .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        SheetGrabber(Modifier.align(Alignment.CenterHorizontally))
         PanelHeader(panel, send)
         AppSegmentedTabs(
             tabs =

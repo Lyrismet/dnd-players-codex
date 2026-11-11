@@ -87,7 +87,7 @@ internal fun rememberMeUiState(): MeUiState {
 
 /** the keypad of the hit points: what was typed and which way it changes them */
 internal data class HitPad(
-    val mode: HitPointMode = HitPointMode.DAMAGE,
+    val mode: HitPointMode = HitPointMode.HEAL,
     val expression: CalcExpression = CalcExpression(),
 ) {
     fun overlay(vitals: CharacterVitals): MeOverlay.HitPoints {
@@ -96,7 +96,7 @@ internal data class HitPad(
         return MeOverlay.HitPoints(
             mode,
             expression.raw.ifEmpty { "0" },
-            before = if (temp) vitals.tempHp else vitals.hpCurrent ?: 0,
+            before = if (temp) vitals.tempHp else vitals.hpCurrent ?: vitals.hpMax ?: 0,
             after = if (temp) after.tempHp else after.hpCurrent ?: 0,
             canApply = expression.raw.isNotEmpty(),
         )

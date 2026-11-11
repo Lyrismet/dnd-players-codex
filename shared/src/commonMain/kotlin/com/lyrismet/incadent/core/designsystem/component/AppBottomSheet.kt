@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
@@ -110,16 +109,7 @@ private fun sheetContentMaxHeight(): Dp {
 @Composable
 private fun AppBottomSheetDragHandle() {
     Box(modifier = Modifier.fillMaxWidth().height(SheetCornerRadius + 4.dp).sheetTopEdge(SheetCornerRadius)) {
-        Box(
-            modifier =
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 4.dp)
-                    .width(40.dp)
-                    .height(5.dp)
-                    .clip(RoundedCornerShape(3.dp))
-                    .background(AppPalette.BorderHover),
-        )
+        SheetGrabber(Modifier.align(Alignment.BottomCenter))
     }
 }
 
@@ -149,4 +139,17 @@ fun SheetCloseButton(
     IconBadge(modifier = modifier, size = size, background = background, onClick = onClick) {
         Text("✕", fontSize = AppFontSize.Body, color = AppPalette.TextMuted)
     }
+}
+
+/** the small pill that says a panel can be dragged down, shared by the sheet shell and panels that are not sheets */
+@Composable
+fun SheetGrabber(modifier: Modifier = Modifier) {
+    Box(
+        modifier =
+            modifier
+                .width(40.dp)
+                .height(5.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(AppPalette.BorderHover),
+    )
 }

@@ -114,7 +114,8 @@ private fun HitPointsSheet(
             overline = stringResource(Res.string.me_hp_pad_overline),
             title = name,
             expr = "",
-            result = pad.result,
+            result = pad.result.withSign(pad.mode),
+            accent = pad.mode.accent(),
             rangeHint = stringResource(Res.string.me_hp_preview_format, pad.before, pad.after),
             applyLabel = stringResource(Res.string.me_hp_apply),
             applyEnabled = pad.canApply,
@@ -127,8 +128,16 @@ private fun HitPointsSheet(
                 AppSegmentedTabs(
                     tabs =
                         listOf(
-                            SegmentedTab(HitPointMode.DAMAGE, stringResource(Res.string.me_hp_mode_minus)),
-                            SegmentedTab(HitPointMode.HEAL, stringResource(Res.string.me_hp_mode_plus)),
+                            SegmentedTab(
+                                HitPointMode.HEAL,
+                                stringResource(Res.string.me_hp_mode_plus),
+                                accent = HitPointMode.HEAL.accent(),
+                            ),
+                            SegmentedTab(
+                                HitPointMode.DAMAGE,
+                                stringResource(Res.string.me_hp_mode_minus),
+                                accent = HitPointMode.DAMAGE.accent(),
+                            ),
                             SegmentedTab(HitPointMode.TEMP, stringResource(Res.string.me_hp_mode_temp)),
                         ),
                     selected = pad.mode,

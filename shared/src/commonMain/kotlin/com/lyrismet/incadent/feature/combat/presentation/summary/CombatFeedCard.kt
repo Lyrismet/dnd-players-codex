@@ -27,7 +27,6 @@ import dndplayerscodex.shared.generated.resources.combat_card_overline
 import dndplayerscodex.shared.generated.resources.combat_list_rounds
 import dndplayerscodex.shared.generated.resources.combat_results_delete
 import dndplayerscodex.shared.generated.resources.combat_results_meta
-import dndplayerscodex.shared.generated.resources.combat_results_minutes
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -44,7 +43,7 @@ fun CombatFeedCard(
         stringResource(
             Res.string.combat_results_meta,
             rounds,
-            stringResource(Res.string.combat_results_minutes, item.minutes),
+            fightDurationText(item.duration),
         )
     Column(
         modifier =

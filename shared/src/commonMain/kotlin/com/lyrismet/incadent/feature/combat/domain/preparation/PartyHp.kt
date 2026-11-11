@@ -4,6 +4,7 @@ package com.lyrismet.incadent.feature.combat.domain.preparation
 data class PartyHp(
     val current: Int,
     val max: Int,
+    val temp: Int = 0,
 )
 
 /** the number typed for the current hit points, a character with no maximum yet gets it as the maximum too */

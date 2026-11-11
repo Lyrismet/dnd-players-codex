@@ -49,6 +49,29 @@ fun nextTurn(
     return position
 }
 
+/** the one who moved before, those who are out are skipped, none at the start of the fight */
+fun previousTurn(
+    participants: List<Combatant>,
+    from: TurnPosition,
+): TurnPosition? {
+    var round = from.round
+    var turn = from.turn
+    var found: TurnPosition? = null
+    var step = 0
+    val atStart = { turn == 0 && round <= 1 }
+    while (found == null && step < participants.size && !atStart()) {
+        if (turn == 0) {
+            round--
+            turn = participants.size - 1
+        } else {
+            turn--
+        }
+        if (!participants[turn].isOut()) found = TurnPosition(round, turn)
+        step++
+    }
+    return found
+}
+
 /** the turn position after the participant at [removedIndex] left, the one who moves keeps moving */
 fun turnAfterRemoval(
     turn: Int,

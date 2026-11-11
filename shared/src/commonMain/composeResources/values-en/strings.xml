@@ -384,7 +384,14 @@
     <string name="combat_round_current">%1$s moves</string>
     <string name="combat_round_hostile">enemies standing: %1$d</string>
     <string name="combat_round_no_hostile">no enemies</string>
-    <string name="combat_round_next">Next turn ›</string>
+    <string name="combat_round_next">Next turn</string>
+    <string name="combat_round_previous">Previous turn</string>
+    <string name="combat_round_toast_again">Round %1$d again</string>
+    <string name="combat_time_seconds">%1$d s</string>
+    <string name="combat_time_minutes">%1$d min</string>
+    <string name="combat_time_minutes_seconds">%1$d min %2$d s</string>
+    <string name="combat_time_hint_title">Combat time</string>
+    <string name="combat_time_hint_body">Time moves by rounds: a round is 6 seconds, and turns do not stretch it. The first round starts at zero.</string>
     <string name="combat_round_all_clear">No enemies left standing</string>
     <string name="combat_round_sum_up">Sum up</string>
     <string name="combat_round_add_enemy">Enemy</string>
@@ -1003,7 +1010,8 @@
     <string name="combat_log_stance_fled">%1$s fled</string>
     <string name="combat_results_overline">COMBAT RESULTS</string>
     <string name="combat_results_meta">%1$s · %2$s</string>
-    <string name="combat_results_minutes">%1$d min</string>
+    <string name="combat_results_minutes">≈ %1$d min</string>
+    <string name="combat_results_seconds">%1$d s</string>
     <string name="combat_results_target">Saved to:</string>
     <string name="combat_results_saved_in">Saved in:</string>
     <string name="combat_results_outcome">OUTCOME</string>
@@ -1619,12 +1627,12 @@
     <string name="me_slot_name">Level %1$d slots</string>
     <string name="me_resources_title">Resources</string>
     <string name="me_resources_empty_title">No resources yet</string>
-    <string name="me_resources_empty_body">Rage, Second Wind, Ki - whatever is spent and regained.</string>
+    <string name="me_resources_empty_body">Any counter with uses: an ability, an item, a spell from a feat.</string>
     <string name="me_resources_add">+ Resource</string>
     <string name="me_resources_template">+ From template</string>
     <string name="me_resources_rest_note">A long rest brings back every use and slot.</string>
     <string name="me_help_resources_title">Resources</string>
-    <string name="me_help_resources_body">What is spent and regained: rage, ki, sorcery points. Press a square to spend a use, press an empty one to get it back. Press the name or hold a square to change the maximum. After a level up, change the maximum yourself.</string>
+    <string name="me_help_resources_body">Any counter that is spent and regained: abilities, items, spells from feats. Press a square to spend a use, press an empty one to get it back. Press the name or hold a square to change the maximum. After a level up, change the maximum yourself.</string>
     <plurals name="me_resource_uses">
         <item quantity="one">%1$d of %2$d use</item>
         <item quantity="other">%1$d of %2$d uses</item>
@@ -1718,11 +1726,12 @@
     <string name="class_sheet_subclass_label">Subclass · optional</string>
     <string name="class_sheet_done">Done</string>
 
-    <string name="session_text_button">As text</string>
-    <string name="session_text_title">Send as text</string>
+    <string name="session_text_button">Share session</string>
+    <string name="session_text_title">Share session</string>
     <string name="session_text_intro_toggle">With an intro</string>
-    <string name="session_text_intro_hint">A joke at the start</string>
-    <string name="session_text_intro_hint_named">A joke at the start, with your character</string>
+    <string name="session_text_intro_hint">A short line at the start</string>
+    <string name="session_text_intro_hint_named">In your character's voice</string>
+    <string name="session_text_intro_next">Another intro</string>
     <string name="session_text_actors_toggle">Cast</string>
     <string name="session_text_actors_hint">A list of who was mentioned at the end</string>
     <string name="session_text_preview">Preview</string>

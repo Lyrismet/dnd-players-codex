@@ -226,7 +226,13 @@ private fun FactEditor(
     }
 }
 
-private fun currentText(fact: FactRow): String = (fact.value as? FactValue.Text)?.text.orEmpty()
+// the dash only stands for an empty value, an editor must not start with it typed in
+private fun currentText(fact: FactRow): String =
+    (fact.value as? FactValue.Text)
+        ?.text
+        .orEmpty()
+        .takeIf { it != EMPTY_VALUE_DASH }
+        .orEmpty()
 
 @Composable
 internal fun FactReadOnlyValue(
