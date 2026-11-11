@@ -2,6 +2,9 @@ package com.lyrismet.incadent.feature.me.domain
 
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterVitals
 
+/** the hit points left, a character that never took a hit has all of them */
+val CharacterVitals.currentHp: Int get() = hpCurrent ?: hpMax ?: 0
+
 /** how a number typed on the hit point keypad changes the hit points */
 enum class HitPointMode { DAMAGE, HEAL, TEMP }
 
@@ -11,7 +14,7 @@ fun CharacterVitals.hit(
     amount: Int,
 ): CharacterVitals {
     val value = amount.coerceAtLeast(0)
-    val current = hpCurrent ?: hpMax ?: 0
+    val current = currentHp
     return when (mode) {
         HitPointMode.DAMAGE -> {
             val soaked = minOf(tempHp, value)

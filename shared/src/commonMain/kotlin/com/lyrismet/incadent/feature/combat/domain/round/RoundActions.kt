@@ -221,9 +221,7 @@ class RoundActions(
         val ordered = combat.combatants.inTurnOrder()
         val position = nextTurn(ordered, TurnPosition(combat.round, combat.turn))
         repository.setTurn(combat.id, position.round, position.turn)
-        ordered.getOrNull(position.turn)?.takeIf { it.id in ownCharacterIds }?.let {
-            repository.updateCombatant(it.copy(reactionAvailable = true))
-        }
+        repository.refreshReaction(ordered, position, ownCharacterIds)
     }
 
     /** a reinforcement joins and moves last in the round */
@@ -271,3 +269,14 @@ class RemovedMember(
     val roundAfter: Int,
     val turnAfter: Int,
 )
+
+/** the party member whose turn it is at [position] has the reaction back */
+internal suspend fun CombatRepository.refreshReaction(
+    ordered: List<Combatant>,
+    position: TurnPosition,
+    ownCharacterIds: Set<Long>,
+) {
+    ordered.getOrNull(position.turn)?.takeIf { it.id in ownCharacterIds }?.let {
+        updateCombatant(it.copy(reactionAvailable = true))
+    }
+}

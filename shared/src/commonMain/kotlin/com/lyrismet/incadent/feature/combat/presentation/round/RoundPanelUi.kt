@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,10 +85,11 @@ internal fun RoundPanelUi(
     maxHeight: Dp,
     send: (CombatRoundEvent) -> Unit,
 ) {
-    var pulled by remember { mutableFloatStateOf(0f) }
+    var pulled by remember(panel.id) { mutableFloatStateOf(0f) }
+    val currentSend by rememberUpdatedState(send)
     val swipeDown =
-        remember {
-            SwipeDownToDismiss(onPull = { pulled = it }, onDismiss = { send(CombatRoundEvent.PanelDismissed) })
+        remember(panel.id) {
+            SwipeDownToDismiss(onPull = { pulled = it }, onDismiss = { currentSend(CombatRoundEvent.PanelDismissed) })
         }
     Column(
         modifier =

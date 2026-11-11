@@ -39,7 +39,7 @@ internal class RoundHandler(
 
     /** the one who moves now is chosen and the panel opens on its actions */
     private fun moveTurn(
-        event: CombatRoundEvent,
+        forward: Boolean,
         snapshot: RoundSnapshot,
     ) {
         val onMoved = { id: Long? ->
@@ -47,11 +47,7 @@ internal class RoundHandler(
             tab.value = PanelTab.ACTIONS
             menuOpen.value = false
         }
-        if (event == CombatRoundEvent.NextTurn) {
-            editor.next(snapshot.ownIds, onMoved)
-        } else {
-            editor.previous(snapshot.ownIds, onMoved)
-        }
+        if (forward) editor.next(snapshot.ownIds, onMoved) else editor.previous(snapshot.ownIds, onMoved)
     }
 
     fun onEvent(
@@ -66,7 +62,8 @@ internal class RoundHandler(
             CombatRoundEvent.PanelDismissed -> selected.value = null
             is CombatRoundEvent.TabSelected -> tab.value = event.tab
             CombatRoundEvent.MenuToggled -> menuOpen.value = !menuOpen.value
-            CombatRoundEvent.NextTurn, CombatRoundEvent.PreviousTurn -> moveTurn(event, snapshot)
+            CombatRoundEvent.NextTurn, CombatRoundEvent.PreviousTurn ->
+                moveTurn(forward = event == CombatRoundEvent.NextTurn, snapshot)
             is CombatRoundEvent.EndRequested -> requestEnd(event.kind)
             is CombatRoundEvent.ReinforcementOpened ->
                 searchController.onEvent(

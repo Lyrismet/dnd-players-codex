@@ -15,6 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -257,13 +259,26 @@ private fun FormInput(
 ) {
     var field by remember { mutableStateOf(TextFieldValue(value)) }
     var focused by remember { mutableStateOf(false) }
+    val sent = remember { mutableListOf<String>() }
+    // a value that is not an echo of what was typed came from outside, so it replaces the text even in focus
+    LaunchedEffect(value) {
+        val echo = sent.indexOf(value)
+        if (echo >= 0) {
+            repeat(echo + 1) { sent.removeAt(0) }
+        } else if (value != field.text) {
+            sent.clear()
+            field = TextFieldValue(value, TextRange(value.length))
+        }
+    }
     val shown = if (focused || field.text == value) field else TextFieldValue(value)
     AppTextInput(
         value = shown,
         onValueChange = { typed ->
-            val capped = if (typed.text.length > maxLength) typed.copy(text = typed.text.take(maxLength)) else typed
-            field = capped
-            if (capped.text != shown.text) onChange(capped.text)
+            field = typed
+            if (typed.text != shown.text) {
+                sent += typed.text
+                onChange(typed.text)
+            }
         },
         modifier = modifier.onFocusChanged { focused = it.isFocused },
         placeholder = placeholder,
@@ -271,6 +286,7 @@ private fun FormInput(
             if (singleLine) formLineInputStyle() else formAreaInputStyle(),
         singleLine = singleLine,
         minLines = if (singleLine) 1 else FORM_AREA_MIN_LINES,
+        maxLength = maxLength,
         counter = AppTextInputCounter(maxLength),
     )
 }

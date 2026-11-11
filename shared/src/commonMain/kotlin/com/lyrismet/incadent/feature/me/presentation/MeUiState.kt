@@ -17,6 +17,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.LongRest
 import com.lyrismet.incadent.feature.me.domain.HitPointMode
 import com.lyrismet.incadent.feature.me.domain.WalletMode
 import com.lyrismet.incadent.feature.me.domain.WalletPad
+import com.lyrismet.incadent.feature.me.domain.currentHp
 import com.lyrismet.incadent.feature.me.domain.hit
 import kotlinx.coroutines.Job
 
@@ -96,8 +97,8 @@ internal data class HitPad(
         return MeOverlay.HitPoints(
             mode,
             expression.raw.ifEmpty { "0" },
-            before = if (temp) vitals.tempHp else vitals.hpCurrent ?: vitals.hpMax ?: 0,
-            after = if (temp) after.tempHp else after.hpCurrent ?: 0,
+            before = if (temp) vitals.tempHp else vitals.currentHp,
+            after = if (temp) after.tempHp else after.currentHp,
             canApply = expression.raw.isNotEmpty(),
         )
     }

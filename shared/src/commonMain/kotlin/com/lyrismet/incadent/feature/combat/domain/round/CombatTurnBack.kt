@@ -16,9 +16,7 @@ class CombatTurnBack(
         val position = previousTurn(ordered, TurnPosition(combat.round, combat.turn))
         if (position != null) {
             repository.setTurn(combat.id, position.round, position.turn)
-            ordered.getOrNull(position.turn)?.takeIf { it.id in ownCharacterIds }?.let {
-                repository.updateCombatant(it.copy(reactionAvailable = true))
-            }
+            repository.refreshReaction(ordered, position, ownCharacterIds)
         }
         return position
     }
