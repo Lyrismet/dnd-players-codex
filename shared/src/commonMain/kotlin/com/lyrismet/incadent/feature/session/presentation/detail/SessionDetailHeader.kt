@@ -54,6 +54,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
 import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
+import com.lyrismet.incadent.core.designsystem.component.ExportIcon
 import com.lyrismet.incadent.core.designsystem.component.GlowingDot
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.TagChip
@@ -155,11 +156,19 @@ private fun SessionHeaderTopRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AppButton(
-                text = stringResource(Res.string.session_text_button),
+            IconBadge(
+                size = 30.dp,
+                shape = RoundedCornerShape(10.dp),
+                background = Color.Transparent,
+                border = AppPalette.BorderHover,
                 onClick = { eventSink(SessionDetailEvent.TextClicked) },
-                tone = ButtonTone.Neutral,
-            )
+            ) {
+                Icon(
+                    ExportIcon,
+                    contentDescription = stringResource(Res.string.session_text_button),
+                    tint = AppPalette.TextDescription,
+                )
+            }
             SessionStatusBadge(isLive = header.isLive)
             if (header.isLive) {
                 AppButton(

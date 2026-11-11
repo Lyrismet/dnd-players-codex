@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.combat.presentation.results
 
+import com.lyrismet.incadent.feature.codex.data.CharacterSheetRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.ItemRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.LocationRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.NpcRepositoryImpl
@@ -54,7 +55,8 @@ class ResultsSaverTest {
             SpeciesRepositoryImpl(db.database, db.current),
             ItemRepositoryImpl(db.database, db.current),
         )
-    private val saver = ResultsSaver(combats, notes, observations, codex)
+    private val sheets = CharacterSheetRepositoryImpl(db.database, db.current)
+    private val saver = ResultsSaver(combats, notes, observations, codex, sheets)
     private val now = LocalDateTime.parse("2026-10-22T21:00")
 
     private suspend fun fight(
@@ -250,5 +252,41 @@ class ResultsSaverTest {
             saved.undo()
 
             assertEquals(false, codex.partyRepository.getById(memberId)?.fallen)
+        }
+
+    @Test
+    fun `temporary hit points from the fight reach the sheet and undo restores them`() =
+        runTest {
+            val memberId =
+                codex.partyRepository.upsert(
+                    PartyMember(0, "Кира", "", "", null, "", true, PartyPresence.IN, 20, 20, ""),
+                )
+            sheets.updateVitals(memberId) { it.copy(tempHp = 2) }
+            val (combatId, _) = fight(null)
+            val hero =
+                Combatant(
+                    0,
+                    "Кира",
+                    CombatSide.PARTY,
+                    null,
+                    null,
+                    memberId,
+                    true,
+                    CombatState.WHOLE,
+                    1,
+                    0,
+                    0,
+                    tempHp = 7,
+                    hpCurrent = 15,
+                    hpMax = 20,
+                )
+            combats.addCombatant(combatId, hero)
+            val combat = assertNotNull(combats.observe(combatId).first())
+
+            val saved = saver.save(combat, CombatOutcome.VICTORY, emptyList(), "Новая", now)
+
+            assertEquals(7, sheets.observeVitals(memberId).first()?.tempHp)
+            saved.undo()
+            assertEquals(2, sheets.observeVitals(memberId).first()?.tempHp)
         }
 }

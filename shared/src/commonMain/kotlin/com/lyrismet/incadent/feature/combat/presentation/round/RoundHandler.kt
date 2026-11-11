@@ -37,6 +37,19 @@ internal class RoundHandler(
 ) {
     private val searchController = FoeSearchController(search, editor, form.host::open)
 
+    /** the one who moves now is chosen and the panel opens on its actions */
+    private fun moveTurn(
+        forward: Boolean,
+        snapshot: RoundSnapshot,
+    ) {
+        val onMoved = { id: Long? ->
+            selected.value = id
+            tab.value = PanelTab.ACTIONS
+            menuOpen.value = false
+        }
+        if (forward) editor.next(snapshot.ownIds, onMoved) else editor.previous(snapshot.ownIds, onMoved)
+    }
+
     fun onEvent(
         event: CombatRoundEvent,
         snapshot: RoundSnapshot,
@@ -46,14 +59,11 @@ internal class RoundHandler(
             is CombatRoundEvent.Search -> searchController.onEvent(event.event, nameOf)
             is CombatRoundEvent.EntryForm -> form.host.onEvent(event.event, scope)
             is CombatRoundEvent.RowTapped -> selected.value = if (selected.value == event.id) null else event.id
+            CombatRoundEvent.PanelDismissed -> selected.value = null
             is CombatRoundEvent.TabSelected -> tab.value = event.tab
             CombatRoundEvent.MenuToggled -> menuOpen.value = !menuOpen.value
-            CombatRoundEvent.NextTurn ->
-                editor.next(snapshot.ownIds) { id ->
-                    selected.value = id
-                    tab.value = PanelTab.ACTIONS
-                    menuOpen.value = false
-                }
+            CombatRoundEvent.NextTurn, CombatRoundEvent.PreviousTurn ->
+                moveTurn(forward = event == CombatRoundEvent.NextTurn, snapshot)
             is CombatRoundEvent.EndRequested -> requestEnd(event.kind)
             is CombatRoundEvent.ReinforcementOpened ->
                 searchController.onEvent(

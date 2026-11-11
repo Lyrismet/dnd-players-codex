@@ -53,6 +53,36 @@ class TurnOrderTest {
     }
 
     @Test
+    fun `going back inside a round steps to the one before`() {
+        val list = listOf(member(1), member(2), member(3))
+        assertEquals(TurnPosition(1, 1), previousTurn(list, TurnPosition(1, 2)))
+    }
+
+    @Test
+    fun `going back from the first turn of a round returns to the round before`() {
+        val list = listOf(member(1), member(2))
+        assertEquals(TurnPosition(2, 1), previousTurn(list, TurnPosition(3, 0)))
+    }
+
+    @Test
+    fun `going back on the first turn of the fight is not possible`() {
+        val list = listOf(member(1), member(2))
+        assertNull(previousTurn(list, TurnPosition(1, 0)))
+    }
+
+    @Test
+    fun `going back skips those who are out`() {
+        val list = listOf(member(1), member(2, state = CombatState.DOWN), member(3))
+        assertEquals(TurnPosition(1, 0), previousTurn(list, TurnPosition(1, 2)))
+    }
+
+    @Test
+    fun `going back does not step before the first one who still plays`() {
+        val list = listOf(member(1, state = CombatState.DOWN), member(2))
+        assertNull(previousTurn(list, TurnPosition(1, 1)))
+    }
+
+    @Test
     fun `a fallen enemy is skipped`() {
         val list = listOf(member(1), member(2, state = CombatState.DOWN), member(3))
         assertEquals(TurnPosition(1, 2), nextTurn(list, TurnPosition(1, 0)))

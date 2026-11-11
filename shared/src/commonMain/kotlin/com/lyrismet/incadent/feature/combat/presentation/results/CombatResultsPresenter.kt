@@ -12,6 +12,7 @@ import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.combat.domain.grouping.enemyTitle
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
@@ -20,10 +21,11 @@ import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
 import com.lyrismet.incadent.feature.combat.domain.results.CodexEntry
 import com.lyrismet.incadent.feature.combat.domain.results.codexChecklist
-import com.lyrismet.incadent.feature.combat.domain.results.minutesUntil
+import com.lyrismet.incadent.feature.combat.domain.results.fightDuration
 import com.lyrismet.incadent.feature.combat.domain.round.autoOutcome
 import com.lyrismet.incadent.feature.combat.presentation.combatSessionTarget
 import com.lyrismet.incadent.feature.combat.presentation.list.CombatListScreen
+import com.lyrismet.incadent.feature.combat.presentation.summary.fightDurationText
 import com.lyrismet.incadent.feature.combat.presentation.summary.summaryOf
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
@@ -35,7 +37,6 @@ import dndplayerscodex.shared.generated.resources.Res
 import dndplayerscodex.shared.generated.resources.combat_list_rounds
 import dndplayerscodex.shared.generated.resources.combat_results_deleted
 import dndplayerscodex.shared.generated.resources.combat_results_meta
-import dndplayerscodex.shared.generated.resources.combat_results_minutes
 import dndplayerscodex.shared.generated.resources.combat_results_saved_codex
 import dndplayerscodex.shared.generated.resources.combat_results_saved_in
 import dndplayerscodex.shared.generated.resources.combat_results_saved_plain
@@ -106,10 +107,12 @@ class CombatResultsPresenter(
     private val sessionNoteRepository: SessionNoteRepository,
     hitObservations: HitObservationRepository,
     private val codexRepositories: CodexRepositories,
+    sheets: CharacterSheetRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val undo: UndoController,
 ) : Presenter<CombatResultsState> {
-    private val saver = ResultsSaver(combatRepository, sessionNoteRepository, hitObservations, codexRepositories)
+    private val saver =
+        ResultsSaver(combatRepository, sessionNoteRepository, hitObservations, codexRepositories, sheets)
 
     @Composable
     override fun present(): CombatResultsState {
@@ -194,8 +197,7 @@ class CombatResultsPresenter(
     @Composable
     private fun metaOf(combat: Combat): String {
         val rounds = pluralStringResource(Res.plurals.combat_list_rounds, combat.round, combat.round)
-        val minutes = combat.minutesUntil(combat.finishedAt ?: now())
-        val time = stringResource(Res.string.combat_results_minutes, minutes)
+        val time = fightDurationText(fightDuration(combat.round))
         return stringResource(Res.string.combat_results_meta, rounds, time)
     }
 }

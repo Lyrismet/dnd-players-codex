@@ -400,7 +400,14 @@
     <string name="combat_round_current">Ходит %1$s</string>
     <string name="combat_round_hostile">врагов в строю: %1$d</string>
     <string name="combat_round_no_hostile">врагов нет</string>
-    <string name="combat_round_next">Следующий ход ›</string>
+    <string name="combat_round_next">Следующий ход</string>
+    <string name="combat_round_previous">Предыдущий ход</string>
+    <string name="combat_round_toast_again">Снова раунд %1$d</string>
+    <string name="combat_time_seconds">%1$d с</string>
+    <string name="combat_time_minutes">%1$d мин</string>
+    <string name="combat_time_minutes_seconds">%1$d мин %2$d с</string>
+    <string name="combat_time_hint_title">Время боя</string>
+    <string name="combat_time_hint_body">Время идёт по раундам: раунд равен 6 секундам, а ходы время не растягивают. Первый раунд начинается с нуля.</string>
     <string name="combat_round_all_clear">Врагов в строю не осталось</string>
     <string name="combat_round_sum_up">Подвести итоги</string>
     <string name="combat_round_add_enemy">Враг</string>
@@ -1039,7 +1046,8 @@
     <string name="combat_log_stance_fled">%1$s сбежал</string>
     <string name="combat_results_overline">ИТОГИ БОЯ</string>
     <string name="combat_results_meta">%1$s · %2$s</string>
-    <string name="combat_results_minutes">%1$d мин</string>
+    <string name="combat_results_minutes">≈ %1$d мин</string>
+    <string name="combat_results_seconds">%1$d с</string>
     <string name="combat_results_target">Сохранится в:</string>
     <string name="combat_results_saved_in">Сохранён в:</string>
     <string name="combat_results_outcome">ИСХОД</string>
@@ -1695,12 +1703,12 @@
     <string name="me_slot_name">Ячейки %1$d круга</string>
     <string name="me_resources_title">Ресурсы</string>
     <string name="me_resources_empty_title">Ресурсов пока нет</string>
-    <string name="me_resources_empty_body">Ярость, Второе дыхание, Ки - всё, что тратится и копится.</string>
+    <string name="me_resources_empty_body">Любой счётчик с использованиями: умение, предмет, заклинание от черты.</string>
     <string name="me_resources_add">+ Ресурс</string>
     <string name="me_resources_template">+ Из шаблона</string>
     <string name="me_resources_rest_note">Долгий отдых вернёт все использования и ячейки.</string>
     <string name="me_help_resources_title">Ресурсы</string>
-    <string name="me_help_resources_body">Здесь то, что тратится и копится: ярость, ки, очки чародейства. Нажмите на квадратик, чтобы потратить использование, на пустой, чтобы вернуть. Нажмите на название или удерживайте квадратик, чтобы изменить максимум. После повышения уровня максимум поправьте сами.</string>
+    <string name="me_help_resources_body">Здесь любой счётчик, что тратится и копится: умения, предметы, заклинания от черт. Нажмите на квадратик, чтобы потратить использование, на пустой, чтобы вернуть. Нажмите на название или удерживайте квадратик, чтобы изменить максимум. После повышения уровня максимум поправьте сами.</string>
     <plurals name="me_resource_uses">
         <item quantity="one">%1$d из %2$d использования</item>
         <item quantity="few">%1$d из %2$d использований</item>
@@ -1802,11 +1810,12 @@
     <string name="class_sheet_subclass_label">Подкласс · необязательно</string>
     <string name="class_sheet_done">Готово</string>
 
-    <string name="session_text_button">Текстом</string>
-    <string name="session_text_title">Отправить текстом</string>
+    <string name="session_text_button">Поделиться сессией</string>
+    <string name="session_text_title">Поделиться сессией</string>
     <string name="session_text_intro_toggle">С вступлением</string>
-    <string name="session_text_intro_hint">Шутка в начале</string>
-    <string name="session_text_intro_hint_named">Шутка в начале, с вашим персонажем</string>
+    <string name="session_text_intro_hint">Короткая строка в начале</string>
+    <string name="session_text_intro_hint_named">От лица вашего персонажа</string>
+    <string name="session_text_intro_next">Другое вступление</string>
     <string name="session_text_actors_toggle">Действующие лица</string>
     <string name="session_text_actors_hint">Список упомянутых в конце</string>
     <string name="session_text_preview">Предпросмотр</string>

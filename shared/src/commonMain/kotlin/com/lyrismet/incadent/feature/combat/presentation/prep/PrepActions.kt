@@ -6,6 +6,7 @@ import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Species
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
@@ -47,6 +48,7 @@ internal class PrepEditor(
     val combatId: Long,
     private val combatRepository: CombatRepository,
     private val codexRepositories: CodexRepositories,
+    private val sheets: CharacterSheetRepository,
     private val lock: Mutex,
     private val launch: (suspend () -> Unit) -> Unit,
 ) : FoeAdder {
@@ -107,7 +109,7 @@ internal class PrepEditor(
         }
     }
 
-    /** the character's current hit points are the codex's, the temporary ones belong to this fight */
+    /** both kinds of hit points are the character's, the temporary ones are copied to this fight too */
     fun applyHp(
         member: PartyMember,
         mode: HpMode,
@@ -133,6 +135,7 @@ internal class PrepEditor(
                             member.id
                     }
                 seated?.let { combatRepository.setTempHp(it.id, value) }
+                sheets.updateVitals(member.id) { it.copy(tempHp = value) }
             }
         }
     }
@@ -151,9 +154,11 @@ internal class PrepEditor(
         onStarted: () -> Unit,
     ) = edit { combat ->
         if (startReadiness(combat.combatants) is StartReadiness.Ready) {
+            val withTemp =
+                partyHp.mapValues { (id, hp) -> hp.copy(temp = sheets.observeVitals(id).first()?.tempHp ?: 0) }
             RoundActions(
                 combatRepository,
-            ).begin(combat, Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()), partyHp)
+            ).begin(combat, Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()), withTemp)
             onStarted()
         }
     }

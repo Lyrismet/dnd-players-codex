@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -48,6 +49,8 @@ fun NumberPadSheet(
     modifier: Modifier = Modifier,
     // a row under the header, e.g. the mode switch of a pad that edits two numbers
     modes: (@Composable () -> Unit)? = null,
+    // tints the typed number and the range under it, e.g. green for a gain and red for a loss
+    accent: Color? = null,
 ) {
     Column(
         modifier =
@@ -60,7 +63,7 @@ fun NumberPadSheet(
     ) {
         NumberPadHeader(overline, title, onClose)
         modes?.invoke()
-        NumberPadResultBlock(expr, result, rangeHint)
+        NumberPadResultBlock(expr, result, rangeHint, accent)
         NumberPadKeyGrid(onDigit, onBackspace, onClear)
         FormPrimaryButton(text = applyLabel, onClick = onApply, enabled = applyEnabled)
     }
@@ -100,6 +103,7 @@ private fun NumberPadResultBlock(
     expr: String,
     result: String,
     rangeHint: String,
+    accent: Color?,
 ) {
     Column(
         modifier =
@@ -124,12 +128,12 @@ private fun NumberPadResultBlock(
                     lineHeight = 46.sp,
                     fontWeight = FontWeight.Bold,
                 ),
-            color = AppPalette.GoldBright,
+            color = accent ?: AppPalette.GoldBright,
         )
         Text(
             rangeHint,
             style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.SmallPlus),
-            color = AppPalette.TextMuted,
+            color = accent ?: AppPalette.TextMuted,
         )
     }
 }

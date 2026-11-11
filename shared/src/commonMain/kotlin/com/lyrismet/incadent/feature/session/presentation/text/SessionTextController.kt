@@ -11,6 +11,7 @@ import kotlin.random.Random
 /** the open sheet, [introIndex] is the joke chosen when it opened so it stays while the sheet is open */
 data class SessionTextOpen(
     val introIndex: Int,
+    val introCount: Int,
     val withIntro: Boolean = true,
     val withActors: Boolean = false,
     val sending: Boolean = false,
@@ -34,13 +35,19 @@ class SessionTextController(
     private val random: Random = Random.Default,
 ) {
     fun open(source: SessionTextSource) {
-        open.value = SessionTextOpen(nextIntroIndex(source.intros.size, preferences.lastSessionTextIntro(), random))
+        open.value =
+            SessionTextOpen(
+                introIndex = nextIntroIndex(source.intros.size, preferences.lastSessionTextIntro(), random),
+                introCount = source.intros.size,
+            )
     }
 
     fun onEvent(event: SessionTextEvent) {
         val current = open.value ?: return
         when (event) {
             SessionTextEvent.IntroToggled -> open.value = current.copy(withIntro = !current.withIntro)
+            SessionTextEvent.IntroChanged ->
+                open.value = current.copy(introIndex = nextIntroIndex(current.introCount, current.introIndex, random))
             SessionTextEvent.ActorsToggled -> open.value = current.copy(withActors = !current.withActors)
             SessionTextEvent.SendClicked -> {
                 if (current.withIntro) preferences.setLastSessionTextIntro(current.introIndex)
@@ -65,6 +72,7 @@ class SessionTextController(
             withIntro = current.withIntro,
             withActors = current.withActors,
             hasCharacter = source.character != null,
+            canChangeIntro = current.withIntro && current.introCount > 1,
             preview = text,
             shareNow = text.takeIf { current.sending },
         )

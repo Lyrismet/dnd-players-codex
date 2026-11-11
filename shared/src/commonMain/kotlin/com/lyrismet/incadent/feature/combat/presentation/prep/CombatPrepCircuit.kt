@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.combat.presentation.prep
 
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
@@ -29,6 +30,7 @@ class CombatPrepPresenterFactory(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val codexRepositories: CodexRepositories,
+    private val sheets: CharacterSheetRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
 ) : Presenter.Factory {
@@ -46,6 +48,7 @@ class CombatPrepPresenterFactory(
                     sessionNoteRepository,
                     sessionEntryRepository,
                     codexRepositories,
+                    sheets,
                     appPreferencesRepository,
                     imageCompressor,
                 )

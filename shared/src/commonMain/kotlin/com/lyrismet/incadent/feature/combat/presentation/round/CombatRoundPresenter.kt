@@ -30,8 +30,10 @@ import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
 import com.lyrismet.incadent.feature.combat.domain.round.NpcPromotion
+import com.lyrismet.incadent.feature.combat.domain.round.TurnPosition
 import com.lyrismet.incadent.feature.combat.domain.round.hostileCount
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
+import com.lyrismet.incadent.feature.combat.domain.round.previousTurn
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpMode
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpPadState
 import com.lyrismet.incadent.feature.combat.presentation.prep.SearchDraft
@@ -64,8 +66,6 @@ import dndplayerscodex.shared.generated.resources.error_action_failed
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 import org.jetbrains.compose.resources.stringResource
 
 /** everything the fight reads from the app, collected once */
@@ -370,8 +370,8 @@ private fun RoundView.render(
     val calcContext = CalcContext(ordered, mover, ownIds, resistances, learners)
     return CombatRoundState(
         isLoading = false,
-        startedAt = current.startedAt.toInstant(TimeZone.currentSystemDefault()),
         round = current.round,
+        canGoBack = previousTurn(ordered, TurnPosition(current.round, current.turn)) != null,
         currentName = mover?.name.orEmpty(),
         hostile = hostileText(hostile),
         allClear = hostile == 0,

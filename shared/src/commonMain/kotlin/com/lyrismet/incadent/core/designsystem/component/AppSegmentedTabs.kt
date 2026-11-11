@@ -18,6 +18,8 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 
+private const val DIMMED_ACCENT_ALPHA = 0.6f
+
 /** a segmented switch of text tabs where the selected one is raised and gold, the tabs share the width equally */
 @Composable
 fun <T> AppSegmentedTabs(
@@ -43,7 +45,12 @@ fun <T> AppSegmentedTabs(
         itemHeight = itemHeight,
         itemSpacing = itemSpacing,
     ) { tab ->
-        val tint = if (tab.value == selected) AppPalette.GoldBright else AppPalette.TextSecondary
+        val tint =
+            when {
+                tab.accent != null -> tab.accent.copy(alpha = if (tab.value == selected) 1f else DIMMED_ACCENT_ALPHA)
+                tab.value == selected -> AppPalette.GoldBright
+                else -> AppPalette.TextSecondary
+            }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
             tab.icon?.let { AppEntityIcon(it, tint, size = 14.dp) }
             Text(text = tab.label, style = labelStyle, color = tint, maxLines = 1, overflow = TextOverflow.Ellipsis)

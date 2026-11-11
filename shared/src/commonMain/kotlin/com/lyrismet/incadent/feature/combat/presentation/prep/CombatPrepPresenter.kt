@@ -14,6 +14,7 @@ import com.lyrismet.incadent.core.toast.autoDismiss
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
@@ -43,6 +44,7 @@ class CombatPrepPresenter(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val codexRepositories: CodexRepositories,
+    private val sheets: CharacterSheetRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
 ) : Presenter<CombatPrepState> {
@@ -105,7 +107,13 @@ class CombatPrepPresenter(
         val foeCount = npcs.count { it.lifeState == NpcLifeState.ALIVE && it.status == NpcStatus.ENEMY } + species.size
         val intro = prepIntro(party.map { it.name }, foeCount)
         val editor =
-            PrepEditor(combatId, combatRepository, codexRepositories, editLock) { block -> scope.launch { block() } }
+            PrepEditor(
+                combatId,
+                combatRepository,
+                codexRepositories,
+                sheets,
+                editLock,
+            ) { block -> scope.launch { block() } }
         val formHost = FoeFormHost(formController, formTarget, editor, imageCompressor)
         val actions = PrepActions(editor, navigator, search, hpPad, exitConfirmVisible, onCreate = formHost::open)
         val ownHp = ownCharacterHp(party)
