@@ -169,7 +169,7 @@ private fun labelIdentity(
     )
 }
 
-/** the npcs to tie a participant to: the ones of its own kind first, the ones already in the fight grey */
+/** the npcs to tie a participant to, the ones of its own kind first and the ones already in the fight grey */
 @Composable
 internal fun linkSheet(
     member: Combatant,

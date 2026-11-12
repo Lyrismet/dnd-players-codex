@@ -36,11 +36,12 @@ class NpcMergeRepositoryImpl(
         if (survivor == null || loser == null) return null
         // the text that is taken over still carries the loser's own tokens
         val taken = loser.copy(description = moveMentions(loser.description, survivorId, loserId))
+        val kept = survivor.copy(description = moveMentions(survivor.description, survivorId, loserId))
         val moved =
             withContext(DatabaseDispatcher) {
                 database.transactionWithResult {
                     val links = moveLinks(survivor.originId, loser.originId, survivorId, loserId)
-                    npcs.write(survivor.filledFrom(taken))
+                    npcs.write(kept.filledFrom(taken))
                     npcs.remove(loserId)
                     links
                 }
@@ -49,10 +50,10 @@ class NpcMergeRepositoryImpl(
     }
 
     override suspend fun undo(trace: NpcMergeTrace) {
-        npcs.upsert(trace.loser)
-        npcs.upsert(trace.survivorBefore)
         withContext(DatabaseDispatcher) {
             database.transaction {
+                npcs.write(trace.loser)
+                npcs.write(trace.survivorBefore)
                 trace.combatantIds.forEach { queries.setCombatantNpc(trace.loser.id, it) }
                 trace.questIds.forEach { queries.setQuestGiver(trace.loser.id, it) }
                 trace.texts.forEach { host(it.host).write(it.id, it.before) }

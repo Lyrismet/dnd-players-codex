@@ -80,6 +80,7 @@ class NpcRepositoryImpl(
                     entity.vulnerabilities.encodeVulnerabilities(),
                     entity.id,
                 )
+                database.combatantQueries.syncNpcName(entity.name, entity.id)
                 writePhotoIfChanged(
                     entity.portrait,
                     stored.portrait,
@@ -136,7 +137,11 @@ class NpcRepositoryImpl(
         withContext(DatabaseDispatcher) { remove(id) }
     }
 
-    internal fun remove(id: Long) = queries.deleteById(id)
+    // a participant of the fight keeps the name as a label once its record is gone
+    internal fun remove(id: Long) {
+        database.combatantQueries.keepNameOfNpc(id)
+        queries.deleteById(id)
+    }
 
     private fun writeLocations(
         npcId: Long,

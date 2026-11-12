@@ -30,7 +30,7 @@ private const val FIVE_PIPS = 5
 private const val HIGH_RATIO = 0.5f
 private const val MID_RATIO = 0.25f
 
-/** what a row says a participant is: kind, class and subclass, and what the fight adds to it */
+/** what a row says a participant is, kind, class and subclass, and what the fight adds to it */
 internal data class MemberRole(
     val parts: RoleParts,
     val tail: String,

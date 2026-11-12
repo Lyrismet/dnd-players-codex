@@ -220,11 +220,13 @@ class CombatRoundPresenter(
         }
 
         val editor =
-            RoundEditor(combatId, combatRepository, codexRepositories, editLock, undoController, {
-                toast.value =
-                    ToastMessage(it)
-            }) { block ->
-                scope.launch { block() }
+            remember(combatId, combatRepository, codexRepositories, undoController, scope) {
+                RoundEditor(combatId, combatRepository, codexRepositories, editLock, undoController, {
+                    toast.value =
+                        ToastMessage(it)
+                }) { block ->
+                    scope.launch { block() }
+                }
             }
         val form =
             rememberRoundForm(
@@ -266,16 +268,18 @@ class CombatRoundPresenter(
                 undoController,
             )
         val identityHandler =
-            IdentityHandler(
-                editor,
-                drafts.selected,
-                drafts.tab,
-                drafts.identity,
-                codexRepositories.npcRepository,
-                npcMerge,
-                combatRepository,
-                undoController,
-            )
+            remember(editor, drafts, codexRepositories, npcMerge, combatRepository, undoController) {
+                IdentityHandler(
+                    editor,
+                    drafts.selected,
+                    drafts.tab,
+                    drafts.identity,
+                    codexRepositories.npcRepository,
+                    npcMerge,
+                    combatRepository,
+                    undoController,
+                )
+            }
         val namingSnapshot = NamingSnapshot(data.species)
         val calcHandler = CalcHandler(editor, drafts.calc, learner)
         val summaryHandler = SummaryHandler(editor, drafts.summary, learner)

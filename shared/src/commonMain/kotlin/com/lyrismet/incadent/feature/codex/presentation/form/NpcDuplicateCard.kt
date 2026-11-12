@@ -24,7 +24,7 @@ import incadent.shared.generated.resources.npc_merge_button
 import incadent.shared.generated.resources.npc_merge_hint
 import org.jetbrains.compose.resources.stringResource
 
-/** the line under the name of a twin: what it is and what it is by class */
+/** the line under the name of a twin, what it is and what it is by class */
 @Composable
 fun twinOf(
     npc: Npc,

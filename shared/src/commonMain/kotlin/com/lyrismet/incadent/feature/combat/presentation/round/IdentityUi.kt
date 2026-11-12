@@ -50,6 +50,7 @@ import incadent.shared.generated.resources.combat_identity_dup_title
 import incadent.shared.generated.resources.combat_identity_link_title
 import incadent.shared.generated.resources.combat_identity_to_codex
 import incadent.shared.generated.resources.combat_link_carry
+import incadent.shared.generated.resources.combat_link_codex_open
 import incadent.shared.generated.resources.combat_link_codex_title
 import incadent.shared.generated.resources.combat_link_label_title
 import incadent.shared.generated.resources.combat_link_open
@@ -73,7 +74,7 @@ internal fun IdentityBlock(
         RenameField(identity, send)
         RolePick(identity, send)
         when (identity.kind) {
-            IdentityKind.CODEX -> CodexLinkCard(identity)
+            IdentityKind.CODEX -> CodexLinkCard(identity, send)
             IdentityKind.LABELLED -> LabelledBlocks(identity, send)
         }
     }
@@ -198,7 +199,10 @@ private fun Tile(letter: String) {
 }
 
 @Composable
-private fun CodexLinkCard(identity: IdentityState) {
+private fun CodexLinkCard(
+    identity: IdentityState,
+    send: (CombatRoundEvent) -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         FormFieldLabel(stringResource(Res.string.combat_identity_link_title).uppercase())
         Row(
@@ -221,6 +225,11 @@ private fun CodexLinkCard(identity: IdentityState) {
                 title = stringResource(Res.string.combat_link_codex_title),
                 subtitle = identity.linkSub,
                 modifier = Modifier.weight(1f),
+            )
+            AppButton(
+                text = stringResource(Res.string.combat_link_codex_open),
+                onClick = { send(CombatRoundEvent.CodexOpened) },
+                variant = ButtonVariant.Ghost,
             )
         }
     }

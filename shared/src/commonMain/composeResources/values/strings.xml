@@ -435,6 +435,7 @@
     <string name="combat_link_label_sub">После боя «%1$s» не останется в кодексе</string>
     <string name="combat_link_carry">Перенесём:</string>
     <string name="combat_link_codex_title">В кодексе · NPC</string>
+    <string name="combat_link_codex_open">Открыть</string>
     <string name="combat_carry_role">роль: %1$s</string>
     <string name="combat_carry_kind">вид: %1$s</string>
     <string name="combat_row_nameless">без имени</string>
@@ -1871,7 +1872,6 @@
         <item>Мастер молчит, отряд записывает.</item>
     </string-array>
     <string name="combat_role_placeholder">Класс и подкласс</string>
-    <string name="combat_role_label">Роль</string>
     <string name="combat_link_npc">NPC</string>
     <string name="combat_link_same_kind">NPC того же вида</string>
     <string name="combat_link_busy">уже в этом бою</string>
@@ -1880,7 +1880,6 @@
     <string name="combat_link_open">Связать с NPC</string>
     <string name="combat_link_overline">СВЯЗАТЬ С КОДЕКСОМ</string>
     <string name="combat_link_title">Выберите NPC</string>
-    <string name="combat_rename_caption">Имя сменится и в карточке NPC, и в заметках с @</string>
     <string name="combat_rename_title">%1$s → %2$s</string>
     <string name="combat_rename_sub">имя сменилось в кодексе</string>
     <string name="combat_promo_role">Роль</string>

@@ -2,7 +2,7 @@ package com.lyrismet.incadent.feature.codex.domain.repository
 
 import com.lyrismet.incadent.feature.codex.domain.model.NpcMergeTrace
 
-/** two records of one name become one: everything that held the one that goes away moves to the one that stays */
+/** two records of one name become one, what held the one that goes moves to the one that stays */
 interface NpcMergeRepository {
     /** null when either record is gone or they are the same one */
     suspend fun merge(

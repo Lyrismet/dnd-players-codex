@@ -3,7 +3,7 @@ package com.lyrismet.incadent.feature.combat.domain.round
 private const val SEPARATOR = " · "
 private const val ELLIPSIS = "…"
 
-/** what a participant is, told as kind, class and subclass, any of them can be empty */
+/** what a participant is, as kind, class and subclass, any of them can be empty */
 data class RoleParts(
     val kind: String = "",
     val characterClass: String = "",
@@ -12,7 +12,7 @@ data class RoleParts(
     fun text(): String = listOf(kind, characterClass, subclass).filter { it.isNotBlank() }.joinToString(SEPARATOR)
 
     companion object {
-        /** the role typed for a participant that is only in the fight: class and subclass in one field */
+        /** the role typed for a participant that is only in the fight, class and subclass in one field */
         fun ofStored(role: String): RoleParts {
             val parts = role.split(SEPARATOR.trim()).map { it.trim() }.filter { it.isNotEmpty() }
             return RoleParts(
@@ -29,10 +29,7 @@ data class RoleParts(
     }
 }
 
-/**
- * the role line that fits the width [fits] measures: the kind goes first, then the end of the subclass is cut
- * with an ellipsis, the class is never cut
- */
+/** the role line that fits, the kind goes first and then the end of the subclass is cut, the class never */
 fun fitRole(
     parts: RoleParts,
     fits: (String) -> Boolean,

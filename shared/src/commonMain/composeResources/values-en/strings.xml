@@ -419,6 +419,7 @@
     <string name="combat_link_label_sub">After the fight “%1$s” will not stay in the codex</string>
     <string name="combat_link_carry">We carry:</string>
     <string name="combat_link_codex_title">In the codex · NPC</string>
+    <string name="combat_link_codex_open">Open</string>
     <string name="combat_carry_role">role: %1$s</string>
     <string name="combat_carry_kind">kind: %1$s</string>
     <string name="combat_row_nameless">unnamed</string>
@@ -1787,7 +1788,6 @@
         <item>The game master is silent, the party writes it down.</item>
     </string-array>
     <string name="combat_role_placeholder">Class and subclass</string>
-    <string name="combat_role_label">Role</string>
     <string name="combat_link_npc">NPC</string>
     <string name="combat_link_same_kind">NPC of the same kind</string>
     <string name="combat_link_busy">already in this fight</string>
@@ -1796,7 +1796,6 @@
     <string name="combat_link_open">Link to an NPC</string>
     <string name="combat_link_overline">LINK TO THE CODEX</string>
     <string name="combat_link_title">Choose an NPC</string>
-    <string name="combat_rename_caption">The name changes in the NPC card and in the notes with @</string>
     <string name="combat_rename_title">%1$s → %2$s</string>
     <string name="combat_rename_sub">renamed in the codex</string>
     <string name="combat_promo_role">Role</string>

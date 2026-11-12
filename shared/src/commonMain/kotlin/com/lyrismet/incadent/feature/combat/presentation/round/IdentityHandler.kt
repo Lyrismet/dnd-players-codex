@@ -87,7 +87,8 @@ internal class IdentityHandler(
         editor.withMember(memberId) { _, member ->
             val before = member.npcId?.let { npcs.getById(it) }
             if (duplicateNpcOf(typed, known, before?.id) == null) {
-                update(memberId) { copy(rename = null, focus = false) }
+                // a newer keystroke typed while the record was read stays
+                update(memberId) { if (rename?.trim() == typed) copy(rename = null, focus = false) else this }
                 if (typed.isNotEmpty() && typed != (before?.name ?: member.name)) {
                     if (before != null) renameNpc(before, typed) else relabel(member, typed)
                 }

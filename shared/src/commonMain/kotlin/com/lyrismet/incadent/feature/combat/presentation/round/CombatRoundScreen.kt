@@ -273,6 +273,9 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
 
     data object LinkOpened : CombatRoundEvent
 
+    /** opens the codex record the chosen participant is tied to */
+    data object CodexOpened : CombatRoundEvent
+
     data object LinkClosed : CombatRoundEvent
 
     data class LinkPicked(

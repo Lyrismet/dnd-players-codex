@@ -3,7 +3,7 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 
-/** how a participant stands to the codex: a character of the party, a creature still unnamed, a record or a label */
+/** how a participant stands to the codex, a party character, an unnamed creature, a record or a label */
 internal enum class MemberTie {
     PARTY,
 

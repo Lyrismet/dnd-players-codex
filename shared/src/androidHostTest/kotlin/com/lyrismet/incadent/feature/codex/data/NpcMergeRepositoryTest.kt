@@ -80,6 +80,42 @@ class NpcMergeRepositoryTest {
         }
 
     @Test
+    fun `a mention of the loser in the description of the survivor points at the survivor`() =
+        runTest {
+            val survivor = npcs.upsert(npc("Вазгар"))
+            val loser = npcs.upsert(npc("Вазгар"))
+            npcs.upsert(npcs.getById(survivor)!!.copy(description = "брат ${mention(loser)}"))
+
+            val trace = assertNotNull(merge.merge(survivor, loser))
+
+            assertEquals("брат ${mention(survivor)}", npcs.getById(survivor)!!.description)
+            merge.undo(trace)
+            assertEquals("брат ${mention(loser)}", npcs.getById(survivor)!!.description)
+        }
+
+    @Test
+    fun `the stored name of a fighter follows the rename of its npc`() =
+        runTest {
+            val id = npcs.upsert(npc("Вазгар"))
+            val combat = combats.create(null, LocalDateTime(2026, 1, 1, 12, 0))
+            combats.addCombatant(
+                combat,
+                Combatant(0, "Вазгар", CombatSide.ENEMY, id, null, null, true, CombatState.WHOLE, 1, 0, 0),
+            )
+
+            npcs.upsert(npcs.getById(id)!!.copy(name = "Рагнар"))
+
+            assertEquals(
+                "Рагнар",
+                db.database.combatantQueries
+                    .selectByCombat(combat)
+                    .executeAsList()
+                    .single()
+                    .name,
+            )
+        }
+
+    @Test
     fun `places join and the places of the survivor stay`() =
         runTest {
             val town = places.upsert(Location(0, "Город", ""))

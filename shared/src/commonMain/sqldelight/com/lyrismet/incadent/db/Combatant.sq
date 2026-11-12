@@ -99,6 +99,12 @@ UPDATE combatant SET npc_id = ?, name = ? WHERE id = ?;
 updateRole:
 UPDATE combatant SET role = ? WHERE id = ?;
 
+syncNpcName:
+UPDATE combatant SET name = ? WHERE npc_id = ?;
+
+keepNameOfNpc:
+UPDATE combatant SET is_label = 1 WHERE npc_id = ?;
+
 updateName:
 UPDATE combatant SET name = ? WHERE id = ?;
 

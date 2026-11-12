@@ -7,5 +7,5 @@ WHERE npc_id IS NULL AND species_id IS NOT NULL AND party_member_id IS NULL
   AND NOT EXISTS (
     SELECT 1 FROM species
     WHERE species.id = combatant.species_id
-      AND (combatant.name = species.name OR combatant.name LIKE species.name || ' %')
+      AND (combatant.name = species.name OR substr(combatant.name, 1, length(species.name) + 1) = species.name || ' ')
   );
