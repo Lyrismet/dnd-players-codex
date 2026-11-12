@@ -14,8 +14,8 @@ import com.lyrismet.incadent.feature.combat.domain.results.CombatFacts
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_party_you_label
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_party_you_label
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource

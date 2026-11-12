@@ -25,8 +25,8 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.domain.model.Photo
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.photo_cover_expand
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.photo_cover_expand
 import org.jetbrains.compose.resources.stringResource
 
 private val CardCoverShape = RoundedCornerShape(16.dp)

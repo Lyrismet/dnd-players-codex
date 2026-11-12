@@ -2,9 +2,9 @@ package com.lyrismet.incadent.feature.combat.presentation.summary
 
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.feature.combat.domain.results.FightDuration
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_results_minutes
-import dndplayerscodex.shared.generated.resources.combat_results_seconds
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_results_minutes
+import incadent.shared.generated.resources.combat_results_seconds
 import org.jetbrains.compose.resources.stringResource
 
 /** "24 с" for a short fight, "≈ 1 мин" for a longer one */

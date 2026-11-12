@@ -49,15 +49,15 @@ import com.lyrismet.incadent.feature.mention.presentation.MentionFieldState
 import com.lyrismet.incadent.feature.mention.presentation.MentionTextField
 import com.lyrismet.incadent.feature.mention.presentation.MentionTriggerButton
 import com.lyrismet.incadent.feature.mention.presentation.rememberMentionFieldState
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.notes_editor_at_action
-import dndplayerscodex.shared.generated.resources.notes_editor_at_hint
-import dndplayerscodex.shared.generated.resources.notes_editor_close
-import dndplayerscodex.shared.generated.resources.notes_editor_discard_text
-import dndplayerscodex.shared.generated.resources.notes_editor_overline_format
-import dndplayerscodex.shared.generated.resources.notes_editor_placeholder
-import dndplayerscodex.shared.generated.resources.notes_editor_save
-import dndplayerscodex.shared.generated.resources.quick_edit_label_description
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.notes_editor_at_action
+import incadent.shared.generated.resources.notes_editor_at_hint
+import incadent.shared.generated.resources.notes_editor_close
+import incadent.shared.generated.resources.notes_editor_discard_text
+import incadent.shared.generated.resources.notes_editor_overline_format
+import incadent.shared.generated.resources.notes_editor_placeholder
+import incadent.shared.generated.resources.notes_editor_save
+import incadent.shared.generated.resources.quick_edit_label_description
 import org.jetbrains.compose.resources.stringResource
 
 /** the description of a record over the whole screen, so the "@" list sits above the keyboard */

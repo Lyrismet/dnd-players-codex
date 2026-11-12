@@ -32,12 +32,12 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.DiamondOutline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_prep_intro_add
-import dndplayerscodex.shared.generated.resources.combat_prep_intro_foe
-import dndplayerscodex.shared.generated.resources.combat_prep_intro_party
-import dndplayerscodex.shared.generated.resources.combat_prep_intro_text
-import dndplayerscodex.shared.generated.resources.combat_prep_intro_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_prep_intro_add
+import incadent.shared.generated.resources.combat_prep_intro_foe
+import incadent.shared.generated.resources.combat_prep_intro_party
+import incadent.shared.generated.resources.combat_prep_intro_text
+import incadent.shared.generated.resources.combat_prep_intro_title
 import org.jetbrains.compose.resources.stringResource
 
 /** the preparation before the codex has a party member and an enemy: what is missing and where to add it */

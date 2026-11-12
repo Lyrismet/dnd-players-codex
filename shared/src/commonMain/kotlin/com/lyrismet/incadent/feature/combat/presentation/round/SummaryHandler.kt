@@ -4,12 +4,12 @@ import androidx.compose.runtime.MutableState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_summary_undo_back
-import dndplayerscodex.shared.generated.resources.combat_summary_undo_recorded
-import dndplayerscodex.shared.generated.resources.combat_summary_undo_same
-import dndplayerscodex.shared.generated.resources.combat_summary_undo_title
-import dndplayerscodex.shared.generated.resources.combat_summary_undo_took
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_summary_undo_back
+import incadent.shared.generated.resources.combat_summary_undo_recorded
+import incadent.shared.generated.resources.combat_summary_undo_same
+import incadent.shared.generated.resources.combat_summary_undo_title
+import incadent.shared.generated.resources.combat_summary_undo_took
 import org.jetbrains.compose.resources.getString
 
 internal class SummaryHandler(

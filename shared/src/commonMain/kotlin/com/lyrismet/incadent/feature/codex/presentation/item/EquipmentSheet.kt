@@ -19,13 +19,13 @@ import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.AppTitleSubtitle
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.items_equip_done
-import dndplayerscodex.shared.generated.resources.items_equip_none
-import dndplayerscodex.shared.generated.resources.items_equip_others
-import dndplayerscodex.shared.generated.resources.items_equip_selected
-import dndplayerscodex.shared.generated.resources.items_equip_sheet_title
-import dndplayerscodex.shared.generated.resources.items_equip_will_move
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.items_equip_done
+import incadent.shared.generated.resources.items_equip_none
+import incadent.shared.generated.resources.items_equip_others
+import incadent.shared.generated.resources.items_equip_selected
+import incadent.shared.generated.resources.items_equip_sheet_title
+import incadent.shared.generated.resources.items_equip_will_move
 import org.jetbrains.compose.resources.stringResource
 
 /** the multi pick of what an owner carries - ticked items first, the others under them, "Done · N" at the bottom */

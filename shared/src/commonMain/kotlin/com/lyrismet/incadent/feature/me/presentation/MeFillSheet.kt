@@ -21,16 +21,16 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_fill_back
-import dndplayerscodex.shared.generated.resources.me_fill_finish
-import dndplayerscodex.shared.generated.resources.me_fill_next
-import dndplayerscodex.shared.generated.resources.me_fill_overline_format
-import dndplayerscodex.shared.generated.resources.me_fill_skip
-import dndplayerscodex.shared.generated.resources.me_fill_title_1
-import dndplayerscodex.shared.generated.resources.me_fill_title_2
-import dndplayerscodex.shared.generated.resources.me_fill_title_3
-import dndplayerscodex.shared.generated.resources.me_fill_title_4
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_fill_back
+import incadent.shared.generated.resources.me_fill_finish
+import incadent.shared.generated.resources.me_fill_next
+import incadent.shared.generated.resources.me_fill_overline_format
+import incadent.shared.generated.resources.me_fill_skip
+import incadent.shared.generated.resources.me_fill_title_1
+import incadent.shared.generated.resources.me_fill_title_2
+import incadent.shared.generated.resources.me_fill_title_3
+import incadent.shared.generated.resources.me_fill_title_4
 import org.jetbrains.compose.resources.stringResource
 
 /** the four steps that fill the sheet from the paper one: class and level, scores, saves and skills, the rest */

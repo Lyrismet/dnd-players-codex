@@ -5,15 +5,15 @@ import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.presentation.summary.damageTypeLabels
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_reaction
-import dndplayerscodex.shared.generated.resources.combat_calc_target_many
-import dndplayerscodex.shared.generated.resources.combat_calc_target_one
-import dndplayerscodex.shared.generated.resources.combat_calc_type_for_next
-import dndplayerscodex.shared.generated.resources.combat_calc_type_for_term
-import dndplayerscodex.shared.generated.resources.combat_calc_type_none
-import dndplayerscodex.shared.generated.resources.combat_calc_type_title
-import dndplayerscodex.shared.generated.resources.combat_panel_rx_spent
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_calc_reaction
+import incadent.shared.generated.resources.combat_calc_target_many
+import incadent.shared.generated.resources.combat_calc_target_one
+import incadent.shared.generated.resources.combat_calc_type_for_next
+import incadent.shared.generated.resources.combat_calc_type_for_term
+import incadent.shared.generated.resources.combat_calc_type_none
+import incadent.shared.generated.resources.combat_calc_type_title
+import incadent.shared.generated.resources.combat_panel_rx_spent
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

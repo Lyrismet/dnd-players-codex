@@ -53,13 +53,13 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryShe
 import com.lyrismet.incadent.feature.codex.presentation.summary.FactRow
 import com.lyrismet.incadent.feature.codex.presentation.summary.QuickEditSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.StatusOption
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_life_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_portrait_hint
-import dndplayerscodex.shared.generated.resources.entity_sheet_relation_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_status_label
-import dndplayerscodex.shared.generated.resources.quick_edit_hold_too_short
-import dndplayerscodex.shared.generated.resources.quick_edit_label_name
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_life_label
+import incadent.shared.generated.resources.entity_sheet_portrait_hint
+import incadent.shared.generated.resources.entity_sheet_relation_label
+import incadent.shared.generated.resources.entity_sheet_status_label
+import incadent.shared.generated.resources.quick_edit_hold_too_short
+import incadent.shared.generated.resources.quick_edit_label_name
 import org.jetbrains.compose.resources.stringResource
 
 private const val HOLD_TOAST_BOTTOM_PADDING_DP = 64

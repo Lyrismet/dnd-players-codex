@@ -38,8 +38,8 @@ import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_add_target
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_calc_add_target
 import org.jetbrains.compose.resources.stringResource
 
 internal fun HitEffect.shieldStyle(): ShieldStyle =

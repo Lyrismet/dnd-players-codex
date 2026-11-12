@@ -43,8 +43,8 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.undo.UNDO_WINDOW_MILLIS
 import com.lyrismet.incadent.core.undo.UndoAction
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.action_undo
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.action_undo
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.abs

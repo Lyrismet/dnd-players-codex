@@ -27,16 +27,16 @@ import com.lyrismet.incadent.core.designsystem.component.CellTone
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterResource
 import com.lyrismet.incadent.feature.me.domain.isDown
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_help_resources_body
-import dndplayerscodex.shared.generated.resources.me_help_resources_title
-import dndplayerscodex.shared.generated.resources.me_resource_uses
-import dndplayerscodex.shared.generated.resources.me_resources_add
-import dndplayerscodex.shared.generated.resources.me_resources_empty_body
-import dndplayerscodex.shared.generated.resources.me_resources_empty_title
-import dndplayerscodex.shared.generated.resources.me_resources_rest_note
-import dndplayerscodex.shared.generated.resources.me_resources_template
-import dndplayerscodex.shared.generated.resources.me_resources_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_help_resources_body
+import incadent.shared.generated.resources.me_help_resources_title
+import incadent.shared.generated.resources.me_resource_uses
+import incadent.shared.generated.resources.me_resources_add
+import incadent.shared.generated.resources.me_resources_empty_body
+import incadent.shared.generated.resources.me_resources_empty_title
+import incadent.shared.generated.resources.me_resources_rest_note
+import incadent.shared.generated.resources.me_resources_template
+import incadent.shared.generated.resources.me_resources_title
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 

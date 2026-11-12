@@ -17,21 +17,21 @@ import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isDying
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_panel_hp_sub
-import dndplayerscodex.shared.generated.resources.combat_panel_hp_sub_temp
-import dndplayerscodex.shared.generated.resources.combat_panel_note_foe
-import dndplayerscodex.shared.generated.resources.combat_panel_note_party
-import dndplayerscodex.shared.generated.resources.combat_panel_side_ally
-import dndplayerscodex.shared.generated.resources.combat_panel_side_enemy
-import dndplayerscodex.shared.generated.resources.combat_panel_side_fled
-import dndplayerscodex.shared.generated.resources.combat_panel_side_friend
-import dndplayerscodex.shared.generated.resources.combat_panel_side_neutral
-import dndplayerscodex.shared.generated.resources.combat_panel_side_party
-import dndplayerscodex.shared.generated.resources.combat_panel_source
-import dndplayerscodex.shared.generated.resources.combat_panel_source_note
-import dndplayerscodex.shared.generated.resources.combat_round_no_damage
-import dndplayerscodex.shared.generated.resources.combat_wound_since
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_panel_hp_sub
+import incadent.shared.generated.resources.combat_panel_hp_sub_temp
+import incadent.shared.generated.resources.combat_panel_note_foe
+import incadent.shared.generated.resources.combat_panel_note_party
+import incadent.shared.generated.resources.combat_panel_side_ally
+import incadent.shared.generated.resources.combat_panel_side_enemy
+import incadent.shared.generated.resources.combat_panel_side_fled
+import incadent.shared.generated.resources.combat_panel_side_friend
+import incadent.shared.generated.resources.combat_panel_side_neutral
+import incadent.shared.generated.resources.combat_panel_side_party
+import incadent.shared.generated.resources.combat_panel_source
+import incadent.shared.generated.resources.combat_panel_source_note
+import incadent.shared.generated.resources.combat_round_no_damage
+import incadent.shared.generated.resources.combat_wound_since
 import org.jetbrains.compose.resources.stringResource
 
 /** the bottom panel of the chosen participant: how they look, what can be done to them, what they carry */

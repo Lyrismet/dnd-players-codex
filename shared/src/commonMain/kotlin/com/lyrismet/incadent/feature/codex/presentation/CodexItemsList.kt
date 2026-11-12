@@ -17,15 +17,15 @@ import com.lyrismet.incadent.feature.codex.presentation.item.ItemSheet
 import com.lyrismet.incadent.feature.codex.presentation.item.PartyListMode
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_search_empty_reset
-import dndplayerscodex.shared.generated.resources.codex_search_empty_text
-import dndplayerscodex.shared.generated.resources.codex_search_empty_title
-import dndplayerscodex.shared.generated.resources.items_add
-import dndplayerscodex.shared.generated.resources.items_empty
-import dndplayerscodex.shared.generated.resources.items_empty_text
-import dndplayerscodex.shared.generated.resources.items_segment_characters
-import dndplayerscodex.shared.generated.resources.items_segment_items
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_search_empty_reset
+import incadent.shared.generated.resources.codex_search_empty_text
+import incadent.shared.generated.resources.codex_search_empty_title
+import incadent.shared.generated.resources.items_add
+import incadent.shared.generated.resources.items_empty
+import incadent.shared.generated.resources.items_empty_text
+import incadent.shared.generated.resources.items_segment_characters
+import incadent.shared.generated.resources.items_segment_items
 import org.jetbrains.compose.resources.stringResource
 
 /** the characters or items switch at the top of the party tab */

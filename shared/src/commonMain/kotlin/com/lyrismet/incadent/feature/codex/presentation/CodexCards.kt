@@ -49,10 +49,10 @@ import com.lyrismet.incadent.feature.codex.presentation.style.ItemMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.style.SpeciesMentionColor
 import com.lyrismet.incadent.feature.codex.presentation.summary.speciesHitsLine
 import com.lyrismet.incadent.feature.codex.presentation.summary.speciesSeenLine
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
-import dndplayerscodex.shared.generated.resources.codex_quest_given_by_label
-import dndplayerscodex.shared.generated.resources.codex_quest_reward_label
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_place_top_level_caption
+import incadent.shared.generated.resources.codex_quest_given_by_label
+import incadent.shared.generated.resources.codex_quest_reward_label
 import org.jetbrains.compose.resources.stringResource
 
 // the share of the text column left empty beside a cover strip

@@ -24,18 +24,18 @@ import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetState
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.action_cancel
-import dndplayerscodex.shared.generated.resources.action_delete
-import dndplayerscodex.shared.generated.resources.campaign_create_name_label
-import dndplayerscodex.shared.generated.resources.campaign_delete_body
-import dndplayerscodex.shared.generated.resources.campaign_delete_export_button
-import dndplayerscodex.shared.generated.resources.campaign_delete_export_hint
-import dndplayerscodex.shared.generated.resources.campaign_delete_title
-import dndplayerscodex.shared.generated.resources.campaign_finish_archive
-import dndplayerscodex.shared.generated.resources.campaign_finish_body
-import dndplayerscodex.shared.generated.resources.campaign_finish_delete
-import dndplayerscodex.shared.generated.resources.campaign_finish_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.action_cancel
+import incadent.shared.generated.resources.action_delete
+import incadent.shared.generated.resources.campaign_create_name_label
+import incadent.shared.generated.resources.campaign_delete_body
+import incadent.shared.generated.resources.campaign_delete_export_button
+import incadent.shared.generated.resources.campaign_delete_export_hint
+import incadent.shared.generated.resources.campaign_delete_title
+import incadent.shared.generated.resources.campaign_finish_archive
+import incadent.shared.generated.resources.campaign_finish_body
+import incadent.shared.generated.resources.campaign_finish_delete
+import incadent.shared.generated.resources.campaign_finish_title
 import org.jetbrains.compose.resources.stringResource
 
 // the calm confirmation of the mockup: archive by default, deleting the data is the quiet way out below it

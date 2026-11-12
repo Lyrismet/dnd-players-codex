@@ -32,17 +32,17 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.me.domain.DeathSaveState
 import com.lyrismet.incadent.feature.me.domain.deathSaveState
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_death_add_failure
-import dndplayerscodex.shared.generated.resources.me_death_add_success
-import dndplayerscodex.shared.generated.resources.me_death_dead
-import dndplayerscodex.shared.generated.resources.me_death_failures
-import dndplayerscodex.shared.generated.resources.me_death_mark_fallen
-import dndplayerscodex.shared.generated.resources.me_death_stable
-import dndplayerscodex.shared.generated.resources.me_death_stable_title
-import dndplayerscodex.shared.generated.resources.me_death_successes
-import dndplayerscodex.shared.generated.resources.me_death_title
-import dndplayerscodex.shared.generated.resources.me_death_undo_failure
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_death_add_failure
+import incadent.shared.generated.resources.me_death_add_success
+import incadent.shared.generated.resources.me_death_dead
+import incadent.shared.generated.resources.me_death_failures
+import incadent.shared.generated.resources.me_death_mark_fallen
+import incadent.shared.generated.resources.me_death_stable
+import incadent.shared.generated.resources.me_death_stable_title
+import incadent.shared.generated.resources.me_death_successes
+import incadent.shared.generated.resources.me_death_title
+import incadent.shared.generated.resources.me_death_undo_failure
 import org.jetbrains.compose.resources.stringResource
 
 private const val DOTS = 3

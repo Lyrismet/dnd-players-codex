@@ -10,8 +10,8 @@ import com.lyrismet.incadent.feature.codex.domain.repository.deleteRecord
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.presentation.MentionSource
 import com.lyrismet.incadent.feature.mention.presentation.rememberMentionLookups
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.mention_created_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.mention_created_title
 import org.jetbrains.compose.resources.stringResource
 
 /** the records a notes field offers after "@", a new one made from there can be taken back with Undo */

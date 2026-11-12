@@ -19,9 +19,9 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignExchangeRepository
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.exchange_file_friend
-import dndplayerscodex.shared.generated.resources.exchange_file_self
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.exchange_file_friend
+import incadent.shared.generated.resources.exchange_file_self
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource

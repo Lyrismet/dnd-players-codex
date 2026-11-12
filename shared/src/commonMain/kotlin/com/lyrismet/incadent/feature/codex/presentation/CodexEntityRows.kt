@@ -8,10 +8,10 @@ import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.action_edit
-import dndplayerscodex.shared.generated.resources.codex_delete_content_description
-import dndplayerscodex.shared.generated.resources.swipe_release_label
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.action_edit
+import incadent.shared.generated.resources.codex_delete_content_description
+import incadent.shared.generated.resources.swipe_release_label
 import org.jetbrains.compose.resources.stringResource
 
 // a right swipe opens the form, so it is only offered in form mode - quick mode keeps rows delete-only

@@ -29,17 +29,17 @@ import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.combat.domain.results.Highlights
 import com.lyrismet.incadent.feature.combat.domain.results.LogLine
 import com.lyrismet.incadent.feature.combat.domain.results.ResultRow
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_results_col_dealt
-import dndplayerscodex.shared.generated.resources.combat_results_col_member
-import dndplayerscodex.shared.generated.resources.combat_results_col_taken
-import dndplayerscodex.shared.generated.resources.combat_results_falls
-import dndplayerscodex.shared.generated.resources.combat_results_falls_count
-import dndplayerscodex.shared.generated.resources.combat_results_finishers
-import dndplayerscodex.shared.generated.resources.combat_results_log_close
-import dndplayerscodex.shared.generated.resources.combat_results_log_open
-import dndplayerscodex.shared.generated.resources.combat_results_log_round
-import dndplayerscodex.shared.generated.resources.combat_results_top
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_results_col_dealt
+import incadent.shared.generated.resources.combat_results_col_member
+import incadent.shared.generated.resources.combat_results_col_taken
+import incadent.shared.generated.resources.combat_results_falls
+import incadent.shared.generated.resources.combat_results_falls_count
+import incadent.shared.generated.resources.combat_results_finishers
+import incadent.shared.generated.resources.combat_results_log_close
+import incadent.shared.generated.resources.combat_results_log_open
+import incadent.shared.generated.resources.combat_results_log_round
+import incadent.shared.generated.resources.combat_results_top
 import org.jetbrains.compose.resources.stringResource
 
 private val DealtWidth = 56.dp

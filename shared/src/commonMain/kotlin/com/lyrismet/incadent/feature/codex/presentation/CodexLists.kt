@@ -20,13 +20,13 @@ import com.lyrismet.incadent.core.designsystem.component.scrollEdgeFade
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.CodexGroup
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterBanner
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_all_species
-import dndplayerscodex.shared.generated.resources.codex_party_fallen_section
-import dndplayerscodex.shared.generated.resources.codex_tab_location
-import dndplayerscodex.shared.generated.resources.codex_tab_npc
-import dndplayerscodex.shared.generated.resources.codex_tab_party
-import dndplayerscodex.shared.generated.resources.codex_tab_quest
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_all_species
+import incadent.shared.generated.resources.codex_party_fallen_section
+import incadent.shared.generated.resources.codex_tab_location
+import incadent.shared.generated.resources.codex_tab_npc
+import incadent.shared.generated.resources.codex_tab_party
+import incadent.shared.generated.resources.codex_tab_quest
 import org.jetbrains.compose.resources.stringResource
 
 private val LIST_CONTENT_PADDING = PaddingValues(start = 16.dp, top = 2.dp, end = 16.dp, bottom = 20.dp)

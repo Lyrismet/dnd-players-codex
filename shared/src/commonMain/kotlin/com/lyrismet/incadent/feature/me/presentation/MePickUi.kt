@@ -22,10 +22,10 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.EntityIcons
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.campaign_player_level_format
-import dndplayerscodex.shared.generated.resources.me_pick_screen_text
-import dndplayerscodex.shared.generated.resources.me_pick_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.campaign_player_level_format
+import incadent.shared.generated.resources.me_pick_screen_text
+import incadent.shared.generated.resources.me_pick_title
 import org.jetbrains.compose.resources.stringResource
 
 /** the screen while nobody carries the "me" mark: the party to choose from */

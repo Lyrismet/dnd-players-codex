@@ -7,8 +7,8 @@ import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_delete_button
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_delete_button
 import org.jetbrains.compose.resources.stringResource
 
 /** the card's last block, shown only when the actions carry a delete handler */

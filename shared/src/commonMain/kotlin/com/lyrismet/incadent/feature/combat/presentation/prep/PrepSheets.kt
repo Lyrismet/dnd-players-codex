@@ -7,11 +7,11 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.NumberPadSheet
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_hp_apply
-import dndplayerscodex.shared.generated.resources.combat_hp_mode_hp
-import dndplayerscodex.shared.generated.resources.combat_hp_mode_temp
-import dndplayerscodex.shared.generated.resources.combat_hp_overline
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_hp_apply
+import incadent.shared.generated.resources.combat_hp_mode_hp
+import incadent.shared.generated.resources.combat_hp_mode_temp
+import incadent.shared.generated.resources.combat_hp_overline
 import org.jetbrains.compose.resources.stringResource
 
 /** the keypad of a party member's hit points or temporary hit points before the fight */

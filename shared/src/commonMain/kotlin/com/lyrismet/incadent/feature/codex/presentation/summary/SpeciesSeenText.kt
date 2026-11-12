@@ -2,12 +2,12 @@ package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.feature.combat.domain.results.HitRange
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_species_fights_format
-import dndplayerscodex.shared.generated.resources.codex_species_row_hp_format
-import dndplayerscodex.shared.generated.resources.codex_species_row_seen_format
-import dndplayerscodex.shared.generated.resources.codex_species_seen_prefix
-import dndplayerscodex.shared.generated.resources.mention_count_in_sessions
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_species_fights_format
+import incadent.shared.generated.resources.codex_species_row_hp_format
+import incadent.shared.generated.resources.codex_species_row_seen_format
+import incadent.shared.generated.resources.codex_species_seen_prefix
+import incadent.shared.generated.resources.mention_count_in_sessions
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 

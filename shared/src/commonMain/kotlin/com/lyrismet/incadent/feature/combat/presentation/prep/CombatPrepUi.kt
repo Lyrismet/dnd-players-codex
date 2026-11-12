@@ -56,18 +56,18 @@ import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_prep_add_ally
-import dndplayerscodex.shared.generated.resources.combat_prep_add_enemy
-import dndplayerscodex.shared.generated.resources.combat_prep_add_party
-import dndplayerscodex.shared.generated.resources.combat_prep_enemies_header
-import dndplayerscodex.shared.generated.resources.combat_prep_exit_text
-import dndplayerscodex.shared.generated.resources.combat_prep_less
-import dndplayerscodex.shared.generated.resources.combat_prep_more
-import dndplayerscodex.shared.generated.resources.combat_prep_overline
-import dndplayerscodex.shared.generated.resources.combat_prep_party_count
-import dndplayerscodex.shared.generated.resources.combat_prep_party_header
-import dndplayerscodex.shared.generated.resources.combat_prep_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_prep_add_ally
+import incadent.shared.generated.resources.combat_prep_add_enemy
+import incadent.shared.generated.resources.combat_prep_add_party
+import incadent.shared.generated.resources.combat_prep_enemies_header
+import incadent.shared.generated.resources.combat_prep_exit_text
+import incadent.shared.generated.resources.combat_prep_less
+import incadent.shared.generated.resources.combat_prep_more
+import incadent.shared.generated.resources.combat_prep_overline
+import incadent.shared.generated.resources.combat_prep_party_count
+import incadent.shared.generated.resources.combat_prep_party_header
+import incadent.shared.generated.resources.combat_prep_title
 import org.jetbrains.compose.resources.stringResource
 
 private const val UNCHECKED_ALPHA = 0.55f

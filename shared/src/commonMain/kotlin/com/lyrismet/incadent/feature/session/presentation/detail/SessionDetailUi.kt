@@ -63,13 +63,13 @@ import com.lyrismet.incadent.feature.mention.presentation.MentionCreateActions
 import com.lyrismet.incadent.feature.mention.presentation.MentionCreateSheet
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
 import com.lyrismet.incadent.feature.session.presentation.text.SessionTextSheet
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_results_delete_confirm
-import dndplayerscodex.shared.generated.resources.combat_results_delete_keep
-import dndplayerscodex.shared.generated.resources.combat_results_delete_text
-import dndplayerscodex.shared.generated.resources.combat_results_delete_title
-import dndplayerscodex.shared.generated.resources.session_detail_empty_feed
-import dndplayerscodex.shared.generated.resources.session_detail_empty_feed_hint
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_results_delete_confirm
+import incadent.shared.generated.resources.combat_results_delete_keep
+import incadent.shared.generated.resources.combat_results_delete_text
+import incadent.shared.generated.resources.combat_results_delete_title
+import incadent.shared.generated.resources.session_detail_empty_feed
+import incadent.shared.generated.resources.session_detail_empty_feed_hint
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.stringResource
 

@@ -5,20 +5,20 @@ import com.lyrismet.incadent.feature.combat.domain.damage.takeHeal
 import com.lyrismet.incadent.feature.combat.domain.damage.takeTemp
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_apply_damage
-import dndplayerscodex.shared.generated.resources.combat_calc_apply_enter
-import dndplayerscodex.shared.generated.resources.combat_calc_apply_heal
-import dndplayerscodex.shared.generated.resources.combat_calc_apply_pick
-import dndplayerscodex.shared.generated.resources.combat_calc_apply_targets
-import dndplayerscodex.shared.generated.resources.combat_calc_apply_temp
-import dndplayerscodex.shared.generated.resources.combat_calc_preview_heal_guess
-import dndplayerscodex.shared.generated.resources.combat_calc_preview_hp
-import dndplayerscodex.shared.generated.resources.combat_calc_preview_more
-import dndplayerscodex.shared.generated.resources.combat_calc_preview_targets
-import dndplayerscodex.shared.generated.resources.combat_calc_preview_temp
-import dndplayerscodex.shared.generated.resources.combat_calc_preview_temp_same
-import dndplayerscodex.shared.generated.resources.combat_calc_preview_untracked
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_calc_apply_damage
+import incadent.shared.generated.resources.combat_calc_apply_enter
+import incadent.shared.generated.resources.combat_calc_apply_heal
+import incadent.shared.generated.resources.combat_calc_apply_pick
+import incadent.shared.generated.resources.combat_calc_apply_targets
+import incadent.shared.generated.resources.combat_calc_apply_temp
+import incadent.shared.generated.resources.combat_calc_preview_heal_guess
+import incadent.shared.generated.resources.combat_calc_preview_hp
+import incadent.shared.generated.resources.combat_calc_preview_more
+import incadent.shared.generated.resources.combat_calc_preview_targets
+import incadent.shared.generated.resources.combat_calc_preview_temp
+import incadent.shared.generated.resources.combat_calc_preview_temp_same
+import incadent.shared.generated.resources.combat_calc_preview_untracked
 import org.jetbrains.compose.resources.stringResource
 
 private const val PREVIEW_LINES = 3

@@ -20,10 +20,10 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppSwitch
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.settings_follow_level_desc
-import dndplayerscodex.shared.generated.resources.settings_follow_level_title
-import dndplayerscodex.shared.generated.resources.settings_section_codex
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.settings_follow_level_desc
+import incadent.shared.generated.resources.settings_follow_level_title
+import incadent.shared.generated.resources.settings_section_codex
 import org.jetbrains.compose.resources.stringResource
 
 /** the Codex group - mockup - overline, then a Surface card with the follow-the-party-level switch */

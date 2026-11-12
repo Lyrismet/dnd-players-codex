@@ -14,8 +14,8 @@ import com.lyrismet.incadent.feature.mention.domain.dedupeKey
 import com.lyrismet.incadent.feature.mention.domain.parseMentions
 import com.lyrismet.incadent.feature.mention.presentation.toChipItem
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.session_detail_meeting_separator_format
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.session_detail_meeting_separator_format
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource

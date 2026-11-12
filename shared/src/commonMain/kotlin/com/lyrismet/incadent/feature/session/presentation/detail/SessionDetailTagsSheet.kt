@@ -25,15 +25,15 @@ import com.lyrismet.incadent.core.designsystem.component.SheetDraftInput
 import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.session.presentation.tags.sessionTagLabel
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.session_detail_tag_add_all_button
-import dndplayerscodex.shared.generated.resources.session_detail_tag_add_suggestion_button
-import dndplayerscodex.shared.generated.resources.session_detail_tag_catalog_header
-import dndplayerscodex.shared.generated.resources.session_detail_tag_custom_header
-import dndplayerscodex.shared.generated.resources.session_detail_tag_disclaimer
-import dndplayerscodex.shared.generated.resources.session_detail_tag_draft_placeholder
-import dndplayerscodex.shared.generated.resources.session_detail_tag_sheet_title
-import dndplayerscodex.shared.generated.resources.session_detail_tag_suggested_header
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.session_detail_tag_add_all_button
+import incadent.shared.generated.resources.session_detail_tag_add_suggestion_button
+import incadent.shared.generated.resources.session_detail_tag_catalog_header
+import incadent.shared.generated.resources.session_detail_tag_custom_header
+import incadent.shared.generated.resources.session_detail_tag_disclaimer
+import incadent.shared.generated.resources.session_detail_tag_draft_placeholder
+import incadent.shared.generated.resources.session_detail_tag_sheet_title
+import incadent.shared.generated.resources.session_detail_tag_suggested_header
 import org.jetbrains.compose.resources.stringResource
 
 /** the "Теги сессии" bottom sheet (Players Codex v6.dc.html:787-810) - catalog toggle, auto-suggestions, custom tag */

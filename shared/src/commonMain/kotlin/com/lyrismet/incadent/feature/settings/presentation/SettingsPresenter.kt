@@ -33,9 +33,9 @@ import com.lyrismet.incadent.feature.phrases.presentation.rememberFrequentPhrase
 import com.lyrismet.incadent.feature.phrases.presentation.sheetState
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.slack.circuit.runtime.presenter.Presenter
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.error_action_failed
-import dndplayerscodex.shared.generated.resources.settings_data_undo_import_done
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.error_action_failed
+import incadent.shared.generated.resources.settings_data_undo_import_done
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource

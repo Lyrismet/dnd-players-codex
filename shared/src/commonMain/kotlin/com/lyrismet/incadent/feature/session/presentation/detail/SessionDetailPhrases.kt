@@ -26,12 +26,12 @@ import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppDashedTile
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.bleedHorizontally
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.phrase_completion_frequent_meta_format
-import dndplayerscodex.shared.generated.resources.phrase_completion_header
-import dndplayerscodex.shared.generated.resources.phrase_completion_pinned_meta
-import dndplayerscodex.shared.generated.resources.phrase_completion_tab
-import dndplayerscodex.shared.generated.resources.phrase_strip_open_button
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.phrase_completion_frequent_meta_format
+import incadent.shared.generated.resources.phrase_completion_header
+import incadent.shared.generated.resources.phrase_completion_pinned_meta
+import incadent.shared.generated.resources.phrase_completion_tab
+import incadent.shared.generated.resources.phrase_strip_open_button
 import org.jetbrains.compose.resources.stringResource
 
 private val StripChipShape = RoundedCornerShape(18.dp)

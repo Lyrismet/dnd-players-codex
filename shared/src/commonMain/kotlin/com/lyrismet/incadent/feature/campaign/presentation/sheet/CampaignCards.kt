@@ -33,15 +33,15 @@ import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignCardItem
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignLibraryState
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.campaign_action_export
-import dndplayerscodex.shared.generated.resources.campaign_action_finish
-import dndplayerscodex.shared.generated.resources.campaign_action_rename
-import dndplayerscodex.shared.generated.resources.campaign_badge_archive
-import dndplayerscodex.shared.generated.resources.campaign_badge_open
-import dndplayerscodex.shared.generated.resources.campaign_library_empty_live
-import dndplayerscodex.shared.generated.resources.campaign_section_archived
-import dndplayerscodex.shared.generated.resources.campaign_section_live
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.campaign_action_export
+import incadent.shared.generated.resources.campaign_action_finish
+import incadent.shared.generated.resources.campaign_action_rename
+import incadent.shared.generated.resources.campaign_badge_archive
+import incadent.shared.generated.resources.campaign_badge_open
+import incadent.shared.generated.resources.campaign_library_empty_live
+import incadent.shared.generated.resources.campaign_section_archived
+import incadent.shared.generated.resources.campaign_section_live
 import org.jetbrains.compose.resources.stringResource
 
 private val CardShape = AppShapes.Card

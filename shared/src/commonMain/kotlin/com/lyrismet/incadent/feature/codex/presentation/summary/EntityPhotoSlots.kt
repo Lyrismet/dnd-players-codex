@@ -11,10 +11,10 @@ import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityEmblem
 import com.lyrismet.incadent.feature.codex.presentation.summary.QuickEditSheet
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_cover_add
-import dndplayerscodex.shared.generated.resources.photo_kind_cover
-import dndplayerscodex.shared.generated.resources.photo_kind_portrait
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_cover_add
+import incadent.shared.generated.resources.photo_kind_cover
+import incadent.shared.generated.resources.photo_kind_portrait
 import org.jetbrains.compose.resources.stringResource
 
 /** quick mode's photo slot actions - pick, crop again and delete all go to the presenter as events */

@@ -6,9 +6,9 @@ import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_recorded_sub
-import dndplayerscodex.shared.generated.resources.combat_calc_recorded_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_calc_recorded_sub
+import incadent.shared.generated.resources.combat_calc_recorded_title
 import org.jetbrains.compose.resources.getString
 
 /** writes a state picked in the panel to the card of the chosen participant, its npc or else its species */

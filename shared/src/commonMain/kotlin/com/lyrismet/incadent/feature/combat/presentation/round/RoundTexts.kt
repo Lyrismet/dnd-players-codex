@@ -6,15 +6,15 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.round.isDying
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_wound_barely
-import dndplayerscodex.shared.generated.resources.combat_wound_bloodied
-import dndplayerscodex.shared.generated.resources.combat_wound_dead
-import dndplayerscodex.shared.generated.resources.combat_wound_down
-import dndplayerscodex.shared.generated.resources.combat_wound_down_mark
-import dndplayerscodex.shared.generated.resources.combat_wound_dying
-import dndplayerscodex.shared.generated.resources.combat_wound_whole
-import dndplayerscodex.shared.generated.resources.combat_wound_wounded
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_wound_barely
+import incadent.shared.generated.resources.combat_wound_bloodied
+import incadent.shared.generated.resources.combat_wound_dead
+import incadent.shared.generated.resources.combat_wound_down
+import incadent.shared.generated.resources.combat_wound_down_mark
+import incadent.shared.generated.resources.combat_wound_dying
+import incadent.shared.generated.resources.combat_wound_whole
+import incadent.shared.generated.resources.combat_wound_wounded
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 

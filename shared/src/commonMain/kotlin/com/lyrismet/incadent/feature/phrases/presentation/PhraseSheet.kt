@@ -11,10 +11,10 @@ import com.lyrismet.incadent.feature.phrases.domain.findFrequentPhrases
 import com.lyrismet.incadent.feature.phrases.domain.phraseLabel
 import com.lyrismet.incadent.feature.phrases.domain.repository.PhraseSnippetRepository
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.phrase_meta_format
-import dndplayerscodex.shared.generated.resources.phrase_meta_sessions
-import dndplayerscodex.shared.generated.resources.phrase_meta_times
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.phrase_meta_format
+import incadent.shared.generated.resources.phrase_meta_sessions
+import incadent.shared.generated.resources.phrase_meta_times
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

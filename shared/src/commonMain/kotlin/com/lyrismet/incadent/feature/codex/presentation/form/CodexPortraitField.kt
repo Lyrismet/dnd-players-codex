@@ -28,18 +28,18 @@ import com.lyrismet.incadent.core.designsystem.component.PortraitFrame
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.core.portrait.photoSizeKb
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_cover_form_hint
-import dndplayerscodex.shared.generated.resources.codex_cover_form_placeholder
-import dndplayerscodex.shared.generated.resources.codex_cover_remove
-import dndplayerscodex.shared.generated.resources.codex_entry_label_cover
-import dndplayerscodex.shared.generated.resources.codex_entry_label_portrait
-import dndplayerscodex.shared.generated.resources.codex_entry_portrait_hint_empty
-import dndplayerscodex.shared.generated.resources.codex_entry_portrait_hint_filled
-import dndplayerscodex.shared.generated.resources.codex_entry_portrait_remove
-import dndplayerscodex.shared.generated.resources.photo_crop_again
-import dndplayerscodex.shared.generated.resources.photo_kind_cover
-import dndplayerscodex.shared.generated.resources.photo_kind_portrait
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_cover_form_hint
+import incadent.shared.generated.resources.codex_cover_form_placeholder
+import incadent.shared.generated.resources.codex_cover_remove
+import incadent.shared.generated.resources.codex_entry_label_cover
+import incadent.shared.generated.resources.codex_entry_label_portrait
+import incadent.shared.generated.resources.codex_entry_portrait_hint_empty
+import incadent.shared.generated.resources.codex_entry_portrait_hint_filled
+import incadent.shared.generated.resources.codex_entry_portrait_remove
+import incadent.shared.generated.resources.photo_crop_again
+import incadent.shared.generated.resources.photo_kind_cover
+import incadent.shared.generated.resources.photo_kind_portrait
 import org.jetbrains.compose.resources.stringResource
 
 private val PortraitCardModifier =

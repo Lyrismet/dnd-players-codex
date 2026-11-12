@@ -10,13 +10,13 @@ import com.lyrismet.incadent.core.designsystem.component.icons.SessionsTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.SettingsTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.EntityIcons
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.bottom_tab_codex
-import dndplayerscodex.shared.generated.resources.bottom_tab_combat
-import dndplayerscodex.shared.generated.resources.bottom_tab_me
-import dndplayerscodex.shared.generated.resources.bottom_tab_me_description
-import dndplayerscodex.shared.generated.resources.bottom_tab_sessions
-import dndplayerscodex.shared.generated.resources.bottom_tab_settings
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.bottom_tab_codex
+import incadent.shared.generated.resources.bottom_tab_combat
+import incadent.shared.generated.resources.bottom_tab_me
+import incadent.shared.generated.resources.bottom_tab_me_description
+import incadent.shared.generated.resources.bottom_tab_sessions
+import incadent.shared.generated.resources.bottom_tab_settings
 import org.jetbrains.compose.resources.stringResource
 
 private val MeTabIconSize = 24.dp

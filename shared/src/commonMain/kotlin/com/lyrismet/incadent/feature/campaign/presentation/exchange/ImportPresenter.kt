@@ -22,9 +22,9 @@ import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignExchange
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.exchange_from_file_label
-import dndplayerscodex.shared.generated.resources.exchange_import_campaign_untitled
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.exchange_from_file_label
+import incadent.shared.generated.resources.exchange_import_campaign_untitled
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource

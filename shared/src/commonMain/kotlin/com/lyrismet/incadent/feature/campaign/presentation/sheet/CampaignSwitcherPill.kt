@@ -25,10 +25,10 @@ import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppNoticeBar
 import com.lyrismet.incadent.core.designsystem.component.AppTriangle
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.campaign_archive_banner_text
-import dndplayerscodex.shared.generated.resources.campaign_archive_banner_title
-import dndplayerscodex.shared.generated.resources.campaign_resume
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.campaign_archive_banner_text
+import incadent.shared.generated.resources.campaign_archive_banner_title
+import incadent.shared.generated.resources.campaign_resume
 import org.jetbrains.compose.resources.stringResource
 
 private val PillShape = AppShapes.Control

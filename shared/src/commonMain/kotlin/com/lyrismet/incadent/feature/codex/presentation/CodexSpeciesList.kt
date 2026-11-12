@@ -14,15 +14,15 @@ import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_npc_mode_named
-import dndplayerscodex.shared.generated.resources.codex_npc_mode_species
-import dndplayerscodex.shared.generated.resources.codex_search_empty_reset
-import dndplayerscodex.shared.generated.resources.codex_search_empty_text
-import dndplayerscodex.shared.generated.resources.codex_search_empty_title
-import dndplayerscodex.shared.generated.resources.codex_species_add
-import dndplayerscodex.shared.generated.resources.codex_species_empty_text
-import dndplayerscodex.shared.generated.resources.codex_species_empty_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_npc_mode_named
+import incadent.shared.generated.resources.codex_npc_mode_species
+import incadent.shared.generated.resources.codex_search_empty_reset
+import incadent.shared.generated.resources.codex_search_empty_text
+import incadent.shared.generated.resources.codex_search_empty_title
+import incadent.shared.generated.resources.codex_species_add
+import incadent.shared.generated.resources.codex_species_empty_text
+import incadent.shared.generated.resources.codex_species_empty_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

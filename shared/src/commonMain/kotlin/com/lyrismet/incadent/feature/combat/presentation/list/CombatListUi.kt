@@ -50,19 +50,19 @@ import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEv
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSwitcherPill
 import com.lyrismet.incadent.feature.combat.presentation.summary.OutcomeBadge
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.campaign_switcher_description
-import dndplayerscodex.shared.generated.resources.combat_list_archive_text
-import dndplayerscodex.shared.generated.resources.combat_list_archive_title
-import dndplayerscodex.shared.generated.resources.combat_list_continue
-import dndplayerscodex.shared.generated.resources.combat_list_empty
-import dndplayerscodex.shared.generated.resources.combat_list_prep_overline
-import dndplayerscodex.shared.generated.resources.combat_list_reset
-import dndplayerscodex.shared.generated.resources.combat_list_reset_keep
-import dndplayerscodex.shared.generated.resources.combat_list_reset_text
-import dndplayerscodex.shared.generated.resources.combat_list_reset_title
-import dndplayerscodex.shared.generated.resources.combat_list_start
-import dndplayerscodex.shared.generated.resources.combat_list_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.campaign_switcher_description
+import incadent.shared.generated.resources.combat_list_archive_text
+import incadent.shared.generated.resources.combat_list_archive_title
+import incadent.shared.generated.resources.combat_list_continue
+import incadent.shared.generated.resources.combat_list_empty
+import incadent.shared.generated.resources.combat_list_prep_overline
+import incadent.shared.generated.resources.combat_list_reset
+import incadent.shared.generated.resources.combat_list_reset_keep
+import incadent.shared.generated.resources.combat_list_reset_text
+import incadent.shared.generated.resources.combat_list_reset_title
+import incadent.shared.generated.resources.combat_list_start
+import incadent.shared.generated.resources.combat_list_title
 import org.jetbrains.compose.resources.stringResource
 
 private val GroupLetterSpacing = 0.12.em

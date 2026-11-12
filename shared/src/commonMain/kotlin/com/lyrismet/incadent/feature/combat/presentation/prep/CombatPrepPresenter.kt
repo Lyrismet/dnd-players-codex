@@ -25,11 +25,11 @@ import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepos
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_prep_intro_foe_done
-import dndplayerscodex.shared.generated.resources.combat_prep_intro_foe_todo
-import dndplayerscodex.shared.generated.resources.combat_prep_intro_party_todo
-import dndplayerscodex.shared.generated.resources.error_action_failed
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_prep_intro_foe_done
+import incadent.shared.generated.resources.combat_prep_intro_foe_todo
+import incadent.shared.generated.resources.combat_prep_intro_party_todo
+import incadent.shared.generated.resources.error_action_failed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch

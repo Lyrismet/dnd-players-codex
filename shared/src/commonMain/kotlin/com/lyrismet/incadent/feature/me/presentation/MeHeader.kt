@@ -40,19 +40,19 @@ import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.feature.codex.domain.grouping.classLine
 import com.lyrismet.incadent.feature.me.domain.isDown
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.campaign_player_level_format
-import dndplayerscodex.shared.generated.resources.me_fallen_line
-import dndplayerscodex.shared.generated.resources.me_hp_label
-import dndplayerscodex.shared.generated.resources.me_hp_of_format
-import dndplayerscodex.shared.generated.resources.me_hp_temp_format
-import dndplayerscodex.shared.generated.resources.me_hp_zero
-import dndplayerscodex.shared.generated.resources.me_menu_description
-import dndplayerscodex.shared.generated.resources.me_menu_edit
-import dndplayerscodex.shared.generated.resources.me_menu_fill
-import dndplayerscodex.shared.generated.resources.me_menu_not_mine
-import dndplayerscodex.shared.generated.resources.me_menu_spells_hide
-import dndplayerscodex.shared.generated.resources.me_menu_spells_show
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.campaign_player_level_format
+import incadent.shared.generated.resources.me_fallen_line
+import incadent.shared.generated.resources.me_hp_label
+import incadent.shared.generated.resources.me_hp_of_format
+import incadent.shared.generated.resources.me_hp_temp_format
+import incadent.shared.generated.resources.me_hp_zero
+import incadent.shared.generated.resources.me_menu_description
+import incadent.shared.generated.resources.me_menu_edit
+import incadent.shared.generated.resources.me_menu_fill
+import incadent.shared.generated.resources.me_menu_not_mine
+import incadent.shared.generated.resources.me_menu_spells_hide
+import incadent.shared.generated.resources.me_menu_spells_show
 import org.jetbrains.compose.resources.stringResource
 
 private val PartyBlue = StatusColor(AppPalette.Azure, AppPalette.Surface, AppPalette.PartyRowBorder)

@@ -32,14 +32,14 @@ import com.lyrismet.incadent.core.designsystem.component.NumberPadKeyGrid
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_done_title
-import dndplayerscodex.shared.generated.resources.combat_calc_done_value
-import dndplayerscodex.shared.generated.resources.combat_calc_mode_damage
-import dndplayerscodex.shared.generated.resources.combat_calc_mode_heal
-import dndplayerscodex.shared.generated.resources.combat_calc_mode_temp
-import dndplayerscodex.shared.generated.resources.combat_calc_more
-import dndplayerscodex.shared.generated.resources.combat_calc_source_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_calc_done_title
+import incadent.shared.generated.resources.combat_calc_done_value
+import incadent.shared.generated.resources.combat_calc_mode_damage
+import incadent.shared.generated.resources.combat_calc_mode_heal
+import incadent.shared.generated.resources.combat_calc_mode_temp
+import incadent.shared.generated.resources.combat_calc_more
+import incadent.shared.generated.resources.combat_calc_source_title
 import org.jetbrains.compose.resources.stringResource
 
 private const val DAMAGE_BORDER_ALPHA = 0.6f

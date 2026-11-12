@@ -14,17 +14,17 @@ import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.repository.PlaceCycleException
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_label_inside
-import dndplayerscodex.shared.generated.resources.codex_entry_label_parent
-import dndplayerscodex.shared.generated.resources.codex_entry_label_where
-import dndplayerscodex.shared.generated.resources.codex_entry_label_where_to_meet
-import dndplayerscodex.shared.generated.resources.codex_place_top_level_caption
-import dndplayerscodex.shared.generated.resources.place_block_contains
-import dndplayerscodex.shared.generated.resources.place_block_inside_of
-import dndplayerscodex.shared.generated.resources.place_block_itself
-import dndplayerscodex.shared.generated.resources.place_block_pending
-import dndplayerscodex.shared.generated.resources.place_cycle_toast
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_label_inside
+import incadent.shared.generated.resources.codex_entry_label_parent
+import incadent.shared.generated.resources.codex_entry_label_where
+import incadent.shared.generated.resources.codex_entry_label_where_to_meet
+import incadent.shared.generated.resources.codex_place_top_level_caption
+import incadent.shared.generated.resources.place_block_contains
+import incadent.shared.generated.resources.place_block_inside_of
+import incadent.shared.generated.resources.place_block_itself
+import incadent.shared.generated.resources.place_block_pending
+import incadent.shared.generated.resources.place_cycle_toast
 import org.jetbrains.compose.resources.stringResource
 
 /** what the place select sheet shows for [field], places [editing] can't sit in are greyed with the reason */

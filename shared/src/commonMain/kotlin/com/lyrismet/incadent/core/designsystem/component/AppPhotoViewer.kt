@@ -30,12 +30,12 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.photo_viewer_close
-import dndplayerscodex.shared.generated.resources.photo_viewer_crop
-import dndplayerscodex.shared.generated.resources.photo_viewer_delete
-import dndplayerscodex.shared.generated.resources.photo_viewer_read_only
-import dndplayerscodex.shared.generated.resources.photo_viewer_replace
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.photo_viewer_close
+import incadent.shared.generated.resources.photo_viewer_crop
+import incadent.shared.generated.resources.photo_viewer_delete
+import incadent.shared.generated.resources.photo_viewer_read_only
+import incadent.shared.generated.resources.photo_viewer_replace
 import org.jetbrains.compose.resources.stringResource
 
 /** what a slot's owner does with the photo - the slot itself only runs the picker and the viewer */

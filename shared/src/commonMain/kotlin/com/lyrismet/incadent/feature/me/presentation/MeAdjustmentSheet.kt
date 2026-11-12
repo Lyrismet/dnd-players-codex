@@ -6,16 +6,16 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_ac_from_hint
-import dndplayerscodex.shared.generated.resources.me_adjustment_hint
-import dndplayerscodex.shared.generated.resources.me_adjustment_note_label
-import dndplayerscodex.shared.generated.resources.me_adjustment_note_placeholder
-import dndplayerscodex.shared.generated.resources.me_popover_adjustment
-import dndplayerscodex.shared.generated.resources.me_popover_initiative
-import dndplayerscodex.shared.generated.resources.me_popover_passive
-import dndplayerscodex.shared.generated.resources.me_spells_tile_attack
-import dndplayerscodex.shared.generated.resources.me_spells_tile_dc
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_ac_from_hint
+import incadent.shared.generated.resources.me_adjustment_hint
+import incadent.shared.generated.resources.me_adjustment_note_label
+import incadent.shared.generated.resources.me_adjustment_note_placeholder
+import incadent.shared.generated.resources.me_popover_adjustment
+import incadent.shared.generated.resources.me_popover_initiative
+import incadent.shared.generated.resources.me_popover_passive
+import incadent.shared.generated.resources.me_spells_tile_attack
+import incadent.shared.generated.resources.me_spells_tile_dc
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 

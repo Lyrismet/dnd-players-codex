@@ -40,9 +40,9 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.entityWriteLock
 import com.lyrismet.incadent.feature.codex.presentation.summary.toMentionRef
 import com.lyrismet.incadent.feature.mention.presentation.MentionField
 import com.lyrismet.incadent.feature.mention.presentation.MentionSource
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_move_into
-import dndplayerscodex.shared.generated.resources.species_type_deleted_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_move_into
+import incadent.shared.generated.resources.species_type_deleted_title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

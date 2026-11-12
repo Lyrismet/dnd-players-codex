@@ -35,8 +35,8 @@ import com.lyrismet.incadent.core.format.signed
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
 import com.lyrismet.incadent.feature.me.domain.AbilityStrip
 import com.lyrismet.incadent.feature.me.domain.SheetRow
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_strip_save
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_strip_save
 import org.jetbrains.compose.resources.stringResource
 
 /** an ability tile with the lines that use it: the saving throw first, then the skills of the ability */

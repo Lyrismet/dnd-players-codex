@@ -15,10 +15,10 @@ import com.lyrismet.incadent.core.designsystem.component.SelectCreateRow
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSections
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetState
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.campaign_import_from_file
-import dndplayerscodex.shared.generated.resources.campaign_new
-import dndplayerscodex.shared.generated.resources.campaign_sheet_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.campaign_import_from_file
+import incadent.shared.generated.resources.campaign_new
+import incadent.shared.generated.resources.campaign_sheet_title
 import org.jetbrains.compose.resources.stringResource
 
 /** draws whichever campaign sheet or dialog the host is in - the host owns every transition, this only reports taps */

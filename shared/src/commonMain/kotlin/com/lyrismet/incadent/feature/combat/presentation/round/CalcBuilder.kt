@@ -12,12 +12,12 @@ import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_manual
-import dndplayerscodex.shared.generated.resources.combat_calc_quick
-import dndplayerscodex.shared.generated.resources.combat_damage_state_immunity
-import dndplayerscodex.shared.generated.resources.combat_damage_state_resistance
-import dndplayerscodex.shared.generated.resources.combat_damage_state_vulnerability
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_calc_manual
+import incadent.shared.generated.resources.combat_calc_quick
+import incadent.shared.generated.resources.combat_damage_state_immunity
+import incadent.shared.generated.resources.combat_damage_state_resistance
+import incadent.shared.generated.resources.combat_damage_state_vulnerability
 import org.jetbrains.compose.resources.stringResource
 
 private val ScaleOrder = listOf(HitScale.ONE, HitScale.HALF, HitScale.ZERO, HitScale.DOUBLE)

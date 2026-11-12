@@ -8,17 +8,17 @@ import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilities
 import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilityEditor
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_label_life
-import dndplayerscodex.shared.generated.resources.codex_entry_label_name_npc
-import dndplayerscodex.shared.generated.resources.codex_entry_label_notes
-import dndplayerscodex.shared.generated.resources.codex_entry_label_relationship
-import dndplayerscodex.shared.generated.resources.codex_entry_label_species
-import dndplayerscodex.shared.generated.resources.codex_entry_label_where_to_meet
-import dndplayerscodex.shared.generated.resources.codex_entry_pick_places_hint
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_name
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_npc_notes
-import dndplayerscodex.shared.generated.resources.codex_species_pick_hint
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_label_life
+import incadent.shared.generated.resources.codex_entry_label_name_npc
+import incadent.shared.generated.resources.codex_entry_label_notes
+import incadent.shared.generated.resources.codex_entry_label_relationship
+import incadent.shared.generated.resources.codex_entry_label_species
+import incadent.shared.generated.resources.codex_entry_label_where_to_meet
+import incadent.shared.generated.resources.codex_entry_pick_places_hint
+import incadent.shared.generated.resources.codex_entry_placeholder_npc_name
+import incadent.shared.generated.resources.codex_entry_placeholder_npc_notes
+import incadent.shared.generated.resources.codex_species_pick_hint
 import org.jetbrains.compose.resources.stringResource
 
 /** the npc form, [FormDensity.Compact] folds the rarely filled fields under "more" */

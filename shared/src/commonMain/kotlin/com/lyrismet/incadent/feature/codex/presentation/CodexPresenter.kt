@@ -87,8 +87,8 @@ import com.lyrismet.incadent.feature.session.presentation.route.sessionEntryOpen
 import com.slack.circuit.retained.rememberRetained
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.presenter.Presenter
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_party_fell_session
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_party_fell_session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first

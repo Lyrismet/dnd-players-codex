@@ -20,8 +20,8 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.QuickEditSheet
 import com.lyrismet.incadent.feature.codex.presentation.summary.RelationGroup
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.quick_edit_relations_hint
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.quick_edit_relations_hint
 import org.jetbrains.compose.resources.stringResource
 
 /** the titled chip rows under the facts - a group with an edit field opens its relation editor on a hold */

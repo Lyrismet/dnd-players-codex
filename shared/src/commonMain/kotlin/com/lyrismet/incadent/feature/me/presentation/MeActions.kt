@@ -12,9 +12,9 @@ import com.lyrismet.incadent.feature.me.domain.HitPointMode
 import com.lyrismet.incadent.feature.me.domain.hit
 import com.lyrismet.incadent.feature.me.domain.next
 import com.lyrismet.incadent.feature.me.domain.withDeathSaveDot
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_fallen_done_title
-import dndplayerscodex.shared.generated.resources.me_not_mine_done_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_fallen_done_title
+import incadent.shared.generated.resources.me_not_mine_done_title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

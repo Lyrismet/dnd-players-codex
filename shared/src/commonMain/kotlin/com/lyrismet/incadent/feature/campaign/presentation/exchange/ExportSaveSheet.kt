@@ -24,14 +24,14 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.file.rememberFileSaver
 import com.lyrismet.incadent.feature.campaign.domain.exchange.MAX_TYPED_CHARS
 import com.lyrismet.incadent.feature.campaign.domain.exchange.typedFileName
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.exchange_save_cancel
-import dndplayerscodex.shared.generated.resources.exchange_save_download
-import dndplayerscodex.shared.generated.resources.exchange_save_folder
-import dndplayerscodex.shared.generated.resources.exchange_save_folder_ask
-import dndplayerscodex.shared.generated.resources.exchange_save_folder_downloads
-import dndplayerscodex.shared.generated.resources.exchange_save_name
-import dndplayerscodex.shared.generated.resources.exchange_save_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.exchange_save_cancel
+import incadent.shared.generated.resources.exchange_save_download
+import incadent.shared.generated.resources.exchange_save_folder
+import incadent.shared.generated.resources.exchange_save_folder_ask
+import incadent.shared.generated.resources.exchange_save_folder_downloads
+import incadent.shared.generated.resources.exchange_save_name
+import incadent.shared.generated.resources.exchange_save_title
 import org.jetbrains.compose.resources.stringResource
 
 private const val CANCEL_WEIGHT = 1f

@@ -17,9 +17,9 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.action_cancel
-import dndplayerscodex.shared.generated.resources.action_delete
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.action_cancel
+import incadent.shared.generated.resources.action_delete
 import org.jetbrains.compose.resources.stringResource
 
 /** "are you sure?" dialog - call it from pending-confirmation state, never trigger the action directly */

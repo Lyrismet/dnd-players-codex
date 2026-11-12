@@ -1,14 +1,14 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.runtime.Composable
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_overline_damage
-import dndplayerscodex.shared.generated.resources.combat_calc_overline_round
-import dndplayerscodex.shared.generated.resources.combat_calc_source_environment
-import dndplayerscodex.shared.generated.resources.combat_calc_source_turn
-import dndplayerscodex.shared.generated.resources.combat_calc_title_damage
-import dndplayerscodex.shared.generated.resources.combat_calc_title_heal
-import dndplayerscodex.shared.generated.resources.combat_calc_title_temp
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_calc_overline_damage
+import incadent.shared.generated.resources.combat_calc_overline_round
+import incadent.shared.generated.resources.combat_calc_source_environment
+import incadent.shared.generated.resources.combat_calc_source_turn
+import incadent.shared.generated.resources.combat_calc_title_damage
+import incadent.shared.generated.resources.combat_calc_title_heal
+import incadent.shared.generated.resources.combat_calc_title_temp
 import org.jetbrains.compose.resources.stringResource
 
 internal fun titleOf(mode: CalcMode) =

@@ -65,13 +65,13 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
 import com.lyrismet.incadent.feature.session.presentation.tags.sessionTagLabel
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.session_detail_back
-import dndplayerscodex.shared.generated.resources.session_detail_end_button
-import dndplayerscodex.shared.generated.resources.session_detail_ended_badge
-import dndplayerscodex.shared.generated.resources.session_detail_live_badge
-import dndplayerscodex.shared.generated.resources.session_detail_resume_button
-import dndplayerscodex.shared.generated.resources.session_text_button
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.session_detail_back
+import incadent.shared.generated.resources.session_detail_end_button
+import incadent.shared.generated.resources.session_detail_ended_badge
+import incadent.shared.generated.resources.session_detail_live_badge
+import incadent.shared.generated.resources.session_detail_resume_button
+import incadent.shared.generated.resources.session_text_button
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

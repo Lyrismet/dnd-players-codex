@@ -14,8 +14,8 @@ import com.lyrismet.incadent.feature.codex.domain.model.ItemOwner
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.presentation.MentionField
 import com.lyrismet.incadent.feature.mention.presentation.MentionSource
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.items_owner_me
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.items_owner_me
 import org.jetbrains.compose.resources.stringResource
 
 /** the rows of the items list for what is typed in the search, name and notes are looked at */

@@ -65,12 +65,12 @@ import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.CropState
 import com.lyrismet.incadent.core.portrait.MAX_ZOOM
 import com.lyrismet.incadent.core.portrait.MIN_ZOOM
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.photo_crop_cancel
-import dndplayerscodex.shared.generated.resources.photo_crop_done
-import dndplayerscodex.shared.generated.resources.photo_crop_hint
-import dndplayerscodex.shared.generated.resources.photo_crop_overline
-import dndplayerscodex.shared.generated.resources.photo_crop_reset
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.photo_crop_cancel
+import incadent.shared.generated.resources.photo_crop_done
+import incadent.shared.generated.resources.photo_crop_hint
+import incadent.shared.generated.resources.photo_crop_overline
+import incadent.shared.generated.resources.photo_crop_reset
 import org.jetbrains.compose.resources.stringResource
 
 private val PortraitWindowShape =

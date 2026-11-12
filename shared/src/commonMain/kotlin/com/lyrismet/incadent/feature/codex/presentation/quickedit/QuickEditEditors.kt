@@ -51,10 +51,10 @@ import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.presentation.summary.RelationOption
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.quick_edit_description_hint
-import dndplayerscodex.shared.generated.resources.quick_edit_done
-import dndplayerscodex.shared.generated.resources.quick_edit_link_none
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.quick_edit_description_hint
+import incadent.shared.generated.resources.quick_edit_done
+import incadent.shared.generated.resources.quick_edit_link_none
 import org.jetbrains.compose.resources.stringResource
 
 /** the editor frame - gold ring, 12dp corners, 8/10/10 padding and an 8dp gap, from the mockup's edit block */

@@ -21,8 +21,8 @@ import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteReposi
 import com.lyrismet.incadent.feature.session.presentation.text.SessionTextController
 import com.lyrismet.incadent.feature.session.presentation.text.SessionTextSource
 import com.slack.circuit.runtime.Navigator
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_toast_format
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_quick_add_toast_format
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone

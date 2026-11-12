@@ -16,9 +16,9 @@ import com.lyrismet.incadent.core.designsystem.component.TextLimits
 import com.lyrismet.incadent.core.designsystem.component.formAreaInputStyle
 import com.lyrismet.incadent.feature.mention.presentation.MentionField
 import com.lyrismet.incadent.feature.mention.presentation.MentionTextField
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_label_nicknames
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_nicknames
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_label_nicknames
+import incadent.shared.generated.resources.codex_entry_placeholder_nicknames
 import org.jetbrains.compose.resources.stringResource
 
 /** a one-line form field that reports its text as the [field] of the entry */

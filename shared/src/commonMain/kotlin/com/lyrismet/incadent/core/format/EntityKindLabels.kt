@@ -1,13 +1,13 @@
 package com.lyrismet.incadent.core.format
 
 import com.lyrismet.incadent.domain.model.EntityKind
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_item
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_location
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_npc
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_party
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_quest
-import dndplayerscodex.shared.generated.resources.session_detail_mention_type_species
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.session_detail_mention_type_item
+import incadent.shared.generated.resources.session_detail_mention_type_location
+import incadent.shared.generated.resources.session_detail_mention_type_npc
+import incadent.shared.generated.resources.session_detail_mention_type_party
+import incadent.shared.generated.resources.session_detail_mention_type_quest
+import incadent.shared.generated.resources.session_detail_mention_type_species
 import org.jetbrains.compose.resources.StringResource
 
 /** the short kind name shown in the mention sheets and card overlines - NPC, Квест, Место, Отряд */

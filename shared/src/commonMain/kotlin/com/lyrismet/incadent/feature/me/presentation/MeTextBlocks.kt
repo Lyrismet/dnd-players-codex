@@ -20,10 +20,10 @@ import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.FormTextArea
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_about_alignment
-import dndplayerscodex.shared.generated.resources.me_about_background
-import dndplayerscodex.shared.generated.resources.me_about_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_about_alignment
+import incadent.shared.generated.resources.me_about_background
+import incadent.shared.generated.resources.me_about_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

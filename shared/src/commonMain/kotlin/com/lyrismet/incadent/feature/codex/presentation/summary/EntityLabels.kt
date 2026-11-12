@@ -5,17 +5,17 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_npc_life_alive
-import dndplayerscodex.shared.generated.resources.codex_npc_life_dead
-import dndplayerscodex.shared.generated.resources.codex_npc_status_enemy
-import dndplayerscodex.shared.generated.resources.codex_npc_status_friend
-import dndplayerscodex.shared.generated.resources.codex_npc_status_neutral
-import dndplayerscodex.shared.generated.resources.codex_party_presence_away
-import dndplayerscodex.shared.generated.resources.codex_party_presence_in
-import dndplayerscodex.shared.generated.resources.codex_quest_status_active
-import dndplayerscodex.shared.generated.resources.codex_quest_status_completed
-import dndplayerscodex.shared.generated.resources.codex_quest_status_failed
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_npc_life_alive
+import incadent.shared.generated.resources.codex_npc_life_dead
+import incadent.shared.generated.resources.codex_npc_status_enemy
+import incadent.shared.generated.resources.codex_npc_status_friend
+import incadent.shared.generated.resources.codex_npc_status_neutral
+import incadent.shared.generated.resources.codex_party_presence_away
+import incadent.shared.generated.resources.codex_party_presence_in
+import incadent.shared.generated.resources.codex_quest_status_active
+import incadent.shared.generated.resources.codex_quest_status_completed
+import incadent.shared.generated.resources.codex_quest_status_failed
 import org.jetbrains.compose.resources.stringResource
 
 /** resource-backed label maps for the enum statuses - composable because the strings come from compose resources */
