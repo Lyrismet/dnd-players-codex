@@ -21,5 +21,8 @@ UPDATE origin_alias SET origin_id = ? WHERE campaign_id = ? AND kind = ? AND ori
 selectByCampaign:
 SELECT kind, alias_origin_id, origin_id FROM origin_alias WHERE campaign_id = ?;
 
+selectAliasesOf:
+SELECT alias_origin_id FROM origin_alias WHERE campaign_id = ? AND kind = ? AND origin_id = ?;
+
 delete:
 DELETE FROM origin_alias WHERE campaign_id = ? AND kind = ? AND alias_origin_id = ?;

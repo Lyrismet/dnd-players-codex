@@ -1,13 +1,17 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.runtime.Composable
+import com.lyrismet.incadent.core.format.joinWithDot
+import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
+import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.combat.domain.forecast.HitForecast
 import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+import com.lyrismet.incadent.feature.combat.domain.round.RoleParts
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isDying
 import com.lyrismet.incadent.feature.combat.domain.round.isOut
@@ -17,7 +21,8 @@ import incadent.shared.generated.resources.combat_panel_rx_attacked
 import incadent.shared.generated.resources.combat_panel_rx_available
 import incadent.shared.generated.resources.combat_panel_rx_spent
 import incadent.shared.generated.resources.combat_round_reinforcement
-import incadent.shared.generated.resources.combat_round_you
+import incadent.shared.generated.resources.combat_row_nameless
+import incadent.shared.generated.resources.combat_row_role_none
 import incadent.shared.generated.resources.combat_wound_captured
 import org.jetbrains.compose.resources.stringResource
 
@@ -25,17 +30,46 @@ private const val FIVE_PIPS = 5
 private const val HIGH_RATIO = 0.5f
 private const val MID_RATIO = 0.25f
 
-/** what the master calls a row: the class of a party member, or what a creature is, a reinforcement says so */
+/** what a row says a participant is, kind, class and subclass, and what the fight adds to it */
+internal data class MemberRole(
+    val parts: RoleParts,
+    val tail: String,
+    val tie: MemberTie,
+) {
+    /** the whole line, as the panel header shows it */
+    fun text(): String = joinWithDot(parts.text(), tail)
+}
+
+/** the codex records a row is told from */
+internal class RoleSources(
+    val party: List<PartyMember>,
+    val npcs: List<Npc>,
+    val speciesOf: Map<Long, Species>,
+)
+
 @Composable
 internal fun roleOf(
     member: Combatant,
-    party: List<PartyMember>,
-    kind: String,
-): String {
-    val own = party.firstOrNull { it.id == member.partyMemberId }
-    val base = own?.characterClass ?: kind
-    val named = if (own?.isPlayerCharacter == true) stringResource(Res.string.combat_round_you, base) else base
-    return if (member.joinedRound > 1) stringResource(Res.string.combat_round_reinforcement, named) else named
+    sources: RoleSources,
+): MemberRole {
+    val own = sources.party.firstOrNull { it.id == member.partyMemberId }
+    val npc = sources.npcs.firstOrNull { it.id == member.npcId }
+    val species = sources.speciesOf[member.id]
+    val parts =
+        when {
+            own != null -> RoleParts(own.race, own.characterClass, own.subclass)
+            npc != null -> RoleParts(species?.name ?: npc.race, npc.characterClass, npc.subclass)
+            species != null -> RoleParts(kind = species.name)
+            else -> RoleParts.ofStored(member.role)
+        }
+    val tail =
+        when {
+            member.joinedRound > 1 -> stringResource(Res.string.combat_round_reinforcement)
+            else -> ""
+        }
+    val tie = member.tie()
+    // a creature that has no name yet is told by that, not by its kind
+    return MemberRole(if (tie == MemberTie.UNNAMED) RoleParts() else parts, tail, tie)
 }
 
 @Composable
@@ -44,13 +78,12 @@ internal fun roundRows(
     ordered: List<Combatant>,
     currentId: Long?,
     selectedId: Long?,
-    party: List<PartyMember>,
-    kinds: Map<Long, String>,
+    sources: RoleSources,
     seen: Map<Long, List<SpeciesHitObservation>>,
 ): List<RoundRow> {
     val current = ordered.firstOrNull { it.id == currentId }
     return ordered.map { member ->
-        val own = party.any { it.id == member.partyMemberId && it.isPlayerCharacter }
+        val own = sources.party.any { it.id == member.partyMemberId && it.isPlayerCharacter }
         roundRow(
             combat,
             member,
@@ -58,8 +91,7 @@ internal fun roundRows(
             member.id == selectedId,
             own,
             current,
-            party,
-            kinds.getValue(member.id),
+            roleOf(member, sources),
             seen[member.id].orEmpty(),
         )
     }
@@ -74,8 +106,7 @@ private fun roundRow(
     isSelected: Boolean,
     own: Boolean,
     current: Combatant?,
-    party: List<PartyMember>,
-    kind: String,
+    role: MemberRole,
     seen: List<SpeciesHitObservation>,
 ): RoundRow {
     val down = member.isDown()
@@ -97,7 +128,11 @@ private fun roundRow(
         selected = isSelected,
         name = member.name,
         struck = member.dead,
-        role = roleOf(member, party, kind),
+        role = role.parts,
+        roleTail = role.tail,
+        own = own,
+        link = role.tie.link(),
+        roleHint = roleHint(role),
         side = member.rowSide(),
         lastHit = null,
         hp = if (tracked) rowHp(member) else null,
@@ -108,6 +143,15 @@ private fun roundRow(
         reaction = if (own && !member.isOut()) rowReaction(member, current) else null,
     )
 }
+
+/** what stands in place of the role while there is none to tell */
+@Composable
+private fun roleHint(role: MemberRole): String? =
+    when {
+        role.tie == MemberTie.UNNAMED -> stringResource(Res.string.combat_row_nameless)
+        role.tie != MemberTie.PARTY && role.parts.text().isEmpty() -> stringResource(Res.string.combat_row_role_none)
+        else -> null
+    }
 
 private fun rowHp(member: Combatant): RowHp {
     val max = checkNotNull(member.hpMax)

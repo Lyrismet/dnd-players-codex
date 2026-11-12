@@ -17,8 +17,6 @@ import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_name_linked_title
 import incadent.shared.generated.resources.combat_name_made_title
 import incadent.shared.generated.resources.combat_name_more
-import incadent.shared.generated.resources.combat_name_plain_sub
-import incadent.shared.generated.resources.combat_name_plain_title
 import incadent.shared.generated.resources.combat_round_took
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.withLock
@@ -109,10 +107,7 @@ internal class NamingHandler(
         member: Combatant,
         choice: NameChoice,
     ) {
-        undo.show(
-            getString(Res.string.combat_name_plain_title, member.name, namedAs(choice)),
-            getString(Res.string.combat_name_plain_sub),
-        ) { combats.renameCombatant(member.id, member.name) }
+        undo.showRelabel(combats, member, namedAs(choice))
     }
 
     private fun confirm(

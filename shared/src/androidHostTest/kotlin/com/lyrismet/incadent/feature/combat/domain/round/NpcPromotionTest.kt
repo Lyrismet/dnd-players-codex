@@ -75,6 +75,19 @@ class NpcPromotionTest {
         }
 
     @Test
+    fun `the role of a fighter that is only in the fight goes to the new npc`() =
+        runTest {
+            val (_, combatId, member) = setup()
+            combats.setRole(member.id, "Воин · Чемпион")
+            val withRole = assertNotNull(combats.observe(combatId).first()).combatants.single()
+            val trace = assertNotNull(promotion.promote(withRole, NameChoice.New("Вазгар")))
+
+            val npc = assertNotNull(npcs.getById(trace.npcId))
+            assertEquals("Воин", npc.characterClass)
+            assertEquals("Чемпион", npc.subclass)
+        }
+
+    @Test
     fun `taking the naming back removes the made npc and brings the name back`() =
         runTest {
             val (_, combatId, member) = setup()

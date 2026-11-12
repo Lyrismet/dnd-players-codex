@@ -62,6 +62,13 @@ interface CombatRepository {
         type: DamageType,
     )
 
+    /** names a participant for this fight only, or takes the label back with the name it had */
+    suspend fun setLabel(
+        combatantId: Long,
+        name: String,
+        isLabel: Boolean,
+    )
+
     suspend fun renameCombatant(
         combatantId: Long,
         name: String,
@@ -98,6 +105,12 @@ interface CombatRepository {
     )
 
     suspend fun clearTurnOrders(combatId: Long)
+
+    /** the class and subclass of a participant that is only in the fight */
+    suspend fun setRole(
+        combatantId: Long,
+        role: String,
+    )
 
     /** a damage term whose resistance was named after the blow gets its new effect and the hit points it really took */
     suspend fun updateTerm(

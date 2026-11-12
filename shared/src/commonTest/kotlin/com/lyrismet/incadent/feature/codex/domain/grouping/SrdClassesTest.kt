@@ -41,4 +41,11 @@ class SrdClassesTest {
         assertEquals("Клятва преданности", classLine("", "Клятва преданности"))
         assertEquals("", classLine("", ""))
     }
+
+    @Test
+    fun `every class of the SRD has its subclass in both languages`() {
+        assertTrue(SrdClasses.all.all { it.subclasses.isNotEmpty() })
+        assertEquals("Круг земли", srdClassNamed("друид")?.subclassNames(russian = true)?.first())
+        assertEquals("Champion", srdClassNamed("Fighter")?.subclassNames(russian = false)?.first())
+    }
 }

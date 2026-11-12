@@ -8,6 +8,7 @@ import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
@@ -41,6 +42,7 @@ object DataBindings {
         locationRepository: LocationRepository,
         speciesRepository: SpeciesRepository,
         itemRepository: ItemRepository,
+        npcMerge: NpcMergeRepository,
     ): CodexRepositories =
         CodexRepositories(
             partyRepository,
@@ -49,6 +51,7 @@ object DataBindings {
             locationRepository,
             speciesRepository,
             itemRepository,
+            npcMerge,
         )
 
     @Provides

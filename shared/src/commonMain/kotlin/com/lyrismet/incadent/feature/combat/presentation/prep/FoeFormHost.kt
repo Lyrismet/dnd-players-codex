@@ -6,6 +6,7 @@ import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
+import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import kotlinx.coroutines.CoroutineScope
 
@@ -32,6 +33,15 @@ internal class FoeFormHost(
             CombatSide.ENEMY -> controller.onAddEntryClicked(EntityKind.NPC, name, npcStatus = NpcStatus.ENEMY)
             CombatSide.ALLY -> controller.onAddEntryClicked(EntityKind.NPC, name, npcStatus = NpcStatus.FRIEND)
         }
+    }
+
+    /** the form of a record that is already in the codex, saving it adds nobody to the fight */
+    fun openExisting(
+        npcId: Long,
+        scope: CoroutineScope,
+    ) {
+        target.value = null
+        controller.onEditEntryRequested(EntityRef.Npc(npcId), scope)
     }
 
     /** the types the open form offers, a party member is only a party member */

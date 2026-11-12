@@ -376,6 +376,8 @@ class SessionDetailPresenter(
                 recentPlaceIds,
                 playerCharacterLevel,
                 hasPlayerCharacter,
+                codexRepositories.npcMerge,
+                undoController,
             )
         val draft = remember(noteId) { mutableStateOf(TextFieldValue("")) }
         val entitySheet = entitySheetInteractions(noteId, selectedEntityRef, reportChange)

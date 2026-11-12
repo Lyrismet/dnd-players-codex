@@ -25,10 +25,11 @@ internal fun CombatRow.toDomain(
         originId = origin_id,
     )
 
-internal fun CombatantRow.toDomain(): Combatant =
+/** [codexName] is the name of the record the participant is linked to, it wins over the copy kept here */
+internal fun CombatantRow.toDomain(codexName: String? = null): Combatant =
     Combatant(
         id = id,
-        name = name,
+        name = codexName ?: name,
         side = side,
         npcId = npc_id,
         speciesId = species_id,
@@ -48,6 +49,8 @@ internal fun CombatantRow.toDomain(): Combatant =
         reactionAvailable = reaction_available != 0L,
         hpCurrent = hp_current?.toInt(),
         hpMax = hp_max?.toInt(),
+        role = role,
+        isLabel = is_label != 0L,
     )
 
 internal fun CombatEventRow.toDomain(): CombatEvent =

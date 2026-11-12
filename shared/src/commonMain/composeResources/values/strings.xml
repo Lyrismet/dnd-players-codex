@@ -419,8 +419,28 @@
     <string name="combat_round_more_than">держится: больше %1$d</string>
     <string name="combat_round_short_left">≈%1$d</string>
     <string name="combat_round_short_more">&gt;%1$d</string>
-    <string name="combat_round_reinforcement">%1$s · подкрепление</string>
-    <string name="combat_round_you">%1$s · вы</string>
+    <string name="combat_round_reinforcement">подкрепление</string>
+    <string name="combat_round_me">я</string>
+    <string name="combat_identity_hint_codex">◇ Это запись кодекса: имя сменится и в карточке.</string>
+    <string name="combat_identity_hint_label">Подпись только в этом бою — кодекс не меняется.</string>
+    <string name="combat_identity_dup_title">В кодексе уже есть «%1$s»</string>
+    <string name="combat_identity_dup_merge_sub">Запись «%1$s» войдёт в неё: урон, заметки, упоминания. Или введите другое имя.</string>
+    <string name="combat_identity_dup_link_sub">Участник станет этой записью кодекса. Или введите другое имя.</string>
+    <string name="combat_identity_dup_link">Связать</string>
+    <string name="combat_role_title">Роль · класс и подкласс</string>
+    <string name="combat_role_unset">Не указана</string>
+    <string name="combat_role_sub_species">вид «%1$s» — из бестиария</string>
+    <string name="combat_identity_link_title">Связь</string>
+    <string name="combat_link_label_title">Только в этом бою</string>
+    <string name="combat_link_label_sub">После боя «%1$s» не останется в кодексе</string>
+    <string name="combat_link_carry">Перенесём:</string>
+    <string name="combat_link_codex_title">В кодексе · NPC</string>
+    <string name="combat_link_codex_open">Открыть</string>
+    <string name="combat_carry_role">роль: %1$s</string>
+    <string name="combat_carry_kind">вид: %1$s</string>
+    <string name="combat_row_nameless">без имени</string>
+    <string name="combat_row_role_none">роль не указана</string>
+    <string name="combat_link_battle_only">только в бою</string>
     <string name="combat_wound_whole">Цел</string>
     <string name="combat_wound_wounded">Ранен</string>
     <string name="combat_wound_bloodied">Окровавлен</string>
@@ -431,12 +451,12 @@
     <string name="combat_wound_dead">Пал</string>
     <string name="combat_wound_captured">Взят живым</string>
     <string name="combat_wound_since">%1$s · с %2$d</string>
-    <string name="combat_panel_side_party">ОТРЯД · %1$s</string>
-    <string name="combat_panel_side_ally">СОЮЗНИК · %1$s</string>
-    <string name="combat_panel_side_enemy">ВРАГ · %1$s</string>
-    <string name="combat_panel_side_neutral">НЕЙТРАЛ · %1$s</string>
-    <string name="combat_panel_side_friend">ДРУГ · %1$s</string>
-    <string name="combat_panel_side_fled">СБЕЖАЛ · %1$s</string>
+    <string name="combat_panel_side_party">ОТРЯД</string>
+    <string name="combat_panel_side_ally">СОЮЗНИК</string>
+    <string name="combat_panel_side_enemy">ВРАГ</string>
+    <string name="combat_panel_side_neutral">НЕЙТРАЛ</string>
+    <string name="combat_panel_side_friend">ДРУГ</string>
+    <string name="combat_panel_side_fled">СБЕЖАЛ</string>
     <string name="combat_panel_hp_sub">хиты</string>
     <string name="combat_panel_hp_sub_temp">хиты · +%1$d врем.</string>
     <string name="combat_panel_source">%1$s · %2$s</string>
@@ -1808,6 +1828,10 @@
     <string name="class_sheet_custom">+ Свой: «%1$s»</string>
     <string name="class_sheet_own_badge">свой</string>
     <string name="class_sheet_subclass_label">Подкласс · необязательно</string>
+    <string name="class_sheet_no_class">Без класса</string>
+    <string name="class_sheet_subclass_free">Подкласс, школа, путь</string>
+    <string name="class_sheet_subclass_example">Например, %1$s</string>
+    <string name="class_sheet_srd_source">из SRD 5.1</string>
     <string name="class_sheet_done">Готово</string>
 
     <string name="session_text_button">Поделиться сессией</string>
@@ -1847,4 +1871,20 @@
         <item>Запись ведётся как есть. Ну, почти как есть.</item>
         <item>Мастер молчит, отряд записывает.</item>
     </string-array>
+    <string name="combat_role_placeholder">Класс и подкласс</string>
+    <string name="combat_link_npc">NPC</string>
+    <string name="combat_link_same_kind">NPC того же вида</string>
+    <string name="combat_link_busy">уже в этом бою</string>
+    <string name="combat_identity_to_codex">В кодекс</string>
+    <string name="combat_identity_done">Готово</string>
+    <string name="combat_link_open">Связать с NPC</string>
+    <string name="combat_link_overline">СВЯЗАТЬ С КОДЕКСОМ</string>
+    <string name="combat_link_title">Выберите NPC</string>
+    <string name="combat_rename_title">%1$s → %2$s</string>
+    <string name="combat_rename_sub">имя сменилось в кодексе</string>
+    <string name="combat_promo_role">Роль</string>
+    <string name="npc_merge_button">Объединить</string>
+    <string name="npc_merge_hint">Запись с таким именем уже есть. Объединить или вернуться и ввести другое имя.</string>
+    <string name="npc_merge_done">Записи «%1$s» объединены</string>
+    <string name="npc_merge_done_sub">участники боя, места, квесты и упоминания перенесены</string>
 </resources>

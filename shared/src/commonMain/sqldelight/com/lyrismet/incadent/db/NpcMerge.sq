@@ -1,0 +1,45 @@
+-- what points at an npc, read and moved when two records of one name become one
+
+combatantIdsOfNpc:
+SELECT id FROM combatant WHERE npc_id = ?;
+
+moveCombatants:
+UPDATE combatant SET npc_id = :survivor WHERE npc_id = :loser;
+
+setCombatantNpc:
+UPDATE combatant SET npc_id = ? WHERE id = ?;
+
+questIdsGivenBy:
+SELECT id FROM quest WHERE given_by_npc_id = ?;
+
+moveQuestGiven:
+UPDATE quest SET given_by_npc_id = :survivor WHERE given_by_npc_id = :loser;
+
+setQuestGiver:
+UPDATE quest SET given_by_npc_id = ? WHERE id = ?;
+
+-- the texts that carry an "@" token of the npc, with or without a count
+entriesMentioning:
+SELECT id, body FROM session_entry WHERE body LIKE '%|n:' || :id || ']%' OR body LIKE '%|n:' || :id || '|%';
+
+speciesMentioning:
+SELECT id, notes FROM species WHERE notes LIKE '%|n:' || :id || ']%' OR notes LIKE '%|n:' || :id || '|%';
+
+placesMentioning:
+SELECT id, description FROM location WHERE description LIKE '%|n:' || :id || ']%' OR description LIKE '%|n:' || :id || '|%';
+
+npcsMentioning:
+SELECT id, description FROM npc WHERE description LIKE '%|n:' || :id || ']%' OR description LIKE '%|n:' || :id || '|%';
+
+questsMentioning:
+SELECT id, description FROM quest WHERE description LIKE '%|n:' || :id || ']%' OR description LIKE '%|n:' || :id || '|%';
+
+partyMentioning:
+SELECT id, description FROM party_member WHERE description LIKE '%|n:' || :id || ']%' OR description LIKE '%|n:' || :id || '|%';
+
+itemsMentioning:
+SELECT id, notes FROM item WHERE notes LIKE '%|n:' || :id || ']%' OR notes LIKE '%|n:' || :id || '|%';
+
+-- the body alone, the note stays as it was written, not edited and not due for a new look at its mentions
+setEntryBody:
+UPDATE session_entry SET body = ? WHERE id = ?;

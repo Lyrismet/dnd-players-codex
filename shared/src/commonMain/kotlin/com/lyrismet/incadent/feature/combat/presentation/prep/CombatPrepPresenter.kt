@@ -11,6 +11,7 @@ import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.core.toast.autoDismiss
+import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -47,6 +48,7 @@ class CombatPrepPresenter(
     private val sheets: CharacterSheetRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
+    private val undoController: UndoController,
 ) : Presenter<CombatPrepState> {
     private val editLock = Mutex()
 
@@ -80,6 +82,8 @@ class CombatPrepPresenter(
                 remember { mutableStateOf(emptyList()) },
                 party.firstOrNull { it.isPlayerCharacter }?.level,
                 everyone.any { it.isPlayerCharacter },
+                codexRepositories.npcMerge,
+                undoController,
             )
         val hpPad = remember { mutableStateOf<HpPadDraft?>(null) }
         val exitConfirmVisible = remember { mutableStateOf(false) }

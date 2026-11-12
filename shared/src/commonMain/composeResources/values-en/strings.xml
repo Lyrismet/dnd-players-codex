@@ -403,8 +403,28 @@
     <string name="combat_round_more_than">holding: more than %1$d</string>
     <string name="combat_round_short_left">≈%1$d</string>
     <string name="combat_round_short_more">&gt;%1$d</string>
-    <string name="combat_round_reinforcement">%1$s · reinforcement</string>
-    <string name="combat_round_you">%1$s · you</string>
+    <string name="combat_round_reinforcement">reinforcement</string>
+    <string name="combat_round_me">me</string>
+    <string name="combat_identity_hint_codex">◇ This is a codex record: the name changes in its card too.</string>
+    <string name="combat_identity_hint_label">A label for this fight only - the codex stays as it is.</string>
+    <string name="combat_identity_dup_title">The codex already has “%1$s”</string>
+    <string name="combat_identity_dup_merge_sub">The record “%1$s” goes into it: damage, notes, mentions. Or type another name.</string>
+    <string name="combat_identity_dup_link_sub">The participant becomes this codex record. Or type another name.</string>
+    <string name="combat_identity_dup_link">Link</string>
+    <string name="combat_role_title">Role · class and subclass</string>
+    <string name="combat_role_unset">Not set</string>
+    <string name="combat_role_sub_species">kind “%1$s” - from the bestiary</string>
+    <string name="combat_identity_link_title">Link</string>
+    <string name="combat_link_label_title">This fight only</string>
+    <string name="combat_link_label_sub">After the fight “%1$s” will not stay in the codex</string>
+    <string name="combat_link_carry">We carry:</string>
+    <string name="combat_link_codex_title">In the codex · NPC</string>
+    <string name="combat_link_codex_open">Open</string>
+    <string name="combat_carry_role">role: %1$s</string>
+    <string name="combat_carry_kind">kind: %1$s</string>
+    <string name="combat_row_nameless">unnamed</string>
+    <string name="combat_row_role_none">role not set</string>
+    <string name="combat_link_battle_only">battle only</string>
     <string name="combat_wound_whole">Unhurt</string>
     <string name="combat_wound_wounded">Hurt</string>
     <string name="combat_wound_bloodied">Bloodied</string>
@@ -415,12 +435,12 @@
     <string name="combat_wound_dead">Dead</string>
     <string name="combat_wound_captured">Taken alive</string>
     <string name="combat_wound_since">%1$s · from %2$d</string>
-    <string name="combat_panel_side_party">PARTY · %1$s</string>
-    <string name="combat_panel_side_ally">ALLY · %1$s</string>
-    <string name="combat_panel_side_enemy">ENEMY · %1$s</string>
-    <string name="combat_panel_side_neutral">NEUTRAL · %1$s</string>
-    <string name="combat_panel_side_friend">FRIEND · %1$s</string>
-    <string name="combat_panel_side_fled">FLED · %1$s</string>
+    <string name="combat_panel_side_party">PARTY</string>
+    <string name="combat_panel_side_ally">ALLY</string>
+    <string name="combat_panel_side_enemy">ENEMY</string>
+    <string name="combat_panel_side_neutral">NEUTRAL</string>
+    <string name="combat_panel_side_friend">FRIEND</string>
+    <string name="combat_panel_side_fled">FLED</string>
     <string name="combat_panel_hp_sub">hit points</string>
     <string name="combat_panel_hp_sub_temp">hit points · +%1$d temp</string>
     <string name="combat_panel_source">%1$s · %2$s</string>
@@ -1724,6 +1744,10 @@
     <string name="class_sheet_custom">+ Own: “%1$s”</string>
     <string name="class_sheet_own_badge">own</string>
     <string name="class_sheet_subclass_label">Subclass · optional</string>
+    <string name="class_sheet_no_class">No class</string>
+    <string name="class_sheet_subclass_free">Subclass, school, path</string>
+    <string name="class_sheet_subclass_example">For example, %1$s</string>
+    <string name="class_sheet_srd_source">from SRD 5.1</string>
     <string name="class_sheet_done">Done</string>
 
     <string name="session_text_button">Share session</string>
@@ -1763,4 +1787,20 @@
         <item>The record is kept as it is. Well, almost as it is.</item>
         <item>The game master is silent, the party writes it down.</item>
     </string-array>
+    <string name="combat_role_placeholder">Class and subclass</string>
+    <string name="combat_link_npc">NPC</string>
+    <string name="combat_link_same_kind">NPC of the same kind</string>
+    <string name="combat_link_busy">already in this fight</string>
+    <string name="combat_identity_to_codex">To the codex</string>
+    <string name="combat_identity_done">Done</string>
+    <string name="combat_link_open">Link to an NPC</string>
+    <string name="combat_link_overline">LINK TO THE CODEX</string>
+    <string name="combat_link_title">Choose an NPC</string>
+    <string name="combat_rename_title">%1$s → %2$s</string>
+    <string name="combat_rename_sub">renamed in the codex</string>
+    <string name="combat_promo_role">Role</string>
+    <string name="npc_merge_button">Merge</string>
+    <string name="npc_merge_hint">A record with this name already exists. Merge them, or go back and type another name.</string>
+    <string name="npc_merge_done">Records «%1$s» merged</string>
+    <string name="npc_merge_done_sub">fighters, places, quests and mentions moved over</string>
 </resources>

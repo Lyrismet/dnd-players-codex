@@ -54,6 +54,7 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
+import com.lyrismet.incadent.feature.codex.presentation.form.ClassSelectSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.FormDensity
 import com.lyrismet.incadent.feature.combat.domain.round.gameTime
@@ -117,6 +118,14 @@ fun CombatRoundUi(
     state.calc?.let { CalcSheet(it, send) }
     state.summary?.let { SummarySheet(it, send) }
     state.promotion?.let { PromotionSheetUi(it, send) }
+    state.classSheet?.let {
+        ClassSelectSheet(
+            it,
+            onChosen = { characterClass, subclass -> send(CombatRoundEvent.ClassChosen(characterClass, subclass)) },
+            onDismiss = { send(CombatRoundEvent.ClassClosed) },
+        )
+    }
+    state.linkSheet?.let { LinkSheetUi(it, send) }
 }
 
 /** the time in the fiction, it moves only when the round changes */

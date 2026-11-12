@@ -90,6 +90,8 @@ internal class RoundHandler(
     ) {
         val id = snapshot.selectedId ?: return
         when (event) {
+            CombatRoundEvent.CodexOpened ->
+                editor.withMember(id) { _, m -> m.npcId?.let { form.host.openExisting(it, scope) } }
             is CombatRoundEvent.MarkSelected ->
                 editor.withMember(
                     id,

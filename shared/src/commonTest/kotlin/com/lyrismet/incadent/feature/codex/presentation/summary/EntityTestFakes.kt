@@ -5,11 +5,13 @@ import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.ItemOwner
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
+import com.lyrismet.incadent.feature.codex.domain.model.NpcMergeTrace
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Quest
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
@@ -196,4 +198,13 @@ internal class RecordingNavigator : Navigator {
         newRoot: Screen,
         options: StateOptions,
     ): List<Screen> = emptyList()
+}
+
+internal class FakeNpcMergeRepository : NpcMergeRepository {
+    override suspend fun merge(
+        survivorId: Long,
+        loserId: Long,
+    ): NpcMergeTrace? = null
+
+    override suspend fun undo(trace: NpcMergeTrace) = Unit
 }

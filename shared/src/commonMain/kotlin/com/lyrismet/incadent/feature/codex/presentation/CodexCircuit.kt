@@ -7,6 +7,7 @@ import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignReposito
 import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LinkSuggestionDismissalRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
@@ -47,6 +48,7 @@ class CodexPresenterFactory(
     private val imageCompressor: ImageCompressor,
     private val campaignRepository: CampaignRepository,
     private val linkDismissals: LinkSuggestionDismissalRepository,
+    private val npcMerge: NpcMergeRepository,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -71,6 +73,7 @@ class CodexPresenterFactory(
                     imageCompressor,
                     campaignRepository,
                     linkDismissals,
+                    npcMerge,
                 )
             else -> null
         }

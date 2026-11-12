@@ -39,7 +39,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun roundPanel(
     combat: Combat,
     member: Combatant,
-    role: String,
+    role: MemberRole,
     moverName: String,
     seen: List<SpeciesHitObservation>,
     kin: PanelKin,
@@ -51,7 +51,9 @@ internal fun roundPanel(
     return RoundPanel(
         id = member.id,
         name = member.name,
-        sideLabel = sideLabel(member, role),
+        sideLabel = sideLabel(member),
+        roleLine = if (role.tie == MemberTie.UNNAMED) "" else role.text(),
+        link = role.tie.link(),
         side = member.rowSide(),
         hp = if (tracked) panelHp(member) else null,
         wound = if (tracked) null else panelWound(combat, member, seen),
@@ -77,10 +79,7 @@ internal fun roundPanel(
 }
 
 @Composable
-private fun sideLabel(
-    member: Combatant,
-    role: String,
-): String {
+private fun sideLabel(member: Combatant): String {
     val label =
         when {
             member.side == CombatSide.PARTY -> Res.string.combat_panel_side_party
@@ -90,7 +89,7 @@ private fun sideLabel(
             member.stance == CombatStance.FLED -> Res.string.combat_panel_side_fled
             else -> Res.string.combat_panel_side_enemy
         }
-    return stringResource(label, role.uppercase())
+    return stringResource(label)
 }
 
 @Composable
@@ -179,6 +178,7 @@ private fun panelMore(
             ),
         vulnerabilities = kin.vulnerabilities.takeIf { !party && (kin.species != null || kin.npc != null) },
         naming = kin.naming,
+        identity = kin.identity,
     )
 }
 
@@ -188,4 +188,5 @@ internal class PanelKin(
     val npc: Npc?,
     val vulnerabilities: Map<DamageType, DamageState>,
     val naming: NamingState?,
+    val identity: IdentityState?,
 )

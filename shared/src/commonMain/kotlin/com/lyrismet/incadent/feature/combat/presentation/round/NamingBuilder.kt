@@ -8,7 +8,6 @@ import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.presentation.summary.damageStateLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.npcStatusLabels
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
-import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
@@ -38,12 +37,10 @@ import incadent.shared.generated.resources.combat_promo_only
 import incadent.shared.generated.resources.combat_promo_over_known
 import incadent.shared.generated.resources.combat_promo_over_new
 import incadent.shared.generated.resources.combat_promo_relation
+import incadent.shared.generated.resources.combat_promo_role
 import incadent.shared.generated.resources.combat_promo_species
 import incadent.shared.generated.resources.combat_promo_species_hint
 import org.jetbrains.compose.resources.stringResource
-
-/** a participant of the codex is not offered a name again, and neither is one of the party */
-internal fun Combatant.canBeNamed() = side != CombatSide.PARTY && npcId == null
 
 private fun DamageState.hasMultiplier() =
     this == DamageState.RESISTANCE || this == DamageState.IMMUNITY || this == DamageState.VULNERABILITY
@@ -76,9 +73,10 @@ internal fun namingState(
     species: List<Species>,
     learned: List<LearnedVulnerability>,
     typeNames: Map<DamageType, String>,
+    focus: Boolean = false,
 ): NamingState? {
-    if (!member.canBeNamed()) return null
     val speciesRecord = species.firstOrNull { it.id == member.speciesId }
+    if (member.tie() != MemberTie.UNNAMED) return null
     val linkedNpcIds = combat.combatants.mapNotNullTo(mutableSetOf()) { it.npcId }
     val speciesNames = species.associate { it.id to it.name.lowercase() }
     val options =
@@ -112,12 +110,15 @@ internal fun namingState(
         value = typed,
         placeholder = member.name,
         options = options,
+        role = roleField(member, speciesRecord),
         carry = if (typed.isBlank()) emptyList() else carryChips(combat, member, speciesRecord, learned, typeNames),
+        carryRole = if (typed.isBlank()) "" else member.role,
+        focus = focus,
     )
 }
 
 @Composable
-private fun carryChips(
+internal fun carryChips(
     combat: Combat,
     member: Combatant,
     species: Species?,
@@ -188,7 +189,7 @@ private fun promotionRows(
             if (member.state != CombatState.WHOLE) woundWord(member).first else null,
         ).joinToString(" · ")
     val note = member.note.trim()
-    return listOf(
+    return listOfNotNull(
         PromotionRow(
             stringResource(Res.string.combat_promo_species),
             species?.name ?: "-",
@@ -204,6 +205,9 @@ private fun promotionRows(
             npc?.let { npcStatusLabels().getValue(it.status) } ?: "-",
             "",
         ),
+        member.role.takeIf { it.isNotBlank() && draft.isNew }?.let {
+            PromotionRow(stringResource(Res.string.combat_promo_role), it, "")
+        },
         PromotionRow(
             stringResource(Res.string.combat_promo_note),
             if (note.isEmpty()) "-" else stringResource(Res.string.combat_promo_note_quoted, note),

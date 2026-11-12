@@ -16,6 +16,7 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetInteractions
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeItemRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeLocationRepository
+import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcMergeRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartyRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeQuestRepository
@@ -204,7 +205,15 @@ class QuickEditInteractionsTest {
         val species = FakeSpeciesRepository()
         val recentPlaces = mutableStateOf(emptyList<Long>())
         private val repositories =
-            CodexRepositories(FakePartyRepository(), npcs, quests, locations, species, FakeItemRepository())
+            CodexRepositories(
+                FakePartyRepository(),
+                npcs,
+                quests,
+                locations,
+                species,
+                FakeItemRepository(),
+                FakeNpcMergeRepository(),
+            )
         private val entitySheet = EntitySheetInteractions(selected, repositories, { _, _ -> })
         val interactions =
             QuickEditInteractions(

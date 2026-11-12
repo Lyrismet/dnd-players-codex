@@ -23,11 +23,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
-import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.Dot
@@ -125,35 +122,6 @@ private fun TurnBadge(row: RoundRow) {
                     border = null,
                 ).padding(top = 7.dp),
     )
-}
-
-@Composable
-private fun RoundRowTitle(row: RoundRow) {
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-        Dot(size = 6.dp, color = RoundColors.side(row.side))
-        Text(
-            text = row.name,
-            color = AppPalette.TextPrimary,
-            fontSize = AppFontSize.MediumPlus,
-            lineHeight = AppLineHeight.Row,
-            fontWeight = FontWeight.SemiBold,
-            textDecoration = if (row.struck) TextDecoration.LineThrough else TextDecoration.None,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        row.lastHit?.let {
-            Text(it, color = AppPalette.MaroonBright, fontSize = AppFontSize.Small, fontWeight = FontWeight.Bold)
-        }
-        Text(
-            text = row.role,
-            color = AppPalette.TextTertiary,
-            fontSize = AppFontSize.Small,
-            lineHeight = AppLineHeight.Row,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f, fill = false),
-        )
-    }
 }
 
 @Composable

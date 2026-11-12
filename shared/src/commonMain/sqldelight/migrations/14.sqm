@@ -1,0 +1,11 @@
+-- a creature of a species given a name for this fight only, told apart by the flag and not by its name
+ALTER TABLE combatant ADD COLUMN is_label INTEGER NOT NULL DEFAULT 0;
+
+-- a creature of a species whose name is no longer the species name plus its number was named by hand
+UPDATE combatant SET is_label = 1
+WHERE npc_id IS NULL AND species_id IS NOT NULL AND party_member_id IS NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM species
+    WHERE species.id = combatant.species_id
+      AND (combatant.name = species.name OR substr(combatant.name, 1, length(species.name) + 1) = species.name || ' ')
+  );

@@ -44,7 +44,7 @@
 - `shared/src/commonMain/kotlin/com/lyrismet/incadent/feature/campaign/data/OriginAliasRepositoryImpl.kt`
 - `shared/src/commonMain/sqldelight/com/lyrismet/incadent/db/Npc.sq`, `NpcLocation.sq`, `Quest.sq`, `Combatant.sq`
 
-**Миграция и тесты:** `14.sqm`: журнал слияния (какие строки переехали) для Undo. Тесты на каждую связь (участники боя, места, квесты, упоминания, алиасы) и на Undo.
+**Миграция и тесты:** `14.sqm`: `combatant.is_label` (существо вида названо только для этого боя); журнала слияния в таблице нет, слияние возвращает снимок в памяти. Тесты на каждую связь (участники боя, места, квесты, упоминания, алиасы) и на Undo.
 
 **Не трогать:** остальные поля записи; логику переименования в бою (шаг 2, часть 1).
 

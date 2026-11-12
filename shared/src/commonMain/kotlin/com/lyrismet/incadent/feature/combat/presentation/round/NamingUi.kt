@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -9,11 +10,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppLineHeight
@@ -30,6 +33,7 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonSize
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
+import com.lyrismet.incadent.core.designsystem.component.FormPickField
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -40,6 +44,7 @@ import incadent.shared.generated.resources.combat_name_carry_title
 import incadent.shared.generated.resources.combat_name_title
 import incadent.shared.generated.resources.combat_promo_learned
 import incadent.shared.generated.resources.combat_promo_reject
+import incadent.shared.generated.resources.combat_role_title
 import org.jetbrains.compose.resources.stringResource
 
 /** the name of a participant made of a species: the field, what it can turn into, and what a new npc would carry */
@@ -56,15 +61,30 @@ internal fun NamingField(
             onValueChange = { send(CombatRoundEvent.NameChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             placeholder = naming.placeholder,
+            autoFocus = naming.focus,
             style = AppTextInputStyle(contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)),
         )
         naming.options.forEach { option -> NameOptionRow(option) { send(CombatRoundEvent.NameChosen(option.choice)) } }
-        if (naming.carry.isNotEmpty()) {
+        FormPickField(
+            label = stringResource(Res.string.combat_role_title).uppercase(),
+            placeholder = naming.role.value,
+            onClick = { send(CombatRoundEvent.ClassOpened) },
+            title = naming.role.value.takeIf { naming.role.isSet },
+            subtitle = naming.role.sub,
+        )
+        if (naming.carry.isNotEmpty() || naming.carryRole.isNotBlank()) {
             FormFieldLabel(stringResource(Res.string.combat_name_carry_title).uppercase())
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
+                if (naming.carryRole.isNotBlank()) {
+                    TagChip(
+                        naming.carryRole,
+                        foreground = AppPalette.Gold,
+                        background = AppPalette.Gold.copy(alpha = 0.12f),
+                    )
+                }
                 naming.carry.forEach {
                     TagChip(
                         it,
@@ -97,18 +117,59 @@ private fun NameOptionRow(
                         } else {
                             AppPalette.Background
                         },
-                    border = if (plain) null else AppPalette.Border,
+                    border =
+                        when {
+                            plain -> AppPalette.BorderHover
+                            option.choice is NameChoice.New -> AppPalette.Gold.copy(alpha = 0.5f)
+                            else -> AppPalette.Border
+                        },
                     onClick = onClick,
                 ).defaultMinSize(minHeight = if (plain) 44.dp else 52.dp)
                 .padding(horizontal = 12.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (plain) {
+            Text(
+                text = option.title,
+                color = AppPalette.TextPrimary,
+                fontSize = AppFontSize.Small,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            return@Row
+        }
+        OptionTile(option)
         AppTitleSubtitle(
             title = option.title,
             subtitle = option.subtitle,
-            titleColor = if (plain) AppPalette.TextSecondary else AppPalette.TextPrimary,
+            titleColor = AppPalette.TextPrimary,
             modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// a plus for a name that makes a new npc, the first letter for a record that is already in the codex
+@Composable
+private fun OptionTile(option: NameOption) {
+    val isNew = option.choice is NameChoice.New
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier =
+            Modifier
+                .size(32.dp)
+                .appCard(
+                    shape = AppShapes.Field,
+                    background = if (isNew) AppPalette.Gold.copy(alpha = 0.15f) else AppPalette.Surface,
+                    border = if (isNew) AppPalette.Gold.copy(alpha = 0.5f) else AppPalette.Border,
+                ),
+    ) {
+        Text(
+            text = if (isNew) "+" else option.title.take(1).uppercase(),
+            color = AppPalette.Gold,
+            fontSize = AppFontSize.Heading,
+            fontWeight = FontWeight.SemiBold,
         )
     }
 }

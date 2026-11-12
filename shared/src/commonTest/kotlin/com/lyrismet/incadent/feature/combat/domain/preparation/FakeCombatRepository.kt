@@ -126,6 +126,28 @@ internal class FakeCombatRepository : CombatRepository {
             )
     }
 
+    override suspend fun setLabel(
+        combatantId: Long,
+        name: String,
+        isLabel: Boolean,
+    ) {
+        combats.value =
+            combats.value.map { c ->
+                c.copy(
+                    combatants =
+                        c.combatants.map {
+                            if (it.id ==
+                                combatantId
+                            ) {
+                                it.copy(name = name, isLabel = isLabel)
+                            } else {
+                                it
+                            }
+                        },
+                )
+            }
+    }
+
     override suspend fun renameCombatant(
         combatantId: Long,
         name: String,
@@ -133,6 +155,16 @@ internal class FakeCombatRepository : CombatRepository {
         combats.value =
             combats.value.map { c ->
                 c.copy(combatants = c.combatants.map { if (it.id == combatantId) it.copy(name = name) else it })
+            }
+    }
+
+    override suspend fun setRole(
+        combatantId: Long,
+        role: String,
+    ) {
+        combats.value =
+            combats.value.map { c ->
+                c.copy(combatants = c.combatants.map { if (it.id == combatantId) it.copy(role = role) else it })
             }
     }
 

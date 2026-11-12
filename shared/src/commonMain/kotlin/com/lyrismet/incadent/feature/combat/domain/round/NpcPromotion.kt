@@ -35,7 +35,7 @@ class NpcPromotion(
     ): PromotionTrace? =
         when (choice) {
             is NameChoice.Plain -> {
-                combats.renameCombatant(member.id, choice.name)
+                combats.setLabel(member.id, choice.name, true)
                 null
             }
             is NameChoice.Existing -> {
@@ -44,6 +44,7 @@ class NpcPromotion(
             }
             is NameChoice.New -> {
                 val speciesRecord = member.speciesId?.let { species.getById(it) }
+                val role = RoleParts.ofStored(member.role)
                 val id =
                     npcs.upsert(
                         Npc(
@@ -55,6 +56,8 @@ class NpcPromotion(
                             locationIds = emptyList(),
                             race = speciesRecord?.name.orEmpty(),
                             speciesId = member.speciesId,
+                            characterClass = role.characterClass,
+                            subclass = role.subclass,
                         ),
                     )
                 combats.linkNpc(member.id, id, choice.name)

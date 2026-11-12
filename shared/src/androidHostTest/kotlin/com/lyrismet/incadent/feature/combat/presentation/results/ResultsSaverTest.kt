@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.combat.presentation.results
 import com.lyrismet.incadent.feature.codex.data.CharacterSheetRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.ItemRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.LocationRepositoryImpl
+import com.lyrismet.incadent.feature.codex.data.NpcMergeRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.NpcRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.PartyRepositoryImpl
 import com.lyrismet.incadent.feature.codex.data.QuestRepositoryImpl
@@ -46,14 +47,16 @@ class ResultsSaverTest {
     private val combats = CombatRepositoryImpl(db.database, db.current)
     private val notes = SessionNoteRepositoryImpl(db.database, db.current)
     private val observations = HitObservationRepositoryImpl(db.database, db.current)
+    private val npcs = NpcRepositoryImpl(db.database, db.current)
     private val codex =
         CodexRepositories(
             PartyRepositoryImpl(db.database, db.current),
-            NpcRepositoryImpl(db.database, db.current),
+            npcs,
             QuestRepositoryImpl(db.database, db.current),
             LocationRepositoryImpl(db.database, db.current),
             SpeciesRepositoryImpl(db.database, db.current),
             ItemRepositoryImpl(db.database, db.current),
+            NpcMergeRepositoryImpl(db.database, db.current, npcs),
         )
     private val sheets = CharacterSheetRepositoryImpl(db.database, db.current)
     private val saver = ResultsSaver(combats, notes, observations, codex, sheets)
