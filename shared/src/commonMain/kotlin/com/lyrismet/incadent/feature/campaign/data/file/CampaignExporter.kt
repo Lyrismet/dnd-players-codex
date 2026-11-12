@@ -482,6 +482,8 @@ private fun Combatant.toFighter(
     hpMax = hp_max?.toInt(),
     turnOrder = turn_order?.toInt(),
     reactionAvailable = reaction_available != 0L,
+    role = role,
+    isLabel = is_label != 0L,
 )
 
 private fun Combat_event.toBlow(

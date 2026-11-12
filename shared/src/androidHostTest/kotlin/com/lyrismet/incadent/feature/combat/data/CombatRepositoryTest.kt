@@ -1,6 +1,10 @@
 package com.lyrismet.incadent.feature.combat.data
 
+import com.lyrismet.incadent.feature.codex.data.NpcRepositoryImpl
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
+import com.lyrismet.incadent.feature.codex.domain.model.Npc
+import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
+import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
@@ -205,5 +209,97 @@ class CombatRepositoryTest {
             db.current.open(TestDatabase.SECOND_CAMPAIGN)
             assertTrue(repository.observeAll().first().isEmpty())
             assertNull(repository.observe(id).first())
+        }
+
+    @Test
+    fun `the role of a fighter is stored and set apart from the rest`() =
+        runTest {
+            val combatId = repository.create(null, STARTED_AT)
+            val id = repository.addCombatant(combatId, goblin().copy(role = "Плут"))
+            assertEquals(
+                "Плут",
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .single()
+                    .role,
+            )
+
+            repository.setRole(id, "Плут · Убийца")
+            val stored =
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .single()
+            assertEquals("Плут · Убийца", stored.role)
+            repository.updateCombatant(stored.copy(note = "ранен"))
+            assertEquals(
+                "Плут · Убийца",
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .single()
+                    .role,
+            )
+        }
+
+    @Test
+    fun `a fighter linked to an npc answers to the name of the codex and follows its rename`() =
+        runTest {
+            val npcs = NpcRepositoryImpl(db.database, db.current)
+            val npcId = npcs.upsert(Npc(0, "Вазгар", NpcStatus.ENEMY, NpcLifeState.ALIVE, "", emptyList(), ""))
+            val combatId = repository.create(null, STARTED_AT)
+            val id = repository.addCombatant(combatId, goblin().copy(name = "Гоблин II"))
+            repository.linkNpc(id, npcId, "Вазгар")
+            assertEquals(
+                "Вазгар",
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .single()
+                    .name,
+            )
+
+            npcs.getById(npcId)?.let { npcs.upsert(it.copy(name = "Вазгар Рыжий")) }
+
+            assertEquals(
+                "Вазгар Рыжий",
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .single()
+                    .name,
+            )
+            assertEquals(
+                "Вазгар Рыжий",
+                repository
+                    .observeAll()
+                    .first()
+                    .single()
+                    .combatants
+                    .single()
+                    .name,
+            )
+        }
+
+    @Test
+    fun `a fighter without a link keeps the name it has`() =
+        runTest {
+            val combatId = repository.create(null, STARTED_AT)
+            repository.addCombatant(combatId, goblin().copy(name = "Гоблин II"))
+            assertEquals(
+                "Гоблин II",
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .single()
+                    .name,
+            )
         }
 }

@@ -91,6 +91,10 @@ data class Combatant(
     // known numbers, null while the hit points are only a guess from the master's words
     val hpCurrent: Int? = null,
     val hpMax: Int? = null,
+    // class and subclass of a participant that is only in the fight, empty for the rest
+    val role: String = "",
+    // a creature of a species named for this fight only, it is not told apart by its name
+    val isLabel: Boolean = false,
 )
 
 /** [amount] is hits for damage and heal, and the damage taken at the mark for a state event */

@@ -85,6 +85,8 @@ data class CodexEntryFormState(
     val hasUnsavedChanges: Boolean = false,
     // null leaves the notes a plain field, as in a host that has no records to offer
     val mention: MentionField? = null,
+    // the other npc that has the name typed for the one being edited
+    val npcTwin: DuplicateNpc? = null,
 )
 
 enum class CodexEntryField {
@@ -225,6 +227,8 @@ sealed interface CodexEntryFormEvent {
         val lifeState: NpcLifeState,
     ) : CodexEntryFormEvent
 
+    data object EntryNpcMergeClicked : CodexEntryFormEvent
+
     data class EntryPartyOwnerChanged(
         val isPlayerCharacter: Boolean,
     ) : CodexEntryFormEvent
@@ -301,3 +305,10 @@ sealed interface CodexEntryFormEvent {
 
     data object EntryQuickAddCancelled : CodexEntryFormEvent
 }
+
+/** the record that already has the typed name */
+data class DuplicateNpc(
+    val id: Long,
+    val name: String,
+    val subtitle: String,
+)

@@ -35,14 +35,19 @@ import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.feature.codex.domain.grouping.isSrdClass
+import com.lyrismet.incadent.feature.codex.domain.grouping.srdClassNamed
 import com.lyrismet.incadent.feature.codex.domain.grouping.srdClassesMatching
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.class_sheet_custom
 import incadent.shared.generated.resources.class_sheet_done
+import incadent.shared.generated.resources.class_sheet_no_class
 import incadent.shared.generated.resources.class_sheet_not_in_srd
 import incadent.shared.generated.resources.class_sheet_overline
 import incadent.shared.generated.resources.class_sheet_own_badge
 import incadent.shared.generated.resources.class_sheet_search
+import incadent.shared.generated.resources.class_sheet_srd_source
+import incadent.shared.generated.resources.class_sheet_subclass_example
+import incadent.shared.generated.resources.class_sheet_subclass_free
 import incadent.shared.generated.resources.class_sheet_subclass_label
 import incadent.shared.generated.resources.class_sheet_title_empty
 import org.jetbrains.compose.resources.stringResource
@@ -70,9 +75,11 @@ fun ClassSelectSheet(
                 )
             },
         ) {
-            ClassPicker(picked) { picked = it }
-            FormFieldLabel(stringResource(Res.string.class_sheet_subclass_label).uppercase())
-            AppTextInput(value = subclass, onValueChange = { subclass = it }, modifier = Modifier.fillMaxWidth())
+            ClassPicker(picked) {
+                picked = it
+                if (it.isBlank()) subclass = ""
+            }
+            if (picked.isNotBlank()) SubclassField(picked, subclass) { subclass = it }
             FormPrimaryButton(
                 text = stringResource(Res.string.class_sheet_done),
                 onClick = { onChosen(picked.trim(), if (picked.isBlank()) "" else subclass.trim()) },
@@ -128,6 +135,40 @@ private fun ColumnScope.ClassPicker(
         ClassTextRow(stringResource(Res.string.class_sheet_custom, ownName), AppPalette.Gold) {
             onPicked(ownName)
             query = ""
+        }
+    }
+    ClassTextRow(
+        stringResource(Res.string.class_sheet_no_class),
+        if (picked.isBlank()) AppPalette.GoldBright else AppPalette.TextMuted,
+    ) { onPicked("") }
+}
+
+// the subclass is typed in, the one the SRD describes for the class is offered as an example and a one-press fill
+@Composable
+private fun SubclassField(
+    characterClass: String,
+    subclass: String,
+    onChanged: (String) -> Unit,
+) {
+    val russian = currentAppLanguage() == AppLanguage.RUSSIAN
+    val srd = srdClassNamed(characterClass)?.subclassNames(russian).orEmpty()
+    FormFieldLabel(stringResource(Res.string.class_sheet_subclass_label).uppercase())
+    AppTextInput(
+        value = subclass,
+        onValueChange = onChanged,
+        modifier = Modifier.fillMaxWidth(),
+        placeholder =
+            srd.firstOrNull()?.let { stringResource(Res.string.class_sheet_subclass_example, it) }
+                ?: stringResource(Res.string.class_sheet_subclass_free),
+    )
+    if (srd.isNotEmpty() && subclass.isBlank()) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            srd.forEach { name -> SelectablePill(text = name, selected = false, onClick = { onChanged(name) }) }
+            Text(
+                stringResource(Res.string.class_sheet_srd_source),
+                color = AppPalette.TextTertiary,
+                fontSize = AppFontSize.Caption,
+            )
         }
     }
 }

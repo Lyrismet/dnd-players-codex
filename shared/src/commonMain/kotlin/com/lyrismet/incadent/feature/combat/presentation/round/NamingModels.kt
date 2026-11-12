@@ -9,8 +9,14 @@ data class NamingState(
     val value: String,
     val placeholder: String,
     val options: List<NameOption>,
+    // the class and subclass, set under the options before the name is given
+    val role: RoleField,
     // what goes to the card of a new npc with the name, shown under the options
     val carry: List<String>,
+    // the role that goes to the card, shown first and lit
+    val carryRole: String,
+    // the cursor goes into the field when the name in the header was pressed
+    val focus: Boolean,
 )
 
 data class NameOption(

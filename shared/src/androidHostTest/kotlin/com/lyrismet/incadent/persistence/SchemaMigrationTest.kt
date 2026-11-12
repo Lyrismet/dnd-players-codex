@@ -333,4 +333,47 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the thirteenth schema keeps the participants and gives them an empty role`() {
+        val file = File.createTempFile("schema-v13", ".db")
+        File("src/commonMain/sqldelight/databases/13.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO combat(id, phase, started_at, campaign_id) VALUES (1, 'ONGOING', '2026-01-01T00:00', 'c')",
+            "INSERT INTO combatant(combat_id, name, side, state, stance, conditions) " +
+                "VALUES (1, 'Goblin', 'ENEMY', 'WHOLE', 'ENEMY', '')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 13, AppDatabase.Schema.version)
+
+        assertEquals("Goblin", driver.single("SELECT name FROM combatant"))
+        assertEquals("", driver.single("SELECT role FROM combatant"))
+        driver.close()
+        file.delete()
+    }
+
+    @Test
+    fun `migrating the fourteenth schema flags the creatures that were named by hand`() {
+        val file = File.createTempFile("schema-v14", ".db")
+        File("src/commonMain/sqldelight/databases/14.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO species(name, creature_type, campaign_id) VALUES ('Wolf', 'BEAST', 'c')",
+            "INSERT INTO combat(id, phase, started_at, campaign_id) VALUES (1, 'ONGOING', '2026-01-01T00:00', 'c')",
+            "INSERT INTO combatant(combat_id, name, side, species_id, state, stance, conditions) " +
+                "VALUES (1, 'Wolf', 'ENEMY', 1, 'WHOLE', 'ENEMY', ''), " +
+                "(1, 'Wolf II', 'ENEMY', 1, 'WHOLE', 'ENEMY', ''), " +
+                "(1, 'Grisha', 'ENEMY', 1, 'WHOLE', 'ENEMY', '')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 14, AppDatabase.Schema.version)
+
+        assertEquals("1", driver.single("SELECT count(*) FROM combatant WHERE is_label = 1"))
+        assertEquals("Grisha", driver.single("SELECT name FROM combatant WHERE is_label = 1"))
+        driver.close()
+        file.delete()
+    }
 }

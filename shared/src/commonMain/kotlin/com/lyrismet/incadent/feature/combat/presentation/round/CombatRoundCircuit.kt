@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
@@ -30,6 +31,7 @@ class CombatRoundPresenterFactory(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val codexRepositories: CodexRepositories,
+    private val npcMerge: NpcMergeRepository,
     private val hitObservationRepository: HitObservationRepository,
     private val imageCompressor: ImageCompressor,
     private val undoController: UndoController,
@@ -48,6 +50,7 @@ class CombatRoundPresenterFactory(
                     sessionNoteRepository,
                     sessionEntryRepository,
                     codexRepositories,
+                    npcMerge,
                     hitObservationRepository,
                     imageCompressor,
                     undoController,

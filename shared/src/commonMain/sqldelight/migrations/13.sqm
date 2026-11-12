@@ -1,0 +1,2 @@
+-- the role of a participant that is only in the fight: class and subclass in one field
+ALTER TABLE combatant ADD COLUMN role TEXT NOT NULL DEFAULT '';

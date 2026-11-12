@@ -12,14 +12,16 @@ import kotlin.test.assertEquals
 
 class QuickRecordsTest {
     private val db = TestDatabase()
+    private val npcs = NpcRepositoryImpl(db.database, db.current)
     private val repositories =
         CodexRepositories(
             PartyRepositoryImpl(db.database, db.current),
-            NpcRepositoryImpl(db.database, db.current),
+            npcs,
             QuestRepositoryImpl(db.database, db.current),
             LocationRepositoryImpl(db.database, db.current),
             SpeciesRepositoryImpl(db.database, db.current),
             ItemRepositoryImpl(db.database, db.current),
+            NpcMergeRepositoryImpl(db.database, db.current, npcs),
         )
 
     @Test

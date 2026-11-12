@@ -16,7 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -144,13 +143,7 @@ private fun PanelHeader(
                     maxLines = 1,
                 )
             }
-            Text(
-                text = panel.name,
-                style = MaterialTheme.typography.headlineMedium,
-                color = AppPalette.TextHeading,
-                maxLines = 1,
-                modifier = Modifier.padding(top = 2.dp),
-            )
+            PanelName(panel, send)
         }
         Column(horizontalAlignment = Alignment.End) {
             panel.hp?.let { hp -> PanelHpBlock(hp, send) }

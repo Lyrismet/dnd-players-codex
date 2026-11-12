@@ -126,6 +126,7 @@ internal fun MoreTab(
     send: (CombatRoundEvent) -> Unit,
 ) {
     val more = panel.more
+    more.identity?.let { IdentityBlock(it, send) }
     more.naming?.let { NamingField(it, send) }
     more.stances?.let { stances ->
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

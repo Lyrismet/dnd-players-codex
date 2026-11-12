@@ -26,7 +26,9 @@ CREATE TABLE combatant (
     note TEXT NOT NULL DEFAULT '',
     reaction_available INTEGER NOT NULL DEFAULT 1,
     hp_current INTEGER,
-    hp_max INTEGER
+    hp_max INTEGER,
+    role TEXT NOT NULL DEFAULT '',
+    is_label INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX combatant_combat_id ON combatant(combat_id);
@@ -53,6 +55,20 @@ END;
 selectByCombat:
 SELECT * FROM combatant WHERE combat_id = ? ORDER BY id;
 
+-- the name a linked participant answers to is the codex one, so a rename there shows in the fight at once
+selectCodexNames:
+SELECT combatant.id, COALESCE(npc.name, party_member.name) AS codex_name FROM combatant
+LEFT JOIN npc ON npc.id = combatant.npc_id
+LEFT JOIN party_member ON party_member.id = combatant.party_member_id
+WHERE combatant.combat_id = ?;
+
+selectCodexNamesByCampaign:
+SELECT combatant.id, COALESCE(npc.name, party_member.name) AS codex_name FROM combatant
+JOIN combat ON combat.id = combatant.combat_id
+LEFT JOIN npc ON npc.id = combatant.npc_id
+LEFT JOIN party_member ON party_member.id = combatant.party_member_id
+WHERE combat.campaign_id = ?;
+
 selectByCampaign:
 SELECT combatant.* FROM combatant
 JOIN combat ON combat.id = combatant.combat_id
@@ -60,12 +76,12 @@ WHERE combat.campaign_id = ?
 ORDER BY combatant.id;
 
 insert:
-INSERT INTO combatant(combat_id, name, side, npc_id, species_id, party_member_id, entered_whole, state, joined_round, death_successes, death_failures, temp_hp, turn_order, stance, captured, dead, conditions, note, reaction_available, hp_current, hp_max)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO combatant(combat_id, name, side, npc_id, species_id, party_member_id, entered_whole, state, joined_round, death_successes, death_failures, temp_hp, turn_order, stance, captured, dead, conditions, note, reaction_available, hp_current, hp_max, role, is_label)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateMember:
 UPDATE combatant
-SET name = ?, entered_whole = ?, state = ?, death_successes = ?, death_failures = ?, temp_hp = ?, turn_order = ?, stance = ?, captured = ?, dead = ?, conditions = ?, note = ?, reaction_available = ?, hp_current = ?, hp_max = ?
+SET name = ?, entered_whole = ?, state = ?, death_successes = ?, death_failures = ?, temp_hp = ?, turn_order = ?, stance = ?, captured = ?, dead = ?, conditions = ?, note = ?, reaction_available = ?, hp_current = ?, hp_max = ?, role = ?, is_label = ?
 WHERE id = ?;
 
 updateTurnOrder:
@@ -80,8 +96,14 @@ UPDATE combatant SET temp_hp = ? WHERE id = ?;
 updateNpc:
 UPDATE combatant SET npc_id = ?, name = ? WHERE id = ?;
 
+updateRole:
+UPDATE combatant SET role = ? WHERE id = ?;
+
 updateName:
 UPDATE combatant SET name = ? WHERE id = ?;
+
+updateLabel:
+UPDATE combatant SET name = ?, is_label = ? WHERE id = ?;
 
 deleteById:
 DELETE FROM combatant WHERE id = ?;

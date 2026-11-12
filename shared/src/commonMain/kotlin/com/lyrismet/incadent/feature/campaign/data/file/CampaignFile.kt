@@ -277,6 +277,8 @@ sealed interface FileRecord {
         val hpMax: Int? = null,
         val turnOrder: Int? = null,
         val reactionAvailable: Boolean = true,
+        val role: String = "",
+        val isLabel: Boolean = false,
     ) : FightRecord
 
     /** one event of a fight, the source and the target are fighter numbers of that fight */

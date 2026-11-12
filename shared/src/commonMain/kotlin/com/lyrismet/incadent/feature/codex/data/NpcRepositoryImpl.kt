@@ -47,49 +47,50 @@ class NpcRepositoryImpl(
 
     // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
     override suspend fun upsert(entity: Npc): Long =
-        withContext(DatabaseDispatcher) {
-            database.transactionWithResult {
-                // a species deleted since the npc was read would break the foreign key, so the link is dropped
-                val speciesId =
-                    entity.speciesId?.takeIf {
-                        database.speciesQueries.selectById(it).executeAsOneOrNull() !=
-                            null
-                    }
-                val stored =
-                    if (entity.id ==
-                        0L
-                    ) {
-                        null
-                    } else {
-                        queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
-                    }
-                val id =
-                    if (stored != null) {
-                        queries.update(
-                            entity.name,
-                            entity.status,
-                            entity.description,
-                            entity.race,
-                            entity.characterClass,
-                            entity.subclass,
-                            entity.lifeState,
-                            entity.nicknames.joinNicknames(),
-                            speciesId,
-                            entity.vulnerabilities.encodeVulnerabilities(),
-                            entity.id,
-                        )
-                        writePhotoIfChanged(
-                            entity.portrait,
-                            stored.portrait,
-                        ) { full, thumb -> queries.setPortrait(full, thumb, entity.id) }
-                        entity.id
-                    } else {
-                        insert(entity.copy(speciesId = speciesId))
-                    }
-                writeLocations(id, entity.locationIds)
-                id
+        withContext(DatabaseDispatcher) { database.transactionWithResult { write(entity) } }
+
+    /** the write of [upsert] for a caller that already holds a transaction, so more can commit with it */
+    internal fun write(entity: Npc): Long {
+        // a species deleted since the npc was read would break the foreign key, so the link is dropped
+        val speciesId =
+            entity.speciesId?.takeIf {
+                database.speciesQueries.selectById(it).executeAsOneOrNull() !=
+                    null
             }
-        }
+        val stored =
+            if (entity.id ==
+                0L
+            ) {
+                null
+            } else {
+                queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
+            }
+        val id =
+            if (stored != null) {
+                queries.update(
+                    entity.name,
+                    entity.status,
+                    entity.description,
+                    entity.race,
+                    entity.characterClass,
+                    entity.subclass,
+                    entity.lifeState,
+                    entity.nicknames.joinNicknames(),
+                    speciesId,
+                    entity.vulnerabilities.encodeVulnerabilities(),
+                    entity.id,
+                )
+                writePhotoIfChanged(
+                    entity.portrait,
+                    stored.portrait,
+                ) { full, thumb -> queries.setPortrait(full, thumb, entity.id) }
+                entity.id
+            } else {
+                insert(entity.copy(speciesId = speciesId))
+            }
+        writeLocations(id, entity.locationIds)
+        return id
+    }
 
     private fun insert(npc: Npc): Long {
         if (npc.id != 0L) {
@@ -132,10 +133,10 @@ class NpcRepositoryImpl(
     }
 
     override suspend fun delete(id: Long) {
-        withContext(DatabaseDispatcher) {
-            queries.deleteById(id)
-        }
+        withContext(DatabaseDispatcher) { remove(id) }
     }
+
+    internal fun remove(id: Long) = queries.deleteById(id)
 
     private fun writeLocations(
         npcId: Long,

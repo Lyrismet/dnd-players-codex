@@ -84,6 +84,8 @@ class LiveFightExchangeTest {
             reaction,
             if (partyId != null) 17L else null,
             if (partyId != null) 28L else null,
+            "",
+            0L,
         )
         fighter("Lira", CombatSide.PARTY, lira, 1L, 0L)
         fighter("Wolf", CombatSide.ENEMY, null, 0L, 1L)

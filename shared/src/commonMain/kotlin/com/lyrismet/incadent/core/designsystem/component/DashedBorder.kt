@@ -49,3 +49,26 @@ fun Modifier.dashedTopRule(
             )
         }
     }
+
+/** a dashed rule [inset] above the bottom edge, for text that can be pressed to change */
+fun Modifier.dashedBottomRule(
+    color: Color,
+    width: Dp = 1.dp,
+    dashLength: Dp = 3.dp,
+    dashGap: Dp = 3.dp,
+    inset: Dp = 1.dp,
+): Modifier =
+    drawWithCache {
+        val strokePx = width.toPx()
+        val y = size.height - inset.toPx()
+        val dashes = PathEffect.dashPathEffect(floatArrayOf(dashLength.toPx(), dashGap.toPx()))
+        onDrawBehind {
+            drawLine(
+                color = color,
+                start = Offset(0f, y),
+                end = Offset(size.width, y),
+                strokeWidth = strokePx,
+                pathEffect = dashes,
+            )
+        }
+    }

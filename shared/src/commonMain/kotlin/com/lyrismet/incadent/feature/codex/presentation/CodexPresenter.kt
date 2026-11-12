@@ -42,6 +42,7 @@ import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LinkSuggestionDismissalRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
@@ -139,6 +140,7 @@ class CodexPresenter(
     private val imageCompressor: ImageCompressor,
     private val campaignRepository: CampaignRepository,
     private val linkDismissals: LinkSuggestionDismissalRepository,
+    npcMerge: NpcMergeRepository,
 ) : Presenter<CodexState> {
     private val codexRepositories =
         CodexRepositories(
@@ -148,6 +150,7 @@ class CodexPresenter(
             locationRepository,
             speciesRepository,
             itemRepository,
+            npcMerge,
         )
     private val deletionPlanner =
         CodexDeletionPlanner(
@@ -334,6 +337,8 @@ class CodexPresenter(
             fields.recentPlaceIds,
             parties.firstOrNull { it.isPlayerCharacter }?.level,
             parties.any { it.isPlayerCharacter },
+            codexRepositories.npcMerge,
+            undoController,
         )
 
     // what the active tab lists and its empty state - a tab with no hits lists the other tabs' matches instead

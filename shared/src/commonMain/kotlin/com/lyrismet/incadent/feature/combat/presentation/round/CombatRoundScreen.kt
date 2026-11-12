@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
+import com.lyrismet.incadent.feature.codex.presentation.form.ClassSelectState
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
@@ -11,6 +12,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
+import com.lyrismet.incadent.feature.combat.domain.round.RoleParts
 import com.lyrismet.incadent.feature.combat.presentation.prep.CombatPrepEvent
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeSearchState
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpPadState
@@ -62,6 +64,9 @@ data class CombatRoundState(
     val entryForm: CodexEntryFormState? = null,
     val formKinds: List<EntityKind> = emptyList(),
     val promotion: PromotionSheet? = null,
+    // the class sheet that sets the role of a participant that is only in the fight
+    val classSheet: ClassSelectState? = null,
+    val linkSheet: LinkSheet? = null,
     val toast: ToastMessage? = null,
     val eventSink: (CombatRoundEvent) -> Unit = {},
 ) : CircuitUiState
@@ -77,7 +82,14 @@ data class RoundRow(
     val selected: Boolean,
     val name: String,
     val struck: Boolean,
-    val role: String,
+    val role: RoleParts,
+    // what the fight adds to the role, a reinforcement says so
+    val roleTail: String,
+    // set instead of the role while there is none to tell, shown dim and slanted
+    val roleHint: String?,
+    // the participant is the player's own character
+    val own: Boolean,
+    val link: RowLink,
     val side: RowSide,
     // the damage taken on the current turn
     val lastHit: String?,
@@ -89,6 +101,8 @@ data class RoundRow(
     val dimmed: Boolean,
     val reaction: RowReaction?,
 )
+
+enum class RowLink { CODEX, BATTLE_ONLY, NONE }
 
 data class RowHp(
     val current: String,
@@ -123,6 +137,9 @@ data class RoundPanel(
     val id: Long,
     val name: String,
     val sideLabel: String,
+    // the class line under the name, empty when none is known
+    val roleLine: String,
+    val link: RowLink,
     val side: RowSide,
     val hp: PanelHp?,
     val wound: PanelWound?,
@@ -191,6 +208,7 @@ data class PanelMore(
     val vulnerabilities: Map<DamageType, DamageState>?,
     // set for a participant that can still be given a name of the codex
     val naming: NamingState?,
+    val identity: IdentityState?,
 )
 
 data class StanceOption(
@@ -230,6 +248,36 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
 
     data class ReactionToggled(
         val id: Long,
+    ) : CombatRoundEvent
+
+    /** the name in the header of the panel was pressed */
+    data object NameTapped : CombatRoundEvent
+
+    data class RenameChanged(
+        val text: String,
+    ) : CombatRoundEvent
+
+    data object RenameConfirmed : CombatRoundEvent
+
+    /** the typed name is one a record of the codex has, the two become one */
+    data object MergeConfirmed : CombatRoundEvent
+
+    data object ClassOpened : CombatRoundEvent
+
+    data class ClassChosen(
+        val characterClass: String,
+        val subclass: String,
+    ) : CombatRoundEvent
+
+    data object ClassClosed : CombatRoundEvent
+
+    data object LinkOpened : CombatRoundEvent
+
+    data object LinkClosed : CombatRoundEvent
+
+    data class LinkPicked(
+        val npcId: Long,
+        val name: String,
     ) : CombatRoundEvent
 
     data class NameChanged(

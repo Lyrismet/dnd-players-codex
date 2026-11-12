@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.portrait.ImageCompressor
+import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -32,6 +33,7 @@ internal fun rememberRoundForm(
     party: List<PartyMember>,
     npcs: List<Npc>,
     species: List<Species>,
+    undo: UndoController,
 ): RoundForm {
     val locations by codexRepositories.locationRepository.observeAll().collectAsState(initial = emptyList())
     val target: MutableState<CombatSide?> = remember { mutableStateOf(null) }
@@ -45,6 +47,8 @@ internal fun rememberRoundForm(
             remember { mutableStateOf(emptyList()) },
             party.firstOrNull { it.isPlayerCharacter }?.level,
             party.any { it.isPlayerCharacter },
+            codexRepositories.npcMerge,
+            undo,
         )
     val host = FoeFormHost(controller, target, editor, imageCompressor)
     return RoundForm(host, controller.buildState(npcs, locations, species), host.kinds())

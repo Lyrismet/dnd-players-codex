@@ -81,6 +81,7 @@ private fun NpcNameField(
         placeholder = stringResource(Res.string.codex_entry_placeholder_npc_name),
         required = true,
     )
+    form.npcTwin?.let { NpcDuplicateCard(it, { eventSink(CodexEntryFormEvent.EntryNpcMergeClicked) }) }
 }
 
 /** the race or species of the npc, picked from the bestiary in a select sheet that also creates one on the spot */

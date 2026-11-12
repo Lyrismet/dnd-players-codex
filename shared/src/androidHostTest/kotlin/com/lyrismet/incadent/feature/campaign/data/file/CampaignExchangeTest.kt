@@ -727,6 +727,8 @@ class CampaignExchangeTest {
                 1L,
                 null,
                 null,
+                "",
+                0L,
             )
             return database.combatantQueries.lastInsertRowId().executeAsOne()
         }

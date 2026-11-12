@@ -18,6 +18,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
+import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.damageStateLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.damageTypeLabels
 import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
@@ -29,6 +30,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
+import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import com.lyrismet.incadent.feature.combat.domain.round.NpcPromotion
 import com.lyrismet.incadent.feature.combat.domain.round.TurnPosition
 import com.lyrismet.incadent.feature.combat.domain.round.hostileCount
@@ -54,12 +56,6 @@ import incadent.shared.generated.resources.combat_damage_state_vulnerability
 import incadent.shared.generated.resources.combat_hp_preview_now
 import incadent.shared.generated.resources.combat_hp_preview_over
 import incadent.shared.generated.resources.combat_hp_preview_unset
-import incadent.shared.generated.resources.combat_prep_ally_npc
-import incadent.shared.generated.resources.combat_prep_ally_species
-import incadent.shared.generated.resources.combat_prep_ally_temp
-import incadent.shared.generated.resources.combat_prep_enemy_npc
-import incadent.shared.generated.resources.combat_prep_enemy_species
-import incadent.shared.generated.resources.combat_prep_enemy_temp
 import incadent.shared.generated.resources.combat_round_hostile
 import incadent.shared.generated.resources.combat_round_no_hostile
 import incadent.shared.generated.resources.error_action_failed
@@ -120,6 +116,7 @@ private class RoundDrafts(
     val summary: MutableState<SummaryDraft?>,
     val naming: MutableState<NameDraft?>,
     val promotion: MutableState<PromotionDraft?>,
+    val identity: MutableState<IdentityDraft?>,
 )
 
 @Composable
@@ -134,6 +131,7 @@ private fun rememberDrafts() =
         summary = remember { mutableStateOf(null) },
         naming = remember { mutableStateOf(null) },
         promotion = remember { mutableStateOf(null) },
+        identity = remember { mutableStateOf(null) },
     )
 
 /** the words the messages of the fight are made of, resolved once */
@@ -191,13 +189,14 @@ class CombatRoundPresenter(
     internal val sessionNoteRepository: SessionNoteRepository,
     internal val sessionEntryRepository: SessionEntryRepository,
     internal val codexRepositories: CodexRepositories,
+    private val npcMerge: NpcMergeRepository,
     internal val hitObservationRepository: HitObservationRepository,
     private val imageCompressor: ImageCompressor,
     private val undoController: UndoController,
 ) : Presenter<CombatRoundState> {
     private val editLock = Mutex()
 
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     @Composable
     override fun present(): CombatRoundState {
         val data = rememberData()
@@ -227,7 +226,16 @@ class CombatRoundPresenter(
             }) { block ->
                 scope.launch { block() }
             }
-        val form = rememberRoundForm(codexRepositories, editor, imageCompressor, data.party, data.npcs, data.species)
+        val form =
+            rememberRoundForm(
+                codexRepositories,
+                editor,
+                imageCompressor,
+                data.party,
+                data.npcs,
+                data.species,
+                undoController,
+            )
         val learner =
             VulnerabilityLearner(
                 codexRepositories.speciesRepository,
@@ -254,6 +262,17 @@ class CombatRoundPresenter(
                 drafts.naming,
                 drafts.promotion,
                 NpcPromotion(combatRepository, codexRepositories.npcRepository, codexRepositories.speciesRepository),
+                combatRepository,
+                undoController,
+            )
+        val identityHandler =
+            IdentityHandler(
+                editor,
+                drafts.selected,
+                drafts.tab,
+                drafts.identity,
+                codexRepositories.npcRepository,
+                npcMerge,
                 combatRepository,
                 undoController,
             )
@@ -285,6 +304,23 @@ class CombatRoundPresenter(
                 CombatRoundEvent.PromotionConfirmed,
                 CombatRoundEvent.PromotionRejected,
                 -> namingHandler.onEvent(event, namingSnapshot)
+                CombatRoundEvent.NameTapped,
+                is CombatRoundEvent.RenameChanged,
+                CombatRoundEvent.RenameConfirmed,
+                CombatRoundEvent.ClassOpened,
+                is CombatRoundEvent.ClassChosen,
+                CombatRoundEvent.ClassClosed,
+                CombatRoundEvent.LinkOpened,
+                CombatRoundEvent.LinkClosed,
+                CombatRoundEvent.MergeConfirmed,
+                -> identityHandler.onEvent(event, data.npcs)
+                is CombatRoundEvent.LinkPicked -> {
+                    identityHandler.onEvent(CombatRoundEvent.LinkClosed, data.npcs)
+                    namingHandler.onEvent(
+                        CombatRoundEvent.NameChosen(NameChoice.Existing(event.npcId, event.name)),
+                        namingSnapshot,
+                    )
+                }
                 is CombatRoundEvent.VulnerabilityChanged ->
                     recordVulnerability(
                         editor,
@@ -321,7 +357,6 @@ private class RoundView(
 private fun RoundView.panelOf(
     member: Combatant,
     drafts: RoundDrafts,
-    kinds: Map<Long, String>,
     seenByMember: Map<Long, List<SpeciesHitObservation>>,
     typeNames: Map<DamageType, String>,
 ): RoundPanel {
@@ -330,17 +365,28 @@ private fun RoundView.panelOf(
             ?.takeIf { it.memberId == member.id }
             ?.text
             .orEmpty()
+    val focus = drafts.identity.value?.let { it.memberId == member.id && it.focus } == true
+    val role = roleOf(member, RoleSources(data.party, data.npcs, speciesOf))
     return roundPanel(
         current,
         member,
-        roleOf(member, data.party, kinds.getValue(member.id)),
+        role,
         mover?.name.orEmpty(),
         seenByMember[member.id].orEmpty(),
         PanelKin(
             species = speciesOf[member.id],
             npc = member.npcId?.let { id -> data.npcs.firstOrNull { it.id == id } },
             vulnerabilities = resistances[member.id].orEmpty(),
-            naming = namingState(current, member, typed, data.npcs, data.species, data.learned, typeNames),
+            naming = namingState(current, member, typed, data.npcs, data.species, data.learned, typeNames, focus),
+            identity =
+                identityState(
+                    member,
+                    role,
+                    drafts.identity.value,
+                    data.npcs,
+                    data.species,
+                    IdentityFacts(current, data.learned, typeNames),
+                ),
         ),
     )
 }
@@ -361,7 +407,7 @@ private fun RoundView.render(
     toast: ToastMessage?,
     sink: (CombatRoundEvent) -> Unit,
 ): CombatRoundState {
-    val kinds = memberKinds(ordered)
+    val sources = RoleSources(data.party, data.npcs, speciesOf)
     val typeNames = damageTypeLabels().mapValues { it.value.lowercase() }
     val seenByMember = speciesOf.mapValues { (_, species) -> data.seen[species.id].orEmpty() }
     val chosen = ordered.firstOrNull { it.id == drafts.selected.value }
@@ -375,8 +421,8 @@ private fun RoundView.render(
         currentName = mover?.name.orEmpty(),
         hostile = hostileText(hostile),
         allClear = hostile == 0,
-        rows = roundRows(current, ordered, mover?.id, drafts.selected.value, data.party, kinds, seenByMember),
-        panel = chosen?.let { panelOf(it, drafts, kinds, seenByMember, typeNames) },
+        rows = roundRows(current, ordered, mover?.id, drafts.selected.value, sources, seenByMember),
+        panel = chosen?.let { panelOf(it, drafts, seenByMember, typeNames) },
         tab = drafts.tab.value,
         menuOpen = drafts.menuOpen.value,
         search =
@@ -392,6 +438,23 @@ private fun RoundView.render(
             },
         hpPad = hpPadState(drafts.hpPad.value, ordered),
         promotion = drafts.promotion.value?.let { promotionOf(it, typeNames) },
+        classSheet =
+            chosen?.let {
+                drafts.identity.value.classSelect(
+                    it.id,
+                    partsOf(
+                        it,
+                        data.npcs.firstOrNull { npc ->
+                            npc.id ==
+                                it.npcId
+                        },
+                    ),
+                )
+            },
+        linkSheet =
+            chosen
+                ?.takeIf { drafts.identity.value?.let { d -> d.memberId == it.id && d.linkOpen } == true }
+                ?.let { linkSheet(it, current, data.npcs, data.species) },
         entryForm = form.state,
         formKinds = form.kinds,
         calc = drafts.calc.value?.let { calcState(it, calcContext, current.round) },
@@ -417,27 +480,6 @@ private fun roundDamage(combat: Combat): RoundDamage? {
     val damage = combat.events.filter { it.kind == CombatEventKind.DAMAGE }
     val now = damage.filter { it.round == combat.round }.sumOf { it.amount }
     return if (damage.isEmpty()) null else RoundDamage(if (now > 0) "−$now" else null)
-}
-
-/** what each participant is, in a word: a party member has its class instead */
-@Composable
-private fun memberKinds(ordered: List<Combatant>): Map<Long, String> {
-    val allyNpc = stringResource(Res.string.combat_prep_ally_npc)
-    val allySpecies = stringResource(Res.string.combat_prep_ally_species)
-    val allyTemp = stringResource(Res.string.combat_prep_ally_temp)
-    val enemyNpc = stringResource(Res.string.combat_prep_enemy_npc)
-    val enemySpecies = stringResource(Res.string.combat_prep_enemy_species)
-    val enemyTemp = stringResource(Res.string.combat_prep_enemy_temp)
-    return ordered.associate { member ->
-        val ally = member.side == CombatSide.ALLY
-        member.id to
-            when {
-                member.side == CombatSide.PARTY -> ""
-                member.npcId != null -> if (ally) allyNpc else enemyNpc
-                member.speciesId != null -> if (ally) allySpecies else enemySpecies
-                else -> if (ally) allyTemp else enemyTemp
-            }
-    }
 }
 
 @Composable

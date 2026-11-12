@@ -47,13 +47,15 @@ class CombatRepositoryImpl(
             combine(
                 combats.selectAll(campaignId).asFlow().mapToList(DatabaseDispatcher),
                 combatants.selectByCampaign(campaignId).asFlow().mapToList(DatabaseDispatcher),
+                combatants.selectCodexNamesByCampaign(campaignId).asFlow().mapToList(DatabaseDispatcher),
                 events.selectByCampaign(campaignId).asFlow().mapToList(DatabaseDispatcher),
-            ) { combatRows, combatantRows, eventRows ->
+            ) { combatRows, combatantRows, nameRows, eventRows ->
+                val names = nameRows.associate { it.id to it.codex_name }
                 val combatantsByCombat = combatantRows.groupBy { it.combat_id }
                 val eventsByCombat = eventRows.groupBy { it.combat_id }
                 combatRows.map { row ->
                     row.toDomain(
-                        combatantsByCombat[row.id].orEmpty().map { it.toDomain() },
+                        combatantsByCombat[row.id].orEmpty().map { it.toDomain(names[it.id]) },
                         eventsByCombat[row.id].orEmpty().map { it.toDomain() },
                     )
                 }
@@ -66,9 +68,11 @@ class CombatRepositoryImpl(
             combine(
                 combats.selectById(id, campaignId).asFlow().mapToOneOrNull(DatabaseDispatcher),
                 combatants.selectByCombat(id).asFlow().mapToList(DatabaseDispatcher),
+                combatants.selectCodexNames(id).asFlow().mapToList(DatabaseDispatcher),
                 events.selectByCombat(id).asFlow().mapToList(DatabaseDispatcher),
-            ) { row: CombatRow?, combatantRows, eventRows ->
-                row?.toDomain(combatantRows.map { it.toDomain() }, eventRows.map { it.toDomain() })
+            ) { row: CombatRow?, combatantRows, nameRows, eventRows ->
+                val names = nameRows.associate { it.id to it.codex_name }
+                row?.toDomain(combatantRows.map { it.toDomain(names[it.id]) }, eventRows.map { it.toDomain() })
             }.flowOn(DatabaseDispatcher)
         }
 
@@ -111,6 +115,8 @@ class CombatRepositoryImpl(
                     reaction_available = if (combatant.reactionAvailable) 1L else 0L,
                     hp_current = combatant.hpCurrent?.toLong(),
                     hp_max = combatant.hpMax?.toLong(),
+                    role = combatant.role,
+                    is_label = if (combatant.isLabel) 1L else 0L,
                 )
                 combatants.lastInsertRowId().executeAsOne()
             }
@@ -188,6 +194,21 @@ class CombatRepositoryImpl(
         withContext(DatabaseDispatcher) { combatants.updateName(name, combatantId) }
     }
 
+    override suspend fun setLabel(
+        combatantId: Long,
+        name: String,
+        isLabel: Boolean,
+    ) {
+        withContext(DatabaseDispatcher) { combatants.updateLabel(name, if (isLabel) 1L else 0L, combatantId) }
+    }
+
+    override suspend fun setRole(
+        combatantId: Long,
+        role: String,
+    ) {
+        withContext(DatabaseDispatcher) { combatants.updateRole(role, combatantId) }
+    }
+
     override suspend fun updateTerm(
         eventId: Long,
         amount: Int,
@@ -246,6 +267,8 @@ class CombatRepositoryImpl(
             reaction_available = if (combatant.reactionAvailable) 1L else 0L,
             hp_current = combatant.hpCurrent?.toLong(),
             hp_max = combatant.hpMax?.toLong(),
+            role = combatant.role,
+            is_label = if (combatant.isLabel) 1L else 0L,
             id = combatant.id,
         )
     }

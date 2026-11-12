@@ -111,6 +111,8 @@ internal class FightImport(
             reaction_available = if (record.reactionAvailable) 1L else 0L,
             hp_current = record.hpCurrent?.toLong(),
             hp_max = record.hpMax?.toLong(),
+            role = record.role,
+            is_label = if (record.isLabel) 1L else 0L,
         )
         fighterMap[record.combatId to record.id] = database.combatantQueries.lastInsertRowId().executeAsOne()
     }

@@ -16,9 +16,11 @@ import com.lyrismet.incadent.core.portrait.encodeAsync
 import com.lyrismet.incadent.core.portrait.prepareCropDraftAsync
 import com.lyrismet.incadent.core.portrait.recropDraft
 import com.lyrismet.incadent.core.preferences.AppLanguage
+import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
 import com.lyrismet.incadent.feature.codex.domain.grouping.classLine
+import com.lyrismet.incadent.feature.codex.domain.grouping.duplicateNpcOf
 import com.lyrismet.incadent.feature.codex.domain.grouping.srdSuggestions
 import com.lyrismet.incadent.feature.codex.domain.grouping.with
 import com.lyrismet.incadent.feature.codex.domain.grouping.withRecentPlaces
@@ -37,6 +39,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
@@ -97,6 +100,7 @@ class CodexEntryFormController private constructor(
     private val playerCharacterLevel: Int?,
     // the first character a campaign gets is the player's own, so the form opens on the owner tab for it
     private val hasPlayerCharacter: Boolean,
+    private val npcMerge: NpcFormMerge,
 ) {
     private val creatureTypes = CreatureTypeFormEditor(fields, speciesRepository)
 
@@ -121,6 +125,8 @@ class CodexEntryFormController private constructor(
             recentPlaceIds: MutableState<List<Long>>,
             playerCharacterLevel: Int?,
             hasPlayerCharacter: Boolean,
+            npcMerge: NpcMergeRepository,
+            undoController: UndoController,
         ): CodexEntryFormController {
             val fields = rememberRetained { mutableStateOf<CodexEntryFormFields?>(null) }
             val baseline = rememberRetained { mutableStateOf<CodexEntryFormFields?>(null) }
@@ -139,6 +145,7 @@ class CodexEntryFormController private constructor(
                 recentPlaceIds,
                 playerCharacterLevel,
                 hasPlayerCharacter,
+                NpcFormMerge(npcRepository, npcMerge, undoController, ::npcMergeTexts),
             )
         }
     }
@@ -178,6 +185,7 @@ class CodexEntryFormController private constructor(
             is CodexEntryFormEvent.EntrySrdPicked -> onSrdPicked(event.name, event.type)
             is CodexEntryFormEvent.EntryNpcStatusChanged -> onNpcStatusChanged(event.status)
             is CodexEntryFormEvent.EntryNpcLifeChanged -> onNpcLifeChanged(event.lifeState)
+            CodexEntryFormEvent.EntryNpcMergeClicked -> onNpcMergeClicked(scope)
             is CodexEntryFormEvent.EntryPartyOwnerChanged -> onPartyOwnerChanged(event.isPlayerCharacter)
             is CodexEntryFormEvent.EntryPartyPresenceChanged -> onPartyPresenceChanged(event.presence)
             is CodexEntryFormEvent.EntryQuestStatusChanged -> onQuestStatusChanged(event.status)
@@ -553,6 +561,13 @@ class CodexEntryFormController private constructor(
             }
     }
 
+    // the npc being edited goes into the one with the typed name, so the form has nothing left to save
+    private fun onNpcMergeClicked(scope: CoroutineScope) {
+        val current = fields.value ?: return
+        val loserId = (current.editingRef as? EntityRef.Npc)?.id ?: return
+        scope.launch { if (npcMerge.run(loserId, current.name)) onClosed() }
+    }
+
     fun onClosed() {
         pendingSpecies = null
         fields.value = null
@@ -623,6 +638,7 @@ class CodexEntryFormController private constructor(
         val isRussian = currentAppLanguage() == AppLanguage.RUSSIAN
         return CodexEntryFormState(
             mention = mention?.let { MentionField(it, current.editingRef?.toMentionRef()) },
+            npcTwin = twinOfEdited(current, npcs, species),
             overline =
                 stringResource(
                     if (isEditing) Res.string.codex_entry_overline_edit else Res.string.codex_entry_overline_create,
@@ -783,3 +799,14 @@ private fun saveLabel(
     )
 
 private fun Long?.toggled(id: Long): Long? = if (this == id) null else id
+
+// only an npc that is being edited can be merged away, a new one is not in the codex yet
+@Composable
+private fun twinOfEdited(
+    form: CodexEntryFormFields,
+    npcs: List<Npc>,
+    species: List<Species>,
+): DuplicateNpc? {
+    val id = (form.editingRef as? EntityRef.Npc)?.id?.takeIf { form.type == EntityKind.NPC } ?: return null
+    return duplicateNpcOf(form.name, npcs, id)?.let { twinOf(it, species) }
+}
