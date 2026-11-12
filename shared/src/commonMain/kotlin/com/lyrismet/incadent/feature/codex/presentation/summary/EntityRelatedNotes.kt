@@ -29,12 +29,12 @@ import com.lyrismet.incadent.core.designsystem.component.NumberLabel
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.format.NumberSizeLadder
 import com.lyrismet.incadent.feature.codex.presentation.summary.RelatedNoteItem
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_related_count_format
-import dndplayerscodex.shared.generated.resources.entity_sheet_related_empty_format
-import dndplayerscodex.shared.generated.resources.entity_sheet_related_meta_format
-import dndplayerscodex.shared.generated.resources.entity_sheet_related_show_all_format
-import dndplayerscodex.shared.generated.resources.entity_sheet_related_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_related_count_format
+import incadent.shared.generated.resources.entity_sheet_related_empty_format
+import incadent.shared.generated.resources.entity_sheet_related_meta_format
+import incadent.shared.generated.resources.entity_sheet_related_show_all_format
+import incadent.shared.generated.resources.entity_sheet_related_title
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 

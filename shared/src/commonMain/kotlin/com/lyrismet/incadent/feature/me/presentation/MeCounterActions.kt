@@ -6,10 +6,10 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.SPELL_LEVELS
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterResourceRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_resource_deleted_title
-import dndplayerscodex.shared.generated.resources.me_slot_name
-import dndplayerscodex.shared.generated.resources.me_spells_hidden_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_resource_deleted_title
+import incadent.shared.generated.resources.me_slot_name
+import incadent.shared.generated.resources.me_spells_hidden_title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

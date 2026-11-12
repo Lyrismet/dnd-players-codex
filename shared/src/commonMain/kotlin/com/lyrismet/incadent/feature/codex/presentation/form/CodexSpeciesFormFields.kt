@@ -11,16 +11,16 @@ import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPickField
 import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 import com.lyrismet.incadent.feature.codex.presentation.summary.VulnerabilityGridEditor
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_label_creature_type
-import dndplayerscodex.shared.generated.resources.codex_entry_label_name_species
-import dndplayerscodex.shared.generated.resources.codex_entry_label_notes
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_species_name
-import dndplayerscodex.shared.generated.resources.codex_entry_placeholder_species_notes
-import dndplayerscodex.shared.generated.resources.codex_entry_srd_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_hp_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_title
-import dndplayerscodex.shared.generated.resources.species_type_pick_hint
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_label_creature_type
+import incadent.shared.generated.resources.codex_entry_label_name_species
+import incadent.shared.generated.resources.codex_entry_label_notes
+import incadent.shared.generated.resources.codex_entry_placeholder_species_name
+import incadent.shared.generated.resources.codex_entry_placeholder_species_notes
+import incadent.shared.generated.resources.codex_entry_srd_label
+import incadent.shared.generated.resources.entity_sheet_species_hp_label
+import incadent.shared.generated.resources.entity_sheet_species_vulnerabilities_title
+import incadent.shared.generated.resources.species_type_pick_hint
 import org.jetbrains.compose.resources.stringResource
 
 /** the species form with name and SRD hints, creature type, photo and notes */

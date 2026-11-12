@@ -31,13 +31,13 @@ import com.lyrismet.incadent.feature.codex.presentation.item.itemPriceEachText
 import com.lyrismet.incadent.feature.codex.presentation.item.itemQuantityText
 import com.lyrismet.incadent.feature.me.domain.isDown
 import com.lyrismet.incadent.feature.mention.presentation.MentionTextField
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.items_quantity_less
-import dndplayerscodex.shared.generated.resources.items_quantity_more
-import dndplayerscodex.shared.generated.resources.me_items_add
-import dndplayerscodex.shared.generated.resources.me_items_title_format
-import dndplayerscodex.shared.generated.resources.me_notes_placeholder
-import dndplayerscodex.shared.generated.resources.me_notes_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.items_quantity_less
+import incadent.shared.generated.resources.items_quantity_more
+import incadent.shared.generated.resources.me_items_add
+import incadent.shared.generated.resources.me_items_title_format
+import incadent.shared.generated.resources.me_notes_placeholder
+import incadent.shared.generated.resources.me_notes_title
 import org.jetbrains.compose.resources.stringResource
 
 private const val NOTES_MIN_LINES = 4

@@ -6,8 +6,8 @@ import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.slack.circuit.retained.rememberRetained
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.items_owner_changed_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.items_owner_changed_title
 import org.jetbrains.compose.resources.stringResource
 
 /** the item sheet and the gear pick of the codex screen, kept across a push and pop of the navigation */

@@ -27,16 +27,16 @@ import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem.PartySummary
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_party_chronicle_damage
-import dndplayerscodex.shared.generated.resources.codex_party_chronicle_fights
-import dndplayerscodex.shared.generated.resources.codex_party_chronicle_sessions
-import dndplayerscodex.shared.generated.resources.codex_party_chronicle_title
-import dndplayerscodex.shared.generated.resources.codex_party_epitaph
-import dndplayerscodex.shared.generated.resources.codex_party_epitaph_foes
-import dndplayerscodex.shared.generated.resources.codex_party_fell_in_battle
-import dndplayerscodex.shared.generated.resources.codex_party_revive
-import dndplayerscodex.shared.generated.resources.entity_sheet_party_presence_label
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_party_chronicle_damage
+import incadent.shared.generated.resources.codex_party_chronicle_fights
+import incadent.shared.generated.resources.codex_party_chronicle_sessions
+import incadent.shared.generated.resources.codex_party_chronicle_title
+import incadent.shared.generated.resources.codex_party_epitaph
+import incadent.shared.generated.resources.codex_party_epitaph_foes
+import incadent.shared.generated.resources.codex_party_fell_in_battle
+import incadent.shared.generated.resources.codex_party_revive
+import incadent.shared.generated.resources.entity_sheet_party_presence_label
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 

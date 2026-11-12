@@ -27,10 +27,10 @@ import androidx.compose.ui.unit.em
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.BrandMark
 import com.lyrismet.incadent.core.designsystem.component.FlameSweepEffect
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.splash_app_name
-import dndplayerscodex.shared.generated.resources.splash_tagline
-import dndplayerscodex.shared.generated.resources.splash_version_format
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.splash_app_name
+import incadent.shared.generated.resources.splash_tagline
+import incadent.shared.generated.resources.splash_version_format
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 

@@ -75,13 +75,13 @@ import com.lyrismet.incadent.feature.mention.presentation.MentionVisualTransform
 import com.lyrismet.incadent.feature.mention.presentation.mentionDisplayLength
 import com.lyrismet.incadent.feature.mention.presentation.takeMentionDisplay
 import com.lyrismet.incadent.feature.mention.presentation.withPinnedCreate
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.action_cancel
-import dndplayerscodex.shared.generated.resources.session_detail_composer_hint
-import dndplayerscodex.shared.generated.resources.session_detail_composer_placeholder
-import dndplayerscodex.shared.generated.resources.session_detail_editing_label_format
-import dndplayerscodex.shared.generated.resources.session_detail_save_button
-import dndplayerscodex.shared.generated.resources.session_detail_submit_button
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.action_cancel
+import incadent.shared.generated.resources.session_detail_composer_hint
+import incadent.shared.generated.resources.session_detail_composer_placeholder
+import incadent.shared.generated.resources.session_detail_editing_label_format
+import incadent.shared.generated.resources.session_detail_save_button
+import incadent.shared.generated.resources.session_detail_submit_button
 import org.jetbrains.compose.resources.stringResource
 
 internal val COMPOSER_SIDE_PADDING = 12.dp

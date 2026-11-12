@@ -7,8 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.session_detail_quantity_hint
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.session_detail_quantity_hint
 import org.jetbrains.compose.resources.stringResource
 
 // the pale line that tells what a digit typed now will do to the species just inserted

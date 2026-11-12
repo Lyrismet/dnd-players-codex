@@ -27,16 +27,16 @@ import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.file.rememberTextSharing
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.session_text_actors_hint
-import dndplayerscodex.shared.generated.resources.session_text_actors_toggle
-import dndplayerscodex.shared.generated.resources.session_text_intro_hint
-import dndplayerscodex.shared.generated.resources.session_text_intro_hint_named
-import dndplayerscodex.shared.generated.resources.session_text_intro_next
-import dndplayerscodex.shared.generated.resources.session_text_intro_toggle
-import dndplayerscodex.shared.generated.resources.session_text_preview
-import dndplayerscodex.shared.generated.resources.session_text_send
-import dndplayerscodex.shared.generated.resources.session_text_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.session_text_actors_hint
+import incadent.shared.generated.resources.session_text_actors_toggle
+import incadent.shared.generated.resources.session_text_intro_hint
+import incadent.shared.generated.resources.session_text_intro_hint_named
+import incadent.shared.generated.resources.session_text_intro_next
+import incadent.shared.generated.resources.session_text_intro_toggle
+import incadent.shared.generated.resources.session_text_preview
+import incadent.shared.generated.resources.session_text_send
+import incadent.shared.generated.resources.session_text_title
 import org.jetbrains.compose.resources.stringResource
 
 private val PREVIEW_MAX_HEIGHT = 240.dp

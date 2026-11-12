@@ -37,14 +37,14 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.stateOf
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_hint
-import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_hint_inherited
-import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_none
-import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_step
-import dndplayerscodex.shared.generated.resources.entity_sheet_npc_vulnerabilities_tip_inherited
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_tip_format
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_npc_vulnerabilities_hint
+import incadent.shared.generated.resources.entity_sheet_npc_vulnerabilities_hint_inherited
+import incadent.shared.generated.resources.entity_sheet_npc_vulnerabilities_label
+import incadent.shared.generated.resources.entity_sheet_npc_vulnerabilities_none
+import incadent.shared.generated.resources.entity_sheet_npc_vulnerabilities_step
+import incadent.shared.generated.resources.entity_sheet_npc_vulnerabilities_tip_inherited
+import incadent.shared.generated.resources.entity_sheet_species_vulnerabilities_tip_format
 import org.jetbrains.compose.resources.stringResource
 
 private const val INHERITED_ALPHA = 0.6f

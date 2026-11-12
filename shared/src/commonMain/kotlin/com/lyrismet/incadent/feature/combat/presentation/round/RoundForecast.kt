@@ -13,12 +13,12 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_round_left
-import dndplayerscodex.shared.generated.resources.combat_round_more_than
-import dndplayerscodex.shared.generated.resources.combat_round_short_left
-import dndplayerscodex.shared.generated.resources.combat_round_short_more
-import dndplayerscodex.shared.generated.resources.combat_round_took
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_round_left
+import incadent.shared.generated.resources.combat_round_more_than
+import incadent.shared.generated.resources.combat_round_short_left
+import incadent.shared.generated.resources.combat_round_short_more
+import incadent.shared.generated.resources.combat_round_took
 import org.jetbrains.compose.resources.stringResource
 
 internal fun Combat.damageTaken(member: Combatant): Int =

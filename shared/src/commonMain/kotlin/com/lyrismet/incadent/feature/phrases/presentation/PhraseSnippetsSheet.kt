@@ -29,17 +29,17 @@ import com.lyrismet.incadent.feature.phrases.presentation.PhraseFrequentRow
 import com.lyrismet.incadent.feature.phrases.presentation.PhrasePinnedRow
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSheetEvent
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSheetState
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.phrase_sheet_disclaimer
-import dndplayerscodex.shared.generated.resources.phrase_sheet_draft_placeholder
-import dndplayerscodex.shared.generated.resources.phrase_sheet_frequent_empty
-import dndplayerscodex.shared.generated.resources.phrase_sheet_frequent_header
-import dndplayerscodex.shared.generated.resources.phrase_sheet_intro
-import dndplayerscodex.shared.generated.resources.phrase_sheet_overline
-import dndplayerscodex.shared.generated.resources.phrase_sheet_pin_button
-import dndplayerscodex.shared.generated.resources.phrase_sheet_pinned_empty
-import dndplayerscodex.shared.generated.resources.phrase_sheet_pinned_header
-import dndplayerscodex.shared.generated.resources.phrase_sheet_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.phrase_sheet_disclaimer
+import incadent.shared.generated.resources.phrase_sheet_draft_placeholder
+import incadent.shared.generated.resources.phrase_sheet_frequent_empty
+import incadent.shared.generated.resources.phrase_sheet_frequent_header
+import incadent.shared.generated.resources.phrase_sheet_intro
+import incadent.shared.generated.resources.phrase_sheet_overline
+import incadent.shared.generated.resources.phrase_sheet_pin_button
+import incadent.shared.generated.resources.phrase_sheet_pinned_empty
+import incadent.shared.generated.resources.phrase_sheet_pinned_header
+import incadent.shared.generated.resources.phrase_sheet_title
 import org.jetbrains.compose.resources.stringResource
 
 /** the "Заготовки" bottom sheet (Players Codex v6.dc.html `isSnipSheet`) - pinned phrases, frequent ones, own input */

@@ -35,11 +35,11 @@ import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_name_carry_title
-import dndplayerscodex.shared.generated.resources.combat_name_title
-import dndplayerscodex.shared.generated.resources.combat_promo_learned
-import dndplayerscodex.shared.generated.resources.combat_promo_reject
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_name_carry_title
+import incadent.shared.generated.resources.combat_name_title
+import incadent.shared.generated.resources.combat_promo_learned
+import incadent.shared.generated.resources.combat_promo_reject
 import org.jetbrains.compose.resources.stringResource
 
 /** the name of a participant made of a species: the field, what it can turn into, and what a new npc would carry */

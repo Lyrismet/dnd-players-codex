@@ -1,4 +1,4 @@
-rootProject.name = "DnDPlayersCodex"
+rootProject.name = "Incadent"
 
 pluginManagement {
     repositories {

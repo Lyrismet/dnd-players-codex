@@ -17,10 +17,10 @@ import com.lyrismet.incadent.core.designsystem.component.AppNoticeBar
 import com.lyrismet.incadent.core.designsystem.component.AppRemoveButton
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.EntityIcons
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_pick_banner_action
-import dndplayerscodex.shared.generated.resources.me_pick_banner_text
-import dndplayerscodex.shared.generated.resources.me_pick_banner_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_pick_banner_action
+import incadent.shared.generated.resources.me_pick_banner_text
+import incadent.shared.generated.resources.me_pick_banner_title
 import org.jetbrains.compose.resources.stringResource
 
 private val BannerBlue = AppPalette.TextSecondary

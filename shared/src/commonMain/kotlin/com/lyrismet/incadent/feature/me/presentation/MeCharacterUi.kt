@@ -28,11 +28,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_tab_items
-import dndplayerscodex.shared.generated.resources.me_tab_resources
-import dndplayerscodex.shared.generated.resources.me_tab_sheet
-import dndplayerscodex.shared.generated.resources.me_tab_spells
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_tab_items
+import incadent.shared.generated.resources.me_tab_resources
+import incadent.shared.generated.resources.me_tab_sheet
+import incadent.shared.generated.resources.me_tab_spells
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 

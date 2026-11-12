@@ -4,8 +4,8 @@ import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_pick_done_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_pick_done_title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString

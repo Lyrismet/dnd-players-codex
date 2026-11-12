@@ -3,9 +3,9 @@ package com.lyrismet.incadent.feature.codex.presentation.summary
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_creature_type_label
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_hp_label
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_species_creature_type_label
+import incadent.shared.generated.resources.entity_sheet_species_hp_label
 
 @Composable
 internal fun SpeciesSummaryBody(

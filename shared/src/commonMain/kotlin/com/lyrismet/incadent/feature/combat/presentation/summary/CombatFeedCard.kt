@@ -22,11 +22,11 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_card_overline
-import dndplayerscodex.shared.generated.resources.combat_list_rounds
-import dndplayerscodex.shared.generated.resources.combat_results_delete
-import dndplayerscodex.shared.generated.resources.combat_results_meta
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_card_overline
+import incadent.shared.generated.resources.combat_list_rounds
+import incadent.shared.generated.resources.combat_results_delete
+import incadent.shared.generated.resources.combat_results_meta
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 

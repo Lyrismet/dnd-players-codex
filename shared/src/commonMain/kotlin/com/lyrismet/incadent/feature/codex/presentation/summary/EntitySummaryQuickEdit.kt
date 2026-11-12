@@ -48,12 +48,12 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.FactValue
 import com.lyrismet.incadent.feature.codex.presentation.summary.QuickEditSheet
 import com.lyrismet.incadent.feature.mention.domain.MentionSegment
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.party_level_up_raise
-import dndplayerscodex.shared.generated.resources.quick_edit_description_placeholder
-import dndplayerscodex.shared.generated.resources.quick_edit_hold_tip
-import dndplayerscodex.shared.generated.resources.quick_edit_hold_tip_dismiss
-import dndplayerscodex.shared.generated.resources.quick_edit_label_description
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.party_level_up_raise
+import incadent.shared.generated.resources.quick_edit_description_placeholder
+import incadent.shared.generated.resources.quick_edit_hold_tip
+import incadent.shared.generated.resources.quick_edit_hold_tip_dismiss
+import incadent.shared.generated.resources.quick_edit_label_description
 import org.jetbrains.compose.resources.stringResource
 
 // the fact label column is a fixed 104px in the mockup, so every value lines up across the card

@@ -9,8 +9,8 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEvent
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_move_into
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_move_into
 import org.jetbrains.compose.resources.stringResource
 
 /** "Переместить в…" for a place card, placed by the caller next to the delete button - only where editable in place */

@@ -14,9 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_portrait_source_camera
-import dndplayerscodex.shared.generated.resources.codex_entry_portrait_source_gallery
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_portrait_source_camera
+import incadent.shared.generated.resources.codex_entry_portrait_source_gallery
 import org.jetbrains.compose.resources.stringResource
 
 /** the "Camera / Gallery" choice opened by tapping an empty or filled [PortraitFrame] - built on [AppDialog] */

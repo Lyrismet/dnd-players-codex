@@ -24,15 +24,15 @@ import com.lyrismet.incadent.feature.codex.presentation.item.itemQuantityText
 import com.lyrismet.incadent.feature.codex.presentation.item.text
 import com.lyrismet.incadent.feature.mention.presentation.MentionChip
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.items_card_owner
-import dndplayerscodex.shared.generated.resources.items_card_price
-import dndplayerscodex.shared.generated.resources.items_card_quantity
-import dndplayerscodex.shared.generated.resources.items_equipment_empty
-import dndplayerscodex.shared.generated.resources.items_equipment_hint
-import dndplayerscodex.shared.generated.resources.items_equipment_title
-import dndplayerscodex.shared.generated.resources.items_quantity_less
-import dndplayerscodex.shared.generated.resources.items_quantity_more
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.items_card_owner
+import incadent.shared.generated.resources.items_card_price
+import incadent.shared.generated.resources.items_card_quantity
+import incadent.shared.generated.resources.items_equipment_empty
+import incadent.shared.generated.resources.items_equipment_hint
+import incadent.shared.generated.resources.items_equipment_title
+import incadent.shared.generated.resources.items_quantity_less
+import incadent.shared.generated.resources.items_quantity_more
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

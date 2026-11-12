@@ -7,16 +7,16 @@ import com.lyrismet.incadent.core.designsystem.component.AppSelectSheetContent
 import com.lyrismet.incadent.core.designsystem.component.AppSelectTexts
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.domain.model.EntityKind
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_place_select_clear
-import dndplayerscodex.shared.generated.resources.codex_place_select_done
-import dndplayerscodex.shared.generated.resources.codex_place_select_empty
-import dndplayerscodex.shared.generated.resources.codex_place_select_empty_hint
-import dndplayerscodex.shared.generated.resources.codex_place_select_multi_hint
-import dndplayerscodex.shared.generated.resources.codex_place_select_search
-import dndplayerscodex.shared.generated.resources.codex_search_create_location
-import dndplayerscodex.shared.generated.resources.place_block_carried
-import dndplayerscodex.shared.generated.resources.place_select_to_top
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_place_select_clear
+import incadent.shared.generated.resources.codex_place_select_done
+import incadent.shared.generated.resources.codex_place_select_empty
+import incadent.shared.generated.resources.codex_place_select_empty_hint
+import incadent.shared.generated.resources.codex_place_select_multi_hint
+import incadent.shared.generated.resources.codex_place_select_search
+import incadent.shared.generated.resources.codex_search_create_location
+import incadent.shared.generated.resources.place_block_carried
+import incadent.shared.generated.resources.place_select_to_top
 import org.jetbrains.compose.resources.stringResource
 
 /** the place select as a sheet of its own, shown over whichever sheet opened it */

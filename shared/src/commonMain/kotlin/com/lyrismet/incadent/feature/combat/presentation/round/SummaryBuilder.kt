@@ -14,20 +14,20 @@ import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_source_environment
-import dndplayerscodex.shared.generated.resources.combat_summary_hit
-import dndplayerscodex.shared.generated.resources.combat_summary_option_immunity
-import dndplayerscodex.shared.generated.resources.combat_summary_option_normal
-import dndplayerscodex.shared.generated.resources.combat_summary_option_resistance
-import dndplayerscodex.shared.generated.resources.combat_summary_option_vulnerability
-import dndplayerscodex.shared.generated.resources.combat_summary_pop_title
-import dndplayerscodex.shared.generated.resources.combat_summary_record_species
-import dndplayerscodex.shared.generated.resources.combat_summary_state_down
-import dndplayerscodex.shared.generated.resources.combat_summary_state_hp
-import dndplayerscodex.shared.generated.resources.combat_summary_title
-import dndplayerscodex.shared.generated.resources.combat_summary_title_now
-import dndplayerscodex.shared.generated.resources.combat_wound_dying
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_calc_source_environment
+import incadent.shared.generated.resources.combat_summary_hit
+import incadent.shared.generated.resources.combat_summary_option_immunity
+import incadent.shared.generated.resources.combat_summary_option_normal
+import incadent.shared.generated.resources.combat_summary_option_resistance
+import incadent.shared.generated.resources.combat_summary_option_vulnerability
+import incadent.shared.generated.resources.combat_summary_pop_title
+import incadent.shared.generated.resources.combat_summary_record_species
+import incadent.shared.generated.resources.combat_summary_state_down
+import incadent.shared.generated.resources.combat_summary_state_hp
+import incadent.shared.generated.resources.combat_summary_title
+import incadent.shared.generated.resources.combat_summary_title_now
+import incadent.shared.generated.resources.combat_wound_dying
 import org.jetbrains.compose.resources.stringResource
 
 /** the damage of one round, target by target and blow by blow */

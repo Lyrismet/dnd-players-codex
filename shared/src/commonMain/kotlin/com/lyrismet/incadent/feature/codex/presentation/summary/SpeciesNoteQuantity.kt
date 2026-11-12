@@ -17,8 +17,8 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.IconBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.mention.domain.MAX_MENTION_QUANTITY
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_note_quantity
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_species_note_quantity
 import org.jetbrains.compose.resources.stringResource
 
 /** "В этой заметке ×4 [−][+]" - how many of the species the tapped chip counts, [onStep] null leaves it read-only */

@@ -2,10 +2,10 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.designsystem.component.FormChipQuickAdd
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_helper
-import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_npc
-import dndplayerscodex.shared.generated.resources.codex_entry_quick_add_placeholder_npc
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_quick_add_helper
+import incadent.shared.generated.resources.codex_entry_quick_add_npc
+import incadent.shared.generated.resources.codex_entry_quick_add_placeholder_npc
 import org.jetbrains.compose.resources.stringResource
 
 /** the "+ New NPC" quick-add for the quest "given by" chip field */

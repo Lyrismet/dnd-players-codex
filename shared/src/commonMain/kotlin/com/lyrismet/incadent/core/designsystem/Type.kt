@@ -7,9 +7,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.alegreya_variable
-import dndplayerscodex.shared.generated.resources.inter_variable
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.alegreya_variable
+import incadent.shared.generated.resources.inter_variable
 import org.jetbrains.compose.resources.Font
 
 /** ui and body text - matches Inter 400/500/600/700 from the design system */

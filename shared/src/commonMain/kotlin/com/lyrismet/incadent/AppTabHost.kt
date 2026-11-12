@@ -48,11 +48,11 @@ import com.slack.circuit.foundation.NavigableCircuitContent
 import com.slack.circuit.foundation.rememberCircuitNavigator
 import com.slack.circuit.runtime.Navigator
 import com.slack.circuit.runtime.screen.Screen
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.action_cancel
-import dndplayerscodex.shared.generated.resources.app_exit_confirm
-import dndplayerscodex.shared.generated.resources.app_exit_text
-import dndplayerscodex.shared.generated.resources.app_exit_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.action_cancel
+import incadent.shared.generated.resources.app_exit_confirm
+import incadent.shared.generated.resources.app_exit_text
+import incadent.shared.generated.resources.app_exit_title
 import org.jetbrains.compose.resources.stringResource
 
 internal enum class AppTab {

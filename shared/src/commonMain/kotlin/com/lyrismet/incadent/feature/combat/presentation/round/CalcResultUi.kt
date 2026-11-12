@@ -30,8 +30,8 @@ import com.lyrismet.incadent.core.designsystem.component.ShieldStyle
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_type_none
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_calc_type_none
 import org.jetbrains.compose.resources.stringResource
 
 /** the thirteen damage types in a row, the chosen one is lit in its own colour */

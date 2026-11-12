@@ -47,14 +47,14 @@ import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.presentation.summary.VulnerabilityGridEditor
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpPadState
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_hp_apply
-import dndplayerscodex.shared.generated.resources.combat_hp_mode_hp
-import dndplayerscodex.shared.generated.resources.combat_panel_full_title
-import dndplayerscodex.shared.generated.resources.combat_panel_remove
-import dndplayerscodex.shared.generated.resources.combat_panel_set_hp
-import dndplayerscodex.shared.generated.resources.combat_panel_side_title
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_hp_apply
+import incadent.shared.generated.resources.combat_hp_mode_hp
+import incadent.shared.generated.resources.combat_panel_full_title
+import incadent.shared.generated.resources.combat_panel_remove
+import incadent.shared.generated.resources.combat_panel_set_hp
+import incadent.shared.generated.resources.combat_panel_side_title
+import incadent.shared.generated.resources.entity_sheet_species_vulnerabilities_title
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 

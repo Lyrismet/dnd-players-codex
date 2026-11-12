@@ -9,16 +9,16 @@ import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.srdNotAdded
 import com.lyrismet.incadent.feature.codex.domain.model.Species
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_label_species
-import dndplayerscodex.shared.generated.resources.codex_species_group_own
-import dndplayerscodex.shared.generated.resources.codex_species_group_srd
-import dndplayerscodex.shared.generated.resources.codex_species_select_clear
-import dndplayerscodex.shared.generated.resources.codex_species_select_create
-import dndplayerscodex.shared.generated.resources.codex_species_select_done
-import dndplayerscodex.shared.generated.resources.codex_species_select_empty
-import dndplayerscodex.shared.generated.resources.codex_species_select_multi_hint
-import dndplayerscodex.shared.generated.resources.codex_species_select_search
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_label_species
+import incadent.shared.generated.resources.codex_species_group_own
+import incadent.shared.generated.resources.codex_species_group_srd
+import incadent.shared.generated.resources.codex_species_select_clear
+import incadent.shared.generated.resources.codex_species_select_create
+import incadent.shared.generated.resources.codex_species_select_done
+import incadent.shared.generated.resources.codex_species_select_empty
+import incadent.shared.generated.resources.codex_species_select_multi_hint
+import incadent.shared.generated.resources.codex_species_select_search
 import org.jetbrains.compose.resources.stringResource
 
 /** the species select as a sheet over the npc form, an empty answer clears the link */

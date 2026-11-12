@@ -10,13 +10,13 @@ import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.repository.TagRepository
 import com.lyrismet.incadent.feature.session.domain.tags.TagReasonLabels
 import com.lyrismet.incadent.feature.session.domain.tags.suggestSessionTags
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.session_detail_tag_button_label_empty
-import dndplayerscodex.shared.generated.resources.session_detail_tag_button_label_has_tags
-import dndplayerscodex.shared.generated.resources.session_detail_tag_sheet_overline_format
-import dndplayerscodex.shared.generated.resources.session_tag_reason_quest
-import dndplayerscodex.shared.generated.resources.session_tag_reason_quests
-import dndplayerscodex.shared.generated.resources.session_tag_reason_words
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.session_detail_tag_button_label_empty
+import incadent.shared.generated.resources.session_detail_tag_button_label_has_tags
+import incadent.shared.generated.resources.session_detail_tag_sheet_overline_format
+import incadent.shared.generated.resources.session_tag_reason_quest
+import incadent.shared.generated.resources.session_tag_reason_quests
+import incadent.shared.generated.resources.session_tag_reason_words
 import org.jetbrains.compose.resources.stringResource
 
 /** what the tag button, the tag sheet and the event handler read, derived from the session's notes and tags */

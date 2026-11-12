@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		30A9CAE13AE40C88154E4C5B /* DnD Players Codex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DnD Players Codex.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		30A9CAE13AE40C88154E4C5B /* Incadent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Incadent.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -58,7 +58,7 @@
 		19E1CB2F71028F6779DCD907 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				30A9CAE13AE40C88154E4C5B /* DnD Players Codex.app */,
+				30A9CAE13AE40C88154E4C5B /* Incadent.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,7 +95,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = 30A9CAE13AE40C88154E4C5B /* DnD Players Codex.app */;
+			productReference = 30A9CAE13AE40C88154E4C5B /* Incadent.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

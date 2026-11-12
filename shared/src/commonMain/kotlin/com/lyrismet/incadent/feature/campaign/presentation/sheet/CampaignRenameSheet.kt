@@ -13,12 +13,12 @@ import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.savableCampaignName
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.settings_rename_hint
-import dndplayerscodex.shared.generated.resources.settings_rename_placeholder
-import dndplayerscodex.shared.generated.resources.settings_rename_save
-import dndplayerscodex.shared.generated.resources.settings_rename_title
-import dndplayerscodex.shared.generated.resources.settings_section_campaign
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.settings_rename_hint
+import incadent.shared.generated.resources.settings_rename_placeholder
+import incadent.shared.generated.resources.settings_rename_save
+import incadent.shared.generated.resources.settings_rename_title
+import incadent.shared.generated.resources.settings_section_campaign
 import org.jetbrains.compose.resources.stringResource
 
 /** the campaign rename sheet - save is disabled and refused while the draft is blank */

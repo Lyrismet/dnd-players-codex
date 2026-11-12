@@ -34,10 +34,10 @@ import com.lyrismet.incadent.core.designsystem.component.icons.SearchIcon
 import com.lyrismet.incadent.core.designsystem.numeral
 import com.lyrismet.incadent.core.format.signed
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.me_search_close
-import dndplayerscodex.shared.generated.resources.me_search_description
-import dndplayerscodex.shared.generated.resources.me_search_placeholder
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_search_close
+import incadent.shared.generated.resources.me_search_description
+import incadent.shared.generated.resources.me_search_placeholder
 import org.jetbrains.compose.resources.stringResource
 
 /** the six ability chips pinned over the list, a press scrolls to the strip, the loupe opens the search */

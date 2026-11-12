@@ -9,11 +9,11 @@ import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.presentation.style.PartyMemberColor
 import com.lyrismet.incadent.feature.codex.presentation.style.toStatusColor
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_outcome_interrupted
-import dndplayerscodex.shared.generated.resources.combat_outcome_peace
-import dndplayerscodex.shared.generated.resources.combat_outcome_retreat
-import dndplayerscodex.shared.generated.resources.combat_outcome_victory
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_outcome_interrupted
+import incadent.shared.generated.resources.combat_outcome_peace
+import incadent.shared.generated.resources.combat_outcome_retreat
+import incadent.shared.generated.resources.combat_outcome_victory
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 

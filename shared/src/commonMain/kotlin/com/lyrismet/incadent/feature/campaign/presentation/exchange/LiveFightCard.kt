@@ -13,12 +13,12 @@ import com.lyrismet.incadent.core.designsystem.component.AppLiveDot
 import com.lyrismet.incadent.core.designsystem.component.AppNoticeBar
 import com.lyrismet.incadent.core.designsystem.component.AppSwitch
 import com.lyrismet.incadent.feature.campaign.domain.model.LiveFight
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.exchange_live_fighters
-import dndplayerscodex.shared.generated.resources.exchange_live_line_minutes
-import dndplayerscodex.shared.generated.resources.exchange_live_line_round
-import dndplayerscodex.shared.generated.resources.exchange_live_title_ongoing
-import dndplayerscodex.shared.generated.resources.exchange_live_title_prep
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.exchange_live_fighters
+import incadent.shared.generated.resources.exchange_live_line_minutes
+import incadent.shared.generated.resources.exchange_live_line_round
+import incadent.shared.generated.resources.exchange_live_title_ongoing
+import incadent.shared.generated.resources.exchange_live_title_prep
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 

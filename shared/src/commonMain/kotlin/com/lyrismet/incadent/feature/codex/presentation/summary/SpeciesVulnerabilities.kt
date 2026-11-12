@@ -41,11 +41,11 @@ import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import com.lyrismet.incadent.feature.codex.presentation.style.toShieldStyle
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_empty
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_hint
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_tip_format
-import dndplayerscodex.shared.generated.resources.entity_sheet_species_vulnerabilities_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_species_vulnerabilities_empty
+import incadent.shared.generated.resources.entity_sheet_species_vulnerabilities_hint
+import incadent.shared.generated.resources.entity_sheet_species_vulnerabilities_tip_format
+import incadent.shared.generated.resources.entity_sheet_species_vulnerabilities_title
 import org.jetbrains.compose.resources.stringResource
 
 private const val GRID_COLUMNS = 3

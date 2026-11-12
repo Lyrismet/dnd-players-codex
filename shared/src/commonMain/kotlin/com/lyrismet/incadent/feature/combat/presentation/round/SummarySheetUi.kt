@@ -40,10 +40,10 @@ import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldColor
 import com.lyrismet.incadent.feature.codex.presentation.style.shieldIconPath
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_summary_empty
-import dndplayerscodex.shared.generated.resources.combat_summary_hint
-import dndplayerscodex.shared.generated.resources.combat_summary_overline
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_summary_empty
+import incadent.shared.generated.resources.combat_summary_hint
+import incadent.shared.generated.resources.combat_summary_overline
 import org.jetbrains.compose.resources.stringResource
 
 /** the damage of one round, target by target and blow by blow, with the master's resistance named after the blow */

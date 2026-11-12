@@ -16,11 +16,11 @@ import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.format.kindLabelRes
 import com.lyrismet.incadent.domain.model.EntityKind
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_type_species
-import dndplayerscodex.shared.generated.resources.codex_party_fallen_word
-import dndplayerscodex.shared.generated.resources.entity_sheet_overline_format
-import dndplayerscodex.shared.generated.resources.entity_sheet_party_type_label
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_type_species
+import incadent.shared.generated.resources.codex_party_fallen_word
+import incadent.shared.generated.resources.entity_sheet_overline_format
+import incadent.shared.generated.resources.entity_sheet_party_type_label
 import org.jetbrains.compose.resources.stringResource
 
 /** the type, status and the edit and close buttons of a card - they stay above the scrolling body */

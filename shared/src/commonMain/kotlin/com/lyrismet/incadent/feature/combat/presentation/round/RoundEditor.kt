@@ -17,11 +17,11 @@ import com.lyrismet.incadent.feature.combat.domain.round.TurnPosition
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
 import com.lyrismet.incadent.feature.combat.domain.round.nextTurn
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeAdder
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_round_toast_again
-import dndplayerscodex.shared.generated.resources.combat_round_toast_joined
-import dndplayerscodex.shared.generated.resources.combat_round_toast_removed
-import dndplayerscodex.shared.generated.resources.combat_round_undo_removed
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_round_toast_again
+import incadent.shared.generated.resources.combat_round_toast_joined
+import incadent.shared.generated.resources.combat_round_toast_removed
+import incadent.shared.generated.resources.combat_round_undo_removed
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

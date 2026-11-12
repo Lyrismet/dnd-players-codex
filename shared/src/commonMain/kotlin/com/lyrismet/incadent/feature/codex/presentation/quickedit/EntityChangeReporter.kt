@@ -2,10 +2,10 @@ package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.undo.UndoController
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.place_move_from
-import dndplayerscodex.shared.generated.resources.place_move_here
-import dndplayerscodex.shared.generated.resources.quick_edit_changed_suffix
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.place_move_from
+import incadent.shared.generated.resources.place_move_here
+import incadent.shared.generated.resources.quick_edit_changed_suffix
 import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.stringResource
 

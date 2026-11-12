@@ -22,12 +22,12 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.format.joinWithDot
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.mention_create_compact
-import dndplayerscodex.shared.generated.resources.mention_create_hint
-import dndplayerscodex.shared.generated.resources.mention_create_row_format
-import dndplayerscodex.shared.generated.resources.mention_empty_codex
-import dndplayerscodex.shared.generated.resources.mention_nickname_format
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.mention_create_compact
+import incadent.shared.generated.resources.mention_create_hint
+import incadent.shared.generated.resources.mention_create_row_format
+import incadent.shared.generated.resources.mention_empty_codex
+import incadent.shared.generated.resources.mention_nickname_format
 import org.jetbrains.compose.resources.stringResource
 
 /** the rows of the "@" dropdown, laid out by the composer's popover chrome */

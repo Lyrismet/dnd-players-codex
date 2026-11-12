@@ -7,11 +7,11 @@ import com.lyrismet.incadent.core.designsystem.component.icons.entity.icon
 import com.lyrismet.incadent.core.selectlist.SelectOption
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.campaign_player_level_format
-import dndplayerscodex.shared.generated.resources.me_pick_empty
-import dndplayerscodex.shared.generated.resources.me_pick_search
-import dndplayerscodex.shared.generated.resources.me_pick_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.campaign_player_level_format
+import incadent.shared.generated.resources.me_pick_empty
+import incadent.shared.generated.resources.me_pick_search
+import incadent.shared.generated.resources.me_pick_title
 import org.jetbrains.compose.resources.stringResource
 
 /** the characters to pick the player's own from, the fallen are not offered */

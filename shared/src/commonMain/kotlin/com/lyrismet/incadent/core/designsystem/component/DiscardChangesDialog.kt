@@ -3,10 +3,10 @@ package com.lyrismet.incadent.core.designsystem.component
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.discard_back
-import dndplayerscodex.shared.generated.resources.discard_leave
-import dndplayerscodex.shared.generated.resources.discard_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.discard_back
+import incadent.shared.generated.resources.discard_leave
+import incadent.shared.generated.resources.discard_title
 import org.jetbrains.compose.resources.stringResource
 
 /** "leave without saving?" over a sheet with unsaved input - going back is the gold button, leaving the plain one */

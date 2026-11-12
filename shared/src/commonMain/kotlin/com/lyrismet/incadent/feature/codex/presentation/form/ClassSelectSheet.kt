@@ -36,15 +36,15 @@ import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.feature.codex.domain.grouping.isSrdClass
 import com.lyrismet.incadent.feature.codex.domain.grouping.srdClassesMatching
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.class_sheet_custom
-import dndplayerscodex.shared.generated.resources.class_sheet_done
-import dndplayerscodex.shared.generated.resources.class_sheet_not_in_srd
-import dndplayerscodex.shared.generated.resources.class_sheet_overline
-import dndplayerscodex.shared.generated.resources.class_sheet_own_badge
-import dndplayerscodex.shared.generated.resources.class_sheet_search
-import dndplayerscodex.shared.generated.resources.class_sheet_subclass_label
-import dndplayerscodex.shared.generated.resources.class_sheet_title_empty
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.class_sheet_custom
+import incadent.shared.generated.resources.class_sheet_done
+import incadent.shared.generated.resources.class_sheet_not_in_srd
+import incadent.shared.generated.resources.class_sheet_overline
+import incadent.shared.generated.resources.class_sheet_own_badge
+import incadent.shared.generated.resources.class_sheet_search
+import incadent.shared.generated.resources.class_sheet_subclass_label
+import incadent.shared.generated.resources.class_sheet_title_empty
 import org.jetbrains.compose.resources.stringResource
 
 private const val GRID_COLUMNS = 3

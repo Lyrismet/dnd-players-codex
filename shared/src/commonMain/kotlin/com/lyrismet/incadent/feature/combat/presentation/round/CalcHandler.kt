@@ -10,11 +10,11 @@ import com.lyrismet.incadent.feature.combat.domain.damage.planHit
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.round.Strike
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_calc_done_many
-import dndplayerscodex.shared.generated.resources.combat_calc_done_one
-import dndplayerscodex.shared.generated.resources.combat_calc_recorded_sub
-import dndplayerscodex.shared.generated.resources.combat_calc_recorded_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_calc_done_many
+import incadent.shared.generated.resources.combat_calc_done_one
+import incadent.shared.generated.resources.combat_calc_recorded_sub
+import incadent.shared.generated.resources.combat_calc_recorded_title
 import org.jetbrains.compose.resources.getString
 
 /** what the calculator may use of the fight at the moment of an event */

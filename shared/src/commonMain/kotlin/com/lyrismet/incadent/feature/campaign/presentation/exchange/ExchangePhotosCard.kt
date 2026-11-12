@@ -11,15 +11,15 @@ import com.lyrismet.incadent.core.format.fileSizeOf
 import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.exchange_approx
-import dndplayerscodex.shared.generated.resources.exchange_photos_hint
-import dndplayerscodex.shared.generated.resources.exchange_photos_none
-import dndplayerscodex.shared.generated.resources.exchange_photos_off
-import dndplayerscodex.shared.generated.resources.exchange_photos_on
-import dndplayerscodex.shared.generated.resources.exchange_photos_title
-import dndplayerscodex.shared.generated.resources.exchange_size_kb
-import dndplayerscodex.shared.generated.resources.exchange_size_mb
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.exchange_approx
+import incadent.shared.generated.resources.exchange_photos_hint
+import incadent.shared.generated.resources.exchange_photos_none
+import incadent.shared.generated.resources.exchange_photos_off
+import incadent.shared.generated.resources.exchange_photos_on
+import incadent.shared.generated.resources.exchange_photos_title
+import incadent.shared.generated.resources.exchange_size_kb
+import incadent.shared.generated.resources.exchange_size_mb
 import org.jetbrains.compose.resources.stringResource
 
 /** a size in bytes as "12 КБ" or "1,5 МБ", the decimal sign follows the app language */

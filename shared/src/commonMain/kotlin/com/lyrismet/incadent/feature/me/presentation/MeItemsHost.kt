@@ -18,10 +18,10 @@ import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.MentionRef
 import com.lyrismet.incadent.feature.mention.domain.mentionEntitiesFrom
 import com.lyrismet.incadent.feature.mention.presentation.MentionField
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_type_location
-import dndplayerscodex.shared.generated.resources.codex_entry_type_npc
-import dndplayerscodex.shared.generated.resources.codex_entry_type_party
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_type_location
+import incadent.shared.generated.resources.codex_entry_type_npc
+import incadent.shared.generated.resources.codex_entry_type_party
 import org.jetbrains.compose.resources.stringResource
 
 /** the codex records the item sheet and the "@" of the notes work with */

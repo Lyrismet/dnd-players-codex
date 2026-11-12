@@ -12,13 +12,13 @@ import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isDying
 import com.lyrismet.incadent.feature.combat.domain.round.isOut
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_panel_rx_attacked
-import dndplayerscodex.shared.generated.resources.combat_panel_rx_available
-import dndplayerscodex.shared.generated.resources.combat_panel_rx_spent
-import dndplayerscodex.shared.generated.resources.combat_round_reinforcement
-import dndplayerscodex.shared.generated.resources.combat_round_you
-import dndplayerscodex.shared.generated.resources.combat_wound_captured
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_panel_rx_attacked
+import incadent.shared.generated.resources.combat_panel_rx_available
+import incadent.shared.generated.resources.combat_panel_rx_spent
+import incadent.shared.generated.resources.combat_round_reinforcement
+import incadent.shared.generated.resources.combat_round_you
+import incadent.shared.generated.resources.combat_wound_captured
 import org.jetbrains.compose.resources.stringResource
 
 private const val FIVE_PIPS = 5

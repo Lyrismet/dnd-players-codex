@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.sessionNumberLabels
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_target_new
-import dndplayerscodex.shared.generated.resources.combat_target_prefix
-import dndplayerscodex.shared.generated.resources.combat_target_session
-import dndplayerscodex.shared.generated.resources.combat_target_session_titled
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_target_new
+import incadent.shared.generated.resources.combat_target_prefix
+import incadent.shared.generated.resources.combat_target_session
+import incadent.shared.generated.resources.combat_target_session_titled
 import org.jetbrains.compose.resources.stringResource
 
 /** "Итоги попадут в" and the session the results go to, a new one when none is running */

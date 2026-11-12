@@ -11,9 +11,9 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppLinkedText
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.settings_about_srd_title
-import dndplayerscodex.shared.generated.resources.settings_about_srd_value
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.settings_about_srd_title
+import incadent.shared.generated.resources.settings_about_srd_value
 import org.jetbrains.compose.resources.stringResource
 
 /** the SRD 5.1 credit with its two license links, shown in About and under the species form */

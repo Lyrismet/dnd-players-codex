@@ -10,11 +10,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.component.AppDisclosure
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.codex_entry_more
-import dndplayerscodex.shared.generated.resources.codex_entry_more_close
-import dndplayerscodex.shared.generated.resources.codex_entry_more_hint_npc
-import dndplayerscodex.shared.generated.resources.codex_entry_summary_portrait
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.codex_entry_more
+import incadent.shared.generated.resources.codex_entry_more_close
+import incadent.shared.generated.resources.codex_entry_more_hint_npc
+import incadent.shared.generated.resources.codex_entry_summary_portrait
 import org.jetbrains.compose.resources.stringResource
 
 /** the "more" block of a form, a plain flag is the only state it keeps */

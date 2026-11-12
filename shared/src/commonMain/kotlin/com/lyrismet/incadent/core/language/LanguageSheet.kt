@@ -33,16 +33,16 @@ import com.lyrismet.incadent.core.designsystem.component.RadioDot
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.parchmentStrokeIcon
 import com.lyrismet.incadent.core.preferences.AppLanguage
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.settings_language_empty
-import dndplayerscodex.shared.generated.resources.settings_language_en
-import dndplayerscodex.shared.generated.resources.settings_language_en_sub
-import dndplayerscodex.shared.generated.resources.settings_language_footnote
-import dndplayerscodex.shared.generated.resources.settings_language_ru
-import dndplayerscodex.shared.generated.resources.settings_language_ru_sub
-import dndplayerscodex.shared.generated.resources.settings_language_search
-import dndplayerscodex.shared.generated.resources.settings_language_title
-import dndplayerscodex.shared.generated.resources.settings_title
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.settings_language_empty
+import incadent.shared.generated.resources.settings_language_en
+import incadent.shared.generated.resources.settings_language_en_sub
+import incadent.shared.generated.resources.settings_language_footnote
+import incadent.shared.generated.resources.settings_language_ru
+import incadent.shared.generated.resources.settings_language_ru_sub
+import incadent.shared.generated.resources.settings_language_search
+import incadent.shared.generated.resources.settings_language_title
+import incadent.shared.generated.resources.settings_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

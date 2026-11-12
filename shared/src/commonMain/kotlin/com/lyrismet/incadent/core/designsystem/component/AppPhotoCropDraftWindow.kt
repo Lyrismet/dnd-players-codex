@@ -8,9 +8,9 @@ import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.core.portrait.decodeImageBitmap
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.photo_kind_cover
-import dndplayerscodex.shared.generated.resources.photo_kind_portrait
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.photo_kind_cover
+import incadent.shared.generated.resources.photo_kind_portrait
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource

@@ -7,8 +7,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import com.lyrismet.incadent.core.logging.AppLog
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.error_action_failed
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.error_action_failed
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

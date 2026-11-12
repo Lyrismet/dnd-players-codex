@@ -33,9 +33,9 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.Dot
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.combat.presentation.prep.AddButton
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_round_add_ally
-import dndplayerscodex.shared.generated.resources.combat_round_add_enemy
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_round_add_ally
+import incadent.shared.generated.resources.combat_round_add_enemy
 import org.jetbrains.compose.resources.stringResource
 
 private const val DIMMED_ALPHA = 0.5f

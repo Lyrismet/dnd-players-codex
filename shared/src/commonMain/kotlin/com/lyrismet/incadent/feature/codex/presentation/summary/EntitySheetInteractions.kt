@@ -30,8 +30,8 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.withPlaceToggl
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.withPresence
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.withQuickEdit
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.withStatus
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.party_level_up_followed
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.party_level_up_followed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

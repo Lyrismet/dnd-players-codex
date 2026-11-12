@@ -6,14 +6,14 @@ import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppIconListRow
 import com.lyrismet.incadent.core.designsystem.component.ExportIcon
 import com.lyrismet.incadent.core.designsystem.component.ImportIcon
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.settings_data_export_hint
-import dndplayerscodex.shared.generated.resources.settings_data_export_title
-import dndplayerscodex.shared.generated.resources.settings_data_import_hint
-import dndplayerscodex.shared.generated.resources.settings_data_import_title
-import dndplayerscodex.shared.generated.resources.settings_data_undo_import_hint
-import dndplayerscodex.shared.generated.resources.settings_data_undo_import_title
-import dndplayerscodex.shared.generated.resources.settings_section_data
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.settings_data_export_hint
+import incadent.shared.generated.resources.settings_data_export_title
+import incadent.shared.generated.resources.settings_data_import_hint
+import incadent.shared.generated.resources.settings_data_import_title
+import incadent.shared.generated.resources.settings_data_undo_import_hint
+import incadent.shared.generated.resources.settings_data_undo_import_title
+import incadent.shared.generated.resources.settings_section_data
 import org.jetbrains.compose.resources.stringResource
 
 /** the "ДАННЫЕ" group: the campaign goes out to a file and comes back from one */

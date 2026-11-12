@@ -2,14 +2,14 @@ package com.lyrismet.incadent.feature.session.presentation.tags
 
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.feature.session.domain.model.BUILT_IN_SESSION_TAGS
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.session_tag_builtin_combat
-import dndplayerscodex.shared.generated.resources.session_tag_builtin_intrigue
-import dndplayerscodex.shared.generated.resources.session_tag_builtin_investigation
-import dndplayerscodex.shared.generated.resources.session_tag_builtin_plot
-import dndplayerscodex.shared.generated.resources.session_tag_builtin_rest
-import dndplayerscodex.shared.generated.resources.session_tag_builtin_trade
-import dndplayerscodex.shared.generated.resources.session_tag_builtin_travel
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.session_tag_builtin_combat
+import incadent.shared.generated.resources.session_tag_builtin_intrigue
+import incadent.shared.generated.resources.session_tag_builtin_investigation
+import incadent.shared.generated.resources.session_tag_builtin_plot
+import incadent.shared.generated.resources.session_tag_builtin_rest
+import incadent.shared.generated.resources.session_tag_builtin_trade
+import incadent.shared.generated.resources.session_tag_builtin_travel
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 

@@ -38,8 +38,8 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.centeredLine
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.help_got_it
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.help_got_it
 import org.jetbrains.compose.resources.stringResource
 
 private val HintTapArea = 48.dp

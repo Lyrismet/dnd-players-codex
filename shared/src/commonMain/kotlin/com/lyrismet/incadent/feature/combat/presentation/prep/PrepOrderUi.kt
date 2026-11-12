@@ -31,10 +31,10 @@ import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.dashedBorder
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.combat_list_reset
-import dndplayerscodex.shared.generated.resources.combat_prep_order_header
-import dndplayerscodex.shared.generated.resources.combat_prep_order_hint
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_list_reset
+import incadent.shared.generated.resources.combat_prep_order_header
+import incadent.shared.generated.resources.combat_prep_order_hint
 import org.jetbrains.compose.resources.stringResource
 
 private val NumberShape = CircleShape

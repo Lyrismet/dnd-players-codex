@@ -5,10 +5,10 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterRestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
-import dndplayerscodex.shared.generated.resources.Res
-import dndplayerscodex.shared.generated.resources.items_deleted_title
-import dndplayerscodex.shared.generated.resources.me_rest_done_title
-import dndplayerscodex.shared.generated.resources.me_rest_note
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.items_deleted_title
+import incadent.shared.generated.resources.me_rest_done_title
+import incadent.shared.generated.resources.me_rest_note
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
