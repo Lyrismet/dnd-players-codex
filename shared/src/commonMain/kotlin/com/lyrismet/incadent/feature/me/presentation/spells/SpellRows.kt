@@ -107,7 +107,7 @@ private fun metaLine(spell: CharacterSpell): String =
             stringResource(Res.string.me_spells_meta_cantrip_school, spell.school.lowercase())
         spell.isCantrip -> stringResource(Res.string.me_spells_meta_cantrip)
         spell.hasFreeCasts ->
-            freeMeta(spell)
+            freeMeta()
         spell.castingTime.isNotBlank() -> stringResource(Res.string.me_spells_meta_slot_time, spell.castingTime)
         else -> stringResource(Res.string.me_spells_meta_slot)
     }

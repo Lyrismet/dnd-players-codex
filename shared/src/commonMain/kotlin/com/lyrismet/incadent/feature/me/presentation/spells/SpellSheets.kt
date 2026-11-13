@@ -26,7 +26,6 @@ import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.format.toRomanNumeral
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
-import com.lyrismet.incadent.feature.codex.domain.model.SpellRest
 import com.lyrismet.incadent.feature.me.domain.SpellPay
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_slots_level_title
@@ -40,7 +39,6 @@ import incadent.shared.generated.resources.me_spells_card_delete
 import incadent.shared.generated.resources.me_spells_card_edit
 import incadent.shared.generated.resources.me_spells_card_over
 import incadent.shared.generated.resources.me_spells_meta_free_long
-import incadent.shared.generated.resources.me_spells_meta_free_short
 import org.jetbrains.compose.resources.stringResource
 
 /** the card of the open spell and the editor of the one being made, one of them at a time */
@@ -117,7 +115,7 @@ private fun CastBlock(
             SectionOverline(stringResource(Res.string.me_spells_card_cast_title), color = AppPalette.Arcane)
             Text(
                 if (spell.hasFreeCasts) {
-                    freeMeta(spell)
+                    freeMeta()
                 } else {
                     stringResource(Res.string.me_spells_card_cast_slot, spell.level.toRomanNumeral())
                 },
@@ -156,16 +154,7 @@ private fun CastBlock(
 }
 
 @Composable
-internal fun freeMeta(spell: CharacterSpell): String =
-    stringResource(
-        if (spell.freeRest ==
-            SpellRest.SHORT
-        ) {
-            Res.string.me_spells_meta_free_short
-        } else {
-            Res.string.me_spells_meta_free_long
-        },
-    )
+internal fun freeMeta(): String = stringResource(Res.string.me_spells_meta_free_long)
 
 @Composable
 private fun CastChip(

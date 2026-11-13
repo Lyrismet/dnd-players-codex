@@ -27,25 +27,25 @@ CREATE INDEX character_spell_campaign_id ON character_spell(campaign_id);
 
 selectByMember:
 SELECT id, name, level, school, casting_time, spell_range, verbal, somatic, has_material, material, duration, concentration, ritual,
-    body, free_max, free_left, free_rest, position, origin_id
+    body, free_max, free_left, position, origin_id
 FROM character_spell WHERE party_member_id = ?
 ORDER BY level, position, id;
 
 selectById:
 SELECT id, name, level, school, casting_time, spell_range, verbal, somatic, has_material, material, duration, concentration, ritual,
-    body, free_max, free_left, free_rest, position, origin_id
+    body, free_max, free_left, position, origin_id
 FROM character_spell WHERE id = ?;
 
 insert:
 INSERT INTO character_spell(party_member_id, name, level, school, casting_time, spell_range, verbal, somatic, has_material, material,
-    duration, concentration, ritual, body, free_max, free_left, free_rest, position, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    duration, concentration, ritual, body, free_max, free_left, position, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE character_spell SET name = :name, level = :level, school = :school, casting_time = :castingTime,
     spell_range = :range, verbal = :verbal, somatic = :somatic, has_material = :hasMaterial, material = :material, duration = :duration,
     concentration = :concentration, ritual = :ritual, body = :body, free_max = :freeMax,
-    free_left = MIN(free_left, :freeMax), free_rest = :freeRest, position = :position
+    free_left = MIN(free_left, :freeMax), position = :position
 WHERE id = :id;
 
 -- a cast and its undo move the count by one, held between zero and the max

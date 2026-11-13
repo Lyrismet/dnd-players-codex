@@ -59,6 +59,15 @@ class SpellCastingTest {
         }
 
     @Test
+    fun `a slot spent since the snapshot is not spent again`() =
+        runTest {
+            casting.cast(spell(1), SpellPay.Slot(1), columns)
+            casting.cast(spell(1), SpellPay.Slot(1), columns)
+            assertNull(casting.cast(spell(1), SpellPay.Slot(1), columns))
+            assertEquals(0, resources.counts[10L])
+        }
+
+    @Test
     fun `a free cast counts down until the rest and undoes`() =
         runTest {
             val cast = casting.cast(spell(1, freeLeft = 1), SpellPay.Free, columns)
@@ -105,6 +114,13 @@ private class FakeResources(
         delta: Int,
     ) {
         counts[id] = (counts[id] ?: 0) + delta
+    }
+
+    override suspend fun spend(id: Long): Boolean {
+        val left = counts[id] ?: 0
+        if (left <= 0) return false
+        counts[id] = left - 1
+        return true
     }
 
     override suspend fun edit(

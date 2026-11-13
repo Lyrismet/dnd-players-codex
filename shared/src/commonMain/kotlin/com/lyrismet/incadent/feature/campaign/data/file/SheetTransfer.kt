@@ -8,8 +8,8 @@ import com.lyrismet.incadent.feature.codex.domain.model.COIN_PURSE_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.FREE_CASTS_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.RESOURCE_MAX_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.SPELL_LEVELS
+import com.lyrismet.incadent.feature.codex.domain.model.SPELL_POSITIONS
 import com.lyrismet.incadent.feature.codex.domain.model.SheetRanges
-import com.lyrismet.incadent.feature.codex.domain.model.SpellRest
 
 /** the sheet of a party member and its counters as file records, [partyNumber] is the number the records point at */
 internal fun readSheetRecords(
@@ -50,7 +50,6 @@ internal fun readSheetRecords(
                 it.body,
                 it.free_max.toInt(),
                 it.free_left.toInt(),
-                it.free_rest,
                 it.position.toInt(),
                 it.origin_id,
             )
@@ -192,8 +191,7 @@ private fun writeSpell(
         record.text,
         cap.toLong(),
         record.freeLeft.coerceIn(0, cap).toLong(),
-        SpellRest.entries.firstOrNull { it.name == record.freeRest }?.name ?: SpellRest.LONG.name,
-        record.position.toLong(),
+        record.position.coerceIn(SPELL_POSITIONS).toLong(),
         campaignId,
         origins.claim(record.originId),
     )

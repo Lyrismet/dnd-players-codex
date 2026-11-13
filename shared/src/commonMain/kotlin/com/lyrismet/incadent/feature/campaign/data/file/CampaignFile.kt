@@ -203,7 +203,6 @@ sealed interface FileRecord {
         val text: String = "",
         val freeMax: Int = 0,
         val freeLeft: Int = 0,
-        val freeRest: String = "LONG",
         val position: Int = 0,
         val originId: String? = null,
     ) : FileRecord

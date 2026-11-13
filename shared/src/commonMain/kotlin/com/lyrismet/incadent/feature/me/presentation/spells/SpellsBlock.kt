@@ -14,9 +14,12 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -257,6 +260,7 @@ private fun LevelTile(
                     filled = resource.current,
                     effect = CellEffect.forLevel(level),
                     clock = clock,
+                    variationSeed = level,
                 )
             }
         }
@@ -308,9 +312,13 @@ private fun LevelPanel(
 ) {
     val resource = state.columns.firstOrNull { it.level == level }?.resource
     val list = remember(state.spells, level) { spellsOfLevel(state.spells, level) }
+    // the panel scrolls into view whole when its level opens, in the sheet and in the fight alike
+    val requester = remember { BringIntoViewRequester() }
+    LaunchedEffect(level) { requester.bringIntoView() }
     Column(
         modifier =
             Modifier
+                .bringIntoViewRequester(requester)
                 .fillMaxWidth()
                 .appCard(
                     shape = AppShapes.Card,
@@ -329,6 +337,7 @@ private fun LevelPanel(
                 onPress = if (state.readOnly) null else ({ send(SpellsEvent.CellPressed(resource.id, it)) }),
                 effect = CellEffect.forLevel(level),
                 clock = clock,
+                variationSeed = level,
             )
             Text(
                 stringResource(Res.string.me_slots_cell_hint),

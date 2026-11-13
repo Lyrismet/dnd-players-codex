@@ -44,8 +44,6 @@ fun spellsOfLevel(
     level: Int,
 ): List<CharacterSpell> = spells.filter { it.level == level }.sortedWith(compareBy({ it.position }, { it.id }))
 
-/** the levels a cast can still choose from: a cantrip tile has no slots, so it never leads here */
-
 /** a cast already paid, [undo] puts back exactly what it took */
 class SpellCast(
     val pay: SpellPay,
@@ -76,8 +74,14 @@ class SpellCasting(
                 }
             is SpellPay.Slot ->
                 columns.firstOrNull { it.level == pay.level && it.resource.current > 0 }?.let { column ->
-                    resources.change(column.resource.id, -1)
-                    SpellCast(pay) { resources.change(column.resource.id, 1) }
+                    if (resources.spend(
+                            column.resource.id,
+                        )
+                    ) {
+                        SpellCast(pay) { resources.change(column.resource.id, 1) }
+                    } else {
+                        null
+                    }
                 }
         }
 }

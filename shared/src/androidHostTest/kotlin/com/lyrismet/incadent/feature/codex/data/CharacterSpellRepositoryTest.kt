@@ -45,6 +45,7 @@ class CharacterSpellRepositoryTest {
                     level = 2,
                     school = "Enchantment",
                     verbal = true,
+                    hasMaterial = true,
                     material = "iron",
                     concentration = true,
                     text = "text",

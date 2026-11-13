@@ -7,7 +7,6 @@ import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
-import com.lyrismet.incadent.feature.codex.domain.model.SpellRest
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSpellRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -52,7 +51,6 @@ class CharacterSpellRepositoryImpl(
                     value.ritual.toLong(),
                     value.text,
                     value.freeMax.toLong(),
-                    value.freeRest.name,
                     value.position.toLong(),
                     value.id,
                 )
@@ -75,7 +73,6 @@ class CharacterSpellRepositoryImpl(
                     value.text,
                     value.freeMax.toLong(),
                     value.freeLeft.toLong(),
-                    value.freeRest.name,
                     value.position.toLong(),
                     current.requireId(),
                     value.originId.orNewOriginId(),
@@ -116,7 +113,6 @@ class CharacterSpellRepositoryImpl(
         body: String,
         freeMax: Long,
         freeLeft: Long,
-        freeRest: String,
         position: Long,
         originId: String,
     ) = CharacterSpell(
@@ -136,7 +132,6 @@ class CharacterSpellRepositoryImpl(
         text = body,
         freeMax = freeMax.toInt(),
         freeLeft = freeLeft.toInt(),
-        freeRest = SpellRest.entries.firstOrNull { it.name == freeRest } ?: SpellRest.LONG,
         position = position.toInt(),
         originId = originId,
     )

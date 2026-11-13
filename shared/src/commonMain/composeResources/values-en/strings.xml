@@ -1907,7 +1907,6 @@
     <string name="me_spells_meta_cantrip">cantrip</string>
     <string name="me_spells_meta_cantrip_school">cantrip · %1$s</string>
     <string name="me_spells_meta_free_long">free · until a long rest</string>
-    <string name="me_spells_meta_free_short">free · until a short rest</string>
     <string name="me_spells_meta_slot">slot</string>
     <string name="me_spells_meta_slot_time">slot · %1$s</string>
     <string name="me_spells_cast_free_left">Cast · %1$d/%2$d</string>

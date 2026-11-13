@@ -30,6 +30,9 @@ interface CharacterResourceRepository {
         delta: Int,
     )
 
+    /** takes one when the count is above zero, false when there was nothing to take */
+    suspend fun spend(id: Long): Boolean
+
     /** renames a resource and moves its max, the count left is kept and cut to the new max */
     suspend fun edit(
         id: Long,

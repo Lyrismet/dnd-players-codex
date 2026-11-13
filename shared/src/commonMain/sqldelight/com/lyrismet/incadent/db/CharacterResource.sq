@@ -37,6 +37,13 @@ UPDATE character_resource SET current_value = MIN(MAX(:value, 0), max_value) WHE
 changeCurrent:
 UPDATE character_resource SET current_value = MIN(MAX(current_value + :delta, 0), max_value) WHERE id = :id;
 
+-- takes one only when there is one, so a quick second press cannot spend what is not there
+spendOne:
+UPDATE character_resource SET current_value = current_value - 1 WHERE id = ? AND current_value > 0;
+
+selectChanges:
+SELECT changes();
+
 pressCell:
 UPDATE character_resource SET current_value = CASE
     WHEN :index < current_value THEN current_value - 1

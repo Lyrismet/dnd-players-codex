@@ -1991,7 +1991,6 @@
     <string name="me_spells_meta_cantrip">заговор</string>
     <string name="me_spells_meta_cantrip_school">заговор · %1$s</string>
     <string name="me_spells_meta_free_long">бесплатно · до долгого отдыха</string>
-    <string name="me_spells_meta_free_short">бесплатно · до короткого отдыха</string>
     <string name="me_spells_meta_slot">ячейка</string>
     <string name="me_spells_meta_slot_time">ячейка · %1$s</string>
     <string name="me_spells_cast_free_left">Применить · %1$d/%2$d</string>

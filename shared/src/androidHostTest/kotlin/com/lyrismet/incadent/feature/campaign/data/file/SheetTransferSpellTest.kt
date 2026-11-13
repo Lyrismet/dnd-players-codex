@@ -43,7 +43,6 @@ class SheetTransferSpellTest {
                     concentration = true,
                     freeMax = 2,
                     freeLeft = 1,
-                    freeRest = "SHORT",
                 )
             writeSheetRecord(db.database, db.current.requireId(), id, spell)
 
@@ -51,7 +50,6 @@ class SheetTransferSpellTest {
             assertEquals("Misty Step", back.name)
             assertEquals(7, back.partyId)
             assertEquals(1, back.freeLeft)
-            assertEquals("SHORT", back.freeRest)
             assertTrue(back.concentration)
 
             clearSheet(db.database, id)

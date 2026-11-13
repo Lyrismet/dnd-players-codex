@@ -18,7 +18,6 @@ data class CharacterSpell(
     val text: String = "",
     val freeMax: Int = 0,
     val freeLeft: Int = 0,
-    val freeRest: SpellRest = SpellRest.LONG,
     val position: Int = 0,
     val originId: String = "",
 ) {
@@ -39,8 +38,6 @@ data class CharacterSpell(
     }
 }
 
-/** the rest that brings the free casts back */
-enum class SpellRest { SHORT, LONG }
-
 const val CANTRIP_LEVEL = 0
 val FREE_CASTS_RANGE = 0..9
+val SPELL_POSITIONS = 0..9_999

@@ -80,6 +80,14 @@ class CharacterResourceRepositoryImpl(
         withContext(DatabaseDispatcher) { queries.changeCurrent(delta.toLong(), id) }
     }
 
+    override suspend fun spend(id: Long): Boolean =
+        withContext(DatabaseDispatcher) {
+            queries.transactionWithResult {
+                queries.spendOne(id)
+                queries.selectChanges().executeAsOne() > 0L
+            }
+        }
+
     override suspend fun edit(
         id: Long,
         name: String,
