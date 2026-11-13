@@ -75,12 +75,19 @@ internal class FeaturesHandler(
         before: List<String>,
         after: List<String>,
     ) = undo.show(getString(Res.string.combat_features_added, name), getString(Res.string.combat_features_undo)) {
+        val added = after.filterNot { it in before }
         entityWriteLock.withLock {
-            npcRepository
-                .getById(
-                    npcId,
-                )?.takeIf { it.facts == after }
-                ?.let { npcRepository.upsert(it.copy(facts = before)) }
+            npcRepository.getById(npcId)?.let {
+                npcRepository.upsert(
+                    it.copy(
+                        facts =
+                            it.facts.filterNot { f ->
+                                f in
+                                    added
+                            },
+                    ),
+                )
+            }
         }
     }
 

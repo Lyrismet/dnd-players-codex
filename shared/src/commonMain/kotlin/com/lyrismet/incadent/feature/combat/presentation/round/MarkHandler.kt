@@ -46,7 +46,7 @@ internal class MarkHandler(
         editor.withMember(d.memberId) { combat, member ->
             when {
                 d.custom -> {
-                    if (customs.none { it.name == text }) repository.addCustomCondition(text)
+                    if (customs.none { it.name.equals(text, ignoreCase = true) }) repository.addCustomCondition(text)
                     repository.addMark(member.id, MarkKind.CUSTOM, text, rounds, combat.round)
                 }
                 concentration -> repository.addMark(member.id, MarkKind.CONCENTRATION, text, rounds, combat.round)

@@ -1859,8 +1859,6 @@
     <string name="combat_features_added">Added to NPC: %1$s</string>
     <string name="combat_features_undo">Tap to undo</string>
     <string name="entity_sheet_npc_facts_label">Known facts</string>
-    <string name="entity_sheet_npc_facts_field">What is known</string>
-    <string name="entity_sheet_npc_facts_add">Add</string>
     <string name="combat_features_hint">Type or start from a preset</string>
     <string name="combat_features_shields_title">Resistances · immunities · vulnerabilities</string>
     <string name="combat_features_done">Done</string>

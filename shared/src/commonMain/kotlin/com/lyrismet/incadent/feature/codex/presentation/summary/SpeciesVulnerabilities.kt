@@ -152,7 +152,7 @@ private fun ShieldLegend() {
     }
 }
 
-/** all vulnerabilities types as a grid, a tap on one opens the five states below it */
+/** all vulnerabilities types as a grid, a tap on one opens the four states below it */
 @Composable
 internal fun VulnerabilityGridEditor(
     vulnerabilities: Map<DamageType, DamageState>,

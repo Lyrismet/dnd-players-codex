@@ -136,7 +136,14 @@ class CombatRepositoryImpl(
                     role = combatant.role,
                     is_label = if (combatant.isLabel) 1L else 0L,
                 )
-                combatants.lastInsertRowId().executeAsOne()
+                val id = combatants.lastInsertRowId().executeAsOne()
+                // a restored participant comes back with what the fight kept on it
+                combatants.updateVulnerabilities(combatant.vulnerabilities.encodeVulnerabilities(), id)
+                combatants.updateFacts(combatant.facts.encodeFacts(), id)
+                combatant.marks.forEach {
+                    marks.insert(id, it.kind, it.text, it.roundsLeft?.toLong(), it.startedRound.toLong())
+                }
+                id
             }
         }
 

@@ -1943,8 +1943,6 @@
     <string name="combat_features_added">Добавлено в NPC: %1$s</string>
     <string name="combat_features_undo">Нажмите, чтобы отменить</string>
     <string name="entity_sheet_npc_facts_label">Сведения</string>
-    <string name="entity_sheet_npc_facts_field">Что известно</string>
-    <string name="entity_sheet_npc_facts_add">Добавить</string>
     <string name="combat_features_hint">Введите или начните с заготовки</string>
     <string name="combat_features_shields_title">Сопротивления · иммунитеты · уязвимости</string>
     <string name="combat_features_done">Готово</string>
