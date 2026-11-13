@@ -21,6 +21,7 @@ class CharacterRestRepositoryImpl(
 ) : CharacterRestRepository {
     private val party = database.partyMemberQueries
     private val resources = database.characterResourceQueries
+    private val spells = database.characterSpellQueries
 
     override suspend fun preview(memberId: Long): RestPlan? = withContext(DatabaseDispatcher) { plan(memberId) }
 
@@ -30,6 +31,7 @@ class CharacterRestRepositoryImpl(
                 plan(memberId)?.also { plan ->
                     writeVitals(party, memberId, plan.vitals)
                     plan.resources.forEach { resources.restoreCurrent(it.current.toLong(), it.id) }
+                    spells.refillFree(memberId)
                 }
             }
         }

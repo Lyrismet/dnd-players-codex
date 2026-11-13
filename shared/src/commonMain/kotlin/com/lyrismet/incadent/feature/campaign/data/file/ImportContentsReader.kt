@@ -56,7 +56,7 @@ private class ContentsCollector {
             is FileRecord.Quest -> quests += record
             is FileRecord.Party -> party += record
             is FileRecord.Item -> items += record
-            is FileRecord.Sheet, is FileRecord.Resource -> Unit
+            is FileRecord.Sheet, is FileRecord.Resource, is FileRecord.Spell -> Unit
             is FileRecord.Session -> sessions += record
             is FileRecord.Tag, is FileRecord.Phrase -> Unit
             is FileRecord.Entry -> addMentions(record)

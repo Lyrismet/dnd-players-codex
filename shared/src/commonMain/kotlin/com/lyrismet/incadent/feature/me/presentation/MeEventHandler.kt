@@ -8,6 +8,10 @@ import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment
 import com.lyrismet.incadent.feature.codex.domain.model.SheetRanges
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPicker
 import com.lyrismet.incadent.feature.me.domain.HitPointMode
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellTile
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsContext
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsEvent
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,6 +37,7 @@ internal class MeEventHandler(
     private val counters: MeCounterActions,
     private val picker: PlayerCharacterPicker,
     private val things: MeThingsHandler,
+    private val spells: SpellsHandler,
     private val scope: CoroutineScope,
 ) {
     fun handle(event: MeEvent) {
@@ -64,6 +69,7 @@ internal class MeEventHandler(
             is MeEvent.Sheet -> sheet(event.event, member, character)
             is MeEvent.Overlay -> overlay(event.event, member)
             is MeEvent.Counters -> MeCounterHandler(ui, actions, counters).handle(event.event, member, character)
+            is MeEvent.Spells -> spellEvent(event.event, member, character, data)
             is MeEvent.Menu -> menu(event.action, member, character)
             is MeEvent.Rest,
             is MeEvent.Wallet,
@@ -73,6 +79,27 @@ internal class MeEventHandler(
             -> things.handle(event, member, data)
             else -> Unit
         }
+    }
+
+    private fun spellEvent(
+        event: SpellsEvent,
+        member: PartyMember,
+        character: MeCharacter,
+        data: MeEventScope,
+    ) {
+        val tile = (event as? SpellsEvent.TileTapped)?.tile
+        if (tile == null) {
+            val state = character.spells
+            spells.handle(event, SpellsContext(member.id, state.spells, state.columns, data.readOnly))
+            return
+        }
+        val counter =
+            when (tile) {
+                SpellTile.ABILITY -> CounterEvent.SpellAbilityRequested
+                SpellTile.DC -> CounterEvent.SpellAdjustmentRequested(SheetAdjustment.SPELL_DC)
+                SpellTile.ATTACK -> CounterEvent.SpellAdjustmentRequested(SheetAdjustment.SPELL_ATTACK)
+            }
+        if (!data.readOnly) MeCounterHandler(ui, actions, counters).handle(counter, member, character)
     }
 
     private fun hitPoints(
@@ -290,7 +317,7 @@ private fun MeEvent.writes(): Boolean =
                 else -> true
             }
         is MeEvent.Overlay -> event != OverlayEvent.Closed
-        is MeEvent.Counters -> event !is CounterEvent.SlotLevelToggled
+        is MeEvent.Spells -> false
         else -> true
     }
 

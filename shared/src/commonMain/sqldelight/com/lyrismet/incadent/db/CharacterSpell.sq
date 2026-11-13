@@ -1,0 +1,68 @@
+CREATE TABLE character_spell (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    party_member_id INTEGER NOT NULL REFERENCES party_member(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    level INTEGER NOT NULL DEFAULT 0,
+    school TEXT NOT NULL DEFAULT '',
+    casting_time TEXT NOT NULL DEFAULT '',
+    spell_range TEXT NOT NULL DEFAULT '',
+    verbal INTEGER NOT NULL DEFAULT 0,
+    somatic INTEGER NOT NULL DEFAULT 0,
+    has_material INTEGER NOT NULL DEFAULT 0,
+    material TEXT NOT NULL DEFAULT '',
+    duration TEXT NOT NULL DEFAULT '',
+    concentration INTEGER NOT NULL DEFAULT 0,
+    ritual INTEGER NOT NULL DEFAULT 0,
+    body TEXT NOT NULL DEFAULT '',
+    free_max INTEGER NOT NULL DEFAULT 0,
+    free_left INTEGER NOT NULL DEFAULT 0,
+    free_rest TEXT NOT NULL DEFAULT 'LONG',
+    position INTEGER NOT NULL DEFAULT 0,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX character_spell_party_member_id ON character_spell(party_member_id);
+CREATE INDEX character_spell_campaign_id ON character_spell(campaign_id);
+
+selectByMember:
+SELECT id, name, level, school, casting_time, spell_range, verbal, somatic, has_material, material, duration, concentration, ritual,
+    body, free_max, free_left, free_rest, position, origin_id
+FROM character_spell WHERE party_member_id = ?
+ORDER BY level, position, id;
+
+selectById:
+SELECT id, name, level, school, casting_time, spell_range, verbal, somatic, has_material, material, duration, concentration, ritual,
+    body, free_max, free_left, free_rest, position, origin_id
+FROM character_spell WHERE id = ?;
+
+insert:
+INSERT INTO character_spell(party_member_id, name, level, school, casting_time, spell_range, verbal, somatic, has_material, material,
+    duration, concentration, ritual, body, free_max, free_left, free_rest, position, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE character_spell SET name = :name, level = :level, school = :school, casting_time = :castingTime,
+    spell_range = :range, verbal = :verbal, somatic = :somatic, has_material = :hasMaterial, material = :material, duration = :duration,
+    concentration = :concentration, ritual = :ritual, body = :body, free_max = :freeMax,
+    free_left = MIN(free_left, :freeMax), free_rest = :freeRest, position = :position
+WHERE id = :id;
+
+-- a cast and its undo move the count by one, held between zero and the max
+changeFree:
+UPDATE character_spell SET free_left = MIN(MAX(free_left + :delta, 0), free_max) WHERE id = :id;
+
+refillFree:
+UPDATE character_spell SET free_left = free_max WHERE party_member_id = ?;
+
+deleteById:
+DELETE FROM character_spell WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+selectOrigins:
+SELECT origin_id FROM character_spell WHERE campaign_id = ?;
+
+deleteByMember:
+DELETE FROM character_spell WHERE party_member_id = ?;

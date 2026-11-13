@@ -46,6 +46,7 @@ import com.lyrismet.incadent.feature.combat.presentation.prep.mentionedKeys
 import com.lyrismet.incadent.feature.combat.presentation.prep.npcKey
 import com.lyrismet.incadent.feature.combat.presentation.prep.searchState
 import com.lyrismet.incadent.feature.combat.presentation.prep.speciesKey
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsBlockState
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
@@ -206,6 +207,7 @@ class CombatRoundPresenter(
     internal val hitObservationRepository: HitObservationRepository,
     private val imageCompressor: ImageCompressor,
     private val undoController: UndoController,
+    private val magicSources: MagicSources,
 ) : Presenter<CombatRoundState> {
     private val editLock = Mutex()
 
@@ -307,6 +309,8 @@ class CombatRoundPresenter(
             )
         val calcHandler = CalcHandler(editor, drafts.calc, learner)
         val summaryHandler = SummaryHandler(editor, drafts.summary, learner)
+        val own = ordered.firstOrNull { m -> data.party.any { it.id == m.partyMemberId && it.isPlayerCharacter } }
+        val magic = rememberRoundMagic(magicSources, data.party, own, current, combatRepository, undoController, scope)
         val ownIds =
             ordered
                 .filter { m ->
@@ -324,6 +328,7 @@ class CombatRoundPresenter(
         }
         val sink: (CombatRoundEvent) -> Unit = { event ->
             when (event) {
+                is CombatRoundEvent.Spells -> magic.handle(event.event)
                 is CombatRoundEvent.Calc -> calcHandler.onEvent(event.event, calcSnapshot, drafts.selected.value)
                 is CombatRoundEvent.Summary -> summaryHandler.onEvent(event.event, summarySnapshot)
                 is CombatRoundEvent.QueueEvent -> queueHandler.onEvent(event)
@@ -375,7 +380,7 @@ class CombatRoundPresenter(
         }
 
         if (current == null) return CombatRoundState(eventSink = sink)
-        val view = RoundView(data, current, ordered, mover, ownIds, speciesOf, resistances, form)
+        val view = RoundView(data, current, ordered, mover, ownIds, speciesOf, resistances, form, magic)
         return view.render(drafts, toast.value, sink)
     }
 }
@@ -391,6 +396,7 @@ private class RoundView(
     val speciesOf: Map<Long, Species>,
     val resistances: Map<Long, Map<DamageType, DamageState>>,
     val form: RoundForm,
+    val magic: RoundMagic,
 )
 
 @Composable
@@ -399,6 +405,7 @@ private fun RoundView.panelOf(
     drafts: RoundDrafts,
     seenByMember: Map<Long, List<SpeciesHitObservation>>,
     typeNames: Map<DamageType, String>,
+    magic: SpellsBlockState?,
 ): RoundPanel {
     val typed =
         drafts.naming.value
@@ -429,7 +436,7 @@ private fun RoundView.panelOf(
                 ),
         ),
         data.customs,
-    )
+    ).copy(magic = magic)
 }
 
 @Composable
@@ -468,7 +475,7 @@ private fun RoundView.render(
         rows = roundRows(current, ordered, mover?.id, drafts.selected.value, sources, seenByMember),
         queueUnnamed = current.combatants.queueStatus() == QueueStatus.Unnamed,
         queueEditing = drafts.queue.value != null,
-        panel = chosen?.let { panelOf(it, drafts, seenByMember, typeNames) },
+        panel = chosen?.let { panelOf(it, drafts, seenByMember, typeNames, magic.stateFor(it.id)) },
         tab = drafts.tab.value,
         menuOpen = drafts.menuOpen.value,
         search =

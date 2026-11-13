@@ -183,6 +183,31 @@ sealed interface FileRecord {
         val originId: String? = null,
     ) : FileRecord
 
+    /** a spell of a party member of a personal copy, with the free casts left and the rest that brings them back */
+    @Serializable
+    @SerialName("spell")
+    data class Spell(
+        val partyId: Long,
+        val name: String,
+        val level: Int = 0,
+        val school: String = "",
+        val castingTime: String = "",
+        val range: String = "",
+        val verbal: Boolean = false,
+        val somatic: Boolean = false,
+        val hasMaterial: Boolean = false,
+        val material: String = "",
+        val duration: String = "",
+        val concentration: Boolean = false,
+        val ritual: Boolean = false,
+        val text: String = "",
+        val freeMax: Int = 0,
+        val freeLeft: Int = 0,
+        val freeRest: String = "LONG",
+        val position: Int = 0,
+        val originId: String? = null,
+    ) : FileRecord
+
     /** a thing somebody carries, [ownerKind] and [ownerId] are the file's own id of the party member, npc or place */
     @Serializable
     @SerialName("item")

@@ -2,6 +2,9 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterResourceRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSpellRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
@@ -35,6 +38,9 @@ class CombatRoundPresenterFactory(
     private val hitObservationRepository: HitObservationRepository,
     private val imageCompressor: ImageCompressor,
     private val undoController: UndoController,
+    private val spellRepository: CharacterSpellRepository,
+    private val resourceRepository: CharacterResourceRepository,
+    private val sheetRepository: CharacterSheetRepository,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -54,6 +60,7 @@ class CombatRoundPresenterFactory(
                     hitObservationRepository,
                     imageCompressor,
                     undoController,
+                    MagicSources(spellRepository, resourceRepository, sheetRepository),
                 )
             else -> null
         }

@@ -19,6 +19,7 @@ import com.lyrismet.incadent.feature.me.domain.WalletMode
 import com.lyrismet.incadent.feature.me.domain.WalletPad
 import com.lyrismet.incadent.feature.me.domain.currentHp
 import com.lyrismet.incadent.feature.me.domain.hit
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsUiState
 import kotlinx.coroutines.Job
 
 /** what the screen remembers while open: the tab, the search, the open card and sheet, texts not saved yet */
@@ -34,7 +35,7 @@ internal class MeUiState(
     var menuOpen by mutableStateOf(false)
     var edit by mutableStateOf<MeOverlay?>(null)
     var hitPad by mutableStateOf<HitPad?>(null)
-    var slotLevel by mutableStateOf<Int?>(null)
+    val spells = SpellsUiState()
     var rest by rest
     var wallet by wallet
 

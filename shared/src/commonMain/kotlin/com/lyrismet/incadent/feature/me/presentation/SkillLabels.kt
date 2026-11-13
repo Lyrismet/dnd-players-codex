@@ -6,17 +6,11 @@ import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.sheet_ability_charisma
-import incadent.shared.generated.resources.sheet_ability_charisma_abbr
 import incadent.shared.generated.resources.sheet_ability_constitution
-import incadent.shared.generated.resources.sheet_ability_constitution_abbr
 import incadent.shared.generated.resources.sheet_ability_dexterity
-import incadent.shared.generated.resources.sheet_ability_dexterity_abbr
 import incadent.shared.generated.resources.sheet_ability_intelligence
-import incadent.shared.generated.resources.sheet_ability_intelligence_abbr
 import incadent.shared.generated.resources.sheet_ability_strength
-import incadent.shared.generated.resources.sheet_ability_strength_abbr
 import incadent.shared.generated.resources.sheet_ability_wisdom
-import incadent.shared.generated.resources.sheet_ability_wisdom_abbr
 import incadent.shared.generated.resources.sheet_skill_acrobatics
 import incadent.shared.generated.resources.sheet_skill_animal_handling
 import incadent.shared.generated.resources.sheet_skill_animal_handling_alt
@@ -88,16 +82,6 @@ internal fun Ability.nameRes(): StringResource =
         Ability.INTELLIGENCE -> Res.string.sheet_ability_intelligence
         Ability.WISDOM -> Res.string.sheet_ability_wisdom
         Ability.CHARISMA -> Res.string.sheet_ability_charisma
-    }
-
-internal fun Ability.abbrRes(): StringResource =
-    when (this) {
-        Ability.STRENGTH -> Res.string.sheet_ability_strength_abbr
-        Ability.DEXTERITY -> Res.string.sheet_ability_dexterity_abbr
-        Ability.CONSTITUTION -> Res.string.sheet_ability_constitution_abbr
-        Ability.INTELLIGENCE -> Res.string.sheet_ability_intelligence_abbr
-        Ability.WISDOM -> Res.string.sheet_ability_wisdom_abbr
-        Ability.CHARISMA -> Res.string.sheet_ability_charisma_abbr
     }
 
 /** every name a skill is found by, lowercase, for the search of the sheet */

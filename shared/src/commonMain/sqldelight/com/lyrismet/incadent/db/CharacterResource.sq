@@ -33,6 +33,10 @@ UPDATE character_resource SET name = ?, max_value = ?, current_value = ?, slot_l
 setCurrent:
 UPDATE character_resource SET current_value = MIN(MAX(:value, 0), max_value) WHERE id = :id;
 
+-- a cast takes a slot and its undo gives it back, in one step so quick casts add up
+changeCurrent:
+UPDATE character_resource SET current_value = MIN(MAX(current_value + :delta, 0), max_value) WHERE id = :id;
+
 pressCell:
 UPDATE character_resource SET current_value = CASE
     WHEN :index < current_value THEN current_value - 1

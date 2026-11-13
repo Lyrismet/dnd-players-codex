@@ -24,6 +24,12 @@ interface CharacterResourceRepository {
         index: Int,
     )
 
+    /** moves the count by [delta], held between zero and the max, so a cast and its undo add up */
+    suspend fun change(
+        id: Long,
+        delta: Int,
+    )
+
     /** renames a resource and moves its max, the count left is kept and cut to the new max */
     suspend fun edit(
         id: Long,

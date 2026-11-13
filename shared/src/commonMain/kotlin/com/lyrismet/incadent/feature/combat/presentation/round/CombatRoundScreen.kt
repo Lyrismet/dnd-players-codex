@@ -16,6 +16,8 @@ import com.lyrismet.incadent.feature.combat.domain.round.RoleParts
 import com.lyrismet.incadent.feature.combat.presentation.prep.CombatPrepEvent
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeSearchState
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpPadState
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsBlockState
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsEvent
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -26,7 +28,7 @@ data class CombatRoundScreen(
     val combatId: Long,
 ) : Screen
 
-enum class PanelTab { ACTIONS, CONDITIONS, MORE }
+enum class PanelTab { ACTIONS, CONDITIONS, MAGIC, MORE }
 
 /** who a row belongs to, the dot and the label take their colour from it */
 enum class RowSide { PARTY, ALLY, ENEMY, NEUTRAL, FRIEND, FLED }
@@ -166,6 +168,8 @@ data class RoundPanel(
     // the calculator modes this participant can take, a guessed one has no temporary hit points
     val calcModes: List<CalcMode>,
     val sourceNote: String,
+    // the spells of the player's own character, null for everyone else and for a character with no magic
+    val magic: SpellsBlockState? = null,
 )
 
 data class PanelHp(
@@ -235,6 +239,10 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
 
     data class Calc(
         val event: CalcEvent,
+    ) : CombatRoundEvent
+
+    data class Spells(
+        val event: SpellsEvent,
     ) : CombatRoundEvent
 
     data class Summary(

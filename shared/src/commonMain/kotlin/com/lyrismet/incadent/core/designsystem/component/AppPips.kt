@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,18 +63,21 @@ fun AppCells(
     tone: CellTone = CellTone.Arcane,
     onPress: ((Int) -> Unit)? = null,
     onHold: (() -> Unit)? = null,
+    // the motion of a free cell, a slot level and the shared clock, none of it by default
+    effect: CellEffect = CellEffect.None,
+    clock: State<Float>? = null,
 ) {
     FlowRow(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(size.gap)) {
         repeat(total) { index ->
             if (onPress == null) {
-                AppCell(index < filled, size, tone)
+                AppCell(index < filled, size, tone, effect, clock)
             } else {
                 Box(
                     Modifier
                         .size(size.tapWidth, size.tapHeight)
                         .combinedClickable(onClick = { onPress(index) }, onLongClick = onHold),
                     contentAlignment = Alignment.Center,
-                ) { AppCell(index < filled, size, tone) }
+                ) { AppCell(index < filled, size, tone, effect, clock) }
             }
         }
     }
@@ -84,12 +88,15 @@ private fun AppCell(
     lit: Boolean,
     size: CellSize,
     tone: CellTone,
+    effect: CellEffect,
+    clock: State<Float>?,
 ) {
     val shape = remember(size) { RoundedCornerShape(size.radius) }
     Box(
         modifier =
             Modifier
                 .size(size.side)
+                .then(if (lit) Modifier.cellEffect(effect, clock, tone.lit) else Modifier)
                 .then(if (lit) Modifier.cellGlow(tone.lit, size.glow, size.radius) else Modifier)
                 .clip(shape)
                 .background(if (lit) tone.lit else tone.off)

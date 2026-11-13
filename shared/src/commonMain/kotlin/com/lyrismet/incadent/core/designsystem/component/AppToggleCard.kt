@@ -16,11 +16,11 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 
-/** a titled switch card with one line under the title */
+/** a titled switch card, with one line under the title when there is a [hint] */
 @Composable
 fun AppToggleCard(
     title: String,
-    hint: String,
+    hint: String?,
     checked: Boolean,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
@@ -44,12 +44,14 @@ fun AppToggleCard(
                         fontWeight = FontWeight.SemiBold,
                     ),
             )
-            Text(
-                text = hint,
-                modifier = Modifier.padding(top = 1.dp),
-                color = AppPalette.TextSecondary,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small),
-            )
+            if (hint != null) {
+                Text(
+                    text = hint,
+                    modifier = Modifier.padding(top = 1.dp),
+                    color = AppPalette.TextSecondary,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small),
+                )
+            }
         }
         AppSwitch(checked = checked, onCheckedChange = { onToggle() })
     }

@@ -6,6 +6,7 @@ import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignReposito
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterResourceRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterRestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSpellRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
@@ -32,6 +33,7 @@ class MePresenterFactory(
     private val partyRepository: PartyRepository,
     private val sheetRepository: CharacterSheetRepository,
     private val resourceRepository: CharacterResourceRepository,
+    private val spellRepository: CharacterSpellRepository,
     private val campaignRepository: CampaignRepository,
     private val codexRepositories: CodexRepositories,
     private val restRepository: CharacterRestRepository,
@@ -51,6 +53,7 @@ class MePresenterFactory(
                     partyRepository,
                     sheetRepository,
                     resourceRepository,
+                    spellRepository,
                     campaignRepository,
                     codexRepositories,
                     restRepository,
