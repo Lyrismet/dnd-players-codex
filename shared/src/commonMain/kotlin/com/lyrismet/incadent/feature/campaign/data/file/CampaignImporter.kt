@@ -205,7 +205,7 @@ internal class CampaignImporter(
                 is FileRecord.Quest -> addQuest(record)
                 is FileRecord.Party -> addParty(record)
                 is FileRecord.Item -> addItem(record)
-                is FileRecord.Sheet, is FileRecord.Resource -> addSheetRecord(record)
+                is FileRecord.Sheet, is FileRecord.Resource, is FileRecord.Spell -> addSheetRecord(record)
                 is FileRecord.Tag -> database.tagQueries.insert(record.name, campaignId)
                 is FileRecord.Phrase -> database.phraseSnippetQueries.insert(record.text, campaignId)
                 is FileRecord.Session -> addSession(record)
@@ -227,6 +227,7 @@ internal class CampaignImporter(
                 is FileRecord.Item -> scope?.items?.contains(record.id) != false
                 is FileRecord.Sheet -> takeSheet && scope?.party?.contains(record.partyId) != false
                 is FileRecord.Resource -> takeSheet && scope?.party?.contains(record.partyId) != false
+                is FileRecord.Spell -> takeSheet && scope?.party?.contains(record.partyId) != false
                 is FileRecord.Session -> scope?.sessions?.contains(record.id) != false
                 is FileRecord.Tag -> request.selection?.tags != false
                 is FileRecord.Phrase -> request.selection?.phrases != false
@@ -793,6 +794,7 @@ internal class CampaignImporter(
                 when (record) {
                     is FileRecord.Sheet -> record.partyId
                     is FileRecord.Resource -> record.partyId
+                    is FileRecord.Spell -> record.partyId
                     else -> return
                 }
             val memberId = partyMap[partyNumber] ?: return

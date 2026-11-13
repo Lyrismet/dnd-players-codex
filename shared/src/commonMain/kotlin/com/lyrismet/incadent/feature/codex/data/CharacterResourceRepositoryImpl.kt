@@ -73,6 +73,21 @@ class CharacterResourceRepositoryImpl(
         withContext(DatabaseDispatcher) { queries.pressCell(index.toLong(), id) }
     }
 
+    override suspend fun change(
+        id: Long,
+        delta: Int,
+    ) {
+        withContext(DatabaseDispatcher) { queries.changeCurrent(delta.toLong(), id) }
+    }
+
+    override suspend fun spend(id: Long): Boolean =
+        withContext(DatabaseDispatcher) {
+            queries.transactionWithResult {
+                queries.spendOne(id)
+                queries.selectChanges().executeAsOne() > 0L
+            }
+        }
+
     override suspend fun edit(
         id: Long,
         name: String,

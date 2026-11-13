@@ -422,4 +422,28 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the seventeenth schema adds an empty spell list and keeps the party`() {
+        val file = File.createTempFile("schema-v17", ".db")
+        File("src/commonMain/sqldelight/databases/17.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(name, campaign_id) VALUES ('Lira', 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 17, AppDatabase.Schema.version)
+
+        assertEquals("0", driver.single("SELECT count(*) FROM character_spell"))
+        driver.execute(
+            null,
+            "INSERT INTO character_spell(party_member_id, name, campaign_id) VALUES (1, 'Light', 'c')",
+            0,
+        )
+        assertEquals("0", driver.single("SELECT level FROM character_spell"))
+        assertEquals("Lira", driver.single("SELECT name FROM party_member"))
+        driver.close()
+        file.delete()
+    }
 }

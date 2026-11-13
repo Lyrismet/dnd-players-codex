@@ -16,8 +16,9 @@ import com.lyrismet.incadent.feature.codex.presentation.item.ItemEvent
 import com.lyrismet.incadent.feature.me.domain.AbilityStrip
 import com.lyrismet.incadent.feature.me.domain.HeaderNumbers
 import com.lyrismet.incadent.feature.me.domain.HitPointMode
-import com.lyrismet.incadent.feature.me.domain.SlotColumn
 import com.lyrismet.incadent.feature.me.domain.WalletPad
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsBlockState
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsEvent
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -75,7 +76,7 @@ data class MeCharacter(
     val tabs: List<MeTab>,
     val spellsHidden: Boolean,
     val sheet: MeSheetState,
-    val spells: MeSpellsState,
+    val spells: SpellsBlockState,
     val resources: List<CharacterResource>,
     val breakdown: MeBreakdown,
     val popover: MeTile?,
@@ -85,16 +86,6 @@ data class MeCharacter(
     val liveSessionTitle: String?,
     val menuOpen: Boolean,
     val readOnly: Boolean,
-)
-
-/** the spell tab: the chosen ability with what it gives and the slot columns */
-data class MeSpellsState(
-    val ability: Ability?,
-    val saveDc: Int?,
-    val attack: Int?,
-    val columns: List<SlotColumn>,
-    // the level whose cells are open under its tile
-    val openLevel: Int?,
 )
 
 /** what the explanation cards of the tiles list */
@@ -295,6 +286,10 @@ sealed interface MeEvent : CircuitUiEvent {
         val event: CounterEvent,
     ) : MeEvent
 
+    data class Spells(
+        val event: SpellsEvent,
+    ) : MeEvent
+
     data object MenuToggled : MeEvent
 
     data class Menu(
@@ -398,10 +393,6 @@ sealed interface SheetEvent {
 }
 
 sealed interface CounterEvent {
-    data class SlotLevelToggled(
-        val level: Int,
-    ) : CounterEvent
-
     /** a press on the cell at [index] of the counter [id], a slot level or a resource */
     data class CellPressed(
         val id: Long,

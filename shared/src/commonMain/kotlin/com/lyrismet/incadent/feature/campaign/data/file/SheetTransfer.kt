@@ -3,9 +3,12 @@ package com.lyrismet.incadent.feature.campaign.data.file
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.db.characterSheet.SelectByMember
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
+import com.lyrismet.incadent.feature.codex.domain.model.CANTRIP_LEVEL
 import com.lyrismet.incadent.feature.codex.domain.model.COIN_PURSE_RANGE
+import com.lyrismet.incadent.feature.codex.domain.model.FREE_CASTS_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.RESOURCE_MAX_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.SPELL_LEVELS
+import com.lyrismet.incadent.feature.codex.domain.model.SPELL_POSITIONS
 import com.lyrismet.incadent.feature.codex.domain.model.SheetRanges
 
 /** the sheet of a party member and its counters as file records, [partyNumber] is the number the records point at */
@@ -16,6 +19,7 @@ internal fun readSheetRecords(
 ): List<FileRecord> {
     val sheet = database.characterSheetQueries.selectByMember(memberId).executeAsOneOrNull()
     val resources = database.characterResourceQueries.selectByMember(memberId).executeAsList()
+    val spells = database.characterSpellQueries.selectByMember(memberId).executeAsList()
     return listOfNotNull(sheet?.toFileSheet(partyNumber)) +
         resources.map {
             FileRecord.Resource(
@@ -24,6 +28,28 @@ internal fun readSheetRecords(
                 it.max_value.toInt(),
                 it.current_value.toInt(),
                 it.slot_level?.toInt(),
+                it.position.toInt(),
+                it.origin_id,
+            )
+        } +
+        spells.map {
+            FileRecord.Spell(
+                partyNumber,
+                it.name,
+                it.level.toInt(),
+                it.school,
+                it.casting_time,
+                it.spell_range,
+                it.verbal != 0L,
+                it.somatic != 0L,
+                it.has_material != 0L,
+                it.material,
+                it.duration,
+                it.concentration != 0L,
+                it.ritual != 0L,
+                it.body,
+                it.free_max.toInt(),
+                it.free_left.toInt(),
                 it.position.toInt(),
                 it.origin_id,
             )
@@ -37,6 +63,7 @@ internal fun clearSheet(
 ) {
     database.characterSheetQueries.deleteByMember(memberId)
     database.characterResourceQueries.deleteByMember(memberId)
+    database.characterSpellQueries.deleteByMember(memberId)
 }
 
 /** the origin ids a sheet and a counter may still take, read once for a whole import */
@@ -46,6 +73,7 @@ internal class SheetOrigins(
 ) {
     val sheets = OriginSet(database.characterSheetQueries.selectOrigins(campaignId).executeAsList())
     val resources = OriginSet(database.characterResourceQueries.selectOrigins(campaignId).executeAsList())
+    val spells = OriginSet(database.characterSpellQueries.selectOrigins(campaignId).executeAsList())
 }
 
 /** writes a sheet or a counter of a file to [memberId], every number pinned to the range the forms allow */
@@ -59,6 +87,7 @@ internal fun writeSheetRecord(
     when (record) {
         is FileRecord.Sheet -> writeSheet(database, campaignId, memberId, record, origins.sheets)
         is FileRecord.Resource -> writeResource(database, campaignId, memberId, record, origins.resources)
+        is FileRecord.Spell -> writeSpell(database, campaignId, memberId, record, origins.spells)
         else -> Unit
     }
 }
@@ -132,6 +161,37 @@ private fun writeResource(
         record.current.coerceIn(0, limit).toLong(),
         record.slotLevel?.coerceIn(SPELL_LEVELS)?.toLong(),
         record.position.toLong(),
+        campaignId,
+        origins.claim(record.originId),
+    )
+}
+
+private fun writeSpell(
+    database: AppDatabase,
+    campaignId: String,
+    memberId: Long,
+    record: FileRecord.Spell,
+    origins: OriginSet,
+) {
+    val cap = record.freeMax.coerceIn(FREE_CASTS_RANGE)
+    database.characterSpellQueries.insert(
+        memberId,
+        record.name,
+        record.level.coerceIn(CANTRIP_LEVEL, SPELL_LEVELS.last).toLong(),
+        record.school,
+        record.castingTime,
+        record.range,
+        if (record.verbal) 1L else 0L,
+        if (record.somatic) 1L else 0L,
+        if (record.hasMaterial) 1L else 0L,
+        record.material,
+        record.duration,
+        if (record.concentration) 1L else 0L,
+        if (record.ritual) 1L else 0L,
+        record.text,
+        cap.toLong(),
+        record.freeLeft.coerceIn(0, cap).toLong(),
+        record.position.coerceIn(SPELL_POSITIONS).toLong(),
         campaignId,
         origins.claim(record.originId),
     )

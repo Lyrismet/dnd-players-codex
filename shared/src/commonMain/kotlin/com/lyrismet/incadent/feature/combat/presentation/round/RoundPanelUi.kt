@@ -49,10 +49,12 @@ import com.lyrismet.incadent.core.designsystem.component.SheetGrabber
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.CalculatorIcon
 import com.lyrismet.incadent.core.designsystem.component.sheetTopEdge
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsBlock
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_calc_mode_damage
 import incadent.shared.generated.resources.combat_calc_mode_heal
 import incadent.shared.generated.resources.combat_calc_mode_temp
+import incadent.shared.generated.resources.combat_magic_tab
 import incadent.shared.generated.resources.combat_panel_capture
 import incadent.shared.generated.resources.combat_panel_captured
 import incadent.shared.generated.resources.combat_panel_died
@@ -84,6 +86,8 @@ internal fun RoundPanelUi(
     maxHeight: Dp,
     send: (CombatRoundEvent) -> Unit,
 ) {
+    // a participant without magic never lands on its tab, even when the last one was open
+    val shown = tab.takeIf { it != PanelTab.MAGIC || panel.magic != null } ?: PanelTab.ACTIONS
     var pulled by remember(panel.id) { mutableFloatStateOf(0f) }
     val currentSend by rememberUpdatedState(send)
     val swipeDown =
@@ -108,16 +112,22 @@ internal fun RoundPanelUi(
         PanelHeader(panel, send)
         AppSegmentedTabs(
             tabs =
-                listOf(
-                    SegmentedTab(PanelTab.ACTIONS, stringResource(Res.string.combat_panel_tab_actions)),
-                    SegmentedTab(PanelTab.CONDITIONS, stringResource(Res.string.combat_panel_tab_conditions)),
-                    SegmentedTab(PanelTab.MORE, stringResource(Res.string.combat_panel_tab_more)),
-                ),
-            selected = tab,
+                buildList {
+                    add(SegmentedTab(PanelTab.ACTIONS, stringResource(Res.string.combat_panel_tab_actions)))
+                    if (panel.magic !=
+                        null
+                    ) {
+                        add(SegmentedTab(PanelTab.MAGIC, stringResource(Res.string.combat_magic_tab)))
+                    }
+                    add(SegmentedTab(PanelTab.CONDITIONS, stringResource(Res.string.combat_panel_tab_conditions)))
+                    add(SegmentedTab(PanelTab.MORE, stringResource(Res.string.combat_panel_tab_more)))
+                },
+            selected = shown,
             onSelected = { send(CombatRoundEvent.TabSelected(it)) },
             modifier = Modifier.fillMaxWidth(),
         )
-        when (tab) {
+        when (shown) {
+            PanelTab.MAGIC -> panel.magic?.let { SpellsBlock(it, { event -> send(CombatRoundEvent.Spells(event)) }) }
             PanelTab.ACTIONS -> ActionsTab(panel, send)
             PanelTab.CONDITIONS -> ConditionsTab(panel, send)
             PanelTab.MORE -> MoreTab(panel, send)

@@ -3,7 +3,9 @@ package com.lyrismet.incadent.core.designsystem.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -22,8 +24,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -78,6 +82,32 @@ fun FormTextField(
         )
     }
 }
+
+/** a single-line field with no label of its own, [enabled] false dims it and takes the typing away */
+@Composable
+fun FormInlineField(
+    value: String,
+    onChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    enabled: Boolean = true,
+    maxLength: Int = TextLimits.LINE,
+) {
+    Box(modifier.height(FormFieldHeight).alpha(if (enabled) 1f else DISABLED_FIELD_ALPHA)) {
+        FormInput(
+            value = value,
+            onChange = { onChange(it.take(maxLength)) },
+            placeholder = placeholder,
+            maxLength = maxLength,
+            singleLine = true,
+            modifier = Modifier.height(FormFieldHeight),
+        )
+        // a disabled field swallows the presses so it neither focuses nor types
+        if (!enabled) Box(Modifier.matchParentSize().pointerInput(Unit) { detectTapGestures { } })
+    }
+}
+
+private const val DISABLED_FIELD_ALPHA = 0.45f
 
 /** multi-line variant of [FormTextField] (mockup's `isArea`) - same chrome, grows from a 3-line minimum */
 @Composable

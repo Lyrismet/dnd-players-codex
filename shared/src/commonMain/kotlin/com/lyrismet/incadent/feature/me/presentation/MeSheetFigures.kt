@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.me.presentation
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterResource
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
+import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterVitals
 import com.lyrismet.incadent.feature.codex.domain.model.FifthEditionRules
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -11,6 +12,9 @@ import com.lyrismet.incadent.feature.me.domain.AbilityStrip
 import com.lyrismet.incadent.feature.me.domain.featureResources
 import com.lyrismet.incadent.feature.me.domain.headerNumbers
 import com.lyrismet.incadent.feature.me.domain.slotColumns
+import com.lyrismet.incadent.feature.me.domain.spellLevels
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsBlockState
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsUiState
 
 /** the numbers of the header and the breakdowns shown in the popovers, from the stored sheet alone */
 internal class MeSheetFigures(
@@ -31,6 +35,7 @@ internal fun buildMeCharacter(
     figures: MeSheetFigures,
     strips: List<AbilityStrip>,
     resources: List<CharacterResource>,
+    spells: List<CharacterSpell>,
     tabs: List<MeTab>,
     ui: MeUiState,
     readOnly: Boolean,
@@ -52,7 +57,7 @@ internal fun buildMeCharacter(
         tabs = tabs,
         spellsHidden = sheet.spellsHidden,
         sheet = sheetState(sheet, strips, ui),
-        spells = spellsState(sheet, member.level ?: 1, resources, ui.slotLevel),
+        spells = spellsState(sheet, member.level ?: 1, resources, spells, ui.spells, readOnly),
         resources = featureResources(resources),
         breakdown = figures.breakdown,
         popover = ui.popover,
@@ -75,20 +80,29 @@ internal fun meTabs(hasSpells: Boolean): List<MeTab> =
         add(MeTab.ITEMS)
     }
 
+@Suppress("LongParameterList")
 private fun spellsState(
     sheet: CharacterSheet,
     level: Int,
     resources: List<CharacterResource>,
-    openLevel: Int?,
-): MeSpellsState {
+    spells: List<CharacterSpell>,
+    ui: SpellsUiState,
+    readOnly: Boolean,
+): SpellsBlockState {
     val columns = slotColumns(resources)
-    return MeSpellsState(
+    val levels = spellLevels(spells, columns)
+    return SpellsBlockState(
         ability = sheet.spellAbility,
         saveDc = FifthEditionRules.spellSaveDc(sheet, level),
         attack = FifthEditionRules.spellAttack(sheet, level),
         columns = columns,
-        // a level whose slots were taken away has nothing to open
-        openLevel = openLevel?.takeIf { open -> columns.any { it.level == open } },
+        spells = spells,
+        // a level whose slots and spells are gone has nothing to open
+        openLevel = ui.openLevel?.takeIf { it in levels },
+        card = spells.firstOrNull { it.id == ui.cardId },
+        draft = ui.draft,
+        readOnly = readOnly,
+        tilesEditable = true,
     )
 }
 

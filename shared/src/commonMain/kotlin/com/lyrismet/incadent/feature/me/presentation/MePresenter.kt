@@ -18,12 +18,14 @@ import com.lyrismet.incadent.feature.codex.domain.model.isSpellTabVisible
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterResourceRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterRestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSpellRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.presentation.item.ItemsController
 import com.lyrismet.incadent.feature.codex.presentation.item.rememberItemsController
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPicker
 import com.lyrismet.incadent.feature.me.domain.abilityStrips
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellsHandler
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
@@ -35,6 +37,7 @@ internal class MePresenter(
     private val partyRepository: PartyRepository,
     private val sheetRepository: CharacterSheetRepository,
     private val resourceRepository: CharacterResourceRepository,
+    private val spellRepository: CharacterSpellRepository,
     private val campaignRepository: CampaignRepository,
     private val codexRepositories: CodexRepositories,
     private val restRepository: CharacterRestRepository,
@@ -65,7 +68,9 @@ internal class MePresenter(
         val itemsController = rememberItemsController(codexRepositories.itemRepository, undoController)
         val live = if (member != null) rememberLiveSession() else null
         // the open level belongs to one character, the next one starts closed
-        LaunchedEffect(member?.id) { ui.slotLevel = null }
+        LaunchedEffect(member?.id) {
+            ui.spells.reset()
+        }
         val characterContent =
             member?.let {
                 characterContent(it, ui, readOnly, MeThings(records, itemsController, live?.title))
@@ -98,7 +103,8 @@ internal class MePresenter(
                     scope,
                 )
             }
-        val handler = remember { MeEventHandler({ latestScope }, ui, actions, counters, picker, things, scope) }
+        val spells = remember { SpellsHandler(ui.spells, scope, resourceRepository, spellRepository, undoController) }
+        val handler = remember { MeEventHandler({ latestScope }, ui, actions, counters, picker, things, spells, scope) }
         val eventSink = remember(handler) { handler::handle }
         return MeState(content = content, eventSink = eventSink)
     }
@@ -123,6 +129,7 @@ internal class MePresenter(
         val resources by remember(
             member.id,
         ) { resourceRepository.observe(member.id) }.collectAsState(initial = emptyList())
+        val spells by remember(member.id) { spellRepository.observe(member.id) }.collectAsState(initial = emptyList())
         val shownVitals = vitals ?: return null
         val level = member.level ?: 1
         // the skill names are only read while the search is open
@@ -155,6 +162,7 @@ internal class MePresenter(
                 figures,
                 strips,
                 resources,
+                spells,
                 tabs,
                 ui,
                 readOnly,

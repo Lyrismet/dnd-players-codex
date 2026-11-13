@@ -60,7 +60,8 @@ internal fun MeCharacterUi(
                         MeRestButton({ onEvent(MeEvent.Rest(RestEvent.Opened)) }, Modifier.fillMaxHeight())
                     }
                 }
-                Box(Modifier.foldable(fraction)) { MeTiles(character, onEvent) }
+                // the gap folds away with the tiles, so a folded header does not keep an empty strip
+                Box(Modifier.foldable(fraction).padding(top = 12.dp)) { MeTiles(character, onEvent) }
                 MeTabs(character, onEvent)
             }
             MeTabContent(character, listState, onEvent, Modifier.weight(1f))

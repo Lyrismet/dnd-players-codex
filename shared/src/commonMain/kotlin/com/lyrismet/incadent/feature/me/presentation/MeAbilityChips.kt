@@ -34,6 +34,7 @@ import com.lyrismet.incadent.core.designsystem.component.icons.SearchIcon
 import com.lyrismet.incadent.core.designsystem.numeral
 import com.lyrismet.incadent.core.format.signed
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
+import com.lyrismet.incadent.feature.me.presentation.spells.abbrRes
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_search_close
 import incadent.shared.generated.resources.me_search_description

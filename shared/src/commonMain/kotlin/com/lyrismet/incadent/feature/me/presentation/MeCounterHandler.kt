@@ -23,7 +23,6 @@ internal class MeCounterHandler(
         when (event) {
             is CounterEvent.CellPressed ->
                 all.firstOrNull { it.id == event.id }?.let { counters.pressCell(it.id, event.index) }
-            is CounterEvent.SlotLevelToggled -> ui.slotLevel = event.level.takeIf { it != ui.slotLevel }
             is CounterEvent.PipHeld -> all.firstOrNull { it.id == event.id }?.let { hold(it, all) }
             CounterEvent.ResourceAdded -> ui.edit = newResource("", all)
             CounterEvent.TemplatesRequested -> ui.edit = MeOverlay.Templates

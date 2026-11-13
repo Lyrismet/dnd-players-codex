@@ -11,6 +11,8 @@ private val SHARED_PRESENTATION: Map<String, Set<String>> =
     mapOf(
         "codex" to setOf("summary", "quickedit", "style", "form", "party", "item"),
         "campaign" to setOf("sheet"),
+        // the spells block of the character, shown in the fight too
+        "me" to setOf("spells"),
         // the saved fight as a card in a session and the outcome badge
         "combat" to setOf("summary"),
         // navigation keys other screens open
