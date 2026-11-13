@@ -40,7 +40,7 @@ enum class WoundTone { WHOLE, WOUNDED, BLOODIED, BARELY, DOWN, DYING, DEAD }
 enum class HpLevel { HIGH, MID, LOW, ZERO }
 
 /** the tint of a small chip under a name: a condition of its group, or what the participant became */
-enum class ChipKind { CAPTURED, NEUTRAL, FRIEND, FLED, RESTRAINT, WEAKENING, EFFECT }
+enum class ChipKind { CAPTURED, NEUTRAL, FRIEND, FLED, RESTRAINT, WEAKENING, EFFECT, MARK, MARK_LAST, MARK_EXPIRED }
 
 data class CombatRoundState(
     // the fight has not arrived yet
@@ -73,6 +73,8 @@ data class CombatRoundState(
     val promotion: PromotionSheet? = null,
     // the class sheet that sets the role of a participant that is only in the fight
     val classSheet: ClassSelectState? = null,
+    val markSheet: MarkSheet? = null,
+    val featuresSheet: FeaturesSheet? = null,
     val linkSheet: LinkSheet? = null,
     val toast: ToastMessage? = null,
     val eventSink: (CombatRoundEvent) -> Unit = {},
@@ -157,6 +159,9 @@ data class RoundPanel(
     val down: DownState?,
     val died: Boolean,
     val conditions: List<ConditionGroupItem>,
+    val features: FeaturesBlock?,
+    val tags: List<PanelMark>,
+    val customs: List<CustomItem>,
     val more: PanelMore,
     // the calculator modes this participant can take, a guessed one has no temporary hit points
     val calcModes: List<CalcMode>,
@@ -213,8 +218,6 @@ data class PanelMore(
     val canSetHp: Boolean,
     val note: String,
     val notePlaceholder: String,
-    // the bestiary damage of the kind this participant is made of, null when it has none to edit
-    val vulnerabilities: Map<DamageType, DamageState>?,
     // set for a participant that can still be given a name of the codex
     val naming: NamingState?,
     val identity: IdentityState?,
@@ -363,6 +366,66 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
     ) : CombatRoundEvent
 
     data object RemoveClicked : CombatRoundEvent
+
+    /** the block and the sheet of the features, the shields and the facts, of the chosen participant */
+    sealed interface FeaturesEvent : CombatRoundEvent
+
+    /** [fact] is the chip the sheet was opened from, its text goes to the field */
+    data class FeaturesOpened(
+        val fact: String? = null,
+    ) : FeaturesEvent
+
+    data class FactTextChanged(
+        val text: String,
+    ) : FeaturesEvent
+
+    data object FeaturesClosed : FeaturesEvent
+
+    /** the editing of the shields in the block begins and ends, the end offers one undo for all of it */
+    data object ShieldsEditStarted : FeaturesEvent
+
+    data object ShieldsEditDone : FeaturesEvent
+
+    /** a tap on a shield of the block, the state of its type goes on by one */
+    data class ShieldTapped(
+        val type: DamageType,
+    ) : FeaturesEvent
+
+    data object FactAdded : FeaturesEvent
+
+    data class FactRemoved(
+        val fact: String,
+    ) : FeaturesEvent
+
+    /** the sheet and the list of marks of the chosen participant */
+    sealed interface MarkEvent : CombatRoundEvent
+
+    data class MarkSheetOpened(
+        val custom: Boolean = false,
+        val concentration: Boolean = false,
+    ) : MarkEvent
+
+    data class MarkTextChanged(
+        val text: String,
+    ) : MarkEvent
+
+    data object MarkConcentrationToggled : MarkEvent
+
+    data class MarkRoundsChanged(
+        val text: String,
+    ) : MarkEvent
+
+    data object MarkSheetClosed : MarkEvent
+
+    data object MarkConfirmed : MarkEvent
+
+    data class MarkRemoved(
+        val id: Long,
+    ) : MarkEvent
+
+    data class CustomToggled(
+        val name: String,
+    ) : MarkEvent
 
     data object SetHpOpened : CombatRoundEvent
 

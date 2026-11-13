@@ -8,14 +8,18 @@ import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.core.identity.newOriginId
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.feature.codex.domain.grouping.encodeFacts
+import com.lyrismet.incadent.feature.codex.domain.grouping.encodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
+import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -41,6 +45,8 @@ class CombatRepositoryImpl(
     private val combatants = database.combatantQueries
     private val events = database.combatEventQueries
     private val learned = database.combatLearnedQueries
+    private val marks = database.combatantMarkQueries
+    private val customConditions = database.customConditionQueries
 
     override fun observeAll(): Flow<List<Combat>> =
         current.observe { campaignId ->
@@ -49,13 +55,20 @@ class CombatRepositoryImpl(
                 combatants.selectByCampaign(campaignId).asFlow().mapToList(DatabaseDispatcher),
                 combatants.selectCodexNamesByCampaign(campaignId).asFlow().mapToList(DatabaseDispatcher),
                 events.selectByCampaign(campaignId).asFlow().mapToList(DatabaseDispatcher),
-            ) { combatRows, combatantRows, nameRows, eventRows ->
+                marks.selectByCampaign(campaignId).asFlow().mapToList(DatabaseDispatcher),
+            ) { combatRows, combatantRows, nameRows, eventRows, markRows ->
                 val names = nameRows.associate { it.id to it.codex_name }
+                val marksByMember = markRows.groupBy({ it.combatant_id }, { it.toDomain() })
                 val combatantsByCombat = combatantRows.groupBy { it.combat_id }
                 val eventsByCombat = eventRows.groupBy { it.combat_id }
                 combatRows.map { row ->
                     row.toDomain(
-                        combatantsByCombat[row.id].orEmpty().map { it.toDomain(names[it.id]) },
+                        combatantsByCombat[row.id].orEmpty().map {
+                            it.toDomain(
+                                names[it.id],
+                                marksByMember[it.id].orEmpty(),
+                            )
+                        },
                         eventsByCombat[row.id].orEmpty().map { it.toDomain() },
                     )
                 }
@@ -70,9 +83,14 @@ class CombatRepositoryImpl(
                 combatants.selectByCombat(id).asFlow().mapToList(DatabaseDispatcher),
                 combatants.selectCodexNames(id).asFlow().mapToList(DatabaseDispatcher),
                 events.selectByCombat(id).asFlow().mapToList(DatabaseDispatcher),
-            ) { row: CombatRow?, combatantRows, nameRows, eventRows ->
+                marks.selectByCombat(id).asFlow().mapToList(DatabaseDispatcher),
+            ) { row: CombatRow?, combatantRows, nameRows, eventRows, markRows ->
                 val names = nameRows.associate { it.id to it.codex_name }
-                row?.toDomain(combatantRows.map { it.toDomain(names[it.id]) }, eventRows.map { it.toDomain() })
+                val marksByMember = markRows.groupBy({ it.combatant_id }, { it.toDomain() })
+                row?.toDomain(
+                    combatantRows.map { it.toDomain(names[it.id], marksByMember[it.id].orEmpty()) },
+                    eventRows.map { it.toDomain() },
+                )
             }.flowOn(DatabaseDispatcher)
         }
 
@@ -118,7 +136,14 @@ class CombatRepositoryImpl(
                     role = combatant.role,
                     is_label = if (combatant.isLabel) 1L else 0L,
                 )
-                combatants.lastInsertRowId().executeAsOne()
+                val id = combatants.lastInsertRowId().executeAsOne()
+                // a restored participant comes back with what the fight kept on it
+                combatants.updateVulnerabilities(combatant.vulnerabilities.encodeVulnerabilities(), id)
+                combatants.updateFacts(combatant.facts.encodeFacts(), id)
+                combatant.marks.forEach {
+                    marks.insert(id, it.kind, it.text, it.roundsLeft?.toLong(), it.startedRound.toLong())
+                }
+                id
             }
         }
 
@@ -200,6 +225,22 @@ class CombatRepositoryImpl(
         isLabel: Boolean,
     ) {
         withContext(DatabaseDispatcher) { combatants.updateLabel(name, if (isLabel) 1L else 0L, combatantId) }
+    }
+
+    override suspend fun setOwnShields(
+        combatantId: Long,
+        shields: Map<DamageType, DamageState>,
+    ) {
+        withContext(
+            DatabaseDispatcher,
+        ) { combatants.updateVulnerabilities(shields.encodeVulnerabilities(), combatantId) }
+    }
+
+    override suspend fun setOwnFacts(
+        combatantId: Long,
+        facts: List<String>,
+    ) {
+        withContext(DatabaseDispatcher) { combatants.updateFacts(facts.encodeFacts(), combatantId) }
     }
 
     override suspend fun setRole(
@@ -319,6 +360,42 @@ class CombatRepositoryImpl(
     override suspend fun clearTurnOrders(combatId: Long) {
         withContext(DatabaseDispatcher) { combatants.clearTurnOrders(combatId) }
     }
+
+    override suspend fun addMark(
+        combatantId: Long,
+        kind: MarkKind,
+        text: String,
+        roundsLeft: Int?,
+        startedRound: Int,
+    ): Long =
+        withContext(DatabaseDispatcher) {
+            marks.transactionWithResult {
+                if (kind == MarkKind.CONCENTRATION) marks.deleteByKind(combatantId, kind)
+                marks.insert(combatantId, kind, text, roundsLeft?.toLong(), startedRound.toLong())
+                marks.lastInsertRowId().executeAsOne()
+            }
+        }
+
+    override suspend fun removeMark(markId: Long) {
+        withContext(DatabaseDispatcher) { marks.deleteById(markId) }
+    }
+
+    override fun observeCustomConditions(): Flow<List<CustomCondition>> =
+        current.observe { campaignId ->
+            customConditions
+                .selectByCampaign(campaignId)
+                .asFlow()
+                .mapToList(DatabaseDispatcher)
+                .map { rows -> rows.map { it.toDomain() } }
+        }
+
+    override suspend fun addCustomCondition(name: String): Long =
+        withContext(DatabaseDispatcher) {
+            customConditions.transactionWithResult {
+                customConditions.insert(current.requireId(), name)
+                customConditions.lastInsertRowId().executeAsOne()
+            }
+        }
 
     override suspend fun attachToSession(
         combatId: Long,

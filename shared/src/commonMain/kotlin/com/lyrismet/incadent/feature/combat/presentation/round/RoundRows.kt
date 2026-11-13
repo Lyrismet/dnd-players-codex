@@ -144,7 +144,7 @@ private fun roundRow(
         hp = if (tracked) rowHp(member) else null,
         wound = if (tracked && !member.isDying()) null else rowWound(member, word),
         caption = caption,
-        chips = rowChips(member),
+        chips = rowChips(member) + markRowChips(member, combat.round),
         dimmed = (down && !member.isDying()) || member.stance == CombatStance.FLED,
         reaction = if (own && !member.isOut()) rowReaction(member, current) else null,
     )

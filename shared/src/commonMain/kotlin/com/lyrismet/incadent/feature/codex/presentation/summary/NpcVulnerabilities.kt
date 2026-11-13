@@ -34,10 +34,13 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.isInheritedVulnerabil
 import com.lyrismet.incadent.feature.codex.domain.grouping.nextOwnVulnerability
 import com.lyrismet.incadent.feature.codex.domain.grouping.shields
 import com.lyrismet.incadent.feature.codex.domain.grouping.stateOf
+import com.lyrismet.incadent.feature.codex.domain.grouping.with
+import com.lyrismet.incadent.feature.codex.domain.grouping.withFact
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.entity_sheet_npc_facts_label
 import incadent.shared.generated.resources.entity_sheet_npc_vulnerabilities_hint
 import incadent.shared.generated.resources.entity_sheet_npc_vulnerabilities_hint_inherited
 import incadent.shared.generated.resources.entity_sheet_npc_vulnerabilities_label
@@ -57,27 +60,41 @@ private fun DamageState.labelColor(): Color =
         else -> AppPalette.Amber
     }
 
-/** the "уязвимости" row of an npc card - its shields by state, and with [onChange] a hold opens the shield editor */
+/** the "особенности" row of an npc card - its shields and facts, and with [onChange] a hold opens the shared sheet */
 @Composable
 internal fun NpcVulnerabilitySection(
     vulnerabilities: NpcVulnerabilities,
-    onChange: ((DamageType, DamageState) -> Unit)?,
+    onChange: ((DamageType, DamageState?) -> Unit)?,
     onEdited: ((Map<DamageType, DamageState>) -> Unit)?,
     modifier: Modifier = Modifier,
+    onFactsChanged: ((List<String>) -> Unit)? = null,
 ) {
     var before by remember { mutableStateOf<Map<DamageType, DamageState>?>(null) }
+    var text by remember { mutableStateOf("") }
     val opened = before
     if (opened != null && onChange != null) {
-        NpcVulnerabilityEditor(
-            vulnerabilities = vulnerabilities,
-            onChange = onChange,
-            onDone = {
-                before = null
-                onEdited?.invoke(opened)
-            },
-            modifier = modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+        val close: () -> Unit = {
+            before = null
+            text = ""
+            onEdited?.invoke(opened)
+        }
+        FeaturesBottomSheet(
+            overline = vulnerabilities.name.uppercase(),
+            facts = vulnerabilities.facts,
+            text = text,
+            shields = effectiveVulnerabilities(vulnerabilities.fromSpecies, vulnerabilities.own),
+            actions =
+                FeaturesSheetActions(
+                    onTextChanged = { text = it },
+                    onAdd = {
+                        onFactsChanged?.invoke(vulnerabilities.facts.withFact(text))
+                        text = ""
+                    },
+                    onRemove = { fact -> onFactsChanged?.invoke(vulnerabilities.facts - fact) },
+                    onShieldChanged = onChange,
+                    onClose = close,
+                ),
         )
-        return
     }
     val rows: @Composable () -> Unit = { NpcVulnerabilityRows(vulnerabilities) }
     if (onChange == null) {
@@ -99,9 +116,13 @@ private fun NpcVulnerabilityRows(vulnerabilities: NpcVulnerabilities) {
     val stateLabels = damageStateLabels()
     var tipped by remember { mutableStateOf<DamageType?>(null) }
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        if (groups.isEmpty()) {
+        if (groups.isEmpty() && vulnerabilities.facts.isEmpty()) {
             RowLine(stringResource(Res.string.entity_sheet_npc_vulnerabilities_label), AppPalette.TextTertiary) {
-                Text(EMPTY_VALUE_DASH, color = AppPalette.TextPrimary, fontSize = AppFontSize.Medium)
+                Text(
+                    EMPTY_VALUE_DASH,
+                    color = AppPalette.TextTertiary,
+                    fontSize = AppFontSize.Medium,
+                )
             }
         }
         groups.forEach { (state, types) ->
@@ -118,6 +139,16 @@ private fun NpcVulnerabilityRows(vulnerabilities: NpcVulnerabilities) {
                                     .clickable { tipped = if (tipped == type) null else type },
                         )
                     }
+                }
+            }
+        }
+        if (vulnerabilities.facts.isNotEmpty()) {
+            RowLine(stringResource(Res.string.entity_sheet_npc_facts_label), AppPalette.TextSecondary) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    vulnerabilities.facts.forEach { FeatureChip(it) }
                 }
             }
         }
@@ -140,7 +171,8 @@ private fun RowLine(
             label,
             modifier = Modifier.width(LABEL_WIDTH),
             color = color,
-            fontSize = AppFontSize.Medium,
+            maxLines = 1,
+            fontSize = AppFontSize.Body,
             lineHeight = AppLineHeight.Row,
         )
         content()
@@ -150,7 +182,7 @@ private fun RowLine(
 @Composable
 private fun VulnerabilityShield(
     type: DamageType,
-    state: DamageState,
+    state: DamageState?,
     modifier: Modifier = Modifier,
 ) {
     DamageTypeShield(
@@ -164,7 +196,7 @@ private fun VulnerabilityShield(
 @Composable
 internal fun NpcVulnerabilityEditor(
     vulnerabilities: NpcVulnerabilities,
-    onChange: (DamageType, DamageState) -> Unit,
+    onChange: (DamageType, DamageState?) -> Unit,
     onDone: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
@@ -184,7 +216,7 @@ internal fun NpcVulnerabilityEditor(
         FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             DamageType.entries.forEach { type ->
                 val inherited = isInheritedVulnerability(vulnerabilities.fromSpecies, vulnerabilities.own, type)
-                val shown = effective.stateOf(type).takeIf { it != DamageState.NORMAL } ?: DamageState.UNKNOWN
+                val shown = effective.stateOf(type).takeIf { it != DamageState.NORMAL }
                 VulnerabilityShield(
                     type = type,
                     state = shown,
@@ -234,7 +266,7 @@ private fun editorHint(
     }
     val stateLabels = damageStateLabels()
     val none = stringResource(Res.string.entity_sheet_npc_vulnerabilities_none)
-    val after = vulnerabilities.own + (tapped to nextOwnVulnerability(species, vulnerabilities.own, tapped))
+    val after = vulnerabilities.own.with(tapped, nextOwnVulnerability(species, vulnerabilities.own, tapped))
 
     fun wordOf(own: Map<DamageType, DamageState>) =
         effectiveVulnerabilities(species, own)

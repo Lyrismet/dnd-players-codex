@@ -1,0 +1,29 @@
+-- marks of a participant: a short text with an optional round counter, told apart by kind
+CREATE TABLE combatant_mark (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    combatant_id INTEGER NOT NULL REFERENCES combatant(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    text TEXT NOT NULL,
+    rounds_left INTEGER,
+    started_round INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX combatant_mark_combatant_id ON combatant_mark(combatant_id);
+
+-- the states the master made up, shared by the whole campaign
+CREATE TABLE custom_condition (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    name TEXT NOT NULL
+);
+
+CREATE INDEX custom_condition_campaign_id ON custom_condition(campaign_id);
+
+-- concentration used to be a condition, it becomes a mark without a name
+INSERT INTO combatant_mark(combatant_id, kind, text, rounds_left, started_round)
+SELECT id, 'CONCENTRATION', '', NULL, 1 FROM combatant
+WHERE ',' || conditions || ',' LIKE '%,CONCENTRATION,%';
+
+UPDATE combatant
+SET conditions = trim(replace(',' || conditions || ',', ',CONCENTRATION,', ','), ',')
+WHERE ',' || conditions || ',' LIKE '%,CONCENTRATION,%';

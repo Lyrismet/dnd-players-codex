@@ -20,6 +20,9 @@ data class PromotionTrace(
     val createdNpc: Boolean,
     val oldName: String,
     val oldNpcId: Long?,
+    // the shields and facts the fight kept on the participant, they moved to the new record and come back with the undo
+    val oldShields: Map<DamageType, DamageState> = emptyMap(),
+    val oldFacts: List<String> = emptyList(),
 )
 
 /** turns a participant made of a species into a named npc of the codex, in the middle of a fight */
@@ -58,17 +61,32 @@ class NpcPromotion(
                             speciesId = member.speciesId,
                             characterClass = role.characterClass,
                             subclass = role.subclass,
+                            vulnerabilities = member.vulnerabilities,
+                            facts = member.facts,
                         ),
                     )
                 combats.linkNpc(member.id, id, choice.name)
-                PromotionTrace(member.id, id, createdNpc = true, member.name, member.npcId)
+                combats.setOwnShields(member.id, emptyMap())
+                combats.setOwnFacts(member.id, emptyList())
+                PromotionTrace(
+                    member.id,
+                    id,
+                    createdNpc = true,
+                    member.name,
+                    member.npcId,
+                    member.vulnerabilities,
+                    member.facts,
+                )
             }
         }
 
     /** takes the naming back: the participant is what it was and an npc made for it is gone */
     suspend fun undo(trace: PromotionTrace) {
         combats.linkNpc(trace.memberId, trace.oldNpcId, trace.oldName)
-        if (trace.createdNpc) npcs.delete(trace.npcId)
+        if (!trace.createdNpc) return
+        npcs.delete(trace.npcId)
+        combats.setOwnShields(trace.memberId, trace.oldShields)
+        combats.setOwnFacts(trace.memberId, trace.oldFacts)
     }
 
     /** moves what the fight learned about [types] from the species card to the npc card, returns the way back */

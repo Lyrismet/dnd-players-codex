@@ -211,7 +211,7 @@ sealed interface CodexEntryFormEvent {
 
     data class EntryVulnerabilityChanged(
         val type: DamageType,
-        val state: DamageState,
+        val state: DamageState?,
     ) : CodexEntryFormEvent
 
     data class EntrySrdPicked(

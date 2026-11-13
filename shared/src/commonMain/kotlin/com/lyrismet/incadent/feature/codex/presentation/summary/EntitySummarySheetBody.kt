@@ -167,6 +167,8 @@ private fun NpcSummaryBody(
                     actions.onNpcVulnerabilityChanged?.let { changed ->
                         { type, state -> changed(npc.ref.id, type, state) }
                     },
+                onFactsChanged =
+                    actions.onNpcFactsChanged?.let { changed -> { facts -> changed(npc.ref.id, facts) } },
                 onEdited =
                     actions.onNpcVulnerabilitiesEdited?.let { edited -> { before -> edited(npc.ref.id, before) } },
             )

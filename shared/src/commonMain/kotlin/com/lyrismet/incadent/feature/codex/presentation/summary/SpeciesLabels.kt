@@ -25,7 +25,6 @@ import incadent.shared.generated.resources.creature_type_unspecified
 import incadent.shared.generated.resources.damage_state_immunity
 import incadent.shared.generated.resources.damage_state_normal
 import incadent.shared.generated.resources.damage_state_resistance
-import incadent.shared.generated.resources.damage_state_unknown
 import incadent.shared.generated.resources.damage_state_vulnerability
 import incadent.shared.generated.resources.damage_type_acid
 import incadent.shared.generated.resources.damage_type_bludgeoning
@@ -104,7 +103,6 @@ fun damageTypeLabels(): Map<DamageType, String> =
 @Composable
 fun damageStateLabels(): Map<DamageState, String> =
     mapOf(
-        DamageState.UNKNOWN to stringResource(Res.string.damage_state_unknown),
         DamageState.NORMAL to stringResource(Res.string.damage_state_normal),
         DamageState.RESISTANCE to stringResource(Res.string.damage_state_resistance),
         DamageState.IMMUNITY to stringResource(Res.string.damage_state_immunity),

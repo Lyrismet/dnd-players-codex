@@ -1,13 +1,17 @@
 package com.lyrismet.incadent.feature.combat.domain.preparation
 
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
+import com.lyrismet.incadent.feature.combat.domain.model.CombatMark
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
+import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -243,6 +247,71 @@ internal class FakeCombatRepository : CombatRepository {
                         },
                 )
             }
+    }
+
+    override suspend fun addMark(
+        combatantId: Long,
+        kind: MarkKind,
+        text: String,
+        roundsLeft: Int?,
+        startedRound: Int,
+    ): Long {
+        val id = nextId++
+        val mark = CombatMark(id, combatantId, kind, text, roundsLeft, startedRound)
+        combats.value =
+            combats.value.map { c ->
+                c.copy(
+                    combatants =
+                        c.combatants.map {
+                            if (it.id != combatantId) {
+                                it
+                            } else {
+                                it.copy(
+                                    marks =
+                                        it.marks.filter { m ->
+                                            m.kind != kind || kind != MarkKind.CONCENTRATION
+                                        } + mark,
+                                )
+                            }
+                        },
+                )
+            }
+        return id
+    }
+
+    override suspend fun removeMark(markId: Long) {
+        combats.value =
+            combats.value.map { c ->
+                c.copy(combatants = c.combatants.map { it.copy(marks = it.marks.filter { m -> m.id != markId }) })
+            }
+    }
+
+    private val customConditions = MutableStateFlow<List<CustomCondition>>(emptyList())
+
+    override fun observeCustomConditions(): Flow<List<CustomCondition>> = customConditions
+
+    override suspend fun addCustomCondition(name: String): Long {
+        val id = nextId++
+        customConditions.value += CustomCondition(id, name)
+        return id
+    }
+
+    override suspend fun setOwnShields(
+        combatantId: Long,
+        shields: Map<DamageType, DamageState>,
+    ) = changeMember(combatantId) { it.copy(vulnerabilities = shields) }
+
+    override suspend fun setOwnFacts(
+        combatantId: Long,
+        facts: List<String>,
+    ) = changeMember(combatantId) { it.copy(facts = facts) }
+
+    private fun changeMember(
+        id: Long,
+        change: (Combatant) -> Combatant,
+    ) {
+        combats.value =
+            combats.value.map { c -> c.copy(combatants = c.combatants.map { if (it.id == id) change(it) else it }) }
     }
 
     override suspend fun attachToSession(

@@ -8,7 +8,9 @@ import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.grouping.decodeFacts
 import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
+import com.lyrismet.incadent.feature.codex.domain.grouping.encodeFacts
 import com.lyrismet.incadent.feature.codex.domain.grouping.encodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -80,6 +82,7 @@ class NpcRepositoryImpl(
                     entity.vulnerabilities.encodeVulnerabilities(),
                     entity.id,
                 )
+                queries.updateFacts(entity.facts.encodeFacts(), entity.id)
                 database.combatantQueries.syncNpcName(entity.name, entity.id)
                 writePhotoIfChanged(
                     entity.portrait,
@@ -112,6 +115,7 @@ class NpcRepositoryImpl(
                 current.requireId(),
                 npc.originId.orNewOriginId(),
             )
+            queries.updateFacts(npc.facts.encodeFacts(), npc.id)
             return npc.id
         }
         queries.insert(
@@ -130,7 +134,7 @@ class NpcRepositoryImpl(
             current.requireId(),
             npc.originId.orNewOriginId(),
         )
-        return queries.lastInsertRowId().executeAsOne()
+        return queries.lastInsertRowId().executeAsOne().also { queries.updateFacts(npc.facts.encodeFacts(), it) }
     }
 
     override suspend fun delete(id: Long) {
@@ -167,6 +171,7 @@ class NpcRepositoryImpl(
         vulnerabilities: String,
         portraitThumb: ByteArray?,
         originId: String,
+        facts: String,
         locationIds: String,
     ) = toDomain(
         id,
@@ -182,6 +187,7 @@ class NpcRepositoryImpl(
         vulnerabilities,
         portraitThumb,
         originId,
+        facts,
     ).copy(locationIds = locationIds.split(',').mapNotNull { it.toLongOrNull() })
 
     // one param per npc table column - dictated by SQLDelight's generated query mapper shape, not real complexity
@@ -200,6 +206,7 @@ class NpcRepositoryImpl(
         vulnerabilities: String,
         portraitThumb: ByteArray?,
         originId: String,
+        facts: String,
     ) = Npc(
         id,
         name,
@@ -217,6 +224,7 @@ class NpcRepositoryImpl(
         originId,
         characterClass,
         subclass,
+        decodeFacts(facts),
     )
 
     // the by-id row also carries the full jpeg
@@ -236,6 +244,7 @@ class NpcRepositoryImpl(
         portraitThumb: ByteArray?,
         portrait: ByteArray?,
         originId: String,
+        facts: String,
     ) = toDomain(
         id,
         name,
@@ -250,5 +259,6 @@ class NpcRepositoryImpl(
         vulnerabilities,
         portraitThumb,
         originId,
+        facts,
     ).copy(portrait = portraitThumb?.let { Photo(it, portrait) })
 }

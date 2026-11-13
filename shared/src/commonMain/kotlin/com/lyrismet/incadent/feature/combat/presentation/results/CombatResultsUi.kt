@@ -281,7 +281,7 @@ private fun DamageState.word() =
         DamageState.RESISTANCE -> Res.string.combat_damage_state_resistance
         DamageState.IMMUNITY -> Res.string.combat_damage_state_immunity
         DamageState.VULNERABILITY -> Res.string.combat_damage_state_vulnerability
-        DamageState.NORMAL, DamageState.UNKNOWN -> Res.string.combat_damage_state_normal
+        DamageState.NORMAL -> Res.string.combat_damage_state_normal
     }
 
 @Composable

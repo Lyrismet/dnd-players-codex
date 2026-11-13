@@ -121,10 +121,7 @@ private fun buildNpcSummary(
             ),
         relatedNotes = buildRelatedNotes(EntityRef.Npc(npc.id), lookup),
         gear = gearOf(EntityKind.NPC, npc.id, lookup),
-        vulnerabilities =
-            lookup.species.find { it.id == npc.speciesId }.let { species ->
-                NpcVulnerabilities(npc.vulnerabilities, species?.vulnerabilities.orEmpty(), species?.name)
-            },
+        vulnerabilities = NpcVulnerabilities.of(npc, lookup.species.find { it.id == npc.speciesId }),
     )
 }
 

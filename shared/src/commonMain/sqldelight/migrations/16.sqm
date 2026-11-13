@@ -1,0 +1,6 @@
+-- what the party knows of an npc beyond its shields, one short fact per line
+ALTER TABLE npc ADD COLUMN facts TEXT NOT NULL DEFAULT '';
+
+-- a participant without a record keeps what the fight learned of it, until it is taken to the codex
+ALTER TABLE combatant ADD COLUMN vulnerabilities TEXT NOT NULL DEFAULT '';
+ALTER TABLE combatant ADD COLUMN facts TEXT NOT NULL DEFAULT '';

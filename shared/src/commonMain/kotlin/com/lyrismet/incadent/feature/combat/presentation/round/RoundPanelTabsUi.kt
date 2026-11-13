@@ -25,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,17 +46,22 @@ import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.NumberPadSheet
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.feature.codex.presentation.summary.VulnerabilityGridEditor
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpPadState
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_hp_apply
 import incadent.shared.generated.resources.combat_hp_mode_hp
+import incadent.shared.generated.resources.combat_mark_add
+import incadent.shared.generated.resources.combat_mark_concentration_quick
+import incadent.shared.generated.resources.combat_mark_custom_add
+import incadent.shared.generated.resources.combat_mark_group_custom
+import incadent.shared.generated.resources.combat_mark_head
+import incadent.shared.generated.resources.combat_mark_none
+import incadent.shared.generated.resources.combat_mark_remove
 import incadent.shared.generated.resources.combat_panel_full_title
 import incadent.shared.generated.resources.combat_panel_remove
 import incadent.shared.generated.resources.combat_panel_set_hp
 import incadent.shared.generated.resources.combat_panel_side_title
-import incadent.shared.generated.resources.entity_sheet_species_vulnerabilities_title
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
@@ -64,44 +71,162 @@ internal fun ConditionsTab(
     panel: RoundPanel,
     send: (CombatRoundEvent) -> Unit,
 ) {
-    panel.conditions.forEach { group ->
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier =
-                        Modifier
-                            .size(
-                                6.dp,
-                            ).appCard(RoundedCornerShape(2.dp), RoundColors.groupTitle(group.group), null),
-                )
-                Text(
-                    group.title,
-                    color = RoundColors.groupTitle(group.group),
-                    fontSize = AppFontSize.Tiny,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.4.sp,
-                )
-            }
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-            ) {
-                group.items.forEach { item ->
-                    ConditionChip(item, group.group) { send(CombatRoundEvent.ConditionToggled(item.condition)) }
+    panel.features?.let { FeaturesBlockUi(it, send) }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            stringResource(Res.string.combat_mark_head) + if (panel.tags.isEmpty()) "" else " · ${panel.tags.size}",
+            color = AppPalette.TextTertiary,
+            fontSize = AppFontSize.Tiny,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 1.4.sp,
+            modifier = Modifier.weight(1f),
+        )
+        AppButton(
+            text = stringResource(Res.string.combat_mark_add),
+            onClick = { send(CombatRoundEvent.MarkSheetOpened()) },
+            variant = ButtonVariant.Ghost,
+        )
+    }
+    if (panel.tags.isEmpty()) {
+        Text(
+            stringResource(Res.string.combat_mark_none),
+            color = AppPalette.TextTertiary,
+            fontSize = AppFontSize.Small,
+        )
+    } else {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            panel.tags.forEach { tag ->
+                MarkTag(tag) {
+                    send(
+                        tag.condition?.let { CombatRoundEvent.ConditionToggled(it) }
+                            ?: CombatRoundEvent.MarkRemoved(tag.id),
+                    )
                 }
+            }
+        }
+    }
+    panel.conditions.forEach { group ->
+        ConditionGroupBlock(
+            group,
+            onToggle = { item -> send(CombatRoundEvent.ConditionToggled(item.condition)) },
+        ) {
+            if (group.group == ConditionGroup.EFFECT) {
+                ConditionChip(
+                    stringResource(Res.string.combat_mark_concentration_quick),
+                    false,
+                    ConditionGroup.EFFECT,
+                ) {
+                    send(CombatRoundEvent.MarkSheetOpened(concentration = true))
+                }
+            }
+        }
+    }
+    CustomGroup(panel.customs, send)
+}
+
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
+private fun CustomGroup(
+    customs: List<CustomItem>,
+    send: (CombatRoundEvent) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            stringResource(Res.string.combat_mark_group_custom),
+            color = AppPalette.TextSecondary,
+            fontSize = AppFontSize.Tiny,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 1.4.sp,
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            customs.forEach { item ->
+                ConditionChip(
+                    item.name,
+                    item.on,
+                    ConditionGroup.WEAKENING,
+                ) { send(CombatRoundEvent.CustomToggled(item.name)) }
+            }
+            ConditionChip(stringResource(Res.string.combat_mark_custom_add), false, ConditionGroup.WEAKENING) {
+                send(CombatRoundEvent.MarkSheetOpened(custom = true))
             }
         }
     }
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
+private fun ConditionGroupBlock(
+    group: ConditionGroupItem,
+    onToggle: (ConditionItem) -> Unit,
+    extra: @Composable () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier =
+                    Modifier
+                        .size(
+                            6.dp,
+                        ).appCard(RoundedCornerShape(2.dp), RoundColors.groupTitle(group.group), null),
+            )
+            Text(
+                group.title,
+                color = RoundColors.groupTitle(group.group),
+                fontSize = AppFontSize.Tiny,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 1.4.sp,
+            )
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            group.items.forEach { item -> ConditionChip(item.label, item.on, group.group) { onToggle(item) } }
+            extra()
+        }
+    }
+}
+
+/** a mark that is on the participant, a tap takes it off */
+@Composable
+private fun MarkTag(
+    mark: PanelMark,
+    onRemove: () -> Unit,
+) {
+    val (fg, bg) = RoundColors.chip(if (mark.concentration) ChipKind.EFFECT else ChipKind.MARK)
+    val removeLabel = stringResource(Res.string.combat_mark_remove)
+    Text(
+        text = mark.label + " ×",
+        color = if (mark.tone == MarkTone.NORMAL) fg else RoundColors.chip(markChip(mark.tone)).first,
+        fontSize = AppFontSize.Small,
+        modifier =
+            Modifier
+                .defaultMinSize(minHeight = 28.dp)
+                .semantics { contentDescription = removeLabel }
+                .appCard(
+                    shape = AppShapes.Card,
+                    background = bg,
+                    border = RoundColors.markBorder(mark.tone),
+                    onClick = onRemove,
+                ).padding(horizontal = 10.dp, vertical = 4.dp),
+    )
+}
+
+private fun markChip(tone: MarkTone): ChipKind =
+    if (tone ==
+        MarkTone.LAST
+    ) {
+        ChipKind.MARK_LAST
+    } else {
+        ChipKind.MARK_EXPIRED
+    }
+
+@Composable
 private fun ConditionChip(
-    item: ConditionItem,
+    label: String,
+    on: Boolean,
     group: ConditionGroup,
     onClick: () -> Unit,
 ) {
     val (fg, bg, border) =
-        if (item.on) {
+        if (on) {
             RoundColors.groupOn(
                 group,
             )
@@ -109,7 +234,7 @@ private fun ConditionChip(
             Triple(AppPalette.TextSecondary, Color.Transparent, AppPalette.Border)
         }
     Text(
-        text = item.label,
+        text = label,
         color = fg,
         fontSize = AppFontSize.Small,
         modifier =
@@ -146,15 +271,6 @@ internal fun MoreTab(
             onClick = { send(CombatRoundEvent.SetHpOpened) },
             variant = ButtonVariant.Ghost,
         )
-    }
-    more.vulnerabilities?.let { vulnerabilities ->
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            FormFieldLabel(stringResource(Res.string.entity_sheet_species_vulnerabilities_title).uppercase())
-            VulnerabilityGridEditor(
-                vulnerabilities,
-                { type, state -> send(CombatRoundEvent.VulnerabilityChanged(type, state)) },
-            )
-        }
     }
     NoteField(panel.id, more.note, more.notePlaceholder) { send(CombatRoundEvent.NoteChanged(panel.id, it)) }
     AppButton(

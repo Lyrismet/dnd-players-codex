@@ -14,6 +14,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
+import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isDying
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
@@ -43,6 +44,7 @@ internal fun roundPanel(
     moverName: String,
     seen: List<SpeciesHitObservation>,
     kin: PanelKin,
+    customs: List<CustomCondition>,
 ): RoundPanel {
     val tracked = member.isTracked()
     val dying = member.isDying()
@@ -72,6 +74,9 @@ internal fun roundPanel(
             },
         died = member.dead,
         conditions = conditionGroups(member),
+        features = if (party) null else featuresBlock(member, kin.npc, kin.vulnerabilities),
+        tags = panelTags(member, combat.round),
+        customs = panelCustoms(member, customs),
         more = panelMore(member, tracked, party, kin),
         calcModes = if (tracked) CalcMode.entries.toList() else listOf(CalcMode.DAMAGE, CalcMode.HEAL),
         sourceNote = stringResource(Res.string.combat_panel_source_note, moverName),
@@ -153,7 +158,7 @@ private fun conditionGroups(member: Combatant): List<ConditionGroupItem> =
             title = group.title(),
             items =
                 CombatCondition.entries
-                    .filter { it.group == group }
+                    .filter { it.group == group && it != CombatCondition.CONCENTRATION }
                     .map { ConditionItem(it, it.label(), it in member.conditions) },
         )
     }
@@ -176,7 +181,6 @@ private fun panelMore(
             stringResource(
                 if (party) Res.string.combat_panel_note_party else Res.string.combat_panel_note_foe,
             ),
-        vulnerabilities = kin.vulnerabilities.takeIf { !party && (kin.species != null || kin.npc != null) },
         naming = kin.naming,
         identity = kin.identity,
     )

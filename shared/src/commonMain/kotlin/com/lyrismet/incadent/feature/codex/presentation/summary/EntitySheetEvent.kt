@@ -49,10 +49,15 @@ sealed interface EntitySheetEvent {
         val state: DamageState,
     ) : EntitySheetEvent
 
+    data class NpcFactsChanged(
+        val npcId: Long,
+        val facts: List<String>,
+    ) : EntitySheetEvent
+
     data class NpcVulnerabilityChanged(
         val npcId: Long,
         val type: DamageType,
-        val state: DamageState,
+        val state: DamageState?,
     ) : EntitySheetEvent
 
     data class NpcVulnerabilitiesEdited(
@@ -101,6 +106,7 @@ fun EntitySheetEvent.writesCampaignData(): Boolean =
         is EntitySheetEvent.QuestStatusSelected,
         is EntitySheetEvent.SpeciesVulnerabilityChanged,
         is EntitySheetEvent.NpcVulnerabilityChanged,
+        is EntitySheetEvent.NpcFactsChanged,
         is EntitySheetEvent.NpcVulnerabilitiesEdited,
         is EntitySheetEvent.SpeciesNoteQuantityStepped,
         is EntitySheetEvent.ItemQuantityStepped,
@@ -139,6 +145,7 @@ fun EntitySheetInteractions.onEvent(
             )
         is EntitySheetEvent.NpcVulnerabilityChanged ->
             onNpcVulnerabilityChanged(scope, event.npcId, event.type, event.state)
+        is EntitySheetEvent.NpcFactsChanged -> onNpcFactsChanged(scope, event.npcId, event.facts)
         is EntitySheetEvent.NpcVulnerabilitiesEdited ->
             onNpcVulnerabilitiesEdited(scope, event.npcId, event.before)
         // the codex screen takes these two before they get here, no other host has an item stack or a gear pick
@@ -207,6 +214,12 @@ fun entitySheetActions(
         onNpcVulnerabilityChanged =
             if (npcVulnerabilityEdit) {
                 { id, type, state -> send(EntitySheetEvent.NpcVulnerabilityChanged(id, type, state)) }
+            } else {
+                null
+            },
+        onNpcFactsChanged =
+            if (npcVulnerabilityEdit) {
+                { id, facts -> send(EntitySheetEvent.NpcFactsChanged(id, facts)) }
             } else {
                 null
             },

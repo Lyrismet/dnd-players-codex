@@ -58,7 +58,7 @@
 
 ### Шаг 4. Метки, факты NPC, "Особенности" и щиты
 
-Статус: `[ ]`. Зависит от: шаги 1, 2. Миграции: `15.sqm`, `16.sqm`. Бриф: `steps/04-marks-features.md`.
+Статус: `[x]`. Зависит от: шаги 1, 2. Миграции: `15.sqm`, `16.sqm` (занято, следующая свободная `17.sqm`). Бриф: `steps/04-marks-features.md`.
 
 **Часть 1. Метки участника**
 Цель: Хранение и интерфейс меток: вкладка "Метки", лист "Новая метка", концентрация, счётчик раундов, свои состояния
@@ -120,6 +120,56 @@
 
 **Часть 2. Сквозная приёмка v9.1**
 Цель: Пройти сквозные сценарии Приложения Д `DEV.md`, сверить `docs/FEATURES.md`, обновить версию платформ.
+
+## Бэклог после /simplify (шаг 4)
+
+Найдено разбором незакоммиченного диффа шага 4 (повторы, лишняя сложность, лишняя работа, неверная глубина правки). Сделанное
+из этого уже в коде, здесь только то, что осталось. Пути даны от `shared/src/commonMain/kotlin/com/lyrismet/incadent/`.
+
+**Нужно решение владельца (схема БД или внешний вид)**
+- [ ] Мёртвый путь "learned". После удаления `recordOnSpecies` ничто не пишет в `combat_learned`, а код вокруг остался:
+  `LearnedVulnerability`, `CombatRepository.observeLearned/addLearned/removeLearned` и реализация, `learned` в
+  `CombatRoundPresenter`, `IdentityFacts`, `NamingHandler`, `NamingBuilder` (`learnedOf`), `NamingUi` (`LearnedRowView`),
+  `IdentityModels`, `NpcPromotion.moveLearned` и тест в `NpcPromotionTest`. Удаление требует миграции, которая
+  убирает таблицу `combat_learned`, с тестом (у тестеров там могут быть строки).
+- [ ] `CombatCondition.CONCENTRATION` остался в enum "для старых файлов", а панель прячет его фильтром в
+  `RoundPanelBuilder`. Миграция 15 уже переносит концентрацию в метки, поэтому значение можно убрать, сначала проверив,
+  что `combatConditionsAdapter` пропускает неизвестные имена.
+- [ ] Визуал, расходящийся с макетом: кнопка "✓" в `ShieldEditor` (`FeaturesUi`) через `AppButton`; поле фактов в
+  `FeaturesSheetActions` и поле своего состояния в `MarkSheetUi` через `SheetDraftInput`; мелкие правки пустого состояния
+  в `NpcVulnerabilities`.
+
+**Рефакторинг**
+- [ ] Щиты и факты живут в двух местах (строка бойца и строка NPC), и каждый код ветвится по `npcId == null`:
+  `VulnerabilityLearner` (`ownShields`, `writeOwn`, `record`), `resistancesOf`, `NpcPromotion` (перенос и `undo` через
+  `oldShields`/`oldFacts`). Нужна одна абстракция "владелец своих особенностей". Запись и откат заодно переезжают из
+  `presentation/round` в слой данных или домена.
+- [ ] `DamageState?` внедрён наполовину: для NPC (`onNpcVulnerabilityChanged`) он есть, для вида
+  (`onSpeciesVulnerabilityChanged`, редактор вида) остался обычный `DamageState`. `stateOf` теперь читает отсутствующую
+  запись как `NORMAL`, это легко принять за "неизвестно".
+- [ ] Логика фактов (`withFact`, поле, добавить и убрать) повторяется в `NpcVulnerabilitySection` и в `FeaturesHandler`.
+  Вынести в общий обработчик в духе `EntitySheetInteractions`. Проверить, не стал ли `NpcVulnerabilityEditor` мёртвым.
+- [ ] Блоки интерфейса по `docs/CORE_COMPONENTS.md`: один чип с `onClick` вместо `FeatureChip`, `MarkTag`, `ConditionChip`;
+  `ChipFlow` для повторяющегося `FlowRow(spacedBy(5.dp))` и общая основа для `CustomGroup` и `ConditionGroupBlock` в
+  `RoundPanelTabsUi`; заголовок-надпись (`Tiny`, `SemiBold`, `letterSpacing 1.4.sp`) через `FormFieldLabel` вместо пяти
+  копий.
+- [ ] `ShieldEditing.tap` и `set` это обёртки над `change`, оставить одну точку входа. `ShieldEditDraft.memberId`
+  дублирует выбранного участника, но нужен `done()` после смены выбора, проверить перед удалением.
+- [ ] `CombatRepositoryImpl`: два `observe` повторяют сборку `names`, `marksByMember` и `toDomain` бойца.
+
+**Производительность**
+- [ ] `facts` NPC пишется вторым запросом `updateFacts` после `insert`/`update` в `NpcRepositoryImpl` (строки 85, 118,
+  137) и в `CampaignRepositoryImpl`: два запроса и два уведомления потоков на сохранение. Добавить `facts` в `insert`,
+  `insertWithId` и `update` в `Npc.sq`. Затронет импортёр, откат импорта, копирование кампании и около 8 тестов.
+- [ ] `VulnerabilityLearner.recordOnMember`: отмена читает весь бой через `combatRepository.observe(combatId).first()`
+  ради одного бойца. Нужен метод чтения одного бойца или запись одной строки.
+- [ ] `selectById` NPC тянет BLOB портрета, а щит читает его только ради `vulnerabilities`. Нужен узкий запрос
+  `vulnerabilities` и запись только этого поля.
+- [ ] `decodeVulnerabilities` не выходит сразу на пустой строке (`decodeFacts` уже выходит).
+- [ ] `NpcVulnerabilitySection` на каждой перекомпозиции заново считает `effectiveVulnerabilities` и собирает
+  `FeaturesSheetActions`: обернуть в `remember`, а состояние текста поднять в лист, чтобы ввод не перекомпозировал секцию.
+- [ ] `marks.selectByCampaign` пятым потоком в `observeAll` перестраивает все бои на любую метку. Проверить, горячий ли
+  `observeAll`.
 
 ## Источники
 

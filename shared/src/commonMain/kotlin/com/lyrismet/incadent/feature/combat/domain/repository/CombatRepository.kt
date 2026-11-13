@@ -1,12 +1,15 @@
 package com.lyrismet.incadent.feature.combat.domain.repository
 
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
+import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDateTime
 
@@ -114,6 +117,17 @@ interface CombatRepository {
 
     suspend fun clearTurnOrders(combatId: Long)
 
+    /** what the fight learned of a participant without a record, kept on it until it is taken to the codex */
+    suspend fun setOwnShields(
+        combatantId: Long,
+        shields: Map<DamageType, DamageState>,
+    )
+
+    suspend fun setOwnFacts(
+        combatantId: Long,
+        facts: List<String>,
+    )
+
     /** the class and subclass of a participant that is only in the fight */
     suspend fun setRole(
         combatantId: Long,
@@ -126,6 +140,21 @@ interface CombatRepository {
         amount: Int,
         effect: HitEffect,
     )
+
+    /** a concentration replaces the one the participant had, the id of the stored mark is returned */
+    suspend fun addMark(
+        combatantId: Long,
+        kind: MarkKind,
+        text: String,
+        roundsLeft: Int?,
+        startedRound: Int,
+    ): Long
+
+    suspend fun removeMark(markId: Long)
+
+    fun observeCustomConditions(): Flow<List<CustomCondition>>
+
+    suspend fun addCustomCondition(name: String): Long
 
     suspend fun attachToSession(
         combatId: Long,

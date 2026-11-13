@@ -14,10 +14,13 @@ import com.lyrismet.incadent.feature.combat.domain.round.CombatTurnBack
 import com.lyrismet.incadent.feature.combat.domain.round.DamageActions
 import com.lyrismet.incadent.feature.combat.domain.round.RoundActions
 import com.lyrismet.incadent.feature.combat.domain.round.TurnPosition
+import com.lyrismet.incadent.feature.combat.domain.round.expiredBetween
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
 import com.lyrismet.incadent.feature.combat.domain.round.nextTurn
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeAdder
 import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.combat_mark_concentration
+import incadent.shared.generated.resources.combat_mark_expired
 import incadent.shared.generated.resources.combat_round_toast_again
 import incadent.shared.generated.resources.combat_round_toast_joined
 import incadent.shared.generated.resources.combat_round_toast_removed
@@ -61,7 +64,18 @@ internal class RoundEditor(
     ) = edit { combat ->
         val ordered = combat.combatants.inTurnOrder()
         actions.next(combat, ownIds)
+        tellExpired(combat)
         onMoved(ordered.getOrNull(nextTurn(ordered, TurnPosition(combat.round, combat.turn)).turn)?.id)
+    }
+
+    /** a mark whose count ran out with the new round is told once, without an undo */
+    private suspend fun tellExpired(before: Combat) {
+        val after = fresh() ?: return
+        val names =
+            after.combatants
+                .expiredBetween(before.round, after.round)
+                .map { it.text.ifBlank { getString(Res.string.combat_mark_concentration) } }
+        if (names.isNotEmpty()) showToast(getString(Res.string.combat_mark_expired, names.joinToString(", ")))
     }
 
     /** the turn goes back, a step into the round before is told */

@@ -8,7 +8,7 @@ data class Species(
     val name: String,
     // the built-in type, [UNSPECIFIED][CreatureType.UNSPECIFIED] while a [customType] is set or nothing is
     val creatureType: CreatureType,
-    // only the types that are known, a type missing here is [DamageState.UNKNOWN]
+    // only the types that are known, a type missing here reads as [DamageState.NORMAL]
     val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
     val notes: String = "",
     val photo: Photo? = null,
@@ -95,7 +95,6 @@ enum class DamageType {
 }
 
 enum class DamageState {
-    UNKNOWN,
     NORMAL,
     RESISTANCE,
     IMMUNITY,

@@ -61,7 +61,7 @@ private fun guessesFor(
                     .singleOrNull()
                     ?.toState()
             val known = species.vulnerabilities[type]
-            if (state == null || (known != null && known != DamageState.UNKNOWN)) {
+            if (state == null || known != null) {
                 null
             } else {
                 val attackers = strikes.mapNotNull { it.sourceId }.distinct().size

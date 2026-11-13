@@ -13,5 +13,6 @@ fun Npc.filledFrom(other: Npc): Npc =
         nicknames = nicknames.ifEmpty { other.nicknames },
         speciesId = speciesId ?: other.speciesId,
         vulnerabilities = vulnerabilities.ifEmpty { other.vulnerabilities },
+        facts = other.facts.fold(facts) { acc, fact -> acc.withFact(fact) },
         locationIds = (locationIds + other.locationIds).distinct(),
     )

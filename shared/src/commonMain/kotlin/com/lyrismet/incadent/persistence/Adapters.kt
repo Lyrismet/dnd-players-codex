@@ -24,6 +24,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
+import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -44,6 +45,7 @@ val combatPhaseAdapter = enumColumnAdapter(CombatPhase.FINISHED)
 val combatSideAdapter = enumColumnAdapter(CombatSide.ENEMY)
 val combatStanceAdapter = enumColumnAdapter(CombatStance.ENEMY)
 val combatStateAdapter = enumColumnAdapter(CombatState.WHOLE)
+val markKindAdapter = enumColumnAdapter(MarkKind.FACT)
 val combatEventKindAdapter = enumColumnAdapter(CombatEventKind.DAMAGE)
 val hitScaleAdapter = enumColumnAdapter(HitScale.ONE)
 val hitEffectAdapter = enumColumnAdapter(HitEffect.FULL)

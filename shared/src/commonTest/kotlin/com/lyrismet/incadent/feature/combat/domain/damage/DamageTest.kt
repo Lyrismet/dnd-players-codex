@@ -40,14 +40,12 @@ class DamageTest {
     }
 
     @Test
-    fun `an unknown or untyped term changes nothing`() {
+    fun `a type without an entry or an untyped term changes nothing`() {
         val hit =
             planHit(
                 listOf(DamageTerm(5, DamageType.ACID), DamageTerm(4)),
                 HitScale.ONE,
-                mapOf(
-                    DamageType.ACID to DamageState.UNKNOWN,
-                ),
+                emptyMap(),
             )
         assertEquals(9, hit.total)
     }
