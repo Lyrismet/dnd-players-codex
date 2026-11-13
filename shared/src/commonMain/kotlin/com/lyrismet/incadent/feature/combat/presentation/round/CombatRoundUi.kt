@@ -99,7 +99,14 @@ fun CombatRoundUi(
                 RoundHeader(state)
                 if (state.allClear) AllClearBanner { send(CombatRoundEvent.EndRequested(EndKind.FINISH)) }
                 RoundList(state, Modifier.weight(1f))
-                state.panel?.let { RoundPanelUi(it, state.tab, this@BoxWithConstraints.maxHeight * PANEL_SHARE, send) }
+                state.panel?.takeUnless { state.queueEditing }?.let {
+                    RoundPanelUi(
+                        it,
+                        state.tab,
+                        this@BoxWithConstraints.maxHeight * PANEL_SHARE,
+                        send,
+                    )
+                }
             }
             AppToast(text = state.toast?.text, modifier = floatingBarAnchor())
         }
@@ -186,7 +193,11 @@ private fun RoundHeader(state: CombatRoundState) {
             )
             state.roundDamage?.let { SummaryButton(it) { send(CombatRoundEvent.Summary(SummaryEvent.Opened)) } }
         }
-        TurnCard(state, Modifier.padding(start = 12.dp, top = 10.dp, end = 12.dp))
+        if (state.queueEditing) {
+            QueueEditCard(state, Modifier.padding(start = 12.dp, top = 10.dp, end = 12.dp))
+        } else {
+            TurnCard(state, Modifier.padding(start = 12.dp, top = 10.dp, end = 12.dp))
+        }
     }
 }
 
@@ -265,6 +276,7 @@ private fun TurnCard(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        PlaceTile(state.currentBadge, current = true, pending = state.currentPending, onClick = null)
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(Res.string.combat_round_current, state.currentName),

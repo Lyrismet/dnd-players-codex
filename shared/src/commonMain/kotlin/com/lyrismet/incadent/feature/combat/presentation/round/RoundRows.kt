@@ -11,11 +11,13 @@ import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+import com.lyrismet.incadent.feature.combat.domain.round.QueueSlot
 import com.lyrismet.incadent.feature.combat.domain.round.RoleParts
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isDying
 import com.lyrismet.incadent.feature.combat.domain.round.isOut
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
+import com.lyrismet.incadent.feature.combat.domain.round.queueSlots
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_panel_rx_attacked
 import incadent.shared.generated.resources.combat_panel_rx_available
@@ -82,11 +84,13 @@ internal fun roundRows(
     seen: Map<Long, List<SpeciesHitObservation>>,
 ): List<RoundRow> {
     val current = ordered.firstOrNull { it.id == currentId }
+    val slots = combat.combatants.queueSlots()
     return ordered.map { member ->
         val own = sources.party.any { it.id == member.partyMemberId && it.isPlayerCharacter }
         roundRow(
             combat,
             member,
+            slots[member.id],
             member.id == currentId,
             member.id == selectedId,
             own,
@@ -102,6 +106,7 @@ internal fun roundRows(
 private fun roundRow(
     combat: Combat,
     member: Combatant,
+    slot: QueueSlot?,
     isCurrent: Boolean,
     isSelected: Boolean,
     own: Boolean,
@@ -123,7 +128,8 @@ private fun roundRow(
         }
     return RoundRow(
         id = member.id,
-        badge = member.turnOrder?.toString() ?: "—",
+        badge = slot.badgeText(),
+        pending = slot is QueueSlot.Pending,
         current = isCurrent,
         selected = isSelected,
         name = member.name,
@@ -214,3 +220,11 @@ private fun rowReaction(
         label = if (pulsing) stringResource(Res.string.combat_panel_rx_attacked) else label,
     )
 }
+
+/** the number in the badge of a row, a temporary place carries a question mark */
+internal fun QueueSlot?.badgeText(): String =
+    when (this) {
+        is QueueSlot.Named -> number.toString()
+        is QueueSlot.Pending -> "?$number"
+        null -> "—"
+    }

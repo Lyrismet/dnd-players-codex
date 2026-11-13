@@ -5,6 +5,8 @@ import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
+import com.lyrismet.incadent.feature.combat.domain.round.QueueSlot
+import com.lyrismet.incadent.feature.combat.domain.round.QueueStatus
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -29,11 +31,15 @@ data class CombatPrepState(
     // shown instead of the lists while the codex has no party member or no enemy to fight with
     val intro: PrepIntro? = null,
     val partyIncluded: Int = 0,
+    // the mean level of the party members in the fight, a dash while no one has a level
+    val averageLevel: String = "",
     val party: List<PrepPartyRow> = emptyList(),
     val allies: List<PrepMemberRow> = emptyList(),
     val enemies: List<PrepMemberRow> = emptyList(),
     // the order of turns, shown once there is an enemy to fight
     val order: List<PrepOrderRow>? = null,
+    // how complete the queue is, shown over the start button once the order is
+    val queue: QueueStatus? = null,
     // what the button under the lists says, none while the intro is shown
     val start: PrepStart? = null,
     val search: FoeSearchState? = null,
@@ -69,13 +75,13 @@ data class PrepHp(
 
 enum class OrderSide { PARTY, ALLY, ENEMY }
 
-/** one participant in the order, [number] is the place the master gave it */
+/** one participant in the order, [slot] is the place the master gave it or a temporary one */
 data class PrepOrderRow(
     val memberId: Long,
     val name: String,
     val sub: String,
     val side: OrderSide,
-    val number: Int?,
+    val slot: QueueSlot,
 )
 
 data class PrepStart(

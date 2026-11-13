@@ -48,9 +48,16 @@ data class CombatRoundState(
     val round: Int = 1,
     val canGoBack: Boolean = false,
     val currentName: String = "",
+    // the place of the one who moves, "?1" while it is a temporary one
+    val currentBadge: String = "",
+    val currentPending: Boolean = false,
     val hostile: String = "",
     val allClear: Boolean = false,
     val rows: List<RoundRow> = emptyList(),
+    // nobody was named, the title of the queue says so
+    val queueUnnamed: Boolean = false,
+    // the queue is being edited: the rows have a handle and a tap on a tile moves the turn
+    val queueEditing: Boolean = false,
     val panel: RoundPanel? = null,
     val tab: PanelTab = PanelTab.ACTIONS,
     val menuOpen: Boolean = false,
@@ -78,6 +85,8 @@ data class RoundDamage(
 data class RoundRow(
     val id: Long,
     val badge: String,
+    // the place is a temporary one ("?N"), its tile is dashed and a tap on it opens the edit
+    val pending: Boolean,
     val current: Boolean,
     val selected: Boolean,
     val name: String,
@@ -218,6 +227,9 @@ data class StanceOption(
 )
 
 sealed interface CombatRoundEvent : CircuitUiEvent {
+    /** the edit of the order of turns */
+    sealed interface QueueEvent : CombatRoundEvent
+
     data class Calc(
         val event: CalcEvent,
     ) : CombatRoundEvent
@@ -365,4 +377,18 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
     data object HpApplied : CombatRoundEvent
 
     data object HpPadClosed : CombatRoundEvent
+
+    data object QueueEditStarted : QueueEvent
+
+    data object QueueEditFinished : QueueEvent
+
+    /** the dragged participant was dropped on the place [toIndex] of the list */
+    data class QueueMoved(
+        val id: Long,
+        val toIndex: Int,
+    ) : QueueEvent
+
+    data class QueueTileTapped(
+        val id: Long,
+    ) : QueueEvent
 }

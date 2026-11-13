@@ -207,6 +207,19 @@ internal class FakeCombatRepository : CombatRepository {
             }
     }
 
+    override suspend fun setQueue(
+        combatId: Long,
+        round: Int,
+        orders: Map<Long, Int?>,
+        turn: Int,
+    ) = update(combatId) { c ->
+        c.copy(
+            round = round,
+            turn = turn,
+            combatants = c.combatants.map { if (it.id in orders) it.copy(turnOrder = orders[it.id]) else it },
+        )
+    }
+
     override suspend fun clearTurnOrders(combatId: Long) =
         update(combatId) { c -> c.copy(combatants = c.combatants.map { it.copy(turnOrder = null) }) }
 

@@ -60,6 +60,7 @@ import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_prep_add_ally
 import incadent.shared.generated.resources.combat_prep_add_enemy
 import incadent.shared.generated.resources.combat_prep_add_party
+import incadent.shared.generated.resources.combat_prep_avg_level
 import incadent.shared.generated.resources.combat_prep_enemies_header
 import incadent.shared.generated.resources.combat_prep_exit_text
 import incadent.shared.generated.resources.combat_prep_less
@@ -113,8 +114,16 @@ private fun PrepContent(state: CombatPrepState) {
         if (intro != null) {
             PrepIntroBody(intro, state.eventSink, Modifier.weight(1f))
         } else {
-            PrepBody(state, Modifier.weight(1f))
-            state.start?.let { PrepStartBar(it) { state.eventSink(CombatPrepEvent.StartClicked) } }
+            val focus = rememberOrderFocus()
+            PrepBody(state, focus, Modifier.weight(1f))
+            state.start?.let {
+                PrepStartBar(
+                    it,
+                    state.queue,
+                    total = state.order?.size ?: 0,
+                    onQueueClick = focus::show,
+                ) { state.eventSink(CombatPrepEvent.StartClicked) }
+            }
         }
     }
 }
@@ -166,6 +175,7 @@ private fun PrepHeader(state: CombatPrepState) {
 @Composable
 private fun PrepBody(
     state: CombatPrepState,
+    focus: OrderFocus,
     modifier: Modifier = Modifier,
 ) {
     val send = state.eventSink
@@ -181,6 +191,12 @@ private fun PrepBody(
             text = stringResource(Res.string.combat_prep_party_header),
             count = stringResource(Res.string.combat_prep_party_count, state.partyIncluded, state.party.size),
             countColor = AppPalette.Azure,
+        )
+        Text(
+            text = stringResource(Res.string.combat_prep_avg_level, state.averageLevel),
+            color = AppPalette.TextSecondary,
+            fontSize = AppFontSize.SmallPlus,
+            modifier = Modifier.padding(horizontal = 4.dp),
         )
         state.party.forEach { row ->
             PrepPartyRow(row, onToggle = { send(CombatPrepEvent.PartyToggled(row.partyMemberId)) }) {
@@ -213,7 +229,7 @@ private fun PrepBody(
         AddEnemyButton(
             stringResource(Res.string.combat_prep_add_enemy),
         ) { send(CombatPrepEvent.SearchOpened(PrepSide.ENEMY)) }
-        state.order?.let { PrepOrderSection(it, send) }
+        state.order?.let { PrepOrderSection(it, focus, send) }
     }
 }
 
