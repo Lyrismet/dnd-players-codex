@@ -1,0 +1,37 @@
+import com.lyrismet.incadent.feature.combat.domain.model.MarkKind;
+
+CREATE TABLE combatant_mark (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    combatant_id INTEGER NOT NULL REFERENCES combatant(id) ON DELETE CASCADE,
+    kind TEXT AS MarkKind NOT NULL,
+    text TEXT NOT NULL,
+    rounds_left INTEGER,
+    started_round INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX combatant_mark_combatant_id ON combatant_mark(combatant_id);
+
+selectByCombat:
+SELECT combatant_mark.* FROM combatant_mark
+JOIN combatant ON combatant.id = combatant_mark.combatant_id
+WHERE combatant.combat_id = ?
+ORDER BY combatant_mark.id;
+
+selectByCampaign:
+SELECT combatant_mark.* FROM combatant_mark
+JOIN combatant ON combatant.id = combatant_mark.combatant_id
+JOIN combat ON combat.id = combatant.combat_id
+WHERE combat.campaign_id = ?
+ORDER BY combatant_mark.id;
+
+insert:
+INSERT INTO combatant_mark(combatant_id, kind, text, rounds_left, started_round) VALUES (?, ?, ?, ?, ?);
+
+deleteById:
+DELETE FROM combatant_mark WHERE id = ?;
+
+deleteByKind:
+DELETE FROM combatant_mark WHERE combatant_id = ? AND kind = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

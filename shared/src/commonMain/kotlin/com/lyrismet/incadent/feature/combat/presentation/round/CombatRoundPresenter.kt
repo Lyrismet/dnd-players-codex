@@ -19,13 +19,13 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
-import com.lyrismet.incadent.feature.codex.presentation.summary.damageStateLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.damageTypeLabels
 import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
 import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
@@ -79,6 +79,7 @@ private class RoundData(
     val liveBodies: List<String>,
     val seen: Map<Long, List<SpeciesHitObservation>>,
     val learned: List<LearnedVulnerability>,
+    val customs: List<CustomCondition>,
 )
 
 @Composable
@@ -94,6 +95,7 @@ private fun CombatRoundPresenter.rememberData(): RoundData {
     }.collectAsState(initial = emptyList())
     val seen by hitObservationRepository.observeAll().collectAsState(initial = emptyMap())
     val learned by combatRepository.observeLearned(combatId).collectAsState(initial = emptyList())
+    val customs by combatRepository.observeCustomConditions().collectAsState(initial = emptyList())
     // the screen waits for the records the rows are named from, a first frame without them would show other names
     val loaded = loadedNpcs != null && loadedSpecies != null && loadedParty != null
     return RoundData(
@@ -105,6 +107,7 @@ private fun CombatRoundPresenter.rememberData(): RoundData {
         entries.map { it.body },
         seen,
         learned,
+        customs,
     )
 }
 
@@ -122,6 +125,9 @@ private class RoundDrafts(
     val promotion: MutableState<PromotionDraft?>,
     val identity: MutableState<IdentityDraft?>,
     val queue: MutableState<QueueSnapshot?>,
+    val mark: MutableState<MarkDraft?>,
+    val features: MutableState<FeaturesDraft?>,
+    val shieldEdit: MutableState<ShieldEditDraft?>,
 )
 
 @Composable
@@ -138,6 +144,9 @@ private fun rememberDrafts() =
         promotion = remember { mutableStateOf(null) },
         identity = remember { mutableStateOf(null) },
         queue = remember { mutableStateOf(null) },
+        mark = remember { mutableStateOf(null) },
+        features = remember { mutableStateOf(null) },
+        shieldEdit = remember { mutableStateOf(null) },
     )
 
 /** the words the messages of the fight are made of, resolved once */
@@ -154,7 +163,6 @@ private fun rememberWords(): RoundWords {
     val immunity = stringResource(Res.string.combat_damage_state_immunity)
     val vulnerability = stringResource(Res.string.combat_damage_state_vulnerability)
     val normal = stringResource(Res.string.combat_damage_state_normal)
-    val unknown = damageStateLabels().getValue(DamageState.UNKNOWN)
     return RoundWords(
         typeNames = types,
         stateTitles =
@@ -163,7 +171,6 @@ private fun rememberWords(): RoundWords {
                 DamageState.IMMUNITY to immunity.replaceFirstChar { it.uppercase() },
                 DamageState.VULNERABILITY to vulnerability.replaceFirstChar { it.uppercase() },
                 DamageState.NORMAL to normal.replaceFirstChar { it.uppercase() },
-                DamageState.UNKNOWN to unknown.replaceFirstChar { it.uppercase() },
             ),
         effectWords =
             mapOf(
@@ -246,7 +253,6 @@ class CombatRoundPresenter(
             )
         val learner =
             VulnerabilityLearner(
-                codexRepositories.speciesRepository,
                 codexRepositories.npcRepository,
                 combatRepository,
                 undoController,
@@ -288,6 +294,17 @@ class CombatRoundPresenter(
             }
         val namingSnapshot = NamingSnapshot(data.species)
         val queueHandler = QueueHandler(editor, combatRepository, drafts.queue, undoController, drafts.selected)
+        val markHandler = MarkHandler(editor, drafts.selected, drafts.mark, combatRepository)
+        val shieldEditing = ShieldEditing(editor, learner, drafts.shieldEdit)
+        val featuresHandler =
+            FeaturesHandler(
+                editor,
+                drafts.selected,
+                drafts.features,
+                codexRepositories.npcRepository,
+                combatRepository,
+                undoController,
+            )
         val calcHandler = CalcHandler(editor, drafts.calc, learner)
         val summaryHandler = SummaryHandler(editor, drafts.summary, learner)
         val ownIds =
@@ -310,6 +327,24 @@ class CombatRoundPresenter(
                 is CombatRoundEvent.Calc -> calcHandler.onEvent(event.event, calcSnapshot, drafts.selected.value)
                 is CombatRoundEvent.Summary -> summaryHandler.onEvent(event.event, summarySnapshot)
                 is CombatRoundEvent.QueueEvent -> queueHandler.onEvent(event)
+                is CombatRoundEvent.MarkEvent -> markHandler.onEvent(event, data.customs)
+                is CombatRoundEvent.ShieldTapped ->
+                    shieldEditing.tap(
+                        drafts.selected.value,
+                        event.type,
+                        speciesOf[drafts.selected.value]?.vulnerabilities.orEmpty(),
+                    )
+                CombatRoundEvent.ShieldsEditStarted -> shieldEditing.start(drafts.selected.value)
+                CombatRoundEvent.ShieldsEditDone -> shieldEditing.done()
+                is CombatRoundEvent.FeaturesOpened -> {
+                    shieldEditing.start(drafts.selected.value)
+                    featuresHandler.onEvent(event)
+                }
+                is CombatRoundEvent.FeaturesClosed -> {
+                    featuresHandler.onEvent(event)
+                    shieldEditing.done()
+                }
+                is CombatRoundEvent.FeaturesEvent -> featuresHandler.onEvent(event)
                 is CombatRoundEvent.NameChanged,
                 is CombatRoundEvent.NameChosen,
                 is CombatRoundEvent.PromotionScopeChanged,
@@ -334,14 +369,7 @@ class CombatRoundPresenter(
                     )
                 }
                 is CombatRoundEvent.VulnerabilityChanged ->
-                    recordVulnerability(
-                        editor,
-                        learner,
-                        event,
-                        drafts.selected.value,
-                        speciesOf[drafts.selected.value],
-                        words,
-                    )
+                    shieldEditing.set(drafts.selected.value, event.type, event.state)
                 else -> handler.onEvent(event, snapshot, nameOf)
             }
         }
@@ -400,6 +428,7 @@ private fun RoundView.panelOf(
                     IdentityFacts(current, data.learned, typeNames),
                 ),
         ),
+        data.customs,
     )
 }
 
@@ -468,6 +497,8 @@ private fun RoundView.render(
                     ),
                 )
             },
+        markSheet = markSheetFor(drafts.mark.value, current),
+        featuresSheet = featuresSheetFor(drafts.features.value, current, data.npcs, resistances),
         linkSheet =
             chosen
                 ?.takeIf { drafts.identity.value?.let { d -> d.memberId == it.id && d.linkOpen } == true }

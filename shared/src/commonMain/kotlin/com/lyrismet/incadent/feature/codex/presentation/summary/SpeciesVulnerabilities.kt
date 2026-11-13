@@ -169,7 +169,7 @@ internal fun VulnerabilityGridEditor(
                     DamageTile(
                         label = typeLabels.getValue(type),
                         type = type,
-                        state = vulnerabilities.stateOf(type),
+                        state = vulnerabilities[type],
                         isOpen = open == type,
                         onClick = { open = if (open == type) null else type },
                         modifier = Modifier.weight(1f),
@@ -203,7 +203,7 @@ internal fun VulnerabilityGridEditor(
 private fun DamageTile(
     label: String,
     type: DamageType,
-    state: DamageState,
+    state: DamageState?,
     isOpen: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -225,7 +225,7 @@ private fun DamageTile(
         Text(
             label,
             style = MaterialTheme.typography.labelMedium.copy(fontSize = AppFontSize.Small),
-            color = if (state == DamageState.UNKNOWN) AppPalette.TextSecondary else AppPalette.TextPrimary,
+            color = if (state == null) AppPalette.TextSecondary else AppPalette.TextPrimary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

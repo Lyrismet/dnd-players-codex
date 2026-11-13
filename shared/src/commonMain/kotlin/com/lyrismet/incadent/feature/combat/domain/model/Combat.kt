@@ -19,6 +19,25 @@ enum class CombatStance { ENEMY, NEUTRAL, FRIEND, FLED }
 
 enum class ConditionGroup { RESTRAINT, WEAKENING, EFFECT }
 
+/** what a mark says about a participant: a held spell, a fact the master noted, or a state made up for the campaign */
+enum class MarkKind { CONCENTRATION, FACT, CUSTOM }
+
+/** [roundsLeft] is the count when the mark was put on in [startedRound], none for a mark without a count */
+data class CombatMark(
+    val id: Long,
+    val combatantId: Long,
+    val kind: MarkKind,
+    val text: String,
+    val roundsLeft: Int?,
+    val startedRound: Int,
+)
+
+/** a state the master made up, every fight of the campaign offers it again */
+data class CustomCondition(
+    val id: Long,
+    val name: String,
+)
+
 /** the conditions a participant can carry, told apart by what they do */
 enum class CombatCondition(
     val group: ConditionGroup,
@@ -28,10 +47,9 @@ enum class CombatCondition(
     PRONE(ConditionGroup.RESTRAINT),
     STUNNED(ConditionGroup.RESTRAINT),
     PARALYZED(ConditionGroup.RESTRAINT),
+    ASLEEP(ConditionGroup.RESTRAINT),
     INCAPACITATED(ConditionGroup.RESTRAINT),
     PETRIFIED(ConditionGroup.RESTRAINT),
-    ASLEEP(ConditionGroup.RESTRAINT),
-    BANISHED(ConditionGroup.RESTRAINT),
     BLINDED(ConditionGroup.WEAKENING),
     DEAFENED(ConditionGroup.WEAKENING),
     POISONED(ConditionGroup.WEAKENING),
@@ -39,8 +57,11 @@ enum class CombatCondition(
     CHARMED(ConditionGroup.WEAKENING),
     SILENCED(ConditionGroup.WEAKENING),
     SLOWED(ConditionGroup.WEAKENING),
+
+    // kept to read old files, a concentration is a mark now and the panel does not offer it as a condition
     CONCENTRATION(ConditionGroup.EFFECT),
     INVISIBLE(ConditionGroup.EFFECT),
+    BANISHED(ConditionGroup.EFFECT),
     HASTED(ConditionGroup.EFFECT),
 }
 
@@ -95,6 +116,10 @@ data class Combatant(
     val role: String = "",
     // a creature of a species named for this fight only, it is not told apart by its name
     val isLabel: Boolean = false,
+    val marks: List<CombatMark> = emptyList(),
+    // what the fight learned of a participant that has no record in the codex, taken over by "В кодекс"
+    val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
+    val facts: List<String> = emptyList(),
 )
 
 /** [amount] is hits for damage and heal, and the damage taken at the mark for a state event */

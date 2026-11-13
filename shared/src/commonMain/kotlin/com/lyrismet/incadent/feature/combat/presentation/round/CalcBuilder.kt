@@ -168,8 +168,7 @@ private fun quickOf(
             .singleOrNull()
     val state = stateOf(scale)
     val known = type?.let { ctx.resistances[member.id]?.get(it) }
-    val unknown = known == null || known == DamageState.UNKNOWN
-    return if (type == null || state == null || !unknown) {
+    return if (type == null || state == null || known != null) {
         null
     } else {
         val label =

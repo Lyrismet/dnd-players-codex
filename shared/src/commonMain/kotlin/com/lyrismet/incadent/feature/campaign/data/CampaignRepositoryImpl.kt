@@ -188,6 +188,7 @@ class CampaignRepositoryImpl(
                 newOriginId(),
             )
             val newId = npcQueries.lastInsertRowId().executeAsOne()
+            npcQueries.updateFacts(npc.facts, newId)
             npcPlaces[oldId].orEmpty().mapNotNull(placeMap::get).forEach { npcLocationQueries.insert(newId, it) }
             copiedNpcs++
         }

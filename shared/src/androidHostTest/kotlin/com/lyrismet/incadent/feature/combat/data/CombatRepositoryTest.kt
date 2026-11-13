@@ -14,6 +14,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
+import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
 import com.lyrismet.incadent.persistence.TestDatabase
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -300,6 +301,42 @@ class CombatRepositoryTest {
                     .combatants
                     .single()
                     .name,
+            )
+        }
+
+    @Test
+    fun `a new concentration replaces the old one and other marks stay`() =
+        runTest {
+            val combatId = repository.create(null, STARTED_AT)
+            val id = repository.addCombatant(combatId, goblin())
+            repository.addMark(id, MarkKind.CONCENTRATION, "Bless", 10, 1)
+            repository.addMark(id, MarkKind.FACT, "AC 12", null, 1)
+            repository.addMark(id, MarkKind.CONCENTRATION, "Haste", null, 2)
+            val marks =
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .single()
+                    .marks
+            assertEquals(listOf("AC 12", "Haste"), marks.map { it.text })
+        }
+
+    @Test
+    fun `custom conditions are listed for the campaign and marks go with the fighter`() =
+        runTest {
+            repository.addCustomCondition("Cursed")
+            assertEquals(listOf("Cursed"), repository.observeCustomConditions().first().map { it.name })
+            val combatId = repository.create(null, STARTED_AT)
+            val id = repository.addCombatant(combatId, goblin())
+            repository.addMark(id, MarkKind.CUSTOM, "Cursed", null, 1)
+            repository.removeCombatant(id)
+            assertTrue(
+                repository
+                    .observe(combatId)
+                    .first()!!
+                    .combatants
+                    .isEmpty(),
             )
         }
 }

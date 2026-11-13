@@ -5,9 +5,10 @@ import com.lyrismet.incadent.core.designsystem.component.ShieldStyle
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 
-fun DamageState.toShieldStyle(): ShieldStyle =
+/** a shield with no state at all is the dashed one an editor shows for a type that has no entry */
+fun DamageState?.toShieldStyle(): ShieldStyle =
     when (this) {
-        DamageState.UNKNOWN -> ShieldStyle.Unknown
+        null -> ShieldStyle.Unknown
         DamageState.NORMAL -> ShieldStyle.Plain
         DamageState.RESISTANCE -> ShieldStyle.Resist
         DamageState.IMMUNITY -> ShieldStyle.Immune

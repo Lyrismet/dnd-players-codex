@@ -204,7 +204,7 @@ internal class CalcHandler(
                     ),
                     getString(Res.string.combat_calc_recorded_sub, name),
                 )
-            learner.record(editor.combatId, member, plan.species.id, plan.type, plan.state, note)
+            learner.record(editor.combatId, member, plan.type, plan.state, note)
         }
         val sameKind =
             draft.targets.filter {

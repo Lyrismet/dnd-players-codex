@@ -135,4 +135,28 @@ class NpcPromotionTest {
             )
             assertEquals(listOf(learned), combats.observeLearned(combatId).first())
         }
+
+    @Test
+    fun `the shields and facts kept on a fighter move into the new npc and come back with the undo`() =
+        runTest {
+            val (_, combatId, member) = setup()
+            combats.setOwnShields(member.id, mapOf(DamageType.COLD to DamageState.IMMUNITY))
+            combats.setOwnFacts(member.id, listOf("fears fire"))
+            val withOwn = assertNotNull(combats.observe(combatId).first()).combatants.single()
+
+            val trace = assertNotNull(promotion.promote(withOwn, NameChoice.New("Вазгар")))
+
+            val npc = assertNotNull(npcs.getById(trace.npcId))
+            assertEquals(mapOf(DamageType.COLD to DamageState.IMMUNITY), npc.vulnerabilities)
+            assertEquals(listOf("fears fire"), npc.facts)
+            val moved = assertNotNull(combats.observe(combatId).first()).combatants.single()
+            assertEquals(emptyMap(), moved.vulnerabilities)
+            assertEquals(emptyList(), moved.facts)
+
+            promotion.undo(trace)
+            val back = assertNotNull(combats.observe(combatId).first()).combatants.single()
+            assertEquals(mapOf(DamageType.COLD to DamageState.IMMUNITY), back.vulnerabilities)
+            assertEquals(listOf("fears fire"), back.facts)
+            assertNull(npcs.getById(trace.npcId))
+        }
 }

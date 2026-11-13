@@ -376,4 +376,50 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the fifteenth schema turns concentration conditions into marks`() {
+        val file = File.createTempFile("schema-v15", ".db")
+        File("src/commonMain/sqldelight/databases/15.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO combat(id, phase, started_at, campaign_id) VALUES (1, 'ONGOING', '2026-01-01T00:00', 'c')",
+            "INSERT INTO combatant(combat_id, name, side, state, stance, conditions) " +
+                "VALUES (1, 'Mage', 'PARTY', 'WHOLE', 'ENEMY', 'PRONE,CONCENTRATION,HASTED'), " +
+                "(1, 'Orc', 'ENEMY', 'WHOLE', 'ENEMY', 'CONCENTRATION'), " +
+                "(1, 'Elf', 'ALLY', 'WHOLE', 'ENEMY', 'PRONE')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 15, AppDatabase.Schema.version)
+
+        assertEquals("2", driver.single("SELECT count(*) FROM combatant_mark WHERE kind = 'CONCENTRATION'"))
+        assertEquals("PRONE,HASTED", driver.single("SELECT conditions FROM combatant WHERE name = 'Mage'"))
+        assertEquals("", driver.single("SELECT conditions FROM combatant WHERE name = 'Orc'"))
+        assertEquals("PRONE", driver.single("SELECT conditions FROM combatant WHERE name = 'Elf'"))
+        driver.close()
+        file.delete()
+    }
+
+    @Test
+    fun `migrating the sixteenth schema gives npcs and fighters empty facts and shields`() {
+        val file = File.createTempFile("schema-v16", ".db")
+        File("src/commonMain/sqldelight/databases/16.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO npc(name, status, description, vulnerabilities, campaign_id) VALUES ('Bob', 'FRIEND', 'kept', 'FIRE:IMMUNITY', 'c')",
+            "INSERT INTO combat(id, phase, started_at, campaign_id) VALUES (1, 'ONGOING', '2026-01-01T00:00', 'c')",
+            "INSERT INTO combatant(combat_id, name, side, state, stance, conditions) VALUES (1, 'Orc', 'ENEMY', 'WHOLE', 'ENEMY', '')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 16, AppDatabase.Schema.version)
+
+        assertEquals("", driver.single("SELECT facts FROM npc"))
+        assertEquals("FIRE:IMMUNITY", driver.single("SELECT vulnerabilities FROM npc"))
+        assertEquals("", driver.single("SELECT facts FROM combatant"))
+        assertEquals("", driver.single("SELECT vulnerabilities FROM combatant"))
+        driver.close()
+        file.delete()
+    }
 }

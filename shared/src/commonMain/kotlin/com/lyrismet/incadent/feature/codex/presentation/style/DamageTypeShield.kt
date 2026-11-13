@@ -12,7 +12,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 @Composable
 fun DamageTypeShield(
     type: DamageType,
-    state: DamageState,
+    state: DamageState?,
     modifier: Modifier = Modifier,
     width: Dp = 30.dp,
 ) {

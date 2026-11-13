@@ -1,0 +1,19 @@
+CREATE TABLE custom_condition (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    name TEXT NOT NULL
+);
+
+CREATE INDEX custom_condition_campaign_id ON custom_condition(campaign_id);
+
+selectByCampaign:
+SELECT * FROM custom_condition WHERE campaign_id = ? ORDER BY id;
+
+insert:
+INSERT INTO custom_condition(campaign_id, name) VALUES (?, ?);
+
+deleteById:
+DELETE FROM custom_condition WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

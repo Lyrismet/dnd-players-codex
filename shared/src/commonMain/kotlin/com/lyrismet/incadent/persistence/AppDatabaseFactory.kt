@@ -7,6 +7,7 @@ import com.lyrismet.incadent.db.Character_sheet
 import com.lyrismet.incadent.db.Combat
 import com.lyrismet.incadent.db.Combat_event
 import com.lyrismet.incadent.db.Combatant
+import com.lyrismet.incadent.db.Combatant_mark
 import com.lyrismet.incadent.db.Deleted_origin
 import com.lyrismet.incadent.db.Item
 import com.lyrismet.incadent.db.Kept_apart
@@ -39,6 +40,7 @@ fun createAppDatabase(driver: SqlDriver): AppDatabase {
                 stanceAdapter = combatStanceAdapter,
                 conditionsAdapter = combatConditionsAdapter,
             ),
+        combatant_markAdapter = Combatant_mark.Adapter(kindAdapter = markKindAdapter),
         combat_eventAdapter =
             Combat_event.Adapter(
                 kindAdapter = combatEventKindAdapter,

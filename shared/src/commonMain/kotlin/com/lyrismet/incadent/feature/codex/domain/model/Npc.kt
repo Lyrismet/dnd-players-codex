@@ -21,6 +21,8 @@ data class Npc(
     val originId: String = "",
     val characterClass: String = "",
     val subclass: String = "",
+    // short things the party knows of the npc besides its shields, one chip each
+    val facts: List<String> = emptyList(),
 )
 
 /** the party's relation to this npc - independent of whether the npc is still alive */

@@ -28,7 +28,9 @@ CREATE TABLE combatant (
     hp_current INTEGER,
     hp_max INTEGER,
     role TEXT NOT NULL DEFAULT '',
-    is_label INTEGER NOT NULL DEFAULT 0
+    is_label INTEGER NOT NULL DEFAULT 0,
+    vulnerabilities TEXT NOT NULL DEFAULT '',
+    facts TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX combatant_combat_id ON combatant(combat_id);
@@ -95,6 +97,12 @@ UPDATE combatant SET temp_hp = ? WHERE id = ?;
 
 updateNpc:
 UPDATE combatant SET npc_id = ?, name = ? WHERE id = ?;
+
+updateVulnerabilities:
+UPDATE combatant SET vulnerabilities = ? WHERE id = ?;
+
+updateFacts:
+UPDATE combatant SET facts = ? WHERE id = ?;
 
 updateRole:
 UPDATE combatant SET role = ? WHERE id = ?;

@@ -125,6 +125,7 @@ fun CombatRoundUi(
     state.calc?.let { CalcSheet(it, send) }
     state.summary?.let { SummarySheet(it, send) }
     state.promotion?.let { PromotionSheetUi(it, send) }
+    FieldSheets(state, send)
     state.classSheet?.let {
         ClassSelectSheet(
             it,
@@ -436,4 +437,14 @@ private fun SummaryButton(
             )
         }
     }
+}
+
+/** the sheets of the marks and of the features of the chosen participant */
+@Composable
+private fun FieldSheets(
+    state: CombatRoundState,
+    send: (CombatRoundEvent) -> Unit,
+) {
+    state.markSheet?.let { MarkSheetUi(it, send) }
+    state.featuresSheet?.let { FeaturesSheetUi(it, send) }
 }

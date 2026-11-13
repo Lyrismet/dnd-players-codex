@@ -11,10 +11,10 @@ import kotlin.test.assertTrue
 
 class DamageShieldStyleTest {
     @Test
-    fun `every damage state has its own shield style`() {
+    fun `every damage state has its own shield style and no state is the dashed one`() {
+        assertEquals(ShieldStyle.Unknown, null.toShieldStyle())
         assertEquals(
             listOf(
-                ShieldStyle.Unknown,
                 ShieldStyle.Plain,
                 ShieldStyle.Resist,
                 ShieldStyle.Immune,

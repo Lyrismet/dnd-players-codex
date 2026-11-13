@@ -278,7 +278,23 @@ data class NpcVulnerabilities(
     val own: Map<DamageType, DamageState> = emptyMap(),
     val fromSpecies: Map<DamageType, DamageState> = emptyMap(),
     val speciesName: String? = null,
-)
+    val facts: List<String> = emptyList(),
+    // the title of the sheet of the features names the npc
+    val name: String = "",
+) {
+    companion object {
+        fun of(
+            npc: Npc,
+            species: Species?,
+        ) = NpcVulnerabilities(
+            npc.vulnerabilities,
+            species?.vulnerabilities.orEmpty(),
+            species?.name,
+            npc.facts,
+            npc.name,
+        )
+    }
+}
 
 /** the records of the lookup that an owner of an item is read from */
 internal fun EntityLookup.asRecords() = CodexRecords(parties, npcs, quests, locations, items = items)

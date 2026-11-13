@@ -329,7 +329,7 @@ class CodexEntryFormController private constructor(
 
     fun onVulnerabilityChanged(
         type: DamageType,
-        state: DamageState,
+        state: DamageState?,
     ) {
         val current = fields.value ?: return
         fields.value = current.copy(vulnerabilities = current.vulnerabilities.with(type, state))

@@ -43,7 +43,7 @@ import org.jetbrains.compose.resources.getString
 internal val entityWriteLock = Mutex()
 
 /** the tap/dismiss/change-value/related-note flow every entity-sheet host reuses - [onChanged] feeds the undo toast */
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 class EntitySheetInteractions(
     private val selectedRef: MutableState<EntityRef?>,
     repositories: CodexRepositories,
@@ -148,13 +148,25 @@ class EntitySheetInteractions(
         scope: CoroutineScope,
         npcId: Long,
         type: DamageType,
-        state: DamageState,
+        state: DamageState?,
     ) {
         scope.launch {
             entityWriteLock.withLock {
                 npcRepository
                     .getById(npcId)
                     ?.let { npcRepository.upsert(it.copy(vulnerabilities = it.vulnerabilities.with(type, state))) }
+            }
+        }
+    }
+
+    fun onNpcFactsChanged(
+        scope: CoroutineScope,
+        npcId: Long,
+        facts: List<String>,
+    ) {
+        scope.launch {
+            entityWriteLock.withLock {
+                npcRepository.getById(npcId)?.let { npcRepository.upsert(it.copy(facts = facts)) }
             }
         }
     }
