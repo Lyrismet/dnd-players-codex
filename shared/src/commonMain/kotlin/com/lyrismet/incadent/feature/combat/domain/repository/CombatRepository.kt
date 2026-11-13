@@ -104,6 +104,14 @@ interface CombatRepository {
         order: Int?,
     )
 
+    /** the places of all the listed participants and the turn are written as one change */
+    suspend fun setQueue(
+        combatId: Long,
+        round: Int,
+        orders: Map<Long, Int?>,
+        turn: Int,
+    )
+
     suspend fun clearTurnOrders(combatId: Long)
 
     /** the class and subclass of a participant that is only in the fight */

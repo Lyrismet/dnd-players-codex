@@ -302,6 +302,20 @@ class CombatRepositoryImpl(
         withContext(DatabaseDispatcher) { combatants.updateTurnOrder(order?.toLong(), combatantId) }
     }
 
+    override suspend fun setQueue(
+        combatId: Long,
+        round: Int,
+        orders: Map<Long, Int?>,
+        turn: Int,
+    ) {
+        withContext(DatabaseDispatcher) {
+            combatants.transaction {
+                orders.forEach { (id, order) -> combatants.updateTurnOrder(order?.toLong(), id) }
+                combats.updateTurn(round.toLong(), turn.toLong(), combatId)
+            }
+        }
+    }
+
     override suspend fun clearTurnOrders(combatId: Long) {
         withContext(DatabaseDispatcher) { combatants.clearTurnOrders(combatId) }
     }

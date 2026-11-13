@@ -16,14 +16,14 @@ fun toggledTurnOrder(
     member: Combatant,
 ): Int? = if (member.turnOrder != null) null else nextPlace(participants)
 
-/** a reinforcement moves last in the round, behind the ones without a place it joins them as one more */
+/** a reinforcement moves last in the round and joins the ones without a place */
 fun reinforcementOrder(participants: List<Combatant>): Int? =
     if (participants.any { it.turnOrder == null }) null else nextPlace(participants)
 
 private fun nextPlace(participants: List<Combatant>): Int =
     (participants.mapNotNull { it.turnOrder }.maxOrNull() ?: 0) + 1
 
-/** the three pips of death saves: pressing the filled last pip empties it, any other sets the count to it */
+/** the three pips of death saves, pressing the last filled one empties it */
 fun toggledSaves(
     current: Int,
     index: Int,

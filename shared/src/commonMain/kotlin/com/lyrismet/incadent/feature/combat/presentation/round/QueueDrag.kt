@@ -4,17 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-/**
- * the order of the queue while a row is dragged. The gesture and the movement of the rows belong to the reorderable
- * library, this keeps the order it makes (the held row cannot go past the named ones, the numbers follow it on the fly)
- * and holds it after the drop until the saved order arrives, so the list does not jump back
- */
+/** the order of the queue while a row is dragged, held after the drop until the saved order arrives */
 internal class QueueDrag {
     var draggedId by mutableStateOf<Long?>(null)
         private set
     var rows: List<RoundRow> = emptyList()
     private var order by mutableStateOf<List<Long>>(emptyList())
     private var movedId by mutableStateOf<Long?>(null)
+    private var startOrder = emptyList<Long>()
     private var limit = 0
 
     /** the rows in the order they are shown, numbered by the place they stand on while one is held or settling */
@@ -29,13 +26,14 @@ internal class QueueDrag {
     }
 
     fun start(id: Long) {
-        order = rows.map { it.id }
+        startOrder = rows.map { it.id }
+        order = startOrder
         movedId = id
         draggedId = id
         limit = rows.count { !it.pending && it.id != id }
     }
 
-    /** the held row went over another one, [from] and [to] are places in the queue and the named ones are its limit */
+    /** the held row went over another one, the named ones are its limit */
     fun move(
         from: Int,
         to: Int,
@@ -47,9 +45,10 @@ internal class QueueDrag {
         order = order.toMutableList().apply { add(target, removeAt(at)) }
     }
 
-    /** the row is let go, the place it got is sent and the shown order stays until it comes back */
+    /** the row is let go, a place it did not leave is not sent */
     fun end(onDrop: (id: Long, toIndex: Int) -> Unit) {
         val id = draggedId ?: return
+        if (order == startOrder) return cancel()
         draggedId = null
         onDrop(id, order.indexOf(id))
     }
@@ -60,7 +59,7 @@ internal class QueueDrag {
         movedId = null
     }
 
-    /** the saved order is the shown one: the drag is over */
+    /** the saved order is the shown one so the drag is over */
     fun settle(rowIds: List<Long>) {
         if (draggedId == null && order.isNotEmpty() && order == rowIds) cancel()
     }

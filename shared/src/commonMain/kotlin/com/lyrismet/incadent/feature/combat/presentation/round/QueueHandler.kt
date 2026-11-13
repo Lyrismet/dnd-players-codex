@@ -70,8 +70,7 @@ internal class QueueHandler(
         orders: Map<Long, Int?>,
         turn: Int,
     ) {
-        orders.forEach { (id, order) -> repository.setTurnOrder(id, order) }
-        repository.setTurn(combat.id, combat.round, turn)
+        repository.setQueue(combat.id, combat.round, orders, turn)
     }
 
     private fun finish() =

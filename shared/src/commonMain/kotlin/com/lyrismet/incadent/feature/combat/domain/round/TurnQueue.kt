@@ -52,10 +52,7 @@ data class QueueChange(
 /** the places as they are now, what an undo of the edits writes back */
 fun List<Combatant>.queueOrders(): Map<Long, Int?> = associate { it.id to it.turnOrder }
 
-/**
- * [id] dragged to the place [toIndex] of the list, it gets a number and the named ones stay in front of the rest. The
- * one who moves keeps moving, [turn] follows the person and not the number
- */
+/** [id] dragged to [toIndex] gets a number, the named stay in front and [turn] follows the person */
 fun List<Combatant>.movedInQueue(
     id: Long,
     toIndex: Int,
@@ -83,14 +80,7 @@ fun List<Combatant>.pinnedInQueue(id: Long): Map<Long, Int?> {
     if (index < 0) return queueOrders()
     return ordered
         .mapIndexed { place, member ->
-            member.id to (
-                if (place <=
-                    index
-                ) {
-                    place + 1
-                } else {
-                    member.turnOrder
-                }
-            )
+            val pinned = place <= index
+            member.id to if (pinned) place + 1 else member.turnOrder
         }.toMap()
 }

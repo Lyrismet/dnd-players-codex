@@ -10,7 +10,7 @@ fun averageLevelTenths(levels: List<Int?>): Int? {
     return if (known.isEmpty()) null else (known.sum() * TENTH.toDouble() / known.size).roundToInt()
 }
 
-/** tenths as a number with one decimal, a whole one has none: 43 is "4,3" and 40 is "4" */
+/** tenths as a number with one decimal and none for a whole one */
 fun tenthsText(
     tenths: Int,
     separator: Char,
