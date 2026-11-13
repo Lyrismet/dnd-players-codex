@@ -32,10 +32,13 @@ import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import com.lyrismet.incadent.feature.combat.domain.round.NpcPromotion
+import com.lyrismet.incadent.feature.combat.domain.round.QueueStatus
 import com.lyrismet.incadent.feature.combat.domain.round.TurnPosition
 import com.lyrismet.incadent.feature.combat.domain.round.hostileCount
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
 import com.lyrismet.incadent.feature.combat.domain.round.previousTurn
+import com.lyrismet.incadent.feature.combat.domain.round.queueSlots
+import com.lyrismet.incadent.feature.combat.domain.round.queueStatus
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpMode
 import com.lyrismet.incadent.feature.combat.presentation.prep.HpPadState
 import com.lyrismet.incadent.feature.combat.presentation.prep.SearchDraft
@@ -56,6 +59,7 @@ import incadent.shared.generated.resources.combat_damage_state_vulnerability
 import incadent.shared.generated.resources.combat_hp_preview_now
 import incadent.shared.generated.resources.combat_hp_preview_over
 import incadent.shared.generated.resources.combat_hp_preview_unset
+import incadent.shared.generated.resources.combat_queue_unnamed_line
 import incadent.shared.generated.resources.combat_round_hostile
 import incadent.shared.generated.resources.combat_round_no_hostile
 import incadent.shared.generated.resources.error_action_failed
@@ -117,6 +121,7 @@ private class RoundDrafts(
     val naming: MutableState<NameDraft?>,
     val promotion: MutableState<PromotionDraft?>,
     val identity: MutableState<IdentityDraft?>,
+    val queue: MutableState<QueueSnapshot?>,
 )
 
 @Composable
@@ -132,6 +137,7 @@ private fun rememberDrafts() =
         naming = remember { mutableStateOf(null) },
         promotion = remember { mutableStateOf(null) },
         identity = remember { mutableStateOf(null) },
+        queue = remember { mutableStateOf(null) },
     )
 
 /** the words the messages of the fight are made of, resolved once */
@@ -281,6 +287,7 @@ class CombatRoundPresenter(
                 )
             }
         val namingSnapshot = NamingSnapshot(data.species)
+        val queueHandler = QueueHandler(editor, combatRepository, drafts.queue, undoController, drafts.selected)
         val calcHandler = CalcHandler(editor, drafts.calc, learner)
         val summaryHandler = SummaryHandler(editor, drafts.summary, learner)
         val ownIds =
@@ -302,6 +309,7 @@ class CombatRoundPresenter(
             when (event) {
                 is CombatRoundEvent.Calc -> calcHandler.onEvent(event.event, calcSnapshot, drafts.selected.value)
                 is CombatRoundEvent.Summary -> summaryHandler.onEvent(event.event, summarySnapshot)
+                is CombatRoundEvent.QueueEvent -> queueHandler.onEvent(event)
                 is CombatRoundEvent.NameChanged,
                 is CombatRoundEvent.NameChosen,
                 is CombatRoundEvent.PromotionScopeChanged,
@@ -405,6 +413,7 @@ private fun RoundView.promotionOf(
     return promotionSheet(draft, current, npc, data.species.firstOrNull { it.id == member?.speciesId }, typeNames)
 }
 
+@Suppress("LongMethod")
 @Composable
 private fun RoundView.render(
     drafts: RoundDrafts,
@@ -423,9 +432,13 @@ private fun RoundView.render(
         round = current.round,
         canGoBack = previousTurn(ordered, TurnPosition(current.round, current.turn)) != null,
         currentName = mover?.name.orEmpty(),
-        hostile = hostileText(hostile),
+        currentBadge = current.combatants.queueSlots()[mover?.id].badgeText(),
+        currentPending = mover?.turnOrder == null,
+        hostile = hostileLine(current, hostile),
         allClear = hostile == 0,
         rows = roundRows(current, ordered, mover?.id, drafts.selected.value, sources, seenByMember),
+        queueUnnamed = current.combatants.queueStatus() == QueueStatus.Unnamed,
+        queueEditing = drafts.queue.value != null,
         panel = chosen?.let { panelOf(it, drafts, seenByMember, typeNames) },
         tab = drafts.tab.value,
         menuOpen = drafts.menuOpen.value,
@@ -468,6 +481,18 @@ private fun RoundView.render(
         eventSink = sink,
     )
 }
+
+/** under the name of the one who moves: the hostile count, or that the turns go by the list */
+@Composable
+private fun hostileLine(
+    combat: Combat,
+    hostile: Int,
+): String =
+    if (combat.combatants.queueStatus() == QueueStatus.Unnamed) {
+        stringResource(Res.string.combat_queue_unnamed_line)
+    } else {
+        hostileText(hostile)
+    }
 
 @Composable
 private fun hostileText(count: Int): String =

@@ -70,6 +70,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
 
             implementation(libs.kermit)
+            implementation(libs.reorderable)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)

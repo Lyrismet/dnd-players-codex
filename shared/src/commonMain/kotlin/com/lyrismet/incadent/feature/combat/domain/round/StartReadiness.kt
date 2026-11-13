@@ -4,10 +4,6 @@ package com.lyrismet.incadent.feature.combat.domain.round
 sealed interface StartReadiness {
     data object NeedEnemy : StartReadiness
 
-    data class NeedOrder(
-        val left: Int,
-    ) : StartReadiness
-
     data class Ready(
         val count: Int,
     ) : StartReadiness

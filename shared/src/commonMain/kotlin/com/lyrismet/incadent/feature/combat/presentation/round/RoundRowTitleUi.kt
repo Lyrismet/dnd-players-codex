@@ -1,11 +1,13 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LocalTextStyle
@@ -16,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -24,15 +27,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.Dot
 import com.lyrismet.incadent.core.designsystem.component.dashedBorder
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.feature.combat.domain.round.fitRole
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_link_battle_only
+import incadent.shared.generated.resources.combat_queue_moves
 import incadent.shared.generated.resources.combat_round_me
 import org.jetbrains.compose.resources.stringResource
 
@@ -86,6 +92,7 @@ private fun RowNameLine(
             width
     Row(horizontalArrangement = Arrangement.spacedBy(NAME_GAP), verticalAlignment = Alignment.CenterVertically) {
         Dot(size = 6.dp, color = RoundColors.side(row.side))
+        if (row.current) MovesPlaque()
         Text(
             text = row.name,
             color = AppPalette.TextPrimary,
@@ -106,6 +113,35 @@ private fun RowNameLine(
         row.lastHit?.let {
             Text(it, color = AppPalette.MaroonBright, fontSize = AppFontSize.Small, fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+/** the gold label of the one who moves, it is always gold and never animated */
+private val PLAQUE_HEIGHT = 17.dp
+private val PLAQUE_TEXT = 9.5.sp
+private val PLAQUE_SPACING = 1.14.sp
+
+@Composable
+private fun MovesPlaque() {
+    Box(
+        modifier =
+            Modifier
+                .height(
+                    PLAQUE_HEIGHT,
+                ).background(AppPalette.Gold, AppShapes.Badge)
+                .padding(horizontal = 6.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = stringResource(Res.string.combat_queue_moves),
+            color = AppPalette.Background,
+            fontSize = PLAQUE_TEXT,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = PLAQUE_SPACING,
+            lineHeight = PLAQUE_TEXT,
+            style = TextStyle(lineHeightStyle = CenteredLine),
+            maxLines = 1,
+        )
     }
 }
 

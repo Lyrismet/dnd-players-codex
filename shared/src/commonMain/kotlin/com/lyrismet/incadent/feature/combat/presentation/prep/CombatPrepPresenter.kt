@@ -6,7 +6,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
+import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
+import com.lyrismet.incadent.core.localization.currentAppLanguage
 import com.lyrismet.incadent.core.portrait.ImageCompressor
+import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.core.toast.ToastMessage
@@ -18,9 +21,13 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
+import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.preparation.PartyHp
+import com.lyrismet.incadent.feature.combat.domain.preparation.averageLevelTenths
+import com.lyrismet.incadent.feature.combat.domain.preparation.tenthsText
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
+import com.lyrismet.incadent.feature.combat.domain.round.queueStatus
 import com.lyrismet.incadent.feature.combat.presentation.combatSessionTarget
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
@@ -139,7 +146,9 @@ class CombatPrepPresenter(
             party = rows.party,
             allies = rows.allies,
             enemies = rows.enemies,
+            averageLevel = averageLevelText(current, party),
             order = prepOrder(current, party),
+            queue = current?.combatants?.takeIf { rows.enemies.isNotEmpty() }?.queueStatus(),
             start = if (intro == null) prepStart(current) else null,
             search = searchState,
             entryForm = formController.buildState(npcs, locations, species),
@@ -169,6 +178,23 @@ private fun onForm(
         is CombatPrepEvent.CreateOpened -> host.open(event.side)
         is CombatPrepEvent.EntryForm -> host.onEvent(event.event, scope)
     }
+}
+
+/** the mean level of the party members who are in the fight, written with the decimal sign of the language */
+@Composable
+private fun averageLevelText(
+    combat: Combat?,
+    party: List<PartyMember>,
+): String {
+    val inFight =
+        combat
+            ?.combatants
+            .orEmpty()
+            .mapNotNull { it.partyMemberId }
+            .toSet()
+    val tenths = averageLevelTenths(party.filter { it.id in inFight }.map { it.level })
+    val separator = if (currentAppLanguage() == AppLanguage.RUSSIAN) ',' else '.'
+    return tenths?.let { tenthsText(it, separator) } ?: EMPTY_VALUE_DASH
 }
 
 /** the intro stands in for the lists until the codex has someone to put on each side */

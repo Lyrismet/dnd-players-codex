@@ -14,29 +14,43 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.Dot
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.designsystem.component.rememberSparkClock
+import com.lyrismet.incadent.core.designsystem.component.sparkFrame
 import com.lyrismet.incadent.feature.combat.presentation.prep.AddButton
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_round_add_ally
 import incadent.shared.generated.resources.combat_round_add_enemy
 import org.jetbrains.compose.resources.stringResource
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 private const val DIMMED_ALPHA = 0.5f
+private val FIELD_RADIUS = 12.dp
 private const val SAVE_PIPS = 3
+private const val HELD_TILT = -1f
+
+/** the items in front of the rows in the list, the library counts places by them */
+private const val HEADER_ITEMS = 1
+private const val CURRENT_TINT = 0.1f
+private const val CURRENT_EDGE = 0.5f
 
 @Composable
 internal fun RoundList(
@@ -44,85 +58,125 @@ internal fun RoundList(
     modifier: Modifier = Modifier,
 ) {
     val send = state.eventSink
+    val listState = rememberLazyListState()
+    val drag = rememberQueueDrag(state.rows.map { it.id })
+    drag.rows = state.rows
+    val reorderState =
+        rememberReorderableLazyListState(listState) { from, to ->
+            drag.move(
+                from.index - HEADER_ITEMS,
+                to.index - HEADER_ITEMS,
+            )
+        }
+    val clock = if (state.rows.any { it.current }) rememberSparkClock() else null
     LazyColumn(
+        state = listState,
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(start = 12.dp, top = 2.dp, end = 12.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        items(state.rows, key = { it.id }) { row -> RoundRowCard(row, send) }
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                AddButton(
-                    text = stringResource(Res.string.combat_round_add_enemy),
-                    color = AppPalette.MaroonBright,
-                    modifier = Modifier.weight(1f),
-                ) { send(CombatRoundEvent.ReinforcementOpened(ally = false)) }
-                AddButton(
-                    text = stringResource(Res.string.combat_round_add_ally),
-                    color = AppPalette.EmeraldBright,
-                    modifier = Modifier.weight(1f),
-                ) { send(CombatRoundEvent.ReinforcementOpened(ally = true)) }
+        item(key = "queue-header") { QueueHeader(state) }
+        items(drag.shown(state.rows), key = { it.id }) { row ->
+            ReorderableItem(reorderState, key = row.id, enabled = state.queueEditing) { held ->
+                RoundRowCard(
+                    row = row,
+                    editing = state.queueEditing,
+                    held = held,
+                    clock = clock,
+                    send = send,
+                    handle =
+                        Modifier.draggableHandle(
+                            onDragStarted = { drag.start(row.id) },
+                            onDragStopped = { drag.end { id, index -> send(CombatRoundEvent.QueueMoved(id, index)) } },
+                        ),
+                    modifier = Modifier.graphicsLayer { rotationZ = if (held) HELD_TILT else 0f },
+                )
             }
         }
+        if (state.queueEditing) item(key = "queue-tip") { QueueEditTip() }
+        if (!state.queueEditing) item(key = "queue-add") { ReinforcementButtons(send) }
     }
 }
 
 @Composable
+private fun ReinforcementButtons(send: (CombatRoundEvent) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        AddButton(
+            text = stringResource(Res.string.combat_round_add_enemy),
+            color = AppPalette.MaroonBright,
+            modifier = Modifier.weight(1f),
+        ) { send(CombatRoundEvent.ReinforcementOpened(ally = false)) }
+        AddButton(
+            text = stringResource(Res.string.combat_round_add_ally),
+            color = AppPalette.EmeraldBright,
+            modifier = Modifier.weight(1f),
+        ) { send(CombatRoundEvent.ReinforcementOpened(ally = true)) }
+    }
+}
+
+@Composable
+@Suppress("LongParameterList")
 private fun RoundRowCard(
     row: RoundRow,
+    editing: Boolean,
+    held: Boolean,
+    clock: State<Float>?,
     send: (CombatRoundEvent) -> Unit,
+    handle: Modifier,
+    modifier: Modifier = Modifier,
 ) {
-    val border =
-        when {
-            row.current -> AppPalette.Gold.copy(alpha = 0.7f)
-            row.selected -> AppPalette.BorderHover
-            else -> AppPalette.Border
-        }
+    val silver = AppPalette.TextSecondary
+    val inner = if (held || row.current) null else silver.takeIf { row.selected }
+    val spark = row.current && !editing
     Row(
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .alpha(if (row.dimmed) DIMMED_ALPHA else 1f)
                 .appCard(
                     shape = AppShapes.Field,
-                    background = if (row.selected) AppPalette.SurfacePopover else AppPalette.SurfaceVariant,
-                    border = border,
+                    background = rowBackground(row, held),
+                    border = rowBorder(row, held, editing),
                     onClick = { send(CombatRoundEvent.RowTapped(row.id)) },
-                ).padding(horizontal = 12.dp, vertical = 10.dp),
+                ).sparkFrame(FIELD_RADIUS, gold = spark, inner = inner, clock = clock.takeIf { spark })
+                .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TurnBadge(row)
+        TurnBadge(row, editing) { send(CombatRoundEvent.QueueTileTapped(row.id)) }
         Column(modifier = Modifier.weight(1f)) {
             RoundRowTitle(row)
-            RowBars(row)
-            if (row.chips.isNotEmpty()) RowChips(row.chips)
+            if (!editing) RowBars(row)
+            if (!editing && row.chips.isNotEmpty()) RowChips(row.chips)
         }
-        RowEnd(row, Modifier.width(84.dp))
+        if (editing) DragHandle(handle, held) else RowEnd(row, Modifier.width(84.dp))
     }
 }
 
-@Composable
-private fun TurnBadge(row: RoundRow) {
-    Text(
-        text = row.badge,
-        color = if (row.current) AppPalette.Background else AppPalette.TextDescription,
-        fontSize = AppFontSize.MediumPlus,
-        fontWeight = FontWeight.Bold,
-        textAlign = TextAlign.Center,
-        modifier =
-            Modifier
-                .size(36.dp)
-                .appCard(
-                    shape = AppShapes.Control,
-                    background = if (row.current) AppPalette.Gold else AppPalette.BadgeFill,
-                    border = null,
-                ).padding(top = 7.dp),
-    )
-}
+private fun rowBackground(
+    row: RoundRow,
+    held: Boolean,
+): Color =
+    when {
+        row.current -> AppPalette.Gold.copy(alpha = CURRENT_TINT).compositeOver(AppPalette.SurfaceVariant)
+        row.selected || held -> AppPalette.SurfacePopover
+        else -> AppPalette.SurfaceVariant
+    }
+
+private fun rowBorder(
+    row: RoundRow,
+    held: Boolean,
+    editing: Boolean,
+): Color? =
+    when {
+        held -> AppPalette.TextSecondary
+        row.current && editing -> AppPalette.Gold.copy(alpha = CURRENT_EDGE)
+        row.current -> null
+        else -> AppPalette.Border
+    }
 
 @Composable
 private fun RowBars(row: RoundRow) {

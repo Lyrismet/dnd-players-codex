@@ -61,7 +61,7 @@ data class HelpRow(
 
 /**
  * the "?" next to a section title: a tap opens a short explanation sheet with an optional legend and a "Понятно"
- * button. The tap area is 48dp, the drawn mark 18dp, and nothing pops up on its own.
+ * button. The tap area is 48dp (or [tapArea]), the drawn mark 18dp (or [mark]), and nothing pops up on its own.
  */
 @Composable
 fun AppHelpHint(
@@ -69,17 +69,19 @@ fun AppHelpHint(
     body: String,
     modifier: Modifier = Modifier,
     rows: List<HelpRow> = emptyList(),
+    tapArea: Dp = HintTapArea,
+    mark: (@Composable () -> Unit)? = null,
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
     Box(
         modifier =
             modifier
-                .size(HintTapArea)
+                .size(tapArea)
                 .clip(CircleShape)
                 .clickable(role = Role.Button) { open = true },
         contentAlignment = Alignment.Center,
     ) {
-        HintMark(size = HintIconSize, fontSize = AppFontSize.Tiny)
+        if (mark != null) mark() else HintMark(size = HintIconSize, fontSize = AppFontSize.Tiny)
     }
     if (open) {
         AppBottomSheet(onDismissRequest = { open = false }) {

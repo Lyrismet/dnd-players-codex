@@ -16,6 +16,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.round.StartReadiness
+import com.lyrismet.incadent.feature.combat.domain.round.queueSlots
 import com.lyrismet.incadent.feature.combat.domain.round.startReadiness
 import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.mentionEntitiesFrom
@@ -51,7 +52,6 @@ import incadent.shared.generated.resources.combat_prep_party_sub_out
 import incadent.shared.generated.resources.combat_prep_party_you
 import incadent.shared.generated.resources.combat_prep_start_go
 import incadent.shared.generated.resources.combat_prep_start_need_enemy
-import incadent.shared.generated.resources.combat_prep_start_need_order
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -301,6 +301,7 @@ internal fun prepOrder(
 ): List<PrepOrderRow>? {
     val members = combat?.combatants.orEmpty()
     if (members.none { it.side == CombatSide.ENEMY }) return null
+    val slots = members.queueSlots()
     val allyNpc = stringResource(Res.string.combat_prep_ally_npc)
     val allySpecies = stringResource(Res.string.combat_prep_ally_species)
     val allyTemp = stringResource(Res.string.combat_prep_ally_temp)
@@ -338,7 +339,7 @@ internal fun prepOrder(
                 } else {
                     OrderSide.ENEMY
                 },
-            number = member.turnOrder,
+            slot = slots.getValue(member.id),
         )
     }
 }
@@ -348,8 +349,6 @@ internal fun prepOrder(
 internal fun prepStart(combat: Combat?): PrepStart =
     when (val readiness = startReadiness(combat?.combatants.orEmpty())) {
         StartReadiness.NeedEnemy -> PrepStart(stringResource(Res.string.combat_prep_start_need_enemy), ready = false)
-        is StartReadiness.NeedOrder ->
-            PrepStart(stringResource(Res.string.combat_prep_start_need_order, readiness.left), ready = false)
         is StartReadiness.Ready ->
             PrepStart(
                 pluralStringResource(Res.plurals.combat_prep_start_go, readiness.count, readiness.count),

@@ -65,6 +65,24 @@ private fun checkIcon(): ImageVector =
             fill = SolidColor(Color.Black),
         ).build()
 
+// the pencil of "change", its tip at the bottom left
+private fun pencilIcon(): ImageVector =
+    ImageVector
+        .Builder(
+            name = "Pencil",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = ICON_VIEWPORT,
+            viewportHeight = ICON_VIEWPORT,
+        ).addPath(
+            pathData =
+                addPathNodes(
+                    "M3,17.25V21h3.75L17.81,9.94l-3.75,-3.75L3,17.25zM20.71,7.04c0.39,-0.39 0.39,-1.02 0,-1.41" +
+                        "l-2.34,-2.34c-0.39,-0.39 -1.02,-0.39 -1.41,0l-1.83,1.83 3.75,3.75 1.83,-1.83z",
+                ),
+            fill = SolidColor(Color.Black),
+        ).build()
+
 // the cross, two strokes through the middle
 private fun closeIcon(): ImageVector =
     ImageVector
@@ -86,6 +104,7 @@ private fun closeIcon(): ImageVector =
 /** glyphs reused across 2+ features - one place to see, and if needed swap, every reference */
 object AppIcons {
     val Edit: ImageVector = quillIcon()
+    val Pencil: ImageVector = pencilIcon()
     val Delete: ImageVector = deleteIcon()
     val Check: ImageVector = checkIcon()
     val Close: ImageVector = closeIcon()
