@@ -446,4 +446,34 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the eighteenth schema sorts the old casting time into a kind`() {
+        val file = File.createTempFile("schema-v18", ".db")
+        File("src/commonMain/sqldelight/databases/18.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(name, campaign_id) VALUES ('Lira', 'c')",
+            "INSERT INTO character_spell(party_member_id, name, casting_time, campaign_id) VALUES (1, 'A', '', 'c')",
+            "INSERT INTO character_spell(party_member_id, name, casting_time, campaign_id) VALUES (1, 'B', 'Бонусное действие', 'c')",
+            "INSERT INTO character_spell(party_member_id, name, casting_time, campaign_id) VALUES (1, 'C', 'Реакция', 'c')",
+            "INSERT INTO character_spell(party_member_id, name, casting_time, campaign_id) VALUES (1, 'D', '1 мин', 'c')",
+            "INSERT INTO character_spell(party_member_id, name, casting_time, campaign_id) VALUES (1, 'E', '1 action', 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 18, AppDatabase.Schema.version)
+
+        assertEquals(
+            "A:ACTION:|B:BONUS:|C:REACTION:|D:LONG:1 мин|E:LONG:1 action",
+            driver.single(
+                "SELECT group_concat(name || ':' || cast_kind || ':' || casting_time, '|') FROM " +
+                    "(SELECT * FROM character_spell ORDER BY name)",
+            ),
+        )
+        assertEquals("NONE", driver.single("SELECT duration_unit FROM character_spell WHERE name = 'A'"))
+        assertEquals("1", driver.single("SELECT projectiles FROM character_spell WHERE name = 'A'"))
+        driver.close()
+        file.delete()
+    }
 }

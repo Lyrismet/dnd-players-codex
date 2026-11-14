@@ -205,6 +205,12 @@ sealed interface FileRecord {
         val freeLeft: Int = 0,
         val position: Int = 0,
         val originId: String? = null,
+        val castKind: String = "ACTION",
+        val durationUnit: String = "NONE",
+        val durationValue: Int = 0,
+        val damage: String = "",
+        val projectiles: Int = 1,
+        val growth: String = "",
     ) : FileRecord
 
     /** a thing somebody carries, [ownerKind] and [ownerId] are the file's own id of the party member, npc or place */

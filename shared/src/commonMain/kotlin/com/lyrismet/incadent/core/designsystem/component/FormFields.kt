@@ -83,7 +83,7 @@ fun FormTextField(
     }
 }
 
-/** a single-line field with no label of its own, [enabled] false dims it and takes the typing away */
+/** a single-line field with no label: [enabled] false dims it, [invalid] draws it red, [counter] shows the length */
 @Composable
 fun FormInlineField(
     value: String,
@@ -92,6 +92,8 @@ fun FormInlineField(
     placeholder: String? = null,
     enabled: Boolean = true,
     maxLength: Int = TextLimits.LINE,
+    invalid: Boolean = false,
+    counter: Boolean = true,
 ) {
     Box(modifier.height(FormFieldHeight).alpha(if (enabled) 1f else DISABLED_FIELD_ALPHA)) {
         FormInput(
@@ -101,7 +103,9 @@ fun FormInlineField(
             maxLength = maxLength,
             singleLine = true,
             modifier = Modifier.height(FormFieldHeight),
+            counter = counter,
         )
+        if (invalid) Box(Modifier.matchParentSize().border(1.dp, AppPalette.MaroonBright, FieldShape))
         // a disabled field swallows the presses so it neither focuses nor types
         if (!enabled) Box(Modifier.matchParentSize().pointerInput(Unit) { detectTapGestures { } })
     }
@@ -286,6 +290,7 @@ private fun FormInput(
     maxLength: Int,
     singleLine: Boolean,
     modifier: Modifier = Modifier,
+    counter: Boolean = true,
 ) {
     var field by remember { mutableStateOf(TextFieldValue(value)) }
     var focused by remember { mutableStateOf(false) }
@@ -317,7 +322,7 @@ private fun FormInput(
         singleLine = singleLine,
         minLines = if (singleLine) 1 else FORM_AREA_MIN_LINES,
         maxLength = maxLength,
-        counter = AppTextInputCounter(maxLength),
+        counter = if (counter) AppTextInputCounter(maxLength) else null,
     )
 }
 

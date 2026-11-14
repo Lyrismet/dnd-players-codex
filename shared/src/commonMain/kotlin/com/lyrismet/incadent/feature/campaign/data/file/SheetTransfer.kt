@@ -5,11 +5,21 @@ import com.lyrismet.incadent.db.characterSheet.SelectByMember
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.CANTRIP_LEVEL
 import com.lyrismet.incadent.feature.codex.domain.model.COIN_PURSE_RANGE
+import com.lyrismet.incadent.feature.codex.domain.model.CastKind
+import com.lyrismet.incadent.feature.codex.domain.model.DurationUnit
 import com.lyrismet.incadent.feature.codex.domain.model.FREE_CASTS_RANGE
+import com.lyrismet.incadent.feature.codex.domain.model.MAX_DAMAGE_ROWS
+import com.lyrismet.incadent.feature.codex.domain.model.MAX_DURATION_VALUE
+import com.lyrismet.incadent.feature.codex.domain.model.PROJECTILES_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.RESOURCE_MAX_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.SPELL_LEVELS
 import com.lyrismet.incadent.feature.codex.domain.model.SPELL_POSITIONS
 import com.lyrismet.incadent.feature.codex.domain.model.SheetRanges
+import com.lyrismet.incadent.feature.codex.domain.model.decodeDamage
+import com.lyrismet.incadent.feature.codex.domain.model.decodeGrowth
+import com.lyrismet.incadent.feature.codex.domain.model.encodeDamage
+import com.lyrismet.incadent.feature.codex.domain.model.encodeGrowth
+import com.lyrismet.incadent.feature.codex.domain.model.enumOrDefault
 
 /** the sheet of a party member and its counters as file records, [partyNumber] is the number the records point at */
 internal fun readSheetRecords(
@@ -52,6 +62,12 @@ internal fun readSheetRecords(
                 it.free_left.toInt(),
                 it.position.toInt(),
                 it.origin_id,
+                it.cast_kind,
+                it.duration_unit,
+                it.duration_value.toInt(),
+                it.damage,
+                it.projectiles.toInt(),
+                it.growth,
             )
         }
 }
@@ -194,6 +210,12 @@ private fun writeSpell(
         record.position.coerceIn(SPELL_POSITIONS).toLong(),
         campaignId,
         origins.claim(record.originId),
+        enumOrDefault(record.castKind, CastKind.ACTION).name,
+        enumOrDefault(record.durationUnit, DurationUnit.NONE).name,
+        record.durationValue.coerceIn(0, MAX_DURATION_VALUE).toLong(),
+        encodeDamage(decodeDamage(record.damage).take(MAX_DAMAGE_ROWS)),
+        record.projectiles.coerceIn(PROJECTILES_RANGE).toLong(),
+        encodeGrowth(decodeGrowth(record.growth)),
     )
 }
 

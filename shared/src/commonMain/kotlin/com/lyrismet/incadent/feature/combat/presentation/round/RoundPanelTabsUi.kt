@@ -190,7 +190,7 @@ private fun MarkTag(
     mark: PanelMark,
     onRemove: () -> Unit,
 ) {
-    val (fg, bg) = RoundColors.chip(if (mark.concentration) ChipKind.EFFECT else ChipKind.MARK)
+    val (fg, bg) = RoundColors.chip(mark.chip)
     val removeLabel = stringResource(Res.string.combat_mark_remove)
     Text(
         text = mark.label + " ×",

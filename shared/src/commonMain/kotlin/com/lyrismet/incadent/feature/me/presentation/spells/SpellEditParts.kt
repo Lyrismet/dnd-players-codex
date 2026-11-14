@@ -23,9 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
-import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
-import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
-import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
+import com.lyrismet.incadent.core.designsystem.component.AppPickSheet
 import com.lyrismet.incadent.core.designsystem.component.AppToggleCard
 import com.lyrismet.incadent.core.designsystem.component.FormFieldHeight
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
@@ -50,11 +48,13 @@ import incadent.shared.generated.resources.me_spells_edit_school
 import incadent.shared.generated.resources.me_spells_school_abjuration
 import incadent.shared.generated.resources.me_spells_school_conjuration
 import incadent.shared.generated.resources.me_spells_school_divination
+import incadent.shared.generated.resources.me_spells_school_empty
 import incadent.shared.generated.resources.me_spells_school_enchantment
 import incadent.shared.generated.resources.me_spells_school_evocation
 import incadent.shared.generated.resources.me_spells_school_illusion
 import incadent.shared.generated.resources.me_spells_school_necromancy
 import incadent.shared.generated.resources.me_spells_school_none
+import incadent.shared.generated.resources.me_spells_school_search
 import incadent.shared.generated.resources.me_spells_school_title
 import incadent.shared.generated.resources.me_spells_school_transmutation
 import org.jetbrains.compose.resources.stringResource
@@ -141,7 +141,6 @@ private fun SchoolSheet(
     onClose: () -> Unit,
     onPick: (String) -> Unit,
 ) {
-    val none = stringResource(Res.string.me_spells_school_none)
     val schools =
         listOf(
             stringResource(Res.string.me_spells_school_abjuration),
@@ -153,34 +152,18 @@ private fun SchoolSheet(
             stringResource(Res.string.me_spells_school_necromancy),
             stringResource(Res.string.me_spells_school_transmutation),
         )
-    AppBottomSheet(onDismissRequest = onClose) {
-        AppSheetColumn(
-            scroll = true,
-            header = { AppSheetHeader(title = stringResource(Res.string.me_spells_school_title), onClose = onClose) },
-        ) {
-            (listOf("" to none) + schools.map { it to it }).forEach { (value, label) ->
-                val on = value == chosen
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 52.dp)
-                        .appCard(
-                            AppShapes.Field,
-                            if (on) AppPalette.SurfaceElevated else AppPalette.Background,
-                            if (on) AppPalette.Gold else AppPalette.BorderSubtle,
-                            onClick = { onPick(value) },
-                        ).padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        label,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (on) AppPalette.GoldBright else AppPalette.TextPrimary,
-                    )
-                }
-            }
-        }
-    }
+    AppPickSheet(
+        items = schools,
+        chosen = chosen.takeIf { it in schools },
+        title = stringResource(Res.string.me_spells_school_title),
+        emptyText = stringResource(Res.string.me_spells_school_empty),
+        searchPlaceholder = stringResource(Res.string.me_spells_school_search),
+        clearLabel = stringResource(Res.string.me_spells_school_none),
+        label = { it },
+        onPick = { onPick(it.orEmpty()) },
+        onDismiss = onClose,
+        showSearch = false,
+    )
 }
 
 /** the three letters as square toggles and the material beside them, which only takes text while the M is on */

@@ -19,8 +19,8 @@ enum class CombatStance { ENEMY, NEUTRAL, FRIEND, FLED }
 
 enum class ConditionGroup { RESTRAINT, WEAKENING, EFFECT }
 
-/** what a mark says about a participant: a held spell, a fact the master noted, or a state made up for the campaign */
-enum class MarkKind { CONCENTRATION, FACT, CUSTOM }
+/** what a mark says about a participant: a held or lasting spell, a fact the master noted, or a made up state */
+enum class MarkKind { CONCENTRATION, SPELL, FACT, CUSTOM }
 
 /** [roundsLeft] is the count when the mark was put on in [startedRound], none for a mark without a count */
 data class CombatMark(

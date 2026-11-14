@@ -25,7 +25,7 @@ class SpellsContext(
 
 /**
  * reacts to the presses of the spells block, the sheet of the character and the fight both delegate here so a cast
- * spends the same slots wherever it happens, [onCast] lets the fight put a concentration mark
+ * spends the same slots wherever it happens, [onCast] lets the fight put a mark for what lasts
  */
 class SpellsHandler(
     private val ui: SpellsUiState,
@@ -33,7 +33,7 @@ class SpellsHandler(
     private val resources: CharacterResourceRepository,
     private val spells: CharacterSpellRepository,
     private val undoController: UndoController,
-    private val onCast: suspend (CharacterSpell) -> Unit = {},
+    private val onCast: suspend (CharacterSpell, SpellPay) -> Unit = { _, _ -> },
 ) {
     private val casting = SpellCasting(resources, spells)
 
@@ -89,7 +89,7 @@ class SpellsHandler(
         ui.cardId = null
         scope.launch {
             casting.cast(spell, pay, context.columns) ?: return@launch
-            onCast(spell)
+            onCast(spell, pay)
         }
     }
 

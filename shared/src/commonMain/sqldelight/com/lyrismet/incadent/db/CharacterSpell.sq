@@ -19,7 +19,13 @@ CREATE TABLE character_spell (
     free_rest TEXT NOT NULL DEFAULT 'LONG',
     position INTEGER NOT NULL DEFAULT 0,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
-    origin_id TEXT NOT NULL DEFAULT ''
+    origin_id TEXT NOT NULL DEFAULT '',
+    cast_kind TEXT NOT NULL DEFAULT 'ACTION',
+    duration_unit TEXT NOT NULL DEFAULT 'NONE',
+    duration_value INTEGER NOT NULL DEFAULT 0,
+    damage TEXT NOT NULL DEFAULT '',
+    projectiles INTEGER NOT NULL DEFAULT 1,
+    growth TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX character_spell_party_member_id ON character_spell(party_member_id);
@@ -27,25 +33,27 @@ CREATE INDEX character_spell_campaign_id ON character_spell(campaign_id);
 
 selectByMember:
 SELECT id, name, level, school, casting_time, spell_range, verbal, somatic, has_material, material, duration, concentration, ritual,
-    body, free_max, free_left, position, origin_id
+    body, free_max, free_left, position, origin_id, cast_kind, duration_unit, duration_value, damage, projectiles, growth
 FROM character_spell WHERE party_member_id = ?
 ORDER BY level, position, id;
 
 selectById:
 SELECT id, name, level, school, casting_time, spell_range, verbal, somatic, has_material, material, duration, concentration, ritual,
-    body, free_max, free_left, position, origin_id
+    body, free_max, free_left, position, origin_id, cast_kind, duration_unit, duration_value, damage, projectiles, growth
 FROM character_spell WHERE id = ?;
 
 insert:
 INSERT INTO character_spell(party_member_id, name, level, school, casting_time, spell_range, verbal, somatic, has_material, material,
-    duration, concentration, ritual, body, free_max, free_left, position, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    duration, concentration, ritual, body, free_max, free_left, position, campaign_id, origin_id,
+    cast_kind, duration_unit, duration_value, damage, projectiles, growth)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE character_spell SET name = :name, level = :level, school = :school, casting_time = :castingTime,
     spell_range = :range, verbal = :verbal, somatic = :somatic, has_material = :hasMaterial, material = :material, duration = :duration,
     concentration = :concentration, ritual = :ritual, body = :body, free_max = :freeMax,
-    free_left = MIN(free_left, :freeMax), position = :position
+    free_left = MIN(free_left, :freeMax), position = :position, cast_kind = :castKind, duration_unit = :durationUnit,
+    duration_value = :durationValue, damage = :damage, projectiles = :projectiles, growth = :growth
 WHERE id = :id;
 
 -- a cast and its undo move the count by one, held between zero and the max

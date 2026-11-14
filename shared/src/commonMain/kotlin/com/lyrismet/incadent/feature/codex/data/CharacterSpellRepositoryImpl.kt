@@ -6,7 +6,14 @@ import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.feature.codex.domain.model.CastKind
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
+import com.lyrismet.incadent.feature.codex.domain.model.DurationUnit
+import com.lyrismet.incadent.feature.codex.domain.model.decodeDamage
+import com.lyrismet.incadent.feature.codex.domain.model.decodeGrowth
+import com.lyrismet.incadent.feature.codex.domain.model.encodeDamage
+import com.lyrismet.incadent.feature.codex.domain.model.encodeGrowth
+import com.lyrismet.incadent.feature.codex.domain.model.enumOrDefault
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSpellRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -33,53 +40,77 @@ class CharacterSpellRepositoryImpl(
     ): Long =
         withContext(DatabaseDispatcher) {
             val value = spell.clamped()
-            val material = if (value.hasMaterial) value.material else ""
-            val stored = if (value.id == 0L) null else queries.selectById(value.id).executeAsOneOrNull()
-            if (stored != null) {
-                queries.update(
-                    value.name,
-                    value.level.toLong(),
-                    value.school,
-                    value.castingTime,
-                    value.range,
-                    value.verbal.toLong(),
-                    value.somatic.toLong(),
-                    value.hasMaterial.toLong(),
-                    material,
-                    value.duration,
-                    value.concentration.toLong(),
-                    value.ritual.toLong(),
-                    value.text,
-                    value.freeMax.toLong(),
-                    value.position.toLong(),
-                    value.id,
-                )
+            if (value.id != 0L && queries.selectById(value.id).executeAsOneOrNull() != null) {
+                update(value)
                 value.id
             } else {
-                queries.insert(
-                    memberId,
-                    value.name,
-                    value.level.toLong(),
-                    value.school,
-                    value.castingTime,
-                    value.range,
-                    value.verbal.toLong(),
-                    value.somatic.toLong(),
-                    value.hasMaterial.toLong(),
-                    material,
-                    value.duration,
-                    value.concentration.toLong(),
-                    value.ritual.toLong(),
-                    value.text,
-                    value.freeMax.toLong(),
-                    value.freeLeft.toLong(),
-                    value.position.toLong(),
-                    current.requireId(),
-                    value.originId.orNewOriginId(),
-                )
+                insert(memberId, value)
                 queries.lastInsertRowId().executeAsOne()
             }
         }
+
+    private fun update(value: CharacterSpell) {
+        queries.update(
+            value.name,
+            value.level.toLong(),
+            value.school,
+            value.castingTime,
+            value.range,
+            value.verbal.toLong(),
+            value.somatic.toLong(),
+            value.hasMaterial.toLong(),
+            value.materialText(),
+            value.duration,
+            value.concentration.toLong(),
+            value.ritual.toLong(),
+            value.text,
+            value.freeMax.toLong(),
+            value.position.toLong(),
+            value.castKind.name,
+            value.durationUnit.name,
+            value.durationValue.toLong(),
+            encodeDamage(value.damage),
+            value.projectiles.toLong(),
+            encodeGrowth(value.growth),
+            value.id,
+        )
+    }
+
+    private fun insert(
+        memberId: Long,
+        value: CharacterSpell,
+    ) {
+        queries.insert(
+            memberId,
+            value.name,
+            value.level.toLong(),
+            value.school,
+            value.castingTime,
+            value.range,
+            value.verbal.toLong(),
+            value.somatic.toLong(),
+            value.hasMaterial.toLong(),
+            value.materialText(),
+            value.duration,
+            value.concentration.toLong(),
+            value.ritual.toLong(),
+            value.text,
+            value.freeMax.toLong(),
+            value.freeLeft.toLong(),
+            value.position.toLong(),
+            current.requireId(),
+            value.originId.orNewOriginId(),
+            value.castKind.name,
+            value.durationUnit.name,
+            value.durationValue.toLong(),
+            encodeDamage(value.damage),
+            value.projectiles.toLong(),
+            encodeGrowth(value.growth),
+        )
+    }
+
+    // a material text only counts while the M is on
+    private fun CharacterSpell.materialText() = if (hasMaterial) material else ""
 
     override suspend fun changeFree(
         id: Long,
@@ -115,6 +146,12 @@ class CharacterSpellRepositoryImpl(
         freeLeft: Long,
         position: Long,
         originId: String,
+        castKind: String,
+        durationUnit: String,
+        durationValue: Long,
+        damage: String,
+        projectiles: Long,
+        growth: String,
     ) = CharacterSpell(
         id = id,
         name = name,
@@ -134,5 +171,11 @@ class CharacterSpellRepositoryImpl(
         freeLeft = freeLeft.toInt(),
         position = position.toInt(),
         originId = originId,
+        castKind = enumOrDefault(castKind, CastKind.ACTION),
+        durationUnit = enumOrDefault(durationUnit, DurationUnit.NONE),
+        durationValue = durationValue.toInt(),
+        damage = decodeDamage(damage),
+        projectiles = projectiles.toInt(),
+        growth = decodeGrowth(growth),
     )
 }

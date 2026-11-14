@@ -22,7 +22,7 @@ data class PanelMark(
     val id: Long,
     val label: String,
     val tone: MarkTone,
-    val concentration: Boolean,
+    val chip: ChipKind,
     // set for a condition that is on, the cross takes it off the same way a tap on its chip does
     val condition: CombatCondition? = null,
 )
@@ -54,12 +54,13 @@ internal fun List<CombatMark>.inRowOrder(round: Int): List<CombatMark> =
         when {
             mark.isExpired(round) -> RowOrder.EXPIRED
             mark.kind == MarkKind.CONCENTRATION -> RowOrder.CONCENTRATION
+            mark.kind == MarkKind.SPELL -> RowOrder.SPELL
             mark.kind == MarkKind.CUSTOM -> RowOrder.CUSTOM
             else -> RowOrder.FACT
         }
     }
 
-private enum class RowOrder { EXPIRED, CONCENTRATION, CUSTOM, FACT }
+private enum class RowOrder { EXPIRED, CONCENTRATION, SPELL, CUSTOM, FACT }
 
 internal fun CustomCondition.isOn(marks: List<CombatMark>): Boolean =
     marks.any { it.kind == MarkKind.CUSTOM && it.text == name }

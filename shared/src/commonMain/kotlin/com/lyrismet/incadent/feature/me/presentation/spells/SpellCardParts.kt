@@ -28,9 +28,11 @@ import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
+import com.lyrismet.incadent.feature.codex.domain.model.atRank
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_spells_card_components
 import incadent.shared.generated.resources.me_spells_card_concentration
+import incadent.shared.generated.resources.me_spells_card_damage
 import incadent.shared.generated.resources.me_spells_card_duration
 import incadent.shared.generated.resources.me_spells_card_range
 import incadent.shared.generated.resources.me_spells_card_ritual
@@ -74,10 +76,10 @@ private fun Badge(
 internal fun CardGrid(spell: CharacterSpell) {
     val cells =
         listOf(
-            stringResource(Res.string.me_spells_card_time) to spell.castingTime,
+            stringResource(Res.string.me_spells_card_time) to castTimeLabel(spell),
             stringResource(Res.string.me_spells_card_range) to spell.range,
             stringResource(Res.string.me_spells_card_components) to if (spell.hasComponents) "x" else "",
-            stringResource(Res.string.me_spells_card_duration) to spell.duration,
+            stringResource(Res.string.me_spells_card_duration) to durationLabel(spell),
         ).filter { it.second.isNotBlank() }
     if (cells.isEmpty()) return
     Column(Modifier.fillMaxWidth().appCard(background = AppPalette.Background, border = AppPalette.BorderSubtle)) {
@@ -138,5 +140,40 @@ private fun Letter(
         contentAlignment = Alignment.Center,
     ) {
         Text(text, style = AppText.caption, color = if (on) AppPalette.Arcane else AppPalette.TextTertiary)
+    }
+}
+
+/** the damage rows with their icons and names, the projectile count in front of them, empty when there is none */
+@Composable
+internal fun DamageBlock(
+    spell: CharacterSpell,
+    characterLevel: Int,
+) {
+    val at = spell.atRank(characterLevel)
+    if (at.damage.none { it.dice.isNotBlank() }) return
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .appCard(
+                background = AppPalette.Background,
+                border = AppPalette.BorderSubtle,
+            ).padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        SectionOverline(stringResource(Res.string.me_spells_card_damage), color = AppPalette.TextTertiary)
+        if (at.projectiles > 1) {
+            Text(
+                "${at.projectiles} ×",
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppPalette.TextSecondary,
+            )
+        }
+        at.damage.filter { it.dice.isNotBlank() }.forEach { row ->
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SpellEffectGlyph(row.effect, size = 17.dp)
+                Text(row.dice, style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextHeading)
+                Text(effectLabel(row.effect), style = AppText.footnote, color = AppPalette.TextSecondary)
+            }
+        }
     }
 }
