@@ -42,7 +42,19 @@ enum class WoundTone { WHOLE, WOUNDED, BLOODIED, BARELY, DOWN, DYING, DEAD }
 enum class HpLevel { HIGH, MID, LOW, ZERO }
 
 /** the tint of a small chip under a name: a condition of its group, or what the participant became */
-enum class ChipKind { CAPTURED, NEUTRAL, FRIEND, FLED, RESTRAINT, WEAKENING, EFFECT, MARK, MARK_LAST, MARK_EXPIRED }
+enum class ChipKind {
+    CAPTURED,
+    NEUTRAL,
+    FRIEND,
+    FLED,
+    RESTRAINT,
+    WEAKENING,
+    EFFECT,
+    SPELL,
+    MARK,
+    MARK_LAST,
+    MARK_EXPIRED,
+}
 
 data class CombatRoundState(
     // the fight has not arrived yet

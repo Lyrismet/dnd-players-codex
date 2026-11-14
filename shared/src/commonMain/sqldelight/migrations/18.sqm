@@ -1,0 +1,17 @@
+-- the casting time as a kind, the duration as a unit and a number, the damage rows and the projectile count of a spell
+ALTER TABLE character_spell ADD COLUMN cast_kind TEXT NOT NULL DEFAULT 'ACTION';
+ALTER TABLE character_spell ADD COLUMN duration_unit TEXT NOT NULL DEFAULT 'NONE';
+ALTER TABLE character_spell ADD COLUMN duration_value INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE character_spell ADD COLUMN damage TEXT NOT NULL DEFAULT '';
+ALTER TABLE character_spell ADD COLUMN projectiles INTEGER NOT NULL DEFAULT 1;
+
+-- the old free text sorts into a kind, anything that is not an action, a bonus action or a reaction is a long time
+UPDATE character_spell SET cast_kind = CASE
+    WHEN casting_time LIKE 'Бонус%' OR casting_time LIKE 'бонус%' OR casting_time LIKE 'bonus%' THEN 'BONUS'
+    WHEN casting_time LIKE 'Реакц%' OR casting_time LIKE 'реакц%' OR casting_time LIKE 'reaction%' THEN 'REACTION'
+    WHEN trim(casting_time) = '' OR casting_time LIKE 'Действ%' OR casting_time LIKE 'действ%' OR casting_time LIKE 'action%' THEN 'ACTION'
+    ELSE 'LONG'
+END;
+UPDATE character_spell SET casting_time = '' WHERE cast_kind <> 'LONG';
+-- how a spell gets stronger with the level or the slot, kept as one text the app reads and writes
+ALTER TABLE character_spell ADD COLUMN growth TEXT NOT NULL DEFAULT '';

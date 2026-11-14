@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
+import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
 import com.lyrismet.incadent.feature.codex.domain.model.FifthEditionRules
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.isSpellTabVisible
@@ -17,6 +18,8 @@ import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
+import com.lyrismet.incadent.feature.combat.domain.round.markFor
+import com.lyrismet.incadent.feature.me.domain.SpellPay
 import com.lyrismet.incadent.feature.me.domain.slotColumns
 import com.lyrismet.incadent.feature.me.domain.spellLevels
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsBlockState
@@ -71,13 +74,20 @@ internal fun rememberRoundMagic(
         .collectAsState(initial = emptyList())
     val latestOwn by rememberUpdatedState(own)
     val latestCombat by rememberUpdatedState(combat)
+    val characterLevel by rememberUpdatedState(character?.level ?: 1)
     val handler =
         remember(ui) {
-            SpellsHandler(ui, scope, sources.resources, sources.spells, undoController) { spell ->
+            SpellsHandler(ui, scope, sources.resources, sources.spells, undoController) { spell, pay ->
                 val member = latestOwn
                 val round = latestCombat?.round
-                if (spell.concentration && member != null && round != null) {
-                    combatRepository.addMark(member.id, MarkKind.CONCENTRATION, spell.name, null, round)
+                if (member != null &&
+                    round != null
+                ) {
+                    putMark(
+                        spell,
+                        pay,
+                        characterLevel,
+                    ) { kind, rounds -> combatRepository.addMark(member.id, kind, spell.name, rounds, round) }
                 }
             }
         }
@@ -90,6 +100,7 @@ internal fun rememberRoundMagic(
             ability = sheet.spellAbility,
             saveDc = FifthEditionRules.spellSaveDc(sheet, level),
             attack = FifthEditionRules.spellAttack(sheet, level),
+            characterLevel = level,
             columns = columns,
             spells = spells,
             openLevel = ui.openLevel?.takeIf { it in spellLevels(spells, columns) },
@@ -104,4 +115,15 @@ internal fun rememberRoundMagic(
         SpellsContext(character.id, spells, columns, readOnly = false),
         handler,
     )
+}
+
+// a spell that lasts puts a counted mark on the caster, a concentration one replaces the last, the other stays violet
+private suspend fun putMark(
+    spell: CharacterSpell,
+    pay: SpellPay,
+    characterLevel: Int,
+    add: suspend (MarkKind, Int?) -> Unit,
+) {
+    val circle = (pay as? SpellPay.Slot)?.level ?: spell.level
+    spell.markFor(circle, characterLevel)?.let { add(it.kind, it.rounds) }
 }

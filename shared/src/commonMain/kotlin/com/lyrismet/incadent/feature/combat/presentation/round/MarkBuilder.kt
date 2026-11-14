@@ -47,9 +47,14 @@ internal fun panelTags(
     member: Combatant,
     round: Int,
 ): List<PanelMark> =
-    member.conditions.map { PanelMark(0, it.label(), MarkTone.NORMAL, false, it) } +
+    member.conditions.map { PanelMark(0, it.label(), MarkTone.NORMAL, ChipKind.MARK, condition = it) } +
         member.marks.inRowOrder(round).map {
-            PanelMark(it.id, it.chipText(round), it.tone(round), it.kind == MarkKind.CONCENTRATION)
+            PanelMark(
+                it.id,
+                it.chipText(round),
+                it.tone(round),
+                it.kind.chip(),
+            )
         }
 
 internal fun panelCustoms(
@@ -65,7 +70,7 @@ internal fun markRowChips(
     member.marks.inRowOrder(round).map { mark ->
         val kind =
             when (mark.tone(round)) {
-                MarkTone.NORMAL -> if (mark.kind == MarkKind.CONCENTRATION) ChipKind.EFFECT else ChipKind.MARK
+                MarkTone.NORMAL -> mark.kind.chip()
                 MarkTone.LAST -> ChipKind.MARK_LAST
                 MarkTone.EXPIRED -> ChipKind.MARK_EXPIRED
             }
@@ -108,3 +113,10 @@ internal fun markSheetFor(
     draft: MarkDraft?,
     combat: Combat,
 ): MarkSheet? = draft?.let { d -> combat.combatants.firstOrNull { it.id == d.memberId }?.let { markSheetState(d, it) } }
+
+internal fun MarkKind.chip(): ChipKind =
+    when (this) {
+        MarkKind.CONCENTRATION -> ChipKind.EFFECT
+        MarkKind.SPELL -> ChipKind.SPELL
+        else -> ChipKind.MARK
+    }

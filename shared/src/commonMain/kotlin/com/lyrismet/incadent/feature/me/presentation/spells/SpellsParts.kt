@@ -14,9 +14,6 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppDashedTile
 import com.lyrismet.incadent.core.designsystem.component.AppHelpHint
-import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.me_spells_add
-import org.jetbrains.compose.resources.stringResource
 
 // the small caption of the slots with its help hint, kept here because a shared package cannot import its feature root
 @Composable
@@ -31,14 +28,24 @@ internal fun SectionCaption(
     }
 }
 
-/** the gold dashed button that adds a spell */
+/** the gold dashed tile that adds a spell, a damage row or a growth rule */
 @Composable
-internal fun AddSpellButton(onClick: () -> Unit) {
+internal fun SpellAddTile(
+    label: String,
+    onClick: () -> Unit,
+) {
     AppDashedTile(onClick, Modifier.fillMaxWidth(), color = AppPalette.Gold.copy(alpha = 0.45f), cornerRadius = 11.dp) {
         Text(
-            stringResource(Res.string.me_spells_add),
+            label,
             style = MaterialTheme.typography.titleSmall,
             color = AppPalette.GoldBright,
         )
     }
 }
+
+internal fun <T> List<T>.replaceAt(
+    index: Int,
+    change: (T) -> T,
+): List<T> = mapIndexed { i, old -> if (i == index) change(old) else old }
+
+internal fun <T> List<T>.removeAt(index: Int): List<T> = filterIndexed { i, _ -> i != index }
