@@ -99,6 +99,8 @@ fun AppSelectSheet(
     leadingIcon: ImageVector? = null,
     onCreate: ((query: String, checked: Set<Long>) -> Unit)? = null,
     onEdit: ((Long) -> Unit)? = null,
+    showSearch: Boolean = true,
+    optionIcon: (@Composable (SelectOption) -> Unit)? = null,
 ) {
     AppBottomSheet(onDismissRequest = onDismiss) {
         AppSelectSheetContent(
@@ -111,6 +113,8 @@ fun AppSelectSheet(
             recentIds = recentIds,
             excludedIds = excludedIds,
             leadingIcon = leadingIcon,
+            showSearch = showSearch,
+            optionIcon = optionIcon,
             onCreate = onCreate,
             onEdit = onEdit,
         )
@@ -132,6 +136,8 @@ fun AppSelectSheetContent(
     leadingIcon: ImageVector? = null,
     onCreate: ((query: String, checked: Set<Long>) -> Unit)? = null,
     onEdit: ((Long) -> Unit)? = null,
+    showSearch: Boolean = true,
+    optionIcon: (@Composable (SelectOption) -> Unit)? = null,
 ) {
     var query by remember { mutableStateOf("") }
     var checked by remember { mutableStateOf(selectedIds) }
@@ -149,15 +155,17 @@ fun AppSelectSheetContent(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SelectHeader(texts, multi)
-            AppSearchField(
-                query = query,
-                onQueryChange = { query = it },
-                placeholder = texts.searchPlaceholder,
-                height = SearchHeight,
-                textSize = AppFontSize.Large,
-                background = AppPalette.Background,
-                clearEndInset = 6.dp,
-            )
+            if (showSearch) {
+                AppSearchField(
+                    query = query,
+                    onQueryChange = { query = it },
+                    placeholder = texts.searchPlaceholder,
+                    height = SearchHeight,
+                    textSize = AppFontSize.Large,
+                    background = AppPalette.Background,
+                    clearEndInset = 6.dp,
+                )
+            }
         }
         Column(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
@@ -171,6 +179,7 @@ fun AppSelectSheetContent(
                     rows = rows,
                     multi = multi,
                     leadingIcon = leadingIcon,
+                    optionIcon = optionIcon,
                     carriedLabel = texts.carriedLabel,
                     onEdit = onEdit,
                     onRowClick = { id ->
@@ -224,10 +233,12 @@ private fun SelectHeader(
 }
 
 @Composable
+@Suppress("LongParameterList")
 private fun SelectRows(
     rows: List<SelectRow>,
     multi: Boolean,
     leadingIcon: ImageVector?,
+    optionIcon: (@Composable (SelectOption) -> Unit)?,
     carriedLabel: (@Composable (name: String) -> String)?,
     onEdit: ((Long) -> Unit)?,
     onRowClick: (Long) -> Unit,
@@ -254,16 +265,26 @@ private fun SelectRows(
             } else if (index > 0) {
                 AppDivider(color = AppPalette.SurfacePopover)
             }
-            SelectListRow(row, multi, leadingIcon, carriedLabel, onEdit, onClick = { onRowClick(row.option.id) })
+            SelectListRow(
+                row,
+                multi,
+                leadingIcon,
+                optionIcon,
+                carriedLabel,
+                onEdit,
+                onClick = { onRowClick(row.option.id) },
+            )
         }
     }
 }
 
 @Composable
+@Suppress("LongParameterList")
 private fun SelectListRow(
     row: SelectRow,
     multi: Boolean,
     leadingIcon: ImageVector?,
+    optionIcon: (@Composable (SelectOption) -> Unit)?,
     carriedLabel: (@Composable (name: String) -> String)?,
     onEdit: ((Long) -> Unit)?,
     onClick: () -> Unit,
@@ -286,6 +307,7 @@ private fun SelectListRow(
         ) {
             AppEntityIcon(leadingIcon, AppPalette.Parchment, size = 14.dp)
         }
+        optionIcon?.invoke(row.option)
         Column(modifier = Modifier.weight(1f)) {
             // explicit line heights - without them the theme's tall default spreads the title and the path apart
             Text(

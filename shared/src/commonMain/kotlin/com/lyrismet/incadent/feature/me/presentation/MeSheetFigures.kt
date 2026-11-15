@@ -95,6 +95,7 @@ private fun spellsState(
         ability = sheet.spellAbility,
         saveDc = FifthEditionRules.spellSaveDc(sheet, level),
         attack = FifthEditionRules.spellAttack(sheet, level),
+        characterLevel = level,
         columns = columns,
         spells = spells,
         // a level whose slots and spells are gone has nothing to open

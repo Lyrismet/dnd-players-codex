@@ -82,7 +82,8 @@ class AppPreferencesRepositoryImpl(
     }
 
     @OptIn(ExperimentalSettingsApi::class)
-    override fun observeFollowPartyLevel(): Flow<Boolean> = settings.getBooleanFlow(KEY_FOLLOW_PARTY_LEVEL, false)
+    override fun observeFollowPartyLevel(): Flow<Boolean> =
+        settings.getBooleanFlow(KEY_FOLLOW_PARTY_LEVEL, DEFAULT_FOLLOW_PARTY_LEVEL)
 
     override fun setFollowPartyLevel(follow: Boolean) {
         settings.putBoolean(KEY_FOLLOW_PARTY_LEVEL, follow)

@@ -17,6 +17,7 @@ import com.lyrismet.incadent.core.language.LanguageSheet
 import com.lyrismet.incadent.core.language.LanguageSheetController
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
+import com.lyrismet.incadent.core.preferences.DEFAULT_FOLLOW_PARTY_LEVEL
 import com.lyrismet.incadent.core.preferences.LanguageRepository
 import com.lyrismet.incadent.core.preferences.MentionStyle
 import com.lyrismet.incadent.core.preferences.SessionNumbering
@@ -62,7 +63,9 @@ class SettingsPresenter(
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
         val mentionStyle by appPreferencesRepository.observeMentionStyle().collectAsState(initial = MentionStyle.FILLED)
-        val followPartyLevel by appPreferencesRepository.observeFollowPartyLevel().collectAsState(initial = false)
+        val followPartyLevel by appPreferencesRepository.observeFollowPartyLevel().collectAsState(
+            initial = DEFAULT_FOLLOW_PARTY_LEVEL,
+        )
         val updateStatus by produceState<UpdateStatus>(UpdateStatus.Unknown) {
             value = updatePolicy.statusOf(VersionNumber.parse(versionName), latestVersionSource.latest())
         }

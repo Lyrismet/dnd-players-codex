@@ -13,6 +13,8 @@ data class SpellsBlockState(
     val ability: Ability?,
     val saveDc: Int?,
     val attack: Int?,
+    // the cantrips grow with it
+    val characterLevel: Int,
     val columns: List<SlotColumn>,
     val spells: List<CharacterSpell>,
     // the level whose cells and list are open under its tile

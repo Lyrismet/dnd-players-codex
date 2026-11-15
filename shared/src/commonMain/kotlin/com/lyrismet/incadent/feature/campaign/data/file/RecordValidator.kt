@@ -106,8 +106,9 @@ class RecordValidator {
                         record.range,
                         record.material,
                         record.duration,
+                        record.damage,
                     ) &&
-                        fits(MAX_LONG_CHARS, record.text)
+                        fits(MAX_LONG_CHARS, record.text, record.growth)
                 is FileRecord.Item -> fits(MAX_SHORT_CHARS, record.name) && fits(MAX_LONG_CHARS, record.notes)
                 is FileRecord.Tag -> fits(MAX_SHORT_CHARS, record.name)
                 is FileRecord.Phrase -> fits(MAX_LONG_CHARS, record.text)

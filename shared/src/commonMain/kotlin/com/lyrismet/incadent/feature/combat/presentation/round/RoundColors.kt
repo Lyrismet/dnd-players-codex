@@ -54,6 +54,7 @@ internal object RoundColors {
             ChipKind.RESTRAINT -> AppPalette.RestraintChip to AppPalette.Maroon.copy(alpha = RESTRAINT_FILL_ALPHA)
             ChipKind.WEAKENING -> AppPalette.WeakeningChip to AppPalette.WeakeningTint
             ChipKind.EFFECT -> AppPalette.GoldBright to AppPalette.Gold.copy(alpha = CHIP_FILL_ALPHA)
+            ChipKind.SPELL -> AppPalette.Arcane to AppPalette.Arcane.copy(alpha = CHIP_FILL_ALPHA)
             ChipKind.MARK -> AppPalette.TextSecondary to AppPalette.SurfaceElevated
             ChipKind.MARK_LAST -> AppPalette.GoldBright to AppPalette.Gold.copy(alpha = CHIP_FILL_ALPHA)
             ChipKind.MARK_EXPIRED -> AppPalette.Barely to AppPalette.Enemy.copy(alpha = CHIP_FILL_ALPHA)

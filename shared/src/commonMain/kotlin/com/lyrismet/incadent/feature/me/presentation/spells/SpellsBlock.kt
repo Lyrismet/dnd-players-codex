@@ -60,6 +60,7 @@ import incadent.shared.generated.resources.me_help_spell_dc_title
 import incadent.shared.generated.resources.me_slots_cell_hint
 import incadent.shared.generated.resources.me_slots_free
 import incadent.shared.generated.resources.me_slots_level_title
+import incadent.shared.generated.resources.me_spells_add
 import incadent.shared.generated.resources.me_spells_cantrips_panel_sub
 import incadent.shared.generated.resources.me_spells_cantrips_sub
 import incadent.shared.generated.resources.me_spells_cantrips_title
@@ -94,7 +95,13 @@ fun SpellsBlock(
             }
         }
         if (!state.readOnly && state.openLevel == null) {
-            AddSpellButton { send(SpellsEvent.Add(levels.firstOrNull { it > CANTRIP_LEVEL } ?: CANTRIP_LEVEL)) }
+            SpellAddTile(stringResource(Res.string.me_spells_add)) {
+                send(
+                    SpellsEvent.Add(
+                        levels.firstOrNull { it > CANTRIP_LEVEL } ?: CANTRIP_LEVEL,
+                    ),
+                )
+            }
         }
     }
     SpellSheets(state, send)
@@ -348,10 +355,10 @@ private fun LevelPanel(
         if (list.isEmpty()) {
             EmptyList()
         } else {
-            SpellList(list, state, send)
+            SpellList(list, state.characterLevel, send)
         }
         if (!state.readOnly) {
-            AddSpellButton { send(SpellsEvent.Add(level)) }
+            SpellAddTile(stringResource(Res.string.me_spells_add)) { send(SpellsEvent.Add(level)) }
         }
     }
 }
