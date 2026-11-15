@@ -8,13 +8,13 @@ val GROWTH_EVERY_RANGE = 2..9
 /** the character levels at which a cantrip gets stronger */
 val CANTRIP_TIERS = listOf(5, 11, 17)
 
-/** what a cantrip gets more of with the character level: dice of its damage rows or the projectiles */
+/** what a cantrip gets more of with the character level - dice of its damage rows or the projectiles */
 enum class CantripGrowth { NONE, DICE, PROJECTILES }
 
 /** what a rule makes bigger on a higher slot */
 enum class GrowthTarget { DICE, PROJECTILES, DURATION, TARGETS, RANGE, CUSTOM }
 
-/** how a rule grows: by the same amount each circle, each N circles, or by a table of circles and values */
+/** how a rule grows - by the same amount each circle, each N circles, or by a table of circles and values */
 enum class GrowthMode { EVERY, EVERY_N, STEPS }
 
 /** a value that starts at the circle [from], a duration step reads "HOUR:8", a dice step "2d8" */
@@ -49,7 +49,7 @@ data class GrowthRule(
         )
 }
 
-/** how a spell gets stronger: [cantrip] by character level, or the [rules] by slot level while [enabled] */
+/** how a spell gets stronger - [cantrip] by character level, or the [rules] by slot level while [enabled] */
 data class SpellGrowth(
     val enabled: Boolean = false,
     val cantrip: CantripGrowth = CantripGrowth.NONE,

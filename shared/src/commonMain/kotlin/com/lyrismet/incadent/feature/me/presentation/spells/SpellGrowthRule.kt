@@ -57,7 +57,7 @@ import org.jetbrains.compose.resources.stringResource
 private const val FIELD_MAX = 16
 private val DiceFieldWidth = 120.dp
 
-/** one rule: what grows, how it grows and the amount, or the table of steps */
+/** one rule - what grows, how it grows and the amount, or the table of steps */
 @Composable
 internal fun GrowthRuleCard(
     spell: CharacterSpell,
@@ -172,7 +172,7 @@ private fun Stepper(
     )
 }
 
-/** what a rule adds on each circle: dice for a dice rule, a number for the others */
+/** what a rule adds on each circle - dice for a dice rule, a number for the others */
 @Composable
 private fun AmountField(
     rule: GrowthRule,

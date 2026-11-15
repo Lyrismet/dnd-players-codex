@@ -28,7 +28,7 @@ private const val HEART_PATH =
     "M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z M12 9.5v5 M9.5 12h5"
 private const val SHIELD_PATH = "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"
 
-/** the casting time as a small shape: a circle for the action, a triangle for the bonus, a diamond, a clock */
+/** the casting time as a small shape - a circle for the action, a triangle for the bonus, a diamond, a clock */
 @Suppress("MagicNumber") // the numbers are the points of the mockup's 14 grid
 @Composable
 internal fun CastKindGlyph(

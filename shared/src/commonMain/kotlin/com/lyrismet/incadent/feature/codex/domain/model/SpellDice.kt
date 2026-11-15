@@ -13,7 +13,7 @@ private data class Dice(
 private fun parseDice(text: String): Dice? =
     DiceParts.matchEntire(text.trim())?.destructured?.let { (count, sides, tail) -> Dice(count.toInt(), sides, tail) }
 
-/** the dice [add] added [times] times to [base]: "1d8" + "1d8" twice is "3d8", "5" + "5" is "10" */
+/** the dice [add] added [times] times to [base] - "1d8" + "1d8" twice is "3d8", "5" + "5" is "10" */
 fun addDice(
     base: String,
     add: String,

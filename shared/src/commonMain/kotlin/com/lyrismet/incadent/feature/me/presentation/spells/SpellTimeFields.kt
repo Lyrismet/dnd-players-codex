@@ -199,6 +199,9 @@ internal fun DurationFields(
             }, size = PillSize.Small)
         }
         if (own) OwnDuration(spell, pick)
+        if (unit == DurationUnit.NONE && spell.duration.isNotBlank()) {
+            Text(spell.duration, style = AppText.footnote, color = AppPalette.TextTertiary)
+        }
         CombatCaption(spell)
     }
 }

@@ -41,7 +41,7 @@ internal fun castKindLabel(kind: CastKind): String =
         },
     )
 
-/** the casting time as the card writes it: the kind, or the own time of a long one */
+/** the casting time as the card writes it - the kind, or the own time of a long one */
 @Composable
 internal fun castTimeLabel(spell: CharacterSpell): String =
     if (spell.castKind == CastKind.LONG && spell.castingTime.isNotBlank()) {

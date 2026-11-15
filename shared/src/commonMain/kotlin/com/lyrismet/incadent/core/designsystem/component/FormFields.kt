@@ -83,7 +83,7 @@ fun FormTextField(
     }
 }
 
-/** a single-line field with no label: [enabled] false dims it, [invalid] draws it red, [counter] shows the length */
+/** a single-line field with no label - [enabled] false dims it, [invalid] draws it red, [counter] shows the length */
 @Composable
 fun FormInlineField(
     value: String,

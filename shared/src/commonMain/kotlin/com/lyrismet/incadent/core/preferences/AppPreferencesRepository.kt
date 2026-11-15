@@ -7,7 +7,7 @@ import com.lyrismet.incadent.core.preferences.SwipeHintState
 import kotlinx.coroutines.flow.Flow
 
 /** what a user who never touched the switch gets */
-const val DEFAULT_FOLLOW_PARTY_LEVEL = true
+const val DEFAULT_FOLLOW_PARTY_LEVEL = false
 
 interface AppPreferencesRepository {
     fun observeSessionNumbering(): Flow<SessionNumbering>

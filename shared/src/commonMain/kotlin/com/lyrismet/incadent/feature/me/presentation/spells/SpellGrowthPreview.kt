@@ -102,7 +102,7 @@ private fun GrowthTile(
     }
 }
 
-/** what changes in one tile: the growing damage and projectiles, the duration, the targets, the range, the notes */
+/** what changes in one tile - the growing damage and projectiles, the duration, the targets, the range, the notes */
 @Composable
 private fun AtSummary(
     spell: CharacterSpell,

@@ -460,12 +460,13 @@ class SchemaMigrationTest {
             "INSERT INTO character_spell(party_member_id, name, casting_time, campaign_id) VALUES (1, 'C', 'Реакция', 'c')",
             "INSERT INTO character_spell(party_member_id, name, casting_time, campaign_id) VALUES (1, 'D', '1 мин', 'c')",
             "INSERT INTO character_spell(party_member_id, name, casting_time, campaign_id) VALUES (1, 'E', '1 action', 'c')",
+            "INSERT INTO character_spell(party_member_id, name, casting_time, campaign_id) VALUES (1, 'F', '1 действие', 'c')",
         ).forEach { driver.execute(null, it, 0) }
 
         AppDatabase.Schema.migrate(driver, 18, AppDatabase.Schema.version)
 
         assertEquals(
-            "A:ACTION:|B:BONUS:|C:REACTION:|D:LONG:1 мин|E:LONG:1 action",
+            "A:ACTION:|B:BONUS:|C:REACTION:|D:LONG:1 мин|E:ACTION:|F:ACTION:",
             driver.single(
                 "SELECT group_concat(name || ':' || cast_kind || ':' || casting_time, '|') FROM " +
                     "(SELECT * FROM character_spell ORDER BY name)",

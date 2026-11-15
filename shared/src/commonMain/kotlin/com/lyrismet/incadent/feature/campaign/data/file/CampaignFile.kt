@@ -205,7 +205,7 @@ sealed interface FileRecord {
         val freeLeft: Int = 0,
         val position: Int = 0,
         val originId: String? = null,
-        val castKind: String = "ACTION",
+        val castKind: String = "",
         val durationUnit: String = "NONE",
         val durationValue: Int = 0,
         val damage: String = "",

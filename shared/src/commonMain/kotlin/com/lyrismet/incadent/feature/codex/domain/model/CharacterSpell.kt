@@ -65,10 +65,21 @@ val PROJECTILES_RANGE = 1..20
 /** how long a spell takes to cast, [LONG] keeps its own time in [CharacterSpell.castingTime] */
 enum class CastKind { ACTION, BONUS, REACTION, LONG }
 
+/** the kind an old free casting time reads as, anything but an action, a bonus action or a reaction is long */
+fun castKindOf(text: String): CastKind {
+    val t = text.lowercase()
+    return when {
+        "бонус" in t || "bonus" in t -> CastKind.BONUS
+        "реакц" in t || "reaction" in t -> CastKind.REACTION
+        t.isBlank() || "действ" in t || "action" in t -> CastKind.ACTION
+        else -> CastKind.LONG
+    }
+}
+
 /** the unit of a picked duration, [NONE] is a spell whose duration is only the old free text or nothing */
 enum class DurationUnit { NONE, INSTANT, ROUND, MINUTE, HOUR, DAY }
 
-/** what a damage row of a spell does: a damage of a type, healing, or hit points that are temporary */
+/** what a damage row of a spell does - a damage of a type, healing, or hit points that are temporary */
 sealed interface SpellEffect {
     data class Damage(
         val type: DamageType,

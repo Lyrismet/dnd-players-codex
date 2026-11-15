@@ -46,7 +46,7 @@ private fun unescape(text: String): String =
         }
     }
 
-/** the growth as one column text: "1~NONE~DICE,EVERY,0,2,1d6,3:2d8|5:3d8;...", free text is percent-escaped */
+/** the growth as one column text - "1~NONE~DICE,EVERY,0,2,1d6,3:2d8|5:3d8;...", free text is percent-escaped */
 fun encodeGrowth(growth: SpellGrowth): String {
     if (growth == SpellGrowth()) return ""
     val rules =

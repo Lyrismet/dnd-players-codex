@@ -39,7 +39,12 @@ private fun GrowthRule.times(
         GrowthMode.STEPS -> if (steps.any { it.from <= circle }) 1 else 0
     }
 
-private fun GrowthRule.stepValue(circle: Int): String? = steps.lastOrNull { it.from <= circle }?.value
+private fun GrowthRule.stepValue(circle: Int): String? =
+    steps
+        .sortedBy {
+            it.from
+        }.lastOrNull { it.from <= circle }
+        ?.value
 
 private fun GrowthRule.apply(
     at: SpellAt,
@@ -48,7 +53,7 @@ private fun GrowthRule.apply(
 ): SpellAt {
     val times = times(over, circle)
     val step = stepValue(circle)
-    val amount = add.trim().toIntOrNull() ?: 0
+    val amount = add.trim().toIntOrNull() ?: 1
     return when (target) {
         GrowthTarget.DICE -> at.copy(damage = diceAt(at.damage, times, step))
         GrowthTarget.PROJECTILES -> at.copy(projectiles = numberAt(at.projectiles, amount * times, step))

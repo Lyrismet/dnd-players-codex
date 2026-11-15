@@ -23,10 +23,7 @@ class SpellsContext(
     val readOnly: Boolean,
 )
 
-/**
- * reacts to the presses of the spells block, the sheet of the character and the fight both delegate here so a cast
- * spends the same slots wherever it happens, [onCast] lets the fight put a mark for what lasts
- */
+/** reacts to the presses of the spells block for the sheet and the fight, so a cast spends the same slots in both */
 class SpellsHandler(
     private val ui: SpellsUiState,
     private val scope: CoroutineScope,

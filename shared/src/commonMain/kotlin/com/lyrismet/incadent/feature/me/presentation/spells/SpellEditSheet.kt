@@ -8,6 +8,8 @@ import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.FormTextArea
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
+import com.lyrismet.incadent.feature.codex.domain.model.GrowthTarget
+import com.lyrismet.incadent.feature.codex.domain.model.isValidDice
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_spells_card_edit
 import incadent.shared.generated.resources.me_spells_edit_add
@@ -63,8 +65,13 @@ internal fun SpellEditSheet(
             FormPrimaryButton(
                 text = stringResource(if (isNew) Res.string.me_spells_edit_add else Res.string.me_spells_card_edit),
                 onClick = { send(SpellsEvent.DraftSaved) },
-                enabled = spell.name.isNotBlank(),
+                enabled = spell.name.isNotBlank() && spell.hasValidDice(),
             )
         }
     }
 }
+
+private fun CharacterSpell.hasValidDice() =
+    damage.all { isValidDice(it.dice) } &&
+        growth.rules.all { it.target != GrowthTarget.DICE || isValidDice(it.add) } &&
+        growth.rules.all { rule -> rule.steps.all { rule.target != GrowthTarget.DICE || isValidDice(it.value) } }

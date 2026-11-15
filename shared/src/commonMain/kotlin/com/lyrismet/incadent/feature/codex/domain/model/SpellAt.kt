@@ -1,6 +1,6 @@
 package com.lyrismet.incadent.feature.codex.domain.model
 
-/** what a spell comes to on a given slot or character level: the base fields with the growth applied */
+/** what a spell comes to on a given slot or character level - the base fields with the growth applied */
 data class SpellAt(
     val damage: List<SpellDamage>,
     val projectiles: Int,

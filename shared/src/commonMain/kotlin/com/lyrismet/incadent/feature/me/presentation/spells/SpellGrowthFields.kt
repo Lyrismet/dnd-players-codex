@@ -81,7 +81,7 @@ private fun growthTargetHint(target: GrowthTarget): String =
         },
     )
 
-/** the upcasting block of the form: a cantrip grows with the level, a spell by rules over the slot circle */
+/** the upcasting block of the form - a cantrip grows with the level, a spell by rules over the slot circle */
 @Composable
 internal fun GrowthFields(
     spell: CharacterSpell,

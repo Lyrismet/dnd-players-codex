@@ -6,7 +6,7 @@ private const val HEALING_KEY = "HEAL"
 private const val TEMP_KEY = "TEMP"
 private val DiceFormat = Regex("^(\\d{1,3}d\\d{1,3}|\\d{1,4})([+-](\\d{1,3}|мод|mod))*$", RegexOption.IGNORE_CASE)
 
-/** a dice text as the form accepts it: "1d10", "2d6+3", "5", "1d8+мод", an empty one is fine */
+/** a dice text as the form accepts it - "1d10", "2d6+3", "5", "1d8+мод", an empty one is fine */
 fun isValidDice(dice: String): Boolean = dice.isBlank() || DiceFormat.matches(dice.trim())
 
 private fun SpellEffect?.key(): String =
