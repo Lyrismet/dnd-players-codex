@@ -171,7 +171,7 @@ fun AppSelectSheetContent(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (canClear && texts.clearLabel != null) SelectOutlinedButton(texts.clearLabel) { onConfirm(emptySet()) }
+            if (canClear) SelectOutlinedButton(texts.clearLabel) { onConfirm(emptySet()) }
             if (rows.isEmpty()) {
                 SelectEmptyText(texts, isListEmpty = options.isEmpty() && query.isBlank(), canCreate = onCreate != null)
             } else {

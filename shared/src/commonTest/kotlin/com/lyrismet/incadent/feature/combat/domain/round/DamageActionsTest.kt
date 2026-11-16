@@ -4,6 +4,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.combat.domain.damage.DamageTerm
 import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
+import com.lyrismet.incadent.feature.combat.domain.damage.missingHp
 import com.lyrismet.incadent.feature.combat.domain.damage.planHit
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
@@ -162,5 +163,114 @@ class DamageActionsTest {
             assertEquals(6, after.events.single().amount)
             assertEquals(HitEffect.HALF, after.events.single().effect)
             assertEquals(19, after.named("Аэлин").hpCurrent)
+        }
+
+    private suspend fun hurtFight(): Combat {
+        val combat = fight()
+        actions.damage(combat, null, listOf(strike(combat.named("Аэлин"), DamageTerm(9))))
+        return repository.get(combat.id)
+    }
+
+    @Test
+    fun `heal to maximum fills the hit points and leaves the temporary ones`() =
+        runTest {
+            val combat = hurtFight()
+            val hero = combat.named("Аэлин")
+            assertEquals(16, hero.hpCurrent)
+            val healed = actions.healToMax(combat, null, listOf(hero))
+            val after = repository.get(combat.id).named("Аэлин")
+            assertEquals(20, after.hpCurrent)
+            assertEquals(hero.tempHp, after.tempHp)
+            assertEquals(1, healed?.before?.size)
+        }
+
+    @Test
+    fun `heal to maximum of several targets tells one heal each`() =
+        runTest {
+            val combat = hurtFight()
+            val id = combat.id
+            repository.addCombatant(id, member("Брон", CombatSide.PARTY, hp = 30).copy(hpCurrent = 10))
+            val fresh = repository.get(id)
+            val targets = fresh.combatants.filter { it.side == CombatSide.PARTY }
+            actions.healToMax(fresh, null, targets)
+            val after = repository.get(id)
+            assertEquals(20, after.named("Аэлин").hpCurrent)
+            assertEquals(30, after.named("Брон").hpCurrent)
+            assertEquals(2, after.events.count { it.kind == CombatEventKind.HEAL })
+        }
+
+    @Test
+    fun `heal to maximum skips full and unknown targets`() =
+        runTest {
+            val combat = fight()
+            val targets = combat.combatants
+            assertEquals(null, actions.healToMax(combat, null, targets))
+            assertEquals(0, repository.get(combat.id).events.size)
+        }
+
+    @Test
+    fun `heal to maximum brings a downed target back on its feet`() =
+        runTest {
+            val combat = fight()
+            actions.damage(combat, null, listOf(strike(combat.named("Аэлин"), DamageTerm(40))))
+            val down = repository.get(combat.id).named("Аэлин")
+            assertEquals(CombatState.DOWN, down.state)
+            actions.healToMax(repository.get(combat.id), null, listOf(down))
+            val up = repository.get(combat.id).named("Аэлин")
+            assertEquals(20, up.hpCurrent)
+            assertEquals(CombatState.WHOLE, up.state)
+        }
+
+    @Test
+    fun `one undo takes back the heal to maximum of every target`() =
+        runTest {
+            val combat = hurtFight()
+            val before = repository.get(combat.id)
+            val healed = checkNotNull(actions.healToMax(before, null, before.combatants.filter { it.hpMax != null }))
+            actions.undo(healed)
+            val after = repository.get(combat.id)
+            assertEquals(before.named("Аэлин").hpCurrent, after.named("Аэлин").hpCurrent)
+            assertEquals(before.events.size, after.events.size)
+        }
+
+    @Test
+    fun `missing hit points are none while the maximum is a guess`() {
+        assertEquals(null, member("Гоблин", CombatSide.ENEMY).missingHp())
+        assertEquals(0, member("Аэлин", CombatSide.PARTY, hp = 20).missingHp())
+        assertEquals(6, member("Аэлин", CombatSide.PARTY, hp = 20).copy(hpCurrent = 14).missingHp())
+    }
+
+    @Test
+    fun `typed hit points of a guessed target are told as one event and move its word`() =
+        runTest {
+            val combat = fight()
+            val goblin = combat.named("Гоблин")
+            actions.damage(combat, null, listOf(strike(goblin, DamageTerm(40))))
+            val struck = repository.get(combat.id)
+            actions.setExact(struck, null, struck.named("Гоблин"), amount = 1)
+            val after = repository.get(combat.id)
+            assertEquals(1, after.events.single { it.kind == CombatEventKind.SET }.amount)
+            assertEquals(CombatState.BARELY_STANDING, after.named("Гоблин").state)
+        }
+
+    @Test
+    fun `typed hit points above the told healing can add the missing heal and one undo takes both`() =
+        runTest {
+            val combat = fight()
+            val goblin = combat.named("Гоблин")
+            val recorded = actions.setExact(combat, null, goblin, amount = 33, unrecordedHeal = 15)
+            val after = repository.get(combat.id)
+            assertEquals(15, after.events.single { it.kind == CombatEventKind.HEAL }.amount)
+            assertEquals(2, recorded.eventIds.size)
+            actions.undo(recorded)
+            assertEquals(0, repository.get(combat.id).events.size)
+        }
+
+    @Test
+    fun `typed hit points of a counted target set its hit points within the maximum`() =
+        runTest {
+            val combat = fight()
+            actions.setExact(combat, null, combat.named("Аэлин"), amount = 99)
+            assertEquals(20, repository.get(combat.id).named("Аэлин").hpCurrent)
         }
 }

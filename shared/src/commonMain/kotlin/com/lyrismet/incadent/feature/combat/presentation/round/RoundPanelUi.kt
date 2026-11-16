@@ -29,21 +29,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.Dot
-import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
-import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.SheetGrabber
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -51,15 +48,11 @@ import com.lyrismet.incadent.core.designsystem.component.icons.CalculatorIcon
 import com.lyrismet.incadent.core.designsystem.component.sheetTopEdge
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsBlock
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.combat_calc_mode_damage
-import incadent.shared.generated.resources.combat_calc_mode_heal
-import incadent.shared.generated.resources.combat_calc_mode_temp
 import incadent.shared.generated.resources.combat_magic_tab
 import incadent.shared.generated.resources.combat_panel_capture
 import incadent.shared.generated.resources.combat_panel_captured
 import incadent.shared.generated.resources.combat_panel_died
 import incadent.shared.generated.resources.combat_panel_died_note
-import incadent.shared.generated.resources.combat_panel_mark_title
 import incadent.shared.generated.resources.combat_panel_saves_failure
 import incadent.shared.generated.resources.combat_panel_saves_success
 import incadent.shared.generated.resources.combat_panel_saves_title
@@ -147,9 +140,7 @@ private fun PanelHeader(
                 Text(
                     text = panel.sideLabel,
                     color = RoundColors.side(panel.side),
-                    fontSize = AppFontSize.Tiny,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.4.sp,
+                    style = AppText.fieldOverlineStrong,
                     maxLines = 1,
                 )
             }
@@ -180,40 +171,11 @@ private fun ActionsTab(
     panel: RoundPanel,
     send: (CombatRoundEvent) -> Unit,
 ) {
-    panel.marks?.let { MarksBlock(it, send) }
+    panel.scale?.let { ScaleBlock(it, send) }
     panel.saves?.let { SavesBlock(it, send) }
     panel.down?.let { DownButtons(it, send) }
     if (panel.died) DiedNote(send)
     CalcButtons(panel, send)
-}
-
-@Composable
-private fun MarksBlock(
-    marks: List<MarkOption>,
-    send: (CombatRoundEvent) -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        FormFieldLabel(stringResource(Res.string.combat_panel_mark_title))
-        SegmentedControl(
-            items = marks,
-            onSelected = { mark -> send(CombatRoundEvent.MarkSelected(mark.state)) },
-            itemBackground = { mark -> if (mark.selected) AppPalette.SurfacePopover else Color.Transparent },
-            containerBackground = AppPalette.Background,
-            itemShape = AppShapes.Small,
-            itemHeight = 32.dp,
-            contentPadding = 3.dp,
-            itemBorder = { mark -> if (mark.selected) RoundColors.wound(mark.tone) else Color.Transparent },
-        ) { mark ->
-            Text(
-                text = mark.label,
-                color = if (mark.selected) RoundColors.wound(mark.tone) else AppPalette.TextSecondary,
-                fontSize = AppFontSize.Caption,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                textAlign = TextAlign.Center,
-            )
-        }
-    }
 }
 
 @Composable
@@ -235,9 +197,7 @@ private fun SavesBlock(
         Text(
             stringResource(Res.string.combat_panel_saves_title),
             color = AppPalette.MaroonBright,
-            fontSize = AppFontSize.Tiny,
-            fontWeight = FontWeight.SemiBold,
-            letterSpacing = 1.4.sp,
+            style = AppText.fieldOverlineStrong,
         )
         SaveRow(stringResource(Res.string.combat_panel_saves_success), saves.successes, RoundColors.Success) {
             send(CombatRoundEvent.SaveToggled(SaveKind.SUCCESS, it))
@@ -418,25 +378,33 @@ private fun calcLook(mode: CalcMode): CalcLook =
     when (mode) {
         CalcMode.DAMAGE ->
             CalcLook(
-                stringResource(Res.string.combat_calc_mode_damage),
-                AppPalette.MaroonBright,
+                stringResource(mode.labelRes()),
+                mode.tint(),
                 AppPalette.Maroon,
                 DAMAGE_FILL_ALPHA,
                 DAMAGE_BORDER_ALPHA,
             )
         CalcMode.HEAL ->
             CalcLook(
-                stringResource(Res.string.combat_calc_mode_heal),
-                AppPalette.EmeraldBright,
+                stringResource(mode.labelRes()),
+                mode.tint(),
                 AppPalette.Emerald,
                 SOFT_FILL_ALPHA,
                 SOFT_BORDER_ALPHA,
             )
         CalcMode.TEMP ->
             CalcLook(
-                stringResource(Res.string.combat_calc_mode_temp),
-                AppPalette.Azure,
+                stringResource(mode.labelRes()),
+                mode.tint(),
                 AppPalette.Party,
+                SOFT_FILL_ALPHA,
+                SOFT_BORDER_ALPHA,
+            )
+        CalcMode.SET ->
+            CalcLook(
+                stringResource(mode.labelRes()),
+                mode.tint(),
+                AppPalette.Gold,
                 SOFT_FILL_ALPHA,
                 SOFT_BORDER_ALPHA,
             )

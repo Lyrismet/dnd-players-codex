@@ -23,6 +23,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppStepper
 import com.lyrismet.incadent.core.designsystem.component.AppSwitch
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
+import com.lyrismet.incadent.core.designsystem.component.NumberPadAction
 import com.lyrismet.incadent.core.designsystem.component.NumberPadSheet
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.appCard
@@ -31,6 +32,11 @@ import com.lyrismet.incadent.core.format.signed
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
 import com.lyrismet.incadent.feature.me.domain.HitPointMode
 import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.calc_heal_to_max_full
+import incadent.shared.generated.resources.calc_heal_to_max_label
+import incadent.shared.generated.resources.calc_heal_to_max_one
+import incadent.shared.generated.resources.calc_heal_to_max_temp_note
+import incadent.shared.generated.resources.calc_heal_to_max_unknown
 import incadent.shared.generated.resources.help_ac_body
 import incadent.shared.generated.resources.help_ac_title
 import incadent.shared.generated.resources.me_ability_hint
@@ -124,6 +130,11 @@ private fun HitPointsSheet(
             onClear = { onEvent(HitPointsEvent.Cleared) },
             onApply = { onEvent(HitPointsEvent.Applied) },
             onClose = { onEvent(HitPointsEvent.Closed) },
+            secondary = pad.toMax?.let { toMaxAction(it, onEvent) },
+            secondaryNote =
+                pad.toMax
+                    ?.takeIf { it.hasTemp && (it.missing ?: 0) > 0 }
+                    ?.let { stringResource(Res.string.calc_heal_to_max_temp_note) },
             modes = {
                 AppSegmentedTabs(
                     tabs =
@@ -147,6 +158,26 @@ private fun HitPointsSheet(
             },
         )
     }
+}
+
+@Composable
+private fun toMaxAction(
+    toMax: HitPointsToMax,
+    onEvent: (HitPointsEvent) -> Unit,
+): NumberPadAction {
+    val missing = toMax.missing
+    val caption =
+        when {
+            missing == null || toMax.max == null -> stringResource(Res.string.calc_heal_to_max_unknown)
+            missing == 0 -> stringResource(Res.string.calc_heal_to_max_full)
+            else -> stringResource(Res.string.calc_heal_to_max_one, toMax.max, missing)
+        }
+    return NumberPadAction(
+        label = stringResource(Res.string.calc_heal_to_max_label),
+        caption = caption,
+        enabled = (missing ?: 0) > 0,
+        onClick = { onEvent(HitPointsEvent.HealedToMax) },
+    )
 }
 
 @Composable

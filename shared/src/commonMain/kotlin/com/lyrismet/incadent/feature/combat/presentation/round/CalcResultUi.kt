@@ -81,7 +81,7 @@ internal fun ResultBlock(
     emit: (CalcEvent) -> Unit,
 ) {
     val damage = calc.mode == CalcMode.DAMAGE
-    val tint = accentTint(calc.mode)
+    val tint = calc.mode.tint()
     Row(
         modifier =
             Modifier
@@ -119,13 +119,6 @@ internal fun ResultBlock(
         }
     }
 }
-
-private fun accentTint(mode: CalcMode): Color =
-    when (mode) {
-        CalcMode.DAMAGE -> AppPalette.MaroonBright
-        CalcMode.HEAL -> AppPalette.EmeraldBright
-        CalcMode.TEMP -> AppPalette.Azure
-    }
 
 @Composable
 @OptIn(ExperimentalLayoutApi::class)

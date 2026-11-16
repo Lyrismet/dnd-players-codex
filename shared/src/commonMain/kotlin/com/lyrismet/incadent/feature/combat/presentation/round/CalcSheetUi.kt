@@ -28,16 +28,17 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
+import com.lyrismet.incadent.core.designsystem.component.NumberPadAction
+import com.lyrismet.incadent.core.designsystem.component.NumberPadActions
 import com.lyrismet.incadent.core.designsystem.component.NumberPadKeyGrid
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
+import com.lyrismet.incadent.core.designsystem.component.SelectablePill
 import com.lyrismet.incadent.core.designsystem.component.SheetCloseButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.calc_heal_to_max_label
 import incadent.shared.generated.resources.combat_calc_done_title
 import incadent.shared.generated.resources.combat_calc_done_value
-import incadent.shared.generated.resources.combat_calc_mode_damage
-import incadent.shared.generated.resources.combat_calc_mode_heal
-import incadent.shared.generated.resources.combat_calc_mode_temp
 import incadent.shared.generated.resources.combat_calc_more
 import incadent.shared.generated.resources.combat_calc_source_title
 import org.jetbrains.compose.resources.stringResource
@@ -45,7 +46,7 @@ import org.jetbrains.compose.resources.stringResource
 private const val DAMAGE_BORDER_ALPHA = 0.6f
 private const val BORDER_ALPHA = 0.5f
 private val DamageKeyHeight = 42.dp
-private val ValueKeyHeight = 54.dp
+private val ValueKeyHeight = 46.dp
 
 /** the colours a mode paints the sheet with: its text, the fill of the apply button and what is written on it */
 private class ModeAccent(
@@ -59,24 +60,31 @@ private fun accentOf(mode: CalcMode): ModeAccent =
     when (mode) {
         CalcMode.DAMAGE ->
             ModeAccent(
-                AppPalette.MaroonBright,
+                mode.tint(),
                 AppPalette.Maroon.copy(alpha = DAMAGE_BORDER_ALPHA),
                 AppPalette.Maroon,
                 Color.White,
             )
         CalcMode.HEAL ->
             ModeAccent(
-                AppPalette.EmeraldBright,
+                mode.tint(),
                 AppPalette.Emerald.copy(alpha = BORDER_ALPHA),
                 AppPalette.Emerald,
                 AppPalette.HealOnFill,
             )
         CalcMode.TEMP ->
             ModeAccent(
-                AppPalette.Azure,
+                mode.tint(),
                 AppPalette.Azure.copy(alpha = BORDER_ALPHA),
                 AppPalette.Azure,
                 AppPalette.TempOnFill,
+            )
+        CalcMode.SET ->
+            ModeAccent(
+                mode.tint(),
+                AppPalette.Gold.copy(alpha = BORDER_ALPHA),
+                AppPalette.Gold,
+                AppPalette.Background,
             )
     }
 
@@ -93,11 +101,12 @@ internal fun CalcSheet(
         AppSheetColumn(scroll = true, spacing = 12.dp) {
             CalcHeader(calc, accent, emit)
             if (calc.modes.size > 1) CalcModes(calc, emit)
-            CalcSourceChips(calc, emit)
+            if (calc.mode != CalcMode.SET) CalcSourceChips(calc, emit)
             if (calc.done.isNotEmpty()) DoneBlock(calc.done)
             TargetsBlock(calc, emit)
             if (damage) TypeBlock(calc, emit)
             ResultBlock(calc, emit)
+            calc.setHeal?.let { SetHealChoice(it, emit) }
             if (calc.keysShown) {
                 NumberPadKeyGrid(
                     onDigit = { emit(CalcEvent.Digit(it)) },
@@ -151,13 +160,7 @@ private fun CalcModes(
             calc.modes.map {
                 SegmentedTab(
                     it,
-                    stringResource(
-                        when (it) {
-                            CalcMode.DAMAGE -> Res.string.combat_calc_mode_damage
-                            CalcMode.HEAL -> Res.string.combat_calc_mode_heal
-                            CalcMode.TEMP -> Res.string.combat_calc_mode_temp
-                        },
-                    ),
+                    stringResource(it.labelRes()),
                 )
             },
         selected = calc.mode,
@@ -259,10 +262,23 @@ private fun ApplyRow(
             ) { emit(CalcEvent.MoreHit) }
             apply(Modifier.weight(1f))
         }
+    } else if (calc.toMax != null) {
+        NumberPadActions(toMaxAction(calc.toMax, emit), calc.toMax.note, apply)
     } else {
         apply(Modifier.fillMaxWidth())
     }
 }
+
+@Composable
+private fun toMaxAction(
+    toMax: CalcToMax,
+    emit: (CalcEvent) -> Unit,
+) = NumberPadAction(
+    label = stringResource(Res.string.calc_heal_to_max_label),
+    caption = toMax.caption,
+    enabled = toMax.enabled,
+    onClick = { emit(CalcEvent.HealedToMax) },
+)
 
 @Composable
 private fun CalcButton(
@@ -293,5 +309,27 @@ private fun CalcButton(
             fontWeight = FontWeight.Bold,
             maxLines = 1,
         )
+    }
+}
+
+@Composable
+private fun SetHealChoice(
+    choice: CalcSetHeal,
+    emit: (CalcEvent) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(choice.suggestion, color = AppPalette.TextSecondary, fontSize = AppFontSize.Caption)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SelectablePill(
+                text = choice.healLabel,
+                selected = choice.asHeal,
+                onClick = { emit(CalcEvent.SetHealChosen(true)) },
+            )
+            SelectablePill(
+                text = choice.plainLabel,
+                selected = !choice.asHeal,
+                onClick = { emit(CalcEvent.SetHealChosen(false)) },
+            )
+        }
     }
 }

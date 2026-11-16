@@ -484,7 +484,7 @@
     <string name="combat_panel_tab_actions">Действия</string>
     <string name="combat_panel_tab_conditions">Метки</string>
     <string name="combat_panel_tab_more">Ещё</string>
-    <string name="combat_panel_mark_title">КАК ВЫГЛЯДИТ · СО СЛОВ МАСТЕРА</string>
+    <string name="combat_panel_mark_title">СКОЛЬКО ЗДОРОВЬЯ ОСТАЛОСЬ</string>
     <string name="combat_panel_saves_title">СПАСБРОСКИ ОТ СМЕРТИ</string>
     <string name="combat_panel_saves_success">Успехи</string>
     <string name="combat_panel_saves_failure">Провалы</string>
@@ -495,8 +495,6 @@
     <string name="combat_panel_died_note">Погиб в этом бою</string>
     <string name="combat_panel_undo">Отменить</string>
     <string name="combat_panel_side_title">СТОРОНА</string>
-    <string name="combat_panel_full_title">Вошёл в бой целым</string>
-    <string name="combat_panel_set_hp">Хиты назвали вслух? Задать</string>
     <string name="combat_panel_note_party">Ресурсы, заклинания, заметки…</string>
     <string name="combat_panel_note_foe">Что заметили: уязвимости, сопротивления, тактика…</string>
     <string name="combat_panel_remove">Убрать из боя</string>
@@ -563,6 +561,45 @@
     <string name="combat_calc_apply_damage">Нанести</string>
     <string name="combat_calc_apply_enter">Введите число</string>
     <string name="combat_calc_apply_heal">Вылечить %1$d</string>
+    <string name="hp_scale_estimate_title">ХИТЫ</string>
+    <string name="hp_scale_estimate_approx">≈ %1$d</string>
+    <string name="hp_scale_estimate_at_least">≥ %1$d</string>
+    <string name="hp_scale_estimate_exact">= %1$d</string>
+    <string name="hp_scale_estimate_unknown">неизвестно</string>
+    <string name="hp_scale_src_scale">шкала · получил %1$d</string>
+    <string name="hp_scale_src_species">бестиарий · получил %1$d</string>
+    <string name="hp_scale_src_took">получил %1$d</string>
+    <string name="hp_scale_src_exact">вписано</string>
+    <string name="hp_exact_label">ТОЧНОЕ ЧИСЛО ХИТОВ</string>
+    <string name="hp_exact_none">не вписано</string>
+    <string name="hp_exact_value">%1$d</string>
+    <string name="hp_exact_set">Вписать</string>
+    <string name="hp_exact_change">Изменить</string>
+    <string name="hp_exact_mode">Задать</string>
+    <string name="hp_exact_apply">Записать: %1$d</string>
+    <string name="hp_exact_apply_heal">Записать %1$d · лечение +%2$d</string>
+    <string name="hp_exact_now">%1$s: сейчас %2$d</string>
+    <string name="hp_exact_now_unknown">%1$s: сейчас %2$d · максимум неизвестен</string>
+    <string name="hp_help_title">Сколько здоровья осталось</string>
+    <string name="hp_help_body">Точные хиты врага мы почти всегда не знаем: мастер описывает его только словами. Поэтому приложение не показывает число, а оценивает его.\n\nЗаписывайте полученный урон цифрами и двигайте ползунок туда, где, по-вашему, здоровье врага: «Окровавлен» это примерно половина. Чем больше урона записано, тем точнее оценка. Лечение вычитается из урона.\n\n≈ N: оценка по ползунку и полученному урону, без ползунка по прошлым боям с таким же существом.\n≥ N: урон есть, а ползунка нет или он у «Цел», хитов было не меньше.\n= N: число, которое вы вписали сами, дальше оно меняется с уроном и лечением.\n\nЕсли враг пришёл в бой раненым, его можно только вписать числом.</string>
+    <string name="hp_exact_suggest">Было %1$d, записано лечение +%2$d, ожидалось %3$d. Вписано %4$d.</string>
+    <string name="hp_exact_as_heal">Лечение не записано: %1$d</string>
+    <string name="hp_exact_as_is">Просто %1$d</string>
+    <string name="hp_exact_toast_title">Хиты: %1$s — %2$d</string>
+    <string name="hp_exact_toast_sub">ровно %1$d · максимум неизвестен</string>
+    <string name="hp_exact_toast_sub_known">%1$d → %2$d</string>
+    <string name="combat_round_exact">ровно %1$d</string>
+    <string name="combat_round_short_exact">=%1$d</string>
+    <string name="calc_heal_to_max_label">До максимума</string>
+    <string name="calc_heal_to_max_one">до %1$d · +%2$d</string>
+    <string name="calc_heal_to_max_many">целей: %1$d</string>
+    <string name="calc_heal_to_max_full">хиты полные</string>
+    <string name="calc_heal_to_max_unknown">максимум неизвестен</string>
+    <string name="calc_heal_to_max_temp_note">Временные хиты не трогаются</string>
+    <string name="calc_heal_to_max_toast_one">Хиты до максимума: %1$s</string>
+    <string name="calc_heal_to_max_toast_many">Хиты до максимума, целей: %1$d</string>
+    <string name="calc_heal_to_max_toast_sub">%1$d → %2$d</string>
+    <string name="calc_heal_to_max_toast_sub_temp">%1$d → %2$d · временные +%3$d не тронуты</string>
     <string name="combat_calc_apply_temp">Дать %1$d врем. HP</string>
     <string name="combat_calc_apply_targets">%1$s · целей: %2$d</string>
     <string name="combat_calc_preview_targets">Цели: %1$s</string>

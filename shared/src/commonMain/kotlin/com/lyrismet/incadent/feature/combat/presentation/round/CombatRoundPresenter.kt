@@ -34,6 +34,7 @@ import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import com.lyrismet.incadent.feature.combat.domain.round.NpcPromotion
 import com.lyrismet.incadent.feature.combat.domain.round.QueueStatus
 import com.lyrismet.incadent.feature.combat.domain.round.TurnPosition
+import com.lyrismet.incadent.feature.combat.domain.round.exactExpectations
 import com.lyrismet.incadent.feature.combat.domain.round.hostileCount
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
 import com.lyrismet.incadent.feature.combat.domain.round.previousTurn
@@ -320,7 +321,16 @@ class CombatRoundPresenter(
         val speciesOf = speciesOfMembers(ordered, data.npcs, data.species)
         val resistances = resistancesOf(ordered, data.npcs, speciesOf)
         val snapshot = RoundSnapshot(drafts.selected.value, ownIds)
-        val calcSnapshot = CalcSnapshot(ordered, mover?.id, resistances, speciesOf, words.typeNames, words.stateTitles)
+        val calcSnapshot =
+            CalcSnapshot(
+                ordered,
+                mover?.id,
+                resistances,
+                speciesOf,
+                words.typeNames,
+                words.stateTitles,
+                current?.exactExpectations(ordered).orEmpty(),
+            )
         val summarySnapshot = SummarySnapshot(speciesOf, words.typeNames, words.effectWords)
         val nameOf = { key: String ->
             data.npcs.firstOrNull { npcKey(it.id) == key }?.name
@@ -462,7 +472,8 @@ private fun RoundView.render(
     val chosen = ordered.firstOrNull { it.id == drafts.selected.value }
     val hostile = ordered.hostileCount()
     val learners = speciesOf.filterKeys { id -> ordered.any { it.id == id && it.side != CombatSide.PARTY } }.keys
-    val calcContext = CalcContext(ordered, mover, ownIds, resistances, learners)
+    val expected = current.exactExpectations(ordered)
+    val calcContext = CalcContext(ordered, mover, ownIds, resistances, learners, expected)
     return CombatRoundState(
         isLoading = false,
         round = current.round,

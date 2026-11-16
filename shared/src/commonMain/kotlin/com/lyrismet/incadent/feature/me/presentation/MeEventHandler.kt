@@ -115,6 +115,10 @@ internal class MeEventHandler(
             HitPointsEvent.Backspace -> ui.hitPad = pad?.copy(expression = pad.expression.backspace())
             HitPointsEvent.Cleared -> ui.hitPad = pad?.copy(expression = pad.expression.clear())
             HitPointsEvent.Closed -> ui.hitPad = null
+            HitPointsEvent.HealedToMax -> {
+                actions.healToMax(member, character.vitals)
+                ui.hitPad = null
+            }
             HitPointsEvent.Applied -> {
                 if (pad != null && pad.expression.raw.isNotEmpty()) {
                     actions.hit(member.id, pad.mode, pad.expression.value())
@@ -310,7 +314,8 @@ private fun MeEvent.writes(): Boolean =
     when (this) {
         is MeEvent.TabSelected, MeEvent.PopoverClosed, MeEvent.MenuToggled -> false
         is MeEvent.TileTapped -> tile == MeTile.ARMOR_CLASS || tile == MeTile.SPEED
-        is MeEvent.Hp -> event == HitPointsEvent.Opened || event == HitPointsEvent.Applied
+        is MeEvent.Hp ->
+            event == HitPointsEvent.Opened || event == HitPointsEvent.Applied || event == HitPointsEvent.HealedToMax
         is MeEvent.Sheet ->
             when (event) {
                 SheetEvent.SearchToggled, is SheetEvent.QueryChanged -> false

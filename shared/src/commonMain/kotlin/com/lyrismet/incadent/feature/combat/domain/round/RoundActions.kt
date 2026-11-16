@@ -44,8 +44,9 @@ class RoundActions(
         combat: Combat,
         member: Combatant,
         state: CombatState,
+        permille: Int? = null,
     ) {
-        if (member.state == state) return
+        if (member.state == state && permille == null) return
         if (state == CombatState.DOWN) {
             setDown(combat, member)
             return
@@ -64,7 +65,13 @@ class RoundActions(
             }
         repository.updateCombatant(back.copy(state = state))
         if (wasDown) combat.tell(CombatEventKind.UP, member.id)
-        combat.tell(CombatEventKind.STATE, member.id, amount = damageTaken(combat, member), state = state)
+        combat.tell(
+            CombatEventKind.STATE,
+            member.id,
+            amount = combat.damageTaken(member),
+            state = state,
+            raw = permille?.coerceAtLeast(1) ?: 0,
+        )
     }
 
     suspend fun setDown(
@@ -161,11 +168,6 @@ class RoundActions(
         combat.tell(CombatEventKind.STANCE, member.id, detail = stance.name)
     }
 
-    suspend fun setEnteredWhole(
-        member: Combatant,
-        whole: Boolean,
-    ) = repository.updateCombatant(member.copy(enteredWhole = whole))
-
     suspend fun setNote(
         member: Combatant,
         note: String,
@@ -236,21 +238,18 @@ class RoundActions(
         return id != null
     }
 
-    private fun damageTaken(
-        combat: Combat,
-        member: Combatant,
-    ): Int = combat.events.filter { it.kind == CombatEventKind.DAMAGE && it.targetId == member.id }.sumOf { it.amount }
-
+    @Suppress("LongParameterList")
     private suspend fun Combat.tell(
         kind: CombatEventKind,
         memberId: Long,
         amount: Int = 0,
         state: CombatState? = null,
         detail: String? = null,
+        raw: Int = 0,
     ) {
         repository.addEvent(
             id,
-            CombatEvent(0, round, kind, null, memberId, amount, null, HitEffect.FULL, state, detail),
+            CombatEvent(0, round, kind, null, memberId, amount, null, HitEffect.FULL, state, detail, raw = raw),
         )
     }
 

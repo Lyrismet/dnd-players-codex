@@ -12,6 +12,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
+import com.lyrismet.incadent.feature.combat.domain.round.damageTaken
 import com.lyrismet.incadent.feature.combat.domain.round.nameChoices
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_mult_immunity

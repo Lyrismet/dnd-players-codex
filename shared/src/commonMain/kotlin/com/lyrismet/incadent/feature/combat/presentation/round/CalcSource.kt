@@ -9,6 +9,7 @@ import incadent.shared.generated.resources.combat_calc_source_turn
 import incadent.shared.generated.resources.combat_calc_title_damage
 import incadent.shared.generated.resources.combat_calc_title_heal
 import incadent.shared.generated.resources.combat_calc_title_temp
+import incadent.shared.generated.resources.hp_exact_mode
 import org.jetbrains.compose.resources.stringResource
 
 internal fun titleOf(mode: CalcMode) =
@@ -16,6 +17,7 @@ internal fun titleOf(mode: CalcMode) =
         CalcMode.DAMAGE -> Res.string.combat_calc_title_damage
         CalcMode.HEAL -> Res.string.combat_calc_title_heal
         CalcMode.TEMP -> Res.string.combat_calc_title_temp
+        CalcMode.SET -> Res.string.hp_exact_mode
     }
 
 @Composable

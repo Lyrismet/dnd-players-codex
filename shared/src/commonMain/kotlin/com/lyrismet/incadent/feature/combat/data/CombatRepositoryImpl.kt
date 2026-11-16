@@ -158,6 +158,10 @@ class CombatRepositoryImpl(
             }
         }
 
+    override suspend fun removeEvent(eventId: Long) {
+        withContext(DatabaseDispatcher) { events.deleteById(eventId) }
+    }
+
     override suspend fun removeCombatant(combatantId: Long) {
         withContext(DatabaseDispatcher) { combatants.deleteById(combatantId) }
     }
@@ -281,12 +285,28 @@ class CombatRepositoryImpl(
         combatId: Long,
         members: List<Combatant>,
         events: List<CombatEvent>,
+    ): List<Long> {
+        val queries = this.events
+        return withContext(DatabaseDispatcher) {
+            // one commit for the whole change, so there is one sync and one round of announcements to the listeners
+            combatants.transactionWithResult {
+                members.forEach { writeMember(it) }
+                events.map {
+                    writeEvent(combatId, it)
+                    queries.lastInsertRowId().executeAsOne()
+                }
+            }
+        }
+    }
+
+    override suspend fun unrecord(
+        members: List<Combatant>,
+        eventIds: List<Long>,
     ) {
         withContext(DatabaseDispatcher) {
-            // one commit for the whole change, so there is one sync and one round of announcements to the listeners
             combatants.transaction {
+                eventIds.forEach { events.deleteById(it) }
                 members.forEach { writeMember(it) }
-                events.forEach { writeEvent(combatId, it) }
             }
         }
     }

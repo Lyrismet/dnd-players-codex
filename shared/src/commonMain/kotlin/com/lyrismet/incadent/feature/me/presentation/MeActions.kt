@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.feature.me.presentation
 
+import com.lyrismet.incadent.core.hp.HealedToMax
+import com.lyrismet.incadent.core.hp.healToMaxToast
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
@@ -9,7 +11,9 @@ import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.me.domain.HitPointMode
+import com.lyrismet.incadent.feature.me.domain.currentHp
 import com.lyrismet.incadent.feature.me.domain.hit
+import com.lyrismet.incadent.feature.me.domain.missingHp
 import com.lyrismet.incadent.feature.me.domain.next
 import com.lyrismet.incadent.feature.me.domain.withDeathSaveDot
 import incadent.shared.generated.resources.Res
@@ -32,6 +36,29 @@ internal class MeActions(
         mode: HitPointMode,
         amount: Int,
     ) = vitals(memberId) { it.hit(mode, amount) }
+
+    /** all the hit points back, the temporary ones stay, the undo puts the old hit points and death saves back */
+    fun healToMax(
+        member: PartyMember,
+        before: CharacterVitals,
+    ) {
+        val missing = before.missingHp?.takeIf { it > 0 } ?: return
+        hit(member.id, HitPointMode.HEAL, missing)
+        scope.launch {
+            val max = before.hpMax ?: return@launch
+            val (title, subtitle) =
+                healToMaxToast(listOf(HealedToMax(member.name, before.currentHp, max, before.tempHp)))
+            undoController.show(title, subtitle) {
+                sheets.updateVitals(member.id) {
+                    it.copy(
+                        hpCurrent = before.hpCurrent,
+                        deathSavesSuccess = before.deathSavesSuccess,
+                        deathSavesFailure = before.deathSavesFailure,
+                    )
+                }
+            }
+        }
+    }
 
     fun vitals(
         memberId: Long,

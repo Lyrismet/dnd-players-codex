@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppSectionTitleHint
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
@@ -241,7 +242,7 @@ private fun SectionHeader(
         verticalArrangement = Arrangement.Center,
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
-        MeSectionTitle(
+        AppSectionTitleHint(
             stringResource(Res.string.me_sheet_section),
             helpTitle = stringResource(Res.string.me_help_skills_title),
             helpBody = stringResource(Res.string.me_help_skills_body),

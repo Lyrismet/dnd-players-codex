@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
+import com.lyrismet.incadent.core.hp.HealedToMax
+import com.lyrismet.incadent.core.hp.healToMaxToast
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
@@ -16,6 +18,7 @@ import com.lyrismet.incadent.feature.combat.domain.round.RoundActions
 import com.lyrismet.incadent.feature.combat.domain.round.TurnPosition
 import com.lyrismet.incadent.feature.combat.domain.round.expiredBetween
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
+import com.lyrismet.incadent.feature.combat.domain.round.isTracked
 import com.lyrismet.incadent.feature.combat.domain.round.nextTurn
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeAdder
 import incadent.shared.generated.resources.Res
@@ -25,6 +28,9 @@ import incadent.shared.generated.resources.combat_round_toast_again
 import incadent.shared.generated.resources.combat_round_toast_joined
 import incadent.shared.generated.resources.combat_round_toast_removed
 import incadent.shared.generated.resources.combat_round_undo_removed
+import incadent.shared.generated.resources.hp_exact_toast_sub
+import incadent.shared.generated.resources.hp_exact_toast_sub_known
+import incadent.shared.generated.resources.hp_exact_toast_title
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -99,6 +105,37 @@ internal class RoundEditor(
             getString(Res.string.combat_round_undo_removed),
         ) { lock.withLock { fresh()?.let { actions.restore(removed, it) } } }
         onRemoved()
+    }
+
+    /** the hit points typed by hand, the toast tells what was written and takes it back */
+    suspend fun setExact(
+        combat: Combat,
+        sourceId: Long?,
+        target: Combatant,
+        amount: Int,
+        unrecordedHeal: Int,
+    ) {
+        val recorded = damage.setExact(combat, sourceId, target, amount, unrecordedHeal)
+        val title = getString(Res.string.hp_exact_toast_title, target.name, amount)
+        val subtitle =
+            if (target.isTracked()) {
+                getString(Res.string.hp_exact_toast_sub_known, target.hpCurrent ?: 0, amount)
+            } else {
+                getString(Res.string.hp_exact_toast_sub, amount)
+            }
+        undo.show(title, subtitle) { lock.withLock { damage.undo(recorded) } }
+    }
+
+    /** the hurt targets get all their hit points back, one undo takes it back for all of them */
+    suspend fun healToMax(
+        combat: Combat,
+        sourceId: Long?,
+        targets: List<Combatant>,
+    ) {
+        val healed = damage.healToMax(combat, sourceId, targets) ?: return
+        val (title, subtitle) =
+            healToMaxToast(healed.before.map { HealedToMax(it.name, it.hpCurrent ?: 0, it.hpMax ?: 0, it.tempHp) })
+        undo.show(title, subtitle) { lock.withLock { damage.undo(healed) } }
     }
 
     /** an enemy tied to an npc of the codex takes its new stance there too */

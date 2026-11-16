@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.runtime.MutableState
 import com.lyrismet.incadent.core.calc.CalcExpression
+import com.lyrismet.incadent.feature.combat.domain.forecast.stateAtPermille
 import com.lyrismet.incadent.feature.combat.domain.round.toggledSaves
 import com.lyrismet.incadent.feature.combat.presentation.prep.CombatPrepEvent
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeSearchController
@@ -92,10 +93,10 @@ internal class RoundHandler(
         when (event) {
             CombatRoundEvent.CodexOpened ->
                 editor.withMember(id) { _, m -> m.npcId?.let { form.host.openExisting(it, scope) } }
-            is CombatRoundEvent.MarkSelected ->
-                editor.withMember(
-                    id,
-                ) { c, m -> editor.actions.setMark(c, m, event.state) }
+            is CombatRoundEvent.ScalePicked ->
+                editor.withMember(id) { c, m ->
+                    editor.actions.setMark(c, m, stateAtPermille(event.permille), event.permille)
+                }
             CombatRoundEvent.StandUp -> editor.withMember(id) { c, m -> editor.actions.standUp(c, m) }
             CombatRoundEvent.CaptureToggled -> editor.withMember(id) { c, m -> editor.actions.toggleCaptured(c, m) }
             CombatRoundEvent.DiedToggled -> editor.withMember(id) { c, m -> editor.actions.toggleDead(c, m) }
@@ -123,10 +124,6 @@ internal class RoundHandler(
                     id,
                 ) { c, m -> editor.actions.toggleCondition(c, m, event.condition) }
             is CombatRoundEvent.StanceSelected -> editor.setStance(id, event.stance)
-            CombatRoundEvent.FullToggled ->
-                editor.withMember(
-                    id,
-                ) { _, m -> editor.actions.setEnteredWhole(m, !m.enteredWhole) }
             is CombatRoundEvent.NoteChanged ->
                 editor.withMember(event.memberId) { _, m -> editor.actions.setNote(m, event.note) }
             CombatRoundEvent.RemoveClicked -> editor.remove(id) { selected.value = null }

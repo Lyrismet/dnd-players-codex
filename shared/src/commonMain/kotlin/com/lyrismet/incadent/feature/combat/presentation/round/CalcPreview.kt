@@ -19,6 +19,10 @@ import incadent.shared.generated.resources.combat_calc_preview_targets
 import incadent.shared.generated.resources.combat_calc_preview_temp
 import incadent.shared.generated.resources.combat_calc_preview_temp_same
 import incadent.shared.generated.resources.combat_calc_preview_untracked
+import incadent.shared.generated.resources.hp_exact_apply
+import incadent.shared.generated.resources.hp_exact_apply_heal
+import incadent.shared.generated.resources.hp_exact_now
+import incadent.shared.generated.resources.hp_exact_now_unknown
 import org.jetbrains.compose.resources.stringResource
 
 private const val PREVIEW_LINES = 3
@@ -28,7 +32,9 @@ internal fun applyLabel(
     draft: CalcDraft,
     targetCount: Int,
     sum: Int,
+    heal: Int = 0,
 ): String {
+    if (draft.mode == CalcMode.SET) return setLabel(draft, targetCount, sum, heal)
     val base =
         when {
             targetCount == 0 -> stringResource(Res.string.combat_calc_apply_pick)
@@ -40,6 +46,20 @@ internal fun applyLabel(
     val counted = targetCount > 1 && sum > 0 && draft.mode != CalcMode.DAMAGE
     return if (counted) stringResource(Res.string.combat_calc_apply_targets, base, targetCount) else base
 }
+
+@Composable
+private fun setLabel(
+    draft: CalcDraft,
+    targetCount: Int,
+    sum: Int,
+    heal: Int,
+): String =
+    when {
+        targetCount != 1 -> stringResource(Res.string.combat_calc_apply_pick)
+        draft.expr.raw.isEmpty() -> stringResource(Res.string.combat_calc_apply_enter)
+        heal > 0 -> stringResource(Res.string.hp_exact_apply_heal, sum, heal)
+        else -> stringResource(Res.string.hp_exact_apply, sum)
+    }
 
 @Composable
 internal fun previewLines(
@@ -66,6 +86,23 @@ internal fun previewLines(
 
 @Composable
 internal fun previewLine(
+    mode: CalcMode,
+    member: Combatant,
+    sum: Int,
+): String =
+    if (mode == CalcMode.SET) {
+        val tracked = member.isTracked()
+        stringResource(
+            if (tracked) Res.string.hp_exact_now else Res.string.hp_exact_now_unknown,
+            member.name,
+            if (tracked) sum.coerceAtMost(checkNotNull(member.hpMax)) else sum,
+        )
+    } else {
+        countedPreview(mode, member, sum)
+    }
+
+@Composable
+private fun countedPreview(
     mode: CalcMode,
     member: Combatant,
     sum: Int,

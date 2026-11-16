@@ -37,6 +37,9 @@ interface CombatRepository {
         event: CombatEvent,
     ): Long
 
+    /** takes back one event, what an undo of the change that told it does */
+    suspend fun removeEvent(eventId: Long)
+
     suspend fun removeCombatant(combatantId: Long)
 
     suspend fun setTempHp(
@@ -92,14 +95,23 @@ interface CombatRepository {
     /** writes every field a fight can change on [combatant], the sides and the sources stay as they were */
     suspend fun updateCombatant(combatant: Combatant)
 
-    /** one blow or heal in one write: the changed participants and the events told of it, announced once */
+    /** one blow or heal in one write: the changed participants and the events told of it, the ids of the events */
     suspend fun record(
         combatId: Long,
         members: List<Combatant>,
         events: List<CombatEvent>,
-    ) {
+    ): List<Long> {
         members.forEach { updateCombatant(it) }
-        events.forEach { addEvent(combatId, it) }
+        return events.map { addEvent(combatId, it) }
+    }
+
+    /** takes back what [record] wrote: the events go and the participants are put back as they were */
+    suspend fun unrecord(
+        members: List<Combatant>,
+        eventIds: List<Long>,
+    ) {
+        eventIds.forEach { removeEvent(it) }
+        members.forEach { updateCombatant(it) }
     }
 
     suspend fun setTurnOrder(

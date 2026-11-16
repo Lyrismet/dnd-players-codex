@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppListRow
+import com.lyrismet.incadent.core.designsystem.component.AppSectionTitleHint
 import com.lyrismet.incadent.core.designsystem.component.AppStepper
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.formAreaInputStyle
@@ -64,11 +65,11 @@ internal fun MeItemsTab(
         }
         if (things.rows.isNotEmpty()) {
             item {
-                MeSectionTitle(stringResource(Res.string.me_items_title_format, things.rows.size))
+                AppSectionTitleHint(stringResource(Res.string.me_items_title_format, things.rows.size))
             }
         }
         item { ItemLines(things.rows, character.readOnly, onEvent) }
-        item { MeSectionTitle(stringResource(Res.string.me_notes_title)) }
+        item { AppSectionTitleHint(stringResource(Res.string.me_notes_title)) }
         item { NotesField(things, character.readOnly, onEvent) }
     }
     things.sheet?.let { sheet ->

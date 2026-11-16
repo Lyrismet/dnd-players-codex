@@ -9,7 +9,6 @@ import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormEvent
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormState
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
-import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import com.lyrismet.incadent.feature.combat.domain.round.RoleParts
@@ -140,8 +139,8 @@ data class RowHp(
 data class RowWound(
     val label: String,
     val tone: WoundTone,
-    // how many of the five bars are filled
-    val pips: Int,
+    // how much of the five bars is filled, 0 to 1 along the same scale as the panel's slider
+    val fill: Float,
     val successes: Int?,
     val failures: Int?,
 )
@@ -168,7 +167,7 @@ data class RoundPanel(
     val side: RowSide,
     val hp: PanelHp?,
     val wound: PanelWound?,
-    val marks: List<MarkOption>?,
+    val scale: PanelScale?,
     val saves: SavesState?,
     val down: DownState?,
     val died: Boolean,
@@ -196,11 +195,20 @@ data class PanelWound(
     val source: String,
 )
 
-data class MarkOption(
-    val state: CombatState,
+/** the scale of how many hit points a guessed participant has left, [thumb] is its place in permille */
+data class PanelScale(
+    val thumb: Int?,
+    val words: List<ScaleWord>,
+    val estimate: String,
+    val source: String,
+    // what was typed by hand, none while nothing was
+    val exact: String?,
+)
+
+data class ScaleWord(
     val label: String,
-    val tone: WoundTone,
-    val selected: Boolean,
+    val permille: Int,
+    val near: Boolean,
 )
 
 data class SavesState(
@@ -229,9 +237,6 @@ data class ConditionItem(
 
 data class PanelMore(
     val stances: List<StanceOption>?,
-    val fullShown: Boolean,
-    val full: Boolean,
-    val canSetHp: Boolean,
     val note: String,
     val notePlaceholder: String,
     // set for a participant that can still be given a name of the codex
@@ -354,8 +359,8 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
         val ally: Boolean,
     ) : CombatRoundEvent
 
-    data class MarkSelected(
-        val state: CombatState,
+    data class ScalePicked(
+        val permille: Int,
     ) : CombatRoundEvent
 
     data object StandUp : CombatRoundEvent
@@ -376,8 +381,6 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
     data class StanceSelected(
         val stance: CombatStance,
     ) : CombatRoundEvent
-
-    data object FullToggled : CombatRoundEvent
 
     // names its participant, a save that waits for the typing to pause may arrive after another one is chosen
     data class NoteChanged(

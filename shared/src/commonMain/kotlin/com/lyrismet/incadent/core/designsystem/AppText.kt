@@ -46,6 +46,11 @@ object AppText {
         @Composable @ReadOnlyComposable
         get() = MaterialTheme.typography.labelSmall.copy(fontSize = AppFontSize.Tiny, letterSpacing = 0.14.em)
 
+    /** [fieldOverline] in semibold, the caption of a block that carries its own colour - 10 / 600 / 0.14em */
+    val fieldOverlineStrong: TextStyle
+        @Composable @ReadOnlyComposable
+        get() = fieldOverline.copy(fontWeight = FontWeight.SemiBold)
+
     /** the name in a row or a card, with the line under it set by [rowSubtitle] - 14.5/600 on a 20 line */
     val rowTitle: TextStyle
         @Composable @ReadOnlyComposable

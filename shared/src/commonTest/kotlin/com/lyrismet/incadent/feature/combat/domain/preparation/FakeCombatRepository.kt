@@ -56,6 +56,10 @@ internal class FakeCombatRepository : CombatRepository {
         return id
     }
 
+    override suspend fun removeEvent(eventId: Long) {
+        combats.value = combats.value.map { c -> c.copy(events = c.events.filter { it.id != eventId }) }
+    }
+
     override suspend fun removeCombatant(combatantId: Long) {
         // the blows it took go with it and the ones it dealt lose their source, like the foreign keys of the table
         combats.value =

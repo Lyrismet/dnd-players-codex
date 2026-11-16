@@ -21,6 +21,7 @@ import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppCells
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
+import com.lyrismet.incadent.core.designsystem.component.AppSectionTitleHint
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.CellSize
 import com.lyrismet.incadent.core.designsystem.component.CellTone
@@ -79,7 +80,7 @@ internal fun MeResourcesTab(
 
 @Composable
 private fun ResourcesHeader() {
-    MeSectionTitle(
+    AppSectionTitleHint(
         stringResource(Res.string.me_resources_title),
         helpTitle = stringResource(Res.string.me_help_resources_title),
         helpBody = stringResource(Res.string.me_help_resources_body),

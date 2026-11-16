@@ -13,6 +13,7 @@ import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import com.lyrismet.incadent.feature.combat.domain.round.NpcPromotion
 import com.lyrismet.incadent.feature.combat.domain.round.PromotionTrace
+import com.lyrismet.incadent.feature.combat.domain.round.damageTaken
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_name_linked_title
 import incadent.shared.generated.resources.combat_name_made_title

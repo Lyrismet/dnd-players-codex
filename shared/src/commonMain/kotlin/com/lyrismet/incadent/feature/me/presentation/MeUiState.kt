@@ -19,6 +19,7 @@ import com.lyrismet.incadent.feature.me.domain.WalletMode
 import com.lyrismet.incadent.feature.me.domain.WalletPad
 import com.lyrismet.incadent.feature.me.domain.currentHp
 import com.lyrismet.incadent.feature.me.domain.hit
+import com.lyrismet.incadent.feature.me.domain.missingHp
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsUiState
 import kotlinx.coroutines.Job
 
@@ -101,6 +102,12 @@ internal data class HitPad(
             before = if (temp) vitals.tempHp else vitals.currentHp,
             after = if (temp) after.tempHp else after.currentHp,
             canApply = expression.raw.isNotEmpty(),
+            toMax =
+                HitPointsToMax(
+                    vitals.hpMax,
+                    vitals.missingHp,
+                    vitals.tempHp > 0,
+                ).takeIf { mode == HitPointMode.HEAL },
         )
     }
 }

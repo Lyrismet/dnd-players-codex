@@ -23,6 +23,7 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppSectionTitleHint
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
@@ -131,7 +132,7 @@ internal fun MeWalletCard(
 
 @Composable
 internal fun MeWalletTitle() {
-    MeSectionTitle(
+    AppSectionTitleHint(
         stringResource(Res.string.me_wallet_title),
         helpTitle = stringResource(Res.string.me_help_wallet_title),
         helpBody = stringResource(Res.string.me_help_wallet_body),

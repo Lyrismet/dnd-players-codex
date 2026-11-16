@@ -67,4 +67,19 @@ class HitPointsTest {
         assertEquals(1, 2.withDeathSaveDot(1))
         assertEquals(0, 1.withDeathSaveDot(0))
     }
+
+    @Test
+    fun `missing hit points are what heals to the maximum and leave the temporary ones`() {
+        assertEquals(6, vitals.missingHp)
+        val after = vitals.hit(HitPointMode.HEAL, checkNotNull(vitals.missingHp))
+        assertEquals(28, after.hpCurrent)
+        assertEquals(3, after.tempHp)
+    }
+
+    @Test
+    fun `missing hit points are none without a maximum and zero when full`() {
+        assertEquals(null, CharacterVitals(hpMax = null, hpCurrent = null).missingHp)
+        assertEquals(0, CharacterVitals(hpMax = 28, hpCurrent = 28).missingHp)
+        assertEquals(28, CharacterVitals(hpMax = 28, hpCurrent = 0).missingHp)
+    }
 }

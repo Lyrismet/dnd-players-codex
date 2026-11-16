@@ -116,6 +116,13 @@ data class MeSheetState(
 /** the free texts of the sheet and the things tab that are typed in place */
 enum class MeText { LANGUAGES, FEATURES, PERSONALITY, NOTES }
 
+/** what "to maximum" would do: [missing] is none while the [max] is not set */
+data class HitPointsToMax(
+    val max: Int?,
+    val missing: Int?,
+    val hasTemp: Boolean,
+)
+
 sealed interface MeOverlay {
     /** the hit point keypad, [result] is what the keys typed, [before] and [after] the hit points now and then */
     data class HitPoints(
@@ -124,6 +131,7 @@ sealed interface MeOverlay {
         val before: Int,
         val after: Int,
         val canApply: Boolean,
+        val toMax: HitPointsToMax?,
     ) : MeOverlay
 
     /** [sheet] is the working copy the edit changes, every number shown comes from it through the rules */
@@ -335,6 +343,8 @@ sealed interface HitPointsEvent {
     data object Cleared : HitPointsEvent
 
     data object Applied : HitPointsEvent
+
+    data object HealedToMax : HitPointsEvent
 
     data object Closed : HitPointsEvent
 }

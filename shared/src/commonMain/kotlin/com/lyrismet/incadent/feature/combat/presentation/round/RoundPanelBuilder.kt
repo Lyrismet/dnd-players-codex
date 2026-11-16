@@ -11,13 +11,15 @@ import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
-import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.ConditionGroup
 import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
+import com.lyrismet.incadent.feature.combat.domain.round.damageTaken
+import com.lyrismet.incadent.feature.combat.domain.round.forecast
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isDying
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
+import com.lyrismet.incadent.feature.combat.domain.round.markAt
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_panel_hp_sub
 import incadent.shared.generated.resources.combat_panel_hp_sub_temp
@@ -59,7 +61,7 @@ internal fun roundPanel(
         side = member.rowSide(),
         hp = if (tracked) panelHp(member) else null,
         wound = if (tracked) null else panelWound(combat, member, seen),
-        marks = if (!tracked && !member.dead) markOptions(member) else null,
+        scale = if (!tracked && !member.dead) panelScale(combat, member, seen) else null,
         saves = if (dying) SavesState(member.deathSuccesses, member.deathFailures) else null,
         down =
             if (down && !member.dead) {
@@ -77,8 +79,8 @@ internal fun roundPanel(
         features = if (party) null else featuresBlock(member, kin.npc, kin.vulnerabilities),
         tags = panelTags(member, combat.round),
         customs = panelCustoms(member, customs),
-        more = panelMore(member, tracked, party, kin),
-        calcModes = if (tracked) CalcMode.entries.toList() else listOf(CalcMode.DAMAGE, CalcMode.HEAL),
+        more = panelMore(member, party, kin),
+        calcModes = calcModesFor(listOf(member)) - CalcMode.SET,
         sourceNote = stringResource(Res.string.combat_panel_source_note, moverName),
     )
 }
@@ -119,6 +121,7 @@ private fun panelWound(
     val mark = combat.markAt(member)
     val label =
         if (mark != null &&
+            mark > 0 &&
             !member.isDown()
         ) {
             stringResource(Res.string.combat_wound_since, word.first, mark)
@@ -144,13 +147,6 @@ private fun panelWound(
 }
 
 @Composable
-private fun markOptions(member: Combatant): List<MarkOption> =
-    WoundScale.reversed().map { state ->
-        val selected = member.state == state || (state == CombatState.DOWN && member.isDown())
-        MarkOption(state, stringResource(state.shortLabel()), state.tone(), selected)
-    }
-
-@Composable
 private fun conditionGroups(member: Combatant): List<ConditionGroupItem> =
     ConditionGroup.entries.map { group ->
         ConditionGroupItem(
@@ -166,16 +162,12 @@ private fun conditionGroups(member: Combatant): List<ConditionGroupItem> =
 @Composable
 private fun panelMore(
     member: Combatant,
-    tracked: Boolean,
     party: Boolean,
     kin: PanelKin,
 ): PanelMore {
     val enemy = member.side == CombatSide.ENEMY
     return PanelMore(
         stances = if (enemy) CombatStance.entries.map { StanceOption(it, it.label(), it == member.stance) } else null,
-        fullShown = !tracked && !party,
-        full = member.enteredWhole,
-        canSetHp = !tracked && !member.dead,
         note = member.note,
         notePlaceholder =
             stringResource(
