@@ -15,13 +15,13 @@ val HitScaleWords: List<Pair<CombatState, Int>> =
         CombatState.WHOLE to FULL.toInt(),
     )
 
-/** the word nearest to a place on the scale */
-fun stateAtPermille(permille: Int): CombatState = HitScaleWords.minBy { abs(it.second - permille) }.first
+/** the word nearest to a place on the scale, a tie goes to the healthier one */
+fun stateAtPermille(permille: Int): CombatState = HitScaleWords.asReversed().minBy { abs(it.second - permille) }.first
 
 /** where a word sits on the scale, none for a state that is not on it */
 fun permilleOf(state: CombatState): Int? = HitScaleWords.firstOrNull { it.first == state }?.second
 
-/** the place a typed number takes on the scale: what is left of all the hit points that were there */
+/** the place a typed number takes on the scale, what is left of all the hit points that were there */
 fun permilleOfExact(
     remaining: Int,
     netDamage: Int,

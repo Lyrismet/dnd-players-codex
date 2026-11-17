@@ -116,14 +116,15 @@ internal class RoundEditor(
         unrecordedHeal: Int,
     ) {
         val recorded = damage.setExact(combat, sourceId, target, amount, unrecordedHeal)
-        val title = getString(Res.string.hp_exact_toast_title, target.name, amount)
+        val written = target.hpMax?.let { amount.coerceIn(0, it) } ?: amount
+        val title = getString(Res.string.hp_exact_toast_title, target.name, written)
         val subtitle =
             if (target.isTracked()) {
-                getString(Res.string.hp_exact_toast_sub_known, target.hpCurrent ?: 0, amount)
+                getString(Res.string.hp_exact_toast_sub_known, target.hpCurrent ?: target.hpMax ?: 0, written)
             } else {
                 getString(Res.string.hp_exact_toast_sub, amount)
             }
-        undo.show(title, subtitle) { lock.withLock { damage.undo(recorded) } }
+        undo.show(title, subtitle) { lock.withLock { fresh()?.let { damage.undo(recorded, it.combatants) } } }
     }
 
     /** the hurt targets get all their hit points back, one undo takes it back for all of them */
@@ -134,8 +135,10 @@ internal class RoundEditor(
     ) {
         val healed = damage.healToMax(combat, sourceId, targets) ?: return
         val (title, subtitle) =
-            healToMaxToast(healed.before.map { HealedToMax(it.name, it.hpCurrent ?: 0, it.hpMax ?: 0, it.tempHp) })
-        undo.show(title, subtitle) { lock.withLock { damage.undo(healed) } }
+            healToMaxToast(
+                healed.before.map { HealedToMax(it.name, it.hpCurrent ?: it.hpMax ?: 0, it.hpMax ?: 0, it.tempHp) },
+            )
+        undo.show(title, subtitle) { lock.withLock { fresh()?.let { damage.undo(healed, it.combatants) } } }
     }
 
     /** an enemy tied to an npc of the codex takes its new stance there too */

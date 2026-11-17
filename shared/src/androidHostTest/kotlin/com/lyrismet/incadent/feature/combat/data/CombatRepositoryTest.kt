@@ -91,6 +91,11 @@ class CombatRepositoryTest {
             assertEquals(CombatOutcome.RETREAT, combat.outcome)
             assertEquals(CombatPhase.FINISHED, combat.phase)
             assertEquals(1, combat.turn)
+
+            repository.setOutcome(combatId, CombatOutcome.VICTORY)
+            val corrected = assertNotNull(repository.observe(combatId).first())
+            assertEquals(CombatOutcome.VICTORY, corrected.outcome)
+            assertEquals(combat.finishedAt, corrected.finishedAt)
             val member = combat.combatants.single()
             assertEquals(CombatState.BLOODIED, member.state)
             assertEquals(setOf(CombatCondition.PRONE), member.conditions)

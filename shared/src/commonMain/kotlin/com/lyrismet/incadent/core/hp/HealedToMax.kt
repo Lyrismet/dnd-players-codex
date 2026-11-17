@@ -15,7 +15,7 @@ class HealedToMax(
     val temp: Int,
 )
 
-/** the title and the subtitle of the undo toast: one name with its numbers or the count and the names */
+/** the title and the subtitle of the undo toast, one name with its numbers or the count and the names */
 suspend fun healToMaxToast(healed: List<HealedToMax>): Pair<String, String> {
     val first = healed.first()
     if (healed.size > 1) {

@@ -116,7 +116,7 @@ data class MeSheetState(
 /** the free texts of the sheet and the things tab that are typed in place */
 enum class MeText { LANGUAGES, FEATURES, PERSONALITY, NOTES }
 
-/** what "to maximum" would do: [missing] is none while the [max] is not set */
+/** what "to maximum" would do, [missing] is none while the [max] is not set */
 data class HitPointsToMax(
     val max: Int?,
     val missing: Int?,

@@ -201,7 +201,7 @@ private fun OutcomeRow(state: CombatResultsState) {
         AppSegmentedTabs(
             tabs = tabs,
             selected = state.outcome,
-            onSelected = { if (!state.readOnly) send(CombatResultsEvent.OutcomeSelected(it)) },
+            onSelected = { send(CombatResultsEvent.OutcomeSelected(it)) },
             modifier = Modifier.fillMaxWidth(),
             containerBackground = AppPalette.Background,
             itemHeight = 32.dp,

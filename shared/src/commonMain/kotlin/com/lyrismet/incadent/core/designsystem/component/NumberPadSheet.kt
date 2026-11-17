@@ -81,7 +81,7 @@ fun NumberPadSheet(
     }
 }
 
-/** the extra button of a pad: its [label] and what it will do as a [caption] */
+/** the extra button of a pad, its [label] and what it will do as a [caption] */
 data class NumberPadAction(
     val label: String,
     val caption: String,
@@ -89,7 +89,7 @@ data class NumberPadAction(
     val onClick: () -> Unit,
 )
 
-/** the outlined button of a [NumberPadAction]: its label over what it will do */
+/** the outlined button of a [NumberPadAction], its label over what it will do */
 @Composable
 fun NumberPadSecondaryButton(
     action: NumberPadAction,
@@ -206,10 +206,7 @@ private data class NumberPadKey(
     val emphasized: Boolean = false,
 )
 
-/**
- * the four-column grid of digits "7 8 9 ⌫ / 4 5 6 + / 1 2 3 / C 0 00", the "+" starting the next term of a sum is there
- * only when [onPlus] is given, which is the layout of the damage calculator
- */
+/** the four-column grid of digits, with the "+" of the damage calculator only when [onPlus] is given */
 @Composable
 fun NumberPadKeyGrid(
     onDigit: (Int) -> Unit,

@@ -8,6 +8,7 @@ import com.lyrismet.incadent.feature.combat.domain.forecast.forecastHits
 import com.lyrismet.incadent.feature.combat.domain.forecast.ledgerOf
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
+import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 
@@ -41,7 +42,7 @@ private fun Combat.exactExpectation(member: Combatant): ExactExpectation? {
     }
 }
 
-/** what is left of an enemy whose hit points are only guessed: what was typed, the scale, then earlier fights */
+/** what is left of an enemy whose hit points are only guessed, what was typed, the scale, then earlier fights */
 fun Combat.forecast(
     member: Combatant,
     seen: List<SpeciesHitObservation> = emptyList(),
@@ -52,7 +53,7 @@ private fun forecastOf(
     ledger: HitLedger,
     seen: List<SpeciesHitObservation> = emptyList(),
 ): HitForecast =
-    if (member.isTracked() || member.isDown()) {
+    if (member.side == CombatSide.PARTY || member.isTracked() || member.isDown()) {
         HitForecast.Unknown
     } else {
         forecastHits(HitForecastInput(ledger.damage, ledger.marks, seen, ledger.healed, ledger.exact))

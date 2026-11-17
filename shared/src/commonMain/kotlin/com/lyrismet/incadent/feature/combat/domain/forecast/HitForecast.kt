@@ -3,10 +3,7 @@ package com.lyrismet.incadent.feature.combat.domain.forecast
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import kotlin.math.roundToInt
 
-/**
- * a state the player marked on the master's words, with the damage and healing the participant had at that moment;
- * [permille] is where the scale was dragged (none for a word picked without it, 1000 is "whole")
- */
+/** a state marked on the master's words, with the damage and healing at that moment and the place on the scale */
 data class StateMark(
     val state: CombatState,
     val damageAtMark: Int,
@@ -35,7 +32,7 @@ data class HitForecastInput(
     val exact: ExactMark? = null,
 )
 
-/** where an estimate comes from: the scale the player moved or what earlier fights taught about the species */
+/** where an estimate comes from, the scale the player moved or what earlier fights taught about the species */
 enum class ForecastSource { SCALE, SPECIES }
 
 sealed interface HitForecast {
@@ -109,7 +106,9 @@ private fun exactRemaining(input: HitForecastInput): Int? {
 private fun markEstimate(marks: List<StateMark>): Int? {
     val mark =
         marks.lastOrNull {
-            (it.permille != null || it.state in MARK_MAX_PER_DAMAGE) && netDamage(it.damageAtMark, it.healedAtMark) > 0
+            (it.permille != null || it.state in MARK_MAX_PER_DAMAGE) &&
+                netDamage(it.damageAtMark, it.healedAtMark) > 0 &&
+                maxPerDamage(it) != null
         }
     val factor = mark?.let(::maxPerDamage)
     return if (mark != null && factor != null) {

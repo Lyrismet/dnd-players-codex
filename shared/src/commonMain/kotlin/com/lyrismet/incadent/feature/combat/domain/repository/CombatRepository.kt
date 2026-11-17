@@ -95,7 +95,7 @@ interface CombatRepository {
     /** writes every field a fight can change on [combatant], the sides and the sources stay as they were */
     suspend fun updateCombatant(combatant: Combatant)
 
-    /** one blow or heal in one write: the changed participants and the events told of it, the ids of the events */
+    /** one blow or heal in one write, the changed participants and the events told of it, the ids of the events */
     suspend fun record(
         combatId: Long,
         members: List<Combatant>,
@@ -105,7 +105,7 @@ interface CombatRepository {
         return events.map { addEvent(combatId, it) }
     }
 
-    /** takes back what [record] wrote: the events go and the participants are put back as they were */
+    /** takes back what [record] wrote, the events go and the participants are put back as they were */
     suspend fun unrecord(
         members: List<Combatant>,
         eventIds: List<Long>,
@@ -177,6 +177,12 @@ interface CombatRepository {
         combatId: Long,
         outcome: CombatOutcome,
         finishedAt: LocalDateTime,
+    )
+
+    /** corrects the result of a finished fight, the finish time stays */
+    suspend fun setOutcome(
+        combatId: Long,
+        outcome: CombatOutcome,
     )
 
     suspend fun delete(combatId: Long)

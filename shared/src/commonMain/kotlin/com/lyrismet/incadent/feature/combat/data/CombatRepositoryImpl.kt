@@ -432,6 +432,13 @@ class CombatRepositoryImpl(
         withContext(DatabaseDispatcher) { combats.updateOutcome(outcome, finishedAt, combatId) }
     }
 
+    override suspend fun setOutcome(
+        combatId: Long,
+        outcome: CombatOutcome,
+    ) {
+        withContext(DatabaseDispatcher) { combats.changeOutcome(outcome, combatId) }
+    }
+
     override suspend fun delete(combatId: Long) {
         withContext(DatabaseDispatcher) { combats.deleteById(combatId, current.requireId()) }
     }

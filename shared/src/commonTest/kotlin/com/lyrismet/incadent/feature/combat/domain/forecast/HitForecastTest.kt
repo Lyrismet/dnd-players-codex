@@ -144,4 +144,20 @@ class HitForecastTest {
         assertEquals(0, permilleOfExact(remaining = 0, netDamage = 0))
         assertEquals(500, permilleOfExact(remaining = 40, netDamage = 40))
     }
+
+    @Test
+    fun `a tie on the scale goes to the healthier word`() {
+        assertEquals(CombatState.BARELY_STANDING, stateAtPermille(125))
+        assertEquals(CombatState.BLOODIED, stateAtPermille(375))
+    }
+
+    @Test
+    fun `a mark at the whole end does not hide an earlier one`() {
+        val marks =
+            listOf(
+                StateMark(CombatState.BLOODIED, 22, permille = 500),
+                StateMark(CombatState.WHOLE, 22, permille = 1000),
+            )
+        assertEquals(HitForecast.Estimate(max = 44, remaining = 22), forecastHits(HitForecastInput(22, marks = marks)))
+    }
 }

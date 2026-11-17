@@ -32,7 +32,7 @@ internal data class CalcDraft(
     val hit: Int = 1,
     val done: List<DoneHit> = emptyList(),
     val collapsed: Boolean = false,
-    // in the "set" mode: a number above what the told healing gives is taken as healing nobody told
+    // in the "set" mode, a number above what the told healing gives is taken as healing nobody told
     val asHeal: Boolean = true,
 )
 
@@ -64,7 +64,7 @@ data class CalcState(
     val setHeal: CalcSetHeal?,
 )
 
-/** the choice after a typed number that is above what the healing told gives: the missing part as a heal, or not */
+/** the choice after a typed number that is above what the healing told gives, the missing part as a heal, or not */
 data class CalcSetHeal(
     val suggestion: String,
     val asHeal: Boolean,
@@ -72,7 +72,7 @@ data class CalcSetHeal(
     val plainLabel: String,
 )
 
-/** the "to maximum" button of the healing mode: what it will do or why it cannot, and a reminder */
+/** the "to maximum" button of the healing mode, what it will do or why it cannot, and a reminder */
 data class CalcToMax(
     val caption: String,
     val enabled: Boolean,

@@ -329,6 +329,11 @@ internal class FakeCombatRepository : CombatRepository {
         finishedAt: LocalDateTime,
     ) = update(combatId) { it.copy(phase = CombatPhase.FINISHED, outcome = outcome, finishedAt = finishedAt) }
 
+    override suspend fun setOutcome(
+        combatId: Long,
+        outcome: CombatOutcome,
+    ) = update(combatId) { it.copy(outcome = outcome) }
+
     override suspend fun delete(combatId: Long) {
         combats.value = combats.value.filter { it.id != combatId }
     }

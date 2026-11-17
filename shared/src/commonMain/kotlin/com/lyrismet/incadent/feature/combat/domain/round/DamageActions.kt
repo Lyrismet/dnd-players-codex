@@ -89,7 +89,7 @@ class DamageActions(
         if (members.isNotEmpty()) repository.record(combat.id, members, told)
     }
 
-    /** a change that can be taken back: [before] are the participants as they were and [eventIds] the events it told */
+    /** a change that can be taken back, with the participants as they were and the events it told */
     class Recorded(
         val before: List<Combatant>,
         val eventIds: List<Long>,
@@ -108,7 +108,23 @@ class DamageActions(
         return Recorded(hurt, ids)
     }
 
-    suspend fun undo(healed: Recorded) = repository.unrecord(healed.before, healed.eventIds)
+    /** puts back only the hit points and what a stand-up changes, so later edits of the participant stay */
+    suspend fun undo(
+        healed: Recorded,
+        current: List<Combatant>,
+    ) {
+        val back =
+            healed.before.mapNotNull { old ->
+                current.firstOrNull { it.id == old.id }?.copy(
+                    hpCurrent = old.hpCurrent,
+                    state = old.state,
+                    deathSuccesses = old.deathSuccesses,
+                    deathFailures = old.deathFailures,
+                    captured = old.captured,
+                )
+            }
+        repository.unrecord(back, healed.eventIds)
+    }
 
     /** the hit points typed by hand, [unrecordedHeal] is the part of the change that was a heal nobody told */
     suspend fun setExact(
@@ -129,6 +145,12 @@ class DamageActions(
         }
         if (wasDown && amount > 0) member = member.standing()
         told += plain(combat, CombatEventKind.SET, target.id, sourceId, amount)
+        if (wasDown && amount > 0) told += plain(combat, CombatEventKind.UP, target.id, sourceId)
+        val fellNow = target.isTracked() && !target.isDown() && amount == 0
+        if (fellNow) {
+            member = member.copy(state = CombatState.DOWN, deathSuccesses = 0, deathFailures = 0)
+            told += plain(combat, CombatEventKind.DOWN, target.id, sourceId)
+        }
         val ids = repository.record(combat.id, listOfNotNull(member.takeIf { it != target }), told)
         return Recorded(listOf(target), ids)
     }

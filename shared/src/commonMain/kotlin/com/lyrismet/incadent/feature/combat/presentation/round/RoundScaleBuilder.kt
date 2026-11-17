@@ -29,7 +29,7 @@ import org.jetbrains.compose.resources.stringResource
 
 private const val FULL = 1000
 
-/** the scale under "how many are left": where the thumb stands, the estimate with its source and what was typed */
+/** the scale under "how many are left", where the thumb stands, the estimate with its source and what was typed */
 @Composable
 internal fun panelScale(
     combat: Combat,
@@ -53,7 +53,7 @@ internal fun panelScale(
     )
 }
 
-/** how full the bars of a row are: where the slider stands, or the place of the word when it was never moved */
+/** how full the bars of a row are, where the slider stands, or the place of the word when it was never moved */
 internal fun scaleFill(
     combat: Combat,
     member: Combatant,
@@ -73,7 +73,7 @@ private fun scaleThumb(
                 it.state != null
         }
     return when {
-        last != null && last.raw > 0 -> last.raw
+        last != null && last.raw > 0 && last.state == member.state -> last.raw
         last == null && member.state == CombatState.WHOLE -> null
         else -> permilleOf(member.state) ?: last?.state?.let { permilleOf(it) }
     }?.coerceIn(0, FULL)

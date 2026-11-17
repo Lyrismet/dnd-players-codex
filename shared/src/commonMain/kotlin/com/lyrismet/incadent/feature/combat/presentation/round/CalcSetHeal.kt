@@ -24,7 +24,7 @@ internal fun missingHeal(
     }
 }
 
-/** what the label of the apply button adds: the part of the number taken as healing, when the player chose that */
+/** what the label of the apply button adds, the part of the number taken as healing, when the player chose that */
 internal fun healPart(
     draft: CalcDraft,
     targets: List<Combatant>,

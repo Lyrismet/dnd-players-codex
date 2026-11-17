@@ -227,7 +227,7 @@ class DamageActionsTest {
             val combat = hurtFight()
             val before = repository.get(combat.id)
             val healed = checkNotNull(actions.healToMax(before, null, before.combatants.filter { it.hpMax != null }))
-            actions.undo(healed)
+            actions.undo(healed, repository.get(combat.id).combatants)
             val after = repository.get(combat.id)
             assertEquals(before.named("Аэлин").hpCurrent, after.named("Аэлин").hpCurrent)
             assertEquals(before.events.size, after.events.size)
@@ -262,7 +262,7 @@ class DamageActionsTest {
             val after = repository.get(combat.id)
             assertEquals(15, after.events.single { it.kind == CombatEventKind.HEAL }.amount)
             assertEquals(2, recorded.eventIds.size)
-            actions.undo(recorded)
+            actions.undo(recorded, repository.get(combat.id).combatants)
             assertEquals(0, repository.get(combat.id).events.size)
         }
 
@@ -272,5 +272,42 @@ class DamageActionsTest {
             val combat = fight()
             actions.setExact(combat, null, combat.named("Аэлин"), amount = 99)
             assertEquals(20, repository.get(combat.id).named("Аэлин").hpCurrent)
+        }
+
+    @Test
+    fun `undo of a heal to maximum keeps what changed after it`() =
+        runTest {
+            val combat = hurtFight()
+            val before = repository.get(combat.id)
+            val healed = checkNotNull(actions.healToMax(before, null, before.combatants.filter { it.hpMax != null }))
+            val now = repository.get(combat.id)
+            val aelin = now.named("Аэлин")
+            repository.updateCombatant(aelin.copy(note = "later"))
+            actions.undo(healed, repository.get(combat.id).combatants)
+            val after = repository.get(combat.id).named("Аэлин")
+            assertEquals(before.named("Аэлин").hpCurrent, after.hpCurrent)
+            assertEquals("later", after.note)
+        }
+
+    @Test
+    fun `typed hit points above zero tell the stand up of a downed target`() =
+        runTest {
+            val combat = fight()
+            actions.damage(combat, null, listOf(strike(combat.named("Аэлин"), DamageTerm(40))))
+            val down = repository.get(combat.id)
+            actions.setExact(down, null, down.named("Аэлин"), amount = 5)
+            val after = repository.get(combat.id)
+            assertEquals(1, after.events.count { it.kind == CombatEventKind.UP })
+            assertEquals(5, after.named("Аэлин").hpCurrent)
+        }
+
+    @Test
+    fun `typed zero puts a counted target down and tells it`() =
+        runTest {
+            val combat = fight()
+            actions.setExact(combat, null, combat.named("Аэлин"), amount = 0)
+            val after = repository.get(combat.id)
+            assertEquals(CombatState.DOWN, after.named("Аэлин").state)
+            assertEquals(1, after.events.count { it.kind == CombatEventKind.DOWN })
         }
 }
