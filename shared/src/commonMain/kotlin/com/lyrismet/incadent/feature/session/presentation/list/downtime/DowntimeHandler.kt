@@ -15,7 +15,11 @@ import incadent.shared.generated.resources.downtime_item_format
 import incadent.shared.generated.resources.downtime_reverted_subtitle
 import incadent.shared.generated.resources.downtime_reverted_title
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
 
 /** turns the presses of the downtime card, its window and its editor into writes, a closed campaign takes none */
@@ -28,6 +32,8 @@ internal class DowntimeHandler(
     // the character marked as mine, whose sheet takes the gold and the things
     private val memberId: Long?,
     private val readOnly: Boolean,
+    // one write at a time, so a double press cannot put the loot into the sheet twice
+    private val lock: Mutex,
     private val cardOf: (downtimeId: Long) -> DowntimeCard?,
 ) {
     fun onEvent(
@@ -62,10 +68,11 @@ internal class DowntimeHandler(
                     sheet.value =
                         DowntimeSheetState.Edit(it.toDraft(), memberId != null)
                 }
-            DowntimeEvent.SaveClicked -> (open as? DowntimeSheetState.Edit)?.let { scope.launch { save(it.draft) } }
-            DowntimeEvent.DeleteClicked -> card?.let { scope.launch { delete(it) } }
-            DowntimeEvent.ApplyClicked -> card?.let { scope.launch { applyStored(it.id) } }
-            DowntimeEvent.RevertClicked -> card?.let { scope.launch { revertStored(it.id) } }
+            DowntimeEvent.SaveClicked ->
+                (open as? DowntimeSheetState.Edit)?.let { scope.launch { lock.withLock { save(it.draft) } } }
+            DowntimeEvent.DeleteClicked -> card?.let { scope.launch { lock.withLock { delete(it) } } }
+            DowntimeEvent.ApplyClicked -> card?.let { scope.launch { lock.withLock { applyStored(it.id) } } }
+            DowntimeEvent.RevertClicked -> card?.let { scope.launch { lock.withLock { revertStored(it.id) } } }
             else -> Unit
         }
     }
@@ -95,7 +102,7 @@ internal class DowntimeHandler(
             getString(Res.string.downtime_applied_title, lootSummary(downtime)),
             getString(Res.string.downtime_applied_subtitle),
         ) {
-            takeOut(id)
+            lock.withLock { takeOut(id) }
         }
     }
 
@@ -106,14 +113,15 @@ internal class DowntimeHandler(
             getString(Res.string.downtime_reverted_title, lootSummary(downtime)),
             getString(Res.string.downtime_reverted_subtitle),
         ) {
-            putIn(id, member)
+            lock.withLock { putIn(id, member) }
         }
     }
 
     // the downtime as it was before the things came out
     private suspend fun takeOut(id: Long): Downtime? {
         val downtime = repository.getById(id)?.takeIf { it.isApplied } ?: return null
-        repository.upsert(ledger.revert(downtime))
+        // not cancelled halfway, the sheet and the record would then disagree
+        withContext(NonCancellable) { repository.upsert(ledger.revert(downtime)) }
         return downtime
     }
 
@@ -122,7 +130,7 @@ internal class DowntimeHandler(
         member: Long,
     ) {
         val downtime = repository.getById(id)?.takeIf { !it.isApplied } ?: return
-        repository.upsert(ledger.apply(downtime, member))
+        withContext(NonCancellable) { repository.upsert(ledger.apply(downtime, member)) }
     }
 
     // the sheet gets back what the record put in, undoing the delete puts it in again
@@ -141,9 +149,17 @@ internal class DowntimeHandler(
                 card.shortText
             }
         undoController.show(getString(Res.string.downtime_deleted_title), subtitle) {
-            val plain = downtime.copy(id = 0, appliedTo = null, items = downtime.items.map { it.copy(itemId = 0) })
-            val restored = repository.upsert(plain)
-            if (member != null) putIn(restored, member)
+            lock.withLock {
+                val plain =
+                    downtime.copy(
+                        id = 0,
+                        appliedTo = null,
+                        appliedGold = 0,
+                        items = downtime.items.map { it.copy(itemId = 0) },
+                    )
+                val restored = repository.upsert(plain)
+                if (member != null) putIn(restored, member)
+            }
         }
     }
 }

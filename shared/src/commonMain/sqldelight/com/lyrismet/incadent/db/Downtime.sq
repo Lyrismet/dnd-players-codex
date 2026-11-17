@@ -10,6 +10,7 @@ CREATE TABLE downtime (
     items TEXT NOT NULL DEFAULT '',
     applied INTEGER NOT NULL DEFAULT 0,
     member_id INTEGER NOT NULL DEFAULT 0,
+    applied_gold INTEGER NOT NULL DEFAULT 0,
     origin_id TEXT NOT NULL DEFAULT ''
 );
 
@@ -17,24 +18,27 @@ CREATE UNIQUE INDEX downtime_after_session_id ON downtime(after_session_id);
 CREATE INDEX downtime_campaign_id ON downtime(campaign_id);
 
 selectAll:
-SELECT id, after_session_id, short_text, long_text, gained_text, gold_delta, items, applied, member_id, origin_id
+SELECT id, after_session_id, short_text, long_text, gained_text, gold_delta, items, applied, member_id, applied_gold, origin_id
 FROM downtime WHERE campaign_id = ?;
 
 selectById:
-SELECT id, after_session_id, short_text, long_text, gained_text, gold_delta, items, applied, member_id, origin_id
+SELECT id, after_session_id, short_text, long_text, gained_text, gold_delta, items, applied, member_id, applied_gold, origin_id
 FROM downtime WHERE id = ?;
 
 insert:
-INSERT INTO downtime(campaign_id, after_session_id, short_text, long_text, gained_text, gold_delta, items, applied, member_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO downtime(campaign_id, after_session_id, short_text, long_text, gained_text, gold_delta, items, applied, member_id, applied_gold, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE downtime
-SET short_text = ?, long_text = ?, gained_text = ?, gold_delta = ?, items = ?, applied = ?, member_id = ?
+SET short_text = ?, long_text = ?, gained_text = ?, gold_delta = ?, items = ?, applied = ?, member_id = ?, applied_gold = ?
 WHERE id = ?;
 
 deleteById:
 DELETE FROM downtime WHERE id = ?;
+
+selectByAfterSession:
+SELECT id FROM downtime WHERE after_session_id = ?;
 
 lastInsertRowId:
 SELECT last_insert_rowid();

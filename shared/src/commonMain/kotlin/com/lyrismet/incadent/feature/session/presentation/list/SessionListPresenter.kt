@@ -390,6 +390,8 @@ class SessionListPresenter(
             val entries = sessionEntryRepository.observeForSession(id).first()
             val tags = tagRepository.observeTagsFor(id).first()
             val gaps = downtimeRepository.observeAll().first().filter { it.afterSessionId == id }
+            // the loot goes back out of the sheets with the record, undoing the delete puts it in again
+            gaps.filter { it.isApplied }.forEach { downtimeLedger.revert(it) }
             sessionNoteRepository.delete(id)
             undoController.show(undoDeletedTitle, "$numLabel · ${note.title}") {
                 // another session may have gone live meanwhile, so the restored one comes back ended
@@ -403,7 +405,18 @@ class SessionListPresenter(
                 val newId = sessionNoteRepository.upsert(restored)
                 entries.forEach { entry -> sessionEntryRepository.restore(entry.copy(sessionNoteId = newId)) }
                 tags.forEach { tag -> tagRepository.addTag(newId, tag) }
-                gaps.forEach { downtimeRepository.upsert(it.copy(id = 0, afterSessionId = newId)) }
+                gaps.forEach { gap ->
+                    val plain =
+                        gap.copy(
+                            id = 0,
+                            afterSessionId = newId,
+                            appliedTo = null,
+                            appliedGold = 0,
+                            items = gap.items.map { it.copy(itemId = 0) },
+                        )
+                    val gapId = downtimeRepository.upsert(plain)
+                    gap.appliedTo?.let { downtimeRepository.upsert(downtimeLedger.apply(plain.copy(id = gapId), it)) }
+                }
             }
         }
     }

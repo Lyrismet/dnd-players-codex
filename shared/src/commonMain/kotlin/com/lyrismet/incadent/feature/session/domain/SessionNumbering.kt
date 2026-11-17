@@ -6,11 +6,7 @@ import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 
 // the current session is the newest whatever its date says, the diary shows it on top
 private fun List<SessionNote>.oldestFirst(): List<SessionNote> =
-    sortedWith(
-        compareBy({
-            it.isLive
-        }, { it.sessionDate }),
-    )
+    sortedWith(compareBy({ it.isLive }, { it.sessionDate }))
 
 /** each session's 1-based position by chronological order (oldest = 1), independent of list sort order */
 fun List<SessionNote>.chronologicalIndex(): Map<Long, Int> =

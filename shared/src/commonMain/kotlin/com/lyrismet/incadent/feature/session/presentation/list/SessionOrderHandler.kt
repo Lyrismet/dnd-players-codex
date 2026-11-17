@@ -36,11 +36,11 @@ internal class SessionOrderHandler(
 
     // a new session just before the current one, dated between it and the one before
     private suspend fun addPast(sessions: List<SessionNote>) {
-        val live = sessions.firstOrNull { it.isLive } ?: return
+        val live = sessions.firstOrNull { it.isLive }
         val past = sessions.filter { !it.isLive }.sortedBy { it.sessionDate }
         // just before the current session when it is the later one, else a day after the last past one
-        val liveIsNewest = past.lastOrNull()?.let { it.sessionDate < live.sessionDate } ?: true
-        val others = if (liveIsNewest) past + live else past
+        val liveIsNewest = live != null && (past.lastOrNull()?.let { it.sessionDate < live.sessionDate } ?: true)
+        val others = past + listOfNotNull(live.takeIf { liveIsNewest })
         val placement = placeAmong(others, past.size)
         val id =
             repository.upsert(

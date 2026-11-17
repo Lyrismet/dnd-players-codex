@@ -12,6 +12,8 @@ data class Downtime(
     val items: List<DowntimeItem> = emptyList(),
     // the party member whose sheet took the gold and the items, null while nothing is put into a sheet
     val appliedTo: Long? = null,
+    // the gold the purse really took, less than [goldDelta] when spending or earning hit the purse's limits
+    val appliedGold: Int = 0,
     val originId: String = "",
 ) {
     val isApplied: Boolean get() = appliedTo != null

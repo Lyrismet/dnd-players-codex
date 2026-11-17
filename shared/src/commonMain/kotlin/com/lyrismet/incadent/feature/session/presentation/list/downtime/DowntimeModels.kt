@@ -134,6 +134,7 @@ internal fun DowntimeDraft.toDowntime(previous: Downtime?): Downtime {
         goldDelta = if (goldSpent) -amount else amount,
         items = items.filter { it.name.isNotBlank() }.map { DowntimeItem(it.name.trim(), it.quantity) },
         appliedTo = previous?.appliedTo,
+        appliedGold = previous?.appliedGold ?: 0,
         originId = previous?.originId.orEmpty(),
     )
 }

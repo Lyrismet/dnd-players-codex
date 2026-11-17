@@ -223,6 +223,7 @@ private fun SessionListContent(
     ) {
         if (state.editing) item(key = "edit-banner") { EditBanner() }
         state.liveSession?.let { live -> liveItems(state, live, downtimeItem) }
+        if (state.liveSession == null) pastSessionItem(state)
         item {
             ListSectionHeader(
                 text = stringResource(Res.string.session_list_archive_section),
@@ -280,12 +281,16 @@ private fun LazyListScope.liveItems(
             }
         }
     }
-    if (state.editing) {
-        item(key = "past-session") {
-            PastSessionTile(onClick = { state.eventSink(SessionListEvent.Order(SessionOrderEvent.PastSessionAdded)) })
-        }
-    }
+    pastSessionItem(state)
     downtimeItem(live.id)
+}
+
+// the tile that adds a past session, shown in edit mode above the archive
+private fun LazyListScope.pastSessionItem(state: SessionListState) {
+    if (!state.editing) return
+    item(key = "past-session") {
+        PastSessionTile(onClick = { state.eventSink(SessionListEvent.Order(SessionOrderEvent.PastSessionAdded)) })
+    }
 }
 
 private fun LazyListScope.gapItem(

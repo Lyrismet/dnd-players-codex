@@ -19,8 +19,13 @@ class DowntimeLedger(
         downtime: Downtime,
         memberId: Long,
     ): Downtime {
+        var movedGold = 0
         if (downtime.goldDelta != 0) {
-            sheets.updateSheet(memberId) { it.copy(purse = it.purse.moved(Coin.GOLD, downtime.goldDelta)) }
+            sheets.updateSheet(memberId) {
+                val purse = it.purse.moved(Coin.GOLD, downtime.goldDelta)
+                movedGold = purse[Coin.GOLD] - it.purse[Coin.GOLD]
+                it.copy(purse = purse)
+            }
         }
         val owner = ItemOwner.Of(EntityKind.PARTY, memberId)
         val placed =
@@ -28,17 +33,17 @@ class DowntimeLedger(
                 val id = items.upsert(Item(id = 0, name = gained.name, quantity = gained.quantity, owner = owner))
                 gained.copy(itemId = id)
             }
-        return downtime.copy(items = placed, appliedTo = memberId)
+        return downtime.copy(items = placed, appliedTo = memberId, appliedGold = movedGold)
     }
 
     /** [downtime] with its gold and items taken back out of the sheet, a thing already used up is left alone */
     suspend fun revert(downtime: Downtime): Downtime {
         val memberId = downtime.appliedTo ?: return downtime
-        if (downtime.goldDelta != 0) {
-            sheets.updateSheet(memberId) { it.copy(purse = it.purse.moved(Coin.GOLD, -downtime.goldDelta)) }
+        if (downtime.appliedGold != 0) {
+            sheets.updateSheet(memberId) { it.copy(purse = it.purse.moved(Coin.GOLD, -downtime.appliedGold)) }
         }
         downtime.items.forEach { gained -> takeBack(gained) }
-        return downtime.copy(items = downtime.items.map { it.copy(itemId = 0) }, appliedTo = null)
+        return downtime.copy(items = downtime.items.map { it.copy(itemId = 0) }, appliedTo = null, appliedGold = 0)
     }
 
     private suspend fun takeBack(gained: DowntimeItem) {

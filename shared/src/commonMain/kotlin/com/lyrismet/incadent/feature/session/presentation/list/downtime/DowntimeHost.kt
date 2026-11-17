@@ -13,6 +13,7 @@ import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.nextSessionIds
 import com.lyrismet.incadent.feature.session.domain.repository.DowntimeRepository
 import com.lyrismet.incadent.feature.session.domain.sessionNumberLabels
+import kotlinx.coroutines.sync.Mutex
 
 /** the downtimes of the open campaign, the window that is open over them and what handles their presses */
 internal class DowntimeHost(
@@ -48,6 +49,7 @@ internal fun rememberDowntimeHost(
             }
         }
     val latestCards by rememberUpdatedState(cards)
+    val lock = remember { Mutex() }
     val handler =
         remember(repository, ledger, undoController, memberId, readOnly) {
             DowntimeHandler(
@@ -57,13 +59,21 @@ internal fun rememberDowntimeHost(
                 undoController,
                 memberId = memberId,
                 readOnly = readOnly,
+                lock = lock,
                 cardOf = { id -> latestCards.firstOrNull { it.id == id } },
             )
         }
-    // an open window follows its downtime, and goes when the downtime is gone
+    // an open window follows its downtime and the rights of now, and goes when the downtime is gone
     val shown =
-        (sheet.value as? DowntimeSheetState.Detail)?.let { open ->
-            cards.firstOrNull { it.id == open.card.id }?.let { open.copy(card = it) } ?: DowntimeSheetState.Hidden
-        } ?: sheet.value
+        when (val open = sheet.value) {
+            is DowntimeSheetState.Detail ->
+                cards
+                    .firstOrNull { it.id == open.card.id }
+                    ?.let { open.copy(card = it, canApply = memberId != null, readOnly = readOnly) }
+                    ?: DowntimeSheetState.Hidden
+            is DowntimeSheetState.Edit ->
+                if (readOnly) DowntimeSheetState.Hidden else open.copy(canApply = memberId != null)
+            DowntimeSheetState.Hidden -> open
+        }
     return DowntimeHost(cards, shown, handler)
 }

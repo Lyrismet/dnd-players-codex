@@ -2088,7 +2088,7 @@
     <string name="session_list_edit_help_body">Numbers follow the date of the session. A session you move gets a date between the dates of its new neighbours and the numbers are counted again. The current session is always the last one and does not move.</string>
     <string name="session_list_edit_fixed">does not move</string>
     <string name="session_list_edit_new_mark">new · drag to its place</string>
-    <string name="session_list_edit_add_past">+ Past session</string>
+    <string name="session_list_edit_add_past">+ Session</string>
     <string name="session_list_edit_between_format">+ Between sessions %1$s and %2$s</string>
     <string name="session_list_edit_handle_description">Move the session</string>
 </resources>

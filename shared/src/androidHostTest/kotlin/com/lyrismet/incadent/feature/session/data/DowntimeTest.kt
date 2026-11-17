@@ -18,7 +18,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -77,12 +76,15 @@ class DowntimeTest {
         }
 
     @Test
-    fun `a gap holds one downtime`() =
+    fun `a second downtime for a gap takes the first one over`() =
         runTest {
             val after = session(1)
-            downtimes.upsert(loot(after))
+            val first = downtimes.upsert(loot(after))
 
-            assertFailsWith<Exception> { downtimes.upsert(loot(after)) }
+            val second = downtimes.upsert(loot(after).copy(shortText = "Рынок"))
+
+            assertEquals(first, second)
+            assertEquals(listOf("Рынок"), downtimes.observeAll().first().map { it.shortText })
         }
 
     @Test
@@ -174,6 +176,21 @@ class DowntimeTest {
             ledger.apply(downtimes.getById(id)!!, member)
 
             assertEquals(0, sheets.getSheet(member).purse.gold)
+        }
+
+    @Test
+    fun `taking back gives only the gold the purse really took`() =
+        runTest {
+            val member = lira()
+            sheets.updateSheet(member) { it.copy(purse = CoinPurse(gold = 20)) }
+            val id = downtimes.upsert(Downtime(0, session(1), shortText = "Пир", goldDelta = -50))
+
+            val applied = ledger.apply(downtimes.getById(id)!!, member)
+            downtimes.upsert(applied)
+            ledger.revert(downtimes.getById(id)!!)
+
+            assertEquals(-20, applied.appliedGold)
+            assertEquals(20, sheets.getSheet(member).purse.gold)
         }
 
     @Test

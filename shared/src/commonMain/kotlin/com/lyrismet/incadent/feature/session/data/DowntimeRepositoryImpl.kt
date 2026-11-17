@@ -36,25 +36,30 @@ class DowntimeRepositoryImpl(
     override suspend fun getById(id: Long): Downtime? =
         withContext(DatabaseDispatcher) { queries.selectById(id, ::toDomain).executeAsOneOrNull() }
 
+    // one row per gap, so a downtime for a gap that already has one takes that row over
     override suspend fun upsert(downtime: Downtime): Long =
         withContext(DatabaseDispatcher) {
             val items = encodeItems(downtime.items)
             val applied = if (downtime.isApplied) 1L else 0L
             val member = downtime.appliedTo ?: 0L
-            if (downtime.id != 0L && queries.selectById(downtime.id).executeAsOneOrNull() != null) {
-                queries.update(
-                    downtime.shortText,
-                    downtime.longText,
-                    downtime.gainedText,
-                    downtime.goldDelta.toLong(),
-                    items,
-                    applied,
-                    member,
-                    downtime.id,
-                )
-                downtime.id
-            } else {
-                database.transactionWithResult {
+            database.transactionWithResult {
+                val existing =
+                    downtime.id.takeIf { it != 0L && queries.selectById(it).executeAsOneOrNull() != null }
+                        ?: queries.selectByAfterSession(downtime.afterSessionId).executeAsOneOrNull()
+                if (existing != null) {
+                    queries.update(
+                        downtime.shortText,
+                        downtime.longText,
+                        downtime.gainedText,
+                        downtime.goldDelta.toLong(),
+                        items,
+                        applied,
+                        member,
+                        downtime.appliedGold.toLong(),
+                        existing,
+                    )
+                    existing
+                } else {
                     queries.insert(
                         current.requireId(),
                         downtime.afterSessionId,
@@ -65,6 +70,7 @@ class DowntimeRepositoryImpl(
                         items,
                         applied,
                         member,
+                        downtime.appliedGold.toLong(),
                         downtime.originId.orNewOriginId(),
                     )
                     queries.lastInsertRowId().executeAsOne()
@@ -87,6 +93,7 @@ class DowntimeRepositoryImpl(
         items: String,
         applied: Long,
         memberId: Long,
+        appliedGold: Long,
         originId: String,
     ) = Downtime(
         id = id,
@@ -97,6 +104,7 @@ class DowntimeRepositoryImpl(
         goldDelta = goldDelta.toInt(),
         items = decodeItems(items),
         appliedTo = if (applied != 0L) memberId else null,
+        appliedGold = appliedGold.toInt(),
         originId = originId,
     )
 }

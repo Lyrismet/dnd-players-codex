@@ -2176,7 +2176,7 @@
     <string name="session_list_edit_help_body">Номера идут по дате сессии. Когда вы переносите сессию, она получает дату между датами новых соседей, а номера пересчитываются. Текущая сессия всегда последняя и не двигается.</string>
     <string name="session_list_edit_fixed">не двигается</string>
     <string name="session_list_edit_new_mark">новая · тяните на место</string>
-    <string name="session_list_edit_add_past">+ Прошлая сессия</string>
+    <string name="session_list_edit_add_past">+ Сессия</string>
     <string name="session_list_edit_between_format">+ Между сессиями %1$s и %2$s</string>
     <string name="session_list_edit_handle_description">Перенести сессию</string>
 </resources>
