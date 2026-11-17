@@ -65,6 +65,12 @@ class SessionNoteRepositoryImpl(
         }
     }
 
+    override suspend fun setDates(dates: Map<Long, LocalDateTime>) {
+        withContext(DatabaseDispatcher) {
+            database.transaction { dates.forEach { (id, date) -> queries.updateDate(date, id) } }
+        }
+    }
+
     override suspend fun makeOnlyLive(
         id: Long,
         now: LocalDateTime,

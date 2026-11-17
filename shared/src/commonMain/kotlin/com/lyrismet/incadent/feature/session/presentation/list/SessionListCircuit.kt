@@ -5,8 +5,11 @@ import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
+import com.lyrismet.incadent.feature.session.domain.DowntimeLedger
+import com.lyrismet.incadent.feature.session.domain.repository.DowntimeRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.feature.session.domain.repository.TagRepository
@@ -39,6 +42,8 @@ class SessionListPresenterFactory(
     private val campaignRepository: CampaignRepository,
     private val importSource: ImportSource,
     private val imageCompressor: ImageCompressor,
+    private val downtimeRepository: DowntimeRepository,
+    private val sheetRepository: CharacterSheetRepository,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -59,6 +64,8 @@ class SessionListPresenterFactory(
                     campaignRepository,
                     importSource,
                     imageCompressor,
+                    downtimeRepository,
+                    DowntimeLedger(sheetRepository, codexRepositories.itemRepository),
                 )
             else -> null
         }

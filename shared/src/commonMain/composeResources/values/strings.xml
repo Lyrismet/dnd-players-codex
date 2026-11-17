@@ -2121,4 +2121,62 @@
     <string name="me_spells_range_near">Касание</string>
     <string name="me_spells_range_self">На себя</string>
     <string name="me_spells_range_own_hint">Например, 60 фт</string>
+
+    <!-- downtime between two sessions -->
+    <string name="downtime_gap_format">Между сессиями %1$s и %2$s</string>
+    <string name="downtime_gap_after_format">После сессии %1$s</string>
+    <string name="downtime_card_more">Подробно ›</string>
+    <string name="downtime_gold_format">%1$s зм</string>
+    <string name="downtime_item_format">%1$s ×%2$d</string>
+    <string name="downtime_title_new">Новый даунтайм</string>
+    <string name="downtime_title_edit">Изменить даунтайм</string>
+    <string name="downtime_field_short">Что делал · кратко</string>
+    <string name="downtime_field_long">Подробно</string>
+    <string name="downtime_field_gained">Что получил</string>
+    <string name="downtime_field_gold">Золото</string>
+    <string name="downtime_field_items">Предметы</string>
+    <string name="downtime_item_less">Меньше</string>
+    <string name="downtime_item_more">Больше</string>
+    <string name="downtime_save">Сохранить</string>
+    <string name="downtime_edit">Изменить</string>
+    <string name="downtime_delete">Удалить</string>
+    <string name="downtime_apply">Внести в лист</string>
+    <string name="downtime_revert">Отменить внесение</string>
+    <string name="downtime_applied_title">Внесено в лист: %1$s</string>
+    <string name="downtime_reverted_title">Внесение отменено: %1$s</string>
+    <string name="downtime_detail_subtitle">Не сессия: нумерация и дни не меняются</string>
+    <string name="downtime_field_did">Что делал</string>
+    <string name="downtime_loot_header">Золото и предметы</string>
+    <string name="downtime_status_no_character">нет своего персонажа</string>
+    <string name="downtime_card_empty">Пусто — нажмите, чтобы записать</string>
+    <string name="downtime_detail_empty">Пока ничего не записано.</string>
+    <string name="downtime_hint_in_list">видно в списке</string>
+    <string name="downtime_hint_optional">необязательно</string>
+    <string name="downtime_placeholder_short">Одной-двумя фразами</string>
+    <string name="downtime_placeholder_long">Как всё было: встречи, находки, разговоры</string>
+    <string name="downtime_placeholder_gained">Слухи, знакомства, награды</string>
+    <string name="downtime_gold_unit">зм</string>
+    <string name="downtime_gold_gained_description">Золото получено</string>
+    <string name="downtime_gold_spent_description">Золото потрачено</string>
+    <string name="downtime_item_name_placeholder">Название</string>
+    <string name="downtime_item_add">+ Предмет</string>
+    <string name="downtime_edit_hint">При сохранении золото уйдёт в кошелёк, предметы — в снаряжение листа «Я». Отменить можно в тосте или в самой записи.</string>
+    <string name="downtime_edit_hint_no_character">Своего персонажа нет: выберите его в «Я», чтобы вносить золото и предметы.</string>
+    <string name="downtime_title">Даунтайм</string>
+    <string name="downtime_applied_subtitle">Даунтайм</string>
+    <string name="downtime_reverted_subtitle">Запись даунтайма осталась</string>
+    <string name="downtime_deleted_applied_suffix">%1$s · внесённое убрано из листа</string>
+    <string name="downtime_deleted_title">Даунтайм удалён</string>
+
+    <!-- the edit mode of the session list -->
+    <string name="session_list_edit_button">Изменить</string>
+    <string name="session_list_edit_done">Готово</string>
+    <string name="session_list_edit_banner">Тяните за ≡, чтобы переставить</string>
+    <string name="session_list_edit_help_title">Порядок сессий</string>
+    <string name="session_list_edit_help_body">Номера идут по дате сессии. Когда вы переносите сессию, она получает дату между датами новых соседей, а номера пересчитываются. Текущая сессия всегда последняя и не двигается.</string>
+    <string name="session_list_edit_fixed">не двигается</string>
+    <string name="session_list_edit_new_mark">новая · тяните на место</string>
+    <string name="session_list_edit_add_past">+ Прошлая сессия</string>
+    <string name="session_list_edit_between_format">+ Между сессиями %1$s и %2$s</string>
+    <string name="session_list_edit_handle_description">Перенести сессию</string>
 </resources>

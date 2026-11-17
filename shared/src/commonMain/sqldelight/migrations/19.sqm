@@ -1,0 +1,17 @@
+-- what the party did between two sessions, one row per gap and kept with the earlier session
+CREATE TABLE downtime (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    after_session_id INTEGER NOT NULL REFERENCES session_note(id) ON DELETE CASCADE,
+    short_text TEXT NOT NULL DEFAULT '',
+    long_text TEXT NOT NULL DEFAULT '',
+    gained_text TEXT NOT NULL DEFAULT '',
+    gold_delta INTEGER NOT NULL DEFAULT 0,
+    items TEXT NOT NULL DEFAULT '',
+    applied INTEGER NOT NULL DEFAULT 0,
+    member_id INTEGER NOT NULL DEFAULT 0,
+    origin_id TEXT NOT NULL DEFAULT ''
+);
+
+CREATE UNIQUE INDEX downtime_after_session_id ON downtime(after_session_id);
+CREATE INDEX downtime_campaign_id ON downtime(campaign_id);

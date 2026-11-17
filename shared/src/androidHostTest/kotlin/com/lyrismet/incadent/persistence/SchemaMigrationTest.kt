@@ -477,4 +477,24 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the nineteenth schema adds an empty downtime table and keeps the sessions`() {
+        val file = File.createTempFile("schema-v19", ".db")
+        File("src/commonMain/sqldelight/databases/19.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO session_note(id, title, session_date, created_at, campaign_id) VALUES (1, 'S', '2026-01-01T00:00', 1, 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 19, AppDatabase.Schema.version)
+
+        assertEquals("0", driver.single("SELECT count(*) FROM downtime"))
+        driver.execute(null, "INSERT INTO downtime(campaign_id, after_session_id) VALUES ('c', 1)", 0)
+        assertEquals("0", driver.single("SELECT gold_delta FROM downtime"))
+        assertEquals("S", driver.single("SELECT title FROM session_note"))
+        driver.close()
+        file.delete()
+    }
 }

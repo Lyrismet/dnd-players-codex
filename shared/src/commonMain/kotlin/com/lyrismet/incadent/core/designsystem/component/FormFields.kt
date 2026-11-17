@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -70,8 +71,10 @@ fun FormTextField(
     placeholder: String? = null,
     required: Boolean = false,
     maxLength: Int = TextLimits.LINE,
+    // a grey note at the right end of the label line
+    labelHint: String? = null,
 ) {
-    FormFieldColumn(label, modifier, required) {
+    FormFieldColumn(label, modifier, required, labelHint) {
         FormInput(
             value = value,
             onChange = { onChange(it.take(maxLength)) },
@@ -123,8 +126,10 @@ fun FormTextArea(
     placeholder: String? = null,
     required: Boolean = false,
     maxLength: Int = TextLimits.NOTE,
+    // a grey note at the right end of the label line
+    labelHint: String? = null,
 ) {
-    FormFieldColumn(label, modifier, required) {
+    FormFieldColumn(label, modifier, required, labelHint) {
         FormInput(
             value = value,
             onChange = { onChange(it.take(maxLength)) },
@@ -270,12 +275,20 @@ private fun FormFieldColumn(
     label: String,
     modifier: Modifier = Modifier,
     required: Boolean = false,
+    labelHint: String? = null,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         FormFieldLabel(
             text = label,
+            modifier = Modifier.fillMaxWidth(),
             required = required,
+            trailingContent = {
+                if (labelHint != null) {
+                    Spacer(Modifier.weight(1f))
+                    Text(labelHint, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextTertiary)
+                }
+            },
         )
         content()
     }

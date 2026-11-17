@@ -45,13 +45,18 @@ import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.mention.domain.mentionEntitiesFrom
 import com.lyrismet.incadent.feature.mention.domain.mentionsIn
 import com.lyrismet.incadent.feature.mention.presentation.toChipItem
+import com.lyrismet.incadent.feature.session.domain.DowntimeLedger
 import com.lyrismet.incadent.feature.session.domain.chronologicalIndex
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
+import com.lyrismet.incadent.feature.session.domain.repository.DowntimeRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.lyrismet.incadent.feature.session.domain.repository.TagRepository
+import com.lyrismet.incadent.feature.session.domain.sessionNumberLabel
 import com.lyrismet.incadent.feature.session.domain.sessionNumberLabels
+import com.lyrismet.incadent.feature.session.presentation.list.downtime.DowntimeHandler
+import com.lyrismet.incadent.feature.session.presentation.list.downtime.rememberDowntimeHost
 import com.lyrismet.incadent.feature.session.presentation.route.SessionDetailScreen
 import com.lyrismet.incadent.feature.session.presentation.route.sessionEntryOpener
 import com.slack.circuit.runtime.Navigator
@@ -87,6 +92,8 @@ class SessionListPresenter(
     private val campaignRepository: CampaignRepository,
     private val importSource: ImportSource,
     private val imageCompressor: ImageCompressor,
+    private val downtimeRepository: DowntimeRepository,
+    private val downtimeLedger: DowntimeLedger,
 ) : Presenter<SessionListState> {
     // one collection per source the screen reads plus the rename wiring - a flat merge, not real complexity
     @Suppress("LongMethod")
@@ -121,6 +128,24 @@ class SessionListPresenter(
             rememberCampaignSheetHost(campaignRepository, importSource) { text -> toast.value = ToastMessage(text) }
         val campaignArchived = campaignHost.current?.status == CampaignStatus.ARCHIVED
         val entriesBySession = remember(allEntries) { allEntries.groupBy { it.sessionNoteId } }
+
+        val downtime =
+            rememberDowntimeHost(
+                sessions,
+                numbering,
+                memberId = parties.firstOrNull { it.isPlayerCharacter }?.id,
+                readOnly = campaignArchived,
+                repository = downtimeRepository,
+                ledger = downtimeLedger,
+                undoController = undoController,
+            )
+
+        val editing = remember { mutableStateOf(false) }
+        val newSessionId = remember { mutableStateOf<Long?>(null) }
+        val orderHandler =
+            remember(campaignArchived) {
+                SessionOrderHandler(editing, newSessionId, sessionNoteRepository, campaignArchived)
+            }
 
         val liveNote = sessions.firstOrNull { it.isLive }
         val liveEntriesFlow: Flow<List<SessionEntry>> =
@@ -187,7 +212,11 @@ class SessionListPresenter(
             rememberFullPhoto(selectedSummary, codexRepositories)
         val selectedEntity = selectedSummary?.withFullPhoto(fullPhoto)
 
-        val archiveItems = if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems
+        val archiveItems =
+            remember(allItems, liveNote?.id, newSessionId.value) {
+                (if (liveNote != null) allItems.filterNot { it.id == liveNote.id } else allItems)
+                    .map { it.copy(isNew = it.id == newSessionId.value) }
+            }
         val swipeHintState by appPreferencesRepository
             .observeSessionListSwipeHintState()
             .collectAsState(initial = SwipeHintState.PENDING)
@@ -204,6 +233,9 @@ class SessionListPresenter(
                         campaignHost.sheet != CampaignSheetState.Hidden ||
                         !isTabSelected,
             )
+
+        val positionLabels =
+            remember(sessions.size, numbering) { (1..sessions.size).map { sessionNumberLabel(it, numbering) } }
 
         return SessionListState(
             isLoading = loadedSessions == null,
@@ -228,6 +260,10 @@ class SessionListPresenter(
                     holdTipAllowed = holdHint == HoldHintState.PENDING,
                     undoAction = undoAction,
                 ),
+            downtimes = downtime.cards,
+            editing = editing.value && !campaignArchived,
+            positionLabels = positionLabels,
+            downtimeSheet = downtime.sheet,
             toast = toast.value,
             swipeHintTarget = swipeHintTarget,
         ) { event ->
@@ -242,6 +278,8 @@ class SessionListPresenter(
                 numbering,
                 campaignHost.onEvent,
                 campaignArchived,
+                downtime.handler,
+                orderHandler,
             )
         }
     }
@@ -289,33 +327,52 @@ class SessionListPresenter(
         numbering: SessionNumbering,
         onCampaignEvent: (CampaignSheetEvent) -> Unit,
         campaignArchived: Boolean,
+        downtime: DowntimeHandler,
+        order: SessionOrderHandler,
     ) {
         when (event) {
-            SessionListEvent.NewSessionClicked ->
-                if (!campaignArchived) {
-                    scope.launch {
-                        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                        val id =
-                            sessionNoteRepository.upsert(
-                                SessionNote(id = 0, title = newSessionTitle, sessionDate = now, endedAt = null),
-                            )
-                        sessionNoteRepository.makeOnlyLive(id, now)
-                        navigator.goTo(SessionDetailScreen(id))
-                    }
-                }
+            SessionListEvent.NewSessionClicked -> if (!campaignArchived) startSession(scope, newSessionTitle)
 
             is SessionListEvent.SessionClicked -> navigator.goTo(SessionDetailScreen(event.id))
             is SessionListEvent.DeleteSessionClicked ->
                 if (!campaignArchived) onDeleteSessionClicked(event.id, sessions, undoDeletedTitle, scope, numbering)
-            is SessionListEvent.EntitySheet -> {
-                if (event.event is EntitySheetEvent.EntityClicked || event.event == EntitySheetEvent.Dismissed) {
-                    quickEdit.onSheetClosed()
-                }
-                if (!campaignArchived || !event.event.writesCampaignData()) entitySheet.onEvent(scope, event.event)
-            }
+            is SessionListEvent.EntitySheet ->
+                onEntitySheet(
+                    event.event,
+                    scope,
+                    entitySheet,
+                    quickEdit,
+                    campaignArchived,
+                )
             is SessionListEvent.QuickEdit -> if (!campaignArchived) quickEdit.onEvent(scope, event.event)
+            is SessionListEvent.Downtime -> downtime.onEvent(scope, event.event)
+            is SessionListEvent.Order -> order.onEvent(scope, event.event, sessions)
             is SessionListEvent.CampaignSheet -> onCampaignEvent(event.event)
         }
+    }
+
+    @OptIn(ExperimentalTime::class)
+    private fun startSession(
+        scope: CoroutineScope,
+        title: String,
+    ) {
+        scope.launch {
+            val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+            val id = sessionNoteRepository.upsert(SessionNote(id = 0, title = title, sessionDate = now, endedAt = null))
+            sessionNoteRepository.makeOnlyLive(id, now)
+            navigator.goTo(SessionDetailScreen(id))
+        }
+    }
+
+    private fun onEntitySheet(
+        event: EntitySheetEvent,
+        scope: CoroutineScope,
+        entitySheet: EntitySheetInteractions,
+        quickEdit: QuickEditInteractions,
+        campaignArchived: Boolean,
+    ) {
+        if (event is EntitySheetEvent.EntityClicked || event == EntitySheetEvent.Dismissed) quickEdit.onSheetClosed()
+        if (!campaignArchived || !event.writesCampaignData()) entitySheet.onEvent(scope, event)
     }
 
     // deletes immediately and offers undo - restoring re-inserts the note and all its entries with fresh ids
@@ -332,6 +389,7 @@ class SessionListPresenter(
         scope.launch {
             val entries = sessionEntryRepository.observeForSession(id).first()
             val tags = tagRepository.observeTagsFor(id).first()
+            val gaps = downtimeRepository.observeAll().first().filter { it.afterSessionId == id }
             sessionNoteRepository.delete(id)
             undoController.show(undoDeletedTitle, "$numLabel · ${note.title}") {
                 // another session may have gone live meanwhile, so the restored one comes back ended
@@ -345,6 +403,7 @@ class SessionListPresenter(
                 val newId = sessionNoteRepository.upsert(restored)
                 entries.forEach { entry -> sessionEntryRepository.restore(entry.copy(sessionNoteId = newId)) }
                 tags.forEach { tag -> tagRepository.addTag(newId, tag) }
+                gaps.forEach { downtimeRepository.upsert(it.copy(id = 0, afterSessionId = newId)) }
             }
         }
     }
