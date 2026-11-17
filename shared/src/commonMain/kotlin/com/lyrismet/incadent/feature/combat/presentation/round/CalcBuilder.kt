@@ -46,7 +46,7 @@ internal fun calcState(
     val items = targets.map { calcTarget(it, draft, ctx, terms, sum, selected == it.id, damage) }
     return CalcState(
         mode = draft.mode,
-        modes = modesFor(targets),
+        modes = calcModesFor(targets),
         overline = overline(draft, ctx, round, sourceName(draft.sourceId, ctx)),
         title = stringResource(titleOf(draft.mode)),
         sources = sourceChips(draft, ctx),
@@ -66,8 +66,10 @@ internal fun calcState(
         preview = if (damage) emptyList() else previewLines(draft, targets, sum),
         keysShown = !(damage && draft.collapsed),
         canMore = damage && targets.isNotEmpty() && sum > 0,
-        applyLabel = applyLabel(draft, targets.size, sum),
-        applyEnabled = canApply(draft.mode, targets, sum),
+        applyLabel = applyLabel(draft, targets.size, sum, healPart(draft, targets, ctx, sum)),
+        applyEnabled = canApply(draft, targets, sum),
+        toMax = if (draft.mode == CalcMode.HEAL) toMaxOf(targets) else null,
+        setHeal = setHealOf(draft, targets, ctx, sum),
     )
 }
 
@@ -79,8 +81,13 @@ private fun selectedTargetId(
     if (targets.size == 1) targets.first().id else draft.selectedTarget?.takeIf { id -> targets.any { it.id == id } }
 
 /** temporary hit points need counted ones, so a guessed target takes damage and healing only */
-private fun modesFor(targets: List<Combatant>): List<CalcMode> =
-    if (targets.any { !it.isTracked() }) listOf(CalcMode.DAMAGE, CalcMode.HEAL) else CalcMode.entries.toList()
+internal fun calcModesFor(targets: List<Combatant>): List<CalcMode> {
+    val counted = if (targets.all { it.isTracked() }) COUNTED_MODES else GUESSED_MODES
+    return if (targets.size == 1) counted + CalcMode.SET else counted
+}
+
+private val GUESSED_MODES = listOf(CalcMode.DAMAGE, CalcMode.HEAL)
+private val COUNTED_MODES = GUESSED_MODES + CalcMode.TEMP
 
 private fun offTargetsOf(
     draft: CalcDraft,
@@ -93,10 +100,15 @@ private fun offTargetsOf(
         .map { OffTarget(it.id, it.name) }
 
 private fun canApply(
-    mode: CalcMode,
+    draft: CalcDraft,
     targets: List<Combatant>,
     sum: Int,
-): Boolean = targets.isNotEmpty() && sum > 0 && (mode != CalcMode.TEMP || targets.all { it.isTracked() })
+): Boolean =
+    when (draft.mode) {
+        CalcMode.SET -> targets.size == 1 && draft.expr.raw.isNotEmpty()
+        else ->
+            targets.isNotEmpty() && sum > 0 && (draft.mode != CalcMode.TEMP || targets.all { it.isTracked() })
+    }
 
 @Composable
 private fun calcTarget(

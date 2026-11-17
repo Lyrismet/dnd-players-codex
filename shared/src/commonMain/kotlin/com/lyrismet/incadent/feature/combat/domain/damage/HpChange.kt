@@ -1,5 +1,8 @@
 package com.lyrismet.incadent.feature.combat.domain.damage
 
+import com.lyrismet.incadent.core.hp.missingHitPoints
+import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+
 /** the hit points and the temporary ones after a change, [effective] is how much it really did */
 data class HpChange(
     val hp: Int,
@@ -38,3 +41,8 @@ fun takeTemp(
     val kept = maxOf(temp, amount)
     return HpChange(hp = hp, temp = kept, effective = kept - temp)
 }
+
+/** the hit points a heal to the maximum adds, none while the maximum is only a guess */
+fun Combatant.missingHp(): Int? = hpMax?.let { max -> missingHitPoints(hpCurrent ?: max, max) }
+
+fun List<Combatant>.hurt(): List<Combatant> = filter { (it.missingHp() ?: 0) > 0 }

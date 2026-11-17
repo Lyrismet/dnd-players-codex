@@ -13,6 +13,8 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.round.QueueSlot
 import com.lyrismet.incadent.feature.combat.domain.round.RoleParts
+import com.lyrismet.incadent.feature.combat.domain.round.damageTaken
+import com.lyrismet.incadent.feature.combat.domain.round.forecast
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isDying
 import com.lyrismet.incadent.feature.combat.domain.round.isOut
@@ -28,7 +30,6 @@ import incadent.shared.generated.resources.combat_row_role_none
 import incadent.shared.generated.resources.combat_wound_captured
 import org.jetbrains.compose.resources.stringResource
 
-private const val FIVE_PIPS = 5
 private const val HIGH_RATIO = 0.5f
 private const val MID_RATIO = 0.25f
 
@@ -142,7 +143,7 @@ private fun roundRow(
         side = member.rowSide(),
         lastHit = null,
         hp = if (tracked) rowHp(member) else null,
-        wound = if (tracked && !member.isDying()) null else rowWound(member, word),
+        wound = if (tracked && !member.isDying()) null else rowWound(member, word, scaleFill(combat, member, forecast)),
         caption = caption,
         chips = rowChips(member) + markRowChips(member, combat.round),
         dimmed = (down && !member.isDying()) || member.stance == CombatStance.FLED,
@@ -176,12 +177,13 @@ private fun rowHp(member: Combatant): RowHp {
 private fun rowWound(
     member: Combatant,
     word: Pair<String, WoundTone>,
+    fill: Float,
 ): RowWound {
     val dying = member.isDying()
     return RowWound(
         label = word.first,
         tone = word.second,
-        pips = if (dying) 0 else member.state.pips().coerceAtMost(FIVE_PIPS),
+        fill = if (dying) 0f else fill,
         successes = if (dying) member.deathSuccesses else null,
         failures = if (dying) member.deathFailures else null,
     )

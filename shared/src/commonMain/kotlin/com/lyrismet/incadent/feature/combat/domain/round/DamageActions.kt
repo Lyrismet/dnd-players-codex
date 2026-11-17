@@ -2,9 +2,15 @@ package com.lyrismet.incadent.feature.combat.domain.round
 
 import com.lyrismet.incadent.feature.combat.domain.damage.PlannedHit
 import com.lyrismet.incadent.feature.combat.domain.damage.effectiveDamage
+import com.lyrismet.incadent.feature.combat.domain.damage.hurt
+import com.lyrismet.incadent.feature.combat.domain.damage.missingHp
 import com.lyrismet.incadent.feature.combat.domain.damage.takeDamage
 import com.lyrismet.incadent.feature.combat.domain.damage.takeHeal
 import com.lyrismet.incadent.feature.combat.domain.damage.takeTemp
+import com.lyrismet.incadent.feature.combat.domain.forecast.ledgerOf
+import com.lyrismet.incadent.feature.combat.domain.forecast.permilleOf
+import com.lyrismet.incadent.feature.combat.domain.forecast.permilleOfExact
+import com.lyrismet.incadent.feature.combat.domain.forecast.stateAtPermille
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
@@ -59,7 +65,7 @@ class DamageActions(
             }
             if (fallen.wentDown) told += plain(combat, CombatEventKind.DOWN, target.id, sourceId)
             if (fallen.wounded) {
-                val taken = combat.damageTakenBy(target) + total
+                val taken = combat.damageTaken(target) + total
                 told +=
                     plain(combat, CombatEventKind.STATE, target.id, sourceId, taken).copy(state = CombatState.WOUNDED)
             }
@@ -76,21 +82,119 @@ class DamageActions(
         val members = mutableListOf<Combatant>()
         val told = mutableListOf<CombatEvent>()
         targets.forEach { target ->
-            val wasDown = target.isDown() && !target.dead
-            var healed = target
-            var done = amount
-            if (target.isTracked()) {
-                val max = checkNotNull(target.hpMax)
-                val change = takeHeal(target.hpCurrent ?: max, max, target.tempHp, amount)
-                healed = healed.copy(hpCurrent = change.hp)
-                done = change.effective
-            }
-            if (wasDown) healed = healed.standing()
-            members += healed
-            told += plain(combat, CombatEventKind.HEAL, target.id, sourceId, done)
-            if (wasDown) told += plain(combat, CombatEventKind.UP, target.id, sourceId)
+            val healed = healed(combat, sourceId, target, amount)
+            members += healed.member
+            told += healed.events
         }
         if (members.isNotEmpty()) repository.record(combat.id, members, told)
+    }
+
+    /** a change that can be taken back, with the participants as they were and the events it told */
+    class Recorded(
+        val before: List<Combatant>,
+        val eventIds: List<Long>,
+    )
+
+    /** every counted target that is hurt gets back what it lacks, temporary hit points stay as they are */
+    suspend fun healToMax(
+        combat: Combat,
+        sourceId: Long?,
+        targets: List<Combatant>,
+    ): Recorded? {
+        val hurt = targets.hurt()
+        if (hurt.isEmpty()) return null
+        val healed = hurt.map { healed(combat, sourceId, it, checkNotNull(it.missingHp())) }
+        val ids = repository.record(combat.id, healed.map { it.member }, healed.flatMap { it.events })
+        return Recorded(hurt, ids)
+    }
+
+    /** puts back only the hit points and what a stand-up changes, so later edits of the participant stay */
+    suspend fun undo(
+        healed: Recorded,
+        current: List<Combatant>,
+    ) {
+        val back =
+            healed.before.mapNotNull { old ->
+                current.firstOrNull { it.id == old.id }?.copy(
+                    hpCurrent = old.hpCurrent,
+                    state = old.state,
+                    deathSuccesses = old.deathSuccesses,
+                    deathFailures = old.deathFailures,
+                    captured = old.captured,
+                )
+            }
+        repository.unrecord(back, healed.eventIds)
+    }
+
+    /** the hit points typed by hand, [unrecordedHeal] is the part of the change that was a heal nobody told */
+    suspend fun setExact(
+        combat: Combat,
+        sourceId: Long?,
+        target: Combatant,
+        amount: Int,
+        unrecordedHeal: Int = 0,
+    ): Recorded {
+        val told = mutableListOf<CombatEvent>()
+        if (unrecordedHeal > 0) told += plain(combat, CombatEventKind.HEAL, target.id, sourceId, unrecordedHeal)
+        var member = target
+        val wasDown = target.isDown() && !target.dead
+        if (target.isTracked()) {
+            member = member.copy(hpCurrent = amount.coerceIn(0, checkNotNull(target.hpMax)))
+        } else if (amount > 0 && !wasDown) {
+            member = member.copy(state = scaleWord(combat, target, amount))
+        }
+        if (wasDown && amount > 0) member = member.standing()
+        told += plain(combat, CombatEventKind.SET, target.id, sourceId, amount)
+        if (wasDown && amount > 0) told += plain(combat, CombatEventKind.UP, target.id, sourceId)
+        val fellNow = target.isTracked() && !target.isDown() && amount == 0
+        if (fellNow) {
+            member = member.copy(state = CombatState.DOWN, deathSuccesses = 0, deathFailures = 0)
+            told += plain(combat, CombatEventKind.DOWN, target.id, sourceId)
+        }
+        val ids = repository.record(combat.id, listOfNotNull(member.takeIf { it != target }), told)
+        return Recorded(listOf(target), ids)
+    }
+
+    /** the word of the scale that a typed number is nearest to, for a guessed participant that is on the scale */
+    private fun scaleWord(
+        combat: Combat,
+        target: Combatant,
+        amount: Int,
+    ): CombatState {
+        if (permilleOf(target.state) == null) return target.state
+        val net = combat.ledgerOf(target.id).net
+        // a creature with hit points left is on its feet, so it never reads as down
+        return stateAtPermille(
+            permilleOfExact(amount, net).coerceAtLeast(
+                permilleOf(CombatState.BARELY_STANDING) ?: 0,
+            ),
+        )
+    }
+
+    private class Healed(
+        val member: Combatant,
+        val events: List<CombatEvent>,
+    )
+
+    private fun healed(
+        combat: Combat,
+        sourceId: Long?,
+        target: Combatant,
+        amount: Int,
+    ): Healed {
+        val wasDown = target.isDown() && !target.dead
+        var member = target
+        var done = amount
+        if (target.isTracked()) {
+            val max = checkNotNull(target.hpMax)
+            val change = takeHeal(target.hpCurrent ?: max, max, target.tempHp, amount)
+            member = member.copy(hpCurrent = change.hp)
+            done = change.effective
+        }
+        if (wasDown) member = member.standing()
+        val events = mutableListOf(plain(combat, CombatEventKind.HEAL, target.id, sourceId, done))
+        if (wasDown) events += plain(combat, CombatEventKind.UP, target.id, sourceId)
+        return Healed(member, events)
     }
 
     /** only for those whose hit points are numbers, the larger of the old and the new number stays */
@@ -166,9 +270,6 @@ class DamageActions(
             deathFailures = 0,
             captured = false,
         )
-
-    private fun Combat.damageTakenBy(member: Combatant): Int =
-        events.filter { it.kind == CombatEventKind.DAMAGE && it.targetId == member.id }.sumOf { it.amount }
 
     private fun plain(
         combat: Combat,

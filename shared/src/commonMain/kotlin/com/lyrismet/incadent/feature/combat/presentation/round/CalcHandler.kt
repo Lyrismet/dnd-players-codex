@@ -7,7 +7,9 @@ import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
 import com.lyrismet.incadent.feature.combat.domain.damage.parseTerms
 import com.lyrismet.incadent.feature.combat.domain.damage.planHit
+import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
+import com.lyrismet.incadent.feature.combat.domain.round.ExactExpectation
 import com.lyrismet.incadent.feature.combat.domain.round.Strike
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import incadent.shared.generated.resources.Res
@@ -18,6 +20,7 @@ import incadent.shared.generated.resources.combat_calc_recorded_title
 import org.jetbrains.compose.resources.getString
 
 /** what the calculator may use of the fight at the moment of an event */
+@Suppress("LongParameterList")
 internal class CalcSnapshot(
     val ordered: List<Combatant>,
     val moverId: Long?,
@@ -26,6 +29,7 @@ internal class CalcSnapshot(
     // the words for a damage type and for what a hit proved about it, ready to put in a message
     val typeNames: Map<DamageType, String>,
     val stateTitles: Map<DamageState, String>,
+    val expected: Map<Long, ExactExpectation> = emptyMap(),
 )
 
 internal class CalcHandler(
@@ -86,6 +90,8 @@ internal class CalcHandler(
                 ) { _, m -> editor.actions.toggleReaction(m) }
             CalcEvent.MoreHit -> apply(draft, snapshot, more = true)
             CalcEvent.Applied -> apply(draft, snapshot, more = false)
+            CalcEvent.HealedToMax -> healToMax(draft)
+            is CalcEvent.SetHealChosen -> calc.value = draft.copy(asHeal = event.asHeal)
             else -> calc.value = CalcEditing.edit(draft, event)
         }
     }
@@ -97,9 +103,13 @@ internal class CalcHandler(
     ) {
         val terms = parseTerms(draft.expr.raw, draft.termTypes)
         val amount = terms.sumOf { it.amount }
+        if (draft.mode == CalcMode.SET) {
+            setExact(draft, snapshot, amount)
+            return
+        }
         if (draft.targets.isEmpty() || amount <= 0) return
         editor.edit { combat ->
-            val targets = draft.targets.mapNotNull { id -> combat.combatants.firstOrNull { it.id == id } }
+            val targets = combat.targetsOf(draft)
             when (draft.mode) {
                 CalcMode.DAMAGE -> {
                     val strikes =
@@ -119,8 +129,36 @@ internal class CalcHandler(
                 }
                 CalcMode.HEAL -> editor.damage.heal(combat, draft.sourceId, targets, amount)
                 CalcMode.TEMP -> editor.damage.giveTemp(combat, draft.sourceId, targets, amount)
+                CalcMode.SET -> Unit
             }
             if (draft.mode != CalcMode.DAMAGE) calc.value = null
+        }
+    }
+
+    private fun setExact(
+        draft: CalcDraft,
+        snapshot: CalcSnapshot,
+        amount: Int,
+    ) {
+        val id = draft.targets.singleOrNull() ?: return
+        val known = snapshot.expected[id]
+        val heal = if (draft.asHeal && known != null) (amount - known.expected).coerceAtLeast(0) else 0
+        editor.edit { combat ->
+            val target = combat.combatants.firstOrNull { it.id == id } ?: return@edit
+            editor.setExact(combat, draft.sourceId, target, amount, heal)
+            calc.value = null
+        }
+    }
+
+    private fun Combat.targetsOf(draft: CalcDraft): List<Combatant> =
+        draft.targets.mapNotNull { id -> combatants.firstOrNull { it.id == id } }
+
+    private fun healToMax(draft: CalcDraft) {
+        if (draft.targets.isEmpty()) return
+        editor.edit { combat ->
+            val targets = combat.targetsOf(draft)
+            editor.healToMax(combat, draft.sourceId, targets)
+            calc.value = null
         }
     }
 

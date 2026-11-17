@@ -6,9 +6,10 @@ import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.combat.domain.damage.HitScale
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
+import com.lyrismet.incadent.feature.combat.domain.round.ExactExpectation
 import com.slack.circuit.runtime.CircuitUiEvent
 
-enum class CalcMode { DAMAGE, HEAL, TEMP }
+enum class CalcMode { DAMAGE, HEAL, TEMP, SET }
 
 /** a blow already dealt in this calculator, shown above the targets while "another hit" keeps it open */
 data class DoneHit(
@@ -31,6 +32,8 @@ internal data class CalcDraft(
     val hit: Int = 1,
     val done: List<DoneHit> = emptyList(),
     val collapsed: Boolean = false,
+    // in the "set" mode, a number above what the told healing gives is taken as healing nobody told
+    val asHeal: Boolean = true,
 )
 
 data class CalcState(
@@ -57,6 +60,23 @@ data class CalcState(
     val canMore: Boolean,
     val applyLabel: String,
     val applyEnabled: Boolean,
+    val toMax: CalcToMax?,
+    val setHeal: CalcSetHeal?,
+)
+
+/** the choice after a typed number that is above what the healing told gives, the missing part as a heal, or not */
+data class CalcSetHeal(
+    val suggestion: String,
+    val asHeal: Boolean,
+    val healLabel: String,
+    val plainLabel: String,
+)
+
+/** the "to maximum" button of the healing mode, what it will do or why it cannot, and a reminder */
+data class CalcToMax(
+    val caption: String,
+    val enabled: Boolean,
+    val note: String?,
 )
 
 data class SourceChip(
@@ -183,6 +203,12 @@ sealed interface CalcEvent : CircuitUiEvent {
     data object MoreHit : CalcEvent
 
     data object Applied : CalcEvent
+
+    data object HealedToMax : CalcEvent
+
+    data class SetHealChosen(
+        val asHeal: Boolean,
+    ) : CalcEvent
 }
 
 /** the round summary: a sheet over the fight with the damage of one round, blow by blow */
@@ -270,4 +296,6 @@ internal class CalcContext(
     val resistances: Map<Long, Map<DamageType, DamageState>>,
     // the participants made of a species, the calculator can write a resistance there
     val learners: Set<Long>,
+    // what the hit points typed by hand give after the healing told since, for those that have both
+    val expected: Map<Long, ExactExpectation> = emptyMap(),
 )

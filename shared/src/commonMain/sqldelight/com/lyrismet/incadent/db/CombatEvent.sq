@@ -38,6 +38,9 @@ insert:
 INSERT INTO combat_event(combat_id, round, kind, source_id, target_id, amount, damage_type, effect, state, detail, turn, hit, raw, scale)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+deleteById:
+DELETE FROM combat_event WHERE id = ?;
+
 updateTerm:
 UPDATE combat_event SET amount = ?, effect = ? WHERE id = ?;
 

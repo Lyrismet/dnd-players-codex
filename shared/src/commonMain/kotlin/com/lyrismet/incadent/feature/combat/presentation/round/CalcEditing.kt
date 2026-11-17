@@ -22,7 +22,11 @@ internal object CalcEditing {
                     scales =
                         draft.scales - event.id,
                 )
-            is CalcEvent.TargetAdded -> draft.copy(targets = draft.targets + event.id)
+            is CalcEvent.TargetAdded ->
+                draft.copy(
+                    targets = draft.targets + event.id,
+                    mode = if (draft.mode == CalcMode.SET) CalcMode.DAMAGE else draft.mode,
+                )
             is CalcEvent.ScaleSelected ->
                 draft.copy(
                     scales =

@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -189,7 +190,7 @@ private fun RowBars(row: RoundRow) {
         if (wound.successes != null && wound.failures != null) {
             SaveDots(wound.successes, wound.failures, Modifier.padding(top = 7.dp))
         } else {
-            WoundPips(wound.pips, RoundColors.wound(wound.tone), Modifier.padding(top = 7.dp))
+            WoundPips(wound.fill, RoundColors.wound(wound.tone), Modifier.padding(top = 7.dp))
         }
     }
 }
@@ -210,19 +211,22 @@ private fun Bar(
 
 @Composable
 private fun WoundPips(
-    filled: Int,
+    fill: Float,
     color: Color,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
         repeat(WoundScale.size) { index ->
-            Column(
+            val part = (fill * WoundScale.size - index).coerceIn(0f, 1f)
+            Box(
                 modifier =
                     Modifier
                         .weight(1f)
                         .height(5.dp)
-                        .appCard(AppShapes.Badge, if (index < filled) color else AppPalette.SurfaceElevated, null),
-            ) {}
+                        .appCard(AppShapes.Badge, AppPalette.SurfaceElevated, null),
+            ) {
+                if (part > 0f) Box(modifier = Modifier.fillMaxWidth(part).height(5.dp).background(color))
+            }
         }
     }
 }
@@ -239,30 +243,22 @@ private fun SaveDots(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         repeat(SAVE_PIPS) {
+            val filled = it < successes
             Dot(
-                size = 9.dp,
-                color =
-                    if (it <
-                        successes
-                    ) {
-                        RoundColors.Success
-                    } else {
-                        AppPalette.SurfaceElevated
-                    },
+                size = 10.dp,
+                color = if (filled) RoundColors.Success else Color.Transparent,
+                borderColor = if (filled) RoundColors.Success else AppPalette.TextTertiary,
+                borderWidth = 1.5.dp,
             )
         }
         Column(modifier = Modifier.size(width = 8.dp, height = 1.dp)) {}
         repeat(SAVE_PIPS) {
+            val filled = it < failures
             Dot(
-                size = 9.dp,
-                color =
-                    if (it <
-                        failures
-                    ) {
-                        RoundColors.Failure
-                    } else {
-                        AppPalette.SurfaceElevated
-                    },
+                size = 10.dp,
+                color = if (filled) RoundColors.Failure else Color.Transparent,
+                borderColor = if (filled) RoundColors.Failure else AppPalette.TextTertiary,
+                borderWidth = 1.5.dp,
             )
         }
     }

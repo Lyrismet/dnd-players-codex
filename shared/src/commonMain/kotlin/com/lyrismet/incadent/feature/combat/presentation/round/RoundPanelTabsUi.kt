@@ -27,19 +27,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
-import com.lyrismet.incadent.core.designsystem.component.AppCheckBox
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
 import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
-import com.lyrismet.incadent.core.designsystem.component.AppTitleSubtitle
 import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
@@ -58,9 +55,7 @@ import incadent.shared.generated.resources.combat_mark_group_custom
 import incadent.shared.generated.resources.combat_mark_head
 import incadent.shared.generated.resources.combat_mark_none
 import incadent.shared.generated.resources.combat_mark_remove
-import incadent.shared.generated.resources.combat_panel_full_title
 import incadent.shared.generated.resources.combat_panel_remove
-import incadent.shared.generated.resources.combat_panel_set_hp
 import incadent.shared.generated.resources.combat_panel_side_title
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -76,9 +71,7 @@ internal fun ConditionsTab(
         Text(
             stringResource(Res.string.combat_mark_head) + if (panel.tags.isEmpty()) "" else " · ${panel.tags.size}",
             color = AppPalette.TextTertiary,
-            fontSize = AppFontSize.Tiny,
-            fontWeight = FontWeight.SemiBold,
-            letterSpacing = 1.4.sp,
+            style = AppText.fieldOverlineStrong,
             modifier = Modifier.weight(1f),
         )
         AppButton(
@@ -134,9 +127,7 @@ private fun CustomGroup(
         Text(
             stringResource(Res.string.combat_mark_group_custom),
             color = AppPalette.TextSecondary,
-            fontSize = AppFontSize.Tiny,
-            fontWeight = FontWeight.SemiBold,
-            letterSpacing = 1.4.sp,
+            style = AppText.fieldOverlineStrong,
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
             customs.forEach { item ->
@@ -172,9 +163,7 @@ private fun ConditionGroupBlock(
             Text(
                 group.title,
                 color = RoundColors.groupTitle(group.group),
-                fontSize = AppFontSize.Tiny,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 1.4.sp,
+                style = AppText.fieldOverlineStrong,
             )
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -264,14 +253,6 @@ internal fun MoreTab(
             )
         }
     }
-    if (more.fullShown) FullRow(more.full) { send(CombatRoundEvent.FullToggled) }
-    if (more.canSetHp) {
-        AppButton(
-            text = stringResource(Res.string.combat_panel_set_hp),
-            onClick = { send(CombatRoundEvent.SetHpOpened) },
-            variant = ButtonVariant.Ghost,
-        )
-    }
     NoteField(panel.id, more.note, more.notePlaceholder) { send(CombatRoundEvent.NoteChanged(panel.id, it)) }
     AppButton(
         text = stringResource(Res.string.combat_panel_remove),
@@ -279,35 +260,6 @@ internal fun MoreTab(
         tone = ButtonTone.Neutral,
         variant = ButtonVariant.Ghost,
     )
-}
-
-@Composable
-private fun FullRow(
-    full: Boolean,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .appCard(
-                    shape = AppShapes.Field,
-                    background = AppPalette.Background,
-                    border = AppPalette.Border,
-                    onClick = onClick,
-                ).defaultMinSize(minHeight = 52.dp)
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AppCheckBox(full)
-        AppTitleSubtitle(
-            title = stringResource(Res.string.combat_panel_full_title),
-            subtitle = "",
-            modifier = Modifier.weight(1f),
-            maxLines = 2,
-        )
-    }
 }
 
 private const val NOTE_SAVE_DELAY_MS = 500L

@@ -51,7 +51,7 @@ internal class SummaryHandler(
             val note = describe(Correction(target.name, event.effect, type, delta, record), snapshot)
             val previous = term.effect
             val revert: suspend () -> Unit = { editor.fresh()?.let { editor.damage.correct(it, term.id, previous) } }
-            if (record && species != null && type != null) {
+            if (record) {
                 learner.record(editor.combatId, target, type, event.effect.toDamageState(), note, revert)
             } else {
                 learner.offerUndo(note, revert)

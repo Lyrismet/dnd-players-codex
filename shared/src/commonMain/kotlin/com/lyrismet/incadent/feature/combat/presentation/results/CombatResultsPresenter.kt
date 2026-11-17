@@ -146,7 +146,7 @@ class CombatResultsPresenter(
             }
         val handler =
             ResultsHandler(
-                ResultsContext(current, outcome, entries, checklist, words),
+                ResultsContext(current, outcome, entries, checklist, words, screen.readOnly),
                 drafts,
                 ResultsActions(navigator, combatRepository, saver, undo, scope),
             )
@@ -209,6 +209,7 @@ private class ResultsContext(
     val entries: List<CodexEntry>,
     val checklist: List<CodexEntry>,
     val words: ResultsWords,
+    val readOnly: Boolean,
 )
 
 private class ResultsActions(
@@ -227,7 +228,7 @@ private class ResultsHandler(
 ) {
     fun onEvent(event: CombatResultsEvent) {
         when (event) {
-            is CombatResultsEvent.OutcomeSelected -> drafts.chosen.value = event.outcome
+            is CombatResultsEvent.OutcomeSelected -> chooseOutcome(event.outcome)
             CombatResultsEvent.LogToggled -> drafts.logExpanded.value = !drafts.logExpanded.value
             is CombatResultsEvent.ItemToggled -> toggle(event.key)
             CombatResultsEvent.SaveClicked -> save()
@@ -272,6 +273,14 @@ private class ResultsHandler(
             actions.undo.show(context.words.savedTitle, note) { saved.undo() }
             actions.navigator.resetRoot(CombatListScreen)
             actions.navigator.goTo(SessionDetailScreen(saved.sessionId))
+        }
+    }
+
+    private fun chooseOutcome(outcome: CombatOutcome) {
+        if (!context.readOnly) {
+            drafts.chosen.value = outcome
+        } else if (outcome != context.outcome) {
+            actions.scope.launch { actions.combats.setOutcome(context.combat.id, outcome) }
         }
     }
 

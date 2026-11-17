@@ -53,6 +53,9 @@ UPDATE combat SET session_note_id = ? WHERE id = ?;
 updateOutcome:
 UPDATE combat SET outcome = ?, finished_at = ?, phase = 'FINISHED' WHERE id = ?;
 
+changeOutcome:
+UPDATE combat SET outcome = ? WHERE id = ?;
+
 deleteById:
 DELETE FROM combat WHERE id = ? AND campaign_id = ?;
 

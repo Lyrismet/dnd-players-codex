@@ -468,7 +468,7 @@
     <string name="combat_panel_tab_actions">Actions</string>
     <string name="combat_panel_tab_conditions">Marks</string>
     <string name="combat_panel_tab_more">More</string>
-    <string name="combat_panel_mark_title">HOW THEY LOOK · THE MASTER\'S WORDS</string>
+    <string name="combat_panel_mark_title">HOW MUCH HEALTH IS LEFT</string>
     <string name="combat_panel_saves_title">DEATH SAVES</string>
     <string name="combat_panel_saves_success">Successes</string>
     <string name="combat_panel_saves_failure">Failures</string>
@@ -479,8 +479,6 @@
     <string name="combat_panel_died_note">Died in this combat</string>
     <string name="combat_panel_undo">Undo</string>
     <string name="combat_panel_side_title">SIDE</string>
-    <string name="combat_panel_full_title">Came into the fight unhurt</string>
-    <string name="combat_panel_set_hp">Hit points said out loud? Set them</string>
     <string name="combat_panel_note_party">Resources, spells, notes…</string>
     <string name="combat_panel_note_foe">What was noticed: vulnerabilities, resistances, tactics…</string>
     <string name="combat_panel_remove">Remove from the fight</string>
@@ -547,6 +545,45 @@
     <string name="combat_calc_apply_damage">Deal</string>
     <string name="combat_calc_apply_enter">Enter a number</string>
     <string name="combat_calc_apply_heal">Heal %1$d</string>
+    <string name="hp_scale_estimate_title">HIT POINTS</string>
+    <string name="hp_scale_estimate_approx">≈ %1$d</string>
+    <string name="hp_scale_estimate_at_least">≥ %1$d</string>
+    <string name="hp_scale_estimate_exact">= %1$d</string>
+    <string name="hp_scale_estimate_unknown">unknown</string>
+    <string name="hp_scale_src_scale">scale · took %1$d</string>
+    <string name="hp_scale_src_species">bestiary · took %1$d</string>
+    <string name="hp_scale_src_took">took %1$d</string>
+    <string name="hp_scale_src_exact">typed in</string>
+    <string name="hp_exact_label">EXACT HIT POINTS</string>
+    <string name="hp_exact_none">not typed in</string>
+    <string name="hp_exact_value">%1$d</string>
+    <string name="hp_exact_set">Type in</string>
+    <string name="hp_exact_change">Change</string>
+    <string name="hp_exact_mode">Set</string>
+    <string name="hp_exact_apply">Write: %1$d</string>
+    <string name="hp_exact_apply_heal">Write %1$d · healing +%2$d</string>
+    <string name="hp_exact_now">%1$s: now %2$d</string>
+    <string name="hp_exact_now_unknown">%1$s: now %2$d · maximum unknown</string>
+    <string name="hp_help_title">How much health is left</string>
+    <string name="hp_help_body">We almost never know an enemy\'s exact hit points: the master describes it only in words. So the app does not show a number, it estimates one.\n\nWrite down the damage taken as numbers and move the thumb to where you think its health is: "Bloodied" is about half. The more damage is recorded, the better the estimate. Healing is taken off the damage.\n\n≈ N: an estimate from the thumb and the damage taken, without the thumb from earlier fights with the same creature.\n≥ N: there is damage, but no thumb or it sits at "Whole", so it had at least that many.\n= N: the number you typed in yourself, after that it moves with damage and healing.\n\nIf an enemy came into the fight wounded, it can only be typed in.</string>
+    <string name="hp_exact_suggest">Was %1$d, healing +%2$d was told, %3$d expected. Typed %4$d.</string>
+    <string name="hp_exact_as_heal">Healing not told: %1$d</string>
+    <string name="hp_exact_as_is">Just %1$d</string>
+    <string name="hp_exact_toast_title">Hit points: %1$s — %2$d</string>
+    <string name="hp_exact_toast_sub">exactly %1$d · maximum unknown</string>
+    <string name="hp_exact_toast_sub_known">%1$d → %2$d</string>
+    <string name="combat_round_exact">exactly %1$d</string>
+    <string name="combat_round_short_exact">=%1$d</string>
+    <string name="calc_heal_to_max_label">To maximum</string>
+    <string name="calc_heal_to_max_one">to %1$d · +%2$d</string>
+    <string name="calc_heal_to_max_many">targets: %1$d</string>
+    <string name="calc_heal_to_max_full">hit points are full</string>
+    <string name="calc_heal_to_max_unknown">maximum unknown</string>
+    <string name="calc_heal_to_max_temp_note">Temporary hit points are left as they are</string>
+    <string name="calc_heal_to_max_toast_one">Hit points to maximum: %1$s</string>
+    <string name="calc_heal_to_max_toast_many">Hit points to maximum, targets: %1$d</string>
+    <string name="calc_heal_to_max_toast_sub">%1$d → %2$d</string>
+    <string name="calc_heal_to_max_toast_sub_temp">%1$d → %2$d · temporary +%3$d untouched</string>
     <string name="combat_calc_apply_temp">Give %1$d temp HP</string>
     <string name="combat_calc_apply_targets">%1$s · %2$d targets</string>
     <string name="combat_calc_preview_targets">Targets: %1$s</string>

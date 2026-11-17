@@ -31,12 +31,6 @@ internal fun CombatState.tone(): WoundTone =
         else -> WoundTone.DOWN
     }
 
-/** how many of the five bars a state fills */
-internal fun CombatState.pips(): Int {
-    val index = WoundScale.indexOf(this)
-    return if (index < 0) 1 else WoundScale.size - index
-}
-
 internal fun CombatState.shortLabel(): StringResource =
     when (this) {
         CombatState.WHOLE -> Res.string.combat_wound_whole
