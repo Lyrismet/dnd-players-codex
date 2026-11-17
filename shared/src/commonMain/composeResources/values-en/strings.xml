@@ -2033,4 +2033,62 @@
     <string name="me_spells_range_near">Touch</string>
     <string name="me_spells_range_self">Self</string>
     <string name="me_spells_range_own_hint">For example, 60 ft</string>
+
+    <!-- downtime between two sessions -->
+    <string name="downtime_gap_format">Between sessions %1$s and %2$s</string>
+    <string name="downtime_gap_after_format">After session %1$s</string>
+    <string name="downtime_card_more">Details ›</string>
+    <string name="downtime_gold_format">%1$s gp</string>
+    <string name="downtime_item_format">%1$s ×%2$d</string>
+    <string name="downtime_title_new">New downtime</string>
+    <string name="downtime_title_edit">Edit downtime</string>
+    <string name="downtime_field_short">What they did · short</string>
+    <string name="downtime_field_long">Details</string>
+    <string name="downtime_field_gained">What they got</string>
+    <string name="downtime_field_gold">Gold</string>
+    <string name="downtime_field_items">Items</string>
+    <string name="downtime_item_less">Less</string>
+    <string name="downtime_item_more">More</string>
+    <string name="downtime_save">Save</string>
+    <string name="downtime_edit">Edit</string>
+    <string name="downtime_delete">Delete</string>
+    <string name="downtime_apply">Add to the sheet</string>
+    <string name="downtime_revert">Take back</string>
+    <string name="downtime_applied_title">Added to the sheet: %1$s</string>
+    <string name="downtime_reverted_title">Taken back: %1$s</string>
+    <string name="downtime_detail_subtitle">Not a session: numbering and days stay as they are</string>
+    <string name="downtime_field_did">What they did</string>
+    <string name="downtime_loot_header">Gold and items</string>
+    <string name="downtime_status_no_character">no character of your own</string>
+    <string name="downtime_card_empty">Empty — press to write it down</string>
+    <string name="downtime_detail_empty">Nothing written yet.</string>
+    <string name="downtime_hint_in_list">shown in the list</string>
+    <string name="downtime_hint_optional">optional</string>
+    <string name="downtime_placeholder_short">One or two sentences</string>
+    <string name="downtime_placeholder_long">How it went: meetings, finds, talks</string>
+    <string name="downtime_placeholder_gained">Rumours, contacts, rewards</string>
+    <string name="downtime_gold_unit">gp</string>
+    <string name="downtime_gold_gained_description">Gold gained</string>
+    <string name="downtime_gold_spent_description">Gold spent</string>
+    <string name="downtime_item_name_placeholder">Name</string>
+    <string name="downtime_item_add">+ Item</string>
+    <string name="downtime_edit_hint">On save the gold goes to the purse and the items to the gear of the "Me" sheet. You can undo it in the toast or in the record itself.</string>
+    <string name="downtime_edit_hint_no_character">No character of your own: pick one in "Me" to add gold and items.</string>
+    <string name="downtime_title">Downtime</string>
+    <string name="downtime_applied_subtitle">Downtime</string>
+    <string name="downtime_reverted_subtitle">The downtime record stays</string>
+    <string name="downtime_deleted_applied_suffix">%1$s · what it added is taken out of the sheet</string>
+    <string name="downtime_deleted_title">Downtime deleted</string>
+
+    <!-- the edit mode of the session list -->
+    <string name="session_list_edit_button">Edit</string>
+    <string name="session_list_edit_done">Done</string>
+    <string name="session_list_edit_banner">Drag ≡ to reorder</string>
+    <string name="session_list_edit_help_title">Session order</string>
+    <string name="session_list_edit_help_body">Numbers follow the date of the session. A session you move gets a date between the dates of its new neighbours and the numbers are counted again. The current session is always the last one and does not move.</string>
+    <string name="session_list_edit_fixed">does not move</string>
+    <string name="session_list_edit_new_mark">new · drag to its place</string>
+    <string name="session_list_edit_add_past">+ Session</string>
+    <string name="session_list_edit_between_format">+ Between sessions %1$s and %2$s</string>
+    <string name="session_list_edit_handle_description">Move the session</string>
 </resources>

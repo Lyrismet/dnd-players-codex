@@ -477,4 +477,47 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the nineteenth schema adds an empty downtime table and keeps the sessions`() {
+        val file = File.createTempFile("schema-v19", ".db")
+        File("src/commonMain/sqldelight/databases/19.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO session_note(id, title, session_date, created_at, campaign_id) VALUES (1, 'S', '2026-01-01T00:00', 1, 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 19, AppDatabase.Schema.version)
+
+        assertEquals("0", driver.single("SELECT count(*) FROM downtime"))
+        driver.execute(null, "INSERT INTO downtime(campaign_id, after_session_id) VALUES ('c', 1)", 0)
+        assertEquals("0", driver.single("SELECT gold_delta FROM downtime"))
+        assertEquals("S", driver.single("SELECT title FROM session_note"))
+        driver.close()
+        file.delete()
+    }
+
+    @Test
+    fun `migrating the twentieth schema gives an applied downtime its gold back`() {
+        val file = File.createTempFile("schema-v20", ".db")
+        File("src/commonMain/sqldelight/databases/20.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO session_note(id, title, session_date, created_at, campaign_id) VALUES (1, 'S', '2026-01-01T00:00', 1, 'c')",
+            "INSERT INTO session_note(id, title, session_date, created_at, campaign_id, origin_id) VALUES (2, 'T', '2026-01-02T00:00', 1, 'c', 'o2')",
+            "INSERT INTO downtime(campaign_id, after_session_id, gold_delta, applied, member_id) VALUES ('c', 1, 40, 1, 3)",
+            "INSERT INTO downtime(campaign_id, after_session_id, gold_delta) VALUES ('c', 2, 50)",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 20, AppDatabase.Schema.version)
+
+        assertEquals(
+            "40|0",
+            driver.single("SELECT group_concat(applied_gold, '|') FROM (SELECT * FROM downtime ORDER BY id)"),
+        )
+        driver.close()
+        file.delete()
+    }
 }

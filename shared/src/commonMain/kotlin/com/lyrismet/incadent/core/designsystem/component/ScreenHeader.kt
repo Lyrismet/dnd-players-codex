@@ -29,6 +29,8 @@ fun ScreenHeader(
     overlineTrailingContent: @Composable RowScope.() -> Unit = {},
     // replaces the overline text, e.g. the campaign switcher pill
     overlineContent: (@Composable () -> Unit)? = null,
+    // sits at the end of the title line, e.g. the "Edit" button of a list
+    titleTrailingContent: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val overlineQuill: (@Composable () -> Unit)? =
         if (onOverlineClick != null) {
@@ -54,15 +56,19 @@ fun ScreenHeader(
                 trailingContent = overlineTrailingContent,
             )
         }
-        Text(
-            text = title,
-            style =
-                MaterialTheme.typography.displayLarge.copy(
-                    fontSize = AppFontSize.StatLarge,
-                    lineHeight = 38.sp,
-                ),
-            color = AppPalette.TextHeading,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = title,
+                modifier = Modifier.weight(1f),
+                style =
+                    MaterialTheme.typography.displayLarge.copy(
+                        fontSize = AppFontSize.StatLarge,
+                        lineHeight = 38.sp,
+                    ),
+                color = AppPalette.TextHeading,
+            )
+            titleTrailingContent?.invoke(this)
+        }
         if (showDivider) {
             HeaderDivider(modifier = Modifier.padding(top = 12.dp))
         }

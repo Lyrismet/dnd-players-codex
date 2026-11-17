@@ -13,6 +13,9 @@ interface SessionNoteRepository {
 
     suspend fun delete(id: Long)
 
+    /** gives every listed session its new date in one go, what moves a session to another place in the diary */
+    suspend fun setDates(dates: Map<Long, LocalDateTime>)
+
     /** [id] becomes the campaign's only live session - reopened if ended, every other live one ends at [now] */
     suspend fun makeOnlyLive(
         id: Long,

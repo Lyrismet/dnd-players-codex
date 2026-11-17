@@ -1,0 +1,2 @@
+ALTER TABLE downtime ADD COLUMN applied_gold INTEGER NOT NULL DEFAULT 0;
+UPDATE downtime SET applied_gold = gold_delta WHERE applied = 1;

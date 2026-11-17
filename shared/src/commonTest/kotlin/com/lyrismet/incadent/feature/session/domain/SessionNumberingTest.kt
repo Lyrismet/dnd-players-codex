@@ -49,3 +49,30 @@ class SessionNumberingTest {
         assertEquals("3", sessions.sessionNumberLabels(SessionNumbering.ARABIC).getValue(30))
     }
 }
+
+class LiveSessionNumberTest {
+    @Test
+    fun `the current session is the newest whatever its date says`() {
+        val ended = LocalDateTime(2026, 9, 20, 22, 0)
+        val sessions =
+            listOf(
+                note(id = 1, day = 5),
+                note(id = 2, day = 20).copy(endedAt = ended),
+                note(id = 3, day = 25).copy(endedAt = ended),
+            )
+
+        val index = sessions.chronologicalIndex()
+
+        assertEquals(3, index.getValue(1))
+        assertEquals(mapOf(2L to 3L, 3L to 1L), sessions.nextSessionIds())
+    }
+}
+
+class NextSessionIdsTest {
+    @Test
+    fun `each session points at the one after it by date and the latest has none`() {
+        val sessions = listOf(note(id = 20, day = 15), note(id = 10, day = 5), note(id = 30, day = 25))
+
+        assertEquals(mapOf(10L to 20L, 20L to 30L), sessions.nextSessionIds())
+    }
+}

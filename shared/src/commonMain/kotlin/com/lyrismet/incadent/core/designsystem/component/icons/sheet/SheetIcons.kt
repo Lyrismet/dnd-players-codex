@@ -77,4 +77,12 @@ object SheetIcons {
             extra = "M8.4 12a3.6 3.6 0 1 0 7.2 0a3.6 3.6 0 1 0 -7.2 0Z",
         )
     }
+    val Hourglass: ImageVector by lazy {
+        silhouetteIcon(
+            name = "Hourglass",
+            body =
+                "M6 2.2H18V4.4C18 7 16.2 9 14 10.8C13.4 11.3 13.4 12.7 14 13.2C16.2 15 18 17 18 19.6V21.8H6" +
+                    "V19.6C6 17 7.8 15 10 13.2C10.6 12.7 10.6 11.3 10 10.8C7.8 9 6 7 6 4.4Z",
+        )
+    }
 }

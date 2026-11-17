@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,11 +28,12 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
+import com.lyrismet.incadent.core.designsystem.component.AppDoneButton
+import com.lyrismet.incadent.core.designsystem.component.AppEditButton
 import com.lyrismet.incadent.core.designsystem.component.OverlineStyle
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.dashedBorder
-import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_queue_edit
 import incadent.shared.generated.resources.combat_queue_edit_done
@@ -48,8 +48,6 @@ import org.jetbrains.compose.resources.stringResource
 
 private const val SETTLE_TIMEOUT_MILLIS = 1000L
 private const val TILE_TINT = 0.12f
-private val EDIT_ICON_GAP = 8.dp
-private val EDIT_ICON_SIZE = 16.dp
 private const val HANDLE_BARS = 3
 private val HANDLE_SIZE = 44.dp
 private val HANDLE_GAP = 4.dp
@@ -94,28 +92,10 @@ internal fun QueueHeader(state: CombatRoundState) {
             modifier = Modifier.weight(1f),
         )
         if (!state.queueEditing) {
-            Row(
-                modifier =
-                    Modifier
-                        .clickable {
-                            state.eventSink(CombatRoundEvent.QueueEditStarted)
-                        }.padding(horizontal = 8.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(EDIT_ICON_GAP),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    AppIcons.Pencil,
-                    contentDescription = null,
-                    tint = AppPalette.Gold,
-                    modifier = Modifier.size(EDIT_ICON_SIZE),
-                )
-                Text(
-                    text = stringResource(Res.string.combat_queue_edit),
-                    color = AppPalette.Gold,
-                    fontSize = AppFontSize.MediumPlus,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
+            AppEditButton(
+                text = stringResource(Res.string.combat_queue_edit),
+                onClick = { state.eventSink(CombatRoundEvent.QueueEditStarted) },
+            )
         }
     }
 }
@@ -246,22 +226,10 @@ internal fun QueueEditCard(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        Box(
-            modifier =
-                Modifier
-                    .height(44.dp)
-                    .background(AppPalette.Gold, RoundedCornerShape(11.dp))
-                    .clickable { state.eventSink(CombatRoundEvent.QueueEditFinished) }
-                    .padding(horizontal = 18.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = stringResource(Res.string.combat_queue_edit_done),
-                color = AppPalette.Background,
-                fontSize = AppFontSize.Medium,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
+        AppDoneButton(
+            text = stringResource(Res.string.combat_queue_edit_done),
+            onClick = { state.eventSink(CombatRoundEvent.QueueEditFinished) },
+        )
     }
 }
 

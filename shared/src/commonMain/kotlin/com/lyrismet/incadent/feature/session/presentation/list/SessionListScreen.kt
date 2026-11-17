@@ -9,6 +9,9 @@ import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditUiEve
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem
 import com.lyrismet.incadent.feature.mention.presentation.MentionChipItem
+import com.lyrismet.incadent.feature.session.presentation.list.downtime.DowntimeCard
+import com.lyrismet.incadent.feature.session.presentation.list.downtime.DowntimeEvent
+import com.lyrismet.incadent.feature.session.presentation.list.downtime.DowntimeSheetState
 import com.slack.circuit.runtime.CircuitUiEvent
 import com.slack.circuit.runtime.CircuitUiState
 import com.slack.circuit.runtime.screen.Screen
@@ -32,6 +35,13 @@ data class SessionListState(
     val entityLoading: Boolean = false,
     // the in-place editing of the open entity card
     val quickEdit: QuickEditState = QuickEditState(),
+    // what the party did between two sessions, each card sits above the session it follows
+    val downtimes: List<DowntimeCard> = emptyList(),
+    // the edit mode: sessions can be moved, a past one added and a downtime put between any two
+    val editing: Boolean = false,
+    // the label of each place of the diary by date, the oldest first - what a session is called once it is moved there
+    val positionLabels: List<String> = emptyList(),
+    val downtimeSheet: DowntimeSheetState = DowntimeSheetState.Hidden,
     val toast: ToastMessage? = null,
     // the archive row the one-time swipe-to-delete hint peeks on - always delete-only, sessions have no swipe-edit
     val swipeHintTarget: SwipeHintTarget<Long>? = null,
@@ -50,6 +60,8 @@ data class SessionListItem(
     val tags: List<String> = emptyList(),
     // distinct @-mentioned entities (any type) across every note of the session, 0 hides the "@ N" badge
     val mentionCount: Int = 0,
+    // added in the edit mode and not moved to its place yet
+    val isNew: Boolean = false,
 )
 
 /** the "currently running" session card shown above the archive - tapping it resumes note-taking */
@@ -63,8 +75,26 @@ data class LiveSessionItem(
     val mentions: List<MentionChipItem>,
 )
 
+sealed interface SessionOrderEvent {
+    /** "Edit" or "Done" over the list */
+    data object EditToggled : SessionOrderEvent
+
+    data object PastSessionAdded : SessionOrderEvent
+
+    /** a session was dropped on place [toIndex] of the past sessions as listed, the newest being 0 */
+    data class SessionMoved(
+        val id: Long,
+        val toIndex: Int,
+    ) : SessionOrderEvent
+}
+
 sealed interface SessionListEvent : CircuitUiEvent {
     data object NewSessionClicked : SessionListEvent
+
+    /** a press of the edit mode of the list */
+    data class Order(
+        val event: SessionOrderEvent,
+    ) : SessionListEvent
 
     data class SessionClicked(
         val id: Long,
@@ -82,6 +112,11 @@ sealed interface SessionListEvent : CircuitUiEvent {
     /** an in-place edit on the entity card that opens over this screen */
     data class QuickEdit(
         val event: QuickEditUiEvent,
+    ) : SessionListEvent
+
+    /** a press on a downtime card, its window or its editor */
+    data class Downtime(
+        val event: DowntimeEvent,
     ) : SessionListEvent
 
     data class CampaignSheet(

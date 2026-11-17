@@ -3,53 +3,39 @@ package com.lyrismet.incadent.feature.session.presentation.list
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppPalette
-import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppButton
-import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.AppLoader
 import com.lyrismet.incadent.core.designsystem.component.AppToast
 import com.lyrismet.incadent.core.designsystem.component.EmptyState
 import com.lyrismet.incadent.core.designsystem.component.EmptyStateAction
-import com.lyrismet.incadent.core.designsystem.component.GlowingDot
 import com.lyrismet.incadent.core.designsystem.component.ListSectionHeader
 import com.lyrismet.incadent.core.designsystem.component.NoPeek
-import com.lyrismet.incadent.core.designsystem.component.NumberLabel
 import com.lyrismet.incadent.core.designsystem.component.ScreenHeader
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
-import com.lyrismet.incadent.core.designsystem.component.TagChip
-import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.designsystem.component.scrollEdgeFade
-import com.lyrismet.incadent.core.format.NumberSizeLadder
-import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.AppArchiveBanner
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
@@ -62,30 +48,31 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.EntityLoadingShe
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import com.lyrismet.incadent.feature.codex.presentation.summary.entitySheetActions
-import com.lyrismet.incadent.feature.mention.presentation.MentionChip
-import com.lyrismet.incadent.feature.session.presentation.tags.sessionTagLabel
+import com.lyrismet.incadent.feature.session.presentation.list.downtime.DowntimeCardRow
+import com.lyrismet.incadent.feature.session.presentation.list.downtime.DowntimeEvent
+import com.lyrismet.incadent.feature.session.presentation.list.downtime.DowntimeSheets
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.campaign_switcher_description
-import incadent.shared.generated.resources.mention_count_notes
 import incadent.shared.generated.resources.session_list_archive_section
 import incadent.shared.generated.resources.session_list_delete_content_description
+import incadent.shared.generated.resources.session_list_edit_fixed
 import incadent.shared.generated.resources.session_list_empty
 import incadent.shared.generated.resources.session_list_empty_button
 import incadent.shared.generated.resources.session_list_empty_title
-import incadent.shared.generated.resources.session_list_live_continue
-import incadent.shared.generated.resources.session_list_live_label
-import incadent.shared.generated.resources.session_list_mention_count_format
 import incadent.shared.generated.resources.session_list_new_session_button
 import incadent.shared.generated.resources.session_list_title
 import incadent.shared.generated.resources.swipe_hint_delete_only_title
 import incadent.shared.generated.resources.swipe_hint_dismiss
 import incadent.shared.generated.resources.swipe_hint_sessions_subtitle
-import org.jetbrains.compose.resources.pluralStringResource
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.ReorderableLazyListState
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
-// matches the bordered tag chip's own rendered height (16sp text + 3dp top/bottom padding) so an unbordered
-// chip in the same row - the "@N" mention badge - lines up with it instead of sizing a touch shorter
-private val SessionCardTagChipHeight = 22.dp
+private const val SETTLE_MILLIS = 800L
+private const val MUTED_ALPHA = 0.55f
+private const val HELD_ALPHA = 0.9f
 
 @Composable
 fun SessionListUi(
@@ -115,6 +102,7 @@ fun SessionListUi(
         }
     }
 
+    DowntimeSheets(state.downtimeSheet) { state.eventSink(SessionListEvent.Downtime(it)) }
     CampaignSheets(state.campaignSheet) { event -> state.eventSink(SessionListEvent.CampaignSheet(event)) }
 
     if (state.entityLoading) {
@@ -152,8 +140,18 @@ private fun SessionListBody(
                     muted = state.campaignArchived,
                 )
             },
+            titleTrailingContent =
+                if (!state.campaignArchived && (state.liveSession != null || state.sessions.isNotEmpty())) {
+                    {
+                        EditModeButton(
+                            state.editing,
+                        ) { state.eventSink(SessionListEvent.Order(SessionOrderEvent.EditToggled)) }
+                    }
+                } else {
+                    null
+                },
             overlineTrailingContent = {
-                if (!state.campaignArchived) {
+                if (!state.campaignArchived && !state.editing) {
                     AppButton(
                         text = stringResource(Res.string.session_list_new_session_button),
                         onClick = { state.eventSink(SessionListEvent.NewSessionClicked) },
@@ -196,28 +194,36 @@ private fun SessionListContent(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
+    val drag = remember { SessionDrag() }
+    val reorderState = rememberReorderableLazyListState(listState) { from, to -> drag.move(from.key, to.key) }
+    // the dates are saved in a moment, then what is listed is what the drag showed
+    LaunchedEffect(drag.draggedId, state.sessions) {
+        if (drag.draggedId == null) {
+            delay(SETTLE_MILLIS)
+            drag.settle()
+        }
+    }
+    val downtimeBySession = remember(state.downtimes) { state.downtimes.associateBy { it.afterSessionId } }
+    val downtimeItem: LazyListScope.(Long) -> Unit = { sessionId ->
+        downtimeBySession[sessionId]?.let { card ->
+            item(key = "downtime-${card.id}") {
+                DowntimeCardRow(
+                    card = card,
+                    onClick = { state.eventSink(SessionListEvent.Downtime(DowntimeEvent.CardClicked(card.id))) },
+                    modifier = Modifier.animateItem(),
+                )
+            }
+        }
+    }
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize().scrollEdgeFade(listState),
         contentPadding = PaddingValues(start = 16.dp, top = 2.dp, end = 16.dp, bottom = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        state.liveSession?.let { live ->
-            item {
-                SwipeToDeleteRow(
-                    onDeleteRequested = { state.eventSink(SessionListEvent.DeleteSessionClicked(live.id)) },
-                    deleteContentDescription = stringResource(Res.string.session_list_delete_content_description),
-                ) {
-                    LiveSessionCard(
-                        session = live,
-                        onClick = { state.eventSink(SessionListEvent.SessionClicked(live.id)) },
-                        onMentionClick = { ref ->
-                            state.eventSink(SessionListEvent.EntitySheet(EntitySheetEvent.EntityClicked(ref)))
-                        },
-                    )
-                }
-            }
-        }
+        if (state.editing) item(key = "edit-banner") { EditBanner() }
+        state.liveSession?.let { live -> liveItems(state, live, downtimeItem) }
+        if (state.liveSession == null) pastSessionItem(state)
         item {
             ListSectionHeader(
                 text = stringResource(Res.string.session_list_archive_section),
@@ -225,125 +231,131 @@ private fun SessionListContent(
                 count = state.sessions.size,
             )
         }
-        items(state.sessions, key = { it.id }) { session ->
-            SessionArchiveRow(
-                session = session,
-                onClick = { state.eventSink(SessionListEvent.SessionClicked(session.id)) },
-                onDeleteClick = { state.eventSink(SessionListEvent.DeleteSessionClicked(session.id)) },
-                // only the row the swipe hint targets actually peeks - every other row stays at rest
-                peekOffsetPx = if (session.id == state.swipeHintTarget?.itemId) swipeHintPeekOffsetPx else NoPeek,
-                modifier = Modifier.animateItem(),
-            )
-        }
-    }
-}
-
-@Composable
-private fun LiveSessionCard(
-    session: LiveSessionItem,
-    onClick: () -> Unit,
-    onMentionClick: (EntityRef) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .appCard(
-                    shape = RoundedCornerShape(16.dp),
-                    border = AppPalette.Gold.copy(alpha = 0.45f),
-                    onClick = onClick,
-                ).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        LiveCardStatusRow(session.dateLabel)
-        LiveCardTitleRow(session)
-        if (session.mentions.isNotEmpty()) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                session.mentions.forEach { chip ->
-                    MentionChip(item = chip, onClick = chip.entityRef?.let { ref -> { onMentionClick(ref) } })
+        val rows = drag.shown(state.sessions)
+        val dragging = drag.draggedId != null
+        rows.forEachIndexed { index, session ->
+            // a gap sits above the session before it, the list runs from the newest down
+            if (!dragging) {
+                if (downtimeBySession.containsKey(session.id)) {
+                    downtimeItem(session.id)
+                } else if (state.editing) {
+                    val upper = state.positionLabels.getOrNull(rows.size - index)
+                    if (upper != null) gapItem(state, session, upper, rows.size - index - 1)
                 }
             }
-        }
-        LiveCardFooter(session.notesSummary)
-    }
-}
-
-@Composable
-private fun LiveCardStatusRow(
-    dateLabel: String,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        GlowingDot(dotSize = 7.dp)
-        Text(
-            stringResource(Res.string.session_list_live_label),
-            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.14.em),
-            color = AppPalette.GoldBright,
-            modifier = Modifier.weight(1f),
-        )
-        Text(
-            dateLabel,
-            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-            color = AppPalette.TextSecondary,
-            maxLines = 1,
-        )
-    }
-}
-
-// number and title share a bottom edge, the number's line height is tightened so it doesn't float above the title
-@Composable
-private fun LiveCardTitleRow(
-    session: LiveSessionItem,
-    modifier: Modifier = Modifier,
-) {
-    val numberSize = NumberSizeLadder.LIVE_SESSION.sizeFor(session.numberLabel).sp
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        Text(
-            session.numberLabel,
-            style =
-                MaterialTheme.typography.displayLarge.copy(
-                    fontSize = numberSize,
-                    lineHeight = numberSize * 0.9f,
-                ),
-            color = AppPalette.Gold,
-            maxLines = 1,
-            softWrap = false,
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(session.overline, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextSecondary)
-            Text(session.title, style = MaterialTheme.typography.headlineMedium, color = AppPalette.TextHeading)
+            item(key = session.id) {
+                SessionRow(state, session, index, rows.size, drag, reorderState, swipeHintPeekOffsetPx)
+            }
         }
     }
 }
 
-@Composable
-private fun LiveCardFooter(
-    notesSummary: String,
-    modifier: Modifier = Modifier,
+private fun LazyListScope.liveItems(
+    state: SessionListState,
+    live: LiveSessionItem,
+    downtimeItem: LazyListScope.(Long) -> Unit,
 ) {
-    Column(modifier = modifier) {
-        AppDivider(color = AppPalette.Border)
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+    item {
+        val onMentionClick = { ref: EntityRef ->
+            state.eventSink(SessionListEvent.EntitySheet(EntitySheetEvent.EntityClicked(ref)))
+        }
+        if (state.editing) {
+            LiveSessionCard(
+                session = live,
+                onClick = { state.eventSink(SessionListEvent.SessionClicked(live.id)) },
+                onMentionClick = onMentionClick,
+                modifier = Modifier.alpha(MUTED_ALPHA),
+                label = state.positionLabels.lastOrNull() ?: live.numberLabel,
+                footerNote = stringResource(Res.string.session_list_edit_fixed),
+            )
+        } else {
+            SwipeToDeleteRow(
+                onDeleteRequested = { state.eventSink(SessionListEvent.DeleteSessionClicked(live.id)) },
+                deleteContentDescription = stringResource(Res.string.session_list_delete_content_description),
+            ) {
+                LiveSessionCard(
+                    session = live,
+                    onClick = { state.eventSink(SessionListEvent.SessionClicked(live.id)) },
+                    onMentionClick = onMentionClick,
+                )
+            }
+        }
+    }
+    pastSessionItem(state)
+    downtimeItem(live.id)
+}
+
+// the tile that adds a past session, shown in edit mode above the archive
+private fun LazyListScope.pastSessionItem(state: SessionListState) {
+    if (!state.editing) return
+    item(key = "past-session") {
+        PastSessionTile(onClick = { state.eventSink(SessionListEvent.Order(SessionOrderEvent.PastSessionAdded)) })
+    }
+}
+
+private fun LazyListScope.gapItem(
+    state: SessionListState,
+    lower: SessionListItem,
+    upperLabel: String,
+    lowerPlace: Int,
+) {
+    item(key = "gap-${lower.id}") {
+        val lowerLabel = state.positionLabels.getOrNull(lowerPlace) ?: lower.numberLabel
+        GapTile(
+            upperLabel = upperLabel,
+            lowerLabel = lowerLabel,
+            onClick = {
+                state.eventSink(SessionListEvent.Downtime(DowntimeEvent.NewClicked(lower.id, lowerLabel, upperLabel)))
+            },
+            modifier = Modifier.animateItem(),
+        )
+    }
+}
+
+@Composable
+@Suppress("LongParameterList")
+private fun LazyItemScope.SessionRow(
+    state: SessionListState,
+    session: SessionListItem,
+    index: Int,
+    count: Int,
+    drag: SessionDrag,
+    reorderState: ReorderableLazyListState,
+    swipeHintPeekOffsetPx: () -> Float,
+) {
+    if (!state.editing) {
+        SessionArchiveRow(
+            session = session,
+            onClick = { state.eventSink(SessionListEvent.SessionClicked(session.id)) },
+            onDeleteClick = { state.eventSink(SessionListEvent.DeleteSessionClicked(session.id)) },
+            // only the row the swipe hint targets actually peeks - every other row stays at rest
+            peekOffsetPx = if (session.id == state.swipeHintTarget?.itemId) swipeHintPeekOffsetPx else NoPeek,
+            modifier = Modifier.animateItem(),
+        )
+        return
+    }
+    // the number is the place the session stands on, so it follows the row while it is carried
+    val label = state.positionLabels.getOrNull(count - index - 1) ?: session.numberLabel
+    ReorderableItem(reorderState, key = session.id) { held ->
+        ArchiveCard(
+            session = session,
+            label = label,
+            labelColor = if (label != session.numberLabel) AppPalette.GoldBright else AppPalette.GoldDim,
+            onClick = { state.eventSink(SessionListEvent.SessionClicked(session.id)) },
+            modifier = Modifier.alpha(if (held) HELD_ALPHA else 1f),
         ) {
-            Text(notesSummary, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextSecondary)
-            Text(
-                stringResource(Res.string.session_list_live_continue),
-                style = MaterialTheme.typography.labelLarge,
-                color = AppPalette.GoldBright,
+            SessionHandle(
+                Modifier.draggableHandle(
+                    onDragStarted = { drag.start(session.id, state.sessions) },
+                    onDragStopped = {
+                        drag.end {
+                            id,
+                            at,
+                            ->
+                            state.eventSink(SessionListEvent.Order(SessionOrderEvent.SessionMoved(id, at)))
+                        }
+                    },
+                ),
             )
         }
     }
@@ -363,75 +375,6 @@ private fun SessionArchiveRow(
         deleteContentDescription = stringResource(Res.string.session_list_delete_content_description),
         peekOffsetPx = peekOffsetPx,
     ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .appCard(
-                        shape = AppShapes.Card,
-                        background = AppPalette.SurfaceVariant,
-                        border = AppPalette.BorderSubtle,
-                        onClick = onClick,
-                    ).padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            NumberLabel(text = session.numberLabel, width = 52.dp, color = AppPalette.GoldDim)
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                ArchiveTitle(session.title)
-                ArchiveMeta(session)
-                if (session.tags.isNotEmpty() || session.mentionCount > 0) {
-                    FlowRow(
-                        modifier = Modifier.padding(top = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp),
-                    ) {
-                        session.tags.forEach { tag ->
-                            TagChip(
-                                text = sessionTagLabel(tag),
-                                foreground = AppPalette.TextDescription,
-                                background = AppPalette.SurfacePopover,
-                                border = AppPalette.Border,
-                                height = SessionCardTagChipHeight,
-                            )
-                        }
-                        if (session.mentionCount > 0) {
-                            val mentionLabel =
-                                stringResource(Res.string.session_list_mention_count_format, session.mentionCount)
-                            TagChip(
-                                text = mentionLabel,
-                                foreground = AppPalette.Gold,
-                                background = AppPalette.Gold.copy(alpha = 0.08f),
-                                height = SessionCardTagChipHeight,
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        ArchiveCard(session = session, label = session.numberLabel, labelColor = AppPalette.GoldDim, onClick = onClick)
     }
-}
-
-@Composable
-private fun ArchiveTitle(title: String) {
-    Text(
-        title,
-        style = MaterialTheme.typography.titleMedium,
-        color = AppPalette.TextHeading,
-        maxLines = 3,
-        overflow = TextOverflow.Ellipsis,
-    )
-}
-
-// the date and how many notes the session holds
-@Composable
-private fun ArchiveMeta(session: SessionListItem) {
-    val notes = pluralStringResource(Res.plurals.mention_count_notes, session.noteCount, session.noteCount)
-    Text(
-        joinWithDot(session.dateLabel, notes),
-        style = MaterialTheme.typography.bodySmall,
-        color = AppPalette.TextSecondary,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-    )
 }
