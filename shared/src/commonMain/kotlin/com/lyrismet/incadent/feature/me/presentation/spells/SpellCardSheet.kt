@@ -58,7 +58,7 @@ import incadent.shared.generated.resources.quick_edit_hold_tip
 import incadent.shared.generated.resources.quick_edit_hold_tip_dismiss
 import org.jetbrains.compose.resources.stringResource
 
-/** the card of a spell: what it does, what it costs, and a hold on any block opens that block to change */
+/** the card of a spell with what it does and costs, a hold on any block opens that block to change */
 @Composable
 internal fun SpellCardSheet(
     spell: CharacterSpell,

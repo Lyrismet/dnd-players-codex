@@ -65,7 +65,7 @@ private const val CHIPS_IN_ROW = 3
 private const val PIPS_IN_ROW = 2
 private val ReferenceKey = 40.dp
 
-/** one line of the reference: what the spell comes to on a circle or a level range, [changed] is lit gold */
+/** one line of the reference with what the spell comes to on a circle or a level range, [changed] is lit gold */
 private class RefRow(
     val key: String,
     val at: SpellAt,
@@ -296,8 +296,7 @@ private fun SpendRow(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionOverline(title, color = AppPalette.TextTertiary)
-        // a row holds three chips, the free places of the last row stay empty so every chip has one width
-        // a lone chip takes the whole row
+        // a row holds three chips with empty places kept so every chip has one width and a lone chip takes the row
         val perRow = if (chips.size == 1) 1 else CHIPS_IN_ROW
         chips.chunked(perRow).forEach { row ->
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
