@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.me.presentation.spells
 
+import com.lyrismet.incadent.core.format.toRomanNumeral
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.model.CANTRIP_LEVEL
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
@@ -10,6 +11,11 @@ import com.lyrismet.incadent.feature.me.domain.SpellCasting
 import com.lyrismet.incadent.feature.me.domain.SpellPay
 import com.lyrismet.incadent.feature.me.domain.defaultPay
 import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_spells_cast_free_sub
+import incadent.shared.generated.resources.me_spells_cast_free_title
+import incadent.shared.generated.resources.me_spells_cast_no_mark
+import incadent.shared.generated.resources.me_spells_cast_slot_sub
+import incadent.shared.generated.resources.me_spells_cast_slot_title
 import incadent.shared.generated.resources.me_spells_deleted_title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -21,16 +27,27 @@ class SpellsContext(
     val spells: List<CharacterSpell>,
     val columns: List<SlotColumn>,
     val readOnly: Boolean,
+) {
+    fun find(id: Long): CharacterSpell? = spells.firstOrNull { it.id == id }
+}
+
+/** what a fight did with a cast, [note] goes under the toast and [undo] takes it back with the cast */
+class CastEffect(
+    val note: String,
+    val undo: suspend () -> Unit,
 )
 
 /** reacts to the presses of the spells block for the sheet and the fight, so a cast spends the same slots in both */
+@Suppress("LongParameterList")
 class SpellsHandler(
     private val ui: SpellsUiState,
     private val scope: CoroutineScope,
     private val resources: CharacterResourceRepository,
     private val spells: CharacterSpellRepository,
     private val undoController: UndoController,
-    private val onCast: suspend (CharacterSpell, SpellPay) -> Unit = { _, _ -> },
+    private val onHoldTipSeen: () -> Unit = {},
+    private val inFight: Boolean = false,
+    private val onCast: suspend (CharacterSpell, SpellPay) -> CastEffect? = { _, _ -> null },
 ) {
     private val casting = SpellCasting(resources, spells)
 
@@ -40,9 +57,17 @@ class SpellsHandler(
     ) {
         when (event) {
             is SpellsEvent.LevelToggled -> ui.openLevel = event.level.takeIf { it != ui.openLevel }
-            SpellsEvent.CardClosed -> ui.cardId = null
+            SpellsEvent.CardClosed -> {
+                ui.cardId = null
+                ui.descriptionDraft = null
+            }
             is SpellsEvent.CardOpened -> ui.cardId = event.id
-            SpellsEvent.DraftClosed -> ui.draft = null
+            SpellsEvent.DraftClosed -> closeDraft()
+            SpellsEvent.HoldTipDismissed -> onHoldTipSeen()
+            SpellsEvent.UndoClicked -> undoController.undo()
+            SpellsEvent.UndoDismissed -> undoController.dismiss()
+            SpellsEvent.DescriptionClosed -> ui.descriptionDraft = null
+            is SpellsEvent.DescriptionChanged -> ui.descriptionDraft = event.text
             is SpellsEvent.DraftChanged -> ui.draft = event.spell
             is SpellsEvent.TileTapped -> Unit
             else -> if (!context.readOnly) write(event, context)
@@ -56,7 +81,7 @@ class SpellsHandler(
         when (event) {
             is SpellsEvent.CellPressed -> scope.launch { resources.pressCell(event.id, event.index) }
             is SpellsEvent.Cast ->
-                context.spells.firstOrNull { it.id == event.spellId }?.let { cast(it, event.pay, context) }
+                context.find(event.spellId)?.let { cast(it, event.pay, context) }
             is SpellsEvent.Add ->
                 ui.draft =
                     CharacterSpell(
@@ -65,14 +90,32 @@ class SpellsHandler(
                         level = event.level.coerceAtLeast(CANTRIP_LEVEL),
                         position = (context.spells.maxOfOrNull { it.position } ?: -1) + 1,
                     )
+            SpellsEvent.DraftSaved -> save(context)
+            is SpellsEvent.Deleted ->
+                context.find(event.id)?.let { delete(it, context.memberId) }
+            else -> openEditor(event, context)
+        }
+    }
+
+    // what a hold or the menu of the card opens, the whole form or one block or the description field
+    private fun openEditor(
+        event: SpellsEvent,
+        context: SpellsContext,
+    ) {
+        when (event) {
             is SpellsEvent.EditRequested ->
-                context.spells.firstOrNull { it.id == event.id }?.let {
+                context.find(event.id)?.let {
                     ui.cardId = null
                     ui.draft = it
                 }
-            SpellsEvent.DraftSaved -> save(context)
-            is SpellsEvent.Deleted ->
-                context.spells.firstOrNull { it.id == event.id }?.let { delete(it, context.memberId) }
+            is SpellsEvent.BlockHeld ->
+                context.find(event.id)?.let {
+                    ui.block = event.block
+                    ui.draft = it
+                }
+            is SpellsEvent.DescriptionHeld ->
+                context.find(event.id)?.let { ui.descriptionDraft = it.text }
+            SpellsEvent.DescriptionSaved -> saveDescription(context)
             else -> Unit
         }
     }
@@ -83,19 +126,58 @@ class SpellsHandler(
         context: SpellsContext,
     ) {
         val pay = chosen ?: defaultPay(spell, context.columns) ?: return
-        ui.cardId = null
         scope.launch {
-            casting.cast(spell, pay, context.columns) ?: return@launch
-            onCast(spell, pay)
+            val cast = casting.cast(spell, pay, context.columns) ?: return@launch
+            val effect = onCast(spell, pay)
+            val (title, sub) = castTexts(spell, pay, context.columns)
+            val note = effect?.note ?: getString(Res.string.me_spells_cast_no_mark).takeIf { !inFight && spell.marks }
+            undoController.showSpent(title, listOfNotNull(sub, note).joinToString(" · ")) {
+                effect?.undo?.invoke()
+                cast.undo()
+            }
         }
+    }
+
+    // a slot or a use is shown by what is left of it after the cast
+    private suspend fun castTexts(
+        spell: CharacterSpell,
+        pay: SpellPay,
+        columns: List<SlotColumn>,
+    ): Pair<String, String?> =
+        when (pay) {
+            is SpellPay.Slot -> {
+                val column = columns.firstOrNull { it.level == pay.level }
+                val circle = pay.level.toRomanNumeral()
+                getString(Res.string.me_spells_cast_slot_title, circle) to
+                    column?.let {
+                        getString(Res.string.me_spells_cast_slot_sub, circle, it.resource.current - 1, it.resource.max)
+                    }
+            }
+            SpellPay.Free ->
+                getString(Res.string.me_spells_cast_free_title, spell.name) to
+                    getString(Res.string.me_spells_cast_free_sub, spell.freeLeft - 1, spell.freeMax)
+            SpellPay.None -> spell.name to null
+        }
+
+    private fun closeDraft() {
+        ui.draft = null
+        ui.block = null
+    }
+
+    private fun saveDescription(context: SpellsContext) {
+        val text = ui.descriptionDraft?.trim()
+        ui.descriptionDraft = null
+        val spell = ui.cardId?.let(context::find)
+        if (text == null || spell == null || text == spell.text) return
+        scope.launch { spells.upsert(context.memberId, spell.copy(text = text)) }
     }
 
     private fun save(context: SpellsContext) {
         val draft = ui.draft?.clamped() ?: return
         if (draft.name.isEmpty()) return
-        ui.draft = null
+        closeDraft()
         scope.launch {
-            val stored = context.spells.firstOrNull { it.id == draft.id }
+            val stored = context.find(draft.id)
             // a spell that had no free casts starts with all of them
             val fresh = (stored?.freeMax ?: 0) == 0
             spells.upsert(context.memberId, if (fresh) draft.copy(freeLeft = draft.freeMax) else draft)

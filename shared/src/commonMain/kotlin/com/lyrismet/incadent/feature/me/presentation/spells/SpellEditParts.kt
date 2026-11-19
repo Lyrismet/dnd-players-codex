@@ -20,10 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
-import com.lyrismet.incadent.core.designsystem.component.AppPickSheet
+import com.lyrismet.incadent.core.designsystem.component.AppDamageGlyph
 import com.lyrismet.incadent.core.designsystem.component.AppToggleCard
 import com.lyrismet.incadent.core.designsystem.component.FormFieldHeight
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
@@ -45,18 +46,7 @@ import incadent.shared.generated.resources.me_spells_edit_level
 import incadent.shared.generated.resources.me_spells_edit_material
 import incadent.shared.generated.resources.me_spells_edit_ritual
 import incadent.shared.generated.resources.me_spells_edit_school
-import incadent.shared.generated.resources.me_spells_school_abjuration
-import incadent.shared.generated.resources.me_spells_school_conjuration
-import incadent.shared.generated.resources.me_spells_school_divination
-import incadent.shared.generated.resources.me_spells_school_empty
-import incadent.shared.generated.resources.me_spells_school_enchantment
-import incadent.shared.generated.resources.me_spells_school_evocation
-import incadent.shared.generated.resources.me_spells_school_illusion
-import incadent.shared.generated.resources.me_spells_school_necromancy
 import incadent.shared.generated.resources.me_spells_school_none
-import incadent.shared.generated.resources.me_spells_school_search
-import incadent.shared.generated.resources.me_spells_school_title
-import incadent.shared.generated.resources.me_spells_school_transmutation
 import org.jetbrains.compose.resources.stringResource
 
 private const val LEVEL_TILES_IN_ROW = 5
@@ -102,7 +92,7 @@ internal fun LevelTiles(
                                 } else {
                                     value.toRomanNumeral()
                                 },
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                                 color = if (on) AppPalette.GoldBright else AppPalette.TextSecondary,
                                 maxLines = 1,
                             )
@@ -117,6 +107,7 @@ internal fun LevelTiles(
 /** the school shows as a field that opens a list sheet, an empty one reads "not chosen" */
 @Composable
 internal fun SchoolField(
+    spellName: String,
     school: String,
     onPick: (String) -> Unit,
 ) {
@@ -126,44 +117,14 @@ internal fun SchoolField(
         placeholder = stringResource(Res.string.me_spells_school_none),
         onClick = { open = true },
         title = school.ifBlank { null },
+        leading = schoolOf(school)?.let { look -> { AppDamageGlyph(look.path, look.color, size = 16.dp) } },
     )
     if (open) {
-        SchoolSheet(school, { open = false }) {
+        SchoolSheet(spellName, school, { open = false }) {
             onPick(it)
             open = false
         }
     }
-}
-
-@Composable
-private fun SchoolSheet(
-    chosen: String,
-    onClose: () -> Unit,
-    onPick: (String) -> Unit,
-) {
-    val schools =
-        listOf(
-            stringResource(Res.string.me_spells_school_abjuration),
-            stringResource(Res.string.me_spells_school_conjuration),
-            stringResource(Res.string.me_spells_school_divination),
-            stringResource(Res.string.me_spells_school_enchantment),
-            stringResource(Res.string.me_spells_school_evocation),
-            stringResource(Res.string.me_spells_school_illusion),
-            stringResource(Res.string.me_spells_school_necromancy),
-            stringResource(Res.string.me_spells_school_transmutation),
-        )
-    AppPickSheet(
-        items = schools,
-        chosen = chosen.takeIf { it in schools },
-        title = stringResource(Res.string.me_spells_school_title),
-        emptyText = stringResource(Res.string.me_spells_school_empty),
-        searchPlaceholder = stringResource(Res.string.me_spells_school_search),
-        clearLabel = stringResource(Res.string.me_spells_school_none),
-        label = { it },
-        onPick = { onPick(it.orEmpty()) },
-        onDismiss = onClose,
-        showSearch = false,
-    )
 }
 
 /** the three letters as square toggles and the material beside them, which only takes text while the M is on */
@@ -220,7 +181,7 @@ private fun LetterToggle(
     ) {
         Text(
             text,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
             color = if (on) AppPalette.Arcane else AppPalette.TextTertiary,
         )
     }

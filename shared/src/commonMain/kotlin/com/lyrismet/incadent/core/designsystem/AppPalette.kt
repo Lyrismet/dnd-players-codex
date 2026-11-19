@@ -75,6 +75,7 @@ object AppPalette {
 
     // spell cells
     val Arcane = Color(0xFFB9A2F2)
+    val ArcaneLight = Color(0xFFD9CCFF)
     val ArcaneCell = Color(0xFFA98BF0)
     val ArcaneCellGlow = Color(0x8CA98BF0)
     val ArcaneCellOff = Color(0xFF221C30)

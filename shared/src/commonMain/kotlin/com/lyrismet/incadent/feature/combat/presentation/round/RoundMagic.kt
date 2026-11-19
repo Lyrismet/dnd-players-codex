@@ -22,13 +22,20 @@ import com.lyrismet.incadent.feature.combat.domain.round.markFor
 import com.lyrismet.incadent.feature.me.domain.SpellPay
 import com.lyrismet.incadent.feature.me.domain.slotColumns
 import com.lyrismet.incadent.feature.me.domain.spellLevels
+import com.lyrismet.incadent.feature.me.presentation.spells.CastEffect
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsBlockState
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsContext
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsEvent
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsHandler
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsUiState
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_spells_cast_mark
+import incadent.shared.generated.resources.me_spells_cast_mark_rounds
+import incadent.shared.generated.resources.me_spells_dur_rounds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flowOf
+import org.jetbrains.compose.resources.getPluralString
+import org.jetbrains.compose.resources.getString
 
 /** the stores the magic tab reads and writes, the same ones the sheet of the character uses */
 class MagicSources(
@@ -72,23 +79,17 @@ internal fun rememberRoundMagic(
         .collectAsState(initial = emptyList())
     val spells by remember(id) { id?.let(sources.spells::observe) ?: flowOf(emptyList()) }
         .collectAsState(initial = emptyList())
+    val undo by undoController.current.collectAsState()
     val latestOwn by rememberUpdatedState(own)
     val latestCombat by rememberUpdatedState(combat)
     val characterLevel by rememberUpdatedState(character?.level ?: 1)
     val handler =
         remember(ui) {
-            SpellsHandler(ui, scope, sources.resources, sources.spells, undoController) { spell, pay ->
+            SpellsHandler(ui, scope, sources.resources, sources.spells, undoController, inFight = true) { spell, pay ->
                 val member = latestOwn
                 val round = latestCombat?.round
-                if (member != null &&
-                    round != null
-                ) {
-                    putMark(
-                        spell,
-                        pay,
-                        characterLevel,
-                    ) { kind, rounds -> combatRepository.addMark(member.id, kind, spell.name, rounds, round) }
-                }
+                if (member == null || round == null) return@SpellsHandler null
+                putMark(spell, pay, characterLevel, combatRepository, member.id, round)
             }
         }
     if (character == null) return RoundMagic(null, null, null, handler)
@@ -106,6 +107,9 @@ internal fun rememberRoundMagic(
             openLevel = ui.openLevel?.takeIf { it in spellLevels(spells, columns) },
             card = spells.firstOrNull { it.id == ui.cardId },
             draft = ui.draft,
+            block = ui.block,
+            descriptionDraft = ui.descriptionDraft,
+            undo = undo,
             readOnly = false,
             tilesEditable = false,
         )
@@ -118,12 +122,23 @@ internal fun rememberRoundMagic(
 }
 
 // a spell that lasts puts a counted mark on the caster, a concentration one replaces the last, the other stays violet
+@Suppress("LongParameterList")
 private suspend fun putMark(
     spell: CharacterSpell,
     pay: SpellPay,
     characterLevel: Int,
-    add: suspend (MarkKind, Int?) -> Unit,
-) {
+    combatRepository: CombatRepository,
+    combatantId: Long,
+    round: Int,
+): CastEffect? {
     val circle = (pay as? SpellPay.Slot)?.level ?: spell.level
-    spell.markFor(circle, characterLevel)?.let { add(it.kind, it.rounds) }
+    val mark = spell.markFor(circle, characterLevel) ?: return null
+    val id = combatRepository.addMark(combatantId, mark.kind, spell.name, mark.rounds, round)
+    val name = if (mark.kind == MarkKind.CONCENTRATION) "◎ ${spell.name}" else spell.name
+    val note =
+        mark.rounds?.let {
+            val rounds = getPluralString(Res.plurals.me_spells_dur_rounds, it, it)
+            getString(Res.string.me_spells_cast_mark_rounds, name, rounds)
+        } ?: getString(Res.string.me_spells_cast_mark, name)
+    return CastEffect(note) { combatRepository.removeMark(id) }
 }

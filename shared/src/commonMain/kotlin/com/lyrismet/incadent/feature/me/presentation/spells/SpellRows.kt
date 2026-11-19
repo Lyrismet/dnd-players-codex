@@ -19,6 +19,9 @@ import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
 import com.lyrismet.incadent.feature.codex.domain.model.atRank
+import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_spells_row_free
+import org.jetbrains.compose.resources.stringResource
 
 /** the spells of one level in one dark box, a line between them */
 @Composable
@@ -82,7 +85,16 @@ private fun DetailLine(
 ) {
     val range = spell.range.trim()
     val at = spell.atRank(characterLevel)
-    if (at.damage.any { it.dice.isNotBlank() }) {
+    if (spell.hasFreeCasts) {
+        val free = stringResource(Res.string.me_spells_row_free, spell.freeLeft, spell.freeMax)
+        Text(
+            listOf(free, range).filter { it.isNotEmpty() }.joinToString(" · "),
+            style = AppText.caption,
+            color = AppPalette.TextSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    } else if (at.damage.any { it.dice.isNotBlank() }) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DamageLine(at.damage, at.projectiles, AppText.caption)
             if (spell.growsWithLevel) Text("↑", style = AppText.caption, color = AppPalette.Arcane)

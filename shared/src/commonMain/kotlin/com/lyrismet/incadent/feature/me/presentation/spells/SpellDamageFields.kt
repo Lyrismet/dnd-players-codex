@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.me.presentation.spells
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -17,15 +18,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
-import com.lyrismet.incadent.core.designsystem.component.AppPickSheet
+import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppRemoveButton
+import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
+import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.AppStepper
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormInlineField
+import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
@@ -38,10 +45,11 @@ import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_spells_damage_add
 import incadent.shared.generated.resources.me_spells_damage_dice_hint
 import incadent.shared.generated.resources.me_spells_damage_more
-import incadent.shared.generated.resources.me_spells_damage_type_empty
 import incadent.shared.generated.resources.me_spells_damage_type_hint
-import incadent.shared.generated.resources.me_spells_damage_type_none
-import incadent.shared.generated.resources.me_spells_damage_type_search
+import incadent.shared.generated.resources.me_spells_damage_type_restore
+import incadent.shared.generated.resources.me_spells_damage_type_row
+import incadent.shared.generated.resources.me_spells_damage_type_taken
+import incadent.shared.generated.resources.me_spells_damage_type_temp_short
 import incadent.shared.generated.resources.me_spells_damage_type_title
 import incadent.shared.generated.resources.me_spells_edit_damage
 import incadent.shared.generated.resources.me_spells_projectiles
@@ -89,7 +97,9 @@ internal fun DamageFields(
     }
     typeOf?.let { index ->
         EffectSheet(
-            chosen = rows.getOrNull(index)?.effect,
+            spellName = spell.name,
+            index = index,
+            rows = rows,
             onClose = { typeOf = null },
             onPick = { effect ->
                 setRows(rows.replaceAt(index) { it.copy(effect = effect) })
@@ -182,22 +192,125 @@ private fun Projectiles(
 
 private const val DICE_MAX_LENGTH = 16
 
+/** the types as tiles, healing apart from the damage ones, a type a row already has is dimmed and names that row */
 @Composable
 private fun EffectSheet(
-    chosen: SpellEffect?,
+    spellName: String,
+    index: Int,
+    rows: List<SpellDamage>,
     onClose: () -> Unit,
     onPick: (SpellEffect?) -> Unit,
 ) {
-    AppPickSheet(
-        items = Effects,
-        chosen = chosen,
-        title = stringResource(Res.string.me_spells_damage_type_title),
-        emptyText = stringResource(Res.string.me_spells_damage_type_empty),
-        searchPlaceholder = stringResource(Res.string.me_spells_damage_type_search),
-        clearLabel = stringResource(Res.string.me_spells_damage_type_none),
-        label = { effectTitle(it) },
-        onPick = onPick,
-        onDismiss = onClose,
-        itemIcon = { SpellEffectGlyph(it, size = 17.dp) },
-    )
+    val chosen = rows.getOrNull(index)?.effect
+    val dice = rows.getOrNull(index)?.dice.orEmpty()
+    val title = stringResource(Res.string.me_spells_damage_type_title)
+    AppBottomSheet(onDismissRequest = onClose) {
+        AppSheetColumn(
+            scroll = true,
+            header = {
+                AppSheetHeader(
+                    title = if (dice.isBlank()) title else "$title · $dice",
+                    onClose = onClose,
+                    overline =
+                        listOf(spellName, stringResource(Res.string.me_spells_damage_type_row, index + 1))
+                            .filter { it.isNotBlank() }
+                            .joinToString(" · ")
+                            .uppercase(),
+                )
+            },
+        ) {
+            EffectSection(
+                stringResource(Res.string.me_spells_damage_type_restore),
+                Effects.take(RESTORE_COUNT),
+                chosen,
+                index,
+                rows,
+                onPick,
+            )
+            EffectSection(title, Effects.drop(RESTORE_COUNT), chosen, index, rows, onPick)
+        }
+    }
 }
+
+@Composable
+private fun EffectSection(
+    title: String,
+    effects: List<SpellEffect>,
+    chosen: SpellEffect?,
+    index: Int,
+    rows: List<SpellDamage>,
+    onPick: (SpellEffect?) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionOverline(title.uppercase(), color = AppPalette.TextTertiary)
+        effects.chunked(TILES_PER_ROW).forEach { line ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                line.forEach { effect ->
+                    val taken = rows.indexOfFirst { it.effect == effect }.takeIf { it >= 0 && it != index }
+                    EffectTile(effect, effect == chosen, taken, Modifier.weight(1f)) {
+                        onPick(
+                            if (effect ==
+                                chosen
+                            ) {
+                                null
+                            } else {
+                                effect
+                            },
+                        )
+                    }
+                }
+                repeat(TILES_PER_ROW - line.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EffectTile(
+    effect: SpellEffect,
+    on: Boolean,
+    takenBy: Int?,
+    modifier: Modifier,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier
+            .heightIn(min = EFFECT_TILE_HEIGHT)
+            .alpha(if (takenBy != null) TAKEN_ALPHA else 1f)
+            .appCard(
+                AppShapes.Field,
+                if (on) AppPalette.SurfaceElevated else AppPalette.Background,
+                if (on) effect.color() else AppPalette.BorderSubtle,
+                onClick = if (takenBy == null) onClick else null,
+            ).padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        SpellEffectGlyph(effect, size = 17.dp)
+        Column {
+            Text(
+                if (effect == SpellEffect.TempHp) {
+                    stringResource(Res.string.me_spells_damage_type_temp_short)
+                } else {
+                    effectLabel(effect).lowercase()
+                },
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                color = AppPalette.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (takenBy != null) {
+                Text(
+                    stringResource(Res.string.me_spells_damage_type_taken, takenBy + 1),
+                    style = AppText.footnote,
+                    color = AppPalette.TextTertiary,
+                )
+            }
+        }
+    }
+}
+
+private const val RESTORE_COUNT = 2
+private const val TILES_PER_ROW = 3
+private const val TAKEN_ALPHA = 0.5f
+private val EFFECT_TILE_HEIGHT = 48.dp

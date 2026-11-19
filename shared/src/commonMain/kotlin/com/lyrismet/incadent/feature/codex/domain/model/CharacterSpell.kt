@@ -32,6 +32,9 @@ data class CharacterSpell(
     val isCantrip: Boolean get() = level == CANTRIP_LEVEL
     val hasFreeCasts: Boolean get() = freeMax > 0
 
+    /** whether a cast of the spell leaves a counted mark on the caster in a fight */
+    val marks: Boolean get() = concentration || combatRounds != null
+
     /** the components as the card writes them: "В, С, М (a pinch of sand)", empty when none is set */
     val hasComponents: Boolean get() = verbal || somatic || hasMaterial
 

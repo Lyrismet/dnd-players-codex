@@ -3,6 +3,7 @@ package com.lyrismet.incadent.feature.me.presentation.spells
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
 import com.lyrismet.incadent.feature.me.domain.SlotColumn
@@ -22,9 +23,20 @@ data class SpellsBlockState(
     val card: CharacterSpell?,
     val draft: CharacterSpell?,
     val readOnly: Boolean,
+    // the one-time hint of the card that its blocks can be held
+    val holdTip: Boolean = false,
+    // the block of the card whose own sheet is open, null while the whole form is
+    val block: SpellBlock? = null,
+    // the description while it is edited in place on the card
+    val descriptionDraft: String? = null,
+    // the toast of the last cast, drawn inside the card because a sheet covers the one of the screen
+    val undo: UndoAction? = null,
     // the numbers open their sheets only on the screen that owns the sheet
     val tilesEditable: Boolean,
 )
+
+/** a part of the card that opens its own sheet on a hold */
+enum class SpellBlock { NAME, DAMAGE, GROWTH, TIME, RANGE, COMPONENTS, DURATION }
 
 /** the three numbers on top of the block */
 enum class SpellTile { ABILITY, DC, ATTACK }
@@ -68,6 +80,29 @@ sealed interface SpellsEvent {
 
     data object DraftClosed : SpellsEvent
 
+    data class BlockHeld(
+        val id: Long,
+        val block: SpellBlock,
+    ) : SpellsEvent
+
+    data object HoldTipDismissed : SpellsEvent
+
+    data object UndoClicked : SpellsEvent
+
+    data object UndoDismissed : SpellsEvent
+
+    data class DescriptionHeld(
+        val id: Long,
+    ) : SpellsEvent
+
+    data class DescriptionChanged(
+        val text: String,
+    ) : SpellsEvent
+
+    data object DescriptionSaved : SpellsEvent
+
+    data object DescriptionClosed : SpellsEvent
+
     data class Deleted(
         val id: Long,
     ) : SpellsEvent
@@ -82,10 +117,14 @@ class SpellsUiState {
     var openLevel by mutableStateOf<Int?>(null)
     var cardId by mutableStateOf<Long?>(null)
     var draft by mutableStateOf<CharacterSpell?>(null)
+    var block by mutableStateOf<SpellBlock?>(null)
+    var descriptionDraft by mutableStateOf<String?>(null)
 
     fun reset() {
         openLevel = null
         cardId = null
         draft = null
+        block = null
+        descriptionDraft = null
     }
 }
