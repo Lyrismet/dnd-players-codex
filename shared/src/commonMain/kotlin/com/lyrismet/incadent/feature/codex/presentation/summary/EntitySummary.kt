@@ -248,6 +248,7 @@ private fun buildPartySummary(
         fall = if (member.fallen) fallOf(member, lookup) else null,
         canRaiseLevel = !member.fallen && (member.level ?: 0) < PartyStatRanges.level.last,
         gear = gearOf(EntityKind.PARTY, member.id, lookup),
+        vulnerabilities = NpcVulnerabilities(own = member.vulnerabilities, name = member.name),
     )
 }
 

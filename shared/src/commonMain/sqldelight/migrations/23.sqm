@@ -1,0 +1,6 @@
+-- the compressed picture before it was cropped, so a crop can be done again from it
+ALTER TABLE party_member ADD COLUMN photo_source BLOB;
+ALTER TABLE npc ADD COLUMN photo_source BLOB;
+ALTER TABLE item ADD COLUMN photo_source BLOB;
+ALTER TABLE location ADD COLUMN photo_source BLOB;
+ALTER TABLE species ADD COLUMN photo_source BLOB;

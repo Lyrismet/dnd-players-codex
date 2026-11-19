@@ -1,6 +1,9 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
+import com.lyrismet.incadent.feature.codex.domain.grouping.with
 import com.lyrismet.incadent.feature.codex.domain.model.CustomCreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.ItemOwner
 import com.lyrismet.incadent.feature.codex.domain.model.Location
@@ -84,6 +87,21 @@ internal class FakePartyRepository(
         combatId: Long?,
     ) {
         stored(id)?.let { put(it.copy(fallen = fallen, fellCombatId = combatId.takeIf { fallen })) }
+    }
+
+    override suspend fun setVulnerabilities(
+        id: Long,
+        vulnerabilities: Map<DamageType, DamageState>,
+    ) {
+        stored(id)?.let { put(it.copy(vulnerabilities = vulnerabilities)) }
+    }
+
+    override suspend fun setVulnerability(
+        id: Long,
+        type: DamageType,
+        state: DamageState?,
+    ) {
+        stored(id)?.let { put(it.copy(vulnerabilities = it.vulnerabilities.with(type, state))) }
     }
 }
 

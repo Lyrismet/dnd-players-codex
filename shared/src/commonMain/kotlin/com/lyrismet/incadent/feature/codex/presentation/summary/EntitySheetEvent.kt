@@ -65,6 +65,17 @@ sealed interface EntitySheetEvent {
         val before: Map<DamageType, DamageState>,
     ) : EntitySheetEvent
 
+    data class PartyVulnerabilityChanged(
+        val partyId: Long,
+        val type: DamageType,
+        val state: DamageState?,
+    ) : EntitySheetEvent
+
+    data class PartyVulnerabilitiesEdited(
+        val partyId: Long,
+        val before: Map<DamageType, DamageState>,
+    ) : EntitySheetEvent
+
     /** the card's "в этой заметке" row stepped the count of the tapped chip - only a session screen can act on it */
     data class SpeciesNoteQuantityStepped(
         val delta: Int,
@@ -108,6 +119,8 @@ fun EntitySheetEvent.writesCampaignData(): Boolean =
         is EntitySheetEvent.NpcVulnerabilityChanged,
         is EntitySheetEvent.NpcFactsChanged,
         is EntitySheetEvent.NpcVulnerabilitiesEdited,
+        is EntitySheetEvent.PartyVulnerabilityChanged,
+        is EntitySheetEvent.PartyVulnerabilitiesEdited,
         is EntitySheetEvent.SpeciesNoteQuantityStepped,
         is EntitySheetEvent.ItemQuantityStepped,
         is EntitySheetEvent.GearHeld,
@@ -148,6 +161,10 @@ fun EntitySheetInteractions.onEvent(
         is EntitySheetEvent.NpcFactsChanged -> onNpcFactsChanged(scope, event.npcId, event.facts)
         is EntitySheetEvent.NpcVulnerabilitiesEdited ->
             onNpcVulnerabilitiesEdited(scope, event.npcId, event.before)
+        is EntitySheetEvent.PartyVulnerabilityChanged ->
+            onPartyVulnerabilityChanged(scope, event.partyId, event.type, event.state)
+        is EntitySheetEvent.PartyVulnerabilitiesEdited ->
+            onPartyVulnerabilitiesEdited(scope, event.partyId, event.before)
         // the codex screen takes these two before they get here, no other host has an item stack or a gear pick
         is EntitySheetEvent.ItemQuantityStepped,
         is EntitySheetEvent.GearHeld,
@@ -163,7 +180,7 @@ fun EntitySheetInteractions.onEvent(
  * the card's actions, every one sent to [send] as an [EntitySheetEvent]. Presence is offered only when
  * [partyPresence] is set, the rest are what only the codex manages.
  */
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList", "LongMethod", "CyclomaticComplexMethod")
 fun entitySheetActions(
     partyPresence: Boolean = false,
     speciesVulnerabilityEdit: Boolean = false,
@@ -226,6 +243,18 @@ fun entitySheetActions(
         onNpcVulnerabilitiesEdited =
             if (npcVulnerabilityEdit) {
                 { id, before -> send(EntitySheetEvent.NpcVulnerabilitiesEdited(id, before)) }
+            } else {
+                null
+            },
+        onPartyVulnerabilityChanged =
+            if (partyPresence) {
+                { id, type, state -> send(EntitySheetEvent.PartyVulnerabilityChanged(id, type, state)) }
+            } else {
+                null
+            },
+        onPartyVulnerabilitiesEdited =
+            if (partyPresence) {
+                { id, before -> send(EntitySheetEvent.PartyVulnerabilitiesEdited(id, before)) }
             } else {
                 null
             },

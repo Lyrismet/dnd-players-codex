@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.feature.me.presentation
 
+import com.lyrismet.incadent.feature.codex.domain.grouping.decodeFacts
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
+import com.lyrismet.incadent.feature.codex.domain.model.CharacterFeat
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterResource
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
@@ -8,6 +10,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.CharacterVitals
 import com.lyrismet.incadent.feature.codex.domain.model.FifthEditionRules
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
+import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilities
 import com.lyrismet.incadent.feature.me.domain.AbilityStrip
 import com.lyrismet.incadent.feature.me.domain.featureResources
 import com.lyrismet.incadent.feature.me.domain.headerNumbers
@@ -36,6 +39,7 @@ internal fun buildMeCharacter(
     strips: List<AbilityStrip>,
     resources: List<CharacterResource>,
     spells: List<CharacterSpell>,
+    feats: List<CharacterFeat>,
     tabs: List<MeTab>,
     ui: MeUiState,
     readOnly: Boolean,
@@ -56,7 +60,7 @@ internal fun buildMeCharacter(
         tab = ui.tab.takeIf { it in tabs } ?: MeTab.SHEET,
         tabs = tabs,
         spellsHidden = sheet.spellsHidden,
-        sheet = sheetState(sheet, strips, ui),
+        sheet = sheetState(sheet, member, strips, feats, ui),
         spells = spellsState(sheet, member.level ?: 1, resources, spells, ui.spells, readOnly),
         resources = featureResources(resources),
         breakdown = figures.breakdown,
@@ -70,6 +74,7 @@ internal fun buildMeCharacter(
         liveSessionTitle = liveSessionTitle,
         menuOpen = ui.menuOpen,
         readOnly = readOnly,
+        photoCrop = ui.photoCrop,
     )
 
 internal fun meTabs(hasSpells: Boolean): List<MeTab> =
@@ -109,7 +114,9 @@ private fun spellsState(
 
 private fun sheetState(
     sheet: CharacterSheet,
+    member: PartyMember,
     strips: List<AbilityStrip>,
+    feats: List<CharacterFeat>,
     ui: MeUiState,
 ): MeSheetState =
     MeSheetState(
@@ -120,10 +127,17 @@ private fun sheetState(
         query = ui.query,
         inspiration = sheet.inspiration,
         languages = ui.textDrafts[MeText.LANGUAGES] ?: sheet.languages,
-        features = ui.textDrafts[MeText.FEATURES] ?: sheet.features,
         background = sheet.background,
         alignment = sheet.alignment,
         personality = ui.textDrafts[MeText.PERSONALITY] ?: sheet.personality,
+        shields =
+            NpcVulnerabilities(
+                own = member.vulnerabilities,
+                facts = decodeFacts(sheet.features),
+                name = member.name,
+            ),
+        feats = feats,
+        featDraft = ui.featDraft,
     )
 
 private fun breakdown(

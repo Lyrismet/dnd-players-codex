@@ -32,6 +32,8 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.StatusColor
+import com.lyrismet.incadent.core.designsystem.component.AppPhotoSlot
+import com.lyrismet.incadent.core.designsystem.component.PhotoSlotActions
 import com.lyrismet.incadent.core.designsystem.component.PortraitBadge
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.component.icons.sheet.SheetIcons
@@ -53,6 +55,7 @@ import incadent.shared.generated.resources.me_menu_fill
 import incadent.shared.generated.resources.me_menu_not_mine
 import incadent.shared.generated.resources.me_menu_spells_hide
 import incadent.shared.generated.resources.me_menu_spells_show
+import incadent.shared.generated.resources.photo_kind_portrait
 import org.jetbrains.compose.resources.stringResource
 
 private val PartyBlue = StatusColor(AppPalette.Azure, AppPalette.Surface, AppPalette.PartyRowBorder)
@@ -64,17 +67,36 @@ internal fun MeNameRow(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            PortraitBadge(
-                portrait = character.portrait,
-                color = PartyBlue,
-                size = 52.dp,
-                shape = RoundedCornerShape(26.dp, 26.dp, 8.dp, 8.dp),
-            ) {
-                Text(
-                    character.name.take(1).uppercase(),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = AppPalette.Azure,
-                )
+            AppPhotoSlot(
+                photo = character.portrait,
+                kind = stringResource(Res.string.photo_kind_portrait).uppercase(),
+                title = character.name,
+                monochrome = false,
+                actions =
+                    if (character.readOnly) {
+                        null
+                    } else {
+                        PhotoSlotActions(
+                            onPicked = { onEvent(MeEvent.Portrait(PortraitEvent.Picked(it))) },
+                            onCrop = { onEvent(MeEvent.Portrait(PortraitEvent.RecropRequested)) },
+                            onDelete = { onEvent(MeEvent.Portrait(PortraitEvent.Removed)) },
+                        )
+                    },
+                showEditHint = !character.readOnly,
+            ) { onClick ->
+                PortraitBadge(
+                    portrait = character.portrait,
+                    color = PartyBlue,
+                    size = 52.dp,
+                    shape = RoundedCornerShape(26.dp, 26.dp, 8.dp, 8.dp),
+                    modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
+                ) {
+                    Text(
+                        character.name.take(1).uppercase(),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = AppPalette.Azure,
+                    )
+                }
             }
             Column(Modifier.weight(1f)) {
                 Text(

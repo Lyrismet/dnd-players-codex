@@ -11,7 +11,8 @@ CREATE TABLE species (
     photo_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
     origin_id TEXT NOT NULL DEFAULT '',
-    custom_type_id INTEGER REFERENCES creature_type(id) ON DELETE SET NULL
+    custom_type_id INTEGER REFERENCES creature_type(id) ON DELETE SET NULL,
+    photo_source BLOB
 );
 
 CREATE INDEX species_campaign_id ON species(campaign_id);
@@ -25,18 +26,18 @@ FROM species s LEFT JOIN creature_type t ON t.id = s.custom_type_id
 WHERE s.campaign_id = ? ORDER BY s.name;
 
 selectById:
-SELECT s.id, s.name, s.creature_type, s.vulnerabilities, s.notes, s.hit_points, s.photo_thumb, s.photo, s.origin_id, s.custom_type_id, t.name AS custom_type_name
+SELECT s.id, s.name, s.creature_type, s.vulnerabilities, s.notes, s.hit_points, s.photo_thumb, s.photo, s.origin_id, s.custom_type_id, t.name AS custom_type_name, s.photo_source
 FROM species s LEFT JOIN creature_type t ON t.id = s.custom_type_id
 WHERE s.id = ?;
 
 insert:
-INSERT INTO species(name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id, origin_id, custom_type_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO species(name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id, origin_id, custom_type_id, photo_source)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO species(id, name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id, origin_id, custom_type_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO species(id, name, creature_type, vulnerabilities, notes, hit_points, photo, photo_thumb, campaign_id, origin_id, custom_type_id, photo_source)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
@@ -51,7 +52,7 @@ SET name = ?, creature_type = ?, custom_type_id = ?, vulnerabilities = ?, notes 
 WHERE id = ?;
 
 setPhoto:
-UPDATE species SET photo = ?, photo_thumb = ? WHERE id = ?;
+UPDATE species SET photo = ?, photo_thumb = ?, photo_source = ? WHERE id = ?;
 
 deleteById:
 DELETE FROM species WHERE id = ?;

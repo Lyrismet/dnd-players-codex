@@ -68,6 +68,7 @@ internal fun NpcVulnerabilitySection(
     onEdited: ((Map<DamageType, DamageState>) -> Unit)?,
     modifier: Modifier = Modifier,
     onFactsChanged: ((List<String>) -> Unit)? = null,
+    withFacts: Boolean = true,
 ) {
     var before by remember { mutableStateOf<Map<DamageType, DamageState>?>(null) }
     var text by remember { mutableStateOf("") }
@@ -81,6 +82,7 @@ internal fun NpcVulnerabilitySection(
         FeaturesBottomSheet(
             overline = vulnerabilities.name.uppercase(),
             facts = vulnerabilities.facts,
+            withFacts = withFacts,
             text = text,
             shields = effectiveVulnerabilities(vulnerabilities.fromSpecies, vulnerabilities.own),
             actions =

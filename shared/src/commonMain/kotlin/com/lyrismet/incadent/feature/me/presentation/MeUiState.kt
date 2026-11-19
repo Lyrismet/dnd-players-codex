@@ -10,6 +10,8 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.calc.CalcExpression
+import com.lyrismet.incadent.core.portrait.PhotoCropDraft
+import com.lyrismet.incadent.feature.codex.domain.model.CharacterFeat
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterResource
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterVitals
 import com.lyrismet.incadent.feature.codex.domain.model.Coin
@@ -36,6 +38,8 @@ internal class MeUiState(
     var menuOpen by mutableStateOf(false)
     var edit by mutableStateOf<MeOverlay?>(null)
     var hitPad by mutableStateOf<HitPad?>(null)
+    var featDraft by mutableStateOf<CharacterFeat?>(null)
+    var photoCrop by mutableStateOf<PhotoCropDraft?>(null)
     val spells = SpellsUiState()
     var rest by rest
     var wallet by wallet

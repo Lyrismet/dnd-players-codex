@@ -9,7 +9,6 @@ import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepos
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_resource_deleted_title
 import incadent.shared.generated.resources.me_slot_name
-import incadent.shared.generated.resources.me_spells_hidden_title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -106,11 +105,6 @@ internal class MeCounterActions(
     ) {
         scope.launch {
             sheets.updateSheet(member.id) { it.copy(spellsHidden = hidden) }
-            if (hidden) {
-                undoController.show(getString(Res.string.me_spells_hidden_title), member.name) {
-                    sheets.updateSheet(member.id) { it.copy(spellsHidden = false) }
-                }
-            }
         }
     }
 }

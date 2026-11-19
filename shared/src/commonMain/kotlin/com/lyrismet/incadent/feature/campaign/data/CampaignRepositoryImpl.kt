@@ -163,6 +163,7 @@ class CampaignRepositoryImpl(
                 full.cover_thumb,
                 targetId,
                 newOriginId(),
+                null,
             )
             placeMap[oldId] = locationQueries.lastInsertRowId().executeAsOne()
         }
@@ -186,6 +187,7 @@ class CampaignRepositoryImpl(
                 npc.portrait_thumb,
                 targetId,
                 newOriginId(),
+                null,
             )
             val newId = npcQueries.lastInsertRowId().executeAsOne()
             npcQueries.updateFacts(npc.facts, newId)
@@ -218,6 +220,7 @@ class CampaignRepositoryImpl(
                 targetId,
                 newOriginId(),
                 database.creatureTypeIdIn(targetId, full.custom_type_name),
+                null,
             )
             speciesQueries.lastInsertRowId().executeAsOne().also { copied[oldId] = it }
         }

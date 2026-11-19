@@ -35,12 +35,14 @@ import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppSectionTitleHint
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
+import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
+import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilitySection
 import com.lyrismet.incadent.feature.me.domain.AbilityStrip
 import com.lyrismet.incadent.feature.me.domain.isDown
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.me_features_placeholder
+import incadent.shared.generated.resources.me_features_hold_hint
 import incadent.shared.generated.resources.me_features_title
 import incadent.shared.generated.resources.me_fill_banner_action
 import incadent.shared.generated.resources.me_fill_banner_text
@@ -77,6 +79,8 @@ private sealed interface SheetItem {
 
     data object Features : SheetItem
 
+    data object Feats : SheetItem
+
     data object About : SheetItem
 
     data object Personality : SheetItem
@@ -94,6 +98,7 @@ private fun sheetItems(sheet: MeSheetState): List<SheetItem> {
         if (!searching) {
             add(SheetItem.Languages)
             add(SheetItem.Features)
+            add(SheetItem.Feats)
             if (sheet.background.isNotBlank() || sheet.alignment.isNotBlank()) {
                 add(SheetItem.About)
             }
@@ -162,6 +167,7 @@ private fun MeSheetTab(
             }
         }
     }
+    sheet.featDraft?.let { draft -> FeatSheet(draft) { onEvent(MeEvent.Feats(it)) } }
 }
 
 private fun itemKey(
@@ -192,10 +198,8 @@ private fun SheetPart(
             TextBlock(Res.string.me_languages_title, Res.string.me_languages_placeholder, sheet.languages) {
                 onEvent(MeEvent.Sheet(SheetEvent.TextChanged(MeText.LANGUAGES, it)))
             }
-        SheetItem.Features ->
-            TextBlock(Res.string.me_features_title, Res.string.me_features_placeholder, sheet.features) {
-                onEvent(MeEvent.Sheet(SheetEvent.TextChanged(MeText.FEATURES, it)))
-            }
+        SheetItem.Features -> FeaturesBlock(sheet, character.readOnly, onEvent)
+        SheetItem.Feats -> FeatsBlock(sheet.feats, character.readOnly) { onEvent(MeEvent.Feats(it)) }
         SheetItem.About -> AboutBlock(sheet) { onEvent(MeEvent.Sheet(SheetEvent.AboutTapped)) }
         SheetItem.Personality ->
             TextBlock(Res.string.me_personality_title, Res.string.me_personality_placeholder, sheet.personality) {
@@ -284,3 +288,36 @@ private fun Modifier.trimBottom(amount: Dp): Modifier =
         val placeable = measurable.measure(constraints)
         layout(placeable.width, (placeable.height - amount.roundToPx()).coerceAtLeast(0)) { placeable.place(0, 0) }
     }
+
+/** the label outside, under it the shields of the character, then the facts of the features */
+@Composable
+private fun FeaturesBlock(
+    sheet: MeSheetState,
+    readOnly: Boolean,
+    onEvent: (MeEvent) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            FormFieldLabel(stringResource(Res.string.me_features_title), modifier = Modifier.weight(1f))
+            if (!readOnly) {
+                Text(
+                    stringResource(Res.string.me_features_hold_hint),
+                    style = AppText.footnote,
+                    color = AppPalette.TextTertiary,
+                )
+            }
+        }
+        NpcVulnerabilitySection(
+            vulnerabilities = sheet.shields,
+            onChange =
+                if (readOnly) {
+                    null
+                } else {
+                    { type, state -> onEvent(MeEvent.Sheet(SheetEvent.ShieldChanged(type, state))) }
+                },
+            onEdited = null,
+            modifier = Modifier.fillMaxWidth().appCard().padding(horizontal = 8.dp),
+            onFactsChanged = { onEvent(MeEvent.Sheet(SheetEvent.FactsChanged(it))) },
+        )
+    }
+}

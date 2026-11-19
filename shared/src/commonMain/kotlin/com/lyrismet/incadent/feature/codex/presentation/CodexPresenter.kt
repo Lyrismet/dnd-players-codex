@@ -167,7 +167,7 @@ class CodexPresenter(
             imageCompressor,
             undoController,
             deletionPlanner,
-            PlayerCharacterPicker(partyRepository, undoController, appPreferencesRepository),
+            PlayerCharacterPicker(partyRepository, appPreferencesRepository),
         )
 
     // one collection per source the screen reads - a flat merge, not real complexity

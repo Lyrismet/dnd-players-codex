@@ -527,7 +527,7 @@ class CodexEntryFormController private constructor(
     fun onPhotoRecropRequested(slot: PhotoSlot) {
         val current = fields.value ?: return
         val stored = if (slot == PhotoSlot.COVER) current.cover else current.portrait
-        fields.value = current.copy(photoCrop = stored?.let { recropDraft(it.display, slot) })
+        fields.value = current.copy(photoCrop = stored?.let { recropDraft(it, slot) })
     }
 
     fun onPhotoCropConfirmed(

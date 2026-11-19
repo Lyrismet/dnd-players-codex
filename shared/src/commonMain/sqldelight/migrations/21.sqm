@@ -1,0 +1,3 @@
+-- an item a character has on, and the shields of a party member kept like those of an npc
+ALTER TABLE item ADD COLUMN worn INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE party_member ADD COLUMN vulnerabilities TEXT NOT NULL DEFAULT '';

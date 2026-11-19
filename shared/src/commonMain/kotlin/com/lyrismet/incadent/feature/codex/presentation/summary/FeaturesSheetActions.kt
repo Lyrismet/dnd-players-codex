@@ -61,8 +61,8 @@ internal fun FeaturesBottomSheet(
     text: String,
     shields: Map<DamageType, DamageState>,
     actions: FeaturesSheetActions,
+    withFacts: Boolean = true,
 ) {
-    val removeLabel = stringResource(Res.string.combat_features_remove)
     AppBottomSheet(onDismissRequest = actions.onClose) {
         AppSheetColumn(
             scroll = true,
@@ -74,50 +74,62 @@ internal fun FeaturesBottomSheet(
                 )
             },
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                FormFieldLabel(stringResource(Res.string.combat_features_facts).uppercase())
-                AppTextInput(
-                    value = text,
-                    onValueChange = actions.onTextChanged,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = stringResource(Res.string.combat_features_field),
-                    style = AppTextInputStyle(contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)),
-                    trailing = { AddInFieldButton(text.isNotBlank(), actions.onAdd) },
-                )
-                if (facts.isNotEmpty()) {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp),
-                    ) {
-                        facts.forEach { fact ->
-                            Row(modifier = Modifier.semantics { contentDescription = removeLabel }) {
-                                FeatureChip(fact, trailing = " ×") { actions.onRemove(fact) }
-                            }
-                        }
-                    }
-                }
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    listOf(
-                        stringResource(Res.string.combat_mark_preset_save),
-                        stringResource(Res.string.combat_mark_preset_ac),
-                        stringResource(Res.string.combat_mark_preset_speed),
-                    ).forEach { preset -> FeatureChip(preset) { actions.onTextChanged("$preset ") } }
-                }
-                Text(
-                    stringResource(Res.string.combat_features_hint),
-                    color = AppPalette.TextTertiary,
-                    fontSize = AppFontSize.Caption,
-                )
-            }
+            if (withFacts) FactsEditor(facts, text, actions)
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 FormFieldLabel(stringResource(Res.string.combat_features_shields_title).uppercase())
                 VulnerabilityGridEditor(shields, actions.onShieldChanged)
             }
             FormPrimaryButton(stringResource(Res.string.combat_features_done), actions.onClose)
         }
+    }
+}
+
+/** the facts of a creature: a field that adds one, the chips that remove one and the quick starts */
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
+private fun FactsEditor(
+    facts: List<String>,
+    text: String,
+    actions: FeaturesSheetActions,
+) {
+    val removeLabel = stringResource(Res.string.combat_features_remove)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        FormFieldLabel(stringResource(Res.string.combat_features_facts).uppercase())
+        AppTextInput(
+            value = text,
+            onValueChange = actions.onTextChanged,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = stringResource(Res.string.combat_features_field),
+            style = AppTextInputStyle(contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)),
+            trailing = { AddInFieldButton(text.isNotBlank(), actions.onAdd) },
+        )
+        if (facts.isNotEmpty()) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
+                facts.forEach { fact ->
+                    Row(modifier = Modifier.semantics { contentDescription = removeLabel }) {
+                        FeatureChip(fact, trailing = " ×") { actions.onRemove(fact) }
+                    }
+                }
+            }
+        }
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            listOf(
+                stringResource(Res.string.combat_mark_preset_save),
+                stringResource(Res.string.combat_mark_preset_ac),
+                stringResource(Res.string.combat_mark_preset_speed),
+            ).forEach { preset -> FeatureChip(preset) { actions.onTextChanged("$preset ") } }
+        }
+        Text(
+            stringResource(Res.string.combat_features_hint),
+            color = AppPalette.TextTertiary,
+            fontSize = AppFontSize.Caption,
+        )
     }
 }
 

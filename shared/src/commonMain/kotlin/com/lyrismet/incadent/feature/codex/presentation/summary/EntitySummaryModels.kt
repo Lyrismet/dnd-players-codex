@@ -240,6 +240,7 @@ sealed interface EntitySummaryItem {
         // the player's own level can still go up
         val canRaiseLevel: Boolean = false,
         val gear: List<MentionChipItem> = emptyList(),
+        val vulnerabilities: NpcVulnerabilities = NpcVulnerabilities(),
     ) : EntitySummaryItem
 }
 

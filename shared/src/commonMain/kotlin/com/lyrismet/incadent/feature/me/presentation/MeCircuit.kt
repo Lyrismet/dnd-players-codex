@@ -1,8 +1,10 @@
 package com.lyrismet.incadent.feature.me.presentation
 
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterFeatRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterResourceRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterRestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
@@ -34,6 +36,8 @@ class MePresenterFactory(
     private val sheetRepository: CharacterSheetRepository,
     private val resourceRepository: CharacterResourceRepository,
     private val spellRepository: CharacterSpellRepository,
+    private val featRepository: CharacterFeatRepository,
+    private val imageCompressor: ImageCompressor,
     private val campaignRepository: CampaignRepository,
     private val codexRepositories: CodexRepositories,
     private val restRepository: CharacterRestRepository,
@@ -54,6 +58,8 @@ class MePresenterFactory(
                     sheetRepository,
                     resourceRepository,
                     spellRepository,
+                    featRepository,
+                    imageCompressor,
                     campaignRepository,
                     codexRepositories,
                     restRepository,

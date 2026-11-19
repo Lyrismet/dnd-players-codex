@@ -40,6 +40,7 @@ data class ItemDraft(
     val owner: ItemOwner = ItemOwner.Shared,
     val notes: String = "",
     val photo: Photo? = null,
+    val worn: Boolean = false,
 ) {
     val isNew: Boolean get() = id == 0L
     val canSave: Boolean get() = name.isNotBlank()
@@ -55,10 +56,11 @@ data class ItemDraft(
             notes = notes,
             photo = photo,
             originId = originId,
+            worn = worn,
         )
 }
 
-internal fun Item.toDraft() = ItemDraft(id, originId, name, quantity, price, coin, owner, notes, photo)
+internal fun Item.toDraft() = ItemDraft(id, originId, name, quantity, price, coin, owner, notes, photo, worn)
 
 /** the sheet to add or edit one item - everything it shows beyond the [draft] is already worded */
 data class ItemSheetState(
@@ -135,6 +137,10 @@ sealed interface ItemEvent : CircuitUiEvent {
 
     data class NotesChanged(
         val notes: String,
+    ) : ItemEvent
+
+    data class WornChanged(
+        val worn: Boolean,
     ) : ItemEvent
 
     data object SaveClicked : ItemEvent

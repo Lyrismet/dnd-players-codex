@@ -33,6 +33,9 @@ data class EntitySummarySheetActions(
     val onNpcFactsChanged: ((npcId: Long, facts: List<String>) -> Unit)? = null,
     // closes the editing, [before] is what the npc had when it opened so the change can be taken back
     val onNpcVulnerabilitiesEdited: ((npcId: Long, before: Map<DamageType, DamageState>) -> Unit)? = null,
+    // the shields of a party member, null keeps them read-only
+    val onPartyVulnerabilityChanged: ((partyId: Long, type: DamageType, state: DamageState?) -> Unit)? = null,
+    val onPartyVulnerabilitiesEdited: ((partyId: Long, before: Map<DamageType, DamageState>) -> Unit)? = null,
     // steps the count of the chip the card was opened from, the row only shows when the card knows that count
     val onSpeciesNoteQuantityStep: ((delta: Int) -> Unit)? = null,
     // steps the stack of an item card by one, null keeps the stack read-only

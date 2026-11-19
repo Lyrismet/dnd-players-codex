@@ -26,6 +26,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.lyrismet.incadent.core.designsystem.component.AppPhotoCropDraftWindow
 import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import incadent.shared.generated.resources.Res
@@ -67,6 +68,13 @@ internal fun MeCharacterUi(
             MeTabContent(character, listState, onEvent, Modifier.weight(1f))
         }
         MeOverlays(character, onEvent)
+        character.photoCrop?.let { draft ->
+            AppPhotoCropDraftWindow(
+                draft = draft,
+                onConfirm = { onEvent(MeEvent.Portrait(PortraitEvent.CropConfirmed(it))) },
+                onCancel = { onEvent(MeEvent.Portrait(PortraitEvent.CropCancelled)) },
+            )
+        }
     }
 }
 

@@ -1,4 +1,5 @@
 import com.lyrismet.incadent.feature.codex.domain.model.Coin;
+import kotlin.Boolean;
 import com.lyrismet.incadent.domain.model.EntityKind;
 
 CREATE TABLE item (
@@ -13,7 +14,9 @@ CREATE TABLE item (
     photo BLOB,
     photo_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
-    origin_id TEXT NOT NULL DEFAULT ''
+    origin_id TEXT NOT NULL DEFAULT '',
+    worn INTEGER AS Boolean NOT NULL DEFAULT 0,
+    photo_source BLOB
 );
 
 CREATE INDEX item_campaign_id ON item(campaign_id);
@@ -21,7 +24,7 @@ CREATE UNIQUE INDEX item_origin_id ON item(campaign_id, origin_id);
 
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
-SELECT id, name, quantity, price, coin, owner_kind, owner_id, notes, photo_thumb, origin_id
+SELECT id, name, quantity, price, coin, owner_kind, owner_id, notes, photo_thumb, origin_id, worn
 FROM item WHERE campaign_id = ?;
 
 selectPhotoSizes:
@@ -32,17 +35,17 @@ selectPhoto:
 SELECT photo FROM item WHERE id = ?;
 
 selectById:
-SELECT id, name, quantity, price, coin, owner_kind, owner_id, notes, photo_thumb, photo, origin_id
+SELECT id, name, quantity, price, coin, owner_kind, owner_id, notes, photo_thumb, photo, origin_id, worn, photo_source
 FROM item WHERE id = ?;
 
 insert:
-INSERT INTO item(name, quantity, price, coin, owner_kind, owner_id, notes, photo, photo_thumb, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO item(name, quantity, price, coin, owner_kind, owner_id, notes, photo, photo_thumb, campaign_id, origin_id, worn, photo_source)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO item(id, name, quantity, price, coin, owner_kind, owner_id, notes, photo, photo_thumb, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO item(id, name, quantity, price, coin, owner_kind, owner_id, notes, photo, photo_thumb, campaign_id, origin_id, worn, photo_source)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
@@ -53,11 +56,15 @@ WHERE id = ?;
 stepQuantity:
 UPDATE item SET quantity = MIN(MAX(quantity + :delta, :min), :max) WHERE id = :id;
 
+-- worn is written on its own, so saving a form never takes a thing off
+setWorn:
+UPDATE item SET worn = ? WHERE id = ?;
+
 setOwner:
 UPDATE item SET owner_kind = ?, owner_id = ? WHERE id = ?;
 
 setPhoto:
-UPDATE item SET photo = ?, photo_thumb = ? WHERE id = ?;
+UPDATE item SET photo = ?, photo_thumb = ?, photo_source = ? WHERE id = ?;
 
 deleteById:
 DELETE FROM item WHERE id = ?;

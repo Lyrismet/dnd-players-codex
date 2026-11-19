@@ -129,6 +129,8 @@ sealed interface FileRecord {
         val fallen: Boolean = false,
         val originId: String? = null,
         val subclass: String = "",
+        // the shields of the character in the format of an npc's
+        val vulnerabilities: String = "",
         // the numbers beside the hit points, a personal copy only
         val tempHp: Int = 0,
         val armorClass: Int? = null,
@@ -213,6 +215,18 @@ sealed interface FileRecord {
         val growth: String = "",
     ) : FileRecord
 
+    /** a feat of a party member of a personal copy */
+    @Serializable
+    @SerialName("feat")
+    data class Feat(
+        val partyId: Long,
+        val name: String,
+        val source: String = "",
+        val description: String = "",
+        val position: Int = 0,
+        val originId: String? = null,
+    ) : FileRecord
+
     /** a thing somebody carries, [ownerKind] and [ownerId] are the file's own id of the party member, npc or place */
     @Serializable
     @SerialName("item")
@@ -226,6 +240,8 @@ sealed interface FileRecord {
         val ownerId: Long? = null,
         val notes: String = "",
         val originId: String? = null,
+        // on the body of the one who carries it, a file made before has none
+        val worn: Boolean = false,
     ) : FileRecord
 
     @Serializable

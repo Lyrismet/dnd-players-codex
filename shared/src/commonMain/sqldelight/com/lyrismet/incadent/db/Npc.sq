@@ -16,7 +16,8 @@ CREATE TABLE npc (
     origin_id TEXT NOT NULL DEFAULT '',
     character_class TEXT NOT NULL DEFAULT '',
     subclass TEXT NOT NULL DEFAULT '',
-    facts TEXT NOT NULL DEFAULT ''
+    facts TEXT NOT NULL DEFAULT '',
+    photo_source BLOB
 );
 
 CREATE INDEX npc_campaign_id ON npc(campaign_id);
@@ -41,18 +42,18 @@ WHERE campaign_id = ?
 ORDER BY name;
 
 selectById:
-SELECT id, name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait_thumb, portrait, origin_id, facts
+SELECT id, name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait_thumb, portrait, origin_id, facts, photo_source
 FROM npc
 WHERE id = ?;
 
 insert:
-INSERT INTO npc(name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO npc(name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id, photo_source)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO npc(id, name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO npc(id, name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id, photo_source)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
@@ -64,7 +65,7 @@ updateFacts:
 UPDATE npc SET facts = ? WHERE id = ?;
 
 setPortrait:
-UPDATE npc SET portrait = ?, portrait_thumb = ? WHERE id = ?;
+UPDATE npc SET portrait = ?, portrait_thumb = ?, photo_source = ? WHERE id = ?;
 
 
 deleteById:

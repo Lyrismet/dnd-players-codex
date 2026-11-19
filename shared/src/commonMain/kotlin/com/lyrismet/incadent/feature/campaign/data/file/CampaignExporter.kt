@@ -253,6 +253,7 @@ class CampaignExporter(
                         name = it.name,
                         characterClass = it.character_class,
                         subclass = it.subclass,
+                        vulnerabilities = it.vulnerabilities,
                         race = it.race,
                         level = it.level?.toInt(),
                         playerName = it.player_name,
@@ -307,6 +308,7 @@ class CampaignExporter(
                     ownerId = owner?.let { ids.owner(it) },
                     notes = ids.text(item.notes),
                     originId = item.origin_id,
+                    worn = item.worn,
                 ),
             )
         }

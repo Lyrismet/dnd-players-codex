@@ -13,6 +13,9 @@ import kotlinx.coroutines.withContext
 // the working copy a crop window cuts from - big enough to zoom to 3x without going soft
 private const val CROP_SOURCE_MAX_DIMENSION_PX = 1600
 private const val CROP_SOURCE_TARGET_BYTES = 1000 * 1024
+
+// the kept picture before the crop is smaller than the working copy, its bytes are the ones of the cropped photo
+private const val SOURCE_MAX_DIMENSION_PX = 800
 private const val LOG_COMPONENT = "PortraitCodec"
 private const val BYTES_PER_KB = 1024
 
@@ -38,6 +41,8 @@ class PhotoCropDraft(
     val slot: PhotoSlot,
     /** true when [source] is the picture already stored, so an untouched window has nothing to write */
     val isStored: Boolean = false,
+    /** true when [source] is the kept picture from before the first crop, already small, so it goes back as it is */
+    val fromSource: Boolean = false,
 ) {
     fun keepsStored(crop: CropRect): Boolean = isStored && crop.isWholeImage
 }
@@ -60,11 +65,21 @@ suspend fun prepareCropDraftAsync(
     compressor: ImageCompressor,
 ): PhotoCropDraft = withContext(Dispatchers.Default) { prepareCropDraft(rawBytes, slot, compressor) }
 
-/** the stored jpeg opened again in the crop window - it can only be narrowed, the cut-off sides are gone */
+/**
+ * the photo opened again in the crop window - from the kept picture before the first crop when there is one, so the
+ * cut-off sides can come back, otherwise from the cropped one, which can only be narrowed
+ */
 fun recropDraft(
-    stored: ByteArray,
+    photo: Photo,
     slot: PhotoSlot,
-): PhotoCropDraft = PhotoCropDraft(stored, slot, isStored = true)
+): PhotoCropDraft {
+    val source = photo.source
+    return if (source != null) {
+        PhotoCropDraft(source, slot, fromSource = true)
+    } else {
+        PhotoCropDraft(photo.display, slot, isStored = true)
+    }
+}
 
 /** cuts [crop] out of the draft into the slot's stored size and byte budget, with the thumbnail made from it */
 fun PhotoCropDraft.encode(
@@ -77,7 +92,16 @@ fun PhotoCropDraft.encode(
         LOG_COMPONENT,
         "${slot.name} cropped to ${full.size.toKb()} KB (limit ${aspect.targetBytes.toKb()} KB)",
     )
-    return Photo(thumb = makeThumb(full, slot, compressor), full = full)
+    // the picture before the crop in the budget of the cropped one, a kept or stored picture already fits
+    val kept =
+        if (fromSource ||
+            isStored
+        ) {
+            source
+        } else {
+            compressor.compressToJpeg(source, SOURCE_MAX_DIMENSION_PX, aspect.targetBytes)
+        }
+    return Photo(thumb = makeThumb(full, slot, compressor), full = full, source = kept)
 }
 
 /** [encode] off the main thread, for the hosts that launch it from "Готово" */

@@ -20,6 +20,8 @@ data class PartyMember(
     val fellCombatId: Long? = null,
     val originId: String = "",
     val subclass: String = "",
+    // what the character resists or is weak to, written on its own so saving a form never wipes it
+    val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
 )
 
 enum class PartyPresence {
