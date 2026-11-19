@@ -208,6 +208,8 @@ fun FormPickField(
     subtitle: String? = null,
     chips: (@Composable () -> Unit)? = null,
     leadingIcon: ImageVector? = null,
+    // an icon of its own colour before the title, in place of [leadingIcon]
+    leading: (@Composable () -> Unit)? = null,
 ) {
     FormFieldColumn(label, modifier) {
         Row(
@@ -224,8 +226,12 @@ fun FormPickField(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (leadingIcon != null && title != null && chips == null) {
-                AppEntityIcon(leadingIcon, AppPalette.Parchment, size = 14.dp)
+            if (title != null && chips == null) {
+                if (leading != null) {
+                    leading()
+                } else if (leadingIcon != null) {
+                    AppEntityIcon(leadingIcon, AppPalette.Parchment, size = 14.dp)
+                }
             }
             Column(modifier = Modifier.weight(1f)) {
                 when {

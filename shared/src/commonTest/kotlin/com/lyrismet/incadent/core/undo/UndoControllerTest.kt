@@ -76,7 +76,7 @@ class UndoControllerTest {
                     ?.followUp
                     ?.label,
             )
-            assertTrue(controller.current.value?.isMade == true)
+            assertTrue(controller.current.value?.kind == UndoKind.Made)
 
             controller.followUp()
 
@@ -94,7 +94,7 @@ class UndoControllerTest {
             controller.dropFollowUp()
 
             assertNull(controller.current.value?.followUp)
-            assertTrue(controller.current.value?.isMade == true)
+            assertTrue(controller.current.value?.kind == UndoKind.Made)
             controller.undo()
             runCurrent()
             assertTrue(restored)
@@ -105,7 +105,7 @@ class UndoControllerTest {
         runTest {
             val controller = UndoController(backgroundScope)
             controller.show("t", "s") {}
-            assertTrue(controller.current.value?.isMade == false)
+            assertTrue(controller.current.value?.kind == UndoKind.Deleted)
 
             controller.followUp()
 

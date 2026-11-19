@@ -24,6 +24,9 @@ const val UNDO_WINDOW_MILLIS = 5_000L
 private val UNDO_WINDOW = UNDO_WINDOW_MILLIS.milliseconds
 private const val LOG_COMPONENT = "UndoController"
 
+/** what the bar reports, it picks the icon of the toast */
+enum class UndoKind { Deleted, Made, Spent }
+
 /** a second button on the bar next to "Undo", for what to do with the thing that was just made */
 data class UndoFollowUp(
     val label: String,
@@ -36,7 +39,7 @@ data class UndoAction(
     val onUndo: suspend () -> Unit,
     val followUp: UndoFollowUp? = null,
     // a bar of something made keeps its icon after the follow-up is taken away
-    val isMade: Boolean = followUp != null,
+    val kind: UndoKind = if (followUp != null) UndoKind.Made else UndoKind.Deleted,
     // the toast draws its countdown from this mark, so it always runs out together with the controller's timer
     val shownAt: TimeMark = TimeSource.Monotonic.markNow(),
 )
@@ -56,7 +59,14 @@ class UndoController(
         title: String,
         subtitle: String,
         onUndo: suspend () -> Unit,
-    ) = showMade(title, subtitle, followUp = null, onUndo)
+    ) = open(UndoAction(title, subtitle, onUndo))
+
+    /** the bar of a spent slot or use, a check instead of the bin */
+    fun showSpent(
+        title: String,
+        subtitle: String,
+        onUndo: suspend () -> Unit,
+    ) = open(UndoAction(title, subtitle, onUndo, kind = UndoKind.Spent))
 
     /** the bar of something just made, [followUp] being what to do with it next */
     fun showMade(
@@ -64,9 +74,11 @@ class UndoController(
         subtitle: String,
         followUp: UndoFollowUp?,
         onUndo: suspend () -> Unit,
-    ) {
+    ) = open(UndoAction(title, subtitle, onUndo, followUp, UndoKind.Made))
+
+    private fun open(action: UndoAction) {
         dismissJob?.cancel()
-        _current.value = UndoAction(title, subtitle, onUndo, followUp)
+        _current.value = action
         dismissJob =
             scope.launch {
                 delay(UNDO_WINDOW)

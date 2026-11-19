@@ -10,6 +10,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
+import com.lyrismet.incadent.core.preferences.HoldHintState
+import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
@@ -51,7 +53,7 @@ internal class MePresenter(
     private val sessionNoteRepository: SessionNoteRepository,
     private val sessionEntryRepository: SessionEntryRepository,
     private val undoController: UndoController,
-    appPreferencesRepository: AppPreferencesRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
 ) : Presenter<MeState> {
     private val picker = PlayerCharacterPicker(partyRepository, appPreferencesRepository)
 
@@ -78,9 +80,22 @@ internal class MePresenter(
         LaunchedEffect(member?.id) {
             ui.spells.reset()
         }
+        val holdHint by appPreferencesRepository.observeHoldHintState().collectAsState(initial = HoldHintState.SEEN)
+        val undo by undoController.current.collectAsState()
         val characterContent =
             member?.let {
-                characterContent(it, ui, readOnly, MeThings(records, itemsController, live?.title))
+                characterContent(
+                    it,
+                    ui,
+                    readOnly,
+                    MeThings(
+                        records,
+                        itemsController,
+                        live?.title,
+                        holdHint == HoldHintState.PENDING,
+                        undo,
+                    ),
+                )
             }
         val content =
             when {
@@ -123,7 +138,17 @@ internal class MePresenter(
                     scope,
                 )
             }
-        val spells = remember { SpellsHandler(ui.spells, scope, resourceRepository, spellRepository, undoController) }
+        val spells =
+            remember {
+                SpellsHandler(
+                    ui.spells,
+                    scope,
+                    resourceRepository,
+                    spellRepository,
+                    undoController,
+                    onHoldTipSeen = { appPreferencesRepository.setHoldHintState(HoldHintState.SEEN) },
+                )
+            }
         val feats = remember { MeFeatsHandler(ui, featRepository, undoController, scope) }
         val portrait = remember { MePortraitHandler(ui, partyRepository, imageCompressor, scope) }
         return remember {
@@ -197,6 +222,8 @@ internal class MePresenter(
                 readOnly,
                 items,
                 things.liveSessionTitle,
+                things.holdTip,
+                things.undo,
             ),
         )
     }
@@ -210,4 +237,6 @@ private class MeThings(
     val records: CodexRecords,
     val controller: ItemsController,
     val liveSessionTitle: String?,
+    val holdTip: Boolean,
+    val undo: UndoAction?,
 )

@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.me.presentation
 
+import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.feature.codex.domain.grouping.decodeFacts
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterFeat
@@ -45,6 +46,8 @@ internal fun buildMeCharacter(
     readOnly: Boolean,
     items: MeItems,
     liveSessionTitle: String?,
+    holdTip: Boolean,
+    undo: UndoAction?,
 ): MeCharacter =
     MeCharacter(
         id = member.id,
@@ -61,7 +64,7 @@ internal fun buildMeCharacter(
         tabs = tabs,
         spellsHidden = sheet.spellsHidden,
         sheet = sheetState(sheet, member, strips, feats, ui),
-        spells = spellsState(sheet, member.level ?: 1, resources, spells, ui.spells, readOnly),
+        spells = spellsState(sheet, member.level ?: 1, resources, spells, ui.spells, readOnly, holdTip, undo),
         resources = featureResources(resources),
         breakdown = figures.breakdown,
         popover = ui.popover,
@@ -93,6 +96,8 @@ private fun spellsState(
     spells: List<CharacterSpell>,
     ui: SpellsUiState,
     readOnly: Boolean,
+    holdTip: Boolean,
+    undo: UndoAction?,
 ): SpellsBlockState {
     val columns = slotColumns(resources)
     val levels = spellLevels(spells, columns)
@@ -108,6 +113,10 @@ private fun spellsState(
         card = spells.firstOrNull { it.id == ui.cardId },
         draft = ui.draft,
         readOnly = readOnly,
+        holdTip = holdTip,
+        undo = undo,
+        block = ui.block,
+        descriptionDraft = ui.descriptionDraft,
         tilesEditable = true,
     )
 }

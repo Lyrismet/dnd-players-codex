@@ -43,6 +43,7 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 import com.lyrismet.incadent.core.undo.UNDO_WINDOW_MILLIS
 import com.lyrismet.incadent.core.undo.UndoAction
+import com.lyrismet.incadent.core.undo.UndoKind
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.action_undo
 import kotlinx.coroutines.launch
@@ -196,9 +197,13 @@ private fun UndoRow(
             background = AppPalette.Maroon.copy(alpha = 0.25f),
         ) {
             Icon(
-                if (action.isMade) AppIcons.Edit else AppIcons.Delete,
+                when (action.kind) {
+                    UndoKind.Deleted -> AppIcons.Delete
+                    UndoKind.Made -> AppIcons.Edit
+                    UndoKind.Spent -> AppIcons.Check
+                },
                 contentDescription = null,
-                tint = if (action.isMade) AppPalette.GoldBright else AppPalette.MaroonBright,
+                tint = if (action.kind == UndoKind.Deleted) AppPalette.MaroonBright else AppPalette.GoldBright,
             )
         }
         Column(modifier = Modifier.weight(1f)) {

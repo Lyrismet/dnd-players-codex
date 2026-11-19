@@ -232,20 +232,28 @@ private fun EstimateRow(scale: PanelScale) {
                 .appCard(shape = AppShapes.Field, background = AppPalette.Background, border = AppPalette.BorderSubtle)
                 .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.Bottom,
     ) {
         Text(
             stringResource(Res.string.hp_scale_estimate_title),
             color = AppPalette.TextTertiary,
             style = AppText.fieldOverlineStrong,
+            modifier = Modifier.alignByBaseline(),
         )
         Text(
             scale.estimate,
             color = scale.thumb?.let { zoneColor(it / PERMILLE) } ?: AppPalette.TextMuted,
             fontSize = AppFontSize.MediumPlus,
             fontWeight = FontWeight.Bold,
+            modifier = Modifier.alignByBaseline(),
         )
-        if (scale.source.isNotEmpty()) Text(scale.source, color = AppPalette.TextMuted, fontSize = AppFontSize.Caption)
+        if (scale.source.isNotEmpty()) {
+            Text(
+                scale.source,
+                color = AppPalette.TextMuted,
+                fontSize = AppFontSize.Caption,
+                modifier = Modifier.alignByBaseline(),
+            )
+        }
     }
 }
 

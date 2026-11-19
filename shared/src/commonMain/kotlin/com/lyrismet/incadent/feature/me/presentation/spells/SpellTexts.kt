@@ -6,6 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
@@ -86,6 +87,7 @@ internal fun DamageLine(
     projectiles: Int,
     style: TextStyle,
     modifier: Modifier = Modifier,
+    color: Color = AppPalette.TextPrimary,
 ) {
     val rows = damage.filter { it.dice.isNotBlank() }
     if (rows.isEmpty()) return
@@ -95,7 +97,7 @@ internal fun DamageLine(
             SpellEffectGlyph(row.effect)
             // the projectile count multiplies all the rows, it is told once before the first dice
             val text = if (index == 0 && projectiles > 1) "$projectiles × ${row.dice}" else row.dice
-            Text(text, style = style, color = AppPalette.TextPrimary, maxLines = 1)
+            Text(text, style = style, color = color, maxLines = 1)
         }
     }
 }

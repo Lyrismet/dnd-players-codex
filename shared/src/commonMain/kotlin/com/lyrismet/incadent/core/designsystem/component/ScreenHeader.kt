@@ -56,10 +56,10 @@ fun ScreenHeader(
                 trailingContent = overlineTrailingContent,
             )
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row {
             Text(
                 text = title,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).alignByBaseline(),
                 style =
                     MaterialTheme.typography.displayLarge.copy(
                         fontSize = AppFontSize.StatLarge,
@@ -67,7 +67,8 @@ fun ScreenHeader(
                     ),
                 color = AppPalette.TextHeading,
             )
-            titleTrailingContent?.invoke(this)
+            // the end content lines up with the title by the bottom of the words
+            titleTrailingContent?.let { Row(modifier = Modifier.alignByBaseline()) { it() } }
         }
         if (showDivider) {
             HeaderDivider(modifier = Modifier.padding(top = 12.dp))
