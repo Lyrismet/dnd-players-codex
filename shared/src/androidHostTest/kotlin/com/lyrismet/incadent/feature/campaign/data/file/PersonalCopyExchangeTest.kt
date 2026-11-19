@@ -47,6 +47,8 @@ class PersonalCopyExchangeTest {
             null,
             campaignId,
             originId,
+            "",
+            null,
         )
         return database.partyMemberQueries.lastInsertRowId().executeAsOne()
     }
@@ -90,9 +92,25 @@ class PersonalCopyExchangeTest {
             null,
             THEIRS,
             "dagger",
+            false,
+            null,
         )
         val torvin = member(THEIRS, "Torvin", "torvin", isMe = false)
-        database.itemQueries.insert("Axe", 1L, null, Coin.GOLD, EntityKind.PARTY, torvin, "", null, null, THEIRS, "axe")
+        database.itemQueries.insert(
+            "Axe",
+            1L,
+            null,
+            Coin.GOLD,
+            EntityKind.PARTY,
+            torvin,
+            "",
+            null,
+            null,
+            THEIRS,
+            "axe",
+            false,
+            null,
+        )
     }
 
     private fun export(mode: ExportMode): MemoryFile {

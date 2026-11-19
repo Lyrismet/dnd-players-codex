@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 private const val CROP_SOURCE_MAX_DIMENSION_PX = 1600
 private const val CROP_SOURCE_TARGET_BYTES = 1000 * 1024
 
-// the kept picture before the crop is smaller than the working copy, its bytes are the ones of the cropped photo
+// the kept picture before the crop is smaller than the working copy
 private const val SOURCE_MAX_DIMENSION_PX = 800
 private const val LOG_COMPONENT = "PortraitCodec"
 private const val BYTES_PER_KB = 1024
@@ -65,10 +65,7 @@ suspend fun prepareCropDraftAsync(
     compressor: ImageCompressor,
 ): PhotoCropDraft = withContext(Dispatchers.Default) { prepareCropDraft(rawBytes, slot, compressor) }
 
-/**
- * the photo opened again in the crop window - from the kept picture before the first crop when there is one, so the
- * cut-off sides can come back, otherwise from the cropped one, which can only be narrowed
- */
+// opens the kept picture before the first crop when there is one, otherwise the cropped one, which can only be narrowed
 fun recropDraft(
     photo: Photo,
     slot: PhotoSlot,

@@ -1,9 +1,6 @@
 package com.lyrismet.incadent.domain.model
 
-/**
- * a stored picture, [full] is loaded only where a card or a crop needs it and its absence means "unchanged" on save,
- * [source] is the compressed picture before the crop, absent for a photo made before it was kept
- */
+// a stored picture, a null full means unchanged on save, source is the picture before the crop and may be absent
 class Photo(
     val thumb: ByteArray,
     val full: ByteArray? = null,

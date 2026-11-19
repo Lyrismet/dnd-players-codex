@@ -132,6 +132,7 @@ class CampaignRepositoryImpl(
         }
 
     // copies are independent rows, notes, quests and the party stay behind
+    @Suppress("LongMethod")
     private fun copyWorld(
         transfer: CampaignTransfer,
         targetId: String,

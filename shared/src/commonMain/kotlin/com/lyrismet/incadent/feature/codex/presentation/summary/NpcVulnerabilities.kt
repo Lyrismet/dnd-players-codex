@@ -81,8 +81,7 @@ internal fun NpcVulnerabilitySection(
         }
         FeaturesBottomSheet(
             overline = vulnerabilities.name.uppercase(),
-            facts = vulnerabilities.facts,
-            withFacts = withFacts,
+            facts = vulnerabilities.facts.takeIf { withFacts },
             text = text,
             shields = effectiveVulnerabilities(vulnerabilities.fromSpecies, vulnerabilities.own),
             actions =

@@ -52,16 +52,16 @@ internal class FeaturesSheetActions(
     val onClose: () -> Unit,
 )
 
-/** the one sheet of the features of a creature: the facts with a field, the shields of every damage type, "Готово" */
+/** the one sheet of the features of a creature, the facts with a field, the shields of every damage type, "Готово" */
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
 internal fun FeaturesBottomSheet(
     overline: String,
-    facts: List<String>,
+    // null leaves the facts editor out
+    facts: List<String>?,
     text: String,
     shields: Map<DamageType, DamageState>,
     actions: FeaturesSheetActions,
-    withFacts: Boolean = true,
 ) {
     AppBottomSheet(onDismissRequest = actions.onClose) {
         AppSheetColumn(
@@ -74,7 +74,7 @@ internal fun FeaturesBottomSheet(
                 )
             },
         ) {
-            if (withFacts) FactsEditor(facts, text, actions)
+            if (facts != null) FactsEditor(facts, text, actions)
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 FormFieldLabel(stringResource(Res.string.combat_features_shields_title).uppercase())
                 VulnerabilityGridEditor(shields, actions.onShieldChanged)
@@ -84,7 +84,7 @@ internal fun FeaturesBottomSheet(
     }
 }
 
-/** the facts of a creature: a field that adds one, the chips that remove one and the quick starts */
+/** the facts of a creature, a field that adds one, the chips that remove one and the quick starts */
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
 private fun FactsEditor(
