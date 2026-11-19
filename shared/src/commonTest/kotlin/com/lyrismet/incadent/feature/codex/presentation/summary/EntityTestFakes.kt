@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.summary
 
 import com.lyrismet.incadent.feature.codex.domain.grouping.with
+import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CustomCreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
@@ -17,6 +18,8 @@ import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.PartySheetBackup
+import com.lyrismet.incadent.feature.codex.domain.repository.PartySheetSnapshot
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.slack.circuit.runtime.Navigator
@@ -225,4 +228,20 @@ internal class FakeNpcMergeRepository : NpcMergeRepository {
     ): NpcMergeTrace? = null
 
     override suspend fun undo(trace: NpcMergeTrace) = Unit
+}
+
+internal class FakePartySheetBackup(
+    private val snapshot: PartySheetSnapshot =
+        PartySheetSnapshot(CharacterSheet(), null, emptyList(), emptyList(), emptyList()),
+) : PartySheetBackup {
+    var restored: Pair<Long, PartySheetSnapshot>? = null
+
+    override suspend fun capture(memberId: Long) = snapshot
+
+    override suspend fun restore(
+        memberId: Long,
+        snapshot: PartySheetSnapshot,
+    ) {
+        restored = memberId to snapshot
+    }
 }

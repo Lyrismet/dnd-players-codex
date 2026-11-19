@@ -45,6 +45,7 @@ import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.PartySheetBackup
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormController
@@ -141,6 +142,7 @@ class CodexPresenter(
     private val campaignRepository: CampaignRepository,
     private val linkDismissals: LinkSuggestionDismissalRepository,
     npcMerge: NpcMergeRepository,
+    sheetBackup: PartySheetBackup,
 ) : Presenter<CodexState> {
     private val codexRepositories =
         CodexRepositories(
@@ -160,6 +162,7 @@ class CodexPresenter(
             locationRepository,
             speciesRepository,
             itemRepository,
+            sheetBackup,
         )
 
     private val events =

@@ -198,7 +198,7 @@ private fun FileRecord.Quest.fits() = fits(MAX_SHORT_CHARS, title, reward) && fi
 
 private fun FileRecord.Party.fits() =
     fits(MAX_SHORT_CHARS, name, characterClass, subclass, race, playerName) &&
-        fits(MAX_LONG_CHARS, description) &&
+        fits(MAX_LONG_CHARS, description, vulnerabilities) &&
         (level == null || level in PartyStatRanges.level) &&
         (hpMax == null || hpMax in PartyStatRanges.hpMax) &&
         (hpCurrent == null || hpCurrent in 0..(hpMax ?: MAX_HP_WITHOUT_MAX))

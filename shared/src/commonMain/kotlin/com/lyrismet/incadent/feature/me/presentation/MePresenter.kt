@@ -155,6 +155,7 @@ internal class MePresenter(
         val feats by remember(member.id) { featRepository.observe(member.id) }.collectAsState(initial = emptyList())
         // the list only holds the thumbnail, the viewer of the portrait needs the full picture
         val fullPortrait by produceState<Photo?>(null, member.id, member.portrait) {
+            value = null
             value = member.portrait?.let { partyRepository.getById(member.id)?.portrait }
         }
         val shownVitals = vitals ?: return null

@@ -762,6 +762,7 @@ internal class CampaignImporter(
                 },
                 id,
             )
+            if (record.worn) database.itemQueries.setWorn(true, id)
         }
 
         private fun FileRecord.Party.withVitals(id: Long): FileRecord.Party {
@@ -967,6 +968,10 @@ internal class CampaignImporter(
                 } else {
                     current.description
                 },
+                id,
+            )
+            database.partyMemberQueries.setVulnerabilities(
+                pick.text(RecordField.VULNERABILITIES, current.vulnerabilities, record.vulnerabilities),
                 id,
             )
         }

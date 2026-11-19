@@ -12,6 +12,8 @@ import com.lyrismet.incadent.feature.codex.domain.repository.ItemRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.PartySheetBackup
+import com.lyrismet.incadent.feature.codex.domain.repository.PartySheetSnapshot
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
@@ -32,6 +34,7 @@ internal class CodexDeletionPlan(
 )
 
 /** builds the delete/restore pair for one codex entity - restoring also re-links whatever referenced it */
+@Suppress("LongParameterList")
 internal class CodexDeletionPlanner(
     private val npcRepository: NpcRepository,
     private val partyRepository: PartyRepository,
@@ -39,6 +42,7 @@ internal class CodexDeletionPlanner(
     private val locationRepository: LocationRepository,
     private val speciesRepository: SpeciesRepository,
     private val itemRepository: ItemRepository,
+    private val sheetBackup: PartySheetBackup,
 ) {
     /** the delete/restore of [ref] - undo puts the record back under its old id, so tokens in notes find it */
     fun planFor(
@@ -89,13 +93,19 @@ internal class CodexDeletionPlanner(
         records.parties.find { it.id == id }?.let { member ->
             // the list row carries only the thumbnail, so the stored record with its photo is read before the delete
             var stored: PartyMember? = null
+            // the delete cascades into the sheet, so it is kept to come back with the record
+            var sheet: PartySheetSnapshot? = null
             CodexDeletionPlan(
                 subtitle = "${labels.getValue(EntityKind.PARTY)} · ${member.name}",
                 delete = {
                     stored = partyRepository.getById(id)
+                    sheet = sheetBackup.capture(id)
                     partyRepository.delete(id)
                 },
-                restore = { partyRepository.upsert(stored ?: member) },
+                restore = {
+                    val restoredId = partyRepository.upsert(stored ?: member)
+                    sheet?.let { sheetBackup.restore(restoredId, it) }
+                },
             )
         }
 
