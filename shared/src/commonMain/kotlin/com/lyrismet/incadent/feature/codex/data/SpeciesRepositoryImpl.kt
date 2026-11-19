@@ -60,7 +60,7 @@ class SpeciesRepositoryImpl(
                     writePhotoIfChanged(
                         entity.photo,
                         stored.photo,
-                    ) { full, thumb -> queries.setPhoto(full, thumb, entity.id) }
+                    ) { full, thumb, source -> queries.setPhoto(full, thumb, source, entity.id) }
                     entity.id
                 } else {
                     insert(entity)
@@ -82,6 +82,7 @@ class SpeciesRepositoryImpl(
                 current.requireId(),
                 species.originId.orNewOriginId(),
                 liveTypeId(species),
+                species.photo?.source,
             )
             return species.id
         }
@@ -96,6 +97,7 @@ class SpeciesRepositoryImpl(
             current.requireId(),
             species.originId.orNewOriginId(),
             liveTypeId(species),
+            species.photo?.source,
         )
         return queries.lastInsertRowId().executeAsOne()
     }
@@ -190,6 +192,7 @@ class SpeciesRepositoryImpl(
         originId: String,
         customTypeId: Long?,
         customTypeName: String?,
+        photoSource: ByteArray?,
     ) = toDomain(
         id,
         name,
@@ -201,5 +204,5 @@ class SpeciesRepositoryImpl(
         originId,
         customTypeId,
         customTypeName,
-    ).copy(photo = photoThumb?.let { Photo(it, photo) })
+    ).copy(photo = photoThumb?.let { Photo(it, photo, photoSource) })
 }

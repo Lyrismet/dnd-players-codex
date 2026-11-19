@@ -72,7 +72,23 @@ private fun PartyBody(
     if (fall != null) Epitaph(fall, actions)
     if (fall == null) PresencePicker(party, actions)
     EntityDescription(party.description, party.descriptionSegments, actions)
-    EntityFactsGrid(party.withLevelArrow(actions), actions.onEntityRefClicked, actions.quickEdit)
+    EntityFactsGrid(
+        facts = party.withLevelArrow(actions),
+        onEntityRefClicked = actions.onEntityRefClicked,
+        quick = actions.quickEdit,
+        footer = {
+            NpcVulnerabilitySection(
+                vulnerabilities = party.vulnerabilities,
+                onChange =
+                    actions.onPartyVulnerabilityChanged?.let { changed ->
+                        { type, state -> changed(party.ref.id, type, state) }
+                    },
+                onEdited =
+                    actions.onPartyVulnerabilitiesEdited?.let { edited -> { before -> edited(party.ref.id, before) } },
+                withFacts = false,
+            )
+        },
+    )
     if (fall != null) Chronicle(fall, actions.onPartyRevived?.let { revive -> { revive(party.ref.id) } }, onRevived)
     EntityGearSection(party.ref, party.gear, actions)
     EntityRelatedNotesSection(party.name, party.relatedNotes, actions.onRelatedNoteClicked)

@@ -1,11 +1,16 @@
 package com.lyrismet.incadent.feature.me.presentation
 
+import com.lyrismet.incadent.core.portrait.CropRect
+import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
+import com.lyrismet.incadent.feature.codex.domain.model.CharacterFeat
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterResource
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterVitals
 import com.lyrismet.incadent.feature.codex.domain.model.CoinPurseChange
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.FifthEditionRules
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
 import com.lyrismet.incadent.feature.codex.domain.model.ResourceTemplate
@@ -13,6 +18,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.RestSummary
 import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.feature.codex.presentation.item.ItemEvent
+import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilities
 import com.lyrismet.incadent.feature.me.domain.AbilityStrip
 import com.lyrismet.incadent.feature.me.domain.HeaderNumbers
 import com.lyrismet.incadent.feature.me.domain.HitPointMode
@@ -86,6 +92,8 @@ data class MeCharacter(
     val liveSessionTitle: String?,
     val menuOpen: Boolean,
     val readOnly: Boolean,
+    // the picked or opened photo in the crop window, closed while null
+    val photoCrop: PhotoCropDraft? = null,
 )
 
 /** what the explanation cards of the tiles list */
@@ -107,14 +115,18 @@ data class MeSheetState(
     val query: String,
     val inspiration: Boolean,
     val languages: String,
-    val features: String,
     val background: String,
     val alignment: String,
     val personality: String,
+    // the shields of the character, one record with the party card
+    val shields: NpcVulnerabilities = NpcVulnerabilities(),
+    val feats: List<CharacterFeat> = emptyList(),
+    // the sheet to add or edit one feat, closed while null
+    val featDraft: CharacterFeat? = null,
 )
 
 /** the free texts of the sheet and the things tab that are typed in place */
-enum class MeText { LANGUAGES, FEATURES, PERSONALITY, NOTES }
+enum class MeText { LANGUAGES, PERSONALITY, NOTES }
 
 /** what "to maximum" would do, [missing] is none while the [max] is not set */
 data class HitPointsToMax(
@@ -317,6 +329,14 @@ sealed interface MeEvent : CircuitUiEvent {
         val event: ItemEvent,
     ) : MeEvent
 
+    data class Feats(
+        val event: FeatEvent,
+    ) : MeEvent
+
+    data class Portrait(
+        val event: PortraitEvent,
+    ) : MeEvent
+
     data class ItemStepped(
         val id: Long,
         val delta: Int,
@@ -395,6 +415,15 @@ sealed interface SheetEvent {
     data class TextChanged(
         val text: MeText,
         val value: String,
+    ) : SheetEvent
+
+    data class ShieldChanged(
+        val type: DamageType,
+        val state: DamageState?,
+    ) : SheetEvent
+
+    data class FactsChanged(
+        val facts: List<String>,
     ) : SheetEvent
 
     data object FillRequested : SheetEvent
@@ -513,3 +542,20 @@ enum class OverlayField {
 }
 
 enum class MenuAction { EDIT, FILL, TOGGLE_SPELLS, NOT_MINE }
+
+sealed interface PortraitEvent {
+    /** the raw picked image, the presenter shrinks it and opens the crop window */
+    class Picked(
+        val bytes: ByteArray,
+    ) : PortraitEvent
+
+    data object RecropRequested : PortraitEvent
+
+    data class CropConfirmed(
+        val crop: CropRect,
+    ) : PortraitEvent
+
+    data object CropCancelled : PortraitEvent
+
+    data object Removed : PortraitEvent
+}

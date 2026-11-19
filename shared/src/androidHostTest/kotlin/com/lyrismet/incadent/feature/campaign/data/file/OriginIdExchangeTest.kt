@@ -38,8 +38,9 @@ class OriginIdExchangeTest {
             source,
             "wolf-origin",
             null,
+            null,
         )
-        database.locationQueries.insert("Town", "", null, null, null, source, "town-origin")
+        database.locationQueries.insert("Town", "", null, null, null, source, "town-origin", null)
         database.npcQueries.insert(
             "Bob",
             NpcStatus.FRIEND,
@@ -55,6 +56,7 @@ class OriginIdExchangeTest {
             null,
             source,
             "bob-origin",
+            null,
         )
         database.questQueries.insert("Find", QuestStatus.ACTIVE, "", null, null, "", source, "quest-origin")
         database.partyMemberQueries.insert(
@@ -73,6 +75,8 @@ class OriginIdExchangeTest {
             null,
             source,
             "hero-origin",
+            "",
+            null,
         )
         database.sessionNoteQueries.insert("Day one", date, date, 5L, source, "session-origin")
         val session = database.sessionNoteQueries.lastInsertRowId().executeAsOne()

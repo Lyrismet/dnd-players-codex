@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.PhotoSlot
+import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
 import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 
@@ -96,7 +97,7 @@ sealed interface QuickEditUiEvent {
     /** "Кадрировать" on the stored photo - the crop window opens on it, narrowing only */
     class PhotoRecropRequested(
         val slot: PhotoSlot,
-        val stored: ByteArray,
+        val stored: Photo,
     ) : QuickEditPhotoEvent
 
     /** "Готово" in the crop window - the presenter cuts, compresses and saves */

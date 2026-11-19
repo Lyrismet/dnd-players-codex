@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.FakeItemReposito
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeLocationRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartyRepository
+import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartySheetBackup
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeQuestRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeSpeciesRepository
 import com.lyrismet.incadent.feature.mention.domain.MentionEntity
@@ -42,6 +43,7 @@ class CodexDeletionPlannerTest {
             FakeLocationRepository(),
             FakeSpeciesRepository(),
             FakeItemRepository(),
+            FakePartySheetBackup(),
         )
 
     private fun records(vararg bodies: Pair<Long, String>) =

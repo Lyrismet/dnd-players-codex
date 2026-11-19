@@ -132,6 +132,7 @@ class CampaignRepositoryImpl(
         }
 
     // copies are independent rows, notes, quests and the party stay behind
+    @Suppress("LongMethod")
     private fun copyWorld(
         transfer: CampaignTransfer,
         targetId: String,
@@ -163,6 +164,7 @@ class CampaignRepositoryImpl(
                 full.cover_thumb,
                 targetId,
                 newOriginId(),
+                full.photo_source,
             )
             placeMap[oldId] = locationQueries.lastInsertRowId().executeAsOne()
         }
@@ -186,6 +188,7 @@ class CampaignRepositoryImpl(
                 npc.portrait_thumb,
                 targetId,
                 newOriginId(),
+                npc.photo_source,
             )
             val newId = npcQueries.lastInsertRowId().executeAsOne()
             npcQueries.updateFacts(npc.facts, newId)
@@ -218,6 +221,7 @@ class CampaignRepositoryImpl(
                 targetId,
                 newOriginId(),
                 database.creatureTypeIdIn(targetId, full.custom_type_name),
+                full.photo_source,
             )
             speciesQueries.lastInsertRowId().executeAsOne().also { copied[oldId] = it }
         }

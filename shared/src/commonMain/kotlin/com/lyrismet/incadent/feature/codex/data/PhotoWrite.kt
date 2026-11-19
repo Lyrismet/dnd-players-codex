@@ -9,10 +9,10 @@ internal fun Photo.needsWrite(stored: Photo?): Boolean = full != null && !full.c
 internal inline fun writePhotoIfChanged(
     photo: Photo?,
     stored: Photo?,
-    set: (full: ByteArray?, thumb: ByteArray?) -> Unit,
+    set: (full: ByteArray?, thumb: ByteArray?, source: ByteArray?) -> Unit,
 ) {
     when {
-        photo == null -> if (stored != null) set(null, null)
-        photo.needsWrite(stored) -> set(photo.full, photo.thumb)
+        photo == null -> if (stored != null) set(null, null, null)
+        photo.needsWrite(stored) -> set(photo.full, photo.thumb, photo.source)
     }
 }

@@ -29,7 +29,7 @@ class MentionExchangeTest {
         name: String,
         originId: String,
     ): Long {
-        database.locationQueries.insert(name, "", null, null, null, campaignId, originId)
+        database.locationQueries.insert(name, "", null, null, null, campaignId, originId, null)
         return database.locationQueries.lastInsertRowId().executeAsOne()
     }
 
@@ -54,6 +54,7 @@ class MentionExchangeTest {
             null,
             campaignId,
             originId,
+            null,
         )
         return database.npcQueries.lastInsertRowId().executeAsOne()
     }

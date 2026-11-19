@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.codex.presentation
 
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
@@ -9,16 +10,19 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
+import com.lyrismet.incadent.feature.codex.domain.repository.PartySheetSnapshot
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeItemRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeLocationRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeNpcRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartyRepository
+import com.lyrismet.incadent.feature.codex.presentation.summary.FakePartySheetBackup
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeQuestRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.FakeSpeciesRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 
 private val thumb = byteArrayOf(1)
 private val full = byteArrayOf(1, 2, 3)
@@ -85,6 +89,23 @@ class CodexDeletionPlannerPhotoTest {
         }
 
     @Test
+    fun `undoing a party delete brings back the sheet of the character`() =
+        runTest {
+            val stored = PartyMember(1, "Лира", "", "", null, "", true, PartyPresence.IN, null, null, "")
+            val sheet =
+                PartySheetSnapshot(CharacterSheet(background = "Сирота"), null, emptyList(), emptyList(), emptyList())
+            val backup = FakePartySheetBackup(sheet)
+            val plan =
+                planner(party = FakePartyRepository(stored), backup = backup)
+                    .planFor(EntityRef.Party(1), listRecords(parties = listOf(stored)), labels)!!
+
+            plan.delete()
+            plan.restore()
+
+            assertEquals(1L to sheet, backup.restored)
+        }
+
+    @Test
     fun `undoing a place delete brings back the full cover not just the thumbnail`() =
         runTest {
             val stored = Location(1, "Таверна", "", cover = Photo(thumb, full))
@@ -113,6 +134,7 @@ class CodexDeletionPlannerPhotoTest {
         npcs: FakeNpcRepository = FakeNpcRepository(),
         party: FakePartyRepository = FakePartyRepository(),
         locations: FakeLocationRepository = FakeLocationRepository(),
+        backup: FakePartySheetBackup = FakePartySheetBackup(),
     ) = CodexDeletionPlanner(
         npcs,
         party,
@@ -120,5 +142,6 @@ class CodexDeletionPlannerPhotoTest {
         locations,
         FakeSpeciesRepository(),
         FakeItemRepository(),
+        backup,
     )
 }

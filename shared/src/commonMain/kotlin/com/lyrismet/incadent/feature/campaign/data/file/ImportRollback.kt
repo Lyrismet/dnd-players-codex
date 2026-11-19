@@ -134,30 +134,35 @@ internal class ImportRollback(
                 database.speciesQueries.setPhoto(
                     bytes,
                     bytes?.let { makeThumb(it, PhotoSlot.PORTRAIT) },
+                    null,
                     id,
                 )
             PhotoOwner.PLACE ->
                 database.locationQueries.setCover(
                     bytes,
                     bytes?.let { makeThumb(it, PhotoSlot.COVER) },
+                    null,
                     id,
                 )
             PhotoOwner.NPC ->
                 database.npcQueries.setPortrait(
                     bytes,
                     bytes?.let { makeThumb(it, PhotoSlot.PORTRAIT) },
+                    null,
                     id,
                 )
             PhotoOwner.PARTY ->
                 database.partyMemberQueries.setPortrait(
                     bytes,
                     bytes?.let { makeThumb(it, PhotoSlot.PORTRAIT) },
+                    null,
                     id,
                 )
             PhotoOwner.ITEM ->
                 database.itemQueries.setPhoto(
                     bytes,
                     bytes?.let { makeThumb(it, PhotoSlot.PORTRAIT) },
+                    null,
                     id,
                 )
         }

@@ -87,7 +87,7 @@ class NpcRepositoryImpl(
                 writePhotoIfChanged(
                     entity.portrait,
                     stored.portrait,
-                ) { full, thumb -> queries.setPortrait(full, thumb, entity.id) }
+                ) { full, thumb, source -> queries.setPortrait(full, thumb, source, entity.id) }
                 entity.id
             } else {
                 insert(entity.copy(speciesId = speciesId))
@@ -114,6 +114,7 @@ class NpcRepositoryImpl(
                 npc.portrait?.thumb,
                 current.requireId(),
                 npc.originId.orNewOriginId(),
+                npc.portrait?.source,
             )
             queries.updateFacts(npc.facts.encodeFacts(), npc.id)
             return npc.id
@@ -133,6 +134,7 @@ class NpcRepositoryImpl(
             npc.portrait?.thumb,
             current.requireId(),
             npc.originId.orNewOriginId(),
+            npc.portrait?.source,
         )
         return queries.lastInsertRowId().executeAsOne().also { queries.updateFacts(npc.facts.encodeFacts(), it) }
     }
@@ -245,6 +247,7 @@ class NpcRepositoryImpl(
         portrait: ByteArray?,
         originId: String,
         facts: String,
+        photoSource: ByteArray?,
     ) = toDomain(
         id,
         name,
@@ -260,5 +263,5 @@ class NpcRepositoryImpl(
         portraitThumb,
         originId,
         facts,
-    ).copy(portrait = portraitThumb?.let { Photo(it, portrait) })
+    ).copy(portrait = portraitThumb?.let { Photo(it, portrait, photoSource) })
 }

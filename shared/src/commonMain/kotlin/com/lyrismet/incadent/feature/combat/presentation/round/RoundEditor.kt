@@ -18,7 +18,6 @@ import com.lyrismet.incadent.feature.combat.domain.round.RoundActions
 import com.lyrismet.incadent.feature.combat.domain.round.TurnPosition
 import com.lyrismet.incadent.feature.combat.domain.round.expiredBetween
 import com.lyrismet.incadent.feature.combat.domain.round.inTurnOrder
-import com.lyrismet.incadent.feature.combat.domain.round.isTracked
 import com.lyrismet.incadent.feature.combat.domain.round.nextTurn
 import com.lyrismet.incadent.feature.combat.presentation.prep.FoeAdder
 import incadent.shared.generated.resources.Res
@@ -28,9 +27,6 @@ import incadent.shared.generated.resources.combat_round_toast_again
 import incadent.shared.generated.resources.combat_round_toast_joined
 import incadent.shared.generated.resources.combat_round_toast_removed
 import incadent.shared.generated.resources.combat_round_undo_removed
-import incadent.shared.generated.resources.hp_exact_toast_sub
-import incadent.shared.generated.resources.hp_exact_toast_sub_known
-import incadent.shared.generated.resources.hp_exact_toast_title
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -107,7 +103,7 @@ internal class RoundEditor(
         onRemoved()
     }
 
-    /** the hit points typed by hand, the toast tells what was written and takes it back */
+    /** the hit points typed by hand, written to the fight without an undo bar */
     suspend fun setExact(
         combat: Combat,
         sourceId: Long?,
@@ -115,16 +111,7 @@ internal class RoundEditor(
         amount: Int,
         unrecordedHeal: Int,
     ) {
-        val recorded = damage.setExact(combat, sourceId, target, amount, unrecordedHeal)
-        val written = target.hpMax?.let { amount.coerceIn(0, it) } ?: amount
-        val title = getString(Res.string.hp_exact_toast_title, target.name, written)
-        val subtitle =
-            if (target.isTracked()) {
-                getString(Res.string.hp_exact_toast_sub_known, target.hpCurrent ?: target.hpMax ?: 0, written)
-            } else {
-                getString(Res.string.hp_exact_toast_sub, amount)
-            }
-        undo.show(title, subtitle) { lock.withLock { fresh()?.let { damage.undo(recorded, it.combatants) } } }
+        damage.setExact(combat, sourceId, target, amount, unrecordedHeal)
     }
 
     /** the hurt targets get all their hit points back, one undo takes it back for all of them */

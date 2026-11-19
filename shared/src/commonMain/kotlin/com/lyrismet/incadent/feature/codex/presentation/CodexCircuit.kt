@@ -10,6 +10,7 @@ import com.lyrismet.incadent.feature.codex.domain.repository.LocationRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
+import com.lyrismet.incadent.feature.codex.domain.repository.PartySheetBackup
 import com.lyrismet.incadent.feature.codex.domain.repository.QuestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.SpeciesRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatFactsSource
@@ -49,6 +50,7 @@ class CodexPresenterFactory(
     private val campaignRepository: CampaignRepository,
     private val linkDismissals: LinkSuggestionDismissalRepository,
     private val npcMerge: NpcMergeRepository,
+    private val sheetBackup: PartySheetBackup,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -74,6 +76,7 @@ class CodexPresenterFactory(
                     campaignRepository,
                     linkDismissals,
                     npcMerge,
+                    sheetBackup,
                 )
             else -> null
         }

@@ -15,6 +15,8 @@ data class Item(
     val notes: String = "",
     val photo: Photo? = null,
     val originId: String = "",
+    // on the body of the one who carries it, listed apart from the pack
+    val worn: Boolean = false,
 ) {
     /** one piece less, null when this was the last piece and the item goes away */
     fun withOneLess(): Item? = if (quantity <= ITEM_QUANTITY_RANGE.first) null else copy(quantity = quantity - 1)

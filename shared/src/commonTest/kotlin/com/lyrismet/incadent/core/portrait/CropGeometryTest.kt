@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.core.portrait
 
+import com.lyrismet.incadent.domain.model.Photo
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -72,11 +74,32 @@ class CropGeometryTest {
     fun onlyAnUntouchedWindowOverAStoredPictureKeepsIt() {
         val whole = CropRect(0f, 0f, 1f, 1f)
         val narrowed = CropRect(0.1f, 0f, 0.9f, 1f)
-        val stored = recropDraft(ByteArray(1), PhotoSlot.COVER)
+        val stored = recropDraft(Photo(thumb = ByteArray(1), full = ByteArray(1)), PhotoSlot.COVER)
         val fresh = PhotoCropDraft(ByteArray(1), PhotoSlot.COVER)
 
         assertTrue(stored.keepsStored(whole))
         assertFalse(stored.keepsStored(narrowed))
         assertFalse(fresh.keepsStored(whole))
+    }
+
+    @Test
+    fun aPhotoWithASourceReopensFromTheSourceAndMayGrowBack() {
+        val source = byteArrayOf(7, 7)
+        val draft =
+            recropDraft(Photo(thumb = byteArrayOf(1), full = byteArrayOf(2), source = source), PhotoSlot.PORTRAIT)
+
+        assertContentEquals(source, draft.source)
+        assertTrue(draft.fromSource)
+        assertFalse(draft.keepsStored(CropRect(0f, 0f, 1f, 1f)))
+    }
+
+    @Test
+    fun aPhotoWithoutASourceReopensFromTheCroppedPicture() {
+        val full = byteArrayOf(2, 2)
+        val draft = recropDraft(Photo(thumb = byteArrayOf(1), full = full), PhotoSlot.PORTRAIT)
+
+        assertContentEquals(full, draft.source)
+        assertFalse(draft.fromSource)
+        assertTrue(draft.keepsStored(CropRect(0f, 0f, 1f, 1f)))
     }
 }

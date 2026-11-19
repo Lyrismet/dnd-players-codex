@@ -1,0 +1,46 @@
+CREATE TABLE character_feat (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    party_member_id INTEGER NOT NULL REFERENCES party_member(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    position INTEGER NOT NULL DEFAULT 0,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX character_feat_party_member_id ON character_feat(party_member_id);
+CREATE INDEX character_feat_campaign_id ON character_feat(campaign_id);
+CREATE UNIQUE INDEX character_feat_origin_id ON character_feat(campaign_id, origin_id);
+
+selectByMember:
+SELECT id, name, source, description, position, origin_id
+FROM character_feat WHERE party_member_id = ?
+ORDER BY position, id;
+
+selectById:
+SELECT id, name, source, description, position, origin_id
+FROM character_feat WHERE id = ?;
+
+-- a null id takes the next one, an id puts a deleted feat back where it was
+insert:
+INSERT INTO character_feat(id, party_member_id, name, source, description, position, campaign_id, origin_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE character_feat SET name = ?, source = ?, description = ? WHERE id = ?;
+
+selectOrigins:
+SELECT origin_id FROM character_feat WHERE campaign_id = ?;
+
+deleteByMember:
+DELETE FROM character_feat WHERE party_member_id = ?;
+
+nextPosition:
+SELECT COALESCE(MAX(position) + 1, 0) FROM character_feat WHERE party_member_id = ?;
+
+deleteById:
+DELETE FROM character_feat WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

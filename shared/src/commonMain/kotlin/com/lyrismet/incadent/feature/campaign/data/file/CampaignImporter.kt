@@ -205,7 +205,10 @@ internal class CampaignImporter(
                 is FileRecord.Quest -> addQuest(record)
                 is FileRecord.Party -> addParty(record)
                 is FileRecord.Item -> addItem(record)
-                is FileRecord.Sheet, is FileRecord.Resource, is FileRecord.Spell -> addSheetRecord(record)
+                is FileRecord.Sheet, is FileRecord.Resource, is FileRecord.Spell, is FileRecord.Feat ->
+                    addSheetRecord(
+                        record,
+                    )
                 is FileRecord.Tag -> database.tagQueries.insert(record.name, campaignId)
                 is FileRecord.Phrase -> database.phraseSnippetQueries.insert(record.text, campaignId)
                 is FileRecord.Session -> addSession(record)
@@ -228,6 +231,7 @@ internal class CampaignImporter(
                 is FileRecord.Sheet -> takeSheet && scope?.party?.contains(record.partyId) != false
                 is FileRecord.Resource -> takeSheet && scope?.party?.contains(record.partyId) != false
                 is FileRecord.Spell -> takeSheet && scope?.party?.contains(record.partyId) != false
+                is FileRecord.Feat -> takeSheet && scope?.party?.contains(record.partyId) != false
                 is FileRecord.Session -> scope?.sessions?.contains(record.id) != false
                 is FileRecord.Tag -> request.selection?.tags != false
                 is FileRecord.Phrase -> request.selection?.phrases != false
@@ -463,6 +467,7 @@ internal class CampaignImporter(
                         campaignId,
                         origin,
                         database.creatureTypeIdIn(campaignId, record.customType),
+                        null,
                     )
                     speciesMap[record.id] =
                         inserted(
@@ -504,6 +509,7 @@ internal class CampaignImporter(
                         null,
                         campaignId,
                         origin,
+                        null,
                     )
                     placeMap[record.id] =
                         inserted(
@@ -551,6 +557,7 @@ internal class CampaignImporter(
                         null,
                         campaignId,
                         origin,
+                        null,
                     )
                     val id = queries.lastInsertRowId().executeAsOne()
                     record.placeIds.mapNotNull(placeMap::get).forEach { database.npcLocationQueries.insert(id, it) }
@@ -672,16 +679,13 @@ internal class CampaignImporter(
                         null,
                         campaignId,
                         origin,
+                        false,
+                        null,
                     )
+                    val newId = queries.lastInsertRowId().executeAsOne()
+                    if (record.worn) queries.setWorn(true, newId)
                     itemMap[record.id] =
-                        inserted(
-                            ExchangeKind.ITEM,
-                            record.notes,
-                            PhotoOwner.ITEM,
-                            record.id,
-                            queries.lastInsertRowId().executeAsOne(),
-                            origin,
-                        )
+                        inserted(ExchangeKind.ITEM, record.notes, PhotoOwner.ITEM, record.id, newId, origin)
                 }
             }
         }
@@ -716,6 +720,8 @@ internal class CampaignImporter(
                 null,
                 campaignId,
                 origin,
+                record.vulnerabilities,
+                null,
             )
             partyAdded++
             val id = queries.lastInsertRowId().executeAsOne()
@@ -756,6 +762,7 @@ internal class CampaignImporter(
                 },
                 id,
             )
+            if (record.worn) database.itemQueries.setWorn(true, id)
         }
 
         private fun FileRecord.Party.withVitals(id: Long): FileRecord.Party {
@@ -795,6 +802,7 @@ internal class CampaignImporter(
                     is FileRecord.Sheet -> record.partyId
                     is FileRecord.Resource -> record.partyId
                     is FileRecord.Spell -> record.partyId
+                    is FileRecord.Feat -> record.partyId
                     else -> return
                 }
             val memberId = partyMap[partyNumber] ?: return
@@ -960,6 +968,10 @@ internal class CampaignImporter(
                 } else {
                     current.description
                 },
+                id,
+            )
+            database.partyMemberQueries.setVulnerabilities(
+                pick.text(RecordField.VULNERABILITIES, current.vulnerabilities, record.vulnerabilities),
                 id,
             )
         }
@@ -1153,6 +1165,7 @@ internal class CampaignImporter(
                         database.speciesQueries.setPhoto(
                             bytes,
                             thumb,
+                            null,
                             it,
                         )
                     }
@@ -1161,19 +1174,37 @@ internal class CampaignImporter(
                         database.locationQueries.setCover(
                             bytes,
                             thumb,
+                            null,
                             it,
                         )
                     }
-                PhotoOwner.NPC -> npcMap[record.ownerId]?.let { database.npcQueries.setPortrait(bytes, thumb, it) }
+                PhotoOwner.NPC ->
+                    npcMap[record.ownerId]?.let {
+                        database.npcQueries.setPortrait(
+                            bytes,
+                            thumb,
+                            null,
+                            it,
+                        )
+                    }
                 PhotoOwner.PARTY ->
                     partyMap[record.ownerId]?.let {
                         database.partyMemberQueries.setPortrait(
                             bytes,
                             thumb,
+                            null,
                             it,
                         )
                     }
-                PhotoOwner.ITEM -> itemMap[record.ownerId]?.let { database.itemQueries.setPhoto(bytes, thumb, it) }
+                PhotoOwner.ITEM ->
+                    itemMap[record.ownerId]?.let {
+                        database.itemQueries.setPhoto(
+                            bytes,
+                            thumb,
+                            null,
+                            it,
+                        )
+                    }
             }
         }
 

@@ -6,7 +6,8 @@ CREATE TABLE location (
     cover BLOB,
     cover_thumb BLOB,
     campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
-    origin_id TEXT NOT NULL DEFAULT ''
+    origin_id TEXT NOT NULL DEFAULT '',
+    photo_source BLOB
 );
 
 CREATE INDEX location_parent_id ON location(parent_id);
@@ -18,16 +19,16 @@ selectAll:
 SELECT id, name, description, parent_id, cover_thumb, origin_id FROM location WHERE campaign_id = ? ORDER BY name;
 
 selectById:
-SELECT id, name, description, parent_id, cover_thumb, cover, origin_id FROM location WHERE id = ?;
+SELECT id, name, description, parent_id, cover_thumb, cover, origin_id, photo_source FROM location WHERE id = ?;
 
 insert:
-INSERT INTO location(name, description, parent_id, cover, cover_thumb, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO location(name, description, parent_id, cover, cover_thumb, campaign_id, origin_id, photo_source)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO location(id, name, description, parent_id, cover, cover_thumb, campaign_id, origin_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO location(id, name, description, parent_id, cover, cover_thumb, campaign_id, origin_id, photo_source)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
@@ -42,7 +43,7 @@ setParent:
 UPDATE location SET parent_id = ? WHERE id = ?;
 
 setCover:
-UPDATE location SET cover = ?, cover_thumb = ? WHERE id = ?;
+UPDATE location SET cover = ?, cover_thumb = ?, photo_source = ? WHERE id = ?;
 
 
 deleteById:

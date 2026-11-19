@@ -63,9 +63,11 @@ class ItemRepositoryImpl(
                         item.notes,
                         item.id,
                     )
-                    writePhotoIfChanged(item.photo, stored.photo) { full, thumb ->
-                        queries.setPhoto(full, thumb, item.id)
-                    }
+                    writePhotoIfChanged(
+                        item.photo,
+                        stored.photo,
+                    ) { full, thumb, source -> queries.setPhoto(full, thumb, source, item.id) }
+                    queries.setWorn(item.worn, item.id)
                     item.id
                 } else {
                     insert(item)
@@ -88,6 +90,8 @@ class ItemRepositoryImpl(
                 item.photo?.thumb,
                 current.requireId(),
                 item.originId.orNewOriginId(),
+                item.worn,
+                item.photo?.source,
             )
             return item.id
         }
@@ -103,6 +107,8 @@ class ItemRepositoryImpl(
             item.photo?.thumb,
             current.requireId(),
             item.originId.orNewOriginId(),
+            item.worn,
+            item.photo?.source,
         )
         return queries.lastInsertRowId().executeAsOne()
     }
@@ -154,6 +160,7 @@ class ItemRepositoryImpl(
         notes: String,
         photoThumb: ByteArray?,
         originId: String,
+        worn: Boolean,
     ) = Item(
         id,
         name,
@@ -164,6 +171,7 @@ class ItemRepositoryImpl(
         notes,
         photoThumb?.let { Photo(it) },
         originId,
+        worn,
     )
 
     // the by-id row also carries the full jpeg
@@ -180,6 +188,8 @@ class ItemRepositoryImpl(
         photoThumb: ByteArray?,
         photo: ByteArray?,
         originId: String,
-    ) = toDomain(id, name, quantity, price, coin, ownerKind, ownerId, notes, photoThumb, originId)
-        .copy(photo = photoThumb?.let { Photo(it, photo) })
+        worn: Boolean,
+        photoSource: ByteArray?,
+    ) = toDomain(id, name, quantity, price, coin, ownerKind, ownerId, notes, photoThumb, originId, worn)
+        .copy(photo = photoThumb?.let { Photo(it, photo, photoSource) })
 }

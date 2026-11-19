@@ -64,7 +64,7 @@ data class FormChipOption<T>(
  */
 @Composable
 fun FormTextField(
-    label: String,
+    label: String?,
     value: String,
     onChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -119,7 +119,7 @@ private const val DISABLED_FIELD_ALPHA = 0.45f
 /** multi-line variant of [FormTextField] (mockup's `isArea`) - same chrome, grows from a 3-line minimum */
 @Composable
 fun FormTextArea(
-    label: String,
+    label: String?,
     value: String,
     onChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -154,7 +154,7 @@ data class FormFieldAction(
  */
 @Composable
 fun FormNumberField(
-    label: String,
+    label: String?,
     value: Int?,
     range: IntRange,
     onChange: (Int?) -> Unit,
@@ -200,7 +200,7 @@ private const val NUMBER_FIELD_MAX_DIGITS = 3
  */
 @Composable
 fun FormPickField(
-    label: String,
+    label: String?,
     placeholder: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -262,7 +262,7 @@ fun FormPickField(
     }
 }
 
-private val PickFieldMinHeight = 52.dp
+private val PickFieldMinHeight = FormFieldHeight
 
 // the line box is trimmed to the glyphs, so a one-line value sits in the middle of the field and not above it
 private val CenteredLine =
@@ -272,24 +272,27 @@ private fun TextStyle.centered(): TextStyle = merge(CenteredLine)
 
 @Composable
 private fun FormFieldColumn(
-    label: String,
+    label: String?,
     modifier: Modifier = Modifier,
     required: Boolean = false,
     labelHint: String? = null,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        FormFieldLabel(
-            text = label,
-            modifier = Modifier.fillMaxWidth(),
-            required = required,
-            trailingContent = {
-                if (labelHint != null) {
-                    Spacer(Modifier.weight(1f))
-                    Text(labelHint, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextTertiary)
-                }
-            },
-        )
+        // a field whose label is drawn by the caller passes none
+        if (label != null) {
+            FormFieldLabel(
+                text = label,
+                modifier = Modifier.fillMaxWidth(),
+                required = required,
+                trailingContent = {
+                    if (labelHint != null) {
+                        Spacer(Modifier.weight(1f))
+                        Text(labelHint, style = MaterialTheme.typography.bodySmall, color = AppPalette.TextTertiary)
+                    }
+                },
+            )
+        }
         content()
     }
 }

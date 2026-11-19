@@ -60,7 +60,7 @@ class LocationRepositoryImpl(
                     writePhotoIfChanged(
                         entity.cover,
                         stored.cover,
-                    ) { full, thumb -> queries.setCover(full, thumb, entity.id) }
+                    ) { full, thumb, source -> queries.setCover(full, thumb, source, entity.id) }
                     entity.id
                 } else {
                     insert(entity)
@@ -110,6 +110,7 @@ class LocationRepositoryImpl(
                 location.cover?.thumb,
                 current.requireId(),
                 location.originId.orNewOriginId(),
+                location.cover?.source,
             )
             return location.id
         }
@@ -121,6 +122,7 @@ class LocationRepositoryImpl(
             location.cover?.thumb,
             current.requireId(),
             location.originId.orNewOriginId(),
+            location.cover?.source,
         )
         return queries.lastInsertRowId().executeAsOne()
     }
@@ -152,6 +154,7 @@ class LocationRepositoryImpl(
         coverThumb: ByteArray?,
         cover: ByteArray?,
         originId: String,
+        photoSource: ByteArray?,
     ) = toDomain(
         id,
         name,
@@ -159,5 +162,5 @@ class LocationRepositoryImpl(
         parentId,
         coverThumb,
         originId,
-    ).copy(cover = coverThumb?.let { Photo(it, cover) })
+    ).copy(cover = coverThumb?.let { Photo(it, cover, photoSource) })
 }

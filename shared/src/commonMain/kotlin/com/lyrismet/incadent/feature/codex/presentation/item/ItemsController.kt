@@ -67,6 +67,7 @@ internal class ItemsController(
                 edit { it.copy(owner = ownerOfOptionId(event.optionId)) }
             }
             is ItemEvent.NotesChanged -> edit { it.copy(notes = event.notes) }
+            is ItemEvent.WornChanged -> edit { it.copy(worn = event.worn) }
             else -> Unit
         }
     }

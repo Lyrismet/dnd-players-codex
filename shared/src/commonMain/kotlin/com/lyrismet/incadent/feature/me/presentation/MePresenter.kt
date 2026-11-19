@@ -4,17 +4,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.campaign.domain.model.CampaignStatus
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignRepository
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.isSpellTabVisible
+import com.lyrismet.incadent.feature.codex.domain.repository.CharacterFeatRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterResourceRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterRestRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
@@ -30,6 +34,7 @@ import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.presenter.Presenter
+import kotlinx.coroutines.CoroutineScope
 
 /** loads the character marked "me" with its sheet and turns every press of the screen into a write */
 @Suppress("LongParameterList")
@@ -38,6 +43,8 @@ internal class MePresenter(
     private val sheetRepository: CharacterSheetRepository,
     private val resourceRepository: CharacterResourceRepository,
     private val spellRepository: CharacterSpellRepository,
+    private val featRepository: CharacterFeatRepository,
+    private val imageCompressor: ImageCompressor,
     private val campaignRepository: CampaignRepository,
     private val codexRepositories: CodexRepositories,
     private val restRepository: CharacterRestRepository,
@@ -46,7 +53,7 @@ internal class MePresenter(
     private val undoController: UndoController,
     appPreferencesRepository: AppPreferencesRepository,
 ) : Presenter<MeState> {
-    private val picker = PlayerCharacterPicker(partyRepository, undoController, appPreferencesRepository)
+    private val picker = PlayerCharacterPicker(partyRepository, appPreferencesRepository)
 
     @Composable
     override fun present(): MeState {
@@ -91,6 +98,19 @@ internal class MePresenter(
                 live?.id,
             )
         val latestScope by rememberUpdatedState(eventScope)
+        val handler = rememberHandler(ui, actions, itemsController, { latestScope }, scope)
+        val eventSink = remember(handler) { handler::handle }
+        return MeState(content = content, eventSink = eventSink)
+    }
+
+    @Composable
+    private fun rememberHandler(
+        ui: MeUiState,
+        actions: MeActions,
+        itemsController: ItemsController,
+        latestScope: () -> MeEventScope,
+        scope: CoroutineScope,
+    ): MeEventHandler {
         val counters = remember { MeCounterActions(scope, resourceRepository, sheetRepository, undoController) }
         val things =
             remember {
@@ -104,9 +124,11 @@ internal class MePresenter(
                 )
             }
         val spells = remember { SpellsHandler(ui.spells, scope, resourceRepository, spellRepository, undoController) }
-        val handler = remember { MeEventHandler({ latestScope }, ui, actions, counters, picker, things, spells, scope) }
-        val eventSink = remember(handler) { handler::handle }
-        return MeState(content = content, eventSink = eventSink)
+        val feats = remember { MeFeatsHandler(ui, featRepository, undoController, scope) }
+        val portrait = remember { MePortraitHandler(ui, partyRepository, imageCompressor, scope) }
+        return remember {
+            MeEventHandler(latestScope, ui, actions, counters, picker, things, spells, feats, portrait, scope)
+        }
     }
 
     @Composable
@@ -130,6 +152,12 @@ internal class MePresenter(
             member.id,
         ) { resourceRepository.observe(member.id) }.collectAsState(initial = emptyList())
         val spells by remember(member.id) { spellRepository.observe(member.id) }.collectAsState(initial = emptyList())
+        val feats by remember(member.id) { featRepository.observe(member.id) }.collectAsState(initial = emptyList())
+        // the list only holds the thumbnail, the viewer of the portrait needs the full picture
+        val fullPortrait by produceState<Photo?>(null, member.id, member.portrait) {
+            value = null
+            value = member.portrait?.let { partyRepository.getById(member.id)?.portrait }
+        }
         val shownVitals = vitals ?: return null
         val level = member.level ?: 1
         // the skill names are only read while the search is open
@@ -156,13 +184,14 @@ internal class MePresenter(
             rememberMeItems(member, sheet, ui, things.records, things.controller, codexRepositories, undoController)
         return MeContent.Character(
             buildMeCharacter(
-                member,
+                member.copy(portrait = fullPortrait ?: member.portrait),
                 shownVitals,
                 sheet,
                 figures,
                 strips,
                 resources,
                 spells,
+                feats,
                 tabs,
                 ui,
                 readOnly,

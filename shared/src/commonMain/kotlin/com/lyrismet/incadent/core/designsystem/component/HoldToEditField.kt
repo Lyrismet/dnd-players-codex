@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
@@ -64,7 +65,7 @@ data class HoldFrame(
 
         // no overhang, the outline lines up with the neighbouring blocks and the inset keeps the text off it
         val Note = HoldFrame(0.dp, 0.dp, 12.dp, 10.dp, 10.dp, fillWidth = true, outlined = true)
-        val FactLine = HoldFrame(0.dp, 0.dp, 14.dp, 4.dp, 0.dp)
+        val FactLine = HoldFrame(0.dp, 0.dp, 14.dp, 4.dp, 10.dp)
     }
 }
 
@@ -97,9 +98,11 @@ fun HoldToEditField(
                 ).clip(RoundedCornerShape(frame.radius))
                 .drawBehind {
                     if (progress.value > 0f) {
-                        drawRect(
+                        // the leading edge is rounded like the field, so the fill never ends in a hard cut
+                        drawRoundRect(
                             color = AppPalette.Gold.copy(alpha = 0.16f),
                             size = Size(size.width * progress.value, size.height),
+                            cornerRadius = CornerRadius(frame.radius.toPx()),
                         )
                     }
                 }.pointerInput(Unit) {

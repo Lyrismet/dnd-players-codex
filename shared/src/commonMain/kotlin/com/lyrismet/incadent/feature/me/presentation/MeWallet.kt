@@ -47,8 +47,6 @@ import com.lyrismet.incadent.feature.me.domain.QUICK_COINS
 import com.lyrismet.incadent.feature.me.domain.WalletMode
 import com.lyrismet.incadent.feature.me.domain.showsTotal
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.me_help_wallet_body
-import incadent.shared.generated.resources.me_help_wallet_title
 import incadent.shared.generated.resources.me_wallet_apply
 import incadent.shared.generated.resources.me_wallet_change
 import incadent.shared.generated.resources.me_wallet_coin_change_format
@@ -132,11 +130,7 @@ internal fun MeWalletCard(
 
 @Composable
 internal fun MeWalletTitle() {
-    AppSectionTitleHint(
-        stringResource(Res.string.me_wallet_title),
-        helpTitle = stringResource(Res.string.me_help_wallet_title),
-        helpBody = stringResource(Res.string.me_help_wallet_body),
-    )
+    AppSectionTitleHint(stringResource(Res.string.me_wallet_title))
 }
 
 /** the keypad of the wallet: spend or gain, the coin, and the purse before and after */

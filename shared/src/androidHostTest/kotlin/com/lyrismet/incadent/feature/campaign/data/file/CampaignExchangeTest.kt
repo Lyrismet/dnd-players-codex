@@ -61,11 +61,12 @@ class CampaignExchangeTest {
             source,
             "wolf-origin",
             null,
+            null,
         )
         val speciesId = database.speciesQueries.lastInsertRowId().executeAsOne()
-        database.locationQueries.insert("Town", "big", null, jpeg, byteArrayOf(1), source, "town-origin")
+        database.locationQueries.insert("Town", "big", null, jpeg, byteArrayOf(1), source, "town-origin", null)
         val town = database.locationQueries.lastInsertRowId().executeAsOne()
-        database.locationQueries.insert("Inn", "", town, null, null, source, "inn-origin")
+        database.locationQueries.insert("Inn", "", town, null, null, source, "inn-origin", null)
         val inn = database.locationQueries.lastInsertRowId().executeAsOne()
         database.npcQueries.insert(
             "Bob",
@@ -82,6 +83,7 @@ class CampaignExchangeTest {
             byteArrayOf(1),
             source,
             "bob-origin",
+            null,
         )
         npcId = database.npcQueries.lastInsertRowId().executeAsOne()
         database.npcLocationQueries.insert(npcId, inn)
@@ -102,6 +104,8 @@ class CampaignExchangeTest {
             null,
             source,
             "hero-origin",
+            "",
+            null,
         )
         database.tagQueries.insert("fight", source)
         database.phraseSnippetQueries.insert("Roll for it", source)
@@ -311,6 +315,7 @@ class CampaignExchangeTest {
             null,
             source,
             "other-origin",
+            null,
         )
         val sessionId =
             database.sessionNoteQueries

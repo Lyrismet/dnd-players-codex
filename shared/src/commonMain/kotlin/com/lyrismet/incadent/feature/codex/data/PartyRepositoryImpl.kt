@@ -8,6 +8,11 @@ import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
+import com.lyrismet.incadent.feature.codex.domain.grouping.encodeVulnerabilities
+import com.lyrismet.incadent.feature.codex.domain.grouping.with
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
@@ -45,6 +50,26 @@ class PartyRepositoryImpl(
         withContext(DatabaseDispatcher) { queries.setFallen(fallen, combatId.takeIf { fallen }, id) }
     }
 
+    override suspend fun setVulnerabilities(
+        id: Long,
+        vulnerabilities: Map<DamageType, DamageState>,
+    ) {
+        withContext(DatabaseDispatcher) { queries.setVulnerabilities(vulnerabilities.encodeVulnerabilities(), id) }
+    }
+
+    override suspend fun setVulnerability(
+        id: Long,
+        type: DamageType,
+        state: DamageState?,
+    ) {
+        withContext(DatabaseDispatcher) {
+            database.transaction {
+                val stored = queries.selectById(id, ::toDomainFull).executeAsOneOrNull() ?: return@transaction
+                queries.setVulnerabilities(stored.vulnerabilities.with(type, state).encodeVulnerabilities(), id)
+            }
+        }
+    }
+
     // the "вы" flag is unique per campaign - saving a player character clears it from everyone else
     override suspend fun upsert(entity: PartyMember): Long =
         withContext(DatabaseDispatcher) {
@@ -70,7 +95,7 @@ class PartyRepositoryImpl(
                         writePhotoIfChanged(
                             entity.portrait,
                             stored.portrait,
-                        ) { full, thumb -> queries.setPortrait(full, thumb, entity.id) }
+                        ) { full, thumb, source -> queries.setPortrait(full, thumb, source, entity.id) }
                         entity.id
                     } else {
                         insert(entity)
@@ -102,6 +127,8 @@ class PartyRepositoryImpl(
                 portrait_thumb = member.portrait?.thumb,
                 campaign_id = current.requireId(),
                 origin_id = member.originId.orNewOriginId(),
+                vulnerabilities = member.vulnerabilities.encodeVulnerabilities(),
+                photo_source = member.portrait?.source,
             )
             return member.id
         }
@@ -121,6 +148,8 @@ class PartyRepositoryImpl(
             portrait_thumb = member.portrait?.thumb,
             campaign_id = current.requireId(),
             origin_id = member.originId.orNewOriginId(),
+            vulnerabilities = member.vulnerabilities.encodeVulnerabilities(),
+            photo_source = member.portrait?.source,
         )
         return queries.lastInsertRowId().executeAsOne()
     }
@@ -150,6 +179,7 @@ class PartyRepositoryImpl(
         fellCombatId: Long?,
         portraitThumb: ByteArray?,
         originId: String,
+        vulnerabilities: String,
     ) = PartyMember(
         id = id,
         name = name,
@@ -167,6 +197,7 @@ class PartyRepositoryImpl(
         fallen = fallen,
         fellCombatId = fellCombatId,
         originId = originId,
+        vulnerabilities = decodeVulnerabilities(vulnerabilities),
     )
 
     // the by-id row also carries the full jpeg
@@ -189,6 +220,8 @@ class PartyRepositoryImpl(
         portraitThumb: ByteArray?,
         portrait: ByteArray?,
         originId: String,
+        vulnerabilities: String,
+        photoSource: ByteArray?,
     ) = toDomain(
         id,
         name,
@@ -206,5 +239,6 @@ class PartyRepositoryImpl(
         fellCombatId,
         portraitThumb,
         originId,
-    ).copy(portrait = portraitThumb?.let { Photo(it, portrait) })
+        vulnerabilities,
+    ).copy(portrait = portraitThumb?.let { Photo(it, portrait, photoSource) })
 }

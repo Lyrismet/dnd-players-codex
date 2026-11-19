@@ -22,6 +22,7 @@ data class MeItemRow(
     val quantity: Int,
     val price: Int?,
     val coin: Coin,
+    val worn: Boolean = false,
 )
 
 sealed interface RestEvent {

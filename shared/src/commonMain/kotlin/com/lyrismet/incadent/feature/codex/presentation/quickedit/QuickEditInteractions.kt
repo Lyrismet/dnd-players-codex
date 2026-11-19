@@ -17,6 +17,7 @@ import com.lyrismet.incadent.core.portrait.recropDraft
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.core.undo.UndoController
+import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.grouping.withRecentPlaces
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.Location
@@ -360,7 +361,7 @@ class QuickEditInteractions(
 
     private fun openRecrop(
         slot: PhotoSlot,
-        stored: ByteArray,
+        stored: Photo,
     ) {
         val ref = selectedRef.value ?: return
         photoCrop.value = QuickPhotoCrop(recropDraft(stored, slot), ref)

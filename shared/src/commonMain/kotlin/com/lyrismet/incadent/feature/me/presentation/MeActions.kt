@@ -6,6 +6,8 @@ import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterVitals
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
@@ -16,13 +18,8 @@ import com.lyrismet.incadent.feature.me.domain.hit
 import com.lyrismet.incadent.feature.me.domain.missingHp
 import com.lyrismet.incadent.feature.me.domain.next
 import com.lyrismet.incadent.feature.me.domain.withDeathSaveDot
-import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.me_fallen_done_title
-import incadent.shared.generated.resources.me_not_mine_done_title
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getString
 
 /** every write of the "me" screen, each one goes straight to the sheet or the party record */
 internal class MeActions(
@@ -104,6 +101,15 @@ internal class MeActions(
         scope.launch { block(party, sheets) }
     }
 
+    /** one tap on a shield, the record is the one the party card shows */
+    fun shield(
+        memberId: Long,
+        type: DamageType,
+        state: DamageState?,
+    ) {
+        scope.launch { party.setVulnerability(memberId, type, state) }
+    }
+
     fun member(
         memberId: Long,
         change: (PartyMember) -> PartyMember,
@@ -112,23 +118,10 @@ internal class MeActions(
     }
 
     fun markFallen(member: PartyMember) {
-        scope.launch {
-            party.setFallen(member.id, true, null)
-            undoController.show(getString(Res.string.me_fallen_done_title), member.name) {
-                party.setFallen(member.id, false, null)
-            }
-        }
+        scope.launch { party.setFallen(member.id, true, null) }
     }
 
-    // a mark given to somebody else since stays with them when the undo comes
     fun releaseMark(member: PartyMember) {
-        scope.launch {
-            party.getById(member.id)?.let { party.upsert(it.copy(isPlayerCharacter = false)) }
-            undoController.show(getString(Res.string.me_not_mine_done_title), member.name) {
-                if (party.observeAll().first().none { it.isPlayerCharacter }) {
-                    party.getById(member.id)?.let { party.upsert(it.copy(isPlayerCharacter = true)) }
-                }
-            }
-        }
+        scope.launch { party.getById(member.id)?.let { party.upsert(it.copy(isPlayerCharacter = false)) } }
     }
 }

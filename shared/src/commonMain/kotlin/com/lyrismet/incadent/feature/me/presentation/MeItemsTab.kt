@@ -1,11 +1,9 @@
 package com.lyrismet.incadent.feature.me.presentation
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,6 +31,8 @@ import com.lyrismet.incadent.feature.codex.presentation.item.itemQuantityText
 import com.lyrismet.incadent.feature.me.domain.isDown
 import com.lyrismet.incadent.feature.mention.presentation.MentionTextField
 import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.item_pack_group
+import incadent.shared.generated.resources.item_worn_group
 import incadent.shared.generated.resources.items_quantity_less
 import incadent.shared.generated.resources.items_quantity_more
 import incadent.shared.generated.resources.me_items_add
@@ -55,7 +55,7 @@ internal fun MeItemsTab(
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (character.vitals.isDown) item { MeDeathSaves(character, onEvent) }
@@ -63,12 +63,15 @@ internal fun MeItemsTab(
         item {
             MeWalletCard(things.purse, character.readOnly) { onEvent(MeEvent.Wallet(WalletEvent.Opened)) }
         }
-        if (things.rows.isNotEmpty()) {
-            item {
-                AppSectionTitleHint(stringResource(Res.string.me_items_title_format, things.rows.size))
-            }
+        val (worn, pack) = things.rows.partition { it.worn }
+        if (worn.isNotEmpty()) {
+            item { AppSectionTitleHint(stringResource(Res.string.item_worn_group, worn.size)) }
+            item { ItemLines(worn, character.readOnly, withAdd = false, onEvent = onEvent) }
+            item { AppSectionTitleHint(stringResource(Res.string.item_pack_group, pack.size)) }
+        } else if (pack.isNotEmpty()) {
+            item { AppSectionTitleHint(stringResource(Res.string.me_items_title_format, pack.size)) }
         }
-        item { ItemLines(things.rows, character.readOnly, onEvent) }
+        item { ItemLines(pack, character.readOnly, withAdd = true, onEvent = onEvent) }
         item { AppSectionTitleHint(stringResource(Res.string.me_notes_title)) }
         item { NotesField(things, character.readOnly, onEvent) }
     }
@@ -88,6 +91,7 @@ internal fun MeItemsTab(
 private fun ItemLines(
     rows: List<MeItemRow>,
     readOnly: Boolean,
+    withAdd: Boolean,
     onEvent: (MeEvent) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth().appCard().padding(start = 14.dp, end = 8.dp)) {
@@ -95,19 +99,9 @@ private fun ItemLines(
             if (index > 0) AppDivider()
             ItemLine(row, readOnly, onEvent)
         }
-        if (!readOnly) {
+        if (!readOnly && withAdd) {
             if (rows.isNotEmpty()) AppDivider()
-            Text(
-                stringResource(Res.string.me_items_add),
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 48.dp)
-                        .clickable { onEvent(MeEvent.Items(ItemEvent.AddClicked)) }
-                        .padding(vertical = 13.dp),
-                style = MaterialTheme.typography.bodyLarge,
-                color = AppPalette.GoldBright,
-            )
+            MeAddRow(stringResource(Res.string.me_items_add)) { onEvent(MeEvent.Items(ItemEvent.AddClicked)) }
         }
     }
 }

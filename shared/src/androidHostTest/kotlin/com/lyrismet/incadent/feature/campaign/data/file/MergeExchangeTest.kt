@@ -86,6 +86,7 @@ class MergeExchangeTest {
             null,
             campaignId,
             originId,
+            null,
         )
         return database.npcQueries.lastInsertRowId().executeAsOne()
     }
@@ -113,6 +114,8 @@ class MergeExchangeTest {
             null,
             campaignId,
             originId,
+            "",
+            null,
         )
         return database.partyMemberQueries.lastInsertRowId().executeAsOne()
     }

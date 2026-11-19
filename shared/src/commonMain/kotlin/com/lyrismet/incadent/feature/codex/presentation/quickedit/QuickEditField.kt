@@ -91,6 +91,23 @@ val QuickEditField.editsInSheet: Boolean get() =
         kind == QuickEditKind.TypeSheet ||
         kind == QuickEditKind.ClassSheet
 
+/** true when a change of the field is worth an undo bar - bulk moves and values that are hard to type again */
+val QuickEditField.offersUndo: Boolean get() =
+    when (this) {
+        QuickEditField.MOVE,
+        QuickEditField.INSIDE,
+        QuickEditField.PORTRAIT,
+        QuickEditField.COVER,
+        QuickEditField.DESCRIPTION,
+        QuickEditField.NICKNAMES,
+        QuickEditField.REWARD,
+        QuickEditField.GIVEN_QUESTS,
+        QuickEditField.RESIDENTS,
+        QuickEditField.PLACE_QUESTS,
+        -> true
+        else -> false
+    }
+
 /** the typed-in or tapped value of one [QuickEditField], always matching that field's [QuickEditKind] */
 sealed interface QuickEditValue {
     data class Text(

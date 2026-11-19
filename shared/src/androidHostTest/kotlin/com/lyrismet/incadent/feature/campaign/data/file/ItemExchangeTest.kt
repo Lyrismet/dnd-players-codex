@@ -74,6 +74,7 @@ class ItemExchangeTest {
             null,
             campaignId,
             originId,
+            null,
         )
         return database.npcQueries.lastInsertRowId().executeAsOne()
     }
@@ -95,6 +96,8 @@ class ItemExchangeTest {
             null,
             campaignId,
             "hero",
+            "",
+            null,
         )
         return database.partyMemberQueries.lastInsertRowId().executeAsOne()
     }
@@ -120,6 +123,8 @@ class ItemExchangeTest {
             null,
             campaignId,
             originId,
+            false,
+            null,
         )
         return database.itemQueries.lastInsertRowId().executeAsOne()
     }

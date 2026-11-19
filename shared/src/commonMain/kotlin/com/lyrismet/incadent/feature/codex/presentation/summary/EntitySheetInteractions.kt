@@ -171,24 +171,58 @@ class EntitySheetInteractions(
         }
     }
 
+    fun onPartyVulnerabilityChanged(
+        scope: CoroutineScope,
+        partyId: Long,
+        type: DamageType,
+        state: DamageState?,
+    ) {
+        scope.launch { partyRepository.setVulnerability(partyId, type, state) }
+    }
+
+    /** reports the whole editing of a character's shields as one change that puts back what they had */
+    fun onPartyVulnerabilitiesEdited(
+        scope: CoroutineScope,
+        partyId: Long,
+        before: Map<DamageType, DamageState>,
+    ) {
+        reportVulnerabilitiesEdit(
+            scope,
+            before,
+            read = { partyRepository.getById(partyId)?.let { it.name to it.vulnerabilities } },
+            write = { partyRepository.setVulnerabilities(partyId, it) },
+        )
+    }
+
     /** reports the whole editing as one change that puts back what the npc had when it began */
     fun onNpcVulnerabilitiesEdited(
         scope: CoroutineScope,
         npcId: Long,
         before: Map<DamageType, DamageState>,
     ) {
+        reportVulnerabilitiesEdit(
+            scope,
+            before,
+            read = { npcRepository.getById(npcId)?.let { it.name to it.vulnerabilities } },
+            write = { npc ->
+                npcRepository.getById(npcId)?.let { npcRepository.upsert(it.copy(vulnerabilities = npc)) }
+            },
+        )
+    }
+
+    private fun reportVulnerabilitiesEdit(
+        scope: CoroutineScope,
+        before: Map<DamageType, DamageState>,
+        read: suspend () -> Pair<String, Map<DamageType, DamageState>>?,
+        write: suspend (Map<DamageType, DamageState>) -> Unit,
+    ) {
         scope.launch {
             entityWriteLock.withLock {
-                val npc = npcRepository.getById(npcId) ?: return@withLock
-                if (npc.vulnerabilities == before) return@withLock
-                val after = npc.vulnerabilities
+                val (name, after) = read() ?: return@withLock
+                if (after == before) return@withLock
                 onChanged(
-                    EntityChange(QuickEditField.VULNERABILITIES, npc.name) {
-                        entityWriteLock.withLock {
-                            npcRepository.getById(npcId)?.takeIf { it.vulnerabilities == after }?.let {
-                                npcRepository.upsert(it.copy(vulnerabilities = before))
-                            }
-                        }
+                    EntityChange(QuickEditField.VULNERABILITIES, name) {
+                        entityWriteLock.withLock { if (read()?.second == after) write(before) }
                     },
                 )
             }

@@ -46,6 +46,7 @@ class RecordValidator {
             is FileRecord.Sheet -> must(record.partyId in party && sheets.add(record.partyId))
             is FileRecord.Resource -> must(record.partyId in party)
             is FileRecord.Spell -> must(record.partyId in party)
+            is FileRecord.Feat -> must(record.partyId in party)
             is FileRecord.Item -> checkItem(record)
             is FileRecord.Session -> must(sessions.add(record.id))
             is FileRecord.Entry -> must(record.sessionId in sessions)
@@ -97,6 +98,9 @@ class RecordValidator {
                 is FileRecord.Party -> record.fits()
                 is FileRecord.Sheet -> record.fits()
                 is FileRecord.Resource -> fits(MAX_SHORT_CHARS, record.name)
+                is FileRecord.Feat ->
+                    fits(MAX_SHORT_CHARS, record.name, record.source) &&
+                        fits(MAX_LONG_CHARS, record.description)
                 is FileRecord.Spell ->
                     fits(
                         MAX_SHORT_CHARS,
@@ -162,6 +166,7 @@ private fun FileRecord.rank(): Int =
         is FileRecord.Sheet -> Section.SHEET
         is FileRecord.Resource -> Section.SHEET
         is FileRecord.Spell -> Section.SHEET
+        is FileRecord.Feat -> Section.SHEET
         is FileRecord.Item -> Section.ITEM
         is FileRecord.Tag -> Section.TAG
         is FileRecord.Phrase -> Section.PHRASE
@@ -193,7 +198,7 @@ private fun FileRecord.Quest.fits() = fits(MAX_SHORT_CHARS, title, reward) && fi
 
 private fun FileRecord.Party.fits() =
     fits(MAX_SHORT_CHARS, name, characterClass, subclass, race, playerName) &&
-        fits(MAX_LONG_CHARS, description) &&
+        fits(MAX_LONG_CHARS, description, vulnerabilities) &&
         (level == null || level in PartyStatRanges.level) &&
         (hpMax == null || hpMax in PartyStatRanges.hpMax) &&
         (hpCurrent == null || hpCurrent in 0..(hpMax ?: MAX_HP_WITHOUT_MAX))

@@ -90,6 +90,7 @@ internal fun diffParty(
         text(RecordField.RACE, mine.race, file.race),
         file.level?.let { text(RecordField.LEVEL, mine.level?.toString().orEmpty(), it.toString()) },
         if (withNotes) text(RecordField.DESCRIPTION, mine.description, file.description) else null,
+        text(RecordField.VULNERABILITIES, mine.vulnerabilities, file.vulnerabilities),
     )
 
 internal fun diffItem(

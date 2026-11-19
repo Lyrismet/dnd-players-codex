@@ -520,4 +520,69 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the twenty first schema adds worn and shields and keeps the rows`() {
+        val file = File.createTempFile("schema-v21", ".db")
+        File("src/commonMain/sqldelight/databases/21.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(name, campaign_id) VALUES ('Lira', 'c')",
+            "INSERT INTO item(name, quantity, owner_kind, owner_id, campaign_id) VALUES ('Axe', 2, 'PARTY', 1, 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 21, AppDatabase.Schema.version)
+
+        assertEquals("Axe|2|0", driver.single("SELECT name || '|' || quantity || '|' || worn FROM item"))
+        assertEquals("Lira|", driver.single("SELECT name || '|' || vulnerabilities FROM party_member"))
+        driver.close()
+        file.delete()
+    }
+
+    @Test
+    fun `migrating the twenty second schema adds an empty feat table and keeps the party`() {
+        val file = File.createTempFile("schema-v22", ".db")
+        File("src/commonMain/sqldelight/databases/22.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(name, campaign_id) VALUES ('Lira', 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 22, AppDatabase.Schema.version)
+
+        assertEquals("0", driver.single("SELECT count(*) FROM character_feat"))
+        driver.execute(
+            null,
+            "INSERT INTO character_feat(party_member_id, name, campaign_id) VALUES (1, 'Lucky', 'c')",
+            0,
+        )
+        assertEquals("", driver.single("SELECT source FROM character_feat"))
+        assertEquals("Lira", driver.single("SELECT name FROM party_member"))
+        driver.close()
+        file.delete()
+    }
+
+    @Test
+    fun `migrating the twenty third schema adds an empty photo source and keeps the photos`() {
+        val file = File.createTempFile("schema-v23", ".db")
+        File("src/commonMain/sqldelight/databases/23.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(name, portrait, portrait_thumb, campaign_id) VALUES ('Lira', x'0102', x'01', 'c')",
+            "INSERT INTO npc(name, status, description, portrait, portrait_thumb, campaign_id) VALUES ('Bob', 'NEUTRAL', '', x'03', x'03', 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 23, AppDatabase.Schema.version)
+
+        assertEquals(
+            "2|",
+            driver.single("SELECT length(portrait) || '|' || ifnull(hex(photo_source), '') FROM party_member"),
+        )
+        assertEquals("1|", driver.single("SELECT length(portrait) || '|' || ifnull(hex(photo_source), '') FROM npc"))
+        driver.close()
+        file.delete()
+    }
 }

@@ -29,7 +29,9 @@ internal fun quickPhotoActions(
             onPicked = { bytes -> it.onEvent(QuickEditUiEvent.PhotoPicked(slot, bytes)) },
             onCrop = {
                 // the list thumbnail would be upscaled into the stored photo, so wait for the full picture
-                photo?.full?.let { stored -> it.onEvent(QuickEditUiEvent.PhotoRecropRequested(slot, stored)) }
+                photo?.takeIf { stored -> stored.full != null }?.let { stored ->
+                    it.onEvent(QuickEditUiEvent.PhotoRecropRequested(slot, stored))
+                }
             },
             onDelete = { it.onEvent(QuickEditUiEvent.PhotoRemoved(slot)) },
         )

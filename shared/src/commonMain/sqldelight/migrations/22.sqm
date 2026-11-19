@@ -1,0 +1,15 @@
+-- the feats, racial gifts and other things a character has besides the text of its features
+CREATE TABLE character_feat (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    party_member_id INTEGER NOT NULL REFERENCES party_member(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    position INTEGER NOT NULL DEFAULT 0,
+    campaign_id TEXT NOT NULL REFERENCES campaign(id) ON DELETE CASCADE,
+    origin_id TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX character_feat_party_member_id ON character_feat(party_member_id);
+CREATE INDEX character_feat_campaign_id ON character_feat(campaign_id);
+CREATE UNIQUE INDEX character_feat_origin_id ON character_feat(campaign_id, origin_id);

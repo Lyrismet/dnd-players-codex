@@ -1,14 +1,11 @@
 package com.lyrismet.incadent.feature.codex.presentation.item
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -20,19 +17,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppChevron
+import com.lyrismet.incadent.core.designsystem.component.AppDeleteLink
 import com.lyrismet.incadent.core.designsystem.component.AppSelectSheet
 import com.lyrismet.incadent.core.designsystem.component.AppSelectTexts
 import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.AppStepper
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
+import com.lyrismet.incadent.core.designsystem.component.AppToggleCard
 import com.lyrismet.incadent.core.designsystem.component.FORM_AREA_MIN_LINES
 import com.lyrismet.incadent.core.designsystem.component.FormFieldHeight
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
@@ -53,6 +50,9 @@ import com.lyrismet.incadent.feature.mention.presentation.MentionTextField
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.codex_search_empty_title
 import incadent.shared.generated.resources.codex_search_placeholder
+import incadent.shared.generated.resources.item_worn_label
+import incadent.shared.generated.resources.item_worn_off
+import incadent.shared.generated.resources.item_worn_on
 import incadent.shared.generated.resources.items_add_short
 import incadent.shared.generated.resources.items_delete
 import incadent.shared.generated.resources.items_name_label
@@ -114,8 +114,14 @@ internal fun ItemSheet(
                 onClick = { onEvent(ItemEvent.OwnerPickerOpened) },
                 title = state.owner.text(),
             )
+            AppToggleCard(
+                title = stringResource(Res.string.item_worn_label),
+                hint = stringResource(if (draft.worn) Res.string.item_worn_on else Res.string.item_worn_off),
+                checked = draft.worn,
+                onToggle = { onEvent(ItemEvent.WornChanged(!draft.worn)) },
+            )
             ItemNotesField(state, onEvent)
-            if (!draft.isNew) ItemDeleteLink(onDelete)
+            if (!draft.isNew) AppDeleteLink(stringResource(Res.string.items_delete), onDelete)
             FormPrimaryButton(
                 text = stringResource(if (draft.isNew) Res.string.items_add_short else Res.string.items_save),
                 onClick = { onEvent(ItemEvent.SaveClicked) },
@@ -124,22 +130,6 @@ internal fun ItemSheet(
         }
     }
     if (state.ownerPickerOpen) ItemOwnerPicker(state, onEvent)
-}
-
-// a bare red text action above the primary button, like the mock
-@Composable
-private fun ItemDeleteLink(onClick: () -> Unit) {
-    Text(
-        text = stringResource(Res.string.items_delete),
-        color = AppPalette.MaroonBright,
-        fontSize = AppFontSize.MediumPlus,
-        fontWeight = FontWeight.SemiBold,
-        modifier =
-            Modifier
-                .heightIn(min = 48.dp)
-                .clickable(onClick = onClick)
-                .wrapContentHeight(Alignment.CenterVertically),
-    )
 }
 
 @Composable

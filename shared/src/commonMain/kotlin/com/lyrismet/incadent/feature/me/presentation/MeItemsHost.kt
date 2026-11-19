@@ -74,7 +74,16 @@ internal fun rememberMeItems(
     val owner = ItemOwner.Of(EntityKind.PARTY, member.id)
     val rows =
         remember(records.items, owner) {
-            records.items.filter { it.owner == owner }.map { MeItemRow(it.id, it.name, it.quantity, it.price, it.coin) }
+            records.items.filter { it.owner == owner }.map {
+                MeItemRow(
+                    it.id,
+                    it.name,
+                    it.quantity,
+                    it.price,
+                    it.coin,
+                    it.worn,
+                )
+            }
         }
     return MeItems(
         rows = rows,

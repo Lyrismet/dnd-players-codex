@@ -9,15 +9,17 @@ import incadent.shared.generated.resources.quick_edit_changed_suffix
 import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.stringResource
 
-/** offers every committed change of a card to the undo bar, a place move is titled by the move itself */
+/** offers the committed changes worth an undo to the undo bar, a place move is titled by the move itself */
 @Composable
 fun rememberEntityChangeReporter(undoController: UndoController): suspend (EntityChange) -> Unit {
     val fieldTitles = rememberQuickEditFieldTitles()
     val changedSuffix = stringResource(Res.string.quick_edit_changed_suffix)
     return { change ->
-        val title = fieldTitles.getValue(change.field)
-        val shown = if (change.field == QuickEditField.MOVE) title else title + changedSuffix
-        undoController.show(shown, change.subtitle(), change.restore)
+        if (change.field.offersUndo) {
+            val title = fieldTitles.getValue(change.field)
+            val shown = if (change.field == QuickEditField.MOVE) title else title + changedSuffix
+            undoController.show(shown, change.subtitle(), change.restore)
+        }
     }
 }
 

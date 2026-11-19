@@ -7,7 +7,9 @@ import com.lyrismet.incadent.feature.codex.domain.model.CANTRIP_LEVEL
 import com.lyrismet.incadent.feature.codex.domain.model.COIN_PURSE_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.CastKind
 import com.lyrismet.incadent.feature.codex.domain.model.DurationUnit
+import com.lyrismet.incadent.feature.codex.domain.model.FEAT_NAME_MAX
 import com.lyrismet.incadent.feature.codex.domain.model.FREE_CASTS_RANGE
+import com.lyrismet.incadent.feature.codex.domain.model.FeatSource
 import com.lyrismet.incadent.feature.codex.domain.model.MAX_DAMAGE_ROWS
 import com.lyrismet.incadent.feature.codex.domain.model.MAX_DURATION_VALUE
 import com.lyrismet.incadent.feature.codex.domain.model.PROJECTILES_RANGE
@@ -31,6 +33,7 @@ internal fun readSheetRecords(
     val sheet = database.characterSheetQueries.selectByMember(memberId).executeAsOneOrNull()
     val resources = database.characterResourceQueries.selectByMember(memberId).executeAsList()
     val spells = database.characterSpellQueries.selectByMember(memberId).executeAsList()
+    val feats = database.characterFeatQueries.selectByMember(memberId).executeAsList()
     return listOfNotNull(sheet?.toFileSheet(partyNumber)) +
         resources.map {
             FileRecord.Resource(
@@ -70,6 +73,9 @@ internal fun readSheetRecords(
                 it.projectiles.toInt(),
                 it.growth,
             )
+        } +
+        feats.map {
+            FileRecord.Feat(partyNumber, it.name, it.source, it.description, it.position.toInt(), it.origin_id)
         }
 }
 
@@ -81,6 +87,7 @@ internal fun clearSheet(
     database.characterSheetQueries.deleteByMember(memberId)
     database.characterResourceQueries.deleteByMember(memberId)
     database.characterSpellQueries.deleteByMember(memberId)
+    database.characterFeatQueries.deleteByMember(memberId)
 }
 
 /** the origin ids a sheet and a counter may still take, read once for a whole import */
@@ -91,6 +98,7 @@ internal class SheetOrigins(
     val sheets = OriginSet(database.characterSheetQueries.selectOrigins(campaignId).executeAsList())
     val resources = OriginSet(database.characterResourceQueries.selectOrigins(campaignId).executeAsList())
     val spells = OriginSet(database.characterSpellQueries.selectOrigins(campaignId).executeAsList())
+    val feats = OriginSet(database.characterFeatQueries.selectOrigins(campaignId).executeAsList())
 }
 
 /** writes a sheet or a counter of a file to [memberId], every number pinned to the range the forms allow */
@@ -105,6 +113,7 @@ internal fun writeSheetRecord(
         is FileRecord.Sheet -> writeSheet(database, campaignId, memberId, record, origins.sheets)
         is FileRecord.Resource -> writeResource(database, campaignId, memberId, record, origins.resources)
         is FileRecord.Spell -> writeSpell(database, campaignId, memberId, record, origins.spells)
+        is FileRecord.Feat -> writeFeat(database, campaignId, memberId, record, origins.feats)
         else -> Unit
     }
 }
@@ -178,6 +187,28 @@ private fun writeResource(
         record.current.coerceIn(0, limit).toLong(),
         record.slotLevel?.coerceIn(SPELL_LEVELS)?.toLong(),
         record.position.toLong(),
+        campaignId,
+        origins.claim(record.originId),
+    )
+}
+
+private fun writeFeat(
+    database: AppDatabase,
+    campaignId: String,
+    memberId: Long,
+    record: FileRecord.Feat,
+    origins: OriginSet,
+) {
+    database.characterFeatQueries.insert(
+        null,
+        memberId,
+        record.name.take(FEAT_NAME_MAX),
+        FeatSource.entries
+            .firstOrNull { it.name == record.source }
+            ?.name
+            .orEmpty(),
+        record.description,
+        record.position.coerceAtLeast(0).toLong(),
         campaignId,
         origins.claim(record.originId),
     )

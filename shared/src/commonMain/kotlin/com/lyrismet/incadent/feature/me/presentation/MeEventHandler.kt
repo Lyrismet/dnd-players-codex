@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.me.presentation
 
+import com.lyrismet.incadent.feature.codex.domain.grouping.encodeFacts
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -38,6 +39,8 @@ internal class MeEventHandler(
     private val picker: PlayerCharacterPicker,
     private val things: MeThingsHandler,
     private val spells: SpellsHandler,
+    private val feats: MeFeatsHandler,
+    private val portrait: MePortraitHandler,
     private val scope: CoroutineScope,
 ) {
     fun handle(event: MeEvent) {
@@ -71,6 +74,8 @@ internal class MeEventHandler(
             is MeEvent.Counters -> MeCounterHandler(ui, actions, counters).handle(event.event, member, character)
             is MeEvent.Spells -> spellEvent(event.event, member, character, data)
             is MeEvent.Menu -> menu(event.action, member, character)
+            is MeEvent.Feats -> feats.handle(event.event, member.id, character.sheet.feats)
+            is MeEvent.Portrait -> portrait.handle(event.event, member.id)
             is MeEvent.Rest,
             is MeEvent.Wallet,
             is MeEvent.Items,
@@ -191,15 +196,19 @@ internal class MeEventHandler(
             is SheetEvent.SkillMarkTapped -> actions.nextMark(id, event.skill)
             is SheetEvent.SkillTapped -> ui.edit = MeOverlay.SkillEdit(event.skill, level, source)
             SheetEvent.InspirationToggled -> actions.sheet(id) { it.copy(inspiration = !it.inspiration) }
-            SheetEvent.SearchToggled -> {
-                ui.searchOpen = !ui.searchOpen
-                if (!ui.searchOpen) ui.query = ""
-            }
+            SheetEvent.SearchToggled -> toggleSearch()
             is SheetEvent.QueryChanged -> ui.query = event.query
             is SheetEvent.TextChanged -> typeText(id, event.text, event.value)
+            is SheetEvent.FactsChanged -> actions.sheet(id) { it.copy(features = event.facts.encodeFacts()) }
+            is SheetEvent.ShieldChanged -> actions.shield(id, event.type, event.state)
             SheetEvent.FillRequested -> ui.edit = MeOverlay.Fill(fillDraft(member, character))
             SheetEvent.AboutTapped -> ui.edit = MeOverlay.EditCharacter(characterDraft(member, source))
         }
+    }
+
+    private fun toggleSearch() {
+        ui.searchOpen = !ui.searchOpen
+        if (!ui.searchOpen) ui.query = ""
     }
 
     // saved a moment after the last key, the draft is shown meanwhile
@@ -271,7 +280,6 @@ private fun CharacterSheet.withText(
 ): CharacterSheet =
     when (text) {
         MeText.LANGUAGES -> copy(languages = value)
-        MeText.FEATURES -> copy(features = value)
         MeText.PERSONALITY -> copy(personality = value)
         MeText.NOTES -> copy(notes = value)
     }
