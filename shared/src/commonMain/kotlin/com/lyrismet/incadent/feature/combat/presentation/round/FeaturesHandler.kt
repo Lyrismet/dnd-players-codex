@@ -5,7 +5,6 @@ import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.grouping.withFact
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcRepository
 import com.lyrismet.incadent.feature.codex.presentation.summary.entityWriteLock
-import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_features_added
 import incadent.shared.generated.resources.combat_features_undo
@@ -18,7 +17,7 @@ internal class FeaturesHandler(
     private val selected: MutableState<Long?>,
     private val draft: MutableState<FeaturesDraft?>,
     private val npcRepository: NpcRepository,
-    private val combatRepository: CombatRepository,
+    private val own: OwnFeatures,
     private val undo: UndoController,
 ) {
     fun onEvent(event: CombatRoundEvent.FeaturesEvent) {
@@ -57,16 +56,12 @@ internal class FeaturesHandler(
         removed: String?,
         added: String?,
     ) = editor.withMember(memberId) { _, member ->
-        val npc = member.npcId?.let { npcRepository.getById(it) }
-        if (npc == null) {
-            combatRepository.setOwnFacts(member.id, change(member.facts, removed, added))
-            return@withMember
-        }
-        val before = npc.facts
+        val before = own.facts(member)
         val after = change(before, removed, added)
         if (after == before) return@withMember
-        entityWriteLock.withLock { npcRepository.getById(npc.id)?.let { npcRepository.upsert(it.copy(facts = after)) } }
-        if (added != null) tellAdded(npc.id, npc.name, before, after)
+        own.writeFacts(member, after)
+        val npcId = member.npcId
+        if (added != null && npcId != null) tellAdded(npcId, member.name, before, after)
     }
 
     private suspend fun tellAdded(

@@ -66,28 +66,34 @@ class HitForecastTest {
     fun `typed hit points move with the damage and healing told after them`() {
         val exact = ExactMark(remaining = 1, damageAtMark = 40)
         val input = HitForecastInput(damageTaken = 40, healed = 17, exact = exact)
-        assertEquals(HitForecast.Exact(18), forecastHits(input))
-        assertEquals(HitForecast.Exact(13), forecastHits(input.copy(damageTaken = 45)))
+        assertEquals(HitForecast.Exact(18, 41), forecastHits(input))
+        assertEquals(HitForecast.Exact(13, 41), forecastHits(input.copy(damageTaken = 45)))
     }
 
     @Test
     fun `typed hit points after a heal that was told once are the paladin case`() {
         val exact = ExactMark(remaining = 1, damageAtMark = 55)
         val input = HitForecastInput(damageTaken = 55, healed = 55, exact = exact)
-        assertEquals(HitForecast.Exact(56), forecastHits(input))
+        assertEquals(HitForecast.Exact(56, 56), forecastHits(input))
     }
 
     @Test
     fun `typed hit points never go below zero`() {
         val input = HitForecastInput(damageTaken = 50, exact = ExactMark(remaining = 3, damageAtMark = 10))
-        assertEquals(HitForecast.Exact(0), forecastHits(input))
+        assertEquals(HitForecast.Exact(0, 13), forecastHits(input))
+    }
+
+    @Test
+    fun `fifty damage and fifty typed left give a hundred maximum`() {
+        val input = HitForecastInput(damageTaken = 50, exact = ExactMark(remaining = 50, damageAtMark = 50))
+        assertEquals(HitForecast.Exact(50, 100), forecastHits(input))
     }
 
     @Test
     fun `typed hit points count with no damage taken`() {
         val input =
             HitForecastInput(damageTaken = 0, exact = ExactMark(remaining = 7, damageAtMark = 0))
-        assertEquals(HitForecast.Exact(7), forecastHits(input))
+        assertEquals(HitForecast.Exact(7, 7), forecastHits(input))
     }
 
     @Test

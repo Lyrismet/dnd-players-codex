@@ -132,7 +132,7 @@ class EntitySheetInteractions(
         scope: CoroutineScope,
         speciesId: Long,
         type: DamageType,
-        state: DamageState,
+        state: DamageState?,
     ) {
         scope.launch {
             entityWriteLock.withLock {

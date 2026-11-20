@@ -254,6 +254,21 @@ class DamageActionsTest {
         }
 
     @Test
+    fun `typed hit points of an ally without numbers give the maximum from the damage taken`() =
+        runTest {
+            val id = repository.create(null, at)
+            repository.addCombatant(id, member("Тарн", CombatSide.PARTY))
+            repository.start(id, at)
+            val combat = repository.get(id)
+            actions.damage(combat, null, listOf(strike(combat.named("Тарн"), DamageTerm(50))))
+            val struck = repository.get(id)
+            actions.setExact(struck, null, struck.named("Тарн"), amount = 50)
+            val tarn = repository.get(id).named("Тарн")
+            assertEquals(100, tarn.hpMax)
+            assertEquals(50, tarn.hpCurrent)
+        }
+
+    @Test
     fun `typed hit points above the told healing can add the missing heal and one undo takes both`() =
         runTest {
             val combat = fight()

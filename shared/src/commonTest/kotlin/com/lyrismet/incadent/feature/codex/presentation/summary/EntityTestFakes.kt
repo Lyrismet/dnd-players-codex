@@ -70,6 +70,13 @@ internal class FakeNpcRepository(
     override suspend fun upsert(entity: Npc): Long = put(entity)
 
     override suspend fun delete(id: Long) = remove(id)
+
+    override suspend fun getVulnerabilities(id: Long): Map<DamageType, DamageState>? = stored(id)?.vulnerabilities
+
+    override suspend fun setVulnerabilities(
+        id: Long,
+        shields: Map<DamageType, DamageState>,
+    ): Boolean = stored(id)?.let { put(it.copy(vulnerabilities = shields)) } != null
 }
 
 internal class FakePartyRepository(

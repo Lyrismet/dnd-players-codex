@@ -331,11 +331,6 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
         val choice: NameChoice,
     ) : CombatRoundEvent
 
-    data class PromotionScopeChanged(
-        val type: DamageType,
-        val onlyNpc: Boolean,
-    ) : CombatRoundEvent
-
     data object PromotionConfirmed : CombatRoundEvent
 
     data object PromotionRejected : CombatRoundEvent

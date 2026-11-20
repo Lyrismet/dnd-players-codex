@@ -27,7 +27,6 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
-import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
@@ -80,7 +79,6 @@ private class RoundData(
     val party: List<PartyMember>,
     val liveBodies: List<String>,
     val seen: Map<Long, List<SpeciesHitObservation>>,
-    val learned: List<LearnedVulnerability>,
     val customs: List<CustomCondition>,
 )
 
@@ -96,7 +94,6 @@ private fun CombatRoundPresenter.rememberData(): RoundData {
         live?.let { sessionEntryRepository.observeForSession(it.id) } ?: flowOf(emptyList())
     }.collectAsState(initial = emptyList())
     val seen by hitObservationRepository.observeAll().collectAsState(initial = emptyMap())
-    val learned by combatRepository.observeLearned(combatId).collectAsState(initial = emptyList())
     val customs by combatRepository.observeCustomConditions().collectAsState(initial = emptyList())
     // the screen waits for the records the rows are named from, a first frame without them would show other names
     val loaded = loadedNpcs != null && loadedSpecies != null && loadedParty != null
@@ -108,7 +105,6 @@ private fun CombatRoundPresenter.rememberData(): RoundData {
         loadedParty.orEmpty(),
         entries.map { it.body },
         seen,
-        learned,
         customs,
     )
 }
@@ -305,7 +301,7 @@ class CombatRoundPresenter(
                 drafts.selected,
                 drafts.features,
                 codexRepositories.npcRepository,
-                combatRepository,
+                OwnFeatures(codexRepositories.npcRepository, combatRepository),
                 undoController,
             )
         val calcHandler = CalcHandler(editor, drafts.calc, learner)
@@ -344,10 +340,9 @@ class CombatRoundPresenter(
                 is CombatRoundEvent.QueueEvent -> queueHandler.onEvent(event)
                 is CombatRoundEvent.MarkEvent -> markHandler.onEvent(event, data.customs)
                 is CombatRoundEvent.ShieldTapped ->
-                    shieldEditing.tap(
+                    shieldEditing.change(
                         drafts.selected.value,
-                        event.type,
-                        speciesOf[drafts.selected.value]?.vulnerabilities.orEmpty(),
+                        ShieldChange.Step(event.type, speciesOf[drafts.selected.value]?.vulnerabilities.orEmpty()),
                     )
                 CombatRoundEvent.ShieldsEditStarted -> shieldEditing.start(drafts.selected.value)
                 CombatRoundEvent.ShieldsEditDone -> shieldEditing.done()
@@ -362,7 +357,6 @@ class CombatRoundPresenter(
                 is CombatRoundEvent.FeaturesEvent -> featuresHandler.onEvent(event)
                 is CombatRoundEvent.NameChanged,
                 is CombatRoundEvent.NameChosen,
-                is CombatRoundEvent.PromotionScopeChanged,
                 CombatRoundEvent.PromotionConfirmed,
                 CombatRoundEvent.PromotionRejected,
                 -> namingHandler.onEvent(event, namingSnapshot)
@@ -384,7 +378,7 @@ class CombatRoundPresenter(
                     )
                 }
                 is CombatRoundEvent.VulnerabilityChanged ->
-                    shieldEditing.set(drafts.selected.value, event.type, event.state)
+                    shieldEditing.change(drafts.selected.value, ShieldChange.Set(event.type, event.state))
                 else -> handler.onEvent(event, snapshot, nameOf)
             }
         }
@@ -414,7 +408,6 @@ private fun RoundView.panelOf(
     member: Combatant,
     drafts: RoundDrafts,
     seenByMember: Map<Long, List<SpeciesHitObservation>>,
-    typeNames: Map<DamageType, String>,
     magic: SpellsBlockState?,
 ): RoundPanel {
     val typed =
@@ -434,7 +427,7 @@ private fun RoundView.panelOf(
             species = speciesOf[member.id],
             npc = member.npcId?.let { id -> data.npcs.firstOrNull { it.id == id } },
             vulnerabilities = resistances[member.id].orEmpty(),
-            naming = namingState(current, member, typed, data.npcs, data.species, data.learned, typeNames, focus),
+            naming = namingState(current, member, typed, data.npcs, data.species, focus),
             identity =
                 identityState(
                     member,
@@ -442,7 +435,7 @@ private fun RoundView.panelOf(
                     drafts.identity.value,
                     data.npcs,
                     data.species,
-                    IdentityFacts(current, data.learned, typeNames),
+                    current,
                 ),
         ),
         data.customs,
@@ -450,13 +443,10 @@ private fun RoundView.panelOf(
 }
 
 @Composable
-private fun RoundView.promotionOf(
-    draft: PromotionDraft,
-    typeNames: Map<DamageType, String>,
-): PromotionSheet? {
+private fun RoundView.promotionOf(draft: PromotionDraft): PromotionSheet? {
     val member = current.combatants.firstOrNull { it.id == draft.trace.memberId }
     val npc = data.npcs.firstOrNull { it.id == draft.trace.npcId }
-    return promotionSheet(draft, current, npc, data.species.firstOrNull { it.id == member?.speciesId }, typeNames)
+    return promotionSheet(draft, current, npc, data.species.firstOrNull { it.id == member?.speciesId })
 }
 
 @Suppress("LongMethod")
@@ -467,7 +457,6 @@ private fun RoundView.render(
     sink: (CombatRoundEvent) -> Unit,
 ): CombatRoundState {
     val sources = RoleSources(data.party, data.npcs, speciesOf)
-    val typeNames = damageTypeLabels().mapValues { it.value.lowercase() }
     val seenByMember = speciesOf.mapValues { (_, species) -> data.seen[species.id].orEmpty() }
     val chosen = ordered.firstOrNull { it.id == drafts.selected.value }
     val hostile = ordered.hostileCount()
@@ -486,7 +475,7 @@ private fun RoundView.render(
         rows = roundRows(current, ordered, mover?.id, drafts.selected.value, sources, seenByMember),
         queueUnnamed = current.combatants.queueStatus() == QueueStatus.Unnamed,
         queueEditing = drafts.queue.value != null,
-        panel = chosen?.let { panelOf(it, drafts, seenByMember, typeNames, magic.stateFor(it.id)) },
+        panel = chosen?.let { panelOf(it, drafts, seenByMember, magic.stateFor(it.id)) },
         tab = drafts.tab.value,
         menuOpen = drafts.menuOpen.value,
         search =
@@ -501,7 +490,7 @@ private fun RoundView.render(
                 )
             },
         hpPad = hpPadState(drafts.hpPad.value, ordered),
-        promotion = drafts.promotion.value?.let { promotionOf(it, typeNames) },
+        promotion = drafts.promotion.value?.let { promotionOf(it) },
         classSheet =
             chosen?.let {
                 drafts.identity.value.classSelect(

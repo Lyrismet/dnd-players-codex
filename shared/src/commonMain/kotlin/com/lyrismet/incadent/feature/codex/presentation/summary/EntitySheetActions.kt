@@ -26,7 +26,7 @@ data class EntitySummarySheetActions(
     // null hides the way back of a fallen character - only the codex brings one back
     val onPartyRevived: ((partyId: Long) -> Unit)? = null,
     // null keeps a species' damage read-only - only the codex marks what the party has noticed
-    val onSpeciesVulnerabilityChanged: ((speciesId: Long, type: DamageType, state: DamageState) -> Unit)? = null,
+    val onSpeciesVulnerabilityChanged: ((speciesId: Long, type: DamageType, state: DamageState?) -> Unit)? = null,
     // null keeps an npc's vulnerabilities read-only - only the codex marks them
     val onNpcVulnerabilityChanged: ((npcId: Long, type: DamageType, state: DamageState?) -> Unit)? = null,
     // null keeps the facts of an npc read-only

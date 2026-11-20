@@ -1,0 +1,2 @@
+-- nothing writes what a fight learned of a species any more, the table is dropped
+DROP TABLE combat_learned;

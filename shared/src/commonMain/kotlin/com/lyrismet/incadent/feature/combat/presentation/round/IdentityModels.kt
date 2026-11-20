@@ -1,9 +1,6 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
-import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.presentation.form.DuplicateNpc
-import com.lyrismet.incadent.feature.combat.domain.model.Combat
-import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 
 enum class IdentityKind { CODEX, LABELLED }
 
@@ -61,11 +58,4 @@ data class LinkOption(
     val subtitle: String,
     // already in this fight under another row, shown grey and taking no press
     val busy: Boolean,
-)
-
-/** what the fight knows of a participant, to tell what it carries into the codex */
-internal class IdentityFacts(
-    val combat: Combat,
-    val learned: List<LearnedVulnerability>,
-    val typeNames: Map<DamageType, String>,
 )

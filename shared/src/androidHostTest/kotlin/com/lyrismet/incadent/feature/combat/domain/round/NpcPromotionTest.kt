@@ -12,7 +12,6 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
-import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.persistence.TestDatabase
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -108,32 +107,6 @@ class NpcPromotionTest {
             val renamed = assertNotNull(combats.observe(combatId).first()).combatants.single()
             assertEquals("Слепой", renamed.name)
             assertNull(renamed.npcId)
-        }
-
-    @Test
-    fun `what the fight learned moves to the npc and the species gets its old state back`() =
-        runTest {
-            val (speciesId, combatId, member) = setup()
-            val learned = LearnedVulnerability(speciesId, DamageType.FIRE, null)
-            combats.addLearned(combatId, learned)
-            val trace = assertNotNull(promotion.promote(member, NameChoice.New("Вазгар")))
-
-            val back = promotion.moveLearned(combatId, trace, listOf(learned), setOf(DamageType.FIRE))
-
-            assertEquals(
-                mapOf(DamageType.FIRE to DamageState.VULNERABILITY),
-                assertNotNull(npcs.getById(trace.npcId)).vulnerabilities,
-            )
-            assertEquals(emptyMap(), assertNotNull(species.getById(speciesId)).vulnerabilities)
-            assertEquals(emptyList(), combats.observeLearned(combatId).first())
-
-            back()
-            assertEquals(emptyMap(), assertNotNull(npcs.getById(trace.npcId)).vulnerabilities)
-            assertEquals(
-                mapOf(DamageType.FIRE to DamageState.VULNERABILITY),
-                assertNotNull(species.getById(speciesId)).vulnerabilities,
-            )
-            assertEquals(listOf(learned), combats.observeLearned(combatId).first())
         }
 
     @Test

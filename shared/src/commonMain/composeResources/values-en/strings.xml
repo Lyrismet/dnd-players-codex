@@ -549,6 +549,7 @@
     <string name="hp_scale_estimate_approx">≈ %1$d</string>
     <string name="hp_scale_estimate_at_least">≥ %1$d</string>
     <string name="hp_scale_estimate_exact">= %1$d</string>
+    <string name="hp_scale_estimate_exact_max">= %1$d of ≈ %2$d</string>
     <string name="hp_scale_estimate_unknown">unknown</string>
     <string name="hp_scale_src_scale">scale · took %1$d</string>
     <string name="hp_scale_src_species">bestiary · took %1$d</string>
@@ -1159,7 +1160,6 @@
     <string name="combat_name_plain">Just a caption, no codex</string>
     <string name="combat_name_carry_title">Goes to the card</string>
     <string name="combat_name_carry_note">note</string>
-    <string name="combat_name_carry_type">%1$s %2$s</string>
     <string name="combat_mult_resistance">×½</string>
     <string name="combat_mult_immunity">×0</string>
     <string name="combat_mult_vulnerability">×2</string>
@@ -1178,9 +1178,6 @@
     <string name="combat_promo_relation">Relation</string>
     <string name="combat_promo_note">Note</string>
     <string name="combat_promo_note_hint">copied to the card</string>
-    <string name="combat_promo_learned">Learned in this fight</string>
-    <string name="combat_promo_all">All: %1$s</string>
-    <string name="combat_promo_only">Only this one</string>
     <string name="combat_promo_confirm_new">Add to the codex</string>
     <string name="combat_promo_confirm_known">Done</string>
     <string name="combat_promo_reject">Do not add</string>

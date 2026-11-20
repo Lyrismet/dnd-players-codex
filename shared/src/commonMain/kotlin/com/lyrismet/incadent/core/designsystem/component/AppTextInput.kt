@@ -16,7 +16,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -24,6 +27,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
@@ -94,32 +98,29 @@ fun AppTextInput(
     leading: (@Composable () -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    val requester = inputFocusRequester(focusRequester, autoFocus)
-    val resolvedStyle = style.resolvedTextStyle()
-    BasicTextField(
-        value = value,
-        onValueChange = { onValueChange(maxLength?.let(it::take) ?: it) },
+    // the caret starts after the last letter, a bare String field would put it before the first
+    var field by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    if (field.text != value) field = TextFieldValue(value, TextRange(value.length))
+    AppTextInput(
+        value = field,
+        onValueChange = {
+            field = it
+            if (it.text != value) onValueChange(it.text)
+        },
+        modifier = modifier,
+        placeholder = placeholder,
+        style = style,
         singleLine = singleLine,
         minLines = minLines,
-        textStyle = resolvedStyle,
-        cursorBrush = GoldCursorBrush,
+        maxLength = maxLength,
+        counter = counter,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         visualTransformation = visualTransformation,
-        modifier = modifier.inputChrome(style, requester),
-        decorationBox = { inner ->
-            InputDecoration(
-                isEmpty = value.isEmpty(),
-                placeholder = placeholder,
-                style = style,
-                textStyle = resolvedStyle,
-                singleLine = singleLine,
-                counter = counter?.let { (it.count ?: value.length) to it.max },
-                leading = leading,
-                trailing = trailing,
-                inner = inner,
-            )
-        },
+        focusRequester = focusRequester,
+        autoFocus = autoFocus,
+        leading = leading,
+        trailing = trailing,
     )
 }
 

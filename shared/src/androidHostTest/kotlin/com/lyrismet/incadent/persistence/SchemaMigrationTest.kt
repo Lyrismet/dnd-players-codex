@@ -585,4 +585,22 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the twenty fourth schema drops the learned table and keeps the fights`() {
+        val file = File.createTempFile("schema-v24", ".db")
+        File("src/commonMain/sqldelight/databases/24.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(name, portrait, portrait_thumb, campaign_id) VALUES ('Lira', x'0102', x'01', 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 24, AppDatabase.Schema.version)
+
+        assertEquals("0", driver.single("SELECT count(*) FROM sqlite_master WHERE name = 'combat_learned'"))
+        assertEquals("Lira", driver.single("SELECT name FROM party_member"))
+        driver.close()
+        file.delete()
+    }
 }

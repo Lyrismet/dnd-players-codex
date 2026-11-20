@@ -14,6 +14,7 @@ import com.lyrismet.incadent.feature.combat.domain.forecast.stateAtPermille
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEvent
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
+import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
@@ -140,13 +141,18 @@ class DamageActions(
         val wasDown = target.isDown() && !target.dead
         if (target.isTracked()) {
             member = member.copy(hpCurrent = amount.coerceIn(0, checkNotNull(target.hpMax)))
+        } else if (target.side == CombatSide.PARTY) {
+            // the damage taken and what is left give the maximum, so an ally's numbers are known from now on
+            val ledger = combat.ledgerOf(target.id)
+            val max = ((ledger.damage - ledger.healed - unrecordedHeal).coerceAtLeast(0) + amount).coerceAtLeast(1)
+            member = member.copy(hpMax = max, hpCurrent = amount.coerceIn(0, max))
         } else if (amount > 0 && !wasDown) {
             member = member.copy(state = scaleWord(combat, target, amount))
         }
         if (wasDown && amount > 0) member = member.standing()
         told += plain(combat, CombatEventKind.SET, target.id, sourceId, amount)
         if (wasDown && amount > 0) told += plain(combat, CombatEventKind.UP, target.id, sourceId)
-        val fellNow = target.isTracked() && !target.isDown() && amount == 0
+        val fellNow = member.isTracked() && !target.isDown() && amount == 0
         if (fellNow) {
             member = member.copy(state = CombatState.DOWN, deathSuccesses = 0, deathFailures = 0)
             told += plain(combat, CombatEventKind.DOWN, target.id, sourceId)

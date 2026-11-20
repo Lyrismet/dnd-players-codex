@@ -25,7 +25,6 @@ import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppButton
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
-import com.lyrismet.incadent.core.designsystem.component.AppSegmentedTabs
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
 import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.AppTitleSubtitle
@@ -34,15 +33,12 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.FormPickField
-import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
-import com.lyrismet.incadent.feature.codex.presentation.style.DamageTypeShield
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_name_carry_title
 import incadent.shared.generated.resources.combat_name_title
-import incadent.shared.generated.resources.combat_promo_learned
 import incadent.shared.generated.resources.combat_promo_reject
 import incadent.shared.generated.resources.combat_role_title
 import org.jetbrains.compose.resources.stringResource
@@ -174,7 +170,7 @@ private fun OptionTile(option: NameOption) {
     }
 }
 
-/** what the naming did, and for each thing the fight learned whether the species or only this npc keeps it */
+/** what the naming did, with a button to keep it and one to take it back */
 @Composable
 internal fun PromotionSheetUi(
     sheet: PromotionSheet,
@@ -194,10 +190,6 @@ internal fun PromotionSheetUi(
             )
             Column {
                 sheet.rows.forEach { PromotionRowView(it) }
-            }
-            if (sheet.learned.isNotEmpty()) {
-                FormFieldLabel(stringResource(Res.string.combat_promo_learned).uppercase())
-                sheet.learned.forEach { LearnedRowView(it, send) }
             }
             AppButton(
                 text = sheet.confirmLabel,
@@ -244,23 +236,4 @@ private fun PromotionRowView(row: PromotionRow) {
         }
     }
     AppDivider()
-}
-
-@Composable
-private fun LearnedRowView(
-    row: LearnedRow,
-    send: (CombatRoundEvent) -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            DamageTypeShield(row.type, row.state, width = 22.dp)
-            Text(row.label, color = AppPalette.TextPrimary, fontSize = AppFontSize.Body, lineHeight = AppLineHeight.Row)
-        }
-        AppSegmentedTabs(
-            tabs = listOf(SegmentedTab(false, row.allLabel), SegmentedTab(true, row.onlyLabel)),
-            selected = row.onlyNpc,
-            onSelected = { send(CombatRoundEvent.PromotionScopeChanged(row.type, it)) },
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
 }

@@ -20,6 +20,7 @@ import incadent.shared.generated.resources.hp_exact_value
 import incadent.shared.generated.resources.hp_scale_estimate_approx
 import incadent.shared.generated.resources.hp_scale_estimate_at_least
 import incadent.shared.generated.resources.hp_scale_estimate_exact
+import incadent.shared.generated.resources.hp_scale_estimate_exact_max
 import incadent.shared.generated.resources.hp_scale_estimate_unknown
 import incadent.shared.generated.resources.hp_scale_src_exact
 import incadent.shared.generated.resources.hp_scale_src_scale
@@ -82,7 +83,9 @@ private fun scaleThumb(
 @Composable
 private fun estimateText(forecast: HitForecast): String =
     when (forecast) {
-        is HitForecast.Exact -> stringResource(Res.string.hp_scale_estimate_exact, forecast.remaining)
+        is HitForecast.Exact ->
+            forecast.max?.let { stringResource(Res.string.hp_scale_estimate_exact_max, forecast.remaining, it) }
+                ?: stringResource(Res.string.hp_scale_estimate_exact, forecast.remaining)
         is HitForecast.Estimate -> stringResource(Res.string.hp_scale_estimate_approx, forecast.remaining)
         is HitForecast.AtLeast -> stringResource(Res.string.hp_scale_estimate_at_least, forecast.damage + 1)
         HitForecast.Unknown -> stringResource(Res.string.hp_scale_estimate_unknown)

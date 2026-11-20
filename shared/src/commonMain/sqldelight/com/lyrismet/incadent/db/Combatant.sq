@@ -98,6 +98,9 @@ UPDATE combatant SET temp_hp = ? WHERE id = ?;
 updateNpc:
 UPDATE combatant SET npc_id = ?, name = ? WHERE id = ?;
 
+selectVulnerabilities:
+SELECT vulnerabilities FROM combatant WHERE id = ?;
+
 updateVulnerabilities:
 UPDATE combatant SET vulnerabilities = ? WHERE id = ?;
 

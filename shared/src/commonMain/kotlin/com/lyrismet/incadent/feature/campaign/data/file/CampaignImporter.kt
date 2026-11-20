@@ -558,6 +558,7 @@ internal class CampaignImporter(
                         campaignId,
                         origin,
                         null,
+                        "",
                     )
                     val id = queries.lastInsertRowId().executeAsOne()
                     record.placeIds.mapNotNull(placeMap::get).forEach { database.npcLocationQueries.insert(id, it) }

@@ -8,6 +8,7 @@ import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.core.identity.newOriginId
 import com.lyrismet.incadent.db.AppDatabase
+import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.grouping.encodeFacts
 import com.lyrismet.incadent.feature.codex.domain.grouping.encodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
@@ -18,7 +19,6 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
-import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import dev.zacsweers.metro.AppScope
@@ -44,7 +44,6 @@ class CombatRepositoryImpl(
     private val combats = database.combatQueries
     private val combatants = database.combatantQueries
     private val events = database.combatEventQueries
-    private val learned = database.combatLearnedQueries
     private val marks = database.combatantMarkQueries
     private val customConditions = database.customConditionQueries
 
@@ -181,41 +180,6 @@ class CombatRepositoryImpl(
         withContext(DatabaseDispatcher) { combatants.updateNpc(npcId, name, combatantId) }
     }
 
-    override fun observeLearned(combatId: Long): Flow<List<LearnedVulnerability>> =
-        learned
-            .selectByCombat(combatId)
-            .asFlow()
-            .mapToList(DatabaseDispatcher)
-            .map { rows ->
-                rows.mapNotNull { row ->
-                    val type = DamageType.entries.firstOrNull { it.name == row.damage_type } ?: return@mapNotNull null
-                    val previous = DamageState.entries.firstOrNull { it.name == row.previous_state }
-                    LearnedVulnerability(row.species_id, type, previous)
-                }
-            }
-
-    override suspend fun addLearned(
-        combatId: Long,
-        learned: LearnedVulnerability,
-    ) {
-        withContext(DatabaseDispatcher) {
-            this@CombatRepositoryImpl.learned.insertIfNew(
-                combatId,
-                learned.speciesId,
-                learned.type.name,
-                learned.previous?.name,
-            )
-        }
-    }
-
-    override suspend fun removeLearned(
-        combatId: Long,
-        speciesId: Long,
-        type: DamageType,
-    ) {
-        withContext(DatabaseDispatcher) { learned.deleteOne(combatId, speciesId, type.name) }
-    }
-
     override suspend fun renameCombatant(
         combatantId: Long,
         name: String,
@@ -230,6 +194,11 @@ class CombatRepositoryImpl(
     ) {
         withContext(DatabaseDispatcher) { combatants.updateLabel(name, if (isLabel) 1L else 0L, combatantId) }
     }
+
+    override suspend fun getOwnShields(combatantId: Long): Map<DamageType, DamageState>? =
+        withContext(DatabaseDispatcher) {
+            combatants.selectVulnerabilities(combatantId).executeAsOneOrNull()?.let(::decodeVulnerabilities)
+        }
 
     override suspend fun setOwnShields(
         combatantId: Long,

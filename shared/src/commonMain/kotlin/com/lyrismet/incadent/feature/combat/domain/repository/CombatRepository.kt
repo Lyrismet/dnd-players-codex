@@ -8,7 +8,6 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatOutcome
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
-import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDateTime
@@ -52,20 +51,6 @@ interface CombatRepository {
         combatantId: Long,
         npcId: Long?,
         name: String,
-    )
-
-    fun observeLearned(combatId: Long): Flow<List<LearnedVulnerability>>
-
-    /** the first [LearnedVulnerability.previous] seen for a species and type in this fight is the one kept */
-    suspend fun addLearned(
-        combatId: Long,
-        learned: LearnedVulnerability,
-    )
-
-    suspend fun removeLearned(
-        combatId: Long,
-        speciesId: Long,
-        type: DamageType,
     )
 
     /** names a participant for this fight only, or takes the label back with the name it had */
@@ -129,7 +114,9 @@ interface CombatRepository {
 
     suspend fun clearTurnOrders(combatId: Long)
 
-    /** what the fight learned of a participant without a record, kept on it until it is taken to the codex */
+    /** the shields kept on a participant without a record until it is taken to the codex, null when it is gone */
+    suspend fun getOwnShields(combatantId: Long): Map<DamageType, DamageState>?
+
     suspend fun setOwnShields(
         combatantId: Long,
         shields: Map<DamageType, DamageState>,

@@ -47,13 +47,13 @@ FROM npc
 WHERE id = ?;
 
 insert:
-INSERT INTO npc(name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id, photo_source)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO npc(name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id, photo_source, facts)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO npc(id, name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id, photo_source)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO npc(id, name, status, description, race, character_class, subclass, life_state, nicknames, species_id, vulnerabilities, portrait, portrait_thumb, campaign_id, origin_id, photo_source, facts)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
@@ -61,8 +61,18 @@ UPDATE npc
 SET name = ?, status = ?, description = ?, race = ?, character_class = ?, subclass = ?, life_state = ?, nicknames = ?, species_id = ?, vulnerabilities = ?
 WHERE id = ?;
 
-updateFacts:
-UPDATE npc SET facts = ? WHERE id = ?;
+-- the same with the facts, for the repository: an import or its rollback has no facts to bring and leaves them alone
+updateWithFacts:
+UPDATE npc
+SET name = ?, status = ?, description = ?, race = ?, character_class = ?, subclass = ?, life_state = ?, nicknames = ?, species_id = ?, vulnerabilities = ?, facts = ?
+WHERE id = ?;
+
+-- the shields are read and written without the photo that selectById carries
+selectVulnerabilities:
+SELECT vulnerabilities FROM npc WHERE id = ?;
+
+updateVulnerabilities:
+UPDATE npc SET vulnerabilities = ? WHERE id = ?;
 
 setPortrait:
 UPDATE npc SET portrait = ?, portrait_thumb = ?, photo_source = ? WHERE id = ?;

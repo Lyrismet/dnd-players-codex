@@ -56,7 +56,7 @@ private val LegendStates = listOf(DamageState.VULNERABILITY, DamageState.IMMUNIT
 @Composable
 internal fun SpeciesVulnerabilitySection(
     vulnerabilities: Map<DamageType, DamageState>,
-    onChange: ((DamageType, DamageState) -> Unit)?,
+    onChange: ((DamageType, DamageState?) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     var editing by remember { mutableStateOf(false) }
@@ -64,7 +64,11 @@ internal fun SpeciesVulnerabilitySection(
     if (editing && onChange != null) {
         Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             FormFieldLabel(text = title, fontSize = AppFontSize.Caption)
-            VulnerabilityGridEditor(vulnerabilities, onChange)
+            // an ordinary state is no entry at all
+            VulnerabilityGridEditor(
+                vulnerabilities,
+                onChange = { type, state -> onChange(type, state.takeIf { it != DamageState.NORMAL }) },
+            )
             VulnerabilityDoneButton(onClick = { editing = false })
         }
         return

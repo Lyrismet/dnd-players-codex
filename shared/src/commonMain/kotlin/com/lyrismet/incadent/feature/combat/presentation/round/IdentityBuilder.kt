@@ -34,7 +34,7 @@ internal fun identityState(
     draft: IdentityDraft?,
     npcs: List<Npc>,
     species: List<Species>,
-    facts: IdentityFacts,
+    combat: Combat,
 ): IdentityState? {
     val kind = identityKindOf(role.tie) ?: return null
     val kindRecord = species.firstOrNull { it.id == member.speciesId }
@@ -44,7 +44,7 @@ internal fun identityState(
     return if (isCodex) {
         IdentityState(kind, rename, role.parts.text(), roleField(member, kindRecord, npc), "", null, emptyList())
     } else {
-        labelIdentity(member, rename, kindRecord, facts, freeCodexName(member, npcs))
+        labelIdentity(member, rename, kindRecord, combat, freeCodexName(member, npcs))
     }
 }
 
@@ -137,7 +137,7 @@ private fun labelIdentity(
     member: Combatant,
     rename: RenameState,
     kindRecord: Species?,
-    facts: IdentityFacts,
+    combat: Combat,
     toCodex: String?,
 ): IdentityState {
     val role = roleField(member, kindRecord)
@@ -157,7 +157,7 @@ private fun labelIdentity(
         }
     val carry =
         listOfNotNull(roleChip, kindChip) +
-            carryChips(facts.combat, member, kindRecord, facts.learned, facts.typeNames).map { CarryChip(it, false) }
+            carryChips(combat, member).map { CarryChip(it, false) }
     return IdentityState(
         kind = IdentityKind.LABELLED,
         rename = rename,

@@ -75,6 +75,7 @@ class ItemExchangeTest {
             campaignId,
             originId,
             null,
+            "",
         )
         return database.npcQueries.lastInsertRowId().executeAsOne()
     }

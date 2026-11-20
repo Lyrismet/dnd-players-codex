@@ -565,6 +565,7 @@
     <string name="hp_scale_estimate_approx">≈ %1$d</string>
     <string name="hp_scale_estimate_at_least">≥ %1$d</string>
     <string name="hp_scale_estimate_exact">= %1$d</string>
+    <string name="hp_scale_estimate_exact_max">= %1$d из ≈ %2$d</string>
     <string name="hp_scale_estimate_unknown">неизвестно</string>
     <string name="hp_scale_src_scale">шкала · получил %1$d</string>
     <string name="hp_scale_src_species">бестиарий · получил %1$d</string>
@@ -1199,7 +1200,6 @@
     <string name="combat_name_plain">Просто подпись, без кодекса</string>
     <string name="combat_name_carry_title">Перенесём в карточку</string>
     <string name="combat_name_carry_note">заметка</string>
-    <string name="combat_name_carry_type">%1$s %2$s</string>
     <string name="combat_mult_resistance">×½</string>
     <string name="combat_mult_immunity">×0</string>
     <string name="combat_mult_vulnerability">×2</string>
@@ -1218,9 +1218,6 @@
     <string name="combat_promo_relation">Отношение</string>
     <string name="combat_promo_note">Заметка</string>
     <string name="combat_promo_note_hint">скопирована в карточку</string>
-    <string name="combat_promo_learned">Узнали в этом бою</string>
-    <string name="combat_promo_all">У всех: %1$s</string>
-    <string name="combat_promo_only">Только у него</string>
     <string name="combat_promo_confirm_new">Записать в кодекс</string>
     <string name="combat_promo_confirm_known">Готово</string>
     <string name="combat_promo_reject">Не записывать</string>
