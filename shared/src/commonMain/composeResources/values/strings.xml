@@ -327,10 +327,10 @@
     <string name="combat_list_reset_title">Сбросить подготовку?</string>
     <string name="combat_list_reset_text">Выбранные участники пропадут.</string>
     <string name="combat_list_reset_keep">Оставить</string>
-    <string name="combat_target_prefix">Итоги попадут в</string>
-    <string name="combat_target_session">сессию %1$s</string>
-    <string name="combat_target_session_titled">сессию %1$s · %2$s</string>
-    <string name="combat_target_new">новую сессию</string>
+    <string name="combat_target_prefix">Итоги попадут в:</string>
+    <string name="combat_target_session">Сессия %1$s</string>
+    <string name="combat_target_session_titled">Сессия %1$s · %2$s</string>
+    <string name="combat_target_new">Новая сессия</string>
     <string name="combat_list_archive_title">АРХИВ</string>
     <string name="combat_list_archive_text">Кампания завершена - новый бой не начать. Прошлые бои остаются здесь.</string>
     <string name="combat_prep_add_party">Персонаж отряда</string>
@@ -1786,7 +1786,6 @@
     <string name="me_help_slots_body">Каждая плитка это круг заклинаний: число ячеек и квадратики, закрашенные ещё свободны. Нажмите на плитку, чтобы открыть круг, потом нажмите на ячейку, чтобы потратить её, и ещё раз, чтобы вернуть. Число ячеек меняется кнопкой «Изменить ячейки».</string>
     <string name="me_slots_level_title">%1$s круг</string>
     <string name="me_slots_free">свободно %1$d из %2$d</string>
-    <string name="me_slots_cell_hint">Нажмите на ячейку — потратить или вернуть</string>
     <string name="me_slots_list_placeholder">Здесь появятся заклинания этого круга</string>
     <string name="me_slots_overline">Заклинания</string>
     <string name="me_slots_title">Ячейки</string>

@@ -313,10 +313,10 @@
     <string name="combat_list_reset_title">Reset the preparation?</string>
     <string name="combat_list_reset_text">The chosen participants will be lost.</string>
     <string name="combat_list_reset_keep">Keep</string>
-    <string name="combat_target_prefix">The results go to</string>
-    <string name="combat_target_session">session %1$s</string>
-    <string name="combat_target_session_titled">session %1$s · %2$s</string>
-    <string name="combat_target_new">a new session</string>
+    <string name="combat_target_prefix">The results go to:</string>
+    <string name="combat_target_session">Session %1$s</string>
+    <string name="combat_target_session_titled">Session %1$s · %2$s</string>
+    <string name="combat_target_new">New session</string>
     <string name="combat_list_archive_title">ARCHIVE</string>
     <string name="combat_list_archive_text">The campaign is finished - no new combat can be started. Past combats stay here.</string>
     <string name="combat_prep_add_party">Party member</string>
@@ -1710,7 +1710,6 @@
     <string name="me_help_slots_body">Each tile is a spell level: the count of slots and squares, the lit ones are still free. Press a tile to open the level, then press a cell to spend it and again to bring it back. Change the number of slots with the "Edit slots" button.</string>
     <string name="me_slots_level_title">Level %1$s</string>
     <string name="me_slots_free">%1$d of %2$d free</string>
-    <string name="me_slots_cell_hint">Press a cell to spend it or bring it back</string>
     <string name="me_slots_list_placeholder">Spells of this level will appear here</string>
     <string name="me_slots_overline">Spells</string>
     <string name="me_slots_title">Slots</string>

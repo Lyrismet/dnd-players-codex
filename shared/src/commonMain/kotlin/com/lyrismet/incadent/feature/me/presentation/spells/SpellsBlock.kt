@@ -57,7 +57,6 @@ import incadent.shared.generated.resources.me_help_spell_attack_body
 import incadent.shared.generated.resources.me_help_spell_attack_title
 import incadent.shared.generated.resources.me_help_spell_dc_body
 import incadent.shared.generated.resources.me_help_spell_dc_title
-import incadent.shared.generated.resources.me_slots_cell_hint
 import incadent.shared.generated.resources.me_slots_free
 import incadent.shared.generated.resources.me_slots_level_title
 import incadent.shared.generated.resources.me_spells_add
@@ -345,11 +344,6 @@ private fun LevelPanel(
                 effect = CellEffect.forLevel(level),
                 clock = clock,
                 variationSeed = level,
-            )
-            Text(
-                stringResource(Res.string.me_slots_cell_hint),
-                style = AppText.caption,
-                color = AppPalette.TextSecondary,
             )
         }
         if (list.isEmpty()) {
