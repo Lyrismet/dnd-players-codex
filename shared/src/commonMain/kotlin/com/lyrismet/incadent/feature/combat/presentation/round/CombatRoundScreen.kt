@@ -168,6 +168,8 @@ data class RoundPanel(
     val hp: PanelHp?,
     val wound: PanelWound?,
     val scale: PanelScale?,
+    // the number typed by hand for an ally whose hit points were not known, null for everyone else
+    val typed: String?,
     val saves: SavesState?,
     val down: DownState?,
     val died: Boolean,
@@ -178,7 +180,6 @@ data class RoundPanel(
     val more: PanelMore,
     // the calculator modes this participant can take, a guessed one has no temporary hit points
     val calcModes: List<CalcMode>,
-    val sourceNote: String,
     // the spells of the player's own character, null for everyone else and for a character with no magic
     val magic: SpellsBlockState? = null,
 )
@@ -199,8 +200,6 @@ data class PanelWound(
 data class PanelScale(
     val thumb: Int?,
     val words: List<ScaleWord>,
-    val estimate: String,
-    val source: String,
     // what was typed by hand, none while nothing was
     val exact: String?,
 )
@@ -356,6 +355,10 @@ sealed interface CombatRoundEvent : CircuitUiEvent {
 
     data class ScalePicked(
         val permille: Int,
+    ) : CombatRoundEvent
+
+    data class ExactReset(
+        val dropMax: Boolean,
     ) : CombatRoundEvent
 
     data object StandUp : CombatRoundEvent

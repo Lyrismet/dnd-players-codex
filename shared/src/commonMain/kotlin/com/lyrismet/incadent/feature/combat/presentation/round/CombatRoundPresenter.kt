@@ -275,7 +275,6 @@ class CombatRoundPresenter(
                 drafts.naming,
                 drafts.promotion,
                 NpcPromotion(combatRepository, codexRepositories.npcRepository, codexRepositories.speciesRepository),
-                combatRepository,
                 undoController,
             )
         val identityHandler =
@@ -421,12 +420,13 @@ private fun RoundView.panelOf(
         current,
         member,
         role,
-        mover?.name.orEmpty(),
         seenByMember[member.id].orEmpty(),
         PanelKin(
             species = speciesOf[member.id],
             npc = member.npcId?.let { id -> data.npcs.firstOrNull { it.id == id } },
             vulnerabilities = resistances[member.id].orEmpty(),
+            hpMaxApprox = data.party.any { it.id == member.partyMemberId && it.hpMaxApprox },
+            cardHpMax = data.party.firstOrNull { it.id == member.partyMemberId }?.hpMax,
             naming = namingState(current, member, typed, data.npcs, data.species, focus),
             identity =
                 identityState(

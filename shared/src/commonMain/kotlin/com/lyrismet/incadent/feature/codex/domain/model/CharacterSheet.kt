@@ -133,6 +133,7 @@ data class CharacterVitals(
     val hpMax: Int?,
     val hpCurrent: Int?,
     val tempHp: Int = 0,
+    val hpMaxApprox: Boolean = false,
     val armorClass: Int? = null,
     // a note for the player only, nothing is calculated from it
     val armorClassFrom: String = "",

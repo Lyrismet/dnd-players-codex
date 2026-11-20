@@ -82,7 +82,8 @@ internal fun TargetsBlock(
         } else if (calc.targets.isNotEmpty()) {
             TargetChips(calc, emit)
         }
-        if (calc.offTargets.isNotEmpty()) {
+        // adding a target in the set mode would turn it into the damage one
+        if (calc.offTargets.isNotEmpty() && calc.mode != CalcMode.SET) {
             Row(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),

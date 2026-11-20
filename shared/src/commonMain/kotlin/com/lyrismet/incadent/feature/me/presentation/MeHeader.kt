@@ -241,7 +241,7 @@ internal fun MeHitPointsCard(
                 color = if (down) AppPalette.MaroonBright else AppPalette.TextHeading,
             )
             Text(
-                stringResource(Res.string.me_hp_of_format, vitals.hpMax.orDash()),
+                stringResource(Res.string.me_hp_of_format, vitals.hpMax.orDash(vitals.hpMaxApprox)),
                 style = MaterialTheme.typography.bodyMedium,
                 color = AppPalette.TextSecondary,
             )

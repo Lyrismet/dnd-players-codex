@@ -114,6 +114,15 @@ internal class RoundEditor(
         damage.setExact(combat, sourceId, target, amount, unrecordedHeal)
     }
 
+    /** the number typed by hand is taken back */
+    suspend fun clearExact(
+        combat: Combat,
+        target: Combatant,
+        dropMax: Boolean,
+    ) {
+        damage.clearExact(combat, target, dropMax)
+    }
+
     /** the hurt targets get all their hit points back, one undo takes it back for all of them */
     suspend fun healToMax(
         combat: Combat,

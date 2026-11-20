@@ -92,6 +92,7 @@ class PartyRepositoryImpl(
                             description = entity.description,
                             id = entity.id,
                         )
+                        queries.setHpMaxApprox(hpMaxApproxAfter(stored, entity), entity.id)
                         writePhotoIfChanged(
                             entity.portrait,
                             stored.portrait,
@@ -180,6 +181,7 @@ class PartyRepositoryImpl(
         portraitThumb: ByteArray?,
         originId: String,
         vulnerabilities: String,
+        hpMaxApprox: Boolean,
     ) = PartyMember(
         id = id,
         name = name,
@@ -198,6 +200,7 @@ class PartyRepositoryImpl(
         fellCombatId = fellCombatId,
         originId = originId,
         vulnerabilities = decodeVulnerabilities(vulnerabilities),
+        hpMaxApprox = hpMaxApprox,
     )
 
     // the by-id row also carries the full jpeg
@@ -222,6 +225,7 @@ class PartyRepositoryImpl(
         originId: String,
         vulnerabilities: String,
         photoSource: ByteArray?,
+        hpMaxApprox: Boolean,
     ) = toDomain(
         id,
         name,
@@ -240,5 +244,17 @@ class PartyRepositoryImpl(
         portraitThumb,
         originId,
         vulnerabilities,
+        hpMaxApprox,
     ).copy(portrait = portraitThumb?.let { Photo(it, portrait, photoSource) })
 }
+
+/** a maximum typed anew is exact, a level that rose over an unchanged maximum makes it a guess */
+private fun hpMaxApproxAfter(
+    stored: PartyMember,
+    entity: PartyMember,
+): Boolean =
+    when {
+        entity.hpMax == null || entity.hpMax != stored.hpMax -> false
+        stored.level != null && entity.level != null && entity.level > stored.level -> true
+        else -> stored.hpMaxApprox
+    }

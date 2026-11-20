@@ -14,8 +14,6 @@ import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.round.RoleParts
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.combat_name_plain_sub
-import incadent.shared.generated.resources.combat_name_plain_title
 import incadent.shared.generated.resources.combat_rename_sub
 import incadent.shared.generated.resources.combat_rename_title
 import kotlinx.coroutines.sync.withLock
@@ -129,7 +127,6 @@ internal class IdentityHandler(
         typed: String,
     ) {
         combats.setLabel(member.id, typed, true)
-        undo.showRelabel(combats, member, typed)
     }
 
     // the record that has the typed name stays, the one of this participant goes into it
@@ -154,13 +151,3 @@ internal fun IdentityDraft?.classSelect(
     } else {
         ClassSelectState(parts.characterClass, parts.subclass)
     }
-
-/** tells that the participant is called [typed] in this fight only, the bar puts the old name back */
-internal suspend fun UndoController.showRelabel(
-    combats: CombatRepository,
-    member: Combatant,
-    typed: String,
-) = show(
-    getString(Res.string.combat_name_plain_title, member.name, typed),
-    getString(Res.string.combat_name_plain_sub),
-) { combats.setLabel(member.id, member.name, member.isLabel) }

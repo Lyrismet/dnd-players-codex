@@ -6,7 +6,6 @@ import com.lyrismet.incadent.core.undo.UndoFollowUp
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
-import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import com.lyrismet.incadent.feature.combat.domain.round.NpcPromotion
 import com.lyrismet.incadent.feature.combat.domain.round.PromotionTrace
@@ -44,7 +43,6 @@ internal class NamingHandler(
     private val typed: MutableState<NameDraft?>,
     private val promotion: MutableState<PromotionDraft?>,
     private val promotions: NpcPromotion,
-    private val combats: CombatRepository,
     private val undo: UndoController,
 ) {
     fun onEvent(
@@ -67,23 +65,13 @@ internal class NamingHandler(
     ) = editor.withMember(memberId) { combat, member ->
         typed.value = null
         val trace = promotions.promote(member, choice)
-        if (trace == null) {
-            plainCaption(member, choice)
-            return@withMember
-        }
+        if (trace == null) return@withMember
         val species = snapshot.species.firstOrNull { it.id == member.speciesId }
         val draft = PromotionDraft(trace, namedAs(choice), choice is NameChoice.New)
         val title = madeTitle(draft)
         val sub = subtitle(combat, member, species)
         val more = UndoFollowUp(getString(Res.string.combat_name_more)) { promotion.value = draft }
         undo.showMade(title, sub, more) { promotions.undo(trace) }
-    }
-
-    private suspend fun plainCaption(
-        member: Combatant,
-        choice: NameChoice,
-    ) {
-        undo.showRelabel(combats, member, namedAs(choice))
     }
 
     private fun confirm(

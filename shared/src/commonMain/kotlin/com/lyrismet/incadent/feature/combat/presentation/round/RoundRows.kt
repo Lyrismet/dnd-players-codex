@@ -88,6 +88,7 @@ internal fun roundRows(
     val slots = combat.combatants.queueSlots()
     return ordered.map { member ->
         val own = sources.party.any { it.id == member.partyMemberId && it.isPlayerCharacter }
+        val approx = sources.party.any { it.id == member.partyMemberId && it.hpMaxApprox }
         roundRow(
             combat,
             member,
@@ -98,6 +99,7 @@ internal fun roundRows(
             current,
             roleOf(member, sources),
             seen[member.id].orEmpty(),
+            approx,
         )
     }
 }
@@ -114,6 +116,7 @@ private fun roundRow(
     current: Combatant?,
     role: MemberRole,
     seen: List<SpeciesHitObservation>,
+    approxMax: Boolean,
 ): RoundRow {
     val down = member.isDown()
     val tracked = member.isTracked()
@@ -142,7 +145,7 @@ private fun roundRow(
         roleHint = roleHint(role),
         side = member.rowSide(),
         lastHit = null,
-        hp = if (tracked) rowHp(member) else null,
+        hp = if (tracked) rowHp(member, approxMax) else null,
         wound = if (tracked && !member.isDying()) null else rowWound(member, word, scaleFill(combat, member, forecast)),
         caption = caption,
         chips = rowChips(member) + markRowChips(member, combat.round),
@@ -160,7 +163,10 @@ private fun roleHint(role: MemberRole): String? =
         else -> null
     }
 
-private fun rowHp(member: Combatant): RowHp {
+private fun rowHp(
+    member: Combatant,
+    approxMax: Boolean,
+): RowHp {
     val max = checkNotNull(member.hpMax)
     val now = member.hpCurrent ?: max
     val ratio = if (max > 0) now.toFloat() / max else 0f
@@ -171,7 +177,7 @@ private fun rowHp(member: Combatant): RowHp {
             ratio > MID_RATIO -> HpLevel.MID
             else -> HpLevel.LOW
         }
-    return RowHp(now.toString(), max.toString(), member.tempHp, ratio.coerceIn(0f, 1f), level)
+    return RowHp(now.toString(), maxText(max, approxMax), member.tempHp, ratio.coerceIn(0f, 1f), level)
 }
 
 private fun rowWound(
@@ -230,3 +236,9 @@ internal fun QueueSlot?.badgeText(): String =
         is QueueSlot.Pending -> "?$number"
         null -> "—"
     }
+
+/** the maximum of a party member whose level rose stands with the approximate sign */
+internal fun maxText(
+    max: Int,
+    approx: Boolean,
+): String = if (approx) "≈$max" else max.toString()

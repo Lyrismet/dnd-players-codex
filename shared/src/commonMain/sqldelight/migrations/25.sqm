@@ -1,0 +1,1 @@
+ALTER TABLE party_member ADD COLUMN hp_max_approx INTEGER NOT NULL DEFAULT 0;

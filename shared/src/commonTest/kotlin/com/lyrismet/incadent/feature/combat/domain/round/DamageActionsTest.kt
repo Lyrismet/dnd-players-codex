@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class DamageActionsTest {
@@ -266,6 +267,24 @@ class DamageActionsTest {
             val tarn = repository.get(id).named("Тарн")
             assertEquals(100, tarn.hpMax)
             assertEquals(50, tarn.hpCurrent)
+        }
+
+    @Test
+    fun `resetting the typed hit points of an ally takes the numbers and the typed event back`() =
+        runTest {
+            val id = repository.create(null, at)
+            repository.addCombatant(id, member("Тарн", CombatSide.PARTY))
+            repository.start(id, at)
+            val combat = repository.get(id)
+            actions.damage(combat, null, listOf(strike(combat.named("Тарн"), DamageTerm(50))))
+            val struck = repository.get(id)
+            actions.setExact(struck, null, struck.named("Тарн"), amount = 50)
+            val typed = repository.get(id)
+            actions.clearExact(typed, typed.named("Тарн"), dropMax = true)
+            val after = repository.get(id)
+            assertNull(after.named("Тарн").hpMax)
+            assertEquals(0, after.events.count { it.kind == CombatEventKind.SET })
+            assertEquals(1, after.events.count { it.kind == CombatEventKind.DAMAGE })
         }
 
     @Test

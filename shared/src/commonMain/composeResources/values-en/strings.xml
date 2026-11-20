@@ -455,7 +455,6 @@
     <string name="combat_wound_dying">Dying</string>
     <string name="combat_wound_dead">Dead</string>
     <string name="combat_wound_captured">Taken alive</string>
-    <string name="combat_wound_since">%1$s · from %2$d</string>
     <string name="combat_panel_side_party">PARTY</string>
     <string name="combat_panel_side_ally">ALLY</string>
     <string name="combat_panel_side_enemy">ENEMY</string>
@@ -464,7 +463,6 @@
     <string name="combat_panel_side_fled">FLED</string>
     <string name="combat_panel_hp_sub">hit points</string>
     <string name="combat_panel_hp_sub_temp">hit points · +%1$d temp</string>
-    <string name="combat_panel_source">%1$s · %2$s</string>
     <string name="combat_panel_tab_actions">Actions</string>
     <string name="combat_panel_tab_conditions">Marks</string>
     <string name="combat_panel_tab_more">More</string>
@@ -545,20 +543,16 @@
     <string name="combat_calc_apply_damage">Deal</string>
     <string name="combat_calc_apply_enter">Enter a number</string>
     <string name="combat_calc_apply_heal">Heal %1$d</string>
-    <string name="hp_scale_estimate_title">HIT POINTS</string>
     <string name="hp_scale_estimate_approx">≈ %1$d</string>
     <string name="hp_scale_estimate_at_least">≥ %1$d</string>
     <string name="hp_scale_estimate_exact">= %1$d</string>
     <string name="hp_scale_estimate_exact_max">= %1$d of ≈ %2$d</string>
     <string name="hp_scale_estimate_unknown">unknown</string>
-    <string name="hp_scale_src_scale">scale · took %1$d</string>
-    <string name="hp_scale_src_species">bestiary · took %1$d</string>
-    <string name="hp_scale_src_took">took %1$d</string>
-    <string name="hp_scale_src_exact">typed in</string>
     <string name="hp_exact_label">EXACT HIT POINTS</string>
     <string name="hp_exact_none">not typed in</string>
     <string name="hp_exact_value">%1$d</string>
     <string name="hp_exact_set">Type in</string>
+    <string name="hp_exact_reset">Reset</string>
     <string name="hp_exact_change">Change</string>
     <string name="hp_exact_mode">Set</string>
     <string name="hp_exact_apply">Write: %1$d</string>
@@ -618,7 +612,6 @@
     <string name="combat_damage_state_vulnerability">vulnerability</string>
     <string name="combat_calc_recorded_title">%1$s: %2$s</string>
     <string name="combat_calc_recorded_sub">%1$s · recorded in the bestiary</string>
-    <string name="combat_panel_source_note">The source is whoever\'s turn it is (%1$s) by default, the calculator can pick another.</string>
     <string name="combat_outcome_victory">Victory</string>
     <string name="combat_outcome_retreat">Retreated</string>
     <string name="combat_outcome_peace">Peace</string>
@@ -1164,8 +1157,6 @@
     <string name="combat_mult_immunity">×0</string>
     <string name="combat_mult_vulnerability">×2</string>
     <string name="combat_promo_note_quoted">“%1$s”</string>
-    <string name="combat_name_plain_title">%1$s → %2$s</string>
-    <string name="combat_name_plain_sub">only a caption in this fight</string>
     <string name="combat_name_made_title">%1$s is in the codex</string>
     <string name="combat_name_linked_title">%1$s is linked to the codex</string>
     <string name="combat_name_more">Details</string>

@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.core.designsystem.component
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -53,22 +54,17 @@ fun Modifier.dashedTopRule(
 /** a dashed rule [inset] above the bottom edge, for text that can be pressed to change */
 fun Modifier.dashedBottomRule(
     color: Color,
-    width: Dp = 1.dp,
-    dashLength: Dp = 3.dp,
-    dashGap: Dp = 3.dp,
     inset: Dp = 1.dp,
+    length: Dp? = null,
 ): Modifier =
-    drawWithCache {
-        val strokePx = width.toPx()
+    drawBehind {
         val y = size.height - inset.toPx()
-        val dashes = PathEffect.dashPathEffect(floatArrayOf(dashLength.toPx(), dashGap.toPx()))
-        onDrawBehind {
-            drawLine(
-                color = color,
-                start = Offset(0f, y),
-                end = Offset(size.width, y),
-                strokeWidth = strokePx,
-                pathEffect = dashes,
-            )
-        }
+        val dashes = PathEffect.dashPathEffect(floatArrayOf(3.dp.toPx(), 3.dp.toPx()))
+        drawLine(
+            color = color,
+            start = Offset(0f, y),
+            end = Offset(length?.toPx()?.coerceAtMost(size.width) ?: size.width, y),
+            strokeWidth = 1.dp.toPx(),
+            pathEffect = dashes,
+        )
     }

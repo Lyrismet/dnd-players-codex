@@ -603,4 +603,22 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the twenty fifth schema keeps the maximum hit points exact`() {
+        val file = File.createTempFile("schema-v25", ".db")
+        File("src/commonMain/sqldelight/databases/25.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(name, level, hp_max, hp_current, campaign_id) VALUES ('Lira', 3, 24, 20, 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 25, AppDatabase.Schema.version)
+
+        assertEquals("24", driver.single("SELECT hp_max FROM party_member"))
+        assertEquals("0", driver.single("SELECT hp_max_approx FROM party_member"))
+        driver.close()
+        file.delete()
+    }
 }

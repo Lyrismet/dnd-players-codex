@@ -22,6 +22,8 @@ data class PartyMember(
     val subclass: String = "",
     // what the character resists or is weak to, written on its own so saving a form never wipes it
     val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
+    // the level rose after the maximum was typed, so it is a guess until a new one is typed
+    val hpMaxApprox: Boolean = false,
 )
 
 enum class PartyPresence {

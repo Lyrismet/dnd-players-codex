@@ -138,18 +138,8 @@ class DamageActions(
     ): Recorded {
         val told = mutableListOf<CombatEvent>()
         if (unrecordedHeal > 0) told += plain(combat, CombatEventKind.HEAL, target.id, sourceId, unrecordedHeal)
-        var member = target
         val wasDown = target.isDown() && !target.dead
-        if (target.isTracked()) {
-            member = member.copy(hpCurrent = amount.coerceIn(0, checkNotNull(target.hpMax)))
-        } else if (target.side == CombatSide.PARTY) {
-            // the damage taken and what is left give the maximum, so an ally's numbers are known from now on
-            val ledger = combat.ledgerOf(target.id)
-            val max = ((ledger.damage - ledger.healed - unrecordedHeal).coerceAtLeast(0) + amount).coerceAtLeast(1)
-            member = member.copy(hpMax = max, hpCurrent = amount.coerceIn(0, max))
-        } else if (amount > 0 && !wasDown) {
-            member = member.copy(state = scaleWord(combat, target, amount))
-        }
+        var member = typedHp(combat, target, amount, unrecordedHeal, wasDown)
         if (wasDown && amount > 0) member = member.standing()
         told += plain(combat, CombatEventKind.SET, target.id, sourceId, amount)
         if (wasDown && amount > 0) told += plain(combat, CombatEventKind.UP, target.id, sourceId)
@@ -160,6 +150,36 @@ class DamageActions(
         }
         val ids = repository.record(combat.id, listOfNotNull(member.takeIf { it != target }), told)
         return Recorded(listOf(target), ids)
+    }
+
+    private fun typedHp(
+        combat: Combat,
+        target: Combatant,
+        amount: Int,
+        unrecordedHeal: Int,
+        wasDown: Boolean,
+    ): Combatant =
+        when {
+            target.isTracked() -> target.copy(hpCurrent = amount.coerceIn(0, checkNotNull(target.hpMax)))
+            target.side == CombatSide.PARTY -> {
+                // the damage taken and what is left give the maximum, so an ally's numbers are known from now on
+                val ledger = combat.ledgerOf(target.id)
+                val max = ((ledger.damage - ledger.healed - unrecordedHeal).coerceAtLeast(0) + amount).coerceAtLeast(1)
+                target.copy(hpMax = max, hpCurrent = amount.coerceIn(0, max))
+            }
+            amount > 0 && !wasDown -> target.copy(state = scaleWord(combat, target, amount))
+            else -> target
+        }
+
+    /** takes the typed number back, [dropMax] takes the maximum that came from it too, so the scale is back */
+    suspend fun clearExact(
+        combat: Combat,
+        target: Combatant,
+        dropMax: Boolean,
+    ) {
+        val typed = combat.events.filter { it.targetId == target.id && it.kind == CombatEventKind.SET }
+        val member = if (dropMax) target.copy(hpMax = null, hpCurrent = null) else target
+        repository.unrecord(listOfNotNull(member.takeIf { it != target }), typed.map { it.id })
     }
 
     /** the word of the scale that a typed number is nearest to, for a guessed participant that is on the scale */
