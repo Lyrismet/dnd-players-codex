@@ -24,7 +24,7 @@ data class NameOption(
     val subtitle: String,
 )
 
-/** the sheet that follows the naming of a participant: what the new link means */
+/** the sheet that follows the naming of a participant and tells what the new link means */
 data class PromotionSheet(
     val overline: String,
     val name: String,

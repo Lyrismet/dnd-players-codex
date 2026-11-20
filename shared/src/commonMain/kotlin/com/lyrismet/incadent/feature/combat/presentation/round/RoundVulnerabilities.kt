@@ -19,13 +19,13 @@ internal data class ShieldEditDraft(
     val before: Map<DamageType, DamageState>,
 )
 
-/** one edit of the own shield list: a tap that walks the state on, or a state picked by hand */
+/** one edit of the own shield list, a tap that walks the state on or a state picked by hand */
 internal sealed interface ShieldChange {
     val type: DamageType
 
     fun applyTo(own: Map<DamageType, DamageState>): Map<DamageType, DamageState>
 
-    /** a tap walks the state on: resistance, immunity, vulnerability, none */
+    /** a tap walks the state on through resistance, immunity, vulnerability and none */
     data class Step(
         override val type: DamageType,
         val inherited: Map<DamageType, DamageState>,

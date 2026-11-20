@@ -8,7 +8,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import kotlinx.coroutines.sync.withLock
 
-/** the shields and facts a participant has of its own: on the card of its record, or else kept on the participant */
+/** the shields and facts a participant has of its own, on the card of its record or else kept on the participant */
 internal class OwnFeatures(
     private val npcRepository: NpcRepository,
     private val combatRepository: CombatRepository,

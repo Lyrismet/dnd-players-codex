@@ -61,7 +61,11 @@ internal class FeaturesHandler(
         if (after == before) return@withMember
         own.writeFacts(member, after)
         val npcId = member.npcId
-        if (added != null && npcId != null) tellAdded(npcId, member.name, before, after)
+        if (added != null &&
+            npcId != null
+        ) {
+            tellAdded(npcId, npcRepository.getById(npcId)?.name ?: member.name, before, after)
+        }
     }
 
     private suspend fun tellAdded(

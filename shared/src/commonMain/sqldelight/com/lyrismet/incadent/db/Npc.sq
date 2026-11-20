@@ -61,7 +61,7 @@ UPDATE npc
 SET name = ?, status = ?, description = ?, race = ?, character_class = ?, subclass = ?, life_state = ?, nicknames = ?, species_id = ?, vulnerabilities = ?
 WHERE id = ?;
 
--- the same with the facts, for the repository: an import or its rollback has no facts to bring and leaves them alone
+-- the same with the facts, for the repository that always writes the facts of the model
 updateWithFacts:
 UPDATE npc
 SET name = ?, status = ?, description = ?, race = ?, character_class = ?, subclass = ?, life_state = ?, nicknames = ?, species_id = ?, vulnerabilities = ?, facts = ?

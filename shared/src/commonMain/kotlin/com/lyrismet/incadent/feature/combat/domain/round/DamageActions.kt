@@ -117,6 +117,7 @@ class DamageActions(
         val back =
             healed.before.mapNotNull { old ->
                 current.firstOrNull { it.id == old.id }?.copy(
+                    hpMax = old.hpMax,
                     hpCurrent = old.hpCurrent,
                     state = old.state,
                     deathSuccesses = old.deathSuccesses,
