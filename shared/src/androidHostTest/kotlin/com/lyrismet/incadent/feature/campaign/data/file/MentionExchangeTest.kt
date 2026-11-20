@@ -55,6 +55,7 @@ class MentionExchangeTest {
             campaignId,
             originId,
             null,
+            "",
         )
         return database.npcQueries.lastInsertRowId().executeAsOne()
     }

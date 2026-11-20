@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation
 
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
+import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
@@ -66,7 +67,7 @@ internal fun List<PartyMember>.toPartyCodexItems(
 private fun PartyMember.hpLine(): String =
     when {
         hpMax == null -> EMPTY_VALUE_DASH
-        else -> "${hpCurrent ?: hpMax}/$hpMax"
+        else -> "${hpCurrent ?: hpMax}/${hpMax.orDash(hpMaxApprox)}"
     }
 
 private fun PartyMember.ownerLine(labels: PartyCardLabels): String =

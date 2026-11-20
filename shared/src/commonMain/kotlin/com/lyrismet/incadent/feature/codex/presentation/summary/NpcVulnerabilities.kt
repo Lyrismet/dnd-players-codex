@@ -83,7 +83,10 @@ internal fun NpcVulnerabilitySection(
             overline = vulnerabilities.name.uppercase(),
             facts = vulnerabilities.facts.takeIf { withFacts },
             text = text,
-            shields = effectiveVulnerabilities(vulnerabilities.fromSpecies, vulnerabilities.own),
+            shields =
+                remember(
+                    vulnerabilities,
+                ) { effectiveVulnerabilities(vulnerabilities.fromSpecies, vulnerabilities.own) },
             actions =
                 FeaturesSheetActions(
                     onTextChanged = { text = it },
@@ -112,8 +115,12 @@ internal fun NpcVulnerabilitySection(
 
 @Composable
 private fun NpcVulnerabilityRows(vulnerabilities: NpcVulnerabilities) {
-    val effective = effectiveVulnerabilities(vulnerabilities.fromSpecies, vulnerabilities.own)
-    val groups = effective.shields().groupBy({ it.second }, { it.first })
+    val groups =
+        remember(vulnerabilities) {
+            effectiveVulnerabilities(vulnerabilities.fromSpecies, vulnerabilities.own)
+                .shields()
+                .groupBy({ it.second }, { it.first })
+        }
     val stateLabels = damageStateLabels()
     var tipped by remember { mutableStateOf<DamageType?>(null) }
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {

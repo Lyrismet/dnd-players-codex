@@ -97,6 +97,7 @@ internal class RoundHandler(
                 editor.withMember(id) { c, m ->
                     editor.actions.setMark(c, m, stateAtPermille(event.permille), event.permille)
                 }
+            is CombatRoundEvent.ExactReset -> editor.withMember(id) { c, m -> editor.clearExact(c, m, event.dropMax) }
             CombatRoundEvent.StandUp -> editor.withMember(id) { c, m -> editor.actions.standUp(c, m) }
             CombatRoundEvent.CaptureToggled -> editor.withMember(id) { c, m -> editor.actions.toggleCaptured(c, m) }
             CombatRoundEvent.DiedToggled -> editor.withMember(id) { c, m -> editor.actions.toggleDead(c, m) }

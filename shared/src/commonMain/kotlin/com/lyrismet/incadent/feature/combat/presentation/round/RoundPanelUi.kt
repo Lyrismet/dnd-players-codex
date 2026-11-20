@@ -172,6 +172,7 @@ private fun ActionsTab(
     send: (CombatRoundEvent) -> Unit,
 ) {
     panel.scale?.let { ScaleBlock(it, send) }
+    panel.typed?.let { TypedBlock(it, send) }
     panel.saves?.let { SavesBlock(it, send) }
     panel.down?.let { DownButtons(it, send) }
     if (panel.died) DiedNote(send)
@@ -365,12 +366,6 @@ private fun CalcButtons(
             }
         }
     }
-    Text(
-        panel.sourceNote,
-        color = AppPalette.TextTertiary,
-        fontSize = AppFontSize.Caption,
-        lineHeight = AppLineHeight.Row,
-    )
 }
 
 @Composable

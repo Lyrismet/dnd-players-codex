@@ -1,32 +1,23 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.runtime.Composable
-import com.lyrismet.incadent.feature.codex.domain.model.DamageState
-import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.Species
-import com.lyrismet.incadent.feature.codex.presentation.summary.damageStateLabels
 import com.lyrismet.incadent.feature.codex.presentation.summary.npcStatusLabels
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
-import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import com.lyrismet.incadent.feature.combat.domain.round.damageTaken
 import com.lyrismet.incadent.feature.combat.domain.round.nameChoices
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.combat_mult_immunity
-import incadent.shared.generated.resources.combat_mult_resistance
-import incadent.shared.generated.resources.combat_mult_vulnerability
 import incadent.shared.generated.resources.combat_name_carry_note
-import incadent.shared.generated.resources.combat_name_carry_type
 import incadent.shared.generated.resources.combat_name_existing_sub
 import incadent.shared.generated.resources.combat_name_existing_sub_species
 import incadent.shared.generated.resources.combat_name_new
 import incadent.shared.generated.resources.combat_name_new_sub
 import incadent.shared.generated.resources.combat_name_new_sub_species
 import incadent.shared.generated.resources.combat_name_plain
-import incadent.shared.generated.resources.combat_promo_all
 import incadent.shared.generated.resources.combat_promo_confirm_known
 import incadent.shared.generated.resources.combat_promo_confirm_new
 import incadent.shared.generated.resources.combat_promo_hp
@@ -34,7 +25,6 @@ import incadent.shared.generated.resources.combat_promo_hp_hint
 import incadent.shared.generated.resources.combat_promo_note
 import incadent.shared.generated.resources.combat_promo_note_hint
 import incadent.shared.generated.resources.combat_promo_note_quoted
-import incadent.shared.generated.resources.combat_promo_only
 import incadent.shared.generated.resources.combat_promo_over_known
 import incadent.shared.generated.resources.combat_promo_over_new
 import incadent.shared.generated.resources.combat_promo_relation
@@ -43,28 +33,6 @@ import incadent.shared.generated.resources.combat_promo_species
 import incadent.shared.generated.resources.combat_promo_species_hint
 import org.jetbrains.compose.resources.stringResource
 
-private fun DamageState.hasMultiplier() =
-    this == DamageState.RESISTANCE || this == DamageState.IMMUNITY || this == DamageState.VULNERABILITY
-
-@Composable
-private fun DamageState.multiplierText() =
-    when (this) {
-        DamageState.RESISTANCE -> stringResource(Res.string.combat_mult_resistance)
-        DamageState.IMMUNITY -> stringResource(Res.string.combat_mult_immunity)
-        else -> stringResource(Res.string.combat_mult_vulnerability)
-    }
-
-/** the learned entries that still hold on the species card, so there is something to move to a new npc */
-internal fun learnedOf(
-    member: Combatant,
-    species: Species?,
-    learned: List<LearnedVulnerability>,
-): List<LearnedVulnerability> =
-    learned.filter { item ->
-        val now = species?.vulnerabilities?.get(item.type)
-        item.speciesId == member.speciesId && now?.hasMultiplier() == true && now != item.previous
-    }
-
 @Composable
 internal fun namingState(
     combat: Combat,
@@ -72,8 +40,6 @@ internal fun namingState(
     typed: String,
     npcs: List<Npc>,
     species: List<Species>,
-    learned: List<LearnedVulnerability>,
-    typeNames: Map<DamageType, String>,
     focus: Boolean = false,
 ): NamingState? {
     val speciesRecord = species.firstOrNull { it.id == member.speciesId }
@@ -112,7 +78,7 @@ internal fun namingState(
         placeholder = member.name,
         options = options,
         role = roleField(member, speciesRecord),
-        carry = if (typed.isBlank()) emptyList() else carryChips(combat, member, speciesRecord, learned, typeNames),
+        carry = if (typed.isBlank()) emptyList() else carryChips(combat, member),
         carryRole = if (typed.isBlank()) "" else member.role,
         focus = focus,
     )
@@ -122,21 +88,12 @@ internal fun namingState(
 internal fun carryChips(
     combat: Combat,
     member: Combatant,
-    species: Species?,
-    learned: List<LearnedVulnerability>,
-    typeNames: Map<DamageType, String>,
 ): List<String> {
     val taken = combat.damageTaken(member)
     return listOfNotNull(
         if (taken > 0) tookText(taken) else null,
         if (member.state != CombatState.WHOLE) woundWord(member).first else null,
-    ) +
-        learnedOf(member, species, learned).mapNotNull { item ->
-            species?.vulnerabilities?.get(item.type)?.let {
-                stringResource(Res.string.combat_name_carry_type, typeNames.getValue(item.type), it.multiplierText())
-            }
-        } +
-        listOfNotNull(if (member.note.isNotBlank()) stringResource(Res.string.combat_name_carry_note) else null)
+    ) + listOfNotNull(if (member.note.isNotBlank()) stringResource(Res.string.combat_name_carry_note) else null)
 }
 
 @Composable
@@ -145,10 +102,8 @@ internal fun promotionSheet(
     combat: Combat,
     npc: Npc?,
     species: Species?,
-    typeNames: Map<DamageType, String>,
 ): PromotionSheet? {
     val member = combat.combatants.firstOrNull { it.id == draft.trace.memberId } ?: return null
-    val stateLabels = damageStateLabels()
     return PromotionSheet(
         overline =
             stringResource(
@@ -156,18 +111,6 @@ internal fun promotionSheet(
             ),
         name = draft.name,
         rows = promotionRows(draft, combat, member, npc, species),
-        learned =
-            draft.learned.mapNotNull { item ->
-                val state = species?.vulnerabilities?.get(item.type) ?: return@mapNotNull null
-                LearnedRow(
-                    type = item.type,
-                    state = state,
-                    label = "${typeNames.getValue(item.type)} · ${stateLabels.getValue(state).lowercase()}",
-                    onlyNpc = item.type in draft.onlyNpc,
-                    allLabel = stringResource(Res.string.combat_promo_all, species.name.lowercase()),
-                    onlyLabel = stringResource(Res.string.combat_promo_only),
-                )
-            },
         confirmLabel =
             stringResource(
                 if (draft.isNew) Res.string.combat_promo_confirm_new else Res.string.combat_promo_confirm_known,

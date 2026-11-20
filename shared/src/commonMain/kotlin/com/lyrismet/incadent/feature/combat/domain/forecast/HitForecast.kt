@@ -49,9 +49,10 @@ sealed interface HitForecast {
         val source: ForecastSource = ForecastSource.SCALE,
     ) : HitForecast
 
-    /** typed by the player and moved on by the damage and healing told since */
+    /** typed by the player and moved on by the damage and healing told since, [max] is what the typing added up to */
     data class Exact(
         val remaining: Int,
+        val max: Int? = null,
     ) : HitForecast
 }
 
@@ -66,7 +67,7 @@ private val MARK_MAX_PER_DAMAGE =
 
 fun forecastHits(input: HitForecastInput): HitForecast {
     val exact = exactRemaining(input)
-    return if (exact != null) HitForecast.Exact(exact) else estimateFromFacts(input)
+    return if (exact != null) HitForecast.Exact(exact, exactMax(input)) else estimateFromFacts(input)
 }
 
 private fun estimateFromFacts(input: HitForecastInput): HitForecast {
@@ -92,6 +93,10 @@ private fun netDamage(
     damage: Int,
     healed: Int,
 ): Int = (damage - healed).coerceAtLeast(0)
+
+/** the damage that was taken when the hit points were typed plus what was left is the whole maximum */
+private fun exactMax(input: HitForecastInput): Int? =
+    input.exact?.let { netDamage(it.damageAtMark, it.healedAtMark) + it.remaining }
 
 private fun exactRemaining(input: HitForecastInput): Int? {
     val exact = input.exact

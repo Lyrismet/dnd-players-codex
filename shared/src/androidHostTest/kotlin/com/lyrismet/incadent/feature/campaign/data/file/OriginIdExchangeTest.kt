@@ -57,6 +57,7 @@ class OriginIdExchangeTest {
             source,
             "bob-origin",
             null,
+            "",
         )
         database.questQueries.insert("Find", QuestStatus.ACTIVE, "", null, null, "", source, "quest-origin")
         database.partyMemberQueries.insert(

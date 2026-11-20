@@ -3,13 +3,9 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 import androidx.compose.runtime.MutableState
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.core.undo.UndoFollowUp
-import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Species
-import com.lyrismet.incadent.feature.codex.presentation.summary.entityWriteLock
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
-import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
-import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.round.NameChoice
 import com.lyrismet.incadent.feature.combat.domain.round.NpcPromotion
 import com.lyrismet.incadent.feature.combat.domain.round.PromotionTrace
@@ -19,8 +15,6 @@ import incadent.shared.generated.resources.combat_name_linked_title
 import incadent.shared.generated.resources.combat_name_made_title
 import incadent.shared.generated.resources.combat_name_more
 import incadent.shared.generated.resources.combat_round_took
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.getString
 
 /** what is being typed over a participant */
@@ -34,8 +28,6 @@ internal data class PromotionDraft(
     val trace: PromotionTrace,
     val name: String,
     val isNew: Boolean,
-    val learned: List<LearnedVulnerability>,
-    val onlyNpc: Set<DamageType> = emptySet(),
 )
 
 /** the species of the codex, as the naming reads them */
@@ -51,7 +43,6 @@ internal class NamingHandler(
     private val typed: MutableState<NameDraft?>,
     private val promotion: MutableState<PromotionDraft?>,
     private val promotions: NpcPromotion,
-    private val combats: CombatRepository,
     private val undo: UndoController,
 ) {
     fun onEvent(
@@ -61,19 +52,6 @@ internal class NamingHandler(
         when (event) {
             is CombatRoundEvent.NameChanged -> selected.value?.let { typed.value = NameDraft(it, event.text) }
             is CombatRoundEvent.NameChosen -> selected.value?.let { choose(it, event.choice, snapshot) }
-            is CombatRoundEvent.PromotionScopeChanged ->
-                promotion.value =
-                    promotion.value?.let { draft ->
-                        draft.copy(
-                            onlyNpc =
-                                if (event.onlyNpc) {
-                                    draft.onlyNpc + event.type
-                                } else {
-                                    draft.onlyNpc -
-                                        event.type
-                                },
-                        )
-                    }
             CombatRoundEvent.PromotionConfirmed -> promotion.value?.let { confirm(it, snapshot) }
             CombatRoundEvent.PromotionRejected -> promotion.value?.let(::reject)
             else -> Unit
@@ -87,28 +65,13 @@ internal class NamingHandler(
     ) = editor.withMember(memberId) { combat, member ->
         typed.value = null
         val trace = promotions.promote(member, choice)
-        if (trace == null) {
-            plainCaption(member, choice)
-            return@withMember
-        }
+        if (trace == null) return@withMember
         val species = snapshot.species.firstOrNull { it.id == member.speciesId }
-        val learned = learnedOf(member, species, combats.observeLearned(editor.combatId).first())
-        val draft = PromotionDraft(trace, namedAs(choice), choice is NameChoice.New, learned)
-        if (learned.isNotEmpty()) {
-            promotion.value = draft
-        } else {
-            val title = madeTitle(draft)
-            val sub = subtitle(combat, member, species)
-            val more = UndoFollowUp(getString(Res.string.combat_name_more)) { promotion.value = draft }
-            undo.showMade(title, sub, more) { promotions.undo(trace) }
-        }
-    }
-
-    private suspend fun plainCaption(
-        member: Combatant,
-        choice: NameChoice,
-    ) {
-        undo.showRelabel(combats, member, namedAs(choice))
+        val draft = PromotionDraft(trace, namedAs(choice), choice is NameChoice.New)
+        val title = madeTitle(draft)
+        val sub = subtitle(combat, member, species)
+        val more = UndoFollowUp(getString(Res.string.combat_name_more)) { promotion.value = draft }
+        undo.showMade(title, sub, more) { promotions.undo(trace) }
     }
 
     private fun confirm(
@@ -117,13 +80,8 @@ internal class NamingHandler(
     ) {
         promotion.value = null
         editor.withMember(draft.trace.memberId) { combat, member ->
-            val back =
-                entityWriteLock.withLock {
-                    promotions.moveLearned(editor.combatId, draft.trace, draft.learned, draft.onlyNpc)
-                }
             val species = snapshot.species.firstOrNull { it.id == member.speciesId }
             undo.show(madeTitle(draft), subtitle(combat, member, species)) {
-                entityWriteLock.withLock { back() }
                 promotions.undo(draft.trace)
             }
         }

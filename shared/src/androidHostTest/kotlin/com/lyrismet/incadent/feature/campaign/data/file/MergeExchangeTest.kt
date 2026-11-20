@@ -87,6 +87,7 @@ class MergeExchangeTest {
             campaignId,
             originId,
             null,
+            "",
         )
         return database.npcQueries.lastInsertRowId().executeAsOne()
     }

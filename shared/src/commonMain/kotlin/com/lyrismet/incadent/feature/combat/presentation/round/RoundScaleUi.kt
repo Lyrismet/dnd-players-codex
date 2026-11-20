@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,10 +53,10 @@ import incadent.shared.generated.resources.combat_panel_mark_title
 import incadent.shared.generated.resources.hp_exact_change
 import incadent.shared.generated.resources.hp_exact_label
 import incadent.shared.generated.resources.hp_exact_none
+import incadent.shared.generated.resources.hp_exact_reset
 import incadent.shared.generated.resources.hp_exact_set
 import incadent.shared.generated.resources.hp_help_body
 import incadent.shared.generated.resources.hp_help_title
-import incadent.shared.generated.resources.hp_scale_estimate_title
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
@@ -85,9 +86,25 @@ internal fun ScaleBlock(
         )
         ScaleSlider(scale) { send(CombatRoundEvent.ScalePicked(it)) }
         ScaleWords(scale.words)
-        EstimateRow(scale)
-        ExactRow(scale.exact) { send(CombatRoundEvent.Calc(CalcEvent.Opened(CalcMode.SET))) }
+        ExactRow(
+            exact = scale.exact,
+            onOpen = { send(CombatRoundEvent.Calc(CalcEvent.Opened(CalcMode.SET))) },
+            onReset = { send(CombatRoundEvent.ExactReset(dropMax = false)) },
+        )
     }
+}
+
+/** the number typed for an ally with no known hit points, the reset brings the scale back */
+@Composable
+internal fun TypedBlock(
+    typed: String,
+    send: (CombatRoundEvent) -> Unit,
+) {
+    ExactRow(
+        exact = typed,
+        onOpen = { send(CombatRoundEvent.SetHpOpened) },
+        onReset = { send(CombatRoundEvent.ExactReset(dropMax = true)) },
+    )
 }
 
 /** the track and the thumb share one inset, so the words under them stand where the places on the scale are */
@@ -96,7 +113,9 @@ private fun ScaleSlider(
     scale: PanelScale,
     onPicked: (Int) -> Unit,
 ) {
-    var drag by remember(scale.thumb) { mutableStateOf<Float?>(null) }
+    var drag by remember { mutableStateOf<Float?>(null) }
+    // a new place from the data lets go of the finger place, the gesture handlers keep one state for good
+    LaunchedEffect(scale.thumb) { drag = null }
     var width by remember { mutableIntStateOf(0) }
     val inset = with(LocalDensity.current) { (ThumbSize / 2).toPx() }
     val place = drag ?: scale.thumb?.let { it / PERMILLE }
@@ -224,43 +243,10 @@ private fun ScaleWords(words: List<ScaleWord>) {
 }
 
 @Composable
-private fun EstimateRow(scale: PanelScale) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .appCard(shape = AppShapes.Field, background = AppPalette.Background, border = AppPalette.BorderSubtle)
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text(
-            stringResource(Res.string.hp_scale_estimate_title),
-            color = AppPalette.TextTertiary,
-            style = AppText.fieldOverlineStrong,
-            modifier = Modifier.alignByBaseline(),
-        )
-        Text(
-            scale.estimate,
-            color = scale.thumb?.let { zoneColor(it / PERMILLE) } ?: AppPalette.TextMuted,
-            fontSize = AppFontSize.MediumPlus,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.alignByBaseline(),
-        )
-        if (scale.source.isNotEmpty()) {
-            Text(
-                scale.source,
-                color = AppPalette.TextMuted,
-                fontSize = AppFontSize.Caption,
-                modifier = Modifier.alignByBaseline(),
-            )
-        }
-    }
-}
-
-@Composable
 private fun ExactRow(
     exact: String?,
     onOpen: () -> Unit,
+    onReset: () -> Unit,
 ) {
     Row(
         modifier =
@@ -285,6 +271,15 @@ private fun ExactRow(
                 exact ?: stringResource(Res.string.hp_exact_none),
                 color = if (exact != null) AppPalette.TextPrimary else AppPalette.TextTertiary,
                 fontSize = AppFontSize.Body,
+            )
+        }
+        if (exact != null) {
+            AppButton(
+                text = stringResource(Res.string.hp_exact_reset),
+                onClick = onReset,
+                tone = ButtonTone.Maroon,
+                variant = ButtonVariant.Ghost,
+                size = ButtonSize.Compact,
             )
         }
         AppButton(

@@ -46,7 +46,7 @@ sealed interface EntitySheetEvent {
     data class SpeciesVulnerabilityChanged(
         val speciesId: Long,
         val type: DamageType,
-        val state: DamageState,
+        val state: DamageState?,
     ) : EntitySheetEvent
 
     data class NpcFactsChanged(

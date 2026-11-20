@@ -243,6 +243,7 @@ private fun SelectByMember.toDomain(): CharacterSheet =
 internal fun SelectVitals.toDomain(): CharacterVitals =
     CharacterVitals(
         hpMax = hp_max?.toInt(),
+        hpMaxApprox = hp_max_approx,
         hpCurrent = (hp_current ?: hp_max)?.toInt(),
         tempHp = temp_hp.toInt(),
         armorClass = armor_class?.toInt(),

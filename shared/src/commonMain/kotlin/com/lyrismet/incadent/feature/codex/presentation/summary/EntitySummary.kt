@@ -240,7 +240,7 @@ private fun buildPartySummary(
                 ),
                 FactRow(
                     Res.string.entity_sheet_party_hp_label,
-                    FactValue.Text(member.hpMax.orDash()),
+                    FactValue.Text(member.hpMax.orDash(member.hpMaxApprox)),
                     QuickEditField.HP_MAX,
                 ),
             ),

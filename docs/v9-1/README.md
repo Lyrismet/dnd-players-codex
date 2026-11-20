@@ -12,7 +12,7 @@
 
 ## Шаги
 
-**Номера миграций.** Заняты `13.sqm`-`23.sqm` (`18.sqm` поля и усиление заклинаний, `19.sqm` и `20.sqm` даунтайм шага 7, `21.sqm`-`23.sqm` шаг 8), следующая свободная `24.sqm`. Номера
+**Номера миграций.** Заняты `13.sqm`-`24.sqm` (`24.sqm` снимает `combat_learned`) (`18.sqm` поля и усиление заклинаний, `19.sqm` и `20.sqm` даунтайм шага 7, `21.sqm`-`23.sqm` шаг 8), следующая свободная `25.sqm`. Номера
 в шагах ниже ориентировочные:
 агент берёт следующий свободный номер из `shared/src/commonMain/sqldelight/migrations/`. Файлы `databases/N.db` это
 снимки
@@ -115,7 +115,7 @@
 
 ### Шаг 9. Подсказки "?" и сквозная приёмка
 
-Статус: `[ ]`. Зависит от: шаги 1-8. Миграции: нет. Бриф: `steps/09-hints-acceptance.md`.
+Статус: `[x]` (ветка `s9_hints_acceptance`). Зависит от: шаги 1-8. Миграции: нет. Бриф: `steps/09-hints-acceptance.md`.
 
 **Часть 1. Подсказки "?"**
 Цель: Убрать три лишние подсказки, оформить подсказку очереди с "?", убрать остатки режима "по инициативе" и склонение
@@ -130,12 +130,12 @@
 из этого уже в коде, здесь только то, что осталось. Пути даны от `shared/src/commonMain/kotlin/com/lyrismet/incadent/`.
 
 **Нужно решение владельца (схема БД или внешний вид)**
-- [ ] Мёртвый путь "learned". После удаления `recordOnSpecies` ничто не пишет в `combat_learned`, а код вокруг остался:
+- [x] Мёртвый путь "learned" (убран, таблица снята миграцией `24.sqm`). После удаления `recordOnSpecies` ничто не пишет в `combat_learned`, а код вокруг остался:
   `LearnedVulnerability`, `CombatRepository.observeLearned/addLearned/removeLearned` и реализация, `learned` в
   `CombatRoundPresenter`, `IdentityFacts`, `NamingHandler`, `NamingBuilder` (`learnedOf`), `NamingUi` (`LearnedRowView`),
   `IdentityModels`, `NpcPromotion.moveLearned` и тест в `NpcPromotionTest`. Удаление требует миграции, которая
   убирает таблицу `combat_learned`, с тестом (у тестеров там могут быть строки).
-- [ ] `CombatCondition.CONCENTRATION` остался в enum "для старых файлов", а панель прячет его фильтром в
+- [ ] (оставлено: файл кампании старой версии с этим значением перестал бы читаться, адаптер БД ни при чём) `CombatCondition.CONCENTRATION` остался в enum "для старых файлов", а панель прячет его фильтром в
   `RoundPanelBuilder`. Миграция 15 уже переносит концентрацию в метки, поэтому значение можно убрать, сначала проверив,
   что `combatConditionsAdapter` пропускает неизвестные имена.
 - [ ] Визуал, расходящийся с макетом: кнопка "✓" в `ShieldEditor` (`FeaturesUi`) через `AppButton`; поле фактов в
@@ -143,11 +143,11 @@
   в `NpcVulnerabilities`.
 
 **Рефакторинг**
-- [ ] Щиты и факты живут в двух местах (строка бойца и строка NPC), и каждый код ветвится по `npcId == null`:
+- [x] (сделан `OwnFeatures` для чтения и записи щитов и фактов, откат `NpcPromotion` оставлен) Щиты и факты живут в двух местах (строка бойца и строка NPC), и каждый код ветвится по `npcId == null`:
   `VulnerabilityLearner` (`ownShields`, `writeOwn`, `record`), `resistancesOf`, `NpcPromotion` (перенос и `undo` через
   `oldShields`/`oldFacts`). Нужна одна абстракция "владелец своих особенностей". Запись и откат заодно переезжают из
   `presentation/round` в слой данных или домена.
-- [ ] `DamageState?` внедрён наполовину: для NPC (`onNpcVulnerabilityChanged`) он есть, для вида
+- [x] `DamageState?` внедрён наполовину: для NPC (`onNpcVulnerabilityChanged`) он есть, для вида
   (`onSpeciesVulnerabilityChanged`, редактор вида) остался обычный `DamageState`. `stateOf` теперь читает отсутствующую
   запись как `NORMAL`, это легко принять за "неизвестно".
 - [ ] Логика фактов (`withFact`, поле, добавить и убрать) повторяется в `NpcVulnerabilitySection` и в `FeaturesHandler`.
@@ -156,22 +156,22 @@
   `ChipFlow` для повторяющегося `FlowRow(spacedBy(5.dp))` и общая основа для `CustomGroup` и `ConditionGroupBlock` в
   `RoundPanelTabsUi`; заголовок-надпись (`Tiny`, `SemiBold`, `letterSpacing 1.4.sp`) через `FormFieldLabel` вместо пяти
   копий.
-- [ ] `ShieldEditing.tap` и `set` это обёртки над `change`, оставить одну точку входа. `ShieldEditDraft.memberId`
+- [x] `ShieldEditing.tap` и `set` это обёртки над `change`, оставить одну точку входа. `ShieldEditDraft.memberId`
   дублирует выбранного участника, но нужен `done()` после смены выбора, проверить перед удалением.
 - [ ] `CombatRepositoryImpl`: два `observe` повторяют сборку `names`, `marksByMember` и `toDomain` бойца.
 
 **Производительность**
-- [ ] `facts` NPC пишется вторым запросом `updateFacts` после `insert`/`update` в `NpcRepositoryImpl` (строки 85, 118,
+- [x] `facts` NPC пишется вторым запросом `updateFacts` после `insert`/`update` в `NpcRepositoryImpl` (строки 85, 118,
   137) и в `CampaignRepositoryImpl`: два запроса и два уведомления потоков на сохранение. Добавить `facts` в `insert`,
   `insertWithId` и `update` в `Npc.sq`. Затронет импортёр, откат импорта, копирование кампании и около 8 тестов.
-- [ ] `VulnerabilityLearner.recordOnMember`: отмена читает весь бой через `combatRepository.observe(combatId).first()`
+- [x] `VulnerabilityLearner.recordOnMember`: отмена читает весь бой через `combatRepository.observe(combatId).first()`
   ради одного бойца. Нужен метод чтения одного бойца или запись одной строки.
-- [ ] `selectById` NPC тянет BLOB портрета, а щит читает его только ради `vulnerabilities`. Нужен узкий запрос
+- [x] `selectById` NPC тянет BLOB портрета, а щит читает его только ради `vulnerabilities`. Нужен узкий запрос
   `vulnerabilities` и запись только этого поля.
-- [ ] `decodeVulnerabilities` не выходит сразу на пустой строке (`decodeFacts` уже выходит).
-- [ ] `NpcVulnerabilitySection` на каждой перекомпозиции заново считает `effectiveVulnerabilities` и собирает
+- [x] `decodeVulnerabilities` не выходит сразу на пустой строке (`decodeFacts` уже выходит).
+- [x] (сделано `remember`, текст остался в секции) `NpcVulnerabilitySection` на каждой перекомпозиции заново считает `effectiveVulnerabilities` и собирает
   `FeaturesSheetActions`: обернуть в `remember`, а состояние текста поднять в лист, чтобы ввод не перекомпозировал секцию.
-- [ ] `marks.selectByCampaign` пятым потоком в `observeAll` перестраивает все бои на любую метку. Проверить, горячий ли
+- [x] (проверено: `observeAll` не слушается из боя, правка не нужна) `marks.selectByCampaign` пятым потоком в `observeAll` перестраивает все бои на любую метку. Проверить, горячий ли
   `observeAll`.
 
 ## Источники

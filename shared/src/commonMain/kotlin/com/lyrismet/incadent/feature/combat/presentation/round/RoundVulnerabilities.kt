@@ -19,6 +19,29 @@ internal data class ShieldEditDraft(
     val before: Map<DamageType, DamageState>,
 )
 
+/** one edit of the own shield list, a tap that walks the state on or a state picked by hand */
+internal sealed interface ShieldChange {
+    val type: DamageType
+
+    fun applyTo(own: Map<DamageType, DamageState>): Map<DamageType, DamageState>
+
+    /** a tap walks the state on through resistance, immunity, vulnerability and none */
+    data class Step(
+        override val type: DamageType,
+        val inherited: Map<DamageType, DamageState>,
+    ) : ShieldChange {
+        override fun applyTo(own: Map<DamageType, DamageState>) =
+            own.with(type, nextOwnVulnerability(inherited, own, type))
+    }
+
+    data class Set(
+        override val type: DamageType,
+        val state: DamageState?,
+    ) : ShieldChange {
+        override fun applyTo(own: Map<DamageType, DamageState>) = own.with(type, state)
+    }
+}
+
 /** the shields of the chosen participant: each tap writes quietly, the one undo bar comes when the editing is done */
 internal class ShieldEditing(
     private val editor: RoundEditor,
@@ -32,25 +55,12 @@ internal class ShieldEditing(
         }
     }
 
-    /** a tap on a shield walks its state on: resistance, immunity, vulnerability, none */
-    fun tap(
+    fun change(
         memberId: Long?,
-        type: DamageType,
-        inherited: Map<DamageType, DamageState>,
-    ) = change(memberId) { own -> own.with(type, nextOwnVulnerability(inherited, own, type)) }
-
-    fun set(
-        memberId: Long?,
-        type: DamageType,
-        state: DamageState?,
-    ) = change(memberId) { own -> own.with(type, state) }
-
-    private fun change(
-        memberId: Long?,
-        next: (Map<DamageType, DamageState>) -> Map<DamageType, DamageState>,
+        change: ShieldChange,
     ) {
         editor.withMember(memberId ?: return) { _, member ->
-            learner.writeOwn(member, next(learner.ownShields(member)))
+            learner.writeOwn(member, change.applyTo(learner.ownShields(member)))
         }
     }
 

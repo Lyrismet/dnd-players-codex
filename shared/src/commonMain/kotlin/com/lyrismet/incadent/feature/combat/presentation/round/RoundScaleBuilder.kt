@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.runtime.Composable
-import com.lyrismet.incadent.feature.combat.domain.forecast.ForecastSource
 import com.lyrismet.incadent.feature.combat.domain.forecast.HitForecast
 import com.lyrismet.incadent.feature.combat.domain.forecast.HitScaleWords
 import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
@@ -13,18 +12,14 @@ import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
-import com.lyrismet.incadent.feature.combat.domain.round.damageTaken
 import com.lyrismet.incadent.feature.combat.domain.round.forecast
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.hp_exact_value
 import incadent.shared.generated.resources.hp_scale_estimate_approx
 import incadent.shared.generated.resources.hp_scale_estimate_at_least
 import incadent.shared.generated.resources.hp_scale_estimate_exact
+import incadent.shared.generated.resources.hp_scale_estimate_exact_max
 import incadent.shared.generated.resources.hp_scale_estimate_unknown
-import incadent.shared.generated.resources.hp_scale_src_exact
-import incadent.shared.generated.resources.hp_scale_src_scale
-import incadent.shared.generated.resources.hp_scale_src_species
-import incadent.shared.generated.resources.hp_scale_src_took
 import org.jetbrains.compose.resources.stringResource
 
 private const val FULL = 1000
@@ -37,7 +32,6 @@ internal fun panelScale(
     seen: List<SpeciesHitObservation>,
 ): PanelScale {
     val forecast = combat.forecast(member, seen)
-    val taken = combat.damageTaken(member)
     val thumb = scaleThumb(combat, member, forecast)
     val near = thumb?.let { place -> stateAtPermille(place) }
     val words =
@@ -47,8 +41,6 @@ internal fun panelScale(
     return PanelScale(
         thumb = thumb,
         words = words,
-        estimate = estimateText(forecast),
-        source = sourceText(forecast, taken),
         exact = (forecast as? HitForecast.Exact)?.let { stringResource(Res.string.hp_exact_value, it.remaining) },
     )
 }
@@ -80,30 +72,12 @@ private fun scaleThumb(
 }
 
 @Composable
-private fun estimateText(forecast: HitForecast): String =
+internal fun estimateText(forecast: HitForecast): String =
     when (forecast) {
-        is HitForecast.Exact -> stringResource(Res.string.hp_scale_estimate_exact, forecast.remaining)
+        is HitForecast.Exact ->
+            forecast.max?.let { stringResource(Res.string.hp_scale_estimate_exact_max, forecast.remaining, it) }
+                ?: stringResource(Res.string.hp_scale_estimate_exact, forecast.remaining)
         is HitForecast.Estimate -> stringResource(Res.string.hp_scale_estimate_approx, forecast.remaining)
         is HitForecast.AtLeast -> stringResource(Res.string.hp_scale_estimate_at_least, forecast.damage + 1)
         HitForecast.Unknown -> stringResource(Res.string.hp_scale_estimate_unknown)
-    }
-
-@Composable
-private fun sourceText(
-    forecast: HitForecast,
-    taken: Int,
-): String =
-    when (forecast) {
-        is HitForecast.Exact -> stringResource(Res.string.hp_scale_src_exact)
-        is HitForecast.Estimate ->
-            stringResource(
-                if (forecast.source == ForecastSource.SPECIES) {
-                    Res.string.hp_scale_src_species
-                } else {
-                    Res.string.hp_scale_src_scale
-                },
-                taken,
-            )
-        is HitForecast.AtLeast -> stringResource(Res.string.hp_scale_src_took, taken)
-        HitForecast.Unknown -> ""
     }

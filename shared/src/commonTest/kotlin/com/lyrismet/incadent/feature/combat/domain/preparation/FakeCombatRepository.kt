@@ -10,7 +10,6 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
-import com.lyrismet.incadent.feature.combat.domain.model.LearnedVulnerability
 import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import kotlinx.coroutines.flow.Flow
@@ -84,8 +83,6 @@ internal class FakeCombatRepository : CombatRepository {
             }
     }
 
-    private val learnedRows = MutableStateFlow<Map<Long, List<LearnedVulnerability>>>(emptyMap())
-
     override suspend fun linkNpc(
         combatantId: Long,
         npcId: Long?,
@@ -106,32 +103,6 @@ internal class FakeCombatRepository : CombatRepository {
                         },
                 )
             }
-    }
-
-    override fun observeLearned(combatId: Long): Flow<List<LearnedVulnerability>> =
-        learnedRows.map { it[combatId].orEmpty() }
-
-    override suspend fun addLearned(
-        combatId: Long,
-        learned: LearnedVulnerability,
-    ) {
-        val rows = learnedRows.value[combatId].orEmpty()
-        if (rows.none { it.speciesId == learned.speciesId && it.type == learned.type }) {
-            learnedRows.value = learnedRows.value + (combatId to rows + learned)
-        }
-    }
-
-    override suspend fun removeLearned(
-        combatId: Long,
-        speciesId: Long,
-        type: DamageType,
-    ) {
-        learnedRows.value =
-            learnedRows.value +
-            (
-                combatId to
-                    learnedRows.value[combatId].orEmpty().filterNot { it.speciesId == speciesId && it.type == type }
-            )
     }
 
     override suspend fun setLabel(
@@ -299,6 +270,9 @@ internal class FakeCombatRepository : CombatRepository {
         customConditions.value += CustomCondition(id, name)
         return id
     }
+
+    override suspend fun getOwnShields(combatantId: Long): Map<DamageType, DamageState>? =
+        combats.value.firstNotNullOfOrNull { c -> c.combatants.firstOrNull { it.id == combatantId } }?.vulnerabilities
 
     override suspend fun setOwnShields(
         combatantId: Long,

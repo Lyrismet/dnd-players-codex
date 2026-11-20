@@ -84,6 +84,7 @@ class CampaignExchangeTest {
             source,
             "bob-origin",
             null,
+            "",
         )
         npcId = database.npcQueries.lastInsertRowId().executeAsOne()
         database.npcLocationQueries.insert(npcId, inn)
@@ -316,6 +317,7 @@ class CampaignExchangeTest {
             source,
             "other-origin",
             null,
+            "",
         )
         val sessionId =
             database.sessionNoteQueries

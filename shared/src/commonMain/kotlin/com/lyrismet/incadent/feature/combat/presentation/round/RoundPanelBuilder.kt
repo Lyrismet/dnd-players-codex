@@ -9,6 +9,7 @@ import com.lyrismet.incadent.feature.combat.domain.forecast.HitForecast
 import com.lyrismet.incadent.feature.combat.domain.forecast.SpeciesHitObservation
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatCondition
+import com.lyrismet.incadent.feature.combat.domain.model.CombatEventKind
 import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
@@ -19,7 +20,6 @@ import com.lyrismet.incadent.feature.combat.domain.round.forecast
 import com.lyrismet.incadent.feature.combat.domain.round.isDown
 import com.lyrismet.incadent.feature.combat.domain.round.isDying
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
-import com.lyrismet.incadent.feature.combat.domain.round.markAt
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_panel_hp_sub
 import incadent.shared.generated.resources.combat_panel_hp_sub_temp
@@ -31,10 +31,8 @@ import incadent.shared.generated.resources.combat_panel_side_fled
 import incadent.shared.generated.resources.combat_panel_side_friend
 import incadent.shared.generated.resources.combat_panel_side_neutral
 import incadent.shared.generated.resources.combat_panel_side_party
-import incadent.shared.generated.resources.combat_panel_source
-import incadent.shared.generated.resources.combat_panel_source_note
 import incadent.shared.generated.resources.combat_round_no_damage
-import incadent.shared.generated.resources.combat_wound_since
+import incadent.shared.generated.resources.hp_exact_value
 import org.jetbrains.compose.resources.stringResource
 
 /** the bottom panel of the chosen participant: how they look, what can be done to them, what they carry */
@@ -43,7 +41,6 @@ internal fun roundPanel(
     combat: Combat,
     member: Combatant,
     role: MemberRole,
-    moverName: String,
     seen: List<SpeciesHitObservation>,
     kin: PanelKin,
     customs: List<CustomCondition>,
@@ -59,9 +56,10 @@ internal fun roundPanel(
         roleLine = if (role.tie == MemberTie.UNNAMED) "" else role.text(),
         link = role.tie.link(),
         side = member.rowSide(),
-        hp = if (tracked) panelHp(member) else null,
+        hp = if (tracked) panelHp(member, kin.hpMaxApprox) else null,
         wound = if (tracked) null else panelWound(combat, member, seen),
         scale = if (!tracked && !member.dead) panelScale(combat, member, seen) else null,
+        typed = typedHpText(combat, member, kin.cardHpMax),
         saves = if (dying) SavesState(member.deathSuccesses, member.deathFailures) else null,
         down =
             if (down && !member.dead) {
@@ -81,7 +79,6 @@ internal fun roundPanel(
         customs = panelCustoms(member, customs),
         more = panelMore(member, party, kin),
         calcModes = calcModesFor(listOf(member)) - CalcMode.SET,
-        sourceNote = stringResource(Res.string.combat_panel_source_note, moverName),
     )
 }
 
@@ -100,7 +97,10 @@ private fun sideLabel(member: Combatant): String {
 }
 
 @Composable
-private fun panelHp(member: Combatant): PanelHp {
+private fun panelHp(
+    member: Combatant,
+    approxMax: Boolean,
+): PanelHp {
     val max = checkNotNull(member.hpMax)
     val caption =
         if (member.tempHp > 0) {
@@ -108,7 +108,7 @@ private fun panelHp(member: Combatant): PanelHp {
         } else {
             stringResource(Res.string.combat_panel_hp_sub)
         }
-    return PanelHp((member.hpCurrent ?: max).toString(), max.toString(), caption)
+    return PanelHp((member.hpCurrent ?: max).toString(), maxText(max, approxMax), caption)
 }
 
 @Composable
@@ -118,31 +118,10 @@ private fun panelWound(
     seen: List<SpeciesHitObservation>,
 ): PanelWound {
     val word = woundWord(member)
-    val mark = combat.markAt(member)
-    val label =
-        if (mark != null &&
-            mark > 0 &&
-            !member.isDown()
-        ) {
-            stringResource(Res.string.combat_wound_since, word.first, mark)
-        } else {
-            word.first
-        }
-    val taken = combat.damageTaken(member)
     val forecast = combat.forecast(member, seen)
-    val sources =
-        listOfNotNull(
-            if (taken > 0) tookText(taken) else stringResource(Res.string.combat_round_no_damage),
-            forecast.takeIf { it != HitForecast.Unknown }?.longText(),
-        )
-    val source =
-        if (sources.size ==
-            2
-        ) {
-            stringResource(Res.string.combat_panel_source, sources[0], sources[1])
-        } else {
-            sources[0]
-        }
+    val label = if (forecast == HitForecast.Unknown) word.first else "${word.first} ${estimateText(forecast)}"
+    val taken = combat.damageTaken(member)
+    val source = if (taken > 0) tookText(taken) else stringResource(Res.string.combat_round_no_damage)
     return PanelWound(label, word.second, source)
 }
 
@@ -179,10 +158,33 @@ private fun panelMore(
 }
 
 /** what a participant is made of in the codex, the vulnerabilities it has now and the naming it still offers */
+@Suppress("LongParameterList")
 internal class PanelKin(
     val species: Species?,
     val npc: Npc?,
     val vulnerabilities: Map<DamageType, DamageState>,
     val naming: NamingState?,
     val identity: IdentityState?,
+    // the party member's maximum is a guess after a level up
+    val hpMaxApprox: Boolean = false,
+    // the maximum on the card of the party member, a fight maximum that differs came from what was typed in it
+    val cardHpMax: Int? = null,
 )
+
+private fun Combat.hasTypedHp(memberId: Long): Boolean =
+    events.any { it.targetId == memberId && it.kind == CombatEventKind.SET }
+
+/** the number typed for an ally whose maximum came from it, the card of the party member holds another one or none */
+@Composable
+private fun typedHpText(
+    combat: Combat,
+    member: Combatant,
+    cardHpMax: Int?,
+): String? {
+    val typedHere = member.hpMax != cardHpMax && combat.hasTypedHp(member.id)
+    return if (member.isTracked() && member.side == CombatSide.PARTY && typedHere) {
+        stringResource(Res.string.hp_exact_value, member.hpCurrent ?: 0)
+    } else {
+        null
+    }
+}

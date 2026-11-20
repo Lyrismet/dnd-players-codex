@@ -58,7 +58,7 @@ enum class CombatCondition(
     SILENCED(ConditionGroup.WEAKENING),
     SLOWED(ConditionGroup.WEAKENING),
 
-    // kept to read old files, a concentration is a mark now and the panel does not offer it as a condition
+    // kept so an old campaign file still decodes, a concentration is a mark now and the panel does not offer it
     CONCENTRATION(ConditionGroup.EFFECT),
     INVISIBLE(ConditionGroup.EFFECT),
     BANISHED(ConditionGroup.EFFECT),
@@ -142,11 +142,4 @@ data class CombatEvent(
     // the number as typed, before the master's words about the hit and the target's resistance
     val raw: Int = 0,
     val scale: HitScale = HitScale.ONE,
-)
-
-/** a resistance a fight wrote into a species, [previous] is what the species had before, null when it had nothing */
-data class LearnedVulnerability(
-    val speciesId: Long,
-    val type: DamageType,
-    val previous: DamageState?,
 )

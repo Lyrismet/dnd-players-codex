@@ -12,6 +12,8 @@ import com.lyrismet.incadent.feature.codex.domain.grouping.decodeFacts
 import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.grouping.encodeFacts
 import com.lyrismet.incadent.feature.codex.domain.grouping.encodeVulnerabilities
+import com.lyrismet.incadent.feature.codex.domain.model.DamageState
+import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
@@ -47,6 +49,23 @@ class NpcRepositoryImpl(
             }
         }
 
+    override suspend fun getVulnerabilities(id: Long): Map<DamageType, DamageState>? =
+        withContext(DatabaseDispatcher) {
+            queries.selectVulnerabilities(id).executeAsOneOrNull()?.let(::decodeVulnerabilities)
+        }
+
+    override suspend fun setVulnerabilities(
+        id: Long,
+        shields: Map<DamageType, DamageState>,
+    ): Boolean =
+        withContext(DatabaseDispatcher) {
+            database.transactionWithResult {
+                val exists = queries.selectVulnerabilities(id).executeAsOneOrNull() != null
+                if (exists) queries.updateVulnerabilities(shields.encodeVulnerabilities(), id)
+                exists
+            }
+        }
+
     // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
     override suspend fun upsert(entity: Npc): Long =
         withContext(DatabaseDispatcher) { database.transactionWithResult { write(entity) } }
@@ -69,7 +88,7 @@ class NpcRepositoryImpl(
             }
         val id =
             if (stored != null) {
-                queries.update(
+                queries.updateWithFacts(
                     entity.name,
                     entity.status,
                     entity.description,
@@ -80,9 +99,9 @@ class NpcRepositoryImpl(
                     entity.nicknames.joinNicknames(),
                     speciesId,
                     entity.vulnerabilities.encodeVulnerabilities(),
+                    entity.facts.encodeFacts(),
                     entity.id,
                 )
-                queries.updateFacts(entity.facts.encodeFacts(), entity.id)
                 database.combatantQueries.syncNpcName(entity.name, entity.id)
                 writePhotoIfChanged(
                     entity.portrait,
@@ -115,8 +134,8 @@ class NpcRepositoryImpl(
                 current.requireId(),
                 npc.originId.orNewOriginId(),
                 npc.portrait?.source,
+                npc.facts.encodeFacts(),
             )
-            queries.updateFacts(npc.facts.encodeFacts(), npc.id)
             return npc.id
         }
         queries.insert(
@@ -135,8 +154,9 @@ class NpcRepositoryImpl(
             current.requireId(),
             npc.originId.orNewOriginId(),
             npc.portrait?.source,
+            npc.facts.encodeFacts(),
         )
-        return queries.lastInsertRowId().executeAsOne().also { queries.updateFacts(npc.facts.encodeFacts(), it) }
+        return queries.lastInsertRowId().executeAsOne()
     }
 
     override suspend fun delete(id: Long) {
