@@ -37,6 +37,7 @@ fun MentionText(
         maxLines = maxLines,
         overflow = overflow,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
         segments.forEach { segment ->

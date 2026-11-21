@@ -21,16 +21,13 @@ import incadent.shared.generated.resources.combat_name_plain
 import incadent.shared.generated.resources.combat_promo_confirm_known
 import incadent.shared.generated.resources.combat_promo_confirm_new
 import incadent.shared.generated.resources.combat_promo_hp
-import incadent.shared.generated.resources.combat_promo_hp_hint
 import incadent.shared.generated.resources.combat_promo_note
-import incadent.shared.generated.resources.combat_promo_note_hint
 import incadent.shared.generated.resources.combat_promo_note_quoted
 import incadent.shared.generated.resources.combat_promo_over_known
 import incadent.shared.generated.resources.combat_promo_over_new
 import incadent.shared.generated.resources.combat_promo_relation
 import incadent.shared.generated.resources.combat_promo_role
 import incadent.shared.generated.resources.combat_promo_species
-import incadent.shared.generated.resources.combat_promo_species_hint
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -137,12 +134,12 @@ private fun promotionRows(
         PromotionRow(
             stringResource(Res.string.combat_promo_species),
             species?.name ?: "-",
-            if (species != null) stringResource(Res.string.combat_promo_species_hint) else "",
+            "",
         ),
         PromotionRow(
             stringResource(Res.string.combat_promo_hp),
             hp.ifEmpty { "-" },
-            if (taken > 0) stringResource(Res.string.combat_promo_hp_hint) else "",
+            "",
         ),
         PromotionRow(
             stringResource(Res.string.combat_promo_relation),
@@ -155,7 +152,7 @@ private fun promotionRows(
         PromotionRow(
             stringResource(Res.string.combat_promo_note),
             if (note.isEmpty()) "-" else stringResource(Res.string.combat_promo_note_quoted, note),
-            if (draft.isNew && note.isNotEmpty()) stringResource(Res.string.combat_promo_note_hint) else "",
+            "",
         ),
     )
 }

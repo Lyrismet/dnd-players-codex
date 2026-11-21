@@ -7,7 +7,6 @@ import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.feature.codex.domain.model.SheetAdjustment
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.me_ac_from_hint
 import incadent.shared.generated.resources.me_adjustment_hint
 import incadent.shared.generated.resources.me_adjustment_note_label
 import incadent.shared.generated.resources.me_adjustment_note_placeholder
@@ -56,5 +55,4 @@ internal fun AdjustmentNote(
         onChange = { send(OverlayEvent.TextChanged(OverlayField.ADJUSTMENT_NOTE, it)) },
         placeholder = stringResource(Res.string.me_adjustment_note_placeholder),
     )
-    Text(stringResource(Res.string.me_ac_from_hint), style = AppText.footnote, color = AppPalette.TextSecondary)
 }

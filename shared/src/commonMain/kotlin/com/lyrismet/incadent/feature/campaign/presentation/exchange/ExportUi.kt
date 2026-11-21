@@ -54,7 +54,6 @@ import incadent.shared.generated.resources.exchange_scope_all
 import incadent.shared.generated.resources.exchange_scope_pick
 import incadent.shared.generated.resources.exchange_sessions_count
 import incadent.shared.generated.resources.exchange_share
-import incadent.shared.generated.resources.exchange_summary_hint
 import incadent.shared.generated.resources.exchange_summary_line
 import incadent.shared.generated.resources.exchange_too_large
 import org.jetbrains.compose.resources.pluralStringResource
@@ -122,8 +121,8 @@ private fun ExportBody(state: ExportState) {
         )
     }
     if (state.whole || !friend) {
-        val hint = if (friend) Res.string.exchange_summary_hint else Res.string.exchange_mode_self_note
-        ExchangeSummary(state.recordCount, state.sessionCount, stringResource(hint))
+        val hint = if (friend) null else stringResource(Res.string.exchange_mode_self_note)
+        ExchangeSummary(state.recordCount, state.sessionCount, hint)
     }
     state.liveFight?.let {
         LiveFightCard(
@@ -227,7 +226,7 @@ private fun deliveryMark(
 internal fun ExchangeSummary(
     records: Int,
     sessions: Int,
-    hint: String,
+    hint: String?,
 ) {
     Column(
         modifier =
@@ -247,10 +246,12 @@ internal fun ExchangeSummary(
             color = AppPalette.TextPrimary,
             style = MaterialTheme.typography.bodyMedium.copy(fontSize = AppFontSize.Medium),
         )
-        Text(
-            text = hint,
-            color = AppPalette.TextSecondary,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small),
-        )
+        if (hint != null) {
+            Text(
+                text = hint,
+                color = AppPalette.TextSecondary,
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.Small),
+            )
+        }
     }
 }

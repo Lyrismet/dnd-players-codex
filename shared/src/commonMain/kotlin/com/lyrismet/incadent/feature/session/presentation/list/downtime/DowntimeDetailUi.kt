@@ -29,7 +29,6 @@ import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.downtime_apply
 import incadent.shared.generated.resources.downtime_delete
 import incadent.shared.generated.resources.downtime_detail_empty
-import incadent.shared.generated.resources.downtime_detail_subtitle
 import incadent.shared.generated.resources.downtime_edit
 import incadent.shared.generated.resources.downtime_field_did
 import incadent.shared.generated.resources.downtime_field_gained
@@ -55,7 +54,6 @@ internal fun DowntimeDetailSheet(
                 overline = gapText(card.afterLabel, card.nextLabel).uppercase(),
                 overlineColor = AppPalette.Parchment,
                 title = stringResource(Res.string.downtime_title),
-                subtitle = stringResource(Res.string.downtime_detail_subtitle),
                 onClose = dismiss,
             )
         }) {

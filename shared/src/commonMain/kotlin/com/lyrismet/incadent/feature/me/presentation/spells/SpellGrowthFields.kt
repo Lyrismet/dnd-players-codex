@@ -44,7 +44,6 @@ import incadent.shared.generated.resources.me_spells_growth_pick_title
 import incadent.shared.generated.resources.me_spells_growth_projectiles
 import incadent.shared.generated.resources.me_spells_growth_projectiles_hint
 import incadent.shared.generated.resources.me_spells_growth_range
-import incadent.shared.generated.resources.me_spells_growth_range_hint
 import incadent.shared.generated.resources.me_spells_growth_spell
 import incadent.shared.generated.resources.me_spells_growth_spell_hint
 import incadent.shared.generated.resources.me_spells_growth_targets
@@ -69,17 +68,17 @@ internal fun growthTargetLabel(target: GrowthTarget): String =
     )
 
 @Composable
-private fun growthTargetHint(target: GrowthTarget): String =
-    stringResource(
+private fun growthTargetHint(target: GrowthTarget): String? =
+    (
         when (target) {
             GrowthTarget.DICE -> Res.string.me_spells_growth_dice_hint
             GrowthTarget.PROJECTILES -> Res.string.me_spells_growth_projectiles_hint
             GrowthTarget.DURATION -> Res.string.me_spells_growth_duration_hint
             GrowthTarget.TARGETS -> Res.string.me_spells_growth_targets_hint
-            GrowthTarget.RANGE -> Res.string.me_spells_growth_range_hint
+            GrowthTarget.RANGE -> null
             GrowthTarget.CUSTOM -> Res.string.me_spells_growth_custom_hint
-        },
-    )
+        }
+    )?.let { stringResource(it) }
 
 /** the upcasting block of the form - a cantrip grows with the level, a spell by rules over the slot circle */
 @Composable

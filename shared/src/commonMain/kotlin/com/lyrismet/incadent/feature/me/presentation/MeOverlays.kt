@@ -41,7 +41,6 @@ import incadent.shared.generated.resources.help_ac_body
 import incadent.shared.generated.resources.help_ac_title
 import incadent.shared.generated.resources.me_ability_hint
 import incadent.shared.generated.resources.me_ability_overline
-import incadent.shared.generated.resources.me_ac_from_hint
 import incadent.shared.generated.resources.me_ac_from_label
 import incadent.shared.generated.resources.me_ac_from_placeholder
 import incadent.shared.generated.resources.me_ac_title
@@ -263,7 +262,6 @@ private fun ArmorClassSheet(
             onChange = { send(OverlayEvent.TextChanged(OverlayField.ARMOR_CLASS_FROM, it)) },
             placeholder = stringResource(Res.string.me_ac_from_placeholder),
         )
-        Text(stringResource(Res.string.me_ac_from_hint), style = AppText.footnote, color = AppPalette.TextSecondary)
     }
 }
 

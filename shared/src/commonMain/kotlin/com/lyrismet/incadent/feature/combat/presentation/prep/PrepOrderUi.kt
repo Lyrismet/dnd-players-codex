@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,7 +41,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
-import com.lyrismet.incadent.core.designsystem.AppLineHeight
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
 import com.lyrismet.incadent.core.designsystem.centeredLine
@@ -62,7 +62,6 @@ import com.lyrismet.incadent.feature.combat.domain.round.QueueStatus
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_list_reset
 import incadent.shared.generated.resources.combat_prep_order_header
-import incadent.shared.generated.resources.combat_prep_order_hint
 import incadent.shared.generated.resources.combat_prep_queue_goto
 import incadent.shared.generated.resources.combat_prep_queue_help_body
 import incadent.shared.generated.resources.combat_prep_queue_help_clear
@@ -191,13 +190,7 @@ internal fun PrepOrderSection(
         )
     }
     Row(modifier = Modifier.fillMaxWidth().pullUp(HINT_PULL), verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = stringResource(Res.string.combat_prep_order_hint),
-            color = AppPalette.TextSecondary,
-            fontSize = AppFontSize.SmallPlus,
-            lineHeight = AppLineHeight.Row,
-            modifier = Modifier.weight(1f).padding(start = 4.dp),
-        )
+        Spacer(Modifier.weight(1f))
         QueueHelpHint()
     }
     rows.forEach { row -> OrderRow(row) { onEvent(CombatPrepEvent.OrderTapped(row.memberId)) } }

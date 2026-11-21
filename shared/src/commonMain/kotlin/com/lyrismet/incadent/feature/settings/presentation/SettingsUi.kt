@@ -77,7 +77,6 @@ import incadent.shared.generated.resources.settings_mention_filled
 import incadent.shared.generated.resources.settings_mention_title
 import incadent.shared.generated.resources.settings_mention_underline
 import incadent.shared.generated.resources.settings_numbering_arabic
-import incadent.shared.generated.resources.settings_numbering_desc
 import incadent.shared.generated.resources.settings_numbering_roman
 import incadent.shared.generated.resources.settings_numbering_title
 import incadent.shared.generated.resources.settings_phrases_summary_format
@@ -219,7 +218,6 @@ private fun DiarySection(
     SettingsGroup(overline = stringResource(Res.string.settings_section_diary), topSpacing = 12.dp) {
         ChoiceRow(
             title = stringResource(Res.string.settings_numbering_title),
-            description = stringResource(Res.string.settings_numbering_desc),
             choices =
                 listOf(
                     SegmentedTab(SessionNumbering.ROMAN, stringResource(Res.string.settings_numbering_roman)),
@@ -316,7 +314,7 @@ internal fun SettingsGroup(
 @Composable
 internal fun <T> ChoiceRow(
     title: String,
-    description: String,
+    description: String? = null,
     choices: List<SegmentedTab<T>>,
     selected: T,
     onSelected: (T) -> Unit,

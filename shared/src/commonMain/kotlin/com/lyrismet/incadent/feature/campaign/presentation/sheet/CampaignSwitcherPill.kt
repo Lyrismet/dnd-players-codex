@@ -17,7 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
@@ -26,7 +25,6 @@ import com.lyrismet.incadent.core.designsystem.component.AppNoticeBar
 import com.lyrismet.incadent.core.designsystem.component.AppTriangle
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.campaign_archive_banner_text
 import incadent.shared.generated.resources.campaign_archive_banner_title
 import incadent.shared.generated.resources.campaign_resume
 import org.jetbrains.compose.resources.stringResource
@@ -91,12 +89,6 @@ fun AppArchiveBanner(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.14.em,
                     ),
-            )
-            Text(
-                text = stringResource(Res.string.campaign_archive_banner_text),
-                modifier = Modifier.padding(top = 2.dp),
-                color = AppPalette.TextMuted,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = AppFontSize.SmallPlus, lineHeight = 18.sp),
             )
         }
         AppButton(text = stringResource(Res.string.campaign_resume), onClick = onResume)
