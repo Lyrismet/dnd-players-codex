@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.campaign.presentation.exchange
 
+import com.lyrismet.incadent.core.analytics.AnalyticsTracker
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignExchangeRepository
@@ -26,6 +27,7 @@ class ImportPresenterFactory(
     private val campaigns: CampaignRepository,
     private val source: ImportSource,
     private val preferences: AppPreferencesRepository,
+    private val analytics: AnalyticsTracker,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -33,7 +35,7 @@ class ImportPresenterFactory(
         context: CircuitContext,
     ): Presenter<*>? =
         when (screen) {
-            is ImportScreen -> ImportPresenter(repository, campaigns, source, navigator, preferences)
+            is ImportScreen -> ImportPresenter(repository, campaigns, source, navigator, preferences, analytics)
             else -> null
         }
 }

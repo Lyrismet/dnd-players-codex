@@ -7,6 +7,7 @@ import com.lyrismet.incadent.core.preferences.SettingsFactory
 import com.lyrismet.incadent.di.AppGraph
 import com.lyrismet.incadent.di.createAppGraph
 import com.lyrismet.incadent.persistence.DatabaseDriverFactory
+import com.lyrismet.incadent.telemetry.Telemetry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,11 +22,14 @@ class IncadentApplication : Application() {
 
     private val lazyGraph =
         lazy {
+            val telemetry = Telemetry.create(applicationContext)
             createAppGraph(
                 DatabaseDriverFactory(applicationContext),
                 SettingsFactory(applicationContext),
                 FileStorage(applicationContext),
                 AppVersionReader(applicationContext),
+                telemetry.analytics,
+                telemetry.crashReporter,
             )
         }
 

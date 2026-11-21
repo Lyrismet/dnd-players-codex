@@ -5,6 +5,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.lyrismet.incadent.core.analytics.AnalyticsTracker
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.localization.currentAppLanguage
@@ -56,6 +57,7 @@ class CombatPrepPresenter(
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
     private val undoController: UndoController,
+    private val analytics: AnalyticsTracker,
 ) : Presenter<CombatPrepState> {
     private val editLock = Mutex()
 
@@ -126,7 +128,8 @@ class CombatPrepPresenter(
                 editLock,
             ) { block -> scope.launch { block() } }
         val formHost = FoeFormHost(formController, formTarget, editor, imageCompressor)
-        val actions = PrepActions(editor, navigator, search, hpPad, exitConfirmVisible, onCreate = formHost::open)
+        val actions =
+            PrepActions(editor, navigator, analytics, search, hpPad, exitConfirmVisible, onCreate = formHost::open)
         val ownHp = ownCharacterHp(party)
         val snapshot =
             PrepSnapshot(

@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.di
 
+import com.lyrismet.incadent.core.analytics.AnalyticsTracker
+import com.lyrismet.incadent.core.analytics.CrashReporter
 import com.lyrismet.incadent.core.appinfo.AppVersion
 import com.lyrismet.incadent.core.file.FileStorage
 import com.lyrismet.incadent.core.file.ImportSource
@@ -28,14 +30,18 @@ interface AppGraph {
     val importSource: ImportSource
     val swipeHintReplayController: SwipeHintReplayController
     val appVersion: AppVersion
+    val analytics: AnalyticsTracker
 
     @DependencyGraph.Factory
     fun interface Factory {
+        @Suppress("LongParameterList")
         fun create(
             @Provides settings: ObservableSettings,
             @Provides databaseDriverFactory: DatabaseDriverFactory,
             @Provides fileStorage: FileStorage,
             @Provides appVersion: AppVersion,
+            @Provides analytics: AnalyticsTracker,
+            @Provides crashReporter: CrashReporter,
         ): AppGraph
     }
 }

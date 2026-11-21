@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
 import com.lyrismet.incadent.core.designsystem.AppTheme
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.localization.AppEnvironment
@@ -80,6 +81,7 @@ fun App(
                 CompositionLocalProvider(
                     LocalMentionStyle provides mentionStyle,
                     LocalOverlayNavigator provides overlay,
+                    LocalAnalyticsTracker provides graph.analytics,
                 ) {
                     AppTheme {
                         Box(modifier = Modifier.fillMaxSize()) {

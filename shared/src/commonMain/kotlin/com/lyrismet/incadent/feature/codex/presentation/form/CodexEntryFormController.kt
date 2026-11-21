@@ -6,6 +6,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.lyrismet.incadent.core.analytics.AnalyticsEvent
+import com.lyrismet.incadent.core.analytics.AnalyticsTracker
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
 import com.lyrismet.incadent.core.designsystem.component.FormChipOption
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.core.localization.currentAppLanguage
@@ -101,6 +104,7 @@ class CodexEntryFormController private constructor(
     // the first character a campaign gets is the player's own, so the form opens on the owner tab for it
     private val hasPlayerCharacter: Boolean,
     private val npcMerge: NpcFormMerge,
+    private val analytics: AnalyticsTracker,
 ) {
     private val creatureTypes = CreatureTypeFormEditor(fields, speciesRepository)
 
@@ -132,6 +136,7 @@ class CodexEntryFormController private constructor(
             val baseline = rememberRetained { mutableStateOf<CodexEntryFormFields?>(null) }
             val discardPrompt = rememberRetained { mutableStateOf(false) }
             val pendingSpecies = rememberRetained { mutableStateOf<Deferred<Long>?>(null) }
+            val analytics = LocalAnalyticsTracker.current
             return CodexEntryFormController(
                 fields,
                 baseline,
@@ -146,6 +151,7 @@ class CodexEntryFormController private constructor(
                 playerCharacterLevel,
                 hasPlayerCharacter,
                 NpcFormMerge(npcRepository, npcMerge, undoController, ::npcMergeTexts),
+                analytics,
             )
         }
     }
@@ -601,7 +607,9 @@ class CodexEntryFormController private constructor(
         onClosed()
         scope.launch {
             val form = created?.let { current.copy(npcSpeciesId = it.await()) } ?: current
-            onSaved(form.type, persister.save(form.withDefaultClass()))
+            val id = persister.save(form.withDefaultClass())
+            if (form.editingRef == null) analytics.track(AnalyticsEvent.RecordCreated(form.type))
+            onSaved(form.type, id)
         }
     }
 

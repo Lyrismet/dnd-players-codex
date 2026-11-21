@@ -1,7 +1,11 @@
 package com.lyrismet.incadent.di
 
+import com.lyrismet.incadent.core.analytics.AnalyticsEvent
+import com.lyrismet.incadent.core.analytics.AnalyticsTracker
 import com.slack.circuit.foundation.Circuit
+import com.slack.circuit.foundation.EventListener
 import com.slack.circuit.runtime.presenter.Presenter
+import com.slack.circuit.runtime.screen.Screen
 import com.slack.circuit.runtime.ui.Ui
 import com.slack.circuit.serialization.CircuitSerializerRegistration
 import com.slack.circuit.serialization.SerializableCircuitSaver
@@ -21,11 +25,23 @@ object CircuitBindings {
         presenterFactories: Set<Presenter.Factory>,
         uiFactories: Set<Ui.Factory>,
         screenRegistrations: Set<CircuitSerializerRegistration>,
+        analytics: AnalyticsTracker,
     ): Circuit =
         Circuit
             .Builder()
             .addPresenterFactories(presenterFactories)
             .addUiFactories(uiFactories)
             .setCircuitSaver(SerializableCircuitSaver(screenRegistrations.toList()))
+            .eventListenerFactory { screen, _ -> ScreenViewListener(screen, analytics) }
             .build()
+}
+
+/** reports a screen view when a screen starts, by the screen type so no argument reaches analytics */
+private class ScreenViewListener(
+    private val screen: Screen,
+    private val analytics: AnalyticsTracker,
+) : EventListener {
+    override fun onStartPresent() {
+        analytics.track(AnalyticsEvent.ScreenView(screen::class.simpleName.orEmpty()))
+    }
 }

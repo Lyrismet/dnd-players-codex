@@ -8,6 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import com.lyrismet.incadent.core.analytics.AnalyticsEvent
+import com.lyrismet.incadent.core.analytics.AnalyticsTracker
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
@@ -37,6 +39,7 @@ class ImportPresenter(
     private val source: ImportSource,
     private val navigator: Navigator,
     private val preferences: AppPreferencesRepository,
+    private val analytics: AnalyticsTracker,
 ) : Presenter<ImportState> {
     // one flat merge of the import's steps and events, splitting it would only move the vars around
     @Suppress("CyclomaticComplexMethod", "LongMethod")
@@ -113,6 +116,7 @@ class ImportPresenter(
                 step =
                     attempt({ ImportStep.Failed(it) }) {
                         val result = repository.import(picked, import)
+                        analytics.track(AnalyticsEvent.CampaignImported)
                         // new characters may have come in, so the banner asking for the player's own can return
                         if (result.partyAdded > 0) preferences.setMeBannerHidden(result.campaignId, false)
                         if (target is ImportTarget.NewCampaign) {
