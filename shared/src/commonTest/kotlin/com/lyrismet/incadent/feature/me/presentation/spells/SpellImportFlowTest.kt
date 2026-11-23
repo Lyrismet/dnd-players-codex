@@ -117,7 +117,7 @@ class SpellImportFlowTest {
             assertEquals("https://dnd.su/spells/1-x/", sheet.link)
             assertEquals(ImportPhase.Failed(SpellImportFailure.OFFLINE), sheet.phase)
             assertNull(ui.importHint)
-            assertTrue(tracker.events.isEmpty())
+            assertEquals(listOf<AnalyticsEvent>(AnalyticsEvent.SpellImportFailed("offline")), tracker.events)
         }
 
     @Test

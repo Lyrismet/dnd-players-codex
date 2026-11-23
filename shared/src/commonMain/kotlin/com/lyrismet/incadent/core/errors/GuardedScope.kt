@@ -6,7 +6,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import com.lyrismet.incadent.core.logging.AppLog
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.error_action_failed
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -24,7 +23,7 @@ fun rememberGuardedScope(onFailure: (Throwable) -> Unit = {}): CoroutineScope {
     val base =
         rememberCoroutineScope {
             CoroutineExceptionHandler { _, failure ->
-                AppLog.error(LOG_COMPONENT, "an action failed", failure)
+                AppErrors.report(LOG_COMPONENT, "an action failed", failure)
                 latest.value(failure)
             }
         }

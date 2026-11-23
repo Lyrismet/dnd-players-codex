@@ -61,8 +61,10 @@ internal class SpellImportFlow(
                         ui.importHint = ImportHint(result.spell.source.siteName, result.spell.dice)
                         deps.analytics.track(AnalyticsEvent.SpellImported(result.spell.source.analyticsKey))
                     }
-                    is SpellImportResult.Failed ->
+                    is SpellImportResult.Failed -> {
                         ui.importSheet = ui.importSheet?.copy(phase = ImportPhase.Failed(result.failure))
+                        deps.analytics.track(AnalyticsEvent.SpellImportFailed(result.failure.name.lowercase()))
+                    }
                 }
             }
     }

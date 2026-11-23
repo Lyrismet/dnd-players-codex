@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.codex.data.remote
 
+import com.lyrismet.incadent.core.errors.AppErrors
 import com.lyrismet.incadent.feature.codex.data.remote.spellimport.AllowedHosts
 import com.lyrismet.incadent.feature.codex.data.remote.spellimport.LinkParse
 import com.lyrismet.incadent.feature.codex.data.remote.spellimport.SpellRequest
@@ -26,6 +27,11 @@ import kotlinx.io.readByteArray
 private const val MAX_BYTES = 1_000_000L
 private const val MAX_REDIRECTS = 3
 private val REDIRECTS = HttpStatusCode.MultipleChoices.value until HttpStatusCode.BadRequest.value
+
+private class UnreadablePageException(
+    site: String,
+) : Exception("the page of $site has no spell the readers know")
+
 private val Origin = Regex("^(https://[^/?#]+)")
 
 /** fetches the page or the api answer of a known site over https and reads the spell out of it */
@@ -49,9 +55,16 @@ class KtorSpellImporter(
                     request.format,
                     fetched.text,
                 )?.let { SpellImportResult.Imported(it.copy(source = request.source)) }
-                    ?: failed(SpellImportFailure.UNREADABLE)
+                    ?: unreadable(request)
             is Fetched.Failure -> failed(fetched.failure)
         }
+
+    // a page the readers cannot make a spell of means a site changed its markup, the one failure worth reporting
+    private fun unreadable(request: SpellRequest): SpellImportResult {
+        val site = request.source.siteName
+        AppErrors.report("SpellImport", "a page of $site could not be read", UnreadablePageException(site))
+        return failed(SpellImportFailure.UNREADABLE)
+    }
 
     // no connection, a refused or a timed out request all read the same to the player
     @Suppress("TooGenericExceptionCaught", "SwallowedException")

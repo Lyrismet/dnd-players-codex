@@ -1,7 +1,7 @@
 package com.lyrismet.incadent.core.undo
 
 import com.lyrismet.incadent.core.coroutines.AppCoroutineScope
-import com.lyrismet.incadent.core.logging.AppLog
+import com.lyrismet.incadent.core.errors.AppErrors
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -113,7 +113,7 @@ class UndoController(
         scope.launch {
             runCatching { action.onUndo() }.onFailure { failure ->
                 if (failure is CancellationException) throw failure
-                AppLog.error(LOG_COMPONENT, "undo failed", failure)
+                AppErrors.report(LOG_COMPONENT, "undo failed", failure)
             }
         }
     }

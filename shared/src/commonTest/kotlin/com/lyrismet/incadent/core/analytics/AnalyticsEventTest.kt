@@ -28,6 +28,14 @@ class AnalyticsEventTest {
     }
 
     @Test
+    fun `spell import failure carries the kind and nothing else`() {
+        val event = AnalyticsEvent.SpellImportFailed("unreadable")
+
+        assertEquals("spell_import_failed", event.name)
+        assertEquals(mapOf("failure" to "unreadable"), event.params)
+    }
+
+    @Test
     fun `events without details have no params`() {
         assertTrue(AnalyticsEvent.CombatStarted.params.isEmpty())
         assertEquals("campaign_exported", AnalyticsEvent.CampaignExported.name)

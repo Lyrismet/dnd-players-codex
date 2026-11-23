@@ -10,8 +10,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.analytics.AnalyticsEvent
 import com.lyrismet.incadent.core.analytics.AnalyticsTracker
+import com.lyrismet.incadent.core.errors.AppErrors
 import com.lyrismet.incadent.core.file.ImportSource
-import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.feature.campaign.domain.model.ConflictMode
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportMode
@@ -221,7 +221,7 @@ class ImportPresenter(
         } catch (
             @Suppress("TooGenericExceptionCaught") failure: Exception,
         ) {
-            AppLog.error(LOG_COMPONENT, "the file could not be imported", failure)
+            AppErrors.report(LOG_COMPONENT, "the file could not be imported", failure)
             failed(ImportFailure.Unreadable)
         }
 }

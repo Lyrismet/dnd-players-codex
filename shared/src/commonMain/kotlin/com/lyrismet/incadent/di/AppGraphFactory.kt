@@ -5,6 +5,7 @@ import com.lyrismet.incadent.core.analytics.CrashReporter
 import com.lyrismet.incadent.core.analytics.NoOpAnalyticsTracker
 import com.lyrismet.incadent.core.analytics.NoOpCrashReporter
 import com.lyrismet.incadent.core.appinfo.AppVersionReader
+import com.lyrismet.incadent.core.errors.AppErrors
 import com.lyrismet.incadent.core.file.FileStorage
 import com.lyrismet.incadent.core.preferences.SettingsFactory
 import com.lyrismet.incadent.persistence.DatabaseDriverFactory
@@ -19,8 +20,9 @@ fun createAppGraph(
     appVersionReader: AppVersionReader,
     analytics: AnalyticsTracker = NoOpAnalyticsTracker,
     crashReporter: CrashReporter = NoOpCrashReporter,
-): AppGraph =
-    createGraphFactory<AppGraph.Factory>()
+): AppGraph {
+    AppErrors.install(crashReporter)
+    return createGraphFactory<AppGraph.Factory>()
         .create(
             settingsFactory.createSettings(),
             databaseDriverFactory,
@@ -29,3 +31,4 @@ fun createAppGraph(
             analytics,
             crashReporter,
         )
+}

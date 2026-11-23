@@ -29,6 +29,14 @@ sealed interface AnalyticsEvent {
         override val params = mapOf("source" to source)
     }
 
+    /** [failure] is the kind of the failure, never the link */
+    data class SpellImportFailed(
+        val failure: String,
+    ) : AnalyticsEvent {
+        override val name = "spell_import_failed"
+        override val params = mapOf("failure" to failure)
+    }
+
     data object CombatStarted : AnalyticsEvent {
         override val name = "combat_started"
     }
