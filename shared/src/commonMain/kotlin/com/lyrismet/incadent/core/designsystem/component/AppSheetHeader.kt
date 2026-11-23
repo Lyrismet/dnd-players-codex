@@ -33,6 +33,7 @@ fun AppSheetHeader(
     intro: String? = null,
     closeSize: Dp = 40.dp,
     overlineTrailing: (@Composable () -> Unit)? = null,
+    closeLeading: (@Composable () -> Unit)? = null,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
@@ -61,7 +62,17 @@ fun AppSheetHeader(
                     )
                 }
             }
-            SheetCloseButton(onClick = onClose, size = closeSize)
+            if (closeLeading == null) {
+                SheetCloseButton(onClick = onClose, size = closeSize)
+            } else {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    closeLeading()
+                    SheetCloseButton(onClick = onClose, size = closeSize)
+                }
+            }
         }
         if (intro != null) {
             Text(intro, style = MaterialTheme.typography.bodyMedium, color = AppPalette.TextMuted)
@@ -81,6 +92,7 @@ fun AppSheetHeader(
     intro: String? = null,
     closeSize: Dp = 40.dp,
     overlineTrailing: (@Composable () -> Unit)? = null,
+    closeLeading: (@Composable () -> Unit)? = null,
 ) {
     AppSheetHeader(
         AnnotatedString(title),
@@ -92,5 +104,6 @@ fun AppSheetHeader(
         intro,
         closeSize,
         overlineTrailing,
+        closeLeading,
     )
 }

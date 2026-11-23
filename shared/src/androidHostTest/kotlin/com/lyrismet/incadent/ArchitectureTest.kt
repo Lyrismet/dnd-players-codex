@@ -134,6 +134,18 @@ class ArchitectureTest {
     }
 
     @Test
+    fun `only a data package talks to the network`() =
+        assertNoViolations(
+            "the ktor client may only be imported by a feature data package",
+            all.filter { it.layer != "data" }.flatMap { source ->
+                source.file
+                    .readLines()
+                    .filter { it.startsWith("import io.ktor.") }
+                    .map { "${source.name} (${source.pkg.joinToString(".")}) has $it" }
+            },
+        )
+
+    @Test
     fun `a data package stays inside its own feature`() =
         assertNoViolations(
             "feature data must not import another feature's data or any presentation",

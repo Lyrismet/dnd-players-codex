@@ -59,6 +59,7 @@ kotlin {
             implementation(libs.compose.uiTooling)
             implementation(libs.sqldelight.android.driver)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -70,6 +71,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
 
             implementation(libs.kermit)
+            implementation(libs.ktor.client.core)
             implementation(libs.reorderable)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
@@ -89,6 +91,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.multiplatform.settings.test)
             implementation(libs.turbine)
+            implementation(libs.ktor.client.mock)
         }
         // real SQL against an in-memory JDBC database, the iOS and device builds use the native drivers instead
         getByName("androidHostTest").dependencies {
@@ -96,6 +99,7 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.native.driver)
+            implementation(libs.ktor.client.darwin)
         }
     }
 }

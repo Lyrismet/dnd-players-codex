@@ -9,6 +9,7 @@ import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.NpcMergeRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.CombatRepository
 import com.lyrismet.incadent.feature.combat.domain.repository.HitObservationRepository
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellImportDeps
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.CircuitContext
@@ -41,6 +42,7 @@ class CombatRoundPresenterFactory(
     private val spellRepository: CharacterSpellRepository,
     private val resourceRepository: CharacterResourceRepository,
     private val sheetRepository: CharacterSheetRepository,
+    private val spellImport: SpellImportDeps,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -60,7 +62,7 @@ class CombatRoundPresenterFactory(
                     hitObservationRepository,
                     imageCompressor,
                     undoController,
-                    MagicSources(spellRepository, resourceRepository, sheetRepository),
+                    MagicSources(spellRepository, resourceRepository, sheetRepository, spellImport),
                 )
             else -> null
         }

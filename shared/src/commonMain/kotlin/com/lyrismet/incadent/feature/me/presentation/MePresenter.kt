@@ -31,6 +31,7 @@ import com.lyrismet.incadent.feature.codex.presentation.item.ItemsController
 import com.lyrismet.incadent.feature.codex.presentation.item.rememberItemsController
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPicker
 import com.lyrismet.incadent.feature.me.domain.abilityStrips
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellImportDeps
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsHandler
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
@@ -54,6 +55,7 @@ internal class MePresenter(
     private val sessionEntryRepository: SessionEntryRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val spellImport: SpellImportDeps,
 ) : Presenter<MeState> {
     private val picker = PlayerCharacterPicker(partyRepository, appPreferencesRepository)
 
@@ -146,6 +148,7 @@ internal class MePresenter(
                     resourceRepository,
                     spellRepository,
                     undoController,
+                    spellImport,
                     onHoldTipSeen = { appPreferencesRepository.setHoldHintState(HoldHintState.SEEN) },
                 )
             }

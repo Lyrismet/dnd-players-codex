@@ -20,6 +20,7 @@ internal fun SpellSheets(
     // the full form closes the card under it, a block sheet leaves it open
     if (card != null && (draft == null || state.block != null)) SpellCardSheet(card, state, send)
     if (draft != null) SpellEditSheet(draft, state, send)
+    state.importSheet?.let { SpellImportSheet(it, send) }
 }
 
 @Composable

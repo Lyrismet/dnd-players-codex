@@ -2098,4 +2098,22 @@
     <string name="session_list_edit_add_past">+ Session</string>
     <string name="session_list_edit_between_format">+ Between sessions %1$s and %2$s</string>
     <string name="session_list_edit_handle_description">Move the session</string>
+    <string name="me_spells_import_button">Import by link</string>
+    <string name="me_spells_import_title">Import by link</string>
+    <string name="me_spells_import_link">Link</string>
+    <string name="me_spells_import_link_hint">Paste a link to a spell</string>
+    <string name="me_spells_import_paste">Paste</string>
+    <string name="me_spells_import_clear">✕</string>
+    <string name="me_spells_import_sites">Works with links from</string>
+    <string name="me_spells_import_language_en">EN</string>
+    <string name="me_spells_import_device_note">Your device loads the page, straight from the site</string>
+    <string name="me_spells_import_submit">Import</string>
+    <string name="me_spells_import_manual">Create manually</string>
+    <string name="me_spells_import_error_unsupported">This site is not supported</string>
+    <string name="me_spells_import_error_offline">No internet connection</string>
+    <string name="me_spells_import_error_not_found">There is no spell at this link</string>
+    <string name="me_spells_import_error_unreadable">Could not read the page</string>
+    <string name="me_spells_import_hint">Imported from %1$s. Check the damage and the growth and set them yourself</string>
+    <string name="me_spells_import_hint_dice">The description mentions damage dice: %1$s</string>
+    <string name="me_spells_import_hint_dismiss">Got it</string>
 </resources>

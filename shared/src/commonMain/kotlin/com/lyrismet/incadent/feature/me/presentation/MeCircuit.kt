@@ -11,6 +11,7 @@ import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepos
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSpellRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
 import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellImportDeps
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.CircuitContext
@@ -45,6 +46,7 @@ class MePresenterFactory(
     private val sessionEntryRepository: SessionEntryRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val spellImport: SpellImportDeps,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -67,6 +69,7 @@ class MePresenterFactory(
                     sessionEntryRepository,
                     undoController,
                     appPreferencesRepository,
+                    spellImport,
                 )
             else -> null
         }

@@ -57,6 +57,7 @@ internal fun SpellEditSheet(
                 AppSheetHeader(
                     title = stringResource(editTitle(block, isNew)),
                     onClose = close,
+                    closeLeading = importButtonOf(isNew && block == null && !state.readOnly, send),
                     overline =
                         if (block ==
                             null
@@ -69,7 +70,7 @@ internal fun SpellEditSheet(
             },
         ) {
             if (block == null) {
-                WholeForm(spell, state, change)
+                WholeForm(spell, state, send, change)
             } else {
                 BlockForm(block, spell, state, change)
             }
@@ -103,6 +104,17 @@ internal fun SpellEditSheet(
     }
 }
 
+// only the form of a new spell has the button that imports one by its link
+private fun importButtonOf(
+    shown: Boolean,
+    send: (SpellsEvent) -> Unit,
+): (@Composable () -> Unit)? =
+    if (shown) {
+        { SpellImportButton { send(SpellsEvent.ImportOpened) } }
+    } else {
+        null
+    }
+
 private fun editTitle(
     block: SpellBlock?,
     isNew: Boolean,
@@ -122,8 +134,10 @@ private fun editTitle(
 private fun WholeForm(
     spell: CharacterSpell,
     state: SpellsBlockState,
+    send: (SpellsEvent) -> Unit,
     change: (CharacterSpell) -> Unit,
 ) {
+    state.importHint?.let { SpellImportHint(it) { send(SpellsEvent.ImportHintDismissed) } }
     NameFields(spell, change)
     CastTimeFields(spell, change)
     RangeFields(spell, change)

@@ -21,6 +21,14 @@ sealed interface AnalyticsEvent {
         override val params = mapOf("kind" to kind.name.lowercase())
     }
 
+    /** [source] is the key of the site the spell came from, the link and the name of the spell are not reported */
+    data class SpellImported(
+        val source: String,
+    ) : AnalyticsEvent {
+        override val name = "spell_imported"
+        override val params = mapOf("source" to source)
+    }
+
     data object CombatStarted : AnalyticsEvent {
         override val name = "combat_started"
     }

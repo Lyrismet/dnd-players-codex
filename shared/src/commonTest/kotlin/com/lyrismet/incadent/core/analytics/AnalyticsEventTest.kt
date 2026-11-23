@@ -20,6 +20,14 @@ class AnalyticsEventTest {
     }
 
     @Test
+    fun `spell import carries the source key and nothing else`() {
+        val event = AnalyticsEvent.SpellImported("dnd_su")
+
+        assertEquals("spell_imported", event.name)
+        assertEquals(mapOf("source" to "dnd_su"), event.params)
+    }
+
+    @Test
     fun `events without details have no params`() {
         assertTrue(AnalyticsEvent.CombatStarted.params.isEmpty())
         assertEquals("campaign_exported", AnalyticsEvent.CampaignExported.name)

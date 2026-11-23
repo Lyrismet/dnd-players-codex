@@ -118,6 +118,8 @@ private fun spellsState(
         block = ui.block,
         descriptionDraft = ui.descriptionDraft,
         tilesEditable = true,
+        importSheet = ui.importSheet,
+        importHint = ui.importHint,
     )
 }
 

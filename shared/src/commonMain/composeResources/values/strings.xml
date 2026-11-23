@@ -2313,4 +2313,22 @@
     <string name="session_list_edit_add_past">+ Сессия</string>
     <string name="session_list_edit_between_format">+ Между сессиями %1$s и %2$s</string>
     <string name="session_list_edit_handle_description">Перенести сессию</string>
+    <string name="me_spells_import_button">Импорт по ссылке</string>
+    <string name="me_spells_import_title">Импорт по ссылке</string>
+    <string name="me_spells_import_link">Ссылка</string>
+    <string name="me_spells_import_link_hint">Вставьте ссылку на заклинание</string>
+    <string name="me_spells_import_paste">Вставить</string>
+    <string name="me_spells_import_clear">✕</string>
+    <string name="me_spells_import_sites">Подходят ссылки с</string>
+    <string name="me_spells_import_language_en">EN</string>
+    <string name="me_spells_import_device_note">Страницу загружает ваше устройство, напрямую с сайта</string>
+    <string name="me_spells_import_submit">Импортировать</string>
+    <string name="me_spells_import_manual">Создать вручную</string>
+    <string name="me_spells_import_error_unsupported">Этот сайт не поддерживается</string>
+    <string name="me_spells_import_error_offline">Нет соединения с интернетом</string>
+    <string name="me_spells_import_error_not_found">По этой ссылке заклинания нет</string>
+    <string name="me_spells_import_error_unreadable">Не удалось разобрать страницу</string>
+    <string name="me_spells_import_hint">Импортировано с %1$s. Урон и усиление проверьте и задайте сами</string>
+    <string name="me_spells_import_hint_dice">В описании есть кубы урона: %1$s</string>
+    <string name="me_spells_import_hint_dismiss">Понятно</string>
 </resources>
