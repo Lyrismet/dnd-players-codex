@@ -57,6 +57,7 @@ import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.rememberImportPicker
+import com.lyrismet.incadent.feature.phrases.presentation.PHRASES_ENTRY_VISIBLE
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.settings_about_update_action
@@ -242,12 +243,14 @@ private fun DiarySection(
             width = 150.dp,
         )
         AppDivider()
-        PhrasesRow(
-            title = stringResource(Res.string.settings_phrases_title),
-            summary = phrasesSummary,
-            onClick = onPhrasesClick,
-        )
-        AppDivider()
+        if (PHRASES_ENTRY_VISIBLE) {
+            PhrasesRow(
+                title = stringResource(Res.string.settings_phrases_title),
+                summary = phrasesSummary,
+                onClick = onPhrasesClick,
+            )
+            AppDivider()
+        }
         HintsRow(
             title = stringResource(Res.string.settings_hints_title),
             description = stringResource(Res.string.settings_hints_desc),

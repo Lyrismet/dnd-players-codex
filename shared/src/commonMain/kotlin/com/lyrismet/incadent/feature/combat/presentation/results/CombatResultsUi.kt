@@ -87,10 +87,7 @@ fun CombatResultsUi(
     modifier: Modifier = Modifier,
 ) {
     val send = state.eventSink
-    val insets =
-        WindowInsets.systemBars.only(
-            WindowInsetsSides.Top + WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
-        )
+    val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     Scaffold(modifier = modifier, contentWindowInsets = insets) { contentPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             if (state.loaded && state.summary != null) {
