@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
@@ -171,6 +172,7 @@ private fun FactRowContent(
         Text(
             stringResource(fact.label),
             style = style,
+            fontWeight = FontWeight.SemiBold,
             color = AppPalette.TextTertiary,
             modifier = Modifier.width(FactLabelWidth),
         )

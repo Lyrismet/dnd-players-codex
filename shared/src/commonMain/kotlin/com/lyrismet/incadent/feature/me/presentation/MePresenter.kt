@@ -38,6 +38,7 @@ import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepos
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.presenter.Presenter
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 
 /** loads the character marked "me" with its sheet and turns every press of the screen into a write */
 @Suppress("LongParameterList")
@@ -59,12 +60,17 @@ internal class MePresenter(
 ) : Presenter<MeState> {
     private val picker = PlayerCharacterPicker(partyRepository, appPreferencesRepository)
 
+    private suspend fun followsPartyLevel() = appPreferencesRepository.observeFollowPartyLevel().first()
+
     @Composable
     override fun present(): MeState {
         val scope = rememberCoroutineScope()
         val party by remember { partyRepository.observeAll() }.collectAsState(initial = null)
         val campaign by remember { campaignRepository.observeCurrent() }.collectAsState(initial = null)
-        val actions = remember { MeActions(scope, partyRepository, sheetRepository, undoController) }
+        val actions =
+            remember {
+                MeActions(scope, partyRepository, sheetRepository, undoController, ::followsPartyLevel)
+            }
         val readOnly = campaign?.status == CampaignStatus.ARCHIVED
         val list = party
         val member = list?.firstOrNull { it.isPlayerCharacter }

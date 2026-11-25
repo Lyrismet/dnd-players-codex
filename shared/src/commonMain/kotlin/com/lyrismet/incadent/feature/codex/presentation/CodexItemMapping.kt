@@ -60,6 +60,7 @@ internal fun List<PartyMember>.toPartyCodexItems(
                     "${labels.hpShort} ${member.hpLine()}"
                 },
             fallen = member.fallen,
+            viewOnly = member.isPlayerCharacter,
         )
     }
 

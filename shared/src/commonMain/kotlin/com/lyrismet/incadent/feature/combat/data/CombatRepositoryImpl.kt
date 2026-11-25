@@ -301,6 +301,14 @@ class CombatRepositoryImpl(
             is_label = if (combatant.isLabel) 1L else 0L,
             id = combatant.id,
         )
+        if (combatant.partyMemberId != null && combatant.hpMax != null) {
+            combatants.mirrorToParty(
+                combatant.hpMax.toLong(),
+                combatant.hpCurrent?.toLong(),
+                combatant.tempHp.toLong(),
+                combatant.id,
+            )
+        }
     }
 
     private fun writeEvent(

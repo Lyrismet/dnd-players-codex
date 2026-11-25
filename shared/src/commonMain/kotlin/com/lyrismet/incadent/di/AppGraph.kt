@@ -1,7 +1,6 @@
 package com.lyrismet.incadent.di
 
 import com.lyrismet.incadent.core.analytics.AnalyticsTracker
-import com.lyrismet.incadent.core.analytics.CrashReporter
 import com.lyrismet.incadent.core.appinfo.AppVersion
 import com.lyrismet.incadent.core.file.FileStorage
 import com.lyrismet.incadent.core.file.ImportSource
@@ -41,7 +40,6 @@ interface AppGraph {
             @Provides fileStorage: FileStorage,
             @Provides appVersion: AppVersion,
             @Provides analytics: AnalyticsTracker,
-            @Provides crashReporter: CrashReporter,
         ): AppGraph
     }
 }

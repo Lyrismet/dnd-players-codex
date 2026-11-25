@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppDeleteLink
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
@@ -123,6 +124,8 @@ private fun FeatRow(
             ).joinToString(" · ").ifEmpty { null },
         onClick = onClick,
         minHeight = 56.dp,
+        titleLineHeight = 20.sp,
+        subtitleLineHeight = 16.sp,
     )
 }
 

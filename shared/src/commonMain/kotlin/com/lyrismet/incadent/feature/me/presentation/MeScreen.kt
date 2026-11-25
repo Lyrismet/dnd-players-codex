@@ -70,6 +70,7 @@ enum class MeTile { ARMOR_CLASS, INITIATIVE, SPEED, PROFICIENCY, PASSIVE_PERCEPT
 data class MeCharacter(
     val id: Long,
     val name: String,
+    val canLevelUp: Boolean,
     val portrait: Photo?,
     val characterClass: String,
     val subclass: String,
@@ -198,6 +199,14 @@ sealed interface MeOverlay {
         val draft: CharacterDraft,
     ) : MeOverlay
 
+    /** [levels] taken from [from], each adds [gain] hit points typed by the player */
+    data class LevelUp(
+        val from: Int,
+        val levels: Int,
+        val gain: Int,
+        val hasMax: Boolean,
+    ) : MeOverlay
+
     /** the slots per level, 0 for none */
     data class Slots(
         val maxima: Map<Int, Int>,
@@ -266,8 +275,17 @@ data class CharacterDraft(
     val race: String,
     val background: String,
     val alignment: String,
-    val playerName: String,
-)
+    val hpBonusPerLevel: Int,
+    // what the maximum is now and the bonus it was counted with, a changed bonus offers a catch up
+    val hpMax: Int?,
+    val storedBonus: Int,
+    val applyCatchUp: Boolean = false,
+) {
+    val catchUp: Int? get() = hpMax?.let { (hpBonusPerLevel - storedBonus) * level }?.takeIf { it != 0 }
+
+    /** what the maximum grows by when the player took the catch up */
+    val catchUpGain: Int get() = if (applyCatchUp) catchUp ?: 0 else 0
+}
 
 sealed interface MeEvent : CircuitUiEvent {
     data class Picked(
@@ -477,6 +495,16 @@ sealed interface OverlayEvent {
         val delta: Int,
     ) : OverlayEvent
 
+    data class BonusStepped(
+        val delta: Int,
+    ) : OverlayEvent
+
+    data object CatchUpToggled : OverlayEvent
+
+    data class LevelsStepped(
+        val delta: Int,
+    ) : OverlayEvent
+
     data class TextChanged(
         val field: OverlayField,
         val value: String,
@@ -537,11 +565,10 @@ enum class OverlayField {
     RACE,
     BACKGROUND,
     ALIGNMENT,
-    PLAYER_NAME,
     RESOURCE_NAME,
 }
 
-enum class MenuAction { EDIT, FILL, TOGGLE_SPELLS, NOT_MINE }
+enum class MenuAction { EDIT, LEVEL_UP, FILL, TOGGLE_SPELLS, NOT_MINE }
 
 sealed interface PortraitEvent {
     /** the raw picked image, the presenter shrinks it and opens the crop window */

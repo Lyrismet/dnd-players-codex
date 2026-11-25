@@ -52,6 +52,7 @@ import incadent.shared.generated.resources.me_hp_zero
 import incadent.shared.generated.resources.me_menu_description
 import incadent.shared.generated.resources.me_menu_edit
 import incadent.shared.generated.resources.me_menu_fill
+import incadent.shared.generated.resources.me_menu_level_up
 import incadent.shared.generated.resources.me_menu_not_mine
 import incadent.shared.generated.resources.me_menu_spells_hide
 import incadent.shared.generated.resources.me_menu_spells_show
@@ -111,7 +112,7 @@ internal fun MeNameRow(
             MenuButton(character.menuOpen) { onEvent(MeEvent.MenuToggled) }
         }
         if (character.fallen) FallenNote()
-        if (character.menuOpen) MeMenu(character.readOnly, character.spellsHidden, onEvent)
+        if (character.menuOpen) MeMenu(character.readOnly, character.spellsHidden, character.canLevelUp, onEvent)
     }
 }
 
@@ -163,6 +164,7 @@ private fun FallenNote() {
 private fun MeMenu(
     readOnly: Boolean,
     spellsHidden: Boolean,
+    canLevelUp: Boolean,
     onEvent: (MeEvent) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth().appCard(background = AppPalette.SurfacePopover, border = AppPalette.BorderPopover)) {
@@ -171,6 +173,12 @@ private fun MeMenu(
                 stringResource(Res.string.me_menu_edit),
                 AppPalette.TextPrimary,
             ) { onEvent(MeEvent.Menu(MenuAction.EDIT)) }
+            if (canLevelUp) {
+                MenuRow(
+                    stringResource(Res.string.me_menu_level_up),
+                    AppPalette.TextPrimary,
+                ) { onEvent(MeEvent.Menu(MenuAction.LEVEL_UP)) }
+            }
             MenuRow(
                 stringResource(Res.string.me_menu_fill),
                 AppPalette.TextPrimary,

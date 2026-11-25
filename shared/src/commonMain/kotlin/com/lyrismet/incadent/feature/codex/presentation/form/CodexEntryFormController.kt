@@ -262,7 +262,9 @@ class CodexEntryFormController private constructor(
         scope.launch {
             val loaded =
                 when (ref) {
-                    is EntityRef.Party -> partyRepository.getById(ref.id)?.let { it.toFields(ref) }
+                    // the player's own character changes in the "me" sheet
+                    is EntityRef.Party ->
+                        partyRepository.getById(ref.id)?.takeIf { !it.isPlayerCharacter }?.let { it.toFields(ref) }
                     is EntityRef.Npc -> npcRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Quest -> questRepository.getById(ref.id)?.let { it.toFields(ref) }
                     is EntityRef.Species -> speciesRepository.getById(ref.id)?.let { it.toFields(ref) }

@@ -111,6 +111,8 @@ data class PartyCodexItem(
     val meta: String,
     // fell in a fight, the card is struck through and listed under "ПАВШИЕ"
     val fallen: Boolean = false,
+    // the player's own character is edited in the "me" sheet, the codex only shows it
+    val viewOnly: Boolean = false,
 )
 
 data class QuestGiverItem(

@@ -21,6 +21,7 @@ import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.localization.AppEnvironment
 import com.lyrismet.incadent.core.localization.customAppLocale
 import com.lyrismet.incadent.core.navigation.LocalOverlayNavigator
+import com.lyrismet.incadent.core.navigation.LocalTabSwitcher
 import com.lyrismet.incadent.core.navigation.OverlayNavigator
 import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.preferences.MentionStyle
@@ -81,6 +82,7 @@ fun App(
                 CompositionLocalProvider(
                     LocalMentionStyle provides mentionStyle,
                     LocalOverlayNavigator provides overlay,
+                    LocalTabSwitcher provides { tab -> tabs.selectedTabIndex.value = tab.ordinal },
                     LocalAnalyticsTracker provides graph.analytics,
                 ) {
                     AppTheme {

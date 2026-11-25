@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.me.domain
 
 import com.lyrismet.incadent.core.hp.missingHitPoints
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterVitals
+import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 
 /** the hit points left, a character that never took a hit has all of them */
 val CharacterVitals.currentHp: Int get() = hpCurrent ?: hpMax ?: 0
@@ -9,8 +10,8 @@ val CharacterVitals.currentHp: Int get() = hpCurrent ?: hpMax ?: 0
 /** what a heal to the maximum adds, none while the maximum is not set */
 val CharacterVitals.missingHp: Int? get() = hpMax?.let { missingHitPoints(currentHp, it) }
 
-/** how a number typed on the hit point keypad changes the hit points */
-enum class HitPointMode { DAMAGE, HEAL, TEMP }
+/** how a number typed on the hit point keypad changes the hit points, MAX sets the maximum itself */
+enum class HitPointMode { DAMAGE, HEAL, TEMP, MAX }
 
 /** one change of the hit points: temporary ones soak up damage first, healing from zero ends the death saves */
 fun CharacterVitals.hit(
@@ -32,6 +33,14 @@ fun CharacterVitals.hit(
             }
         }
         HitPointMode.TEMP -> copy(tempHp = value)
+        // a typed maximum is exact, the hit points left never stay above it and a full character stays full
+        HitPointMode.MAX ->
+            if (value < 1) {
+                this
+            } else {
+                val max = value.coerceIn(PartyStatRanges.hpMax)
+                copy(hpMax = max, hpCurrent = hpCurrent?.let { minOf(it, max) }, hpMaxApprox = false)
+            }
     }
 }
 

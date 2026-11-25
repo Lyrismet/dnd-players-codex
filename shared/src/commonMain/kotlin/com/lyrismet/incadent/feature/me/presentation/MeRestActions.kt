@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.me.presentation
 
+import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterRestRepository
@@ -9,6 +10,7 @@ import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.items_deleted_title
 import incadent.shared.generated.resources.me_rest_done_title
 import incadent.shared.generated.resources.me_rest_note
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
@@ -29,15 +31,24 @@ internal class MeRestActions(
             val plan = rests.longRest(member.id) ?: return@launch
             // a session that ended meanwhile must not cost the user the undo
             val entryId =
-                liveSessionId?.takeIf { log }?.let {
-                    runCatching { entries.add(it, getString(Res.string.me_rest_note)) }.getOrNull()
-                }
+                liveSessionId?.takeIf { log }?.let { addNote(it) }
             undoController.show(getString(Res.string.me_rest_done_title), member.name) {
                 rests.undo(member.id, plan.undo)
                 entryId?.let { entries.delete(it) }
             }
         }
     }
+
+    @Suppress("TooGenericExceptionCaught")
+    private suspend fun addNote(sessionId: Long): Long? =
+        try {
+            entries.add(sessionId, getString(Res.string.me_rest_note))
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Exception) {
+            AppLog.warn("MeRest", "the rest note was not added: ${failure.message}")
+            null
+        }
 }
 
 /** the deletes of the things tab, an item goes with an undo that puts it back under its old id */

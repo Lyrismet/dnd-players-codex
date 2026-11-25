@@ -23,6 +23,7 @@ internal fun MeOverlay.reduce(event: OverlayEvent): MeOverlay =
         is MeOverlay.Adjustment -> reduceAdjustment(event)
         is MeOverlay.Fill -> copy(draft = draft.reduce(event))
         is MeOverlay.EditCharacter -> reduceEdit(event)
+        is MeOverlay.LevelUp -> reduceLevelUp(event)
         is MeOverlay.Slots -> reduceSlots(event)
         is MeOverlay.Resource -> reduceResource(event)
         is MeOverlay.HitPoints,
@@ -106,10 +107,12 @@ private fun MeOverlay.EditCharacter.reduceEdit(event: OverlayEvent): MeOverlay =
                         OverlayField.RACE -> draft.copy(race = event.value)
                         OverlayField.BACKGROUND -> draft.copy(background = event.value)
                         OverlayField.ALIGNMENT -> draft.copy(alignment = event.value)
-                        OverlayField.PLAYER_NAME -> draft.copy(playerName = event.value)
                         OverlayField.ARMOR_CLASS_FROM, OverlayField.ADJUSTMENT_NOTE, OverlayField.RESOURCE_NAME -> draft
                     },
             )
+        is OverlayEvent.BonusStepped ->
+            copy(draft = draft.copy(hpBonusPerLevel = draft.hpBonusPerLevel.stepped(event.delta, HP_BONUS_RANGE)))
+        OverlayEvent.CatchUpToggled -> copy(draft = draft.copy(applyCatchUp = !draft.applyCatchUp))
         else -> this
     }
 
@@ -150,7 +153,7 @@ private fun FillDraft.reduceVitals(event: OverlayEvent): FillDraft =
         else -> this
     }
 
-private fun Int.stepped(
+internal fun Int.stepped(
     delta: Int,
     range: IntRange,
 ): Int = (this + delta).coerceIn(range)
@@ -163,3 +166,5 @@ internal fun Set<Ability>.toggled(ability: Ability): Set<Ability> =
     } else {
         this + ability
     }
+
+private val HP_BONUS_RANGE = 0..10

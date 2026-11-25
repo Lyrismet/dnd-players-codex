@@ -17,7 +17,7 @@
 - `feature/codex/domain/model/PartyMember.kt`, `feature/codex/data/PartyRepositoryImpl.kt`, `sqldelight/.../Party*.sq` (новые поля)
 - существующий `hpMaxApprox` (читать, чтобы не сломать: правка уровня числом остаётся приблизительной, кнопка "Повысить уровень" нет)
 
-**Миграция и тесты:** `26.sqm` на `party_member`: `short_name TEXT NOT NULL DEFAULT ''`, `hp_bonus_per_level INTEGER NOT NULL DEFAULT 0`, `last_level_gain INTEGER`. Колонки части 2 заводятся здесь же, чтобы миграция одна. Тест миграции на базе версии 25 рядом с существующими (`SchemaMigrationTest`), поля в файле кампании (`CampaignFile`, `CampaignRepositoryImpl`, `RecordValidator`) и тест обмена со старым файлом. Тесты логики в `commonTest`. Имена в обратных кавычках без запятых и точек.
+**Миграция и тесты:** `26.sqm` на `party_member`: `hp_bonus_per_level INTEGER NOT NULL DEFAULT 0`, `last_level_gain INTEGER`. Колонки части 2 заводятся здесь же, чтобы миграция одна. Тест миграции на базе версии 25 рядом с существующими (`SchemaMigrationTest`), поля в файле кампании (`CampaignFile`, `CampaignRepositoryImpl`, `RecordValidator`) и тест обмена со старым файлом. Тесты логики в `commonTest`. Имена в обратных кавычках без запятых и точек.
 
 **Не трогать:** кость хитов класса (не используется), форму кодекса (часть 3), бой.
 
@@ -30,7 +30,7 @@
 
 **Готово, когда:** `docs/RULES.md` "Готовность задачи", `./gradlew build -x :shared:linkReleaseFrameworkIosArm64 -x :shared:linkReleaseFrameworkIosSimulatorArm64`, `ktlintFormat`, `detekt` зелёные, тесты на iOS-имена без запятых и точек.
 
-## Часть 2. Короткое имя персонажа
+## Часть 2. Короткое имя персонажа (отменена, короткого имени в приложении нет)
 **Цель:** Заменить поле "Как вас подписывать" на короткое имя, показывать его в упоминаниях, бою и журнале, а в шапке листа и карточке кодекса держать под полным именем.
 
 **Читать (только это):** `DEV.md`: эпик L, раздел L.2. `DESIGN.md`: задача 19. `docs/CORE_COMPONENTS.md`.

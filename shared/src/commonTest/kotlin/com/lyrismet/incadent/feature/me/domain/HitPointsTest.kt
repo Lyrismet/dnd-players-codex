@@ -82,4 +82,26 @@ class HitPointsTest {
         assertEquals(0, CharacterVitals(hpMax = 28, hpCurrent = 28).missingHp)
         assertEquals(28, CharacterVitals(hpMax = 28, hpCurrent = 0).missingHp)
     }
+
+    @Test
+    fun `a typed maximum becomes exact and the hit points left never exceed it`() {
+        val approx = vitals.copy(hpMaxApprox = true)
+        val raised = approx.hit(HitPointMode.MAX, 40)
+        assertEquals(40, raised.hpMax)
+        assertEquals(22, raised.hpCurrent)
+        assertFalse(raised.hpMaxApprox)
+        assertEquals(10, vitals.hit(HitPointMode.MAX, 10).hpCurrent)
+    }
+
+    @Test
+    fun `an empty typed maximum changes nothing`() {
+        assertEquals(vitals, vitals.hit(HitPointMode.MAX, 0))
+    }
+
+    @Test
+    fun `a typed maximum on a full character keeps it full`() {
+        val full = CharacterVitals(hpMax = null, hpCurrent = null).hit(HitPointMode.MAX, 30)
+        assertEquals(30, full.hpMax)
+        assertEquals(30, full.currentHp)
+    }
 }

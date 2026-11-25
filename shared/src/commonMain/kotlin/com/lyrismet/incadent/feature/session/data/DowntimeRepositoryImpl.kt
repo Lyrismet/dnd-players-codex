@@ -6,6 +6,7 @@ import com.lyrismet.incadent.core.campaign.CurrentCampaign
 import com.lyrismet.incadent.core.campaign.observe
 import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.core.identity.orNewOriginId
+import com.lyrismet.incadent.core.logging.AppLog
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.feature.session.domain.model.Downtime
 import com.lyrismet.incadent.feature.session.domain.model.DowntimeItem
@@ -124,6 +125,8 @@ private fun decodeItems(text: String): List<DowntimeItem> =
         emptyList()
     } else {
         runCatching { Json.decodeFromString<List<StoredItem>>(text) }
-            .getOrDefault(emptyList())
-            .map { DowntimeItem(it.name, it.quantity, it.itemId) }
+            .getOrElse {
+                AppLog.warn("Database", "unreadable items in a downtime row, read as no items")
+                emptyList()
+            }.map { DowntimeItem(it.name, it.quantity, it.itemId) }
     }

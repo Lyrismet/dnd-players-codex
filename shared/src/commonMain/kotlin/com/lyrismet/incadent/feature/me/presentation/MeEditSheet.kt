@@ -1,16 +1,21 @@
 package com.lyrismet.incadent.feature.me.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.designsystem.AppPalette
+import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
+import com.lyrismet.incadent.core.format.signed
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_edit_alignment_label
 import incadent.shared.generated.resources.me_edit_background_label
+import incadent.shared.generated.resources.me_edit_bonus_catch_up
+import incadent.shared.generated.resources.me_edit_bonus_hint
+import incadent.shared.generated.resources.me_edit_bonus_label
 import incadent.shared.generated.resources.me_edit_name_label
 import incadent.shared.generated.resources.me_edit_overline
-import incadent.shared.generated.resources.me_edit_player_label
 import incadent.shared.generated.resources.me_edit_race_label
 import incadent.shared.generated.resources.me_edit_title
 import incadent.shared.generated.resources.me_fill_class_label
@@ -39,7 +44,14 @@ internal fun MeEditSheet(
         EditField(Res.string.me_edit_race_label, draft.race, OverlayField.RACE, send)
         EditField(Res.string.me_edit_background_label, draft.background, OverlayField.BACKGROUND, send)
         EditField(Res.string.me_edit_alignment_label, draft.alignment, OverlayField.ALIGNMENT, send)
-        EditField(Res.string.me_edit_player_label, draft.playerName, OverlayField.PLAYER_NAME, send)
+        SectionOverline(stringResource(Res.string.me_edit_bonus_label), color = AppPalette.TextTertiary)
+        NumberRow(draft.hpBonusPerLevel, send, onStep = { OverlayEvent.BonusStepped(it) })
+        Text(stringResource(Res.string.me_edit_bonus_hint), style = AppText.footnote, color = AppPalette.TextSecondary)
+        draft.catchUp?.let {
+            SwitchRow(stringResource(Res.string.me_edit_bonus_catch_up, it.signed()), draft.applyCatchUp) {
+                send(OverlayEvent.CatchUpToggled)
+            }
+        }
     }
 }
 

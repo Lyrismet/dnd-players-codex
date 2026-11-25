@@ -100,11 +100,26 @@ internal data class HitPad(
     fun overlay(vitals: CharacterVitals): MeOverlay.HitPoints {
         val after = vitals.hit(mode, expression.value())
         val temp = mode == HitPointMode.TEMP
+        val max = mode == HitPointMode.MAX
         return MeOverlay.HitPoints(
             mode,
             expression.raw.ifEmpty { "0" },
-            before = if (temp) vitals.tempHp else vitals.currentHp,
-            after = if (temp) after.tempHp else after.currentHp,
+            before =
+                if (temp) {
+                    vitals.tempHp
+                } else if (max) {
+                    vitals.hpMax ?: 0
+                } else {
+                    vitals.currentHp
+                },
+            after =
+                if (temp) {
+                    after.tempHp
+                } else if (max) {
+                    after.hpMax ?: 0
+                } else {
+                    after.currentHp
+                },
             canApply = expression.raw.isNotEmpty(),
             toMax =
                 HitPointsToMax(

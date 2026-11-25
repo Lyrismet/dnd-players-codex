@@ -13,7 +13,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
@@ -24,6 +26,7 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonTone
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FlameSweepEffect
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
+import com.lyrismet.incadent.core.designsystem.component.TagChip
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySummaryItem.PartySummary
@@ -36,7 +39,9 @@ import incadent.shared.generated.resources.codex_party_epitaph
 import incadent.shared.generated.resources.codex_party_epitaph_foes
 import incadent.shared.generated.resources.codex_party_fell_in_battle
 import incadent.shared.generated.resources.codex_party_revive
+import incadent.shared.generated.resources.entity_sheet_party_open_sheet
 import incadent.shared.generated.resources.entity_sheet_party_presence_label
+import incadent.shared.generated.resources.entity_sheet_party_view_only
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -44,12 +49,13 @@ import org.jetbrains.compose.resources.stringResource
 internal fun PartySummaryBody(
     party: PartySummary,
     actions: EntitySummarySheetActions,
+    onOpenSheet: () -> Unit,
 ) {
     // the flame goes over the card once, the card itself changes under it when the record does
     var revived by remember { mutableStateOf(false) }
     FlameSweepEffect(play = revived) {
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-            PartyBody(party, actions) { revived = true }
+            PartyBody(party, actions, onOpenSheet) { revived = true }
         }
     }
 }
@@ -57,10 +63,24 @@ internal fun PartySummaryBody(
 @Composable
 private fun PartyBody(
     party: PartySummary,
-    actions: EntitySummarySheetActions,
+    shown: EntitySummarySheetActions,
+    onOpenSheet: () -> Unit,
     onRevived: () -> Unit,
 ) {
     val fall = party.fall
+    // the player's own character has no pen and no in-place editing, the "me" sheet is where it changes
+    val actions =
+        if (party.viewOnly) {
+            shown.copy(
+                onEditClicked = null,
+                quickEdit = null,
+                onPartyLevelRaised = null,
+                onPartyVulnerabilityChanged = null,
+                onPartyVulnerabilitiesEdited = null,
+            )
+        } else {
+            shown
+        }
     EntityHeader(
         emblem = party.emblem,
         title = party.name,
@@ -69,6 +89,9 @@ private fun PartyBody(
         showEditHint = actions.onEditClicked != null,
         quick = actions.quickEdit,
     )
+    if (party.viewOnly) {
+        ViewOnlyRow(onOpenSheet)
+    }
     if (fall != null) Epitaph(fall, actions)
     if (fall == null) PresencePicker(party, actions)
     EntityDescription(party.description, party.descriptionSegments, actions)
@@ -189,5 +212,25 @@ private fun ChronicleTile(
     ) {
         Text(text = value.toString(), style = MaterialTheme.typography.headlineSmall, color = AppPalette.TextHeading)
         Text(text = label, color = AppPalette.TextSecondary, fontSize = AppFontSize.CaptionPlus)
+    }
+}
+
+/** the frame that says the card only shows, and the way to the sheet where it changes */
+@Composable
+private fun ViewOnlyRow(onOpenSheet: () -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+        TagChip(
+            stringResource(Res.string.entity_sheet_party_view_only),
+            foreground = AppPalette.TextSecondary,
+            background = Color.Transparent,
+            border = AppPalette.Border,
+            height = 28.dp,
+        )
+        AppButton(
+            stringResource(Res.string.entity_sheet_party_open_sheet),
+            onOpenSheet,
+            tone = ButtonTone.Gold,
+            variant = ButtonVariant.Ghost,
+        )
     }
 }

@@ -113,6 +113,27 @@ internal class FakePartyRepository(
     ) {
         stored(id)?.let { put(it.copy(vulnerabilities = it.vulnerabilities.with(type, state))) }
     }
+
+    override suspend fun setCharacterExtras(
+        id: Long,
+        hpBonusPerLevel: Int,
+        lastLevelGain: Int?,
+    ) {
+        stored(id)?.let {
+            put(it.copy(hpBonusPerLevel = hpBonusPerLevel, lastLevelGain = lastLevelGain))
+        }
+    }
+
+    override suspend fun saveLevelUp(
+        player: PartyMember,
+        followers: List<PartyMember>,
+    ) {
+        (listOf(player) + followers).forEach { put(it) }
+    }
+
+    override suspend fun restore(members: List<PartyMember>) {
+        members.forEach { put(it) }
+    }
 }
 
 internal class FakeLocationRepository(

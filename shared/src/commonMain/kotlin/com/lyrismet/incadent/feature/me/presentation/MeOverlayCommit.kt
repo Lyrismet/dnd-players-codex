@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.me.presentation
 
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
+import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
 import com.lyrismet.incadent.feature.codex.domain.model.withNote
 
@@ -34,6 +35,7 @@ internal fun MeActions.commit(
         is MeOverlay.Adjustment -> sheet(id) { it.withAdjustment(overlay.target, overlay.value, overlay.note) }
         is MeOverlay.Fill -> commitFill(member, overlay.draft)
         is MeOverlay.EditCharacter -> commitEdit(id, overlay.draft)
+        is MeOverlay.LevelUp -> levelUp(member, overlay.gain, overlay.levels)
         is MeOverlay.HitPoints,
         is MeOverlay.Slots,
         is MeOverlay.Resource,
@@ -58,9 +60,11 @@ private fun MeActions.commitEdit(
                     subclass = draft.subclass.trim(),
                     race = draft.race.trim(),
                     level = draft.level,
-                    playerName = draft.playerName.trim(),
+                    // a bonus counted into the maximum on request, the typed maximum stays untouched otherwise
+                    hpMax = it.hpMax?.let { max -> (max + draft.catchUpGain).coerceIn(PartyStatRanges.hpMax) },
                 ),
             )
+            party.setCharacterExtras(id, draft.hpBonusPerLevel, it.lastLevelGain)
         }
         sheets.updateSheet(id) {
             it.copy(

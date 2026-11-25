@@ -6,6 +6,7 @@ import incadent.shared.generated.resources.codex_entry_label_cover
 import incadent.shared.generated.resources.codex_entry_label_portrait
 import incadent.shared.generated.resources.codex_quest_given_by_label
 import incadent.shared.generated.resources.codex_quest_reward_label
+import incadent.shared.generated.resources.combat_features_title
 import incadent.shared.generated.resources.entity_sheet_group_location_inside
 import incadent.shared.generated.resources.entity_sheet_group_location_npcs
 import incadent.shared.generated.resources.entity_sheet_group_location_quests
@@ -53,6 +54,7 @@ fun rememberQuickEditFieldTitles(): Map<QuickEditField, String> =
         QuickEditField.INSIDE to stringResource(Res.string.entity_sheet_group_location_inside),
         QuickEditField.RELATION to stringResource(Res.string.entity_sheet_relation_label),
         QuickEditField.VULNERABILITIES to stringResource(Res.string.entity_sheet_npc_vulnerabilities_label),
+        QuickEditField.FACTS to stringResource(Res.string.combat_features_title),
         QuickEditField.LIFE to stringResource(Res.string.entity_sheet_life_label),
         QuickEditField.QUEST_STATUS to stringResource(Res.string.entity_sheet_status_label),
         QuickEditField.PRESENCE to stringResource(Res.string.entity_sheet_party_presence_label),

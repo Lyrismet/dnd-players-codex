@@ -34,9 +34,6 @@ import com.lyrismet.incadent.core.designsystem.component.appCard
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_mark_confirm
 import incadent.shared.generated.resources.combat_mark_field_label
-import incadent.shared.generated.resources.combat_mark_preset_ac
-import incadent.shared.generated.resources.combat_mark_preset_save
-import incadent.shared.generated.resources.combat_mark_preset_speed
 import incadent.shared.generated.resources.combat_mark_rounds_custom
 import incadent.shared.generated.resources.combat_mark_rounds_minute
 import incadent.shared.generated.resources.combat_mark_rounds_none
@@ -76,20 +73,6 @@ internal fun MarkSheetUi(
                     style = AppTextInputStyle(contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)),
                     autoFocus = true,
                 )
-            }
-            if (sheet.showPresets) {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    listOf(
-                        stringResource(Res.string.combat_mark_preset_save),
-                        stringResource(Res.string.combat_mark_preset_ac),
-                        stringResource(Res.string.combat_mark_preset_speed),
-                    ).forEach { preset ->
-                        SheetChip(preset, false) { send(CombatRoundEvent.MarkTextChanged(preset)) }
-                    }
-                }
             }
             RoundsPicker(sheet, send)
             if (!sheet.custom) {

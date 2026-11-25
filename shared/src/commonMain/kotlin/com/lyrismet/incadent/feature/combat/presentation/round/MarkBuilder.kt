@@ -3,7 +3,6 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.feature.combat.domain.model.Combat
 import com.lyrismet.incadent.feature.combat.domain.model.CombatMark
-import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.Combatant
 import com.lyrismet.incadent.feature.combat.domain.model.CustomCondition
 import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
@@ -104,7 +103,6 @@ internal fun markSheetState(
         roundsText = draft.roundsText,
         canAdd = draft.text.isNotBlank() || concentration,
         // a participant of the party or the allies has no enemy presets
-        showPresets = member.side == CombatSide.ENEMY && !draft.custom && !concentration,
     )
 }
 

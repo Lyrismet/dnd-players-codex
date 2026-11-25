@@ -127,8 +127,12 @@ private fun <K : Enum<K>> noteMapAdapter(entries: List<K>) =
             val stored =
                 databaseValue
                     .takeIf { it.isNotEmpty() }
-                    ?.let { runCatching { Json.decodeFromString(serializer, it) }.getOrNull() }
-                    .orEmpty()
+                    ?.let {
+                        runCatching { Json.decodeFromString(serializer, it) }.getOrElse {
+                            AppLog.warn(LOG_COMPONENT, "unreadable notes in a row, read as no notes")
+                            null
+                        }
+                    }.orEmpty()
             return stored
                 .mapNotNull { (name, note) -> entries.firstOrNull { it.name == name }?.let { it to note } }
                 .toMap()

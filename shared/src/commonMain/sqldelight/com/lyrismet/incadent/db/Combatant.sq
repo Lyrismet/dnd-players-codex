@@ -86,6 +86,15 @@ UPDATE combatant
 SET name = ?, entered_whole = ?, state = ?, death_successes = ?, death_failures = ?, temp_hp = ?, turn_order = ?, stance = ?, captured = ?, dead = ?, conditions = ?, note = ?, reaction_available = ?, hp_current = ?, hp_max = ?, role = ?, is_label = ?
 WHERE id = ?;
 
+-- a hit taken in a fight going on is the hit of the character on the sheet too
+mirrorToParty:
+UPDATE party_member
+SET hp_max = :hpMax, hp_current = :hpCurrent, temp_hp = :tempHp
+WHERE id = (SELECT party_member_id FROM combatant WHERE id = :combatantId)
+    AND EXISTS (
+        SELECT 1 FROM combatant c JOIN combat k ON k.id = c.combat_id WHERE c.id = :combatantId AND k.phase = 'ONGOING'
+    );
+
 updateTurnOrder:
 UPDATE combatant SET turn_order = ? WHERE id = ?;
 

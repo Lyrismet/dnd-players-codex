@@ -20,8 +20,8 @@ internal class SpellImportTexts(
 
 internal suspend fun loadSpellImportTexts(): SpellImportTexts =
     SpellImportTexts(
+        // Schools lists the same eight in the same order as the enum
         schools =
-            // Schools lists the same eight in the same order as the enum
             SpellSchool.entries.zip(Schools).associate { (school, shape) -> school to getString(shape.name) },
         touch = getString(Res.string.me_spells_range_near),
         self = getString(Res.string.me_spells_range_self),

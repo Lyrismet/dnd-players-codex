@@ -29,6 +29,5 @@ fun createAppGraph(
             fileStorage,
             appVersionReader.read(),
             analytics,
-            crashReporter,
         )
 }

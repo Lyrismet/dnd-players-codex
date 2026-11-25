@@ -24,6 +24,10 @@ data class PartyMember(
     val vulnerabilities: Map<DamageType, DamageState> = emptyMap(),
     // the level rose after the maximum was typed, so it is a guess until a new one is typed
     val hpMaxApprox: Boolean = false,
+    // hit points a level adds beyond the roll, a feat like Tough gives 2
+    val hpBonusPerLevel: Int = 0,
+    // what the last level up added, offered again as the next one
+    val lastLevelGain: Int? = null,
 )
 
 enum class PartyPresence {

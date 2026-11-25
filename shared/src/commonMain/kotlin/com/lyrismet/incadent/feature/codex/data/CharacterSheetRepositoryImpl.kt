@@ -267,4 +267,15 @@ internal fun writeVitals(
         value.deathSavesFailure.toLong(),
         memberId,
     )
+    mirrorToCombat(party, memberId)
+}
+
+/** the hit points of the sheet go to the seat in a fight going on, the fight is where they were taken otherwise */
+internal fun mirrorToCombat(
+    party: PartyMemberQueries,
+    memberId: Long,
+) {
+    val vitals = party.selectVitals(memberId).executeAsOneOrNull()?.toDomain() ?: return
+    val max = vitals.hpMax ?: return
+    party.mirrorToCombat(max.toLong(), vitals.hpCurrent?.toLong(), vitals.tempHp.toLong(), memberId)
 }

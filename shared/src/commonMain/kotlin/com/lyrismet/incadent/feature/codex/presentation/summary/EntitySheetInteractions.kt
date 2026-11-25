@@ -4,7 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.lyrismet.incadent.feature.codex.domain.grouping.InsideChanges
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
-import com.lyrismet.incadent.feature.codex.domain.grouping.levelFollowers
+import com.lyrismet.incadent.feature.codex.domain.grouping.followersOf
 import com.lyrismet.incadent.feature.codex.domain.grouping.with
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
@@ -19,7 +19,6 @@ import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.domain.model.Species
 import com.lyrismet.incadent.feature.codex.domain.model.clampedToRanges
 import com.lyrismet.incadent.feature.codex.domain.repository.CodexRepositories
-import com.lyrismet.incadent.feature.codex.domain.repository.PartyRepository
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EntityChange
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.MovedPlaces
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.QuickEditField
@@ -166,7 +165,17 @@ class EntitySheetInteractions(
     ) {
         scope.launch {
             entityWriteLock.withLock {
-                npcRepository.getById(npcId)?.let { npcRepository.upsert(it.copy(facts = facts)) }
+                val npc = npcRepository.getById(npcId) ?: return@withLock
+                npcRepository.upsert(npc.copy(facts = facts))
+                if (npc.facts.any { it !in facts }) {
+                    onChanged(
+                        EntityChange(QuickEditField.FACTS, npc.name) {
+                            entityWriteLock.withLock {
+                                npcRepository.getById(npcId)?.let { npcRepository.upsert(it.copy(facts = npc.facts)) }
+                            }
+                        },
+                    )
+                }
             }
         }
     }
@@ -454,15 +463,4 @@ class EntitySheetInteractions(
             )
         }
     }
-}
-
-// the party follows only when the player's own level goes up
-private suspend fun PartyRepository.followersOf(
-    before: PartyMember,
-    after: PartyMember,
-): List<PartyMember> {
-    val from = before.level
-    val to = after.level
-    val raised = before.isPlayerCharacter && from != null && to != null && to > from
-    return if (raised) levelFollowers(observeAll().first(), before.id, checkNotNull(to)) else emptyList()
 }
