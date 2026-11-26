@@ -70,6 +70,13 @@ class PartyRepositoryImpl(
         }
     }
 
+    override suspend fun setHpMaxApprox(
+        id: Long,
+        approx: Boolean,
+    ) {
+        withContext(DatabaseDispatcher) { queries.setHpMaxApprox(approx, id) }
+    }
+
     override suspend fun setCharacterExtras(
         id: Long,
         hpBonusPerLevel: Int,

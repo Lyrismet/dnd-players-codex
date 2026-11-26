@@ -56,11 +56,4 @@ class LevelUpTest {
         assertFalse(member(level = 20).canLevelUp)
         assertNull(member(level = 20).leveledUp(5))
     }
-
-    @Test
-    fun `a bonus per level catches up over every level taken`() {
-        assertEquals(6, member().bonusCatchUp(0, 2))
-        assertNull(member().bonusCatchUp(2, 2))
-        assertNull(member(hpMax = null).bonusCatchUp(0, 2))
-    }
 }

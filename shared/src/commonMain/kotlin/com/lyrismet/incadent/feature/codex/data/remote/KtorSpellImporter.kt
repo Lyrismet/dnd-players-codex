@@ -41,6 +41,8 @@ private val Origin = Regex("^(https://[^/?#]+)")
 class KtorSpellImporter(
     private val client: HttpClient,
 ) : SpellImporter {
+    private val reportedSites = mutableSetOf<String>()
+
     override suspend fun import(link: String): SpellImportResult =
         when (val parsed = parseSpellLink(link)) {
             LinkParse.UnsupportedSite -> failed(SpellImportFailure.UNSUPPORTED_SITE)
@@ -62,7 +64,13 @@ class KtorSpellImporter(
     // a page the readers cannot make a spell of means a site changed its markup, the one failure worth reporting
     private fun unreadable(request: SpellRequest): SpellImportResult {
         val site = request.source.siteName
-        AppErrors.report("SpellImport", "a page of $site could not be read", UnreadablePageException(site))
+        // once per site and launch, so a challenge page answered to every try does not flood the reports
+        if (reportedSites.add(
+                site,
+            )
+        ) {
+            AppErrors.report("SpellImport", "a page of $site could not be read", UnreadablePageException(site))
+        }
         return failed(SpellImportFailure.UNREADABLE)
     }
 

@@ -99,6 +99,13 @@ internal class FakePartyRepository(
         stored(id)?.let { put(it.copy(fallen = fallen, fellCombatId = combatId.takeIf { fallen })) }
     }
 
+    override suspend fun setHpMaxApprox(
+        id: Long,
+        approx: Boolean,
+    ) {
+        stored(id)?.let { put(it.copy(hpMaxApprox = approx)) }
+    }
+
     override suspend fun setVulnerabilities(
         id: Long,
         vulnerabilities: Map<DamageType, DamageState>,

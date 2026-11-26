@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.appinfo.LatestVersionSource
 import com.lyrismet.incadent.core.appinfo.UpdatePolicy
 import com.lyrismet.incadent.core.appinfo.UpdateStatus
@@ -58,6 +60,7 @@ class SettingsPresenter(
     @Suppress("CyclomaticComplexMethod", "LongMethod")
     @Composable
     override fun present(): SettingsState {
+        val analytics = LocalAnalyticsTracker.current
         val language by languageRepository.observeLanguage().collectAsState(initial = AppLanguage.RUSSIAN)
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
@@ -104,6 +107,7 @@ class SettingsPresenter(
             canUndoImport = canUndoImport,
             undoImportPrompt = undoPrompt,
         ) { event ->
+            analytics.action("Settings", event)
             when (event) {
                 SettingsEvent.UndoImportRequested -> undoPrompt = true
                 SettingsEvent.UndoImportDismissed -> undoPrompt = false

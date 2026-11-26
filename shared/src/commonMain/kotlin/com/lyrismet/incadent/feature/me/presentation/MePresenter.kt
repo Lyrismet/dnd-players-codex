@@ -8,6 +8,8 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.HoldHintState
@@ -62,8 +64,10 @@ internal class MePresenter(
 
     private suspend fun followsPartyLevel() = appPreferencesRepository.observeFollowPartyLevel().first()
 
+    @Suppress("LongMethod")
     @Composable
     override fun present(): MeState {
+        val analytics = LocalAnalyticsTracker.current
         val scope = rememberCoroutineScope()
         val party by remember { partyRepository.observeAll() }.collectAsState(initial = null)
         val campaign by remember { campaignRepository.observeCurrent() }.collectAsState(initial = null)
@@ -122,7 +126,13 @@ internal class MePresenter(
             )
         val latestScope by rememberUpdatedState(eventScope)
         val handler = rememberHandler(ui, actions, itemsController, { latestScope }, scope)
-        val eventSink = remember(handler) { handler::handle }
+        val eventSink =
+            remember(handler, analytics) {
+                { event: MeEvent ->
+                    analytics.action("Me", event)
+                    handler.handle(event)
+                }
+            }
         return MeState(content = content, eventSink = eventSink)
     }
 

@@ -111,13 +111,13 @@ SELECT description FROM party_member WHERE id = ?;
 setDescription:
 UPDATE party_member SET description = ? WHERE id = ?;
 
--- the numbers a sheet shows beside the hit points, written on their own so saving a form never touches them
 -- a change on the sheet reaches the seat of the character in a fight going on
 mirrorToCombat:
 UPDATE combatant
 SET hp_max = :hpMax, hp_current = :hpCurrent, temp_hp = :tempHp
 WHERE party_member_id = :memberId AND combat_id IN (SELECT id FROM combat WHERE phase = 'ONGOING');
 
+-- the numbers a sheet shows beside the hit points, written on their own so saving a form never touches them
 selectVitals:
 SELECT hp_max, hp_max_approx, hp_current, temp_hp, armor_class, armor_class_from, death_saves_success, death_saves_failure
 FROM party_member WHERE id = ?;

@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.lyrismet.incadent.core.analytics.AnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.format.EMPTY_VALUE_DASH
 import com.lyrismet.incadent.core.localization.currentAppLanguage
@@ -160,6 +161,7 @@ class CombatPrepPresenter(
             exitConfirmVisible = exitConfirmVisible.value,
             toast = toast.value,
         ) { event ->
+            analytics.action("CombatPrep", event)
             when (event) {
                 is CombatPrepEvent.MemberEvent -> actions.onMember(event, snapshot)
                 is CombatPrepEvent.SearchEvent -> actions.onSearch(event, snapshot)

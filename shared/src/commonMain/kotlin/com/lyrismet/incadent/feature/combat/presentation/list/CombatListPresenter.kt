@@ -7,6 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.format.toDisplayTime
@@ -67,8 +69,10 @@ class CombatListPresenter(
 ) : Presenter<CombatListState> {
     private val preparation = CombatPreparation(combatRepository)
 
+    @Suppress("LongMethod")
     @Composable
     override fun present(): CombatListState {
+        val analytics = LocalAnalyticsTracker.current
         val loadedCombats by combatRepository.observeAll().collectAsState(initial = null)
         val combats = loadedCombats.orEmpty()
         val sessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
@@ -110,6 +114,7 @@ class CombatListPresenter(
             resetConfirmVisible = resetConfirmVisible,
             toast = toast.value,
         ) { event ->
+            analytics.action("CombatList", event)
             when (event) {
                 CombatListEvent.StartClicked, CombatListEvent.ContinueClicked ->
                     if (!campaignArchived) {

@@ -55,6 +55,7 @@ private val UnitWords =
         "час" to DurationUnit.HOUR,
         "day" to DurationUnit.DAY,
         "дн" to DurationUnit.DAY,
+        "ден" to DurationUnit.DAY,
         "сут" to DurationUnit.DAY,
     )
 private val DurationNumber = Regex("(\\d+)\\s*(${UnitWords.keys.joinToString("|")})", RegexOption.IGNORE_CASE)

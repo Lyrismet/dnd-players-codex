@@ -25,9 +25,3 @@ fun PartyMember.leveledUp(
         lastLevelGain = gain.coerceAtLeast(0),
     )
 }
-
-/** what the maximum grows by when every level carries the new bonus, null when nothing changes */
-fun PartyMember.bonusCatchUp(
-    oldBonus: Int,
-    newBonus: Int,
-): Int? = (level ?: return null).let { (newBonus - oldBonus) * it }.takeIf { hpMax != null && it != 0 }

@@ -7,6 +7,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.toast.ToastMessage
@@ -211,6 +213,7 @@ class CombatRoundPresenter(
     @Suppress("LongMethod", "CyclomaticComplexMethod")
     @Composable
     override fun present(): CombatRoundState {
+        val analytics = LocalAnalyticsTracker.current
         val data = rememberData()
         val drafts = rememberDrafts()
         val words = rememberWords()
@@ -332,6 +335,7 @@ class CombatRoundPresenter(
                 ?: data.species.firstOrNull { speciesKey(it.id) == key }?.name
         }
         val sink: (CombatRoundEvent) -> Unit = { event ->
+            analytics.action("CombatRound", event)
             when (event) {
                 is CombatRoundEvent.Spells -> magic.handle(event.event)
                 is CombatRoundEvent.Calc -> calcHandler.onEvent(event.event, calcSnapshot, drafts.selected.value)

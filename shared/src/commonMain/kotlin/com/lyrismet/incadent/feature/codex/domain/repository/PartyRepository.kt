@@ -25,6 +25,12 @@ interface PartyRepository : EntityRepository<PartyMember> {
         state: DamageState?,
     )
 
+    /** whether the maximum is a guess, a typed maximum equal to the stored one is exact all the same */
+    suspend fun setHpMaxApprox(
+        id: Long,
+        approx: Boolean,
+    )
+
     /** the level up numbers of a character, a form save never touches them */
     suspend fun setCharacterExtras(
         id: Long,

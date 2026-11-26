@@ -10,6 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.analytics.AnalyticsEvent
 import com.lyrismet.incadent.core.analytics.AnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.errors.AppErrors
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
@@ -171,6 +172,7 @@ class ImportPresenter(
             leavePromptVisible = leavePrompt,
             newerPrompt = file?.newer.takeIf { newerPrompt },
         ) { event ->
+            analytics.action("Import", event)
             when (event) {
                 is ImportEvent.FilePicked -> source.offer(event.origin)
                 is ImportEvent.DestinationSelected -> destination = event.destination

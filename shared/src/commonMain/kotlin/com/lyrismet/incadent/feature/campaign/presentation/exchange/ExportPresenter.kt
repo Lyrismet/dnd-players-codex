@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.analytics.AnalyticsEvent
 import com.lyrismet.incadent.core.analytics.AnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.designsystem.component.StatusKind
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.file.FileStorage
@@ -111,6 +112,7 @@ class ExportPresenter(
             savePrompt = savePrompt?.copy(folder = saveFolder),
             status = status,
         ) { event ->
+            analytics.action("Export", event)
             when (event) {
                 is ExportEvent.ModeSelected -> mode = event.mode
                 ExportEvent.PartyNotesToggled -> partyNotes = !partyNotes

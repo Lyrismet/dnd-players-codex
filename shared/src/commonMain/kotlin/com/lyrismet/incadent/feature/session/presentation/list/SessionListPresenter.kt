@@ -5,6 +5,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.format.toDisplayDate
@@ -99,6 +101,7 @@ class SessionListPresenter(
     @Suppress("LongMethod")
     @Composable
     override fun present(): SessionListState {
+        val analytics = LocalAnalyticsTracker.current
         val loadedSessions by sessionNoteRepository.observeAll().collectAsState(initial = null)
         val sessions = loadedSessions.orEmpty()
         val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
@@ -267,6 +270,7 @@ class SessionListPresenter(
             toast = toast.value,
             swipeHintTarget = swipeHintTarget,
         ) { event ->
+            analytics.action("SessionList", event)
             onEvent(
                 event,
                 scope,

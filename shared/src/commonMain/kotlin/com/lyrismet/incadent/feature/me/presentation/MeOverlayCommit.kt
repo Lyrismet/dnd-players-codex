@@ -53,6 +53,8 @@ private fun MeActions.commitEdit(
 ) {
     write { party, sheets ->
         party.getById(id)?.let {
+            // a bonus counted into the maximum on request, the typed maximum stays untouched otherwise
+            val newMax = it.hpMax?.let { max -> (max + draft.catchUpGain).coerceIn(PartyStatRanges.hpMax) }
             party.upsert(
                 it.copy(
                     name = draft.name.trim().ifBlank { it.name },
@@ -60,8 +62,17 @@ private fun MeActions.commitEdit(
                     subclass = draft.subclass.trim(),
                     race = draft.race.trim(),
                     level = draft.level,
-                    // a bonus counted into the maximum on request, the typed maximum stays untouched otherwise
-                    hpMax = it.hpMax?.let { max -> (max + draft.catchUpGain).coerceIn(PartyStatRanges.hpMax) },
+                    hpMax = newMax,
+                    hpCurrent =
+                        it.hpCurrent?.let { now ->
+                            newMax?.let { max ->
+                                (
+                                    now +
+                                        draft.catchUpGain.coerceAtLeast(0)
+                                ).coerceAtMost(max)
+                            }
+                                ?: now
+                        },
                 ),
             )
             party.setCharacterExtras(id, draft.hpBonusPerLevel, it.lastLevelGain)

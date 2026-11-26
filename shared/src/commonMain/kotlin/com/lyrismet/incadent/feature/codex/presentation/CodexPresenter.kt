@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.debounce.rememberDebounced
 import com.lyrismet.incadent.core.errors.ReportFailures
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
@@ -495,12 +497,14 @@ class CodexPresenter(
         isLoading: Boolean,
         context: CodexEditContext,
     ): CodexState {
+        val analytics = LocalAnalyticsTracker.current
         val activeTab = fields.activeTab.value
         val campaign by campaignRepository.observeCurrent().collectAsState(initial = null)
         val readOnly = campaign?.status == CampaignStatus.ARCHIVED
         // one identity for the whole screen, so the rows do not recompose when only the data behind the sink moved
         val latest =
             rememberUpdatedState { event: CodexEvent ->
+                analytics.action("Codex", event)
                 if (!(readOnly && event.writesCampaignData())) {
                     events.handle(event, fields, formController, records, labels, scope, campaign?.id)
                 }

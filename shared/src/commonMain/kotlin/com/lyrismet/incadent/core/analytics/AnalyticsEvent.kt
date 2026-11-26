@@ -14,6 +14,15 @@ sealed interface AnalyticsEvent {
         override val params = mapOf("screen_name" to screen)
     }
 
+    /** [action] is the type name of a user event of the screen, never a value the user typed */
+    data class UiAction(
+        val screen: String,
+        val action: String,
+    ) : AnalyticsEvent {
+        override val name = "ui_action"
+        override val params = mapOf("screen" to screen, "action" to action)
+    }
+
     data class RecordCreated(
         val kind: EntityKind,
     ) : AnalyticsEvent {

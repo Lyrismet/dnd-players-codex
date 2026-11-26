@@ -55,6 +55,7 @@ internal class MeActions(
             val member = party.getById(memberId) ?: return@launch
             val typed = CharacterVitals(member.hpMax, member.hpCurrent).hit(HitPointMode.MAX, amount)
             party.upsert(member.copy(hpMax = typed.hpMax, hpCurrent = typed.hpCurrent))
+            party.setHpMaxApprox(memberId, false)
         }
     }
 
