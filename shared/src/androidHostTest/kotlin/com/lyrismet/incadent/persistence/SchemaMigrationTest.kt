@@ -621,4 +621,24 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the twenty sixth schema adds the level up numbers`() {
+        val file = File.createTempFile("schema-v26", ".db")
+        File("src/commonMain/sqldelight/databases/26.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(name, level, hp_max, hp_current, campaign_id) VALUES ('Lira', 3, 24, 20, 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 26, AppDatabase.Schema.version)
+
+        assertEquals("Lira", driver.single("SELECT name FROM party_member"))
+        assertEquals("24", driver.single("SELECT hp_max FROM party_member"))
+        assertEquals("0", driver.single("SELECT hp_bonus_per_level FROM party_member"))
+        assertEquals(null, driver.single("SELECT last_level_gain FROM party_member"))
+        driver.close()
+        file.delete()
+    }
 }

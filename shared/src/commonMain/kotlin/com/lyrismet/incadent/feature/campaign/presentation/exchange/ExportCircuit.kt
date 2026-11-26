@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.campaign.presentation.exchange
 
+import com.lyrismet.incadent.core.analytics.AnalyticsTracker
 import com.lyrismet.incadent.core.file.FileStorage
 import com.lyrismet.incadent.feature.campaign.domain.repository.CampaignExchangeRepository
 import com.slack.circuit.runtime.CircuitContext
@@ -22,6 +23,7 @@ import dev.zacsweers.metro.Provides
 class ExportPresenterFactory(
     private val repository: CampaignExchangeRepository,
     private val storage: FileStorage,
+    private val analytics: AnalyticsTracker,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -29,7 +31,7 @@ class ExportPresenterFactory(
         context: CircuitContext,
     ): Presenter<*>? =
         when (screen) {
-            is ExportScreen -> ExportPresenter(screen, repository, storage, navigator)
+            is ExportScreen -> ExportPresenter(screen, repository, storage, navigator, analytics)
             else -> null
         }
 }

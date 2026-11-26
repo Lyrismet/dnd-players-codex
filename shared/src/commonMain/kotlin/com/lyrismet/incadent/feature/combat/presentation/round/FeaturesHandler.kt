@@ -8,6 +8,7 @@ import com.lyrismet.incadent.feature.codex.presentation.summary.entityWriteLock
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_features_added
 import incadent.shared.generated.resources.combat_features_undo
+import incadent.shared.generated.resources.features_removed_title
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.getString
 
@@ -61,10 +62,23 @@ internal class FeaturesHandler(
         if (after == before) return@withMember
         own.writeFacts(member, after)
         val npcId = member.npcId
+        if (removed != null && added == null) tellRemoved(member.id, removed, before, after)
         if (added != null &&
             npcId != null
         ) {
             tellAdded(npcId, npcRepository.getById(npcId)?.name ?: member.name, before, after)
+        }
+    }
+
+    private suspend fun tellRemoved(
+        memberId: Long,
+        fact: String,
+        before: List<String>,
+        after: List<String>,
+    ) = undo.show(getString(Res.string.features_removed_title), fact) {
+        editor.withMember(memberId) { _, member ->
+            val now = own.facts(member)
+            own.writeFacts(member, if (now == after) before else now.withFact(fact))
         }
     }
 

@@ -75,6 +75,7 @@ import com.lyrismet.incadent.feature.mention.presentation.MentionVisualTransform
 import com.lyrismet.incadent.feature.mention.presentation.mentionDisplayLength
 import com.lyrismet.incadent.feature.mention.presentation.takeMentionDisplay
 import com.lyrismet.incadent.feature.mention.presentation.withPinnedCreate
+import com.lyrismet.incadent.feature.phrases.presentation.PHRASES_ENTRY_VISIBLE
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.action_cancel
 import incadent.shared.generated.resources.session_detail_composer_hint
@@ -124,7 +125,7 @@ internal fun SessionComposer(
             if (completionsOpen) PhraseCompletionsPopover(state, composerWidthPx)
             state.editingEntryTimeLabel?.let { EditingEntryBanner(it, state.eventSink) }
             AnimatedVisibility(
-                visible = !mentionsOpen && !completionsOpen,
+                visible = PHRASES_ENTRY_VISIBLE && !mentionsOpen && !completionsOpen,
                 enter = fadeIn() + expandVertically(),
                 exit = fadeOut() + shrinkVertically(),
             ) {

@@ -39,7 +39,7 @@
     <string name="mention_section_previous_session">IN THE LAST SESSION</string>
     <string name="mention_section_recent">RECENTLY CREATED</string>
     <string name="mention_section_codex">IN THE CODEX</string>
-    <string name="mention_empty_codex">The codex is empty. Type a name and we will create a record</string>
+    <string name="mention_empty_codex">The codex is empty. Type a name and create a record</string>
     <string name="mention_create_row_format">+ Create “%1$s”…</string>
     <string name="mention_nickname_format">nickname “%1$s”</string>
     <string name="mention_quest_giver_format">from %1$s</string>
@@ -122,7 +122,7 @@
     <string name="codex_quest_status_failed">Failed</string>
     <string name="codex_quest_given_by_label">Given by</string>
     <string name="codex_quest_reward_label">Reward</string>
-    <string name="codex_empty_all_title">The codex fills itself</string>
+    <string name="codex_empty_all_title">The codex grows with your notes</string>
     <string name="codex_empty_all_text">Mention heroes, places and quests with @ in your notes. Or add them by hand.</string>
     <string name="codex_empty_all_button">+ New entry</string>
     <string name="codex_empty_party_title">Gather the party</string>
@@ -174,7 +174,6 @@
     <string name="codex_entry_label_name_location">Name</string>
     <string name="codex_entry_more">More details</string>
     <string name="codex_entry_more_close">Collapse</string>
-    <string name="codex_entry_more_hint_npc">Portrait, race, condition, where to meet, nicknames</string>
     <string name="codex_entry_summary_portrait">portrait</string>
     <string name="codex_entry_label_nicknames">Nicknames</string>
     <string name="codex_entry_placeholder_nicknames">Grey, the Monk</string>
@@ -199,8 +198,8 @@
     <string name="codex_entry_save_label_edit">Save changes</string>
     <string name="discard_title">Leave without saving?</string>
     <string name="codex_entry_discard_text">What you entered will be lost. Use the button at the bottom of the form to save.</string>
-    <string name="discard_back">Go back</string>
-    <string name="discard_leave">Discard</string>
+    <string name="discard_back">Stay</string>
+    <string name="discard_leave">Leave</string>
     <string name="codex_entry_quick_add_npc">+ New NPC</string>
     <string name="codex_entry_quick_add_placeholder_npc">NPC name</string>
     <string name="codex_entry_quick_add_helper">The entry appears in the codex and is selected here right away. Fill in details later.</string>
@@ -318,7 +317,7 @@
     <string name="combat_target_session_titled">Session %1$s · %2$s</string>
     <string name="combat_target_new">New session</string>
     <string name="combat_list_archive_title">ARCHIVE</string>
-    <string name="combat_list_archive_text">The campaign is finished - no new combat can be started. Past combats stay here.</string>
+    <string name="combat_list_archive_text">The campaign is finished — no new combat can be started. Past combats stay here.</string>
     <string name="combat_prep_add_party">Party member</string>
     <string name="combat_prep_add_ally">Ally</string>
     <string name="combat_prep_party_count">%1$d of %2$d</string>
@@ -345,13 +344,13 @@
     <string name="combat_prep_found_mentioned">%1$s · mentioned in the session</string>
     <string name="combat_prep_no_match_enemy">No such enemy in the codex</string>
     <string name="combat_prep_no_match_ally">No such ally in the codex</string>
-    <string name="combat_prep_empty_enemy">No enemies in the codex yet. Type a name - the enemy can be added to the codex or taken for this combat only.</string>
-    <string name="combat_prep_empty_ally">No allied NPCs in the codex yet. Type a name - a summon or a familiar can be taken for this combat only.</string>
+    <string name="combat_prep_empty_enemy">No enemies in the codex yet. Type a name — the enemy can be added to the codex or taken for this combat only.</string>
+    <string name="combat_prep_empty_ally">No allied NPCs in the codex yet. Type a name — a summon or a familiar can be taken for this combat only.</string>
     <string name="combat_prep_temp">+ “%1$s” without a codex entry</string>
     <string name="combat_prep_temp_hint_enemy">no codex entry</string>
-    <string name="combat_prep_temp_hint_ally">a summon or a familiar - can be saved to the codex in the results</string>
-    <string name="combat_prep_intro_title">First - who is fighting</string>
-    <string name="combat_prep_intro_text">A combat needs at least one party member and one enemy in the codex. Hit points, damage and states are kept for them, and the results go to the session.</string>
+    <string name="combat_prep_temp_hint_ally">a summon or a familiar — can be saved to the codex in the results</string>
+    <string name="combat_prep_intro_title">First — who is fighting</string>
+    <string name="combat_prep_intro_text">To start a combat you need at least one party member and one enemy from the codex. You track hit points, damage and states as the fight goes, and the results are saved to the session.</string>
     <string name="combat_prep_intro_party">Party member</string>
     <string name="combat_prep_intro_party_todo">Yours and your friends\' characters</string>
     <string name="combat_prep_intro_foe">Enemy</string>
@@ -361,13 +360,12 @@
     <string name="combat_hp_overline">BEFORE THE FIGHT</string>
     <string name="combat_hp_mode_hp">Hit points</string>
     <string name="combat_hp_mode_temp">Temp HP</string>
-    <string name="combat_hp_preview_unset">No hit points were set - the number becomes both the current and the maximum</string>
+    <string name="combat_hp_preview_unset">No hit points were set — the number becomes both the current and the maximum</string>
     <string name="combat_hp_preview_now">Now %1$d of %2$d</string>
     <string name="combat_hp_preview_over">Now %1$d of %2$d · maximum %2$d</string>
     <string name="combat_hp_preview_temp">Now %1$d temporary</string>
     <string name="combat_hp_apply">Save</string>
     <string name="combat_prep_order_header">3 · ORDER · AS THE MASTER SAYS</string>
-    <string name="combat_prep_order_hint">Tap in the order the master names them</string>
     <string name="combat_prep_start_need_enemy">Add an enemy</string>
     <string name="combat_prep_queue_unnamed">Order not set</string>
     <string name="combat_prep_queue_partial">Order: %1$d of %2$d</string>
@@ -398,8 +396,8 @@
     <string name="combat_queue_edit_undo">Undo the edit</string>
     <string name="combat_queue_edit_handle">Drag</string>
     <string name="combat_queue_edit_title">Editing the order</string>
-    <string name="combat_queue_edit_tip">Drag by ≡ or tap a ?N - it gets the next number after the named ones.</string>
-    <string name="combat_queue_edit_hint">Turn: %1$s - stays</string>
+    <string name="combat_queue_edit_tip">Drag by ≡ or tap a ?N — it gets the next number after the named ones.</string>
+    <string name="combat_queue_edit_hint">Turn: %1$s — stays</string>
     <string name="combat_queue_unnamed_line">order not named · turns go by the list</string>
     <string name="combat_queue_moves">MOVES</string>
     <string name="combat_round_current">%1$s moves</string>
@@ -427,14 +425,14 @@
     <string name="combat_round_reinforcement">reinforcement</string>
     <string name="combat_round_me">me</string>
     <string name="combat_identity_hint_codex">◇ This is a codex record: the name changes in its card too.</string>
-    <string name="combat_identity_hint_label">A label for this fight only - the codex stays as it is.</string>
+    <string name="combat_identity_hint_label">A label for this fight only — the codex stays as it is.</string>
     <string name="combat_identity_dup_title">The codex already has “%1$s”</string>
     <string name="combat_identity_dup_merge_sub">The record “%1$s” goes into it: damage, notes, mentions. Or type another name.</string>
     <string name="combat_identity_dup_link_sub">The participant becomes this codex record. Or type another name.</string>
     <string name="combat_identity_dup_link">Link</string>
     <string name="combat_role_title">Role · class and subclass</string>
     <string name="combat_role_unset">Not set</string>
-    <string name="combat_role_sub_species">kind “%1$s” - from the bestiary</string>
+    <string name="combat_role_sub_species">kind “%1$s” — from the bestiary</string>
     <string name="combat_identity_link_title">Link</string>
     <string name="combat_link_label_title">This fight only</string>
     <string name="combat_link_label_sub">After the fight “%1$s” will not stay in the codex</string>
@@ -480,9 +478,9 @@
     <string name="combat_panel_note_party">Resources, spells, notes…</string>
     <string name="combat_panel_note_foe">What was noticed: vulnerabilities, resistances, tactics…</string>
     <string name="combat_panel_remove">Remove from the fight</string>
-    <string name="combat_panel_rx_available">Reaction ready - tap to spend it</string>
+    <string name="combat_panel_rx_available">Reaction ready</string>
     <string name="combat_panel_rx_spent">Reaction spent</string>
-    <string name="combat_panel_rx_attacked">You are being attacked - you can answer with a reaction</string>
+    <string name="combat_panel_rx_attacked">You are being attacked — you can answer with a reaction</string>
     <string name="combat_stance_enemy">Enemy</string>
     <string name="combat_stance_neutral">Neutral</string>
     <string name="combat_stance_friend">Friend</string>
@@ -560,7 +558,7 @@
     <string name="hp_exact_now">%1$s: now %2$d</string>
     <string name="hp_exact_now_unknown">%1$s: now %2$d · maximum unknown</string>
     <string name="hp_help_title">How much health is left</string>
-    <string name="hp_help_body">We almost never know an enemy\'s exact hit points: the master describes it only in words. So the app does not show a number, it estimates one.\n\nWrite down the damage taken as numbers and move the thumb to where you think its health is: "Bloodied" is about half. The more damage is recorded, the better the estimate. Healing is taken off the damage.\n\n≈ N: an estimate from the thumb and the damage taken, without the thumb from earlier fights with the same creature.\n≥ N: there is damage, but no thumb or it sits at "Whole", so it had at least that many.\n= N: the number you typed in yourself, after that it moves with damage and healing.\n\nIf an enemy came into the fight wounded, it can only be typed in.</string>
+    <string name="hp_help_body">An enemy\'s exact hit points are usually unknown: the master describes them only in words. So the app estimates them.\n\nWrite down the damage taken as numbers and move the thumb to where you think its health is ("Bloodied" is about half). The more damage is recorded, the better the estimate. Healing is taken off the damage.\n\n≈ N — an estimate from the thumb and the damage taken, without the thumb from earlier fights with the same creature.\n≥ N — there is damage, but no thumb or it sits at "Whole", so it had at least that many.\n= N — the number you typed in yourself, after that it moves with damage and healing.\n\nIf an enemy came into the fight wounded, it can only be typed in.</string>
     <string name="hp_exact_suggest">Was %1$d, healing +%2$d was told, %3$d expected. Typed %4$d.</string>
     <string name="hp_exact_as_heal">Healing not told: %1$d</string>
     <string name="hp_exact_as_is">Just %1$d</string>
@@ -620,12 +618,11 @@
     <string name="settings_title">Settings</string>
     <string name="settings_section_app">APP</string>
     <string name="settings_language_title">Interface language</string>
-    <string name="settings_language_desc">Buttons and labels are translated. Your notes and codex stay as they are.</string>
+    <string name="settings_language_desc">Buttons and labels are translated</string>
     <string name="settings_language_ru">Русский</string>
     <string name="settings_language_en">English</string>
     <string name="settings_section_diary">JOURNAL</string>
     <string name="settings_numbering_title">Session numbering</string>
-    <string name="settings_numbering_desc">XIII or 13, whichever suits you</string>
     <string name="settings_numbering_roman">XIII</string>
     <string name="settings_numbering_arabic">13</string>
     <string name="settings_mention_title">@ mentions</string>
@@ -638,7 +635,6 @@
     <string name="settings_storage_value">On this device only</string>
     <string name="settings_rename_title">Campaign name</string>
     <string name="settings_rename_placeholder">For example, Shadows of Blackwood</string>
-    <string name="settings_rename_hint">Shown above the session list and in combat summaries.</string>
     <string name="settings_rename_save">Save</string>
     <string name="codex_npc_life_alive">Alive</string>
     <string name="codex_npc_life_dead">Dead</string>
@@ -669,6 +665,8 @@
     <string name="entity_sheet_party_type_label">Party</string>
     <string name="entity_sheet_party_you_label">You</string>
     <string name="entity_sheet_party_player_label">Player</string>
+    <string name="entity_sheet_party_view_only">View only</string>
+    <string name="entity_sheet_party_open_sheet">Open the character sheet</string>
     <string name="entity_sheet_party_class_label">Class</string>
     <string name="entity_sheet_party_level_label">Level</string>
     <string name="entity_sheet_party_hp_label">Max HP</string>
@@ -676,7 +674,7 @@
     <string name="quick_edit_label_description">Description</string>
     <string name="notes_editor_overline_format">%1$s · %2$s</string>
     <string name="notes_editor_placeholder">Appearance, personality, what is known. @ to mention or create a record</string>
-    <string name="notes_editor_at_hint">@ - mention</string>
+    <string name="notes_editor_at_hint">@ — mention</string>
     <string name="notes_editor_at_action">Mention</string>
     <string name="notes_editor_save">Save</string>
     <string name="notes_editor_close">Close</string>
@@ -685,7 +683,7 @@
     <string name="quick_edit_changed_suffix">— changed</string>
     <string name="quick_edit_link_none">Not set</string>
     <string name="quick_edit_description_placeholder">No description yet — hold to add one</string>
-    <string name="entity_sheet_portrait_hint">Tap the frame to add a portrait - for example, a photo of a handout from the GM</string>
+    <string name="entity_sheet_portrait_hint">Tap the frame to add a portrait — for example, a photo of a handout from the GM</string>
     <string name="quick_edit_hold_tip">Hold any field to edit it right here</string>
     <string name="quick_edit_hold_tip_dismiss">Got it</string>
     <string name="quick_edit_description_hint">Appearance, personality, what is known…</string>
@@ -708,10 +706,10 @@
     <string name="phrase_completion_frequent_meta_format">×%1$d</string>
     <string name="phrase_sheet_overline">JOURNAL</string>
     <string name="phrase_sheet_title">Quick phrases</string>
-    <string name="phrase_sheet_intro">Phrases you keep writing. Tap one in the row above the input to insert it; start typing and the app suggests a continuation.</string>
+    <string name="phrase_sheet_intro">Phrases you write often. Tap one in the row above the input and it is inserted. Start typing and the app suggests a continuation.</string>
     <string name="phrase_sheet_pinned_header">★ MINE</string>
     <string name="phrase_sheet_pinned_empty">Nothing yet. Add your own or pin a frequent phrase below.</string>
-    <string name="phrase_sheet_draft_placeholder">New snippet…</string>
+    <string name="phrase_sheet_draft_placeholder">New phrase…</string>
     <string name="phrase_sheet_frequent_header">↻ FREQUENT PHRASES · FOUND AUTOMATICALLY</string>
     <string name="phrase_sheet_frequent_empty">No repeats yet — they show up once the same phrase appears in different notes.</string>
     <string name="phrase_sheet_pin_button">★ Pin</string>
@@ -725,8 +723,8 @@
         <item quantity="one">%1$d session</item>
         <item quantity="other">%1$d sessions</item>
     </plurals>
-    <string name="session_detail_entry_save_phrase">Save as snippet</string>
-    <string name="session_detail_phrase_saved_toast">Added to snippets</string>
+    <string name="session_detail_entry_save_phrase">Save as quick phrase</string>
+    <string name="session_detail_phrase_saved_toast">Added to quick phrases</string>
     <string name="settings_phrases_title">Quick phrases</string>
     <string name="settings_phrases_summary_format">Mine: %1$d · frequent found: %2$d</string>
     <string name="codex_entry_required_note">* — required field</string>
@@ -734,7 +732,7 @@
     <string name="codex_entry_label_parent">Located in</string>
     <string name="codex_place_select_search">Find a place</string>
     <string name="codex_place_select_empty">Nothing found</string>
-    <string name="codex_place_select_empty_hint">No places yet. Type a name above and we will create the place, the details and links can come later.</string>
+    <string name="codex_place_select_empty_hint">No places yet. Type a name above and create the place, you can add the details and links later.</string>
     <string name="codex_place_select_clear">Not set</string>
     <string name="codex_place_select_multi_hint">several allowed</string>
     <string name="codex_place_select_done">Done · %1$d</string>
@@ -790,7 +788,7 @@
     <string name="campaign_world_same">Same world as another campaign</string>
     <string name="campaign_world_same_hint">Next you pick which places and NPCs to copy. The party is not copied.</string>
     <string name="campaign_copy_tags">Copy session tags</string>
-    <string name="campaign_copy_phrases">Copy phrase snippets</string>
+    <string name="campaign_copy_phrases">Copy quick phrases</string>
     <string name="campaign_create_button">Create campaign</string>
     <string name="campaign_create_next">Next · pick entries</string>
     <string name="campaign_items_tab_format">%1$s · %2$d of %3$d</string>
@@ -813,14 +811,13 @@
     <string name="campaign_finish_title">Finish «%1$s»?</string>
     <string name="campaign_finish_body">The campaign goes to the archive. Notes, codex and fights are kept, and you can come back to it any time from the campaign list.</string>
     <string name="campaign_finish_archive">Archive it</string>
-    <string name="campaign_finish_delete">Delete data</string>
+    <string name="campaign_finish_delete">Delete all</string>
     <string name="campaign_delete_title">Delete «%1$s»?</string>
     <string name="campaign_delete_body">Sessions, notes and the codex of this campaign are gone for good. Type its name to confirm.</string>
     <string name="campaign_archive_banner_title">ARCHIVE</string>
-    <string name="campaign_archive_banner_text">The campaign is finished. Everything is kept for memory.</string>
     <string name="campaign_resume">↻ Resume</string>
     <string name="campaign_library_title">Campaigns</string>
-    <string name="campaign_library_empty_live">No ongoing campaigns. Start a new one when the group gathers again.</string>
+    <string name="campaign_library_empty_live">No active campaigns. Start a new one when the group gathers again.</string>
     <string name="campaign_onboarding_title">The journal of your game</string>
     <string name="campaign_onboarding_lead">Playing a tabletop RPG? Write down what happened tonight and Incadent links heroes, places and quests for you.</string>
     <string name="campaign_onboarding_notes_title">Write at the table</string>
@@ -840,7 +837,7 @@
     <string name="place_block_carried">moves with “%1$s”</string>
     <string name="place_cycle_toast">A place can\'t be put inside itself</string>
     <string name="codex_entry_label_inside">Inside</string>
-    <string name="entity_sheet_group_location_inside_empty">No places inside - hold to add</string>
+    <string name="entity_sheet_group_location_inside_empty">No places inside — hold to add</string>
     <string name="entity_sheet_move_into">Move to…</string>
     <plurals name="place_move_from">
         <item quantity="one">%1$d place moved from “%2$s”</item>
@@ -885,16 +882,16 @@
     <string name="damage_state_vulnerability">Vulnerability</string>
     <string name="entity_sheet_species_creature_type_label">Creature type</string>
     <string name="entity_sheet_species_hp_label">Hit points</string>
-    <string name="entity_sheet_species_vulnerabilities_title">Resistances</string>
+    <string name="entity_sheet_species_vulnerabilities_title">Resistances and vulnerabilities</string>
     <string name="entity_sheet_species_vulnerabilities_empty">No resistances or vulnerabilities noticed yet. Hold to mark them</string>
     <string name="entity_sheet_species_vulnerabilities_done">Done</string>
     <string name="entity_sheet_species_vulnerabilities_hint">Tap a type to pick its state</string>
-    <string name="entity_sheet_species_vulnerabilities_tip_format">%1$s - %2$s</string>
+    <string name="entity_sheet_species_vulnerabilities_tip_format">%1$s — %2$s</string>
     <string name="codex_npc_mode_named">Named</string>
     <string name="codex_all_species">Species</string>
     <string name="codex_npc_mode_species">Species</string>
     <string name="codex_species_empty_title">No species yet</string>
-    <string name="codex_species_empty_text">Goblins, wolves, skeletons - everything that comes in packs. Add a species to mark it in notes</string>
+    <string name="codex_species_empty_text">Goblins, wolves, skeletons — everything that comes in packs. Add a species to mark it in notes</string>
     <string name="codex_species_seen_prefix">Seen %1$s</string>
     <string name="codex_species_fights_format">in %1$d fights</string>
     <string name="codex_species_row_hp_format">HP %1$s</string>
@@ -938,7 +935,6 @@
         <item quantity="other">%1$d sessions</item>
     </plurals>
     <string name="exchange_summary_line">%1$s · %2$s</string>
-    <string name="exchange_summary_hint">places, NPCs, quests, species, party, sessions with notes and combats</string>
     <string name="exchange_tab_places">Places</string>
     <string name="exchange_tab_npcs">NPCs</string>
     <string name="exchange_tab_quests">Quests</string>
@@ -951,7 +947,6 @@
     <string name="exchange_items_none">Clear all</string>
     <string name="exchange_items_empty">Nothing here</string>
     <string name="exchange_photos_title">With photos</string>
-    <string name="exchange_photos_hint">Only the main photo goes into the file</string>
     <string name="exchange_photos_on">%1$s · %2$d photos · %3$s without photos</string>
     <string name="exchange_photos_off">%1$s · %2$s with photos</string>
     <string name="exchange_photos_none">No photos · %1$s</string>
@@ -964,7 +959,7 @@
     <string name="exchange_save_folder">Folder</string>
     <string name="exchange_save_folder_downloads">Downloads</string>
     <string name="exchange_save_folder_ask">Choose when saving</string>
-    <string name="exchange_save_download">Download · %1$s</string>
+    <string name="exchange_save_download">Save · %1$s</string>
     <string name="exchange_save_cancel">Cancel</string>
     <string name="exchange_live_title_ongoing">A fight is under way</string>
     <string name="exchange_live_title_prep">A fight is being prepared</string>
@@ -1012,14 +1007,14 @@
     <string name="exchange_error_not_incadent_title">This is not an Incadent file</string>
     <string name="exchange_error_not_incadent_body">The file has no Incadent mark. Pick a file the app made, its name ends with .incadent.json.</string>
     <string name="exchange_newer_title">The file is from a newer version</string>
-    <string name="exchange_newer_text">A newer Incadent (V%1$d) made this file, and yours is V%2$d. Whatever your version does not recognize will not load. Continue?</string>
+    <string name="exchange_newer_text">A newer Incadent (V%1$d) made this file, and yours is V%2$d. Some data may not load. It is better to update the app first. Continue?</string>
     <string name="exchange_newer_skipped">Entries that will not load: %1$d.</string>
     <string name="exchange_newer_continue">Continue</string>
     <string name="exchange_newer_back">Back</string>
     <string name="exchange_error_large_title">The file is too large</string>
     <string name="exchange_error_large_body">The app does not open files over 25 MB. Ask for the file without photos.</string>
     <string name="exchange_error_broken_title">The file is damaged</string>
-    <string name="exchange_error_broken_body">The mark is there but the records do not add up. It may not have downloaded fully.</string>
+    <string name="exchange_error_broken_body">This is an Incadent file, but it could not be read. It may not have downloaded fully. Ask for it to be sent again.</string>
     <string name="exchange_error_read_title">Could not read the file</string>
     <string name="exchange_error_read_body">The file does not open. Try picking it again.</string>
     <string name="exchange_error_other_file">Pick another file</string>
@@ -1032,13 +1027,13 @@
     <string name="campaign_delete_export_hint">You can export to a file first: it keeps the entries and notes of this campaign.</string>
     <string name="campaign_delete_export_button">Export to a file</string>
     <string name="settings_section_data">DATA</string>
-    <string name="settings_data_export_title">Export campaign</string>
-    <string name="settings_data_export_hint">The open campaign to an .incadent.json file</string>
+    <string name="settings_data_export_title">Campaign backup</string>
+    <string name="settings_data_export_hint">A file with the campaign: keep it as a backup or send it to a friend</string>
     <string name="settings_data_import_title">Import from a file</string>
     <string name="settings_data_import_hint">Or open a file from Telegram</string>
     <string name="exchange_approx">≈ %1$s</string>
     <string name="exchange_photos_footnote">Only the main photo goes into the file. Thumbnails are rebuilt on import.</string>
-    <string name="exchange_pick_footnote">Dashed - an entry comes with a ticked one: an NPC's place, species, a mention in a session. Untick the source and it goes too.</string>
+    <string name="exchange_pick_footnote">Dashed — an entry comes with a ticked one: an NPC's place, species, a mention in a session. Untick the source and it goes too.</string>
     <string name="exchange_pull_npc_place">place of NPC “%1$s”</string>
     <string name="exchange_pull_npc_species">species of NPC “%1$s”</string>
     <string name="exchange_pull_quest">from quest “%1$s”</string>
@@ -1071,7 +1066,7 @@
     <string name="combat_log_down_party">%1$s is unconscious</string>
     <string name="combat_log_up">%1$s is back on their feet</string>
     <string name="combat_log_dead">%1$s has fallen</string>
-    <string name="combat_log_mark">%1$s - %2$s</string>
+    <string name="combat_log_mark">%1$s — %2$s</string>
     <string name="combat_log_stance_enemy">%1$s is a foe again</string>
     <string name="combat_log_stance_neutral">%1$s surrendered</string>
     <string name="combat_log_stance_friend">%1$s joined our side</string>
@@ -1102,14 +1097,11 @@
     <string name="combat_results_item_alive">%1$s survived %2$d</string>
     <string name="combat_results_item_hits_sub">remember the species\' hit points</string>
     <string name="combat_results_item_dead">%1$s died</string>
-    <string name="combat_results_item_dead_sub">mark dead in the codex</string>
     <string name="combat_results_item_fallen">%1$s fell</string>
-    <string name="combat_results_item_fallen_sub">mark fallen in the codex</string>
     <string name="combat_results_item_resistance">%1$s · %2$s</string>
     <string name="combat_results_item_resistance_sub">%1$s</string>
     <string name="combat_results_item_resistance_weak">%1$s · unsure</string>
     <string name="combat_results_item_keep">Keep “%1$s” as an NPC ally</string>
-    <string name="combat_results_item_keep_sub">a new codex record</string>
     <string name="combat_results_gone">This fight was already deleted</string>
     <string name="combat_card_overline">COMBAT · %1$s</string>
     <string name="combat_results_item_party_fallen">%1$s has fallen</string>
@@ -1135,14 +1127,14 @@
     <string name="codex_party_default_class">Adventurer</string>
     <string name="combat_prep_create_npc">+ Create NPC “%1$s”</string>
     <string name="combat_prep_create_species">+ Create species “%1$s”</string>
-    <string name="combat_prep_create_species_hint">several alike: %1$s ×3 - a bestiary record</string>
-    <string name="combat_prep_create_hint_enemy">a named enemy - one, with its own codex card</string>
-    <string name="combat_prep_create_hint_ally">a named ally - one, with its own codex card</string>
-    <string name="entity_sheet_npc_vulnerabilities_label">Vulnerabilities</string>
+    <string name="combat_prep_create_species_hint">several alike: %1$s ×3 — a bestiary record</string>
+    <string name="combat_prep_create_hint_enemy">a named enemy — one, with its own codex card</string>
+    <string name="combat_prep_create_hint_ally">a named ally — one, with its own codex card</string>
+    <string name="entity_sheet_npc_vulnerabilities_label">Resistances and vulnerabilities</string>
     <string name="entity_sheet_npc_vulnerabilities_hint">Tap a shield: resistance, immunity, vulnerability, none</string>
-    <string name="entity_sheet_npc_vulnerabilities_hint_inherited">· faded - from the species «%1$s»</string>
-    <string name="entity_sheet_npc_vulnerabilities_tip_inherited">%1$s - %2$s · from the species «%3$s»</string>
-    <string name="entity_sheet_npc_vulnerabilities_step">%1$s - %2$s · tap - %3$s</string>
+    <string name="entity_sheet_npc_vulnerabilities_hint_inherited">· faded — from the species «%1$s»</string>
+    <string name="entity_sheet_npc_vulnerabilities_tip_inherited">%1$s — %2$s · from the species «%3$s»</string>
+    <string name="entity_sheet_npc_vulnerabilities_step">%1$s — %2$s · tap — %3$s</string>
     <string name="entity_sheet_npc_vulnerabilities_none">none</string>
     <string name="combat_name_title">Name</string>
     <string name="combat_name_new">New NPC «%1$s»</string>
@@ -1163,12 +1155,9 @@
     <string name="combat_promo_over_new">NEW NPC · FROM THE FIGHT</string>
     <string name="combat_promo_over_known">NPC FROM THE CODEX · FROM THE FIGHT</string>
     <string name="combat_promo_species">Species</string>
-    <string name="combat_promo_species_hint">stays linked to the bestiary</string>
     <string name="combat_promo_hp">Hit points</string>
-    <string name="combat_promo_hp_hint">the fight counts in its hit points estimate</string>
     <string name="combat_promo_relation">Relation</string>
     <string name="combat_promo_note">Note</string>
-    <string name="combat_promo_note_hint">copied to the card</string>
     <string name="combat_promo_confirm_new">Add to the codex</string>
     <string name="combat_promo_confirm_known">Done</string>
     <string name="combat_promo_reject">Do not add</string>
@@ -1194,7 +1183,7 @@
     <string name="help_res_on_sub">Press to spend</string>
     <string name="help_pip_off_title">Spent</string>
     <string name="help_res_off_sub">Press to restore</string>
-    <string name="help_res_body">Rage, Ki, Second Wind - anything that is spent and builds back up. A long rest restores everything. Press the name to edit or delete it.</string>
+    <string name="help_res_body">Rage, Ki, Second Wind — anything that is spent and builds back up. A long rest restores everything. Press the name to edit or delete it.</string>
     <string name="help_ds_title">Death saving throws</string>
     <string name="help_ds_ok_title">Three successes</string>
     <string name="help_ds_ok_sub">Stable: unconscious, but no longer rolls</string>
@@ -1218,9 +1207,9 @@
     <string name="help_friend_row_items">Personal items and wallet</string>
     <string name="help_friend_row_me">The "me" mark</string>
     <string name="help_friend_body">Party names, classes and levels, all codex entries, sessions and mentions are sent. NPC and place items are sent too.</string>
-    <string name="link_suggestion_meet_at">%1$s - add to "Where to find"?</string>
-    <string name="link_suggestion_who_here">%1$s - add to "Who is here"?</string>
-    <string name="link_suggestion_giver">%1$s - set as "Given by"?</string>
+    <string name="link_suggestion_meet_at">%1$s — add to "Where to find"?</string>
+    <string name="link_suggestion_who_here">%1$s — add to "Who is here"?</string>
+    <string name="link_suggestion_giver">%1$s — set as "Given by"?</string>
     <string name="link_suggestion_apply">Link</string>
     <string name="link_suggestion_dismiss">No thanks</string>
     <string name="link_suggestion_done_title">Linked</string>
@@ -1228,9 +1217,9 @@
     <string name="link_suggestion_done_who_here">%1$s → Who is here</string>
     <string name="link_suggestion_done_giver">%1$s → Given by</string>
     <string name="link_suggestion_dismissed_title">Suggestion hidden</string>
-    <string name="link_suggestion_dismissed_subtitle">%1$s - will not be offered again</string>
+    <string name="link_suggestion_dismissed_subtitle">%1$s — will not be offered again</string>
     <string name="mention_create_compact">+ Create a record</string>
-    <string name="mention_create_hint">Not there? Type the name and we will create the record</string>
+    <string name="mention_create_hint">Not there? Type the name and create a record</string>
     <string name="party_level_up_followed">Party raised too: %1$d</string>
     <string name="party_level_up_raise">Level up</string>
     <string name="species_type_title">Creature type</string>
@@ -1579,10 +1568,10 @@
     <string name="me_death_add_success">+ Success</string>
     <string name="me_death_add_failure">+ Failure</string>
     <string name="me_death_stable">Unconscious but no longer rolling. The count resets on healing.</string>
-    <string name="me_death_dead">Three failures. Mark the character as fallen? The record moves to the “Fallen” section of the party, notes and items stay.</string>
+    <string name="me_death_dead">Three failures. The hero has fallen. Move them to “Fallen”? Notes and items stay, and you can bring them back from the card.</string>
     <string name="me_death_mark_fallen">Mark as fallen</string>
-    <string name="me_death_undo_failure">Mistake - remove a failure</string>
-    <string name="me_fill_banner_title">Fill the sheet from the paper one</string>
+    <string name="me_death_undo_failure">Remove a failure</string>
+    <string name="me_fill_banner_title">Copy your sheet from paper</string>
     <string name="me_fill_banner_text">Bonuses, saves and skills are counted from the scores.</string>
     <string name="me_fill_banner_action">Start with class and level</string>
     <string name="me_sheet_section">Abilities and skills</string>
@@ -1614,7 +1603,7 @@
     <string name="me_feats_delete">Delete feat</string>
     <string name="me_feats_deleted_title">Feat deleted</string>
     <string name="me_features_title">Features</string>
-    <string name="me_features_hold_hint">hold the shields to edit</string>
+    <string name="me_features_hold_hint">hold to edit</string>
     <string name="me_about_title">About the character</string>
     <string name="me_about_background">Background</string>
     <string name="me_about_alignment">Alignment</string>
@@ -1629,6 +1618,22 @@
     <string name="me_hp_mode_minus">− Hit points</string>
     <string name="me_hp_mode_plus">+ Hit points</string>
     <string name="me_hp_mode_temp">Temporary</string>
+    <string name="me_hp_mode_max">Change maximum hit points</string>
+    <string name="me_menu_level_up">Level up</string>
+    <string name="me_level_up_title">Level up</string>
+    <string name="me_level_up_level_format">Level %1$d → %2$d</string>
+    <string name="me_level_up_levels_label">How many levels</string>
+    <string name="me_level_up_total_format">Total hit points: %1$s</string>
+    <string name="me_level_up_gain_label">Hit points gained</string>
+    <string name="me_level_up_gain_hint">Enter how many hit points each new level adds. The field offers this number next time.</string>
+    <string name="me_level_up_no_max_hint">There is no maximum hit points set, so only the level changes.</string>
+    <string name="me_level_up_done">Level up</string>
+    <string name="me_level_up_toast">%1$s: level %2$d</string>
+    <string name="me_level_up_toast_max">Maximum hit points %1$d</string>
+    <string name="me_level_up_toast_no_max">No maximum hit points set</string>
+    <string name="me_edit_bonus_label">Hit point bonus per level</string>
+    <string name="me_edit_bonus_hint">Feats like Tough add extra hit points for every level.</string>
+    <string name="me_edit_bonus_catch_up">Recalculate maximum hit points: %1$s</string>
     <string name="me_ability_overline">Ability</string>
     <string name="me_ability_hint">The score from the sheet, 1 to 30. The bonus is counted for you.</string>
     <string name="me_calc_bonus">Bonus · counted</string>
@@ -1642,7 +1647,6 @@
     <string name="me_ac_title">Armor class</string>
     <string name="me_ac_from_label">Where from · for yourself</string>
     <string name="me_ac_from_placeholder">For example, chain mail 16 + shield 2</string>
-    <string name="me_ac_from_hint">A note for you only, nothing is counted from it.</string>
     <string name="me_speed_title">Speed</string>
     <string name="me_speed_hint">Walking speed in feet.</string>
     <string name="me_adjustment_note_label">Where the adjustment comes from · for yourself</string>
@@ -1654,7 +1658,6 @@
     <string name="me_edit_race_label">Race or species</string>
     <string name="me_edit_background_label">Background</string>
     <string name="me_edit_alignment_label">Alignment</string>
-    <string name="me_edit_player_label">How to sign you</string>
     <string name="me_fill_overline_format">Sheet · step %1$d of %2$d</string>
     <string name="me_fill_title_1">Class and level</string>
     <string name="me_fill_title_2">Abilities</string>
@@ -1689,13 +1692,13 @@
     <string name="me_spells_pick_none">None</string>
     <string name="me_spells_pick_hint">The spell save DC and the attack bonus are counted from it. With no ability and no slots the Spells tab is hidden.</string>
     <string name="me_help_spell_ability_title">Spellcasting ability</string>
-    <string name="me_help_spell_ability_body">The ability your spells depend on, set by your class. Press the tile to choose it: the save DC (difficulty class) and the attack bonus are counted from it. Leave it empty for a hero without magic.</string>
+    <string name="me_help_spell_ability_body">Your class sets it. Press the tile to choose the ability: the save DC (difficulty class) and the attack bonus are counted from it. Leave it empty for a hero without magic.</string>
     <string name="me_help_spell_dc_title">Spell save DC</string>
     <string name="me_help_spell_dc_body">DC (difficulty class) is the number the target must beat with a saving throw against your spell. It is 8 + proficiency bonus + spellcasting ability modifier. It changes with your level and your ability score.</string>
     <string name="me_help_spell_attack_title">Spell attack bonus</string>
     <string name="me_help_spell_attack_body">The bonus you add to the d20 when a spell asks for an attack roll. It is proficiency bonus + spellcasting ability modifier. It changes with your level and your ability score.</string>
     <string name="me_help_slots_title">Spell slots</string>
-    <string name="me_help_slots_body">Each tile is a spell level: the count of slots and squares, the lit ones are still free. Press a tile to open the level, then press a cell to spend it and again to bring it back. Change the number of slots with the "Edit slots" button.</string>
+    <string name="me_help_slots_body">Each tile is a spell level: the count of slots and squares. A lit square is a free slot. Press a tile to open the level, then press a cell to spend it and again to bring it back. Change the number of slots with the "Edit slots" button.</string>
     <string name="me_slots_level_title">Level %1$s</string>
     <string name="me_slots_free">%1$d of %2$d free</string>
     <string name="me_slots_list_placeholder">Spells of this level will appear here</string>
@@ -1767,7 +1770,7 @@
     <string name="me_rest_log_live_format">A “Long rest” note in “%1$s”</string>
     <string name="me_rest_log_none">No session in progress</string>
     <string name="me_rest_confirm">Take the rest</string>
-    <string name="me_rest_undo_hint">Afterwards, “Undo” in the toast</string>
+    <string name="me_rest_undo_hint">Afterwards, “Undo” at the bottom of the screen</string>
     <string name="me_rest_note">Long rest</string>
     <string name="me_rest_done_title">Long rest</string>
     <string name="me_items_add">+ Item</string>
@@ -1826,8 +1829,8 @@
     <string name="session_text_actors_items">Items</string>
     <string-array name="session_text_intros_named"><item>{name} unrolls a scroll: here is the truth about the trip.</item>
         <item>{name} swears this is exactly how it goes.</item>
-        <item>A tavern tale. Author - {name}. Any resemblance to reality is a coincidence.</item>
-        <item>A chronicle by candlelight. Author - {name}.</item>
+        <item>A tavern tale. Author — {name}. Any resemblance to reality is a coincidence.</item>
+        <item>A chronicle by candlelight. Author — {name}.</item>
         <item>{name} dictates the chronicle, the ink still wet.</item>
         <item>{name} opens the journal and pretends to remember everything.</item>
         <item>The campaign chronicle. {name} holds the quill, the party does not argue.</item>
@@ -1868,9 +1871,6 @@
     <string name="combat_mark_field_label">Mark</string>
     <string name="combat_mark_field_spell">Spell</string>
     <string name="combat_mark_field_custom">Condition name</string>
-    <string name="combat_mark_preset_save">Saving throw…</string>
-    <string name="combat_mark_preset_ac">AC…</string>
-    <string name="combat_mark_preset_speed">Speed…</string>
     <string name="combat_mark_rounds_title">ROUND COUNTER</string>
     <string name="combat_mark_rounds_none">no count</string>
     <string name="combat_mark_rounds_minute">1 min · 10</string>
@@ -1892,11 +1892,10 @@
     <string name="combat_features_add">Add</string>
     <string name="combat_features_remove">Remove fact</string>
     <string name="combat_features_added">Added to NPC: %1$s</string>
+    <string name="features_removed_title">Feature removed</string>
     <string name="combat_features_undo">Tap to undo</string>
     <string name="entity_sheet_npc_facts_label">Known facts</string>
-    <string name="combat_features_hint">Type or start from a preset</string>
     <string name="combat_features_shields_title">Resistances · immunities · vulnerabilities</string>
-    <string name="combat_features_done">Done</string>
     <string name="combat_features_changed">Features changed</string>
     <string name="me_spells_cantrips_title">Cantrips</string>
     <string name="me_spells_cantrips_sub">At will</string>
@@ -2031,7 +2030,6 @@
     <string name="me_spells_growth_projectiles_hint">rays, arrows, strikes</string>
     <string name="me_spells_growth_duration_hint">Hex and the like</string>
     <string name="me_spells_growth_targets_hint">Hold Person: +1 target</string>
-    <string name="me_spells_growth_range_hint">rare, but it happens</string>
     <string name="me_spells_growth_custom_hint">a text for every step</string>
     <string name="me_spells_growth_mode_every">Every circle</string>
     <string name="me_spells_growth_mode_every_n">Every N</string>
@@ -2079,7 +2077,6 @@
     <string name="downtime_revert">Take back</string>
     <string name="downtime_applied_title">Added to the sheet: %1$s</string>
     <string name="downtime_reverted_title">Taken back: %1$s</string>
-    <string name="downtime_detail_subtitle">Not a session: numbering and days stay as they are</string>
     <string name="downtime_field_did">What they did</string>
     <string name="downtime_loot_header">Gold and items</string>
     <string name="downtime_status_no_character">no character of your own</string>
@@ -2095,7 +2092,7 @@
     <string name="downtime_gold_spent_description">Gold spent</string>
     <string name="downtime_item_name_placeholder">Name</string>
     <string name="downtime_item_add">+ Item</string>
-    <string name="downtime_edit_hint">On save the gold goes to the purse and the items to the gear of the "Me" sheet. You can undo it in the toast or in the record itself.</string>
+    <string name="downtime_edit_hint">On save the gold goes to the purse and the items to the gear of the "Me" sheet. You can undo it with the button at the bottom of the screen or in the record itself.</string>
     <string name="downtime_edit_hint_no_character">No character of your own: pick one in "Me" to add gold and items.</string>
     <string name="downtime_title">Downtime</string>
     <string name="downtime_applied_subtitle">Downtime</string>
@@ -2114,4 +2111,22 @@
     <string name="session_list_edit_add_past">+ Session</string>
     <string name="session_list_edit_between_format">+ Between sessions %1$s and %2$s</string>
     <string name="session_list_edit_handle_description">Move the session</string>
+    <string name="me_spells_import_button">Import by link</string>
+    <string name="me_spells_import_title">Import by link</string>
+    <string name="me_spells_import_link">Link</string>
+    <string name="me_spells_import_link_hint">Paste a link to a spell</string>
+    <string name="me_spells_import_paste">Paste</string>
+    <string name="me_spells_import_clear">✕</string>
+    <string name="me_spells_import_sites">Works with links from</string>
+    <string name="me_spells_import_language_en">EN</string>
+    <string name="me_spells_import_device_note">Your device loads the page, straight from the site</string>
+    <string name="me_spells_import_submit">Import</string>
+    <string name="me_spells_import_manual">Create manually</string>
+    <string name="me_spells_import_error_unsupported">This site is not supported</string>
+    <string name="me_spells_import_error_offline">No internet connection</string>
+    <string name="me_spells_import_error_not_found">There is no spell at this link</string>
+    <string name="me_spells_import_error_unreadable">Could not read the page</string>
+    <string name="me_spells_import_hint">Imported from %1$s. Check the damage and the growth and set them yourself</string>
+    <string name="me_spells_import_hint_dice">The description mentions damage dice: %1$s</string>
+    <string name="me_spells_import_hint_dismiss">Got it</string>
 </resources>

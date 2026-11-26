@@ -7,6 +7,14 @@ plugins {
     alias(libs.plugins.detekt)
 }
 
+// the config file is not in git, a build without it just has no firebase
+if (file("google-services.json").exists()) {
+    // the perf plugin 2.0.1 needs the Transform api that AGP 9 removed, so only its library is used
+    listOf(libs.plugins.googleServices, libs.plugins.firebaseCrashlytics).forEach {
+        apply(plugin = it.get().pluginId)
+    }
+}
+
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_11
@@ -24,6 +32,11 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.kotlinx.coroutines.core)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.perf)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
@@ -46,7 +59,7 @@ android {
             libs.versions.android.targetSdk
                 .get()
                 .toInt()
-        versionName = "0.9.1.0"
+        versionName = "0.9.1.1"
         // 0.8 -> 80000, 1.2.3 -> 1020300, 0.9.0.1 -> 90001, so every new versionName installs over the one before it
         versionCode = versionCodeOf(versionName.orEmpty())
     }
@@ -70,7 +83,8 @@ android {
     buildTypes {
         release {
             signingConfigs.findByName("release")?.let { signingConfig = it }
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

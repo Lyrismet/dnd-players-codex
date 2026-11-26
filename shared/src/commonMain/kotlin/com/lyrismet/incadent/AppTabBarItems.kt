@@ -10,6 +10,7 @@ import com.lyrismet.incadent.core.designsystem.component.icons.SessionsTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.SettingsTabIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.AppEntityIcon
 import com.lyrismet.incadent.core.designsystem.component.icons.entity.EntityIcons
+import com.lyrismet.incadent.core.navigation.AppTab
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.bottom_tab_codex
 import incadent.shared.generated.resources.bottom_tab_combat

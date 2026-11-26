@@ -142,7 +142,7 @@ internal fun CodexPartyEntry(
 ) = PartyRow(
     member = member,
     eventSink = state.eventSink,
-    swipeEditEnabled = state.swipeEditEnabled,
+    swipeEditEnabled = state.swipeEditEnabled && !member.viewOnly,
     peekOffsetPx = state.peekOffsetPxFor(EntityRef.Party(member.id), hintPeekOffsetPx),
 )
 

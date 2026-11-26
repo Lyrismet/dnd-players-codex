@@ -5,6 +5,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.file.ImportSource
 import com.lyrismet.incadent.core.language.LanguageSheetController
 import com.lyrismet.incadent.core.preferences.AppLanguage
@@ -22,6 +24,7 @@ class CampaignLibraryPresenter(
 ) : Presenter<CampaignLibraryScreenState> {
     @Composable
     override fun present(): CampaignLibraryScreenState {
+        val analytics = LocalAnalyticsTracker.current
         val toast = remember { mutableStateOf<String?>(null) }
         toast.autoDismiss()
         val host = rememberCampaignSheetHost(campaignRepository, importSource) { text -> toast.value = text }
@@ -35,6 +38,7 @@ class CampaignLibraryPresenter(
             language = language,
             languageSheetOpen = languageSheet.isOpen.value,
         ) { event ->
+            analytics.action("CampaignLibrary", event)
             when (event) {
                 is CampaignLibraryEvent.CampaignSheet -> host.onEvent(event.event)
                 is CampaignLibraryEvent.LanguageSheet -> languageSheet.onEvent(event.event)

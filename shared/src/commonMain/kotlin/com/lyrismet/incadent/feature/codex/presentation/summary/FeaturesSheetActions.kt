@@ -25,22 +25,16 @@ import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.AppTextInput
 import com.lyrismet.incadent.core.designsystem.component.AppTextInputStyle
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
-import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.combat_features_add
-import incadent.shared.generated.resources.combat_features_done
 import incadent.shared.generated.resources.combat_features_facts
 import incadent.shared.generated.resources.combat_features_field
-import incadent.shared.generated.resources.combat_features_hint
 import incadent.shared.generated.resources.combat_features_remove
 import incadent.shared.generated.resources.combat_features_shields_title
 import incadent.shared.generated.resources.combat_features_title
-import incadent.shared.generated.resources.combat_mark_preset_ac
-import incadent.shared.generated.resources.combat_mark_preset_save
-import incadent.shared.generated.resources.combat_mark_preset_speed
 import org.jetbrains.compose.resources.stringResource
 
 /** what the sheet of the features shows and how it answers, the fight and the npc card fill it from their own data */
@@ -79,7 +73,6 @@ internal fun FeaturesBottomSheet(
                 FormFieldLabel(stringResource(Res.string.combat_features_shields_title).uppercase())
                 VulnerabilityGridEditor(shields, actions.onShieldChanged)
             }
-            FormPrimaryButton(stringResource(Res.string.combat_features_done), actions.onClose)
         }
     }
 }
@@ -115,21 +108,6 @@ private fun FactsEditor(
                 }
             }
         }
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            listOf(
-                stringResource(Res.string.combat_mark_preset_save),
-                stringResource(Res.string.combat_mark_preset_ac),
-                stringResource(Res.string.combat_mark_preset_speed),
-            ).forEach { preset -> FeatureChip(preset) { actions.onTextChanged("$preset ") } }
-        }
-        Text(
-            stringResource(Res.string.combat_features_hint),
-            color = AppPalette.TextTertiary,
-            fontSize = AppFontSize.Caption,
-        )
     }
 }
 

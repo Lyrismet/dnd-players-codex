@@ -1,6 +1,8 @@
 package com.lyrismet.incadent.feature.combat.presentation.prep
 
 import androidx.compose.runtime.MutableState
+import com.lyrismet.incadent.core.analytics.AnalyticsEvent
+import com.lyrismet.incadent.core.analytics.AnalyticsTracker
 import com.lyrismet.incadent.core.calc.CalcExpression
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
@@ -178,9 +180,11 @@ internal data class HpPadDraft(
     val expr: CalcExpression = CalcExpression(),
 )
 
+@Suppress("LongParameterList")
 internal class PrepActions(
     private val editor: PrepEditor,
     private val navigator: Navigator,
+    private val analytics: AnalyticsTracker,
     search: MutableState<SearchDraft?>,
     private val hpPad: MutableState<HpPadDraft?>,
     private val exitConfirmVisible: MutableState<Boolean>,
@@ -205,7 +209,10 @@ internal class PrepActions(
     }
 
     fun onStart(snapshot: PrepSnapshot) {
-        editor.start(snapshot.ownHp) { navigator.resetRoot(CombatRoundScreen(editor.combatId)) }
+        editor.start(snapshot.ownHp) {
+            analytics.track(AnalyticsEvent.CombatStarted)
+            navigator.resetRoot(CombatRoundScreen(editor.combatId))
+        }
     }
 
     fun onSearch(

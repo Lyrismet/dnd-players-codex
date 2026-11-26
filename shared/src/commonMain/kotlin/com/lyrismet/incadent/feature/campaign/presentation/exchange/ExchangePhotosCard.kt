@@ -13,7 +13,6 @@ import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.feature.campaign.domain.model.ExportEstimate
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.exchange_approx
-import incadent.shared.generated.resources.exchange_photos_hint
 import incadent.shared.generated.resources.exchange_photos_none
 import incadent.shared.generated.resources.exchange_photos_off
 import incadent.shared.generated.resources.exchange_photos_on
@@ -60,7 +59,7 @@ fun ExchangePhotosCard(
     }
     AppToggleCard(
         title = stringResource(Res.string.exchange_photos_title),
-        hint = estimate?.let { photosNote(it, photos) } ?: stringResource(Res.string.exchange_photos_hint),
+        hint = estimate?.let { photosNote(it, photos) },
         checked = photos,
         onToggle = onToggle,
         modifier = modifier,

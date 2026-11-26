@@ -40,6 +40,8 @@ import com.lyrismet.incadent.core.designsystem.component.PortraitMarkContent
 import com.lyrismet.incadent.core.designsystem.component.SegmentedControl
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.language.label
+import com.lyrismet.incadent.core.navigation.AppTab
+import com.lyrismet.incadent.core.navigation.LocalTabSwitcher
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EditorHoleTracker
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.EditorShield
 import com.lyrismet.incadent.feature.codex.presentation.quickedit.LocalEditorHoleTracker
@@ -72,6 +74,8 @@ fun EntitySummarySheetContent(
     modifier: Modifier = Modifier,
 ) {
     var holdTooShortTrigger by remember { mutableIntStateOf(0) }
+    val switchTab = LocalTabSwitcher.current
+    val onOpenSheet = { switchTab(AppTab.ME).also { onClose() } }
     val editorHole = remember { EditorHoleTracker() }
     val quick = actions.quickEdit
     val scrollState = rememberScrollState()
@@ -99,7 +103,7 @@ fun EntitySummarySheetContent(
                         is EntitySummaryItem.NpcSummary -> NpcSummaryBody(item, actions)
                         is EntitySummaryItem.LocationSummary -> LocationSummaryBody(item, actions)
                         is EntitySummaryItem.QuestSummary -> QuestSummaryBody(item, actions)
-                        is EntitySummaryItem.PartySummary -> PartySummaryBody(item, actions)
+                        is EntitySummaryItem.PartySummary -> PartySummaryBody(item, actions, onOpenSheet)
                         is EntitySummaryItem.SpeciesSummary -> SpeciesSummaryBody(item, actions)
                         is EntitySummaryItem.ItemSummary -> ItemSummaryBody(item, actions)
                     }

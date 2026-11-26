@@ -23,6 +23,7 @@ import com.lyrismet.incadent.feature.me.domain.SpellPay
 import com.lyrismet.incadent.feature.me.domain.slotColumns
 import com.lyrismet.incadent.feature.me.domain.spellLevels
 import com.lyrismet.incadent.feature.me.presentation.spells.CastEffect
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellImportDeps
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsBlockState
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsContext
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsEvent
@@ -42,6 +43,7 @@ class MagicSources(
     val spells: CharacterSpellRepository,
     val resources: CharacterResourceRepository,
     val sheets: CharacterSheetRepository,
+    val spellImport: SpellImportDeps,
 )
 
 /** the spells of the player's own character in this fight, empty when the fight has none or it has no magic */
@@ -59,7 +61,7 @@ internal class RoundMagic(
     }
 }
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "LongMethod")
 @Composable
 internal fun rememberRoundMagic(
     sources: MagicSources,
@@ -85,7 +87,15 @@ internal fun rememberRoundMagic(
     val characterLevel by rememberUpdatedState(character?.level ?: 1)
     val handler =
         remember(ui) {
-            SpellsHandler(ui, scope, sources.resources, sources.spells, undoController, inFight = true) { spell, pay ->
+            SpellsHandler(
+                ui,
+                scope,
+                sources.resources,
+                sources.spells,
+                undoController,
+                sources.spellImport,
+                inFight = true,
+            ) { spell, pay ->
                 val member = latestOwn
                 val round = latestCombat?.round
                 if (member == null || round == null) return@SpellsHandler null
@@ -112,6 +122,8 @@ internal fun rememberRoundMagic(
             undo = undo,
             readOnly = false,
             tilesEditable = false,
+            importSheet = ui.importSheet,
+            importHint = ui.importHint,
         )
     return RoundMagic(
         own?.id,

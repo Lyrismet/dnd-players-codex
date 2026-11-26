@@ -19,3 +19,6 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# screen names go to analytics by simple class name, so the screens keep theirs
+-keepnames class * implements com.slack.circuit.runtime.screen.Screen
+-keepnames class * implements com.slack.circuit.runtime.CircuitUiEvent

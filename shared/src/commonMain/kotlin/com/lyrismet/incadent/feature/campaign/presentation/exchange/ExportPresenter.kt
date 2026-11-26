@@ -7,6 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.lyrismet.incadent.core.analytics.AnalyticsEvent
+import com.lyrismet.incadent.core.analytics.AnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.designsystem.component.StatusKind
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.file.FileStorage
@@ -34,6 +37,7 @@ class ExportPresenter(
     private val repository: CampaignExchangeRepository,
     private val storage: FileStorage,
     private val navigator: Navigator,
+    private val analytics: AnalyticsTracker,
 ) : Presenter<ExportState> {
     // one flat merge of the export's state and its events, splitting it would only move the vars around
     @Suppress("CyclomaticComplexMethod", "LongMethod")
@@ -108,6 +112,7 @@ class ExportPresenter(
             savePrompt = savePrompt?.copy(folder = saveFolder),
             status = status,
         ) { event ->
+            analytics.action("Export", event)
             when (event) {
                 is ExportEvent.ModeSelected -> mode = event.mode
                 ExportEvent.PartyNotesToggled -> partyNotes = !partyNotes
@@ -127,6 +132,7 @@ class ExportPresenter(
                                 measured.copy(photos = photos),
                                 storage.createSink(fileName),
                             )
+                            analytics.track(AnalyticsEvent.CampaignExported)
                             when (event.delivery) {
                                 ExportDelivery.SHARE -> file = fileName
                                 ExportDelivery.SAVE -> {

@@ -217,6 +217,25 @@ private fun SessionFeed(
             listState.animateScrollToItem(state.items.lastIndex)
         }
     }
+    FollowEndOnResize(listState, state, focusResolved)
+}
+
+// the keyboard resizes the viewport, so the list is pinned to its end again instead of staying where it was
+@Composable
+private fun FollowEndOnResize(
+    listState: LazyListState,
+    state: SessionFeedState,
+    focusResolved: Boolean,
+) {
+    val followEnd by rememberUpdatedState(
+        state.highlightedEntryId == null && !focusResolved && state.selectedEntryId == null,
+    )
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.viewportSize.height }.collect {
+            val lastIndex = listState.layoutInfo.totalItemsCount - 1
+            if (followEnd && lastIndex >= 0) listState.scrollToItem(lastIndex)
+        }
+    }
 }
 
 // the buttons of a selected note grow it downwards, so the list follows its size until the whole note shows

@@ -15,9 +15,7 @@
     <string name="session_list_new_session_button">+ Сессия</string>
     <string name="session_list_empty_title">Первая сессия ждёт</string>
     <string name="session_list_empty_button">+ Начать сессию</string>
-    <string name="session_list_empty">Нажмите «Начать сессию» и записывайте, что происходит. Герои и места подтянутся
-        сами через @.
-    </string>
+    <string name="session_list_empty">Нажмите «Начать сессию» и записывайте, что происходит. Герои и места подтянутся сами через @.</string>
     <string name="session_list_archive_section">Архив</string>
     <string name="session_list_mention_count_format">@ %1$d</string>
     <string name="session_list_live_label">ТЕКУЩАЯ СЕССИЯ</string>
@@ -41,7 +39,7 @@
     <string name="mention_section_previous_session">В ПРОШЛОЙ СЕССИИ</string>
     <string name="mention_section_recent">НЕДАВНО СОЗДАНЫ</string>
     <string name="mention_section_codex">В КОДЕКСЕ</string>
-    <string name="mention_empty_codex">В кодексе пока пусто. Напишите имя, и мы создадим запись</string>
+    <string name="mention_empty_codex">В кодексе пока пусто. Введите имя и создайте запись</string>
     <string name="mention_create_row_format">+ Создать «%1$s»…</string>
     <string name="mention_nickname_format">прозвище «%1$s»</string>
     <string name="mention_quest_giver_format">от %1$s</string>
@@ -66,19 +64,14 @@
     <string name="starter_phrase_met">Встретили @</string>
     <string name="starter_phrase_quest">Взяли квест @</string>
     <string name="mention_unlinked_overline">ЗАПИСИ ЕЩЁ НЕТ</string>
-    <string name="mention_unlinked_body">Имя упомянуто (%1$s в %2$s), но записи с таким именем в кодексе нет. Что
-        сделать?
-    </string>
+    <string name="mention_unlinked_body">Имя упомянуто (%1$s в %2$s), но записи с таким именем в кодексе нет. Что сделать?</string>
     <string name="mention_unlinked_create_format">+ Создать «%1$s»…</string>
-    <string name="mention_unlinked_link_hint">Если это другое имя уже записанного — упоминания станут ссылками на него
-    </string>
+    <string name="mention_unlinked_link_hint">Если это другое имя уже записанного — упоминания станут ссылками на него</string>
     <string name="session_detail_submit_button">Записать</string>
     <string name="session_detail_save_button">Сохранить</string>
     <string name="session_detail_editing_label_format">РЕДАКТИРОВАНИЕ · %1$s</string>
     <string name="session_detail_empty_feed">Чистая страница</string>
-    <string name="session_detail_empty_feed_hint">Записывайте, что происходит. Введите @, чтобы связать заметку с NPC,
-        локацией или квестом.
-    </string>
+    <string name="session_detail_empty_feed_hint">Записывайте, что происходит. Введите @, чтобы связать заметку с NPC, локацией или квестом.</string>
     <string name="session_detail_composer_hint">@ — упоминание</string>
     <string name="session_detail_undo_deleted_entry_title">Запись удалена</string>
     <string name="session_entry_edited_label">изм.</string>
@@ -131,9 +124,8 @@
     <string name="codex_quest_status_failed">Провален</string>
     <string name="codex_quest_given_by_label">Кто дал</string>
     <string name="codex_quest_reward_label">Награда</string>
-    <string name="codex_empty_all_title">Кодекс заполнится сам</string>
-    <string name="codex_empty_all_text">Упоминайте героев, места и квесты через @ в заметках. Или добавьте вручную.
-    </string>
+    <string name="codex_empty_all_title">Кодекс растёт вместе с заметками</string>
+    <string name="codex_empty_all_text">Упоминайте героев, места и квесты через @ в заметках. Или добавьте вручную.</string>
     <string name="codex_empty_all_button">+ Новая запись</string>
     <string name="codex_empty_party_title">Соберите отряд</string>
     <string name="codex_empty_party_text">Начните со своего героя, потом добавьте остальных.</string>
@@ -184,7 +176,6 @@
     <string name="codex_entry_label_name_location">Название</string>
     <string name="codex_entry_more">Подробнее</string>
     <string name="codex_entry_more_close">Свернуть</string>
-    <string name="codex_entry_more_hint_npc">Портрет, раса, состояние, где встретить, прозвища</string>
     <string name="codex_entry_summary_portrait">портрет</string>
     <string name="codex_entry_label_nicknames">Прозвища</string>
     <string name="codex_entry_placeholder_nicknames">Седой, Монах</string>
@@ -209,21 +200,15 @@
     <string name="codex_entry_save_label_edit">Сохранить изменения</string>
     <string name="discard_title">Выйти без сохранения?</string>
     <string name="codex_entry_discard_text">Введённое пропадёт. Сохранить запись можно кнопкой внизу формы.</string>
-    <string name="discard_back">Вернуться</string>
-    <string name="discard_leave">Не сохранять</string>
+    <string name="discard_back">Остаться</string>
+    <string name="discard_leave">Выйти</string>
     <string name="codex_entry_quick_add_npc">+ Новый NPC</string>
     <string name="codex_entry_quick_add_placeholder_npc">Имя NPC</string>
-    <string name="codex_entry_quick_add_helper">Запись появится в кодексе и сразу выберется здесь. Детали допишете
-        позже.
-    </string>
+    <string name="codex_entry_quick_add_helper">Запись появится в кодексе и сразу выберется здесь. Детали допишете позже.</string>
     <string name="codex_entry_quick_add_toast_format">«%1$s» добавлен в кодекс</string>
     <string name="codex_entry_label_portrait">Портрет</string>
-    <string name="codex_entry_portrait_hint_empty">Нажмите на рамку: сфотографируйте распечатку от мастера или выберите
-        из галереи. Перед сохранением можно кадрировать.
-    </string>
-    <string name="codex_entry_portrait_hint_filled">Портрет хранится только на устройстве. Нажмите на рамку, чтобы
-        переснять
-    </string>
+    <string name="codex_entry_portrait_hint_empty">Нажмите на рамку: сфотографируйте распечатку от мастера или выберите из галереи. Перед сохранением можно кадрировать.</string>
+    <string name="codex_entry_portrait_hint_filled">Портрет хранится только на устройстве. Нажмите на рамку, чтобы переснять</string>
     <string name="codex_entry_portrait_remove">Удалить фото</string>
     <string name="codex_entry_portrait_source_camera">Камера</string>
     <string name="codex_entry_portrait_source_gallery">Галерея</string>
@@ -245,9 +230,7 @@
     <string name="entity_sheet_group_location_quests_empty">Пока без квестов · удерживайте, чтобы добавить</string>
     <string name="quick_edit_relations_hint">Можно выбрать несколько · нажмите вне поля — закрыть</string>
     <string name="codex_delete_warning_title">Удалить «%1$s»?</string>
-    <string name="codex_delete_warning_text">В заметках %1$s в %2$s — они не пропадут, а останутся с пометкой «?».
-        Вернуть запись можно кнопкой «Отменить» или создать заново.
-    </string>
+    <string name="codex_delete_warning_text">В заметках %1$s в %2$s — они не пропадут, а останутся с пометкой «?». Вернуть запись можно кнопкой «Отменить» или создать заново.</string>
     <string name="codex_delete_warning_confirm">Удалить запись</string>
     <string name="codex_delete_warning_cancel">Не удалять</string>
     <plurals name="mention_count_mentions">
@@ -269,16 +252,13 @@
         <item quantity="other">%1$d сессиях</item>
     </plurals>
     <string name="deleted_mention_overline">ЗАПИСИ НЕТ В КОДЕКСЕ</string>
-    <string name="deleted_mention_body">На эту запись ссылаются %1$s в %2$s, а карточки в кодексе нет. Что сделать?
-    </string>
+    <string name="deleted_mention_body">На эту запись ссылаются %1$s в %2$s, а карточки в кодексе нет. Что сделать?</string>
     <string name="deleted_mention_create_format">+ Создать «%1$s» как %2$s</string>
     <string name="deleted_mention_type_npc">NPC</string>
     <string name="deleted_mention_type_quest">квест</string>
     <string name="deleted_mention_type_location">место</string>
     <string name="deleted_mention_link_title">Связать с другой записью</string>
-    <string name="deleted_mention_link_hint">Если запись переименовали или завели дубль — упоминания станут ссылками на
-        неё
-    </string>
+    <string name="deleted_mention_link_hint">Если запись переименовали или завели дубль — упоминания станут ссылками на неё</string>
     <string name="deleted_mention_text_title">Оставить текстом</string>
     <string name="deleted_mention_text_hint">«?» уйдёт, имя останется обычным словом в заметках</string>
     <string name="deleted_mention_search_placeholder">Найти запись в кодексе</string>
@@ -303,8 +283,7 @@
         <item quantity="other">%1$d упоминания · открыть сессию →</item>
     </plurals>
     <string name="entity_sheet_related_show_all_format">Показать все (%1$d)</string>
-    <string name="entity_sheet_related_empty_format">Пока нигде не упоминается. Добавьте @%1$s в заметку сессии.
-    </string>
+    <string name="entity_sheet_related_empty_format">Пока нигде не упоминается. Добавьте @%1$s в заметку сессии.</string>
 
     <string name="bottom_tab_sessions">Сессии</string>
     <string name="bottom_tab_codex">Кодекс</string>
@@ -314,8 +293,7 @@
     <string name="bottom_tab_settings">Настройки</string>
     <string name="combat_list_title">Бои</string>
     <string name="combat_list_session_group">СЕССИЯ %1$s · %2$s</string>
-    <string name="combat_list_empty">Прошлых боёв пока нет. Итоги каждого боя сохраняются в сессию и появятся здесь.
-    </string>
+    <string name="combat_list_empty">Прошлых боёв пока нет. Итоги каждого боя сохраняются в сессию и появятся здесь.</string>
     <string name="combat_list_start">Начать бой</string>
     <string name="combat_list_continue">Продолжить подготовку</string>
     <string name="combat_list_prep_overline">ПОДГОТОВКА</string>
@@ -353,8 +331,7 @@
     <string name="combat_target_session_titled">Сессия %1$s · %2$s</string>
     <string name="combat_target_new">Новая сессия</string>
     <string name="combat_list_archive_title">АРХИВ</string>
-    <string name="combat_list_archive_text">Кампания завершена - новый бой не начать. Прошлые бои остаются здесь.
-    </string>
+    <string name="combat_list_archive_text">Кампания завершена — новый бой не начать. Прошлые бои остаются здесь.</string>
     <string name="combat_prep_add_party">Персонаж отряда</string>
     <string name="combat_prep_add_ally">Союзник</string>
     <string name="combat_prep_party_count">%1$d из %2$d</string>
@@ -381,19 +358,13 @@
     <string name="combat_prep_found_mentioned">%1$s · упомянут в сессии</string>
     <string name="combat_prep_no_match_enemy">В кодексе такого врага нет</string>
     <string name="combat_prep_no_match_ally">В кодексе такого союзника нет</string>
-    <string name="combat_prep_empty_enemy">Врагов в кодексе пока нет. Введите имя - противника можно записать в кодекс
-        или взять только в этот бой.
-    </string>
-    <string name="combat_prep_empty_ally">Союзных NPC в кодексе пока нет. Введите имя - призыв или фамильяра можно взять
-        только в этот бой.
-    </string>
+    <string name="combat_prep_empty_enemy">Врагов в кодексе пока нет. Введите имя — противника можно записать в кодекс или взять только в этот бой.</string>
+    <string name="combat_prep_empty_ally">Союзных NPC в кодексе пока нет. Введите имя — призыв или фамильяра можно взять только в этот бой.</string>
     <string name="combat_prep_temp">+ «%1$s» без записи в кодекс</string>
     <string name="combat_prep_temp_hint_enemy">без записи в кодексе</string>
-    <string name="combat_prep_temp_hint_ally">призыв, фамильяр - в итогах можно сохранить в кодекс</string>
-    <string name="combat_prep_intro_title">Сначала - кто сражается</string>
-    <string name="combat_prep_intro_text">Для боя нужны хотя бы один персонаж отряда и один противник в кодексе. Хиты,
-        урон и состояния будут вестись по ним, а итоги попадут в сессию.
-    </string>
+    <string name="combat_prep_temp_hint_ally">призыв, фамильяр — в итогах можно сохранить в кодекс</string>
+    <string name="combat_prep_intro_title">Сначала — кто сражается</string>
+    <string name="combat_prep_intro_text">Чтобы начать бой, нужен хотя бы один персонаж отряда и один противник из кодекса. Хиты, урон и состояния вы отмечаете по ходу боя, а итоги сохранятся в сессии.</string>
     <string name="combat_prep_intro_party">Персонаж отряда</string>
     <string name="combat_prep_intro_party_todo">Ваш и персонажи друзей</string>
     <string name="combat_prep_intro_foe">Противник</string>
@@ -403,13 +374,12 @@
     <string name="combat_hp_overline">ПЕРЕД БОЕМ</string>
     <string name="combat_hp_mode_hp">Хиты</string>
     <string name="combat_hp_mode_temp">Врем. HP</string>
-    <string name="combat_hp_preview_unset">Хиты не были указаны - число станет и текущими, и максимумом</string>
+    <string name="combat_hp_preview_unset">Хиты не были указаны — число станет и текущими, и максимумом</string>
     <string name="combat_hp_preview_now">Сейчас %1$d из %2$d</string>
     <string name="combat_hp_preview_over">Сейчас %1$d из %2$d · максимум %2$d</string>
     <string name="combat_hp_preview_temp">Сейчас %1$d временных</string>
     <string name="combat_hp_apply">Сохранить</string>
     <string name="combat_prep_order_header">3 · ОЧЕРЁДНОСТЬ · ПО СЛОВАМ МАСТЕРА</string>
-    <string name="combat_prep_order_hint">Нажимайте в том порядке, как называет мастер</string>
     <string name="combat_prep_start_need_enemy">Добавьте противника</string>
     <string name="combat_prep_queue_unnamed">Очередь не задана</string>
     <string name="combat_prep_queue_partial">Очередь: %1$d из %2$d</string>
@@ -417,9 +387,7 @@
     <string name="combat_prep_queue_ready">Очередь готова</string>
     <string name="combat_prep_queue_help_title">Как назначить очередь</string>
     <string name="combat_prep_queue_help_body">Очередь можно не называть: бой начнётся и без неё.</string>
-    <string name="combat_prep_queue_help_first">Нажмите участника: он встанет на следующее место, первый нажатый ходит
-        первым
-    </string>
+    <string name="combat_prep_queue_help_first">Нажмите участника: он встанет на следующее место, первый нажатый ходит первым</string>
     <string name="combat_prep_queue_help_clear">Нажмите ещё раз, чтобы снять место</string>
     <string name="combat_prep_queue_help_rest">Участник без места встаёт в конец как ?1, ?2 и дальше</string>
     <string name="combat_prep_avg_level">Средний уровень отряда %1$s</string>
@@ -444,9 +412,8 @@
     <string name="combat_queue_edit_undo">Отменить правку</string>
     <string name="combat_queue_edit_handle">Перетащить</string>
     <string name="combat_queue_edit_title">Правка очереди</string>
-    <string name="combat_queue_edit_tip">Тяните за ≡ или нажмите на ?N - он получит следующий номер после названных.
-    </string>
-    <string name="combat_queue_edit_hint">Ход: %1$s - не меняется</string>
+    <string name="combat_queue_edit_tip">Тяните за ≡ или нажмите на ?N — он получит следующий номер после названных.</string>
+    <string name="combat_queue_edit_hint">Ход: %1$s — не меняется</string>
     <string name="combat_queue_unnamed_line">очередь не названа · ход по списку</string>
     <string name="combat_queue_moves">ХОДИТ</string>
     <string name="combat_round_current">Ходит %1$s</string>
@@ -459,9 +426,7 @@
     <string name="combat_time_minutes">%1$d мин</string>
     <string name="combat_time_minutes_seconds">%1$d мин %2$d с</string>
     <string name="combat_time_hint_title">Время боя</string>
-    <string name="combat_time_hint_body">Время идёт по раундам: раунд равен 6 секундам, а ходы время не растягивают.
-        Первый раунд начинается с нуля.
-    </string>
+    <string name="combat_time_hint_body">Время идёт по раундам: раунд равен 6 секундам, а ходы время не растягивают. Первый раунд начинается с нуля.</string>
     <string name="combat_round_all_clear">Врагов в строю не осталось</string>
     <string name="combat_round_sum_up">Подвести итоги</string>
     <string name="combat_round_add_enemy">Враг</string>
@@ -478,9 +443,7 @@
     <string name="combat_identity_hint_codex">◇ Это запись кодекса: имя сменится и в карточке.</string>
     <string name="combat_identity_hint_label">Подпись только в этом бою — кодекс не меняется.</string>
     <string name="combat_identity_dup_title">В кодексе уже есть «%1$s»</string>
-    <string name="combat_identity_dup_merge_sub">Запись «%1$s» войдёт в неё: урон, заметки, упоминания. Или введите
-        другое имя.
-    </string>
+    <string name="combat_identity_dup_merge_sub">Запись «%1$s» войдёт в неё: урон, заметки, упоминания. Или введите другое имя.</string>
     <string name="combat_identity_dup_link_sub">Участник станет этой записью кодекса. Или введите другое имя.</string>
     <string name="combat_identity_dup_link">Связать</string>
     <string name="combat_role_title">Роль · класс и подкласс</string>
@@ -524,16 +487,16 @@
     <string name="combat_panel_stand_up">Встал с 1</string>
     <string name="combat_panel_capture">Взят живым</string>
     <string name="combat_panel_captured">✓ Взят живым</string>
-    <string name="combat_panel_died">Погиб</string>
-    <string name="combat_panel_died_note">Погиб в этом бою</string>
+    <string name="combat_panel_died">Пал</string>
+    <string name="combat_panel_died_note">Пал в этом бою</string>
     <string name="combat_panel_undo">Отменить</string>
     <string name="combat_panel_side_title">СТОРОНА</string>
     <string name="combat_panel_note_party">Ресурсы, заклинания, заметки…</string>
     <string name="combat_panel_note_foe">Что заметили: уязвимости, сопротивления, тактика…</string>
     <string name="combat_panel_remove">Убрать из боя</string>
-    <string name="combat_panel_rx_available">Реакция доступна - нажмите, чтобы потратить</string>
+    <string name="combat_panel_rx_available">Реакция доступна</string>
     <string name="combat_panel_rx_spent">Реакция потрачена</string>
-    <string name="combat_panel_rx_attacked">Вас атакуют - можно ответить реакцией</string>
+    <string name="combat_panel_rx_attacked">Вас атакуют — можно ответить реакцией</string>
     <string name="combat_stance_enemy">Враг</string>
     <string name="combat_stance_neutral">Нейтрал</string>
     <string name="combat_stance_friend">Друг</string>
@@ -611,14 +574,7 @@
     <string name="hp_exact_now">%1$s: сейчас %2$d</string>
     <string name="hp_exact_now_unknown">%1$s: сейчас %2$d · максимум неизвестен</string>
     <string name="hp_help_title">Сколько здоровья осталось</string>
-    <string name="hp_help_body">Точные хиты врага мы почти всегда не знаем: мастер описывает его только словами. Поэтому
-        приложение не показывает число, а оценивает его.\n\nЗаписывайте полученный урон цифрами и двигайте ползунок
-        туда, где, по-вашему, здоровье врага: «Окровавлен» это примерно половина. Чем больше урона записано, тем точнее
-        оценка. Лечение вычитается из урона.\n\n≈ N: оценка по ползунку и полученному урону, без ползунка по прошлым
-        боям с таким же существом.\n≥ N: урон есть, а ползунка нет или он у «Цел», хитов было не меньше.\n= N: число,
-        которое вы вписали сами, дальше оно меняется с уроном и лечением.\n\nЕсли враг пришёл в бой раненым, его можно
-        только вписать числом.
-    </string>
+    <string name="hp_help_body">Точные хиты врага обычно неизвестны: мастер описывает их словами. Поэтому приложение их оценивает.\n\nЗаписывайте урон цифрами и двигайте ползунок туда, где, по-вашему, здоровье врага («Окровавлен» — примерно половина). Чем больше урона записано, тем точнее оценка. Лечение вычитается из урона.\n\n≈ N — оценка по ползунку и урону, без ползунка по прошлым боям с таким же существом.\n≥ N — урон есть, а ползунка нет или он у «Цел», хитов было не меньше.\n= N — число, которое вы вписали сами, дальше оно меняется с уроном и лечением.\n\nЕсли враг пришёл в бой раненым, его можно только вписать числом.</string>
     <string name="hp_exact_suggest">Было %1$d, записано лечение +%2$d, ожидалось %3$d. Вписано %4$d.</string>
     <string name="hp_exact_as_heal">Лечение не записано: %1$d</string>
     <string name="hp_exact_as_is">Просто %1$d</string>
@@ -678,13 +634,11 @@
     <string name="settings_title">Настройки</string>
     <string name="settings_section_app">ПРИЛОЖЕНИЕ</string>
     <string name="settings_language_title">Язык интерфейса</string>
-    <string name="settings_language_desc">Переводятся кнопки и подписи. Ваши заметки и кодекс остаются как есть.
-    </string>
+    <string name="settings_language_desc">Переводятся кнопки и подписи</string>
     <string name="settings_language_ru">Русский</string>
     <string name="settings_language_en">English</string>
     <string name="settings_section_diary">ДНЕВНИК</string>
     <string name="settings_numbering_title">Нумерация сессий</string>
-    <string name="settings_numbering_desc">XIII или 13 — как удобнее</string>
     <string name="settings_numbering_roman">XIII</string>
     <string name="settings_numbering_arabic">13</string>
     <string name="settings_mention_title">Упоминания @</string>
@@ -697,7 +651,6 @@
     <string name="settings_storage_value">Только на устройстве</string>
     <string name="settings_rename_title">Название кампании</string>
     <string name="settings_rename_placeholder">Например, Тени Блэквуда</string>
-    <string name="settings_rename_hint">Показывается над списком сессий и в итогах боёв.</string>
     <string name="settings_rename_save">Сохранить</string>
     <string name="codex_npc_life_alive">Жив</string>
     <string name="codex_npc_life_dead">Мёртв</string>
@@ -728,6 +681,8 @@
     <string name="entity_sheet_party_type_label">Отряд</string>
     <string name="entity_sheet_party_you_label">Вы</string>
     <string name="entity_sheet_party_player_label">Игрок</string>
+    <string name="entity_sheet_party_view_only">Только для просмотра</string>
+    <string name="entity_sheet_party_open_sheet">Открыть лист персонажа</string>
     <string name="entity_sheet_party_class_label">Класс</string>
     <string name="entity_sheet_party_level_label">Уровень</string>
     <string name="entity_sheet_party_hp_label">Макс. хиты</string>
@@ -744,9 +699,7 @@
     <string name="quick_edit_changed_suffix">— изменено</string>
     <string name="quick_edit_link_none">Не указано</string>
     <string name="quick_edit_description_placeholder">Описания пока нет — удерживайте, чтобы добавить</string>
-    <string name="entity_sheet_portrait_hint">Нажмите на рамку, чтобы добавить портрет — например, снимок распечатки от
-        мастера
-    </string>
+    <string name="entity_sheet_portrait_hint">Нажмите на рамку, чтобы добавить портрет — например, снимок распечатки от мастера</string>
     <string name="quick_edit_hold_tip">Удерживайте любое поле, чтобы изменить его прямо здесь</string>
     <string name="quick_edit_hold_tip_dismiss">Понятно</string>
     <string name="quick_edit_description_hint">Внешность, характер, что известно…</string>
@@ -769,20 +722,14 @@
     <string name="phrase_completion_frequent_meta_format">×%1$d</string>
     <string name="phrase_sheet_overline">ДНЕВНИК</string>
     <string name="phrase_sheet_title">Быстрые фразы</string>
-    <string name="phrase_sheet_intro">Фразы, которые вы пишете снова и снова. Нажмите на фразу над полем ввода — она
-        вставится; начните печатать — приложение предложит продолжение.
-    </string>
+    <string name="phrase_sheet_intro">Фразы, которые вы пишете часто. Нажмите на фразу над полем ввода, и она вставится. Начните печатать, и приложение предложит продолжение.</string>
     <string name="phrase_sheet_pinned_header">★ МОИ</string>
     <string name="phrase_sheet_pinned_empty">Пока пусто. Добавьте свою или закрепите частую фразу ниже.</string>
-    <string name="phrase_sheet_draft_placeholder">Новая заготовка…</string>
+    <string name="phrase_sheet_draft_placeholder">Новая фраза…</string>
     <string name="phrase_sheet_frequent_header">↻ ЧАСТЫЕ ФРАЗЫ · НАЙДЕНО АВТОМАТИЧЕСКИ</string>
-    <string name="phrase_sheet_frequent_empty">Повторов пока нет — они появятся, когда одна и та же фраза встретится в
-        разных записях.
-    </string>
+    <string name="phrase_sheet_frequent_empty">Повторов пока нет — они появятся, когда одна и та же фраза встретится в разных заметках.</string>
     <string name="phrase_sheet_pin_button">★ Закрепить</string>
-    <string name="phrase_sheet_disclaimer">Ищем повторы только в ваших заметках на этом устройстве. Ничего не
-        отправляется.
-    </string>
+    <string name="phrase_sheet_disclaimer">Ищем повторы только в ваших заметках на этом устройстве. Ничего не отправляется.</string>
     <string name="phrase_meta_format">встречается %1$s · %2$s</string>
     <plurals name="phrase_meta_times">
         <item quantity="one">%1$d раз</item>
@@ -796,8 +743,8 @@
         <item quantity="many">%1$d сессий</item>
         <item quantity="other">%1$d сессии</item>
     </plurals>
-    <string name="session_detail_entry_save_phrase">В заготовки</string>
-    <string name="session_detail_phrase_saved_toast">Добавлено в заготовки</string>
+    <string name="session_detail_entry_save_phrase">В быстрые фразы</string>
+    <string name="session_detail_phrase_saved_toast">Добавлено в быстрые фразы</string>
     <string name="settings_phrases_title">Быстрые фразы</string>
     <string name="settings_phrases_summary_format">Своих: %1$d · частых найдено: %2$d</string>
     <string name="codex_entry_required_note">* — обязательное поле</string>
@@ -805,9 +752,7 @@
     <string name="codex_entry_label_parent">Находится в</string>
     <string name="codex_place_select_search">Найти место</string>
     <string name="codex_place_select_empty">Ничего не найдено</string>
-    <string name="codex_place_select_empty_hint">Мест пока нет. Введите название выше, и мы создадим место, а описание и
-        связи можно добавить потом.
-    </string>
+    <string name="codex_place_select_empty_hint">Мест пока нет. Введите название выше и создайте место, а описание и связи добавите потом.</string>
     <string name="codex_place_select_clear">Не указано</string>
     <string name="codex_place_select_multi_hint">можно несколько</string>
     <string name="codex_place_select_done">Готово · %1$d</string>
@@ -825,8 +770,7 @@
     <string name="photo_viewer_replace">Заменить</string>
     <string name="photo_viewer_crop">Кадрировать</string>
     <string name="photo_viewer_delete">Удалить</string>
-    <string name="photo_viewer_read_only">Заменить или удалить фото — в форме записи («Изменить» в шапке карточки)
-    </string>
+    <string name="photo_viewer_read_only">Заменить или удалить фото — в форме записи («Изменить» в шапке карточки)</string>
     <string name="codex_cover_add">Добавить обложку</string>
     <string name="codex_cover_form_placeholder">Широкое изображение места</string>
     <string name="codex_cover_form_hint">карта, вид, иллюстрация · 16:9</string>
@@ -866,7 +810,7 @@
     <string name="campaign_world_same">Тот же мир, что в другой кампании</string>
     <string name="campaign_world_same_hint">Дальше выберете, какие места и NPC перенести. Отряд не переносится.</string>
     <string name="campaign_copy_tags">Перенести теги сессий</string>
-    <string name="campaign_copy_phrases">Перенести заготовки фраз</string>
+    <string name="campaign_copy_phrases">Перенести быстрые фразы</string>
     <string name="campaign_create_button">Создать кампанию</string>
     <string name="campaign_create_next">Далее · выбрать записи</string>
     <string name="campaign_items_tab_format">%1$s · %2$d из %3$d</string>
@@ -876,9 +820,7 @@
     <string name="campaign_items_all">Выбрать все</string>
     <string name="campaign_items_none">Снять все</string>
     <string name="campaign_items_empty">Здесь пусто</string>
-    <string name="campaign_items_note">Переносятся копии: название, описание, фото, вложенность. С NPC переносятся и его
-        места. Квесты и заметки остаются в старой кампании.
-    </string>
+    <string name="campaign_items_note">Переносятся копии: название, описание, фото, вложенность. С NPC переносятся и его места. Квесты и заметки остаются в старой кампании.</string>
     <plurals name="campaign_items_transfer">
         <item quantity="one">Перенести %1$d запись</item>
         <item quantity="few">Перенести %1$d записи</item>
@@ -891,25 +833,17 @@
     <string name="campaign_toast_archived">Кампания в архиве. Открыть её можно из списка кампаний</string>
     <string name="campaign_toast_deleted">Кампания удалена</string>
     <string name="campaign_finish_title">Завершить «%1$s»?</string>
-    <string name="campaign_finish_body">Кампания уйдёт в архив. Записи, кодекс и бои сохранятся, вернуться к ней можно в
-        любой момент из списка кампаний.
-    </string>
+    <string name="campaign_finish_body">Кампания уйдёт в архив. Записи, кодекс и бои сохранятся, вернуться к ней можно в любой момент из списка кампаний.</string>
     <string name="campaign_finish_archive">В архив</string>
-    <string name="campaign_finish_delete">Удалить данные</string>
+    <string name="campaign_finish_delete">Удалить всё</string>
     <string name="campaign_delete_title">Удалить «%1$s»?</string>
-    <string name="campaign_delete_body">Сессии, записи и кодекс этой кампании исчезнут безвозвратно. Чтобы подтвердить,
-        введите её название.
-    </string>
+    <string name="campaign_delete_body">Сессии, записи и кодекс этой кампании исчезнут безвозвратно. Чтобы подтвердить, введите её название.</string>
     <string name="campaign_archive_banner_title">АРХИВ</string>
-    <string name="campaign_archive_banner_text">Кампания завершена. Всё сохранено для памяти.</string>
     <string name="campaign_resume">↻ Возобновить</string>
     <string name="campaign_library_title">Кампании</string>
-    <string name="campaign_library_empty_live">Идущих кампаний нет. Начните новую, когда группа снова соберётся.
-    </string>
+    <string name="campaign_library_empty_live">Активных кампаний нет. Начните новую, когда группа снова соберётся.</string>
     <string name="campaign_onboarding_title">Журнал вашей игры</string>
-    <string name="campaign_onboarding_lead">Играете в настольную ролевую? Пишите, что случилось за вечер, а Incadent сам
-        свяжет героев, места и квесты.
-    </string>
+    <string name="campaign_onboarding_lead">Играете в настольную ролевую? Пишите, что случилось за вечер, а Incadent сам свяжет героев, места и квесты.</string>
     <string name="campaign_onboarding_notes_title">Пишите прямо за столом</string>
     <string name="campaign_onboarding_notes_text">Пара слов за вечер, и сессию не забудете</string>
     <string name="campaign_onboarding_codex_title">Всё о вашем мире</string>
@@ -918,7 +852,7 @@
     <string name="campaign_onboarding_combat_text">Очередь ходов, кто как ранен, на ком концентрация</string>
     <string name="settings_all_campaigns_title">Все кампании</string>
     <string name="campaign_items_title">Что перенести</string>
-    <string name="error_action_failed">Не получилось сохранить. Попробуйте ещё раз</string>
+    <string name="error_action_failed">Не удалось сохранить. Попробуйте ещё раз</string>
     <string name="place_block_itself">это само место</string>
     <string name="place_block_inside_of">внутри «%1$s»</string>
     <string name="place_block_contains">содержит это место</string>
@@ -927,7 +861,7 @@
     <string name="place_block_carried">едет вместе с «%1$s»</string>
     <string name="place_cycle_toast">Место нельзя положить внутрь него самого</string>
     <string name="codex_entry_label_inside">Внутри</string>
-    <string name="entity_sheet_group_location_inside_empty">Вложенных мест нет - удерживайте, чтобы добавить</string>
+    <string name="entity_sheet_group_location_inside_empty">Вложенных мест нет — удерживайте, чтобы добавить</string>
     <string name="entity_sheet_move_into">Переместить в…</string>
     <plurals name="place_move_from">
         <item quantity="one">%1$d место переехало из «%2$s»</item>
@@ -976,20 +910,16 @@
     <string name="damage_state_vulnerability">Уязвимость</string>
     <string name="entity_sheet_species_creature_type_label">Тип существа</string>
     <string name="entity_sheet_species_hp_label">Хиты</string>
-    <string name="entity_sheet_species_vulnerabilities_title">Сопротивления</string>
-    <string name="entity_sheet_species_vulnerabilities_empty">Сопротивлений и уязвимостей пока не замечено. Удерживайте,
-        чтобы отметить
-    </string>
+    <string name="entity_sheet_species_vulnerabilities_title">Сопротивления и уязвимости</string>
+    <string name="entity_sheet_species_vulnerabilities_empty">Сопротивлений и уязвимостей пока не замечено. Удерживайте, чтобы отметить</string>
     <string name="entity_sheet_species_vulnerabilities_done">Готово</string>
     <string name="entity_sheet_species_vulnerabilities_hint">Нажмите на тип, чтобы выбрать состояние</string>
-    <string name="entity_sheet_species_vulnerabilities_tip_format">%1$s - %2$s</string>
+    <string name="entity_sheet_species_vulnerabilities_tip_format">%1$s — %2$s</string>
     <string name="codex_npc_mode_named">Именные</string>
     <string name="codex_all_species">Виды</string>
     <string name="codex_npc_mode_species">Виды</string>
     <string name="codex_species_empty_title">Видов пока нет</string>
-    <string name="codex_species_empty_text">Гоблины, волки, скелеты - всё, что встречается стаями. Добавьте вид, чтобы
-        отмечать его в заметках
-    </string>
+    <string name="codex_species_empty_text">Гоблины, волки, скелеты — всё, что встречается стаями. Добавьте вид, чтобы отмечать его в заметках</string>
     <string name="codex_species_seen_prefix">Встречено %1$s</string>
     <string name="codex_species_fights_format">в боях %1$d</string>
     <string name="codex_species_row_hp_format">хиты %1$s</string>
@@ -1015,15 +945,9 @@
     <string name="settings_about_version_title">Версия</string>
     <string name="settings_about_update_title">Доступна новая версия</string>
     <string name="settings_about_update_action">Обновить</string>
-    <string name="settings_about_srd_value">Это приложение использует материалы из System Reference Document 5.1 (SRD
-        5.1) компании Wizards of the Coast LLC, доступного по адресу
-        https://dnd.wizards.com/resources/systems-reference-document. SRD 5.1 распространяется по лицензии Creative
-        Commons Attribution 4.0 International, доступной по адресу
-        https://creativecommons.org/licenses/by/4.0/legalcode. Названия существ и шаблоны ресурсов переведены и
-        адаптированы. Wizards of the Coast не поддерживает это приложение.
-    </string>
+    <string name="settings_about_srd_value">Это приложение использует материалы из System Reference Document 5.1 (SRD 5.1) компании Wizards of the Coast LLC, доступного по адресу https://dnd.wizards.com/resources/systems-reference-document. SRD 5.1 распространяется по лицензии Creative Commons Attribution 4.0 International, доступной по адресу https://creativecommons.org/licenses/by/4.0/legalcode. Названия существ и шаблоны ресурсов переведены и адаптированы. Wizards of the Coast не поддерживает это приложение.</string>
     <string name="entity_sheet_species_note_quantity">В этой заметке</string>
-    <string name="session_detail_quantity_hint">○ %1$s ×… цифра - сколько их</string>
+    <string name="session_detail_quantity_hint">○ %1$s ×… цифра — сколько их</string>
     <string name="entity_sheet_npc_species_label">Раса / вид</string>
     <!-- exchange: export and import of a campaign file -->
     <string name="exchange_export_overline">ЭКСПОРТ</string>
@@ -1043,7 +967,6 @@
         <item quantity="other">%1$d сессии</item>
     </plurals>
     <string name="exchange_summary_line">%1$s · %2$s</string>
-    <string name="exchange_summary_hint">места, NPC, квесты, виды, отряд, сессии с заметками и боями</string>
     <string name="exchange_tab_places">Места</string>
     <string name="exchange_tab_npcs">NPC</string>
     <string name="exchange_tab_quests">Квесты</string>
@@ -1056,7 +979,6 @@
     <string name="exchange_items_none">Снять все</string>
     <string name="exchange_items_empty">Здесь пусто</string>
     <string name="exchange_photos_title">С фото</string>
-    <string name="exchange_photos_hint">В файл идёт только основное фото</string>
     <string name="exchange_photos_on">%1$s · %2$d фото · без фото %3$s</string>
     <string name="exchange_photos_off">%1$s · с фото было бы %2$s</string>
     <string name="exchange_photos_none">Фото нет · %1$s</string>
@@ -1069,7 +991,7 @@
     <string name="exchange_save_folder">Папка</string>
     <string name="exchange_save_folder_downloads">Загрузки</string>
     <string name="exchange_save_folder_ask">Выбрать при сохранении</string>
-    <string name="exchange_save_download">Загрузить · %1$s</string>
+    <string name="exchange_save_download">Сохранить · %1$s</string>
     <string name="exchange_save_cancel">Отмена</string>
     <string name="exchange_live_title_ongoing">Идёт бой</string>
     <string name="exchange_live_title_prep">Бой в подготовке</string>
@@ -1107,8 +1029,7 @@
     <string name="exchange_back">‹ Назад</string>
     <string name="exchange_items_title">Что взять</string>
     <string name="exchange_items_from">Из «%1$s» в «%2$s»</string>
-    <string name="exchange_discard_text">Выбранное и отмеченное для замены пропадёт, в кампанию ничего не попадёт.
-    </string>
+    <string name="exchange_discard_text">Выбранное и отмеченное для замены пропадёт, в кампанию ничего не попадёт.</string>
     <string name="exchange_kind_place">место</string>
     <string name="exchange_kind_npc">NPC</string>
     <string name="exchange_kind_quest">квест</string>
@@ -1116,25 +1037,18 @@
     <string name="exchange_kind_item">предмет</string>
     <string name="exchange_kind_party">отряд</string>
     <string name="exchange_import_button_count">Импортировать %1$d</string>
-    <string name="exchange_error_title">Не получилось</string>
+    <string name="exchange_error_title">Не удалось</string>
     <string name="exchange_error_not_incadent_title">Это не файл Incadent</string>
-    <string name="exchange_error_not_incadent_body">В файле нет метки Incadent. Выберите файл, который сделало
-        приложение: его имя заканчивается на .incadent.json.
-    </string>
+    <string name="exchange_error_not_incadent_body">В файле нет метки Incadent. Выберите файл, который сделало приложение: его имя заканчивается на .incadent.json.</string>
     <string name="exchange_newer_title">Файл из более новой версии</string>
-    <string name="exchange_newer_text">Этот файл сделан более новой версией Incadent (V%1$d), а у вас V%2$d. Всё, что
-        ваша версия не узнаёт, не загрузится. Продолжить?
-    </string>
+    <string name="exchange_newer_text">Этот файл сделан более новой версией Incadent (V%1$d), а у вас V%2$d. Часть данных может не загрузиться. Лучше сначала обновить приложение. Продолжить?</string>
     <string name="exchange_newer_skipped">Не загрузится записей: %1$d.</string>
     <string name="exchange_newer_continue">Продолжить</string>
     <string name="exchange_newer_back">Назад</string>
     <string name="exchange_error_large_title">Файл слишком большой</string>
-    <string name="exchange_error_large_body">Больше 25 МБ приложение не открывает. Попросите отправить файл без фото.
-    </string>
+    <string name="exchange_error_large_body">Больше 25 МБ приложение не открывает. Попросите отправить файл без фото.</string>
     <string name="exchange_error_broken_title">Файл повреждён</string>
-    <string name="exchange_error_broken_body">Метка на месте, но записи в файле не сходятся. Возможно, он скачался не до
-        конца.
-    </string>
+    <string name="exchange_error_broken_body">Файл от Incadent, но прочитать его не удалось. Возможно, он скачался не до конца. Попросите отправить его ещё раз.</string>
     <string name="exchange_error_read_title">Не удалось прочитать файл</string>
     <string name="exchange_error_read_body">Файл не открывается. Попробуйте выбрать его ещё раз.</string>
     <string name="exchange_error_other_file">Выбрать другой файл</string>
@@ -1146,21 +1060,16 @@
     </plurals>
     <string name="campaign_action_export">Экспорт</string>
     <string name="campaign_import_from_file">Импорт из файла</string>
-    <string name="campaign_delete_export_hint">Сначала можно сделать экспорт в файл: он сохранит записи и заметки этой
-        кампании.
-    </string>
+    <string name="campaign_delete_export_hint">Сначала можно сделать экспорт в файл: он сохранит записи и заметки этой кампании.</string>
     <string name="campaign_delete_export_button">Экспорт в файл</string>
     <string name="settings_section_data">ДАННЫЕ</string>
-    <string name="settings_data_export_title">Экспорт кампании</string>
-    <string name="settings_data_export_hint">Открытая кампания в файл .incadent.json</string>
+    <string name="settings_data_export_title">Резервная копия кампании</string>
+    <string name="settings_data_export_hint">Файл с кампанией: сохраните про запас или отправьте другу</string>
     <string name="settings_data_import_title">Импорт из файла</string>
     <string name="settings_data_import_hint">Или откройте файл из Telegram</string>
     <string name="exchange_approx">≈ %1$s</string>
-    <string name="exchange_photos_footnote">В файл идёт только основное фото. Миниатюры соберутся заново при импорте.
-    </string>
-    <string name="exchange_pick_footnote">Пунктир — запись берётся вместе с отмеченной: место NPC, вид, упоминание в
-        сессии. Снимите источник — снимется и она.
-    </string>
+    <string name="exchange_photos_footnote">В файл идёт только основное фото. Миниатюры соберутся заново при импорте.</string>
+    <string name="exchange_pick_footnote">Пунктир — запись берётся вместе с отмеченной: место NPC, вид, упоминание в сессии. Снимите источник — снимется и она.</string>
     <string name="exchange_pull_npc_place">место NPC «%1$s»</string>
     <string name="exchange_pull_npc_species">вид NPC «%1$s»</string>
     <string name="exchange_pull_quest">из квеста «%1$s»</string>
@@ -1193,7 +1102,7 @@
     <string name="combat_log_down_party">%1$s без сознания</string>
     <string name="combat_log_up">%1$s снова на ногах</string>
     <string name="combat_log_dead">%1$s пал</string>
-    <string name="combat_log_mark">%1$s - %2$s</string>
+    <string name="combat_log_mark">%1$s — %2$s</string>
     <string name="combat_log_stance_enemy">%1$s снова враг</string>
     <string name="combat_log_stance_neutral">%1$s сдался</string>
     <string name="combat_log_stance_friend">%1$s перешёл на нашу сторону</string>
@@ -1207,8 +1116,7 @@
     <string name="combat_results_outcome">ИСХОД</string>
     <string name="combat_results_suggested">предложено: %1$s</string>
     <string name="combat_results_codex">В КОДЕКС · ТОЛЬКО ОТМЕЧЕННОЕ</string>
-    <string name="combat_results_note">Хиты вашего персонажа обновятся в кодексе. Смена сторон уже применена к NPC.
-    </string>
+    <string name="combat_results_note">Хиты вашего персонажа обновятся в кодексе. Смена сторон уже применена к NPC.</string>
     <string name="combat_results_save">Сохранить в сессию</string>
     <string name="combat_results_back">Вернуться в бой</string>
     <string name="combat_results_delete">Удалить бой</string>
@@ -1225,14 +1133,11 @@
     <string name="combat_results_item_alive">%1$s выжил после %2$d</string>
     <string name="combat_results_item_hits_sub">запомнить хиты вида</string>
     <string name="combat_results_item_dead">%1$s погиб</string>
-    <string name="combat_results_item_dead_sub">отметить мёртвым в кодексе</string>
     <string name="combat_results_item_fallen">%1$s пал</string>
-    <string name="combat_results_item_fallen_sub">отметить павшим в кодексе</string>
     <string name="combat_results_item_resistance">%1$s · %2$s</string>
     <string name="combat_results_item_resistance_sub">%1$s</string>
     <string name="combat_results_item_resistance_weak">%1$s · под вопросом</string>
     <string name="combat_results_item_keep">Сохранить «%1$s» как NPC-союзника</string>
-    <string name="combat_results_item_keep_sub">новая запись в кодексе</string>
     <string name="combat_results_gone">Этот бой уже удалён</string>
     <string name="combat_card_overline">БОЙ · %1$s</string>
     <string name="combat_results_item_party_fallen">%1$s пал</string>
@@ -1262,15 +1167,14 @@
     <string name="codex_party_default_class">Искатель приключений</string>
     <string name="combat_prep_create_npc">+ Создать NPC «%1$s»</string>
     <string name="combat_prep_create_species">+ Создать вид «%1$s»</string>
-    <string name="combat_prep_create_species_hint">несколько одинаковых: %1$s ×3 - запись в бестиарии</string>
-    <string name="combat_prep_create_hint_enemy">именной враг - один, со своей карточкой в кодексе</string>
-    <string name="combat_prep_create_hint_ally">именной союзник - один, со своей карточкой в кодексе</string>
-    <string name="entity_sheet_npc_vulnerabilities_label">Уязвимости</string>
-    <string name="entity_sheet_npc_vulnerabilities_hint">Нажимайте на щит: сопротивление, иммунитет, уязвимость, нет
-    </string>
-    <string name="entity_sheet_npc_vulnerabilities_hint_inherited">· бледные - от вида «%1$s»</string>
-    <string name="entity_sheet_npc_vulnerabilities_tip_inherited">%1$s - %2$s · от вида «%3$s»</string>
-    <string name="entity_sheet_npc_vulnerabilities_step">%1$s - %2$s · нажатие - %3$s</string>
+    <string name="combat_prep_create_species_hint">несколько одинаковых: %1$s ×3 — запись в бестиарии</string>
+    <string name="combat_prep_create_hint_enemy">именной враг — один, со своей карточкой в кодексе</string>
+    <string name="combat_prep_create_hint_ally">именной союзник — один, со своей карточкой в кодексе</string>
+    <string name="entity_sheet_npc_vulnerabilities_label">Сопротивления и уязвимости</string>
+    <string name="entity_sheet_npc_vulnerabilities_hint">Нажимайте на щит: сопротивление, иммунитет, уязвимость, нет</string>
+    <string name="entity_sheet_npc_vulnerabilities_hint_inherited">· бледные — от вида «%1$s»</string>
+    <string name="entity_sheet_npc_vulnerabilities_tip_inherited">%1$s — %2$s · от вида «%3$s»</string>
+    <string name="entity_sheet_npc_vulnerabilities_step">%1$s — %2$s · нажатие — %3$s</string>
     <string name="entity_sheet_npc_vulnerabilities_none">нет</string>
     <string name="combat_name_title">Имя</string>
     <string name="combat_name_new">Новый NPC «%1$s»</string>
@@ -1291,12 +1195,9 @@
     <string name="combat_promo_over_new">НОВЫЙ NPC · ИЗ БОЯ</string>
     <string name="combat_promo_over_known">NPC ИЗ КОДЕКСА · ИЗ БОЯ</string>
     <string name="combat_promo_species">Вид</string>
-    <string name="combat_promo_species_hint">остаётся связь с бестиарием</string>
     <string name="combat_promo_hp">Хиты</string>
-    <string name="combat_promo_hp_hint">бой пойдёт в оценку его хитов</string>
     <string name="combat_promo_relation">Отношение</string>
     <string name="combat_promo_note">Заметка</string>
-    <string name="combat_promo_note_hint">скопирована в карточку</string>
     <string name="combat_promo_confirm_new">Записать в кодекс</string>
     <string name="combat_promo_confirm_known">Готово</string>
     <string name="combat_promo_reject">Не записывать</string>
@@ -1310,9 +1211,7 @@
     <string name="help_skills_proficient_sub">Плюс бонус мастерства</string>
     <string name="help_skills_expert_title">Компетентность</string>
     <string name="help_skills_expert_sub">Мастерство дважды</string>
-    <string name="help_skills_body">Нажмите на кружок — переключится по кругу. На название — правка навыка с
-        поправкой.
-    </string>
+    <string name="help_skills_body">Нажмите на кружок — переключится по кругу. На название — правка навыка с поправкой.</string>
     <string name="help_slots_title">Ячейки заклинаний</string>
     <string name="help_slots_on_title">Свободна</string>
     <string name="help_slots_on_sub">Нажмите, чтобы потратить</string>
@@ -1324,32 +1223,21 @@
     <string name="help_res_on_sub">Нажмите, чтобы потратить</string>
     <string name="help_pip_off_title">Потрачен</string>
     <string name="help_res_off_sub">Нажмите, чтобы вернуть</string>
-    <string name="help_res_body">Ярость, Ки, Второе дыхание — всё, что тратится и копится. Долгий отдых вернёт всё.
-        Нажмите на название, чтобы изменить или удалить.
-    </string>
+    <string name="help_res_body">Ярость, Ки, Второе дыхание — всё, что тратится и копится. Долгий отдых вернёт всё. Нажмите на название, чтобы изменить или удалить.</string>
     <string name="help_ds_title">Спасброски от смерти</string>
     <string name="help_ds_ok_title">Три успеха</string>
     <string name="help_ds_ok_sub">Состояние стабильно: без сознания, но больше не бросает</string>
     <string name="help_ds_fail_title">Три провала</string>
     <string name="help_ds_fail_sub">Можно отметить павшим</string>
-    <string name="help_ds_body">Нажатие на отмеченный кружок снимает отметку. Любое лечение возвращает в сознание.
-    </string>
+    <string name="help_ds_body">Нажатие на отмеченный кружок снимает отметку. Любое лечение возвращает в сознание.</string>
     <string name="help_ac_title">Класс доспеха</string>
-    <string name="help_ac_body">КД вписывается рукой, как на бумажном листе: доспехи, щит и магия сами не считаются. В
-        строке «Откуда» можно записать для себя, из чего он сложился.
-    </string>
+    <string name="help_ac_body">КД вписывается рукой, как на бумажном листе: доспехи, щит и магия сами не считаются. В строке «Откуда» можно записать для себя, из чего он сложился.</string>
     <string name="help_per_title">Пассивная внимательность</string>
-    <string name="help_per_body">10 + бонус Внимательности. Мастер сверяет её со Скрытностью врагов, когда вы не ищете
-        специально. В некоторых изданиях — пассивное восприятие.
-    </string>
+    <string name="help_per_body">10 + бонус Внимательности. Мастер сверяет её со Скрытностью врагов, когда вы не ищете специально. В некоторых изданиях — пассивное восприятие.</string>
     <string name="help_wallet_title">Кошелёк</string>
-    <string name="help_wallet_body">1 платиновая = 10 золотых. 1 золотая = 10 серебряных = 100 медных. 1 электрумовая =
-        5 серебряных. Монеты сами не размениваются, «Всего ≈» — только подсказка.
-    </string>
+    <string name="help_wallet_body">1 платиновая = 10 золотых. 1 золотая = 10 серебряных = 100 медных. 1 электрумовая = 5 серебряных. Монеты сами не размениваются, «Всего ≈» — только подсказка.</string>
     <string name="help_temp_title">Временные хиты</string>
-    <string name="help_temp_body">Уходят первыми при уроне. Не складываются: если получили новые, оставьте большее.
-        Долгий отдых их убирает.
-    </string>
+    <string name="help_temp_body">Уходят первыми при уроне. Не складываются: если получили новые, оставьте большее. Долгий отдых их убирает.</string>
     <string name="help_friend_title">Что не уйдёт другу</string>
     <string name="help_friend_row_hp">Хиты и временные хиты отряда</string>
     <string name="help_friend_row_ac">КД отряда</string>
@@ -1358,12 +1246,10 @@
     <string name="help_friend_row_sheet">Ваш лист персонажа</string>
     <string name="help_friend_row_items">Личные вещи и кошелёк</string>
     <string name="help_friend_row_me">Метка «я»</string>
-    <string name="help_friend_body">Уйдут имена, классы и уровни отряда, все записи кодекса, сессии и упоминания.
-        Предметы NPC и мест тоже уйдут.
-    </string>
-    <string name="link_suggestion_meet_at">%1$s - указать в «Где встретить»?</string>
-    <string name="link_suggestion_who_here">%1$s - указать в «Кто здесь»?</string>
-    <string name="link_suggestion_giver">%1$s - указать в «От кого»?</string>
+    <string name="help_friend_body">Уйдут имена, классы и уровни отряда, все записи кодекса, сессии и упоминания. Предметы NPC и мест тоже уйдут.</string>
+    <string name="link_suggestion_meet_at">%1$s — указать в «Где встретить»?</string>
+    <string name="link_suggestion_who_here">%1$s — указать в «Кто здесь»?</string>
+    <string name="link_suggestion_giver">%1$s — указать в «От кого»?</string>
     <string name="link_suggestion_apply">Связать</string>
     <string name="link_suggestion_dismiss">Не надо</string>
     <string name="link_suggestion_done_title">Связано</string>
@@ -1371,9 +1257,9 @@
     <string name="link_suggestion_done_who_here">%1$s → Кто здесь</string>
     <string name="link_suggestion_done_giver">%1$s → От кого</string>
     <string name="link_suggestion_dismissed_title">Предложение скрыто</string>
-    <string name="link_suggestion_dismissed_subtitle">%1$s - больше не предлагать связь</string>
+    <string name="link_suggestion_dismissed_subtitle">%1$s — больше не предлагать связь</string>
     <string name="mention_create_compact">+ Создать запись</string>
-    <string name="mention_create_hint">Нет нужного? Напишите имя, и мы создадим запись</string>
+    <string name="mention_create_hint">Нет нужного? Введите имя и создайте запись</string>
     <string name="party_level_up_followed">Отряд тоже повышен: %1$d</string>
     <string name="party_level_up_raise">Повысить уровень</string>
     <string name="species_type_title">Тип существа</string>
@@ -1405,12 +1291,8 @@
 
     <string name="exchange_mode_self">Для себя</string>
     <string name="exchange_mode_friend">Для друга</string>
-    <string name="exchange_mode_self_note">Полная копия кампании: записи, сессии, бои, хиты, КД, заметки об отряде и
-        метка «я». Выбрать нужно только, брать ли фото.
-    </string>
-    <string name="exchange_friend_banner">Отряд уйдёт без хитов, КД и заметок, без вашего листа и личных вещей. Друг не
-        увидит ваших пометок о нём
-    </string>
+    <string name="exchange_mode_self_note">Полная копия кампании: записи, сессии, бои, хиты, КД, заметки об отряде и метка «я». Выбрать нужно только, брать ли фото.</string>
+    <string name="exchange_friend_banner">Отряд уйдёт без хитов, КД и заметок, без вашего листа и личных вещей. Друг не увидит ваших пометок о нём</string>
     <string name="exchange_party_notes_title">Заметки об отряде</string>
     <string name="exchange_party_notes_hint">Ваши заметки о персонажах друзей</string>
     <string name="exchange_file_self">личная копия</string>
@@ -1431,9 +1313,7 @@
     <string name="exchange_take_vitals_hint">Иначе у отряда останутся ваши значения</string>
     <string name="settings_data_undo_import_title">Отменить последний импорт</string>
     <string name="settings_data_undo_import_hint">Вернёт кампанию, как она была до импорта</string>
-    <string name="settings_data_undo_import_text">Записи и заметки из последнего импорта уберутся, изменённое вернётся.
-        Всё, что вы правили после импорта в этих записях, пропадёт.
-    </string>
+    <string name="settings_data_undo_import_text">Записи и заметки из последнего импорта уберутся, изменённое вернётся. Всё, что вы правили после импорта в этих записях, пропадёт.</string>
     <string name="settings_data_undo_import_confirm">Отменить импорт</string>
     <string name="settings_data_undo_import_done">Импорт отменён</string>
     <string name="exchange_field_name">Название</string>
@@ -1495,12 +1375,8 @@
     <string name="exchange_compare_status_later">Нерешённые в этот раз не берутся, их спросим снова</string>
     <string name="exchange_compare_merge">Объединить</string>
     <string name="exchange_nothing_title">Ничего нового</string>
-    <string name="exchange_nothing_text_records">Всё из файла уже есть в кампании: %1$s совпадают. Добавлять и решать
-        нечего.
-    </string>
-    <string name="exchange_nothing_text_both">Всё из файла уже есть в кампании: %1$s и %2$s совпадают. Добавлять и
-        решать нечего.
-    </string>
+    <string name="exchange_nothing_text_records">Всё из файла уже есть в кампании: %1$s совпадают. Добавлять и решать нечего.</string>
+    <string name="exchange_nothing_text_both">Всё из файла уже есть в кампании: %1$s и %2$s совпадают. Добавлять и решать нечего.</string>
     <string name="exchange_compare_close">Закрыть</string>
     <string name="exchange_detail_fills_count">%1$d дополнится</string>
     <string name="exchange_detail_text_suffix">%1$s · текст</string>
@@ -1724,18 +1600,14 @@
     <string name="sheet_resource_lay_on_hands">Наложение рук</string>
     <string name="sheet_resource_divine_sense">Божественное чувство</string>
     <string name="sheet_resource_arcane_recovery">Магическое восстановление</string>
-    <string name="me_pick_screen_text">Здесь будут хиты, ресурсы и вещи вашего героя. Это та же запись отряда, не
-        копия.
-    </string>
+    <string name="me_pick_screen_text">Здесь будут хиты, ресурсы и вещи вашего героя. Это та же запись отряда, не копия.</string>
     <string name="me_menu_description">Меню персонажа</string>
     <string name="me_menu_edit">Изменить персонажа</string>
     <string name="me_menu_fill">Заполнить лист по шагам</string>
     <string name="me_menu_spells_hide">Скрыть вкладку «Заклинания»</string>
     <string name="me_menu_spells_show">Показать вкладку «Заклинания»</string>
     <string name="me_spells_hide_action">Не заклинатель — скрыть вкладку</string>
-    <string name="me_spells_hide_hint">Вернуть вкладку можно в любой момент: меню ⋯ вверху, пункт «Показать вкладку
-        «Заклинания»».
-    </string>
+    <string name="me_spells_hide_hint">Вернуть вкладку можно в любой момент: меню ⋯ вверху, пункт «Показать вкладку «Заклинания»».</string>
     <string name="me_menu_not_mine">Это не мой персонаж</string>
     <string name="me_fallen_line">† В разделе «Павшие»</string>
     <string name="me_hp_label">Хиты</string>
@@ -1772,20 +1644,15 @@
     <string name="me_death_add_success">+ Успех</string>
     <string name="me_death_add_failure">+ Провал</string>
     <string name="me_death_stable">Без сознания, но больше не бросает. Счёт сбросится при лечении.</string>
-    <string name="me_death_dead">Три провала. Отметить персонажа павшим? Запись уйдёт в раздел «Павшие» отряда, заметки
-        и вещи сохранятся.
-    </string>
+    <string name="me_death_dead">Три провала. Герой пал. Перенести его в «Павшие»? Заметки и вещи сохранятся, вернуть можно из карточки.</string>
     <string name="me_death_mark_fallen">Отметить павшим</string>
-    <string name="me_death_undo_failure">Ошибка — снять провал</string>
-    <string name="me_fill_banner_title">Заполните лист с бумажного</string>
+    <string name="me_death_undo_failure">Снять провал</string>
+    <string name="me_fill_banner_title">Перенесите лист с бумаги</string>
     <string name="me_fill_banner_text">Бонусы, спасброски и навыки посчитаются из значений.</string>
     <string name="me_fill_banner_action">Начать с класса и уровня</string>
     <string name="me_sheet_section">Характеристики и навыки</string>
     <string name="me_help_skills_title">Характеристики и навыки</string>
-    <string name="me_help_skills_body">Впишите значения характеристик с бумажного листа, бонусы посчитаются сами.
-        Нажмите на кружок, чтобы отметить владение: один раз владение, два раза компетентность. Нажмите на название,
-        чтобы добавить поправку для предмета или черты.
-    </string>
+    <string name="me_help_skills_body">Впишите значения характеристик с бумажного листа, бонусы посчитаются сами. Нажмите на кружок, чтобы отметить владение: один раз владение, два раза компетентность. Нажмите на название, чтобы добавить поправку для предмета или черты.</string>
     <string name="me_inspiration">Вдохновение</string>
     <string name="me_search_description">Поиск навыка</string>
     <string name="me_search_placeholder">Навык или другое название</string>
@@ -1812,7 +1679,7 @@
     <string name="me_feats_delete">Удалить черту</string>
     <string name="me_feats_deleted_title">Черта удалена</string>
     <string name="me_features_title">Особенности</string>
-    <string name="me_features_hold_hint">удерживайте щиты - править</string>
+    <string name="me_features_hold_hint">удерживайте, чтобы править</string>
     <string name="me_about_title">О персонаже</string>
     <string name="me_about_background">Предыстория</string>
     <string name="me_about_alignment">Мировоззрение</string>
@@ -1827,6 +1694,22 @@
     <string name="me_hp_mode_minus">− Хиты</string>
     <string name="me_hp_mode_plus">+ Хиты</string>
     <string name="me_hp_mode_temp">Временные</string>
+    <string name="me_hp_mode_max">Изменить максимум хитов</string>
+    <string name="me_menu_level_up">Повысить уровень</string>
+    <string name="me_level_up_title">Повысить уровень</string>
+    <string name="me_level_up_level_format">Уровень %1$d → %2$d</string>
+    <string name="me_level_up_levels_label">На сколько уровней</string>
+    <string name="me_level_up_total_format">Всего хитов: %1$s</string>
+    <string name="me_level_up_gain_label">Прибавка хитов</string>
+    <string name="me_level_up_gain_hint">Впишите, сколько хитов добавляет каждый новый уровень. В следующий раз поле подскажет это число.</string>
+    <string name="me_level_up_no_max_hint">Максимум хитов не задан, поэтому изменится только уровень.</string>
+    <string name="me_level_up_done">Повысить</string>
+    <string name="me_level_up_toast">%1$s: уровень %2$d</string>
+    <string name="me_level_up_toast_max">Максимум хитов %1$d</string>
+    <string name="me_level_up_toast_no_max">Максимум хитов не задан</string>
+    <string name="me_edit_bonus_label">Бонус хитов за уровень</string>
+    <string name="me_edit_bonus_hint">Черты вроде Крепкого дают лишние хиты за каждый уровень.</string>
+    <string name="me_edit_bonus_catch_up">Пересчитать максимум хитов: %1$s</string>
     <string name="me_ability_overline">Характеристика</string>
     <string name="me_ability_hint">Значение с листа, от 1 до 30. Бонус посчитается сам.</string>
     <string name="me_calc_bonus">Бонус · считается</string>
@@ -1840,7 +1723,6 @@
     <string name="me_ac_title">Класс доспеха</string>
     <string name="me_ac_from_label">Откуда · для себя</string>
     <string name="me_ac_from_placeholder">Например, кольчуга 16 + щит 2</string>
-    <string name="me_ac_from_hint">Заметка только для вас, нигде не считается.</string>
     <string name="me_speed_title">Скорость</string>
     <string name="me_speed_hint">Скорость ходьбы в футах.</string>
     <string name="me_adjustment_note_label">Откуда поправка · для себя</string>
@@ -1852,7 +1734,6 @@
     <string name="me_edit_race_label">Раса или вид</string>
     <string name="me_edit_background_label">Предыстория</string>
     <string name="me_edit_alignment_label">Мировоззрение</string>
-    <string name="me_edit_player_label">Как вас подписывать</string>
     <string name="me_fill_overline_format">Лист · шаг %1$d из %2$d</string>
     <string name="me_fill_title_1">Класс и уровень</string>
     <string name="me_fill_title_2">Характеристики</string>
@@ -1863,8 +1744,7 @@
     <string name="me_fill_subclass_label">Подкласс · необязательно</string>
     <string name="me_fill_subclass_placeholder">Например, Школа Воплощения</string>
     <string name="me_fill_level_label">Уровень</string>
-    <string name="me_fill_abilities_hint">Впишите значения с бумажного листа, от 1 до 30. Бонусы посчитаются сами.
-    </string>
+    <string name="me_fill_abilities_hint">Впишите значения с бумажного листа, от 1 до 30. Бонусы посчитаются сами.</string>
     <string name="me_fill_proficiency_label">Бонус мастерства</string>
     <string name="me_fill_proficiency_hint">по уровню</string>
     <string name="me_fill_saves_label">Спасброски</string>
@@ -1886,50 +1766,31 @@
     <string name="me_spells_empty_action">Задать ячейки</string>
     <string name="me_spells_pick_title">Характеристика заклинаний</string>
     <string name="me_spells_pick_none">Не выбрана</string>
-    <string name="me_spells_pick_hint">По ней считаются СЛ и бонус атаки заклинаний. Без выбранной характеристики и без
-        ячеек вкладки «Заклинания» нет.
-    </string>
+    <string name="me_spells_pick_hint">По ней считаются СЛ и бонус атаки заклинаний. Без выбранной характеристики и без ячеек вкладки «Заклинания» нет.</string>
     <string name="me_help_spell_ability_title">Характеристика заклинаний</string>
-    <string name="me_help_spell_ability_body">Характеристика, от которой зависят ваши заклинания, её задаёт ваш класс.
-        Нажмите на плитку, чтобы выбрать её: от неё считаются СЛ (сложность заклинаний) и бонус атаки. У героя без магии
-        оставьте пустой.
-    </string>
+    <string name="me_help_spell_ability_body">Её задаёт ваш класс. Нажмите на плитку, чтобы выбрать характеристику: от неё считаются СЛ (сложность заклинаний) и бонус атаки. У героя без магии оставьте пустой.</string>
     <string name="me_help_spell_dc_title">Сложность заклинаний</string>
-    <string name="me_help_spell_dc_body">СЛ (сложность заклинаний) — число, против которого цель бросает спасбросок от
-        вашего заклинания. Считается как 8 + бонус мастерства + модификатор характеристики заклинаний. Меняется с
-        уровнем и с ростом характеристики.
-    </string>
+    <string name="me_help_spell_dc_body">СЛ (сложность заклинаний) — число, против которого цель бросает спасбросок от вашего заклинания. Считается как 8 + бонус мастерства + модификатор характеристики заклинаний. Меняется с уровнем и с ростом характеристики.</string>
     <string name="me_help_spell_attack_title">Бонус атаки заклинаний</string>
-    <string name="me_help_spell_attack_body">Бонус, который вы добавляете к броску d20, когда заклинание требует броска
-        атаки. Считается как бонус мастерства + модификатор характеристики заклинаний. Меняется с уровнем и с ростом
-        характеристики.
-    </string>
+    <string name="me_help_spell_attack_body">Бонус, который вы добавляете к броску d20, когда заклинание требует броска атаки. Считается как бонус мастерства + модификатор характеристики заклинаний. Меняется с уровнем и с ростом характеристики.</string>
     <string name="me_help_slots_title">Ячейки заклинаний</string>
-    <string name="me_help_slots_body">Каждая плитка это круг заклинаний: число ячеек и квадратики, закрашенные ещё
-        свободны. Нажмите на плитку, чтобы открыть круг, потом нажмите на ячейку, чтобы потратить её, и ещё раз, чтобы
-        вернуть. Число ячеек меняется кнопкой «Изменить ячейки».
-    </string>
+    <string name="me_help_slots_body">Каждая плитка — круг заклинаний: число ячеек и квадратики. Закрашенный квадратик — свободная ячейка. Нажмите на плитку, чтобы открыть круг, потом нажмите на ячейку, чтобы потратить её, и ещё раз, чтобы вернуть. Число ячеек меняется кнопкой «Изменить ячейки».</string>
     <string name="me_slots_level_title">%1$s круг</string>
     <string name="me_slots_free">свободно %1$d из %2$d</string>
     <string name="me_slots_list_placeholder">Здесь появятся заклинания этого круга</string>
     <string name="me_slots_overline">Заклинания</string>
     <string name="me_slots_title">Ячейки</string>
     <string name="me_slots_level">%1$d круг</string>
-    <string name="me_slots_hint">Впишите, сколько ячеек каждого круга на вашем листе. Круг без ячеек не показывается.
-    </string>
+    <string name="me_slots_hint">Впишите, сколько ячеек каждого круга на вашем листе. Круг без ячеек не показывается.</string>
     <string name="me_slot_name">Ячейки %1$d круга</string>
     <string name="me_resources_title">Ресурсы</string>
     <string name="me_resources_empty_title">Ресурсов пока нет</string>
-    <string name="me_resources_empty_body">Любой счётчик с использованиями: умение, предмет, заклинание от черты.
-    </string>
+    <string name="me_resources_empty_body">Любой счётчик с использованиями: умение, предмет, заклинание от черты.</string>
     <string name="me_resources_add">+ Ресурс</string>
     <string name="me_resources_template">+ Из шаблона</string>
     <string name="me_resources_rest_note">Долгий отдых вернёт все использования и ячейки.</string>
     <string name="me_help_resources_title">Ресурсы</string>
-    <string name="me_help_resources_body">Здесь любой счётчик, что тратится и копится: умения, предметы, заклинания от
-        черт. Нажмите на квадратик, чтобы потратить использование, на пустой, чтобы вернуть. Нажмите на название или
-        удерживайте квадратик, чтобы изменить максимум. После повышения уровня максимум поправьте сами.
-    </string>
+    <string name="me_help_resources_body">Здесь любой счётчик, что тратится и копится: умения, предметы, заклинания от черт. Нажмите на квадратик, чтобы потратить использование, на пустой, чтобы вернуть. Нажмите на название или удерживайте квадратик, чтобы изменить максимум. После повышения уровня максимум поправьте сами.</string>
     <plurals name="me_resource_uses">
         <item quantity="one">%1$d из %2$d использования</item>
         <item quantity="few">%1$d из %2$d использований</item>
@@ -1944,9 +1805,7 @@
     <string name="me_resource_name_label">Название</string>
     <string name="me_resource_name_placeholder">Например, Ярость</string>
     <string name="me_resource_max_label">Максимум</string>
-    <string name="me_resource_max_hint">Остаток сам не пересчитывается: после повышения уровня поправьте квадратики
-        нажатием.
-    </string>
+    <string name="me_resource_max_hint">Остаток сам не пересчитывается: после повышения уровня поправьте квадратики нажатием.</string>
     <string name="me_resource_delete">Удалить ресурс</string>
     <string name="me_resource_deleted_title">Ресурс удалён</string>
     <string name="me_templates_overline">Ресурсы</string>
@@ -1993,7 +1852,7 @@
     <string name="me_rest_log_live_format">Заметка «Долгий отдых» в «%1$s»</string>
     <string name="me_rest_log_none">Нет идущей сессии</string>
     <string name="me_rest_confirm">Отдохнуть</string>
-    <string name="me_rest_undo_hint">После — «Отменить» в тосте</string>
+    <string name="me_rest_undo_hint">После — «Отменить» внизу экрана</string>
     <string name="me_rest_note">Долгий отдых</string>
     <string name="me_rest_done_title">Долгий отдых</string>
     <string name="me_items_add">+ Предмет</string>
@@ -2055,8 +1914,8 @@
     <string-array name="session_text_intros_named">
         <item>{name} разворачивает свиток: вот правда о походе.</item>
         <item>{name} уверяет, что всё именно так и происходит.</item>
-        <item>Трактирная байка. Автор - {name}. Совпадения с реальностью случайны.</item>
-        <item>Летопись при свете свечи. Автор - {name}.</item>
+        <item>Трактирная байка. Автор — {name}. Совпадения с реальностью случайны.</item>
+        <item>Летопись при свете свечи. Автор — {name}.</item>
         <item>{name} диктует хронику, чернила ещё влажные.</item>
         <item>{name} открывает дневник и делает вид, что всё помнит.</item>
         <item>Хроника похода. Перо у {name}, отряд не спорит.</item>
@@ -2098,9 +1957,6 @@
     <string name="combat_mark_field_label">Метка</string>
     <string name="combat_mark_field_spell">Заклинание</string>
     <string name="combat_mark_field_custom">Название состояния</string>
-    <string name="combat_mark_preset_save">Спасбросок…</string>
-    <string name="combat_mark_preset_ac">КД…</string>
-    <string name="combat_mark_preset_speed">Скорость…</string>
     <string name="combat_mark_rounds_title">СЧЁТЧИК РАУНДОВ</string>
     <string name="combat_mark_rounds_none">без счёта</string>
     <string name="combat_mark_rounds_minute">1 мин · 10</string>
@@ -2114,7 +1970,7 @@
     <string name="combat_features_add_shield">+ сопротивление</string>
     <string name="combat_mark_expired">Время вышло: %1$s</string>
     <string name="combat_features_title">Особенности</string>
-    <string name="combat_features_header">ОСОБЕННОСТИ · удерживайте - править</string>
+    <string name="combat_features_header">ОСОБЕННОСТИ · удерживайте — править</string>
     <string name="combat_features_only">только в бою</string>
     <string name="combat_features_more">ещё %1$d ›</string>
     <string name="combat_features_facts">Сведения</string>
@@ -2122,11 +1978,10 @@
     <string name="combat_features_add">Добавить</string>
     <string name="combat_features_remove">Убрать сведение</string>
     <string name="combat_features_added">Добавлено в NPC: %1$s</string>
+    <string name="features_removed_title">Особенность удалена</string>
     <string name="combat_features_undo">Нажмите, чтобы отменить</string>
     <string name="entity_sheet_npc_facts_label">Сведения</string>
-    <string name="combat_features_hint">Введите или начните с заготовки</string>
     <string name="combat_features_shields_title">Сопротивления · иммунитеты · уязвимости</string>
-    <string name="combat_features_done">Готово</string>
     <string name="combat_features_changed">Особенности изменены</string>
     <string name="me_spells_cantrips_title">Заговоры</string>
     <string name="me_spells_cantrips_sub">Фокусы</string>
@@ -2141,9 +1996,7 @@
     <string name="me_spells_card_delete_spell">Удалить заклинание</string>
     <string name="me_spells_card_description_hint">Что делает заклинание</string>
     <string name="me_spells_card_edit_form">Изменить в форме</string>
-    <string name="me_spells_card_empty">Пока только название. Урон, время, дальность и описание добавляются через «⋯» →
-        «Изменить в форме».
-    </string>
+    <string name="me_spells_card_empty">Пока только название. Урон, время, дальность и описание добавляются через «⋯» → «Изменить в форме».</string>
     <string name="me_spells_description_cancel">Отмена</string>
     <string name="me_spells_description_done">Готово</string>
     <string name="me_spells_block_name">Название и круг</string>
@@ -2157,12 +2010,8 @@
     <string name="me_spells_card_spend_slot">Потратить ячейку</string>
     <string name="me_spells_card_spend_uses">Потратить применение</string>
     <string name="me_spells_card_spend_free">Применение</string>
-    <string name="me_spells_card_spend_free_note">Осталось %1$d из %2$d · вернётся после долгого отдыха. Ячейку не
-        тратит.
-    </string>
-    <string name="me_spells_card_spend_none_note">Свободных ячеек %1$s круга и выше нет. Вернутся после долгого
-        отдыха.
-    </string>
+    <string name="me_spells_card_spend_free_note">Осталось %1$d из %2$d · вернётся после долгого отдыха. Ячейку не тратит.</string>
+    <string name="me_spells_card_spend_none_note">Свободных ячеек %1$s круга и выше нет. Вернутся после долгого отдыха.</string>
     <string name="me_spells_card_no_slots_note">Ячеек %1$s круга и выше у персонажа нет.</string>
     <string name="me_spells_cast_slot_title">Потрачена ячейка: %1$s</string>
     <string name="me_spells_cast_slot_sub">Осталось %1$s: %2$d из %3$d</string>
@@ -2269,7 +2118,6 @@
     <string name="me_spells_growth_projectiles_hint">лучи, стрелы, удары</string>
     <string name="me_spells_growth_duration_hint">«Сглаз», «Метка охотника»</string>
     <string name="me_spells_growth_targets_hint">«Удержание личности»: +1 цель</string>
-    <string name="me_spells_growth_range_hint">редко, но бывает</string>
     <string name="me_spells_growth_custom_hint">текст для каждой ступени</string>
     <string name="me_spells_growth_mode_every">Каждый круг</string>
     <string name="me_spells_growth_mode_every_n">Каждые N</string>
@@ -2305,9 +2153,9 @@
     <string name="downtime_item_format">%1$s ×%2$d</string>
     <string name="downtime_title_new">Новый даунтайм</string>
     <string name="downtime_title_edit">Изменить даунтайм</string>
-    <string name="downtime_field_short">Что делал · кратко</string>
+    <string name="downtime_field_short">Чем занимались · кратко</string>
     <string name="downtime_field_long">Подробно</string>
-    <string name="downtime_field_gained">Что получил</string>
+    <string name="downtime_field_gained">Что получили</string>
     <string name="downtime_field_gold">Золото</string>
     <string name="downtime_field_items">Предметы</string>
     <string name="downtime_item_less">Меньше</string>
@@ -2319,8 +2167,7 @@
     <string name="downtime_revert">Отменить внесение</string>
     <string name="downtime_applied_title">Внесено в лист: %1$s</string>
     <string name="downtime_reverted_title">Внесение отменено: %1$s</string>
-    <string name="downtime_detail_subtitle">Не сессия: нумерация и дни не меняются</string>
-    <string name="downtime_field_did">Что делал</string>
+    <string name="downtime_field_did">Чем занимались</string>
     <string name="downtime_loot_header">Золото и предметы</string>
     <string name="downtime_status_no_character">нет своего персонажа</string>
     <string name="downtime_card_empty">Пусто — нажмите, чтобы записать</string>
@@ -2335,12 +2182,8 @@
     <string name="downtime_gold_spent_description">Золото потрачено</string>
     <string name="downtime_item_name_placeholder">Название</string>
     <string name="downtime_item_add">+ Предмет</string>
-    <string name="downtime_edit_hint">При сохранении золото уйдёт в кошелёк, предметы — в снаряжение листа «Я». Отменить
-        можно в тосте или в самой записи.
-    </string>
-    <string name="downtime_edit_hint_no_character">Своего персонажа нет: выберите его в «Я», чтобы вносить золото и
-        предметы.
-    </string>
+    <string name="downtime_edit_hint">При сохранении золото уйдёт в кошелёк, предметы — в снаряжение листа «Я». Отменить можно кнопкой внизу экрана или в самой записи.</string>
+    <string name="downtime_edit_hint_no_character">Своего персонажа нет: выберите его в «Я», чтобы вносить золото и предметы.</string>
     <string name="downtime_title">Даунтайм</string>
     <string name="downtime_applied_subtitle">Даунтайм</string>
     <string name="downtime_reverted_subtitle">Запись даунтайма осталась</string>
@@ -2352,12 +2195,28 @@
     <string name="session_list_edit_done">Готово</string>
     <string name="session_list_edit_banner">Тяните за ≡, чтобы переставить</string>
     <string name="session_list_edit_help_title">Порядок сессий</string>
-    <string name="session_list_edit_help_body">Номера идут по дате сессии. Когда вы переносите сессию, она получает дату
-        между датами новых соседей, а номера пересчитываются. Текущая сессия всегда последняя и не двигается.
-    </string>
+    <string name="session_list_edit_help_body">Номера идут по дате сессии. Когда вы переносите сессию, она получает дату между датами новых соседей, а номера пересчитываются. Текущая сессия всегда последняя и не двигается.</string>
     <string name="session_list_edit_fixed">не двигается</string>
     <string name="session_list_edit_new_mark">новая · тяните на место</string>
     <string name="session_list_edit_add_past">+ Сессия</string>
     <string name="session_list_edit_between_format">+ Между сессиями %1$s и %2$s</string>
     <string name="session_list_edit_handle_description">Перенести сессию</string>
+    <string name="me_spells_import_button">Импорт по ссылке</string>
+    <string name="me_spells_import_title">Импорт по ссылке</string>
+    <string name="me_spells_import_link">Ссылка</string>
+    <string name="me_spells_import_link_hint">Вставьте ссылку на заклинание</string>
+    <string name="me_spells_import_paste">Вставить</string>
+    <string name="me_spells_import_clear">✕</string>
+    <string name="me_spells_import_sites">Подходят ссылки с</string>
+    <string name="me_spells_import_language_en">EN</string>
+    <string name="me_spells_import_device_note">Страницу загружает ваше устройство, напрямую с сайта</string>
+    <string name="me_spells_import_submit">Импортировать</string>
+    <string name="me_spells_import_manual">Создать вручную</string>
+    <string name="me_spells_import_error_unsupported">Этот сайт не поддерживается</string>
+    <string name="me_spells_import_error_offline">Нет соединения с интернетом</string>
+    <string name="me_spells_import_error_not_found">По этой ссылке заклинания нет</string>
+    <string name="me_spells_import_error_unreadable">Не удалось разобрать страницу</string>
+    <string name="me_spells_import_hint">Импортировано с %1$s. Урон и усиление проверьте и задайте сами</string>
+    <string name="me_spells_import_hint_dice">В описании есть кубы урона: %1$s</string>
+    <string name="me_spells_import_hint_dismiss">Понятно</string>
 </resources>

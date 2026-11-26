@@ -96,13 +96,13 @@ private fun sheetItems(sheet: MeSheetState): List<SheetItem> {
         if (searching && sheet.strips.isEmpty()) add(SheetItem.Empty)
         sheet.strips.forEach { add(SheetItem.Strip(it)) }
         if (!searching) {
-            add(SheetItem.Languages)
             add(SheetItem.Features)
             add(SheetItem.Feats)
             if (sheet.background.isNotBlank() || sheet.alignment.isNotBlank()) {
                 add(SheetItem.About)
             }
             add(SheetItem.Personality)
+            add(SheetItem.Languages)
         }
     }
 }

@@ -13,6 +13,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilities
 import com.lyrismet.incadent.feature.me.domain.AbilityStrip
+import com.lyrismet.incadent.feature.me.domain.canLevelUp
 import com.lyrismet.incadent.feature.me.domain.featureResources
 import com.lyrismet.incadent.feature.me.domain.headerNumbers
 import com.lyrismet.incadent.feature.me.domain.slotColumns
@@ -52,6 +53,7 @@ internal fun buildMeCharacter(
     MeCharacter(
         id = member.id,
         name = member.name,
+        canLevelUp = member.canLevelUp,
         portrait = member.portrait,
         characterClass = member.characterClass,
         subclass = member.subclass,
@@ -118,6 +120,8 @@ private fun spellsState(
         block = ui.block,
         descriptionDraft = ui.descriptionDraft,
         tilesEditable = true,
+        importSheet = ui.importSheet,
+        importHint = ui.importHint,
     )
 }
 

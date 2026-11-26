@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
+import com.lyrismet.incadent.feature.codex.domain.repository.SpellImportFailure
 import com.lyrismet.incadent.feature.me.domain.SlotColumn
 import com.lyrismet.incadent.feature.me.domain.SpellPay
 
@@ -33,6 +34,32 @@ data class SpellsBlockState(
     val undo: UndoAction? = null,
     // the numbers open their sheets only on the screen that owns the sheet
     val tilesEditable: Boolean,
+    // the sheet that takes the link of a spell to import
+    val importSheet: SpellImportSheetState? = null,
+    // the line over the form of an imported spell, null once the form is touched
+    val importHint: ImportHint? = null,
+)
+
+/** the link being typed and what became of the last try */
+data class SpellImportSheetState(
+    val link: String = "",
+    val phase: ImportPhase = ImportPhase.Idle,
+)
+
+sealed interface ImportPhase {
+    data object Idle : ImportPhase
+
+    data object Loading : ImportPhase
+
+    data class Failed(
+        val failure: SpellImportFailure,
+    ) : ImportPhase
+}
+
+/** [site] is the name of the site the spell came from, [dice] the dice found in its description */
+data class ImportHint(
+    val site: String,
+    val dice: List<String>,
 )
 
 /** a part of the card that opens its own sheet on a hold */
@@ -110,6 +137,21 @@ sealed interface SpellsEvent {
     data class TileTapped(
         val tile: SpellTile,
     ) : SpellsEvent
+
+    /** the presses of the import of a spell by its link */
+    sealed interface ImportEvent : SpellsEvent
+
+    data object ImportOpened : ImportEvent
+
+    data class ImportLinkChanged(
+        val link: String,
+    ) : ImportEvent
+
+    data object ImportSubmitted : ImportEvent
+
+    data object ImportClosed : ImportEvent
+
+    data object ImportHintDismissed : ImportEvent
 }
 
 /** what the screen remembers about the block: the open level, the open card and the spell being edited */
@@ -119,6 +161,8 @@ class SpellsUiState {
     var draft by mutableStateOf<CharacterSpell?>(null)
     var block by mutableStateOf<SpellBlock?>(null)
     var descriptionDraft by mutableStateOf<String?>(null)
+    var importSheet by mutableStateOf<SpellImportSheetState?>(null)
+    var importHint by mutableStateOf<ImportHint?>(null)
 
     fun reset() {
         openLevel = null
@@ -126,5 +170,7 @@ class SpellsUiState {
         draft = null
         block = null
         descriptionDraft = null
+        importSheet = null
+        importHint = null
     }
 }

@@ -41,7 +41,6 @@ data class MarkSheet(
     val concentration: Boolean,
     val roundsText: String,
     val canAdd: Boolean,
-    val showPresets: Boolean,
 )
 
 internal const val MARK_MINUTE_ROUNDS = 10

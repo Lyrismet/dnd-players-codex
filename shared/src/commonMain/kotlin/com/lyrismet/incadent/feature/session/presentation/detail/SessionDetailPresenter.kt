@@ -10,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.text.input.TextFieldValue
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.errors.ReportFailures
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.format.toDisplayDate
@@ -123,6 +125,7 @@ class SessionDetailPresenter(
     @Suppress("LongMethod")
     @Composable
     override fun present(): SessionDetailState {
+        val analytics = LocalAnalyticsTracker.current
         val allSessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
         val allEntries by sessionEntryRepository.observeAll().collectAsState(initial = emptyList())
         val allCombats by combatRepository.observeAll().collectAsState(initial = emptyList())
@@ -300,6 +303,7 @@ class SessionDetailPresenter(
         // the sink keeps one identity for the whole screen, so a keystroke does not recompose every note
         val latestEvents =
             rememberUpdatedState { event: SessionDetailEvent ->
+                analytics.action("SessionDetail", event)
                 val context =
                     EventContext(
                         currentNote,

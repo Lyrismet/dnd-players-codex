@@ -70,41 +70,91 @@ class PartyRepositoryImpl(
         }
     }
 
-    // the "вы" flag is unique per campaign - saving a player character clears it from everyone else
-    override suspend fun upsert(entity: PartyMember): Long =
+    override suspend fun setHpMaxApprox(
+        id: Long,
+        approx: Boolean,
+    ) {
+        withContext(DatabaseDispatcher) { queries.setHpMaxApprox(approx, id) }
+    }
+
+    override suspend fun setCharacterExtras(
+        id: Long,
+        hpBonusPerLevel: Int,
+        lastLevelGain: Int?,
+    ) {
         withContext(DatabaseDispatcher) {
-            database.transactionWithResult {
-                val stored =
-                    if (entity.id == 0L) null else queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
-                val id =
-                    if (stored != null) {
-                        queries.update(
-                            name = entity.name,
-                            character_class = entity.characterClass,
-                            subclass = entity.subclass,
-                            race = entity.race,
-                            level = entity.level?.toLong(),
-                            player_name = entity.playerName,
-                            is_player_character = entity.isPlayerCharacter,
-                            presence = entity.presence,
-                            hp_max = entity.hpMax?.toLong(),
-                            hp_current = entity.hpCurrent?.toLong(),
-                            description = entity.description,
-                            id = entity.id,
-                        )
-                        queries.setHpMaxApprox(hpMaxApproxAfter(stored, entity), entity.id)
-                        writePhotoIfChanged(
-                            entity.portrait,
-                            stored.portrait,
-                        ) { full, thumb, source -> queries.setPortrait(full, thumb, source, entity.id) }
-                        entity.id
-                    } else {
-                        insert(entity)
-                    }
-                if (entity.isPlayerCharacter) queries.clearOtherPlayerCharacters(id, current.requireId())
-                id
+            queries.setCharacterExtras(hpBonusPerLevel.toLong(), lastLevelGain?.toLong(), id)
+        }
+    }
+
+    override suspend fun saveLevelUp(
+        player: PartyMember,
+        followers: List<PartyMember>,
+    ) {
+        withContext(DatabaseDispatcher) {
+            database.transaction {
+                upsertRow(player)
+                writeExtras(player)
+                followers.forEach { upsertRow(it) }
             }
         }
+    }
+
+    override suspend fun restore(members: List<PartyMember>) {
+        withContext(DatabaseDispatcher) {
+            database.transaction {
+                members.forEach {
+                    upsertRow(it)
+                    writeExtras(it)
+                    queries.setHpMaxApprox(it.hpMaxApprox, it.id)
+                }
+            }
+        }
+    }
+
+    private fun writeExtras(member: PartyMember) =
+        queries.setCharacterExtras(
+            member.hpBonusPerLevel.toLong(),
+            member.lastLevelGain?.toLong(),
+            member.id,
+        )
+
+    // the "вы" flag is unique per campaign - saving a player character clears it from everyone else
+    override suspend fun upsert(entity: PartyMember): Long =
+        withContext(DatabaseDispatcher) { database.transactionWithResult { upsertRow(entity) } }
+
+    private fun upsertRow(entity: PartyMember): Long {
+        val stored =
+            if (entity.id == 0L) null else queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
+        val id =
+            if (stored != null) {
+                queries.update(
+                    name = entity.name,
+                    character_class = entity.characterClass,
+                    subclass = entity.subclass,
+                    race = entity.race,
+                    level = entity.level?.toLong(),
+                    player_name = entity.playerName,
+                    is_player_character = entity.isPlayerCharacter,
+                    presence = entity.presence,
+                    hp_max = entity.hpMax?.toLong(),
+                    hp_current = entity.hpCurrent?.toLong(),
+                    description = entity.description,
+                    id = entity.id,
+                )
+                queries.setHpMaxApprox(hpMaxApproxAfter(stored, entity), entity.id)
+                mirrorToCombat(queries, entity.id)
+                writePhotoIfChanged(
+                    entity.portrait,
+                    stored.portrait,
+                ) { full, thumb, source -> queries.setPortrait(full, thumb, source, entity.id) }
+                entity.id
+            } else {
+                insert(entity)
+            }
+        if (entity.isPlayerCharacter) queries.clearOtherPlayerCharacters(id, current.requireId())
+        return id
+    }
 
     // a record of a known id that is gone comes back under that id, so the "@" tokens in notes find it again
     private fun insert(member: PartyMember): Long {
@@ -182,6 +232,8 @@ class PartyRepositoryImpl(
         originId: String,
         vulnerabilities: String,
         hpMaxApprox: Boolean,
+        hpBonusPerLevel: Long,
+        lastLevelGain: Long?,
     ) = PartyMember(
         id = id,
         name = name,
@@ -201,6 +253,8 @@ class PartyRepositoryImpl(
         originId = originId,
         vulnerabilities = decodeVulnerabilities(vulnerabilities),
         hpMaxApprox = hpMaxApprox,
+        hpBonusPerLevel = hpBonusPerLevel.toInt(),
+        lastLevelGain = lastLevelGain?.toInt(),
     )
 
     // the by-id row also carries the full jpeg
@@ -226,6 +280,8 @@ class PartyRepositoryImpl(
         vulnerabilities: String,
         photoSource: ByteArray?,
         hpMaxApprox: Boolean,
+        hpBonusPerLevel: Long,
+        lastLevelGain: Long?,
     ) = toDomain(
         id,
         name,
@@ -245,6 +301,8 @@ class PartyRepositoryImpl(
         originId,
         vulnerabilities,
         hpMaxApprox,
+        hpBonusPerLevel,
+        lastLevelGain,
     ).copy(portrait = portraitThumb?.let { Photo(it, portrait, photoSource) })
 }
 

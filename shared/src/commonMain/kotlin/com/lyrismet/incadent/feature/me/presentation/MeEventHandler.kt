@@ -1,6 +1,5 @@
 package com.lyrismet.incadent.feature.me.presentation
 
-import com.lyrismet.incadent.feature.codex.domain.grouping.encodeFacts
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -199,7 +198,7 @@ internal class MeEventHandler(
             SheetEvent.SearchToggled -> toggleSearch()
             is SheetEvent.QueryChanged -> ui.query = event.query
             is SheetEvent.TextChanged -> typeText(id, event.text, event.value)
-            is SheetEvent.FactsChanged -> actions.sheet(id) { it.copy(features = event.facts.encodeFacts()) }
+            is SheetEvent.FactsChanged -> actions.setFacts(id, event.facts)
             is SheetEvent.ShieldChanged -> actions.shield(id, event.type, event.state)
             SheetEvent.FillRequested -> ui.edit = MeOverlay.Fill(fillDraft(member, character))
             SheetEvent.AboutTapped -> ui.edit = MeOverlay.EditCharacter(characterDraft(member, source))
@@ -264,6 +263,8 @@ internal class MeEventHandler(
         ui.menuOpen = false
         when (action) {
             MenuAction.EDIT -> ui.edit = MeOverlay.EditCharacter(characterDraft(member, character.sheet.source))
+            MenuAction.LEVEL_UP ->
+                ui.edit = MeOverlay.LevelUp(member.level ?: 0, 1, member.lastLevelGain ?: 0, member.hpMax != null)
             MenuAction.FILL -> ui.edit = MeOverlay.Fill(fillDraft(member, character))
             MenuAction.TOGGLE_SPELLS -> counters.setSpellsHidden(member, !character.spellsHidden)
             MenuAction.NOT_MINE -> actions.releaseMark(member)
@@ -314,7 +315,9 @@ private fun characterDraft(
         race = member.race,
         background = sheet.background,
         alignment = sheet.alignment,
-        playerName = member.playerName,
+        hpBonusPerLevel = member.hpBonusPerLevel,
+        hpMax = member.hpMax,
+        storedBonus = member.hpBonusPerLevel,
     )
 
 /** true for the presses that change stored data, the others only move what the screen shows */

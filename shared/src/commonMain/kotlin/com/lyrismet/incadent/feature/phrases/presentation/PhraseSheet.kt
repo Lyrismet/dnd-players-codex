@@ -23,6 +23,10 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
+// entry points to phrases are hidden for now, flip to true to bring them back
+@Suppress("MayBeConstant")
+val PHRASES_ENTRY_VISIBLE: Boolean = false
+
 /** the "Заготовки" bottom sheet's content, pre-formatted for rendering - absent while the sheet is closed */
 data class PhraseSheetState(
     val pinned: List<PhrasePinnedRow>,

@@ -6,6 +6,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.SessionNumbering
@@ -116,6 +118,7 @@ class CombatResultsPresenter(
 
     @Composable
     override fun present(): CombatResultsState {
+        val analytics = LocalAnalyticsTracker.current
         val combat by combatRepository.observe(screen.combatId).collectAsState(initial = null)
         val sessions by sessionNoteRepository.observeAll().collectAsState(initial = emptyList())
         val species by codexRepositories.speciesRepository.observeAll().collectAsState(initial = emptyList())
@@ -134,6 +137,7 @@ class CombatResultsPresenter(
 
         val current =
             combat ?: return CombatResultsState(readOnly = screen.readOnly, toast = drafts.toast.value) { event ->
+                analytics.action("CombatResults", event)
                 if (event == CombatResultsEvent.BackClicked) navigator.pop()
             }
         val suggested = if (screen.interrupted) CombatOutcome.INTERRUPTED else autoOutcome(current.combatants)
@@ -166,7 +170,10 @@ class CombatResultsPresenter(
             deleteConfirmVisible = drafts.deleteConfirm.value,
             saving = drafts.saving.value,
             toast = drafts.toast.value,
-            eventSink = handler::onEvent,
+            eventSink = { event ->
+                analytics.action("CombatResults", event)
+                handler.onEvent(event)
+            },
         )
     }
 

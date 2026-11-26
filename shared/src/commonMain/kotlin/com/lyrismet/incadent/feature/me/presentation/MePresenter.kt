@@ -8,6 +8,8 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import com.lyrismet.incadent.core.analytics.LocalAnalyticsTracker
+import com.lyrismet.incadent.core.analytics.action
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.preferences.HoldHintState
@@ -31,12 +33,14 @@ import com.lyrismet.incadent.feature.codex.presentation.item.ItemsController
 import com.lyrismet.incadent.feature.codex.presentation.item.rememberItemsController
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPicker
 import com.lyrismet.incadent.feature.me.domain.abilityStrips
+import com.lyrismet.incadent.feature.me.presentation.spells.SpellImportDeps
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsHandler
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import com.lyrismet.incadent.feature.session.domain.repository.SessionEntryRepository
 import com.lyrismet.incadent.feature.session.domain.repository.SessionNoteRepository
 import com.slack.circuit.runtime.presenter.Presenter
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 
 /** loads the character marked "me" with its sheet and turns every press of the screen into a write */
 @Suppress("LongParameterList")
@@ -54,15 +58,23 @@ internal class MePresenter(
     private val sessionEntryRepository: SessionEntryRepository,
     private val undoController: UndoController,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val spellImport: SpellImportDeps,
 ) : Presenter<MeState> {
     private val picker = PlayerCharacterPicker(partyRepository, appPreferencesRepository)
 
+    private suspend fun followsPartyLevel() = appPreferencesRepository.observeFollowPartyLevel().first()
+
+    @Suppress("LongMethod")
     @Composable
     override fun present(): MeState {
+        val analytics = LocalAnalyticsTracker.current
         val scope = rememberCoroutineScope()
         val party by remember { partyRepository.observeAll() }.collectAsState(initial = null)
         val campaign by remember { campaignRepository.observeCurrent() }.collectAsState(initial = null)
-        val actions = remember { MeActions(scope, partyRepository, sheetRepository, undoController) }
+        val actions =
+            remember {
+                MeActions(scope, partyRepository, sheetRepository, undoController, ::followsPartyLevel)
+            }
         val readOnly = campaign?.status == CampaignStatus.ARCHIVED
         val list = party
         val member = list?.firstOrNull { it.isPlayerCharacter }
@@ -114,7 +126,13 @@ internal class MePresenter(
             )
         val latestScope by rememberUpdatedState(eventScope)
         val handler = rememberHandler(ui, actions, itemsController, { latestScope }, scope)
-        val eventSink = remember(handler) { handler::handle }
+        val eventSink =
+            remember(handler, analytics) {
+                { event: MeEvent ->
+                    analytics.action("Me", event)
+                    handler.handle(event)
+                }
+            }
         return MeState(content = content, eventSink = eventSink)
     }
 
@@ -146,6 +164,7 @@ internal class MePresenter(
                     resourceRepository,
                     spellRepository,
                     undoController,
+                    spellImport,
                     onHoldTipSeen = { appPreferencesRepository.setHoldHintState(HoldHintState.SEEN) },
                 )
             }

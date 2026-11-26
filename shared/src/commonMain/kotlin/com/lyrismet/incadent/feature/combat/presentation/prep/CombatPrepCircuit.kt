@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.combat.presentation.prep
 
+import com.lyrismet.incadent.core.analytics.AnalyticsTracker
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
 import com.lyrismet.incadent.core.undo.UndoController
@@ -35,6 +36,7 @@ class CombatPrepPresenterFactory(
     private val appPreferencesRepository: AppPreferencesRepository,
     private val imageCompressor: ImageCompressor,
     private val undoController: UndoController,
+    private val analytics: AnalyticsTracker,
 ) : Presenter.Factory {
     override fun create(
         screen: Screen,
@@ -54,6 +56,7 @@ class CombatPrepPresenterFactory(
                     appPreferencesRepository,
                     imageCompressor,
                     undoController,
+                    analytics,
                 )
             else -> null
         }

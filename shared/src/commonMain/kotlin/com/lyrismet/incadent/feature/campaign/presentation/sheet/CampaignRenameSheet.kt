@@ -1,12 +1,9 @@
 package com.lyrismet.incadent.feature.campaign.presentation.sheet
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
-import com.lyrismet.incadent.core.designsystem.AppFontSize
-import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.AppNameInput
 import com.lyrismet.incadent.core.designsystem.component.AppSheetColumn
@@ -14,7 +11,6 @@ import com.lyrismet.incadent.core.designsystem.component.AppSheetHeader
 import com.lyrismet.incadent.core.designsystem.component.FormPrimaryButton
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.savableCampaignName
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.settings_rename_hint
 import incadent.shared.generated.resources.settings_rename_placeholder
 import incadent.shared.generated.resources.settings_rename_save
 import incadent.shared.generated.resources.settings_rename_title
@@ -43,11 +39,6 @@ fun CampaignRenameSheet(
                 onNameChanged = onDraftChanged,
                 placeholder = stringResource(Res.string.settings_rename_placeholder),
                 onDone = { if (canSave) onSave() },
-            )
-            Text(
-                text = stringResource(Res.string.settings_rename_hint),
-                fontSize = AppFontSize.SmallPlus,
-                color = AppPalette.TextSecondary,
             )
             FormPrimaryButton(
                 text = stringResource(Res.string.settings_rename_save),

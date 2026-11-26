@@ -26,7 +26,9 @@ CREATE TABLE party_member (
     subclass TEXT NOT NULL DEFAULT '',
     vulnerabilities TEXT NOT NULL DEFAULT '',
     photo_source BLOB,
-    hp_max_approx INTEGER AS Boolean NOT NULL DEFAULT 0
+    hp_max_approx INTEGER AS Boolean NOT NULL DEFAULT 0,
+    hp_bonus_per_level INTEGER NOT NULL DEFAULT 0,
+    last_level_gain INTEGER
 );
 
 CREATE INDEX party_member_campaign_id ON party_member(campaign_id);
@@ -36,14 +38,16 @@ CREATE INDEX party_member_fell_combat_id ON party_member(fell_combat_id);
 -- list queries leave the full jpeg out, a row carries only its thumbnail
 selectAll:
 SELECT id, name, character_class, subclass, race, level, player_name, is_player_character, presence, hp_max, hp_current,
-    description, fallen, fell_combat_id, portrait_thumb, origin_id, vulnerabilities, hp_max_approx
+    description, fallen, fell_combat_id, portrait_thumb, origin_id, vulnerabilities, hp_max_approx,
+    hp_bonus_per_level, last_level_gain
 FROM party_member
 WHERE campaign_id = ?
 ORDER BY name;
 
 selectById:
 SELECT id, name, character_class, subclass, race, level, player_name, is_player_character, presence, hp_max, hp_current,
-    description, fallen, fell_combat_id, portrait_thumb, portrait, origin_id, vulnerabilities, photo_source, hp_max_approx
+    description, fallen, fell_combat_id, portrait_thumb, portrait, origin_id, vulnerabilities, photo_source, hp_max_approx,
+    hp_bonus_per_level, last_level_gain
 FROM party_member
 WHERE id = ?;
 
@@ -75,6 +79,10 @@ UPDATE party_member SET portrait = ?, portrait_thumb = ?, photo_source = ? WHERE
 setHpMaxApprox:
 UPDATE party_member SET hp_max_approx = ? WHERE id = ?;
 
+-- the level up numbers are written on their own, so saving a form never wipes them
+setCharacterExtras:
+UPDATE party_member SET hp_bonus_per_level = ?, last_level_gain = ? WHERE id = ?;
+
 -- the shields are written on their own, so saving a form never wipes them
 setVulnerabilities:
 UPDATE party_member SET vulnerabilities = ? WHERE id = ?;
@@ -102,6 +110,12 @@ SELECT description FROM party_member WHERE id = ?;
 
 setDescription:
 UPDATE party_member SET description = ? WHERE id = ?;
+
+-- a change on the sheet reaches the seat of the character in a fight going on
+mirrorToCombat:
+UPDATE combatant
+SET hp_max = :hpMax, hp_current = :hpCurrent, temp_hp = :tempHp
+WHERE party_member_id = :memberId AND combat_id IN (SELECT id FROM combat WHERE phase = 'ONGOING');
 
 -- the numbers a sheet shows beside the hit points, written on their own so saving a form never touches them
 selectVitals:

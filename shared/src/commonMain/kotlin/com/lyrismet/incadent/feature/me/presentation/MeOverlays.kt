@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.me.presentation
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -30,7 +31,6 @@ import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.designsystem.numeral
 import com.lyrismet.incadent.core.format.signed
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
-import com.lyrismet.incadent.feature.me.domain.HitPointMode
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.calc_heal_to_max_full
 import incadent.shared.generated.resources.calc_heal_to_max_label
@@ -41,7 +41,6 @@ import incadent.shared.generated.resources.help_ac_body
 import incadent.shared.generated.resources.help_ac_title
 import incadent.shared.generated.resources.me_ability_hint
 import incadent.shared.generated.resources.me_ability_overline
-import incadent.shared.generated.resources.me_ac_from_hint
 import incadent.shared.generated.resources.me_ac_from_label
 import incadent.shared.generated.resources.me_ac_from_placeholder
 import incadent.shared.generated.resources.me_ac_title
@@ -49,9 +48,6 @@ import incadent.shared.generated.resources.me_calc_bonus
 import incadent.shared.generated.resources.me_calc_save
 import incadent.shared.generated.resources.me_done
 import incadent.shared.generated.resources.me_hp_apply
-import incadent.shared.generated.resources.me_hp_mode_minus
-import incadent.shared.generated.resources.me_hp_mode_plus
-import incadent.shared.generated.resources.me_hp_mode_temp
 import incadent.shared.generated.resources.me_hp_pad_overline
 import incadent.shared.generated.resources.me_hp_preview_format
 import incadent.shared.generated.resources.me_proficiency_expertise
@@ -89,6 +85,7 @@ internal fun MeOverlays(
         is MeOverlay.Adjustment -> AdjustmentSheet(overlay, send)
         is MeOverlay.Fill -> MeFillSheet(overlay.draft, send)
         is MeOverlay.EditCharacter -> MeEditSheet(overlay.draft, send)
+        is MeOverlay.LevelUp -> MeLevelUpSheet(overlay, send)
         is MeOverlay.Slots -> SlotsSheet(overlay, send)
         is MeOverlay.Resource ->
             ResourceSheet(overlay, send) { onEvent(MeEvent.Counters(CounterEvent.ResourceDeleted)) }
@@ -136,25 +133,9 @@ private fun HitPointsSheet(
                     ?.takeIf { it.hasTemp && (it.missing ?: 0) > 0 }
                     ?.let { stringResource(Res.string.calc_heal_to_max_temp_note) },
             modes = {
-                AppSegmentedTabs(
-                    tabs =
-                        listOf(
-                            SegmentedTab(
-                                HitPointMode.HEAL,
-                                stringResource(Res.string.me_hp_mode_plus),
-                                accent = HitPointMode.HEAL.accent(),
-                            ),
-                            SegmentedTab(
-                                HitPointMode.DAMAGE,
-                                stringResource(Res.string.me_hp_mode_minus),
-                                accent = HitPointMode.DAMAGE.accent(),
-                            ),
-                            SegmentedTab(HitPointMode.TEMP, stringResource(Res.string.me_hp_mode_temp)),
-                        ),
-                    selected = pad.mode,
-                    onSelected = { onEvent(HitPointsEvent.ModeChanged(it)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    HitPointsModes(pad, onEvent)
+                }
             },
         )
     }
@@ -263,7 +244,6 @@ private fun ArmorClassSheet(
             onChange = { send(OverlayEvent.TextChanged(OverlayField.ARMOR_CLASS_FROM, it)) },
             placeholder = stringResource(Res.string.me_ac_from_placeholder),
         )
-        Text(stringResource(Res.string.me_ac_from_hint), style = AppText.footnote, color = AppPalette.TextSecondary)
     }
 }
 
@@ -321,14 +301,15 @@ internal fun NumberRow(
     send: (OverlayEvent) -> Unit,
     step: Int = 1,
     spread: Boolean = false,
+    onStep: (Int) -> OverlayEvent = { OverlayEvent.NumberStepped(it) },
     // a value that is added to a number reads "+1", a number that is set reads as it is
     signed: Boolean = false,
 ) {
     AppStepper(
         count = value,
         countText = if (signed) value.signed() else value.toString(),
-        onDecrease = { send(OverlayEvent.NumberStepped(-step)) },
-        onIncrease = { send(OverlayEvent.NumberStepped(step)) },
+        onDecrease = { send(onStep(-step)) },
+        onIncrease = { send(onStep(step)) },
         decreaseDescription = stringResource(Res.string.me_step_less),
         increaseDescription = stringResource(Res.string.me_step_more),
         tiles = true,
@@ -343,7 +324,7 @@ private fun CalcCard(
     value: String,
     modifier: Modifier,
 ) {
-    androidx.compose.foundation.layout.Column(
+    Column(
         modifier =
             modifier
                 .appCard(
@@ -357,7 +338,7 @@ private fun CalcCard(
 }
 
 @Composable
-private fun SwitchRow(
+internal fun SwitchRow(
     label: String,
     checked: Boolean,
     onToggle: () -> Unit,

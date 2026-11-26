@@ -98,10 +98,6 @@ private val TAG_RULES =
                 "campfire",
             ).map(TagSignal::Prefix),
         ),
-        TagRule(
-            "Отдых",
-            listOf("отдых", "ночлег", "привал", "sleep", "bedroll").map(TagSignal::Prefix) + TagSignal.Exact("rest"),
-        ),
     )
 
 private const val MAX_REASON_WORDS = 2

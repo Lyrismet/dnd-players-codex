@@ -51,7 +51,7 @@ internal class MeCounterActions(
         }
     }
 
-    // a level set to zero goes away, a new level starts full and a kept one keeps what is left
+    // a level set to zero goes away, a new level starts full and a kept one keeps what is left plus any slot gained
     fun saveSlots(
         memberId: Long,
         maxima: Map<Int, Int>,
@@ -69,7 +69,11 @@ internal class MeCounterActions(
                 val existing = stored[level]
                 when {
                     existing != null && max == 0 -> resources.delete(existing.id)
-                    existing != null -> if (existing.max != max) resources.edit(existing.id, existing.name, max)
+                    existing != null && existing.max != max -> {
+                        resources.edit(existing.id, existing.name, max)
+                        // a slot gained by hand is ready to use, so the count grows with the max
+                        if (max > existing.max) resources.setCurrent(existing.id, existing.current + max - existing.max)
+                    }
                     max > 0 ->
                         resources.upsert(
                             memberId,

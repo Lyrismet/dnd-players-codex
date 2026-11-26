@@ -83,8 +83,8 @@ class SessionTagSuggestionsTest {
 
     @Test
     fun `matching is case-insensitive`() {
-        val result = suggestSessionTags(listOf("ОТРЯД УШЁЛ НА ОТДЫХ В ЛАГЕРЕ"), emptyList(), emptyList())
-        assertTrue(result.any { it.tag == "Отдых" })
+        val result = suggestSessionTags(listOf("ОТРЯД ПОПАЛ В ЗАСАДУ"), emptyList(), emptyList())
+        assertTrue(result.any { it.tag == "Бой" })
     }
 
     @Test
@@ -100,13 +100,5 @@ class SessionTagSuggestionsTest {
     fun `an english word suggests the same tag as its russian one`() {
         val result = suggestSessionTags(listOf("The party fell into an ambush"), emptyList(), emptyList())
         assertTrue(result.any { it.tag == "Бой" })
-    }
-
-    @Test
-    fun `an english whole word stem does not match inside a longer word`() {
-        val noRest = suggestSessionTags(listOf("The campaign went on in the restaurant"), emptyList(), emptyList())
-        assertTrue(noRest.none { it.tag == "Отдых" })
-        val rest = suggestSessionTags(listOf("Time to rest"), emptyList(), emptyList())
-        assertTrue(rest.any { it.tag == "Отдых" })
     }
 }

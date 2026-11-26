@@ -13,7 +13,6 @@ import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.codex_entry_more
 import incadent.shared.generated.resources.codex_entry_more_close
-import incadent.shared.generated.resources.codex_entry_more_hint_npc
 import incadent.shared.generated.resources.codex_entry_summary_portrait
 import org.jetbrains.compose.resources.stringResource
 
@@ -49,5 +48,5 @@ internal fun npcDetailsSummary(form: CodexEntryFormState): String {
             form.npcPlaces.takeIf { it.isNotEmpty() }?.joinToString { it.label },
             form.nicknames.trim().takeIf { it.isNotEmpty() },
         )
-    return filled.joinToString(" · ").ifEmpty { stringResource(Res.string.codex_entry_more_hint_npc) }
+    return filled.joinToString(" · ")
 }

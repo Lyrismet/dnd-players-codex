@@ -24,4 +24,26 @@ interface PartyRepository : EntityRepository<PartyMember> {
         type: DamageType,
         state: DamageState?,
     )
+
+    /** whether the maximum is a guess, a typed maximum equal to the stored one is exact all the same */
+    suspend fun setHpMaxApprox(
+        id: Long,
+        approx: Boolean,
+    )
+
+    /** the level up numbers of a character, a form save never touches them */
+    suspend fun setCharacterExtras(
+        id: Long,
+        hpBonusPerLevel: Int,
+        lastLevelGain: Int?,
+    )
+
+    /** the leveled player and the followers in one write, the player's last level gain is kept too */
+    suspend fun saveLevelUp(
+        player: PartyMember,
+        followers: List<PartyMember>,
+    )
+
+    /** the members back exactly as given in one write, the approximate flag and the level up numbers included */
+    suspend fun restore(members: List<PartyMember>)
 }

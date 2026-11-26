@@ -57,6 +57,7 @@ import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.rememberImportPicker
+import com.lyrismet.incadent.feature.phrases.presentation.PHRASES_ENTRY_VISIBLE
 import com.lyrismet.incadent.feature.phrases.presentation.PhraseSnippetsSheet
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.settings_about_update_action
@@ -77,7 +78,6 @@ import incadent.shared.generated.resources.settings_mention_filled
 import incadent.shared.generated.resources.settings_mention_title
 import incadent.shared.generated.resources.settings_mention_underline
 import incadent.shared.generated.resources.settings_numbering_arabic
-import incadent.shared.generated.resources.settings_numbering_desc
 import incadent.shared.generated.resources.settings_numbering_roman
 import incadent.shared.generated.resources.settings_numbering_title
 import incadent.shared.generated.resources.settings_phrases_summary_format
@@ -219,7 +219,6 @@ private fun DiarySection(
     SettingsGroup(overline = stringResource(Res.string.settings_section_diary), topSpacing = 12.dp) {
         ChoiceRow(
             title = stringResource(Res.string.settings_numbering_title),
-            description = stringResource(Res.string.settings_numbering_desc),
             choices =
                 listOf(
                     SegmentedTab(SessionNumbering.ROMAN, stringResource(Res.string.settings_numbering_roman)),
@@ -244,12 +243,14 @@ private fun DiarySection(
             width = 150.dp,
         )
         AppDivider()
-        PhrasesRow(
-            title = stringResource(Res.string.settings_phrases_title),
-            summary = phrasesSummary,
-            onClick = onPhrasesClick,
-        )
-        AppDivider()
+        if (PHRASES_ENTRY_VISIBLE) {
+            PhrasesRow(
+                title = stringResource(Res.string.settings_phrases_title),
+                summary = phrasesSummary,
+                onClick = onPhrasesClick,
+            )
+            AppDivider()
+        }
         HintsRow(
             title = stringResource(Res.string.settings_hints_title),
             description = stringResource(Res.string.settings_hints_desc),
@@ -316,7 +317,7 @@ internal fun SettingsGroup(
 @Composable
 internal fun <T> ChoiceRow(
     title: String,
-    description: String,
+    description: String? = null,
     choices: List<SegmentedTab<T>>,
     selected: T,
     onSelected: (T) -> Unit,

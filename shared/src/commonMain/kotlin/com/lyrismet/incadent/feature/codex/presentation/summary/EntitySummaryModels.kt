@@ -241,6 +241,8 @@ sealed interface EntitySummaryItem {
         val canRaiseLevel: Boolean = false,
         val gear: List<MentionChipItem> = emptyList(),
         val vulnerabilities: NpcVulnerabilities = NpcVulnerabilities(),
+        // the player's own character, shown here and edited in the "me" sheet
+        val viewOnly: Boolean = false,
     ) : EntitySummaryItem
 }
 

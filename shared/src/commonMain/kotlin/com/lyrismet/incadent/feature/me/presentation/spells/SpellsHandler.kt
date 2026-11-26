@@ -45,12 +45,15 @@ class SpellsHandler(
     private val resources: CharacterResourceRepository,
     private val spells: CharacterSpellRepository,
     private val undoController: UndoController,
+    imports: SpellImportDeps,
     private val onHoldTipSeen: () -> Unit = {},
     private val inFight: Boolean = false,
     private val onCast: suspend (CharacterSpell, SpellPay) -> CastEffect? = { _, _ -> null },
 ) {
     private val casting = SpellCasting(resources, spells)
+    private val importFlow = SpellImportFlow(ui, scope, imports)
 
+    @Suppress("CyclomaticComplexMethod")
     fun handle(
         event: SpellsEvent,
         context: SpellsContext,
@@ -68,7 +71,11 @@ class SpellsHandler(
             SpellsEvent.UndoDismissed -> undoController.dismiss()
             SpellsEvent.DescriptionClosed -> ui.descriptionDraft = null
             is SpellsEvent.DescriptionChanged -> ui.descriptionDraft = event.text
-            is SpellsEvent.DraftChanged -> ui.draft = event.spell
+            is SpellsEvent.DraftChanged -> {
+                ui.draft = event.spell
+                importFlow.endHint()
+            }
+            is SpellsEvent.ImportEvent -> importFlow.handle(event, context.readOnly, nextPosition(context))
             is SpellsEvent.TileTapped -> Unit
             else -> if (!context.readOnly) write(event, context)
         }
@@ -88,7 +95,7 @@ class SpellsHandler(
                         id = 0,
                         name = "",
                         level = event.level.coerceAtLeast(CANTRIP_LEVEL),
-                        position = (context.spells.maxOfOrNull { it.position } ?: -1) + 1,
+                        position = nextPosition(context),
                     )
             SpellsEvent.DraftSaved -> save(context)
             is SpellsEvent.Deleted ->
@@ -96,6 +103,8 @@ class SpellsHandler(
             else -> openEditor(event, context)
         }
     }
+
+    private fun nextPosition(context: SpellsContext) = (context.spells.maxOfOrNull { it.position } ?: -1) + 1
 
     // what a hold or the menu of the card opens, the whole form or one block or the description field
     private fun openEditor(
@@ -162,6 +171,7 @@ class SpellsHandler(
     private fun closeDraft() {
         ui.draft = null
         ui.block = null
+        importFlow.reset()
     }
 
     private fun saveDescription(context: SpellsContext) {
@@ -176,6 +186,8 @@ class SpellsHandler(
         val draft = ui.draft?.clamped() ?: return
         if (draft.name.isEmpty()) return
         closeDraft()
+        // a new spell shows itself, in the tile of its own circle whichever way the sheet was opened
+        if (draft.id == 0L) ui.openLevel = draft.level
         scope.launch {
             val stored = context.find(draft.id)
             // a spell that had no free casts starts with all of them

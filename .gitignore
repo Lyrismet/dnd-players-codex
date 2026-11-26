@@ -24,3 +24,6 @@ node_modules/
 # release signing keys, never committed
 *.jks
 *.keystore
+
+# firebase config, restored from a secret in CI
+google-services.json

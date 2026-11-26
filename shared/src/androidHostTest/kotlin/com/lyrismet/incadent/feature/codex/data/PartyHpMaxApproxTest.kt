@@ -75,4 +75,45 @@ class PartyHpMaxApproxTest {
             party.upsert(member.copy(level = 2))
             assertFalse(checkNotNull(party.getById(member.id)).hpMaxApprox)
         }
+
+    @Test
+    fun `the level up numbers are written apart and survive a form save`() =
+        runTest {
+            val member = tarn()
+            party.setCharacterExtras(member.id, 2, 7)
+            party.upsert(checkNotNull(party.getById(member.id)).copy(description = "x"))
+
+            val stored = checkNotNull(party.getById(member.id))
+            assertEquals(2, stored.hpBonusPerLevel)
+            assertEquals(7, stored.lastLevelGain)
+        }
+
+    @Test
+    fun `a level up writes the followers and the undo puts everything back`() =
+        runTest {
+            val player = tarn().let { checkNotNull(party.getById(party.upsert(it.copy(isPlayerCharacter = true)))) }
+            val friendId =
+                party.upsert(
+                    player.copy(id = 0, name = "Ilse", originId = "", isPlayerCharacter = false, hpMaxApprox = true),
+                )
+            val friend = checkNotNull(party.getById(friendId))
+            val approx = player.copy(hpMaxApprox = true)
+            party.restore(listOf(approx))
+
+            val after = approx.copy(level = 4, hpMax = 35, hpCurrent = 35, lastLevelGain = 5)
+            party.saveLevelUp(after, listOf(friend.copy(level = 4)))
+
+            assertEquals(4, checkNotNull(party.getById(friendId)).level)
+            assertEquals(5, checkNotNull(party.getById(player.id)).lastLevelGain)
+            assertFalse(checkNotNull(party.getById(player.id)).hpMaxApprox)
+
+            party.restore(listOf(approx, friend))
+
+            val back = checkNotNull(party.getById(player.id))
+            assertEquals(3, back.level)
+            assertEquals(30, back.hpMax)
+            assertEquals(null, back.lastLevelGain)
+            assertTrue(back.hpMaxApprox)
+            assertEquals(friend.level, checkNotNull(party.getById(friendId)).level)
+        }
 }

@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppLineHeight
@@ -53,12 +54,7 @@ import org.jetbrains.compose.resources.stringResource
 private const val INHERITED_ALPHA = 0.6f
 private val LABEL_WIDTH = 104.dp
 
-private fun DamageState.labelColor(): Color =
-    when (this) {
-        DamageState.VULNERABILITY -> AppPalette.MaroonBright
-        DamageState.IMMUNITY -> AppPalette.TextPrimary
-        else -> AppPalette.Amber
-    }
+private val ShieldOrder = listOf(DamageState.IMMUNITY, DamageState.RESISTANCE, DamageState.VULNERABILITY)
 
 /** the "особенности" row of an npc card - its shields and facts, and with [onChange] a hold opens the shared sheet */
 @Composable
@@ -115,16 +111,18 @@ internal fun NpcVulnerabilitySection(
 
 @Composable
 private fun NpcVulnerabilityRows(vulnerabilities: NpcVulnerabilities) {
-    val groups =
+    val marks =
         remember(vulnerabilities) {
             effectiveVulnerabilities(vulnerabilities.fromSpecies, vulnerabilities.own)
                 .shields()
-                .groupBy({ it.second }, { it.first })
+                .sortedBy { ShieldOrder.indexOf(it.second) }
         }
-    val stateLabels = damageStateLabels()
     var tipped by remember { mutableStateOf<DamageType?>(null) }
-    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        if (groups.isEmpty() && vulnerabilities.facts.isEmpty()) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        if (marks.isEmpty() && vulnerabilities.facts.isEmpty()) {
             RowLine(stringResource(Res.string.entity_sheet_npc_vulnerabilities_label), AppPalette.TextTertiary) {
                 Text(
                     EMPTY_VALUE_DASH,
@@ -133,25 +131,35 @@ private fun NpcVulnerabilityRows(vulnerabilities: NpcVulnerabilities) {
                 )
             }
         }
-        groups.forEach { (state, types) ->
-            RowLine(stateLabels.getValue(state), state.labelColor()) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    types.forEach { type ->
-                        val inherited = isInheritedVulnerability(vulnerabilities.fromSpecies, vulnerabilities.own, type)
-                        VulnerabilityShield(
-                            type = type,
-                            state = state,
-                            modifier =
-                                Modifier
-                                    .alpha(if (inherited) INHERITED_ALPHA else 1f)
-                                    .clickable { tipped = if (tipped == type) null else type },
-                        )
-                    }
+        if (marks.isNotEmpty()) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.fillMaxWidth()) {
+                marks.forEach { (type, state) ->
+                    val inherited = isInheritedVulnerability(vulnerabilities.fromSpecies, vulnerabilities.own, type)
+                    VulnerabilityShield(
+                        type = type,
+                        state = state,
+                        modifier =
+                            Modifier
+                                .alpha(if (inherited) INHERITED_ALPHA else 1f)
+                                .clickable { tipped = if (tipped == type) null else type },
+                    )
                 }
             }
         }
         if (vulnerabilities.facts.isNotEmpty()) {
-            RowLine(stringResource(Res.string.entity_sheet_npc_facts_label), AppPalette.TextSecondary) {
+            // the facts take the whole width under their label, a long list does not squeeze into a column
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
+                Text(
+                    stringResource(Res.string.entity_sheet_npc_facts_label),
+                    color = AppPalette.TextSecondary,
+                    maxLines = 1,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = AppFontSize.Body,
+                    lineHeight = AppLineHeight.Row,
+                )
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -180,6 +188,7 @@ private fun RowLine(
             modifier = Modifier.width(LABEL_WIDTH),
             color = color,
             maxLines = 1,
+            fontWeight = FontWeight.SemiBold,
             fontSize = AppFontSize.Body,
             lineHeight = AppLineHeight.Row,
         )
@@ -318,5 +327,5 @@ private fun TipLine(
                 stateLabels.getValue(state).lowercase(),
             )
         }
-    VulnerabilityTip(tip, modifier = Modifier.padding(start = LABEL_WIDTH + 12.dp, bottom = 6.dp))
+    VulnerabilityTip(tip, modifier = Modifier.padding(bottom = 6.dp))
 }

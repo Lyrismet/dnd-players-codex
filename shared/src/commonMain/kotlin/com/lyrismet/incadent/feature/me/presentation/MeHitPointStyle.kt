@@ -8,7 +8,7 @@ internal fun HitPointMode.accent(): Color? =
     when (this) {
         HitPointMode.HEAL -> AppPalette.EmeraldBright
         HitPointMode.DAMAGE -> AppPalette.MaroonBright
-        HitPointMode.TEMP -> null
+        HitPointMode.TEMP, HitPointMode.MAX -> null
     }
 
 // a true minus like the rest of the app, a temporary number has no sign
@@ -16,5 +16,5 @@ internal fun String.withSign(mode: HitPointMode): String =
     when (mode) {
         HitPointMode.HEAL -> "+$this"
         HitPointMode.DAMAGE -> "−$this"
-        HitPointMode.TEMP -> this
+        HitPointMode.TEMP, HitPointMode.MAX -> this
     }

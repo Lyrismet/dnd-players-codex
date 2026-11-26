@@ -61,13 +61,10 @@ import incadent.shared.generated.resources.combat_results_delete_text
 import incadent.shared.generated.resources.combat_results_delete_title
 import incadent.shared.generated.resources.combat_results_item_alive
 import incadent.shared.generated.resources.combat_results_item_dead
-import incadent.shared.generated.resources.combat_results_item_dead_sub
 import incadent.shared.generated.resources.combat_results_item_fallen
-import incadent.shared.generated.resources.combat_results_item_fallen_sub
 import incadent.shared.generated.resources.combat_results_item_fell
 import incadent.shared.generated.resources.combat_results_item_hits_sub
 import incadent.shared.generated.resources.combat_results_item_keep
-import incadent.shared.generated.resources.combat_results_item_keep_sub
 import incadent.shared.generated.resources.combat_results_item_party_fallen
 import incadent.shared.generated.resources.combat_results_item_party_fallen_sub
 import incadent.shared.generated.resources.combat_results_item_resistance
@@ -90,10 +87,7 @@ fun CombatResultsUi(
     modifier: Modifier = Modifier,
 ) {
     val send = state.eventSink
-    val insets =
-        WindowInsets.systemBars.only(
-            WindowInsetsSides.Top + WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
-        )
+    val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     Scaffold(modifier = modifier, contentWindowInsets = insets) { contentPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             if (state.loaded && state.summary != null) {
@@ -256,14 +250,12 @@ private fun CodexItem.words(): Pair<String, String> =
                 draft.damage,
             ) to stringResource(Res.string.combat_results_item_hits_sub)
         is CodexItem.MarkDead ->
-            stringResource(Res.string.combat_results_item_dead, name) to
-                stringResource(Res.string.combat_results_item_dead_sub)
+            stringResource(Res.string.combat_results_item_dead, name) to ""
         is CodexItem.MarkPartyFallen ->
             stringResource(Res.string.combat_results_item_party_fallen, name) to
                 stringResource(Res.string.combat_results_item_party_fallen_sub)
         is CodexItem.MarkFallen ->
-            stringResource(Res.string.combat_results_item_fallen, name) to
-                stringResource(Res.string.combat_results_item_fallen_sub)
+            stringResource(Res.string.combat_results_item_fallen, name) to ""
         is CodexItem.Resistance -> {
             val type = damageTypeLabels().getValue(guess.type)
             val state = stringResource(guess.state.word())
@@ -272,8 +264,7 @@ private fun CodexItem.words(): Pair<String, String> =
                 if (guess.confident) sub else stringResource(Res.string.combat_results_item_resistance_weak, sub)
         }
         is CodexItem.KeepAlly ->
-            stringResource(Res.string.combat_results_item_keep, name) to
-                stringResource(Res.string.combat_results_item_keep_sub)
+            stringResource(Res.string.combat_results_item_keep, name) to ""
     }
 
 private fun DamageState.word() =

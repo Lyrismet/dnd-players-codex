@@ -32,6 +32,7 @@ import com.lyrismet.incadent.core.designsystem.component.ConfirmationDialog
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.dismissKeyboardOnTap
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
+import com.lyrismet.incadent.core.navigation.AppTab
 import com.lyrismet.incadent.core.navigation.BackAction
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.navigation.resolveBackAction
@@ -54,14 +55,6 @@ import incadent.shared.generated.resources.app_exit_confirm
 import incadent.shared.generated.resources.app_exit_text
 import incadent.shared.generated.resources.app_exit_title
 import org.jetbrains.compose.resources.stringResource
-
-internal enum class AppTab {
-    SESSIONS,
-    CODEX,
-    ME,
-    COMBAT,
-    SETTINGS,
-}
 
 /** a tab's back stack, plus a navigator used only for tab-level actions (not for back presses) */
 internal class TabStack(
