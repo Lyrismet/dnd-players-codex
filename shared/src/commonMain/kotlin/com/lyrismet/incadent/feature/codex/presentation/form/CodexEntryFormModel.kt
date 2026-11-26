@@ -12,6 +12,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
+import com.lyrismet.incadent.feature.codex.domain.model.PartyClass
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
@@ -70,6 +71,8 @@ data class CodexEntryFormState(
     val partyIsPlayerCharacter: Boolean = false,
     val partyOwnerOptions: List<FormChipOption<Boolean>> = emptyList(),
     val partyLevel: Int? = null,
+    // the classes the party member has as rows, two or more are listed, one is the class field above
+    val partyClasses: List<PartyClass> = emptyList(),
     val partyHpMax: Int? = null,
     // the player character's level when setting it here would change something, null hides the shortcut
     val partyLevelFromPlayer: Int? = null,
@@ -186,6 +189,10 @@ sealed interface CodexEntryFormEvent {
     data object EntryClassSelectOpened : CodexEntryFormEvent
 
     data object EntryClassSelectClosed : CodexEntryFormEvent
+
+    data class EntryClassesChanged(
+        val classes: List<PartyClass>,
+    ) : CodexEntryFormEvent
 
     data class EntryClassChosen(
         val characterClass: String,

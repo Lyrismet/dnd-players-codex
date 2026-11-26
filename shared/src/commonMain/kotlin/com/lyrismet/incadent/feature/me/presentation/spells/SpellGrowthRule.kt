@@ -199,11 +199,9 @@ private fun AmountField(
             }) { onAdd((n + 1).coerceAtMost(MAX_DURATION_VALUE).toString()) }
         }
     }
-    if (rule.target ==
-        GrowthTarget.DURATION
-    ) {
-        Text(durationLabel(spell.durationUnit, 1), style = AppText.footnote, color = AppPalette.TextTertiary)
-    }
+    // an empty line would still take the gap of the column
+    val unit = if (rule.target == GrowthTarget.DURATION) durationLabel(spell.durationUnit, 1) else ""
+    if (unit.isNotEmpty()) Text(unit, style = AppText.footnote, color = AppPalette.TextTertiary)
 }
 
 @Composable

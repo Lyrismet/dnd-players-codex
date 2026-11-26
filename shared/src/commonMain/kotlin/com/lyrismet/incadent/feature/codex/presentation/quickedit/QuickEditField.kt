@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.model.PartyClass
 import com.lyrismet.incadent.feature.codex.domain.model.PartyStatRanges
 import com.lyrismet.incadent.feature.codex.domain.model.SPECIES_HIT_POINTS_RANGE
 import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
@@ -139,6 +140,11 @@ sealed interface QuickEditValue {
     data class ClassPick(
         val characterClass: String,
         val subclass: String,
+    ) : QuickEditValue
+
+    /** the whole class list of a party member, one class goes back to the class fields alone */
+    data class Classes(
+        val classes: List<PartyClass>,
     ) : QuickEditValue
 
     /** null removes the photo */

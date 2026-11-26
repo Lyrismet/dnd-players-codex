@@ -6,7 +6,9 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.format.signed
+import com.lyrismet.incadent.feature.codex.domain.grouping.classesLine
 import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.class_level_template
 import incadent.shared.generated.resources.me_edit_overline
 import incadent.shared.generated.resources.me_level_up_done
 import incadent.shared.generated.resources.me_level_up_gain_hint
@@ -31,9 +33,28 @@ internal fun MeLevelUpSheet(
         onClose = { send(OverlayEvent.Closed) },
         onDone = { send(OverlayEvent.Applied) },
         doneLabel = stringResource(Res.string.me_level_up_done),
+        doneEnabled = levelUp.levels >= 1,
     ) {
         SectionOverline(stringResource(Res.string.me_level_up_levels_label), color = AppPalette.TextTertiary)
-        NumberRow(levelUp.levels, send, spread = true, onStep = { OverlayEvent.LevelsStepped(it) })
+        if (levelUp.classes.size >= 2) {
+            val levelTemplate = stringResource(Res.string.class_level_template)
+            levelUp.classes.forEachIndexed { index, entry ->
+                Text(
+                    listOf(entry).classesLine(levelTemplate),
+                    style = AppText.footnote,
+                    color = AppPalette.TextSecondary,
+                )
+                NumberRow(
+                    levelUp.added[index],
+                    send,
+                    spread = true,
+                    onStep = { OverlayEvent.ClassLevelsStepped(index, it) },
+                    signed = true,
+                )
+            }
+        } else {
+            NumberRow(levelUp.levels, send, spread = true, onStep = { OverlayEvent.LevelsStepped(it) })
+        }
         if (levelUp.hasMax) {
             SectionOverline(stringResource(Res.string.me_level_up_gain_label), color = AppPalette.TextTertiary)
             NumberRow(levelUp.gain, send, spread = true, signed = true)

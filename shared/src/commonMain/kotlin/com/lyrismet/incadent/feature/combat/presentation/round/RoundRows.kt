@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.combat.presentation.round
 
 import androidx.compose.runtime.Composable
 import com.lyrismet.incadent.core.format.joinWithDot
+import com.lyrismet.incadent.feature.codex.domain.grouping.classesLine
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.Species
@@ -21,6 +22,7 @@ import com.lyrismet.incadent.feature.combat.domain.round.isOut
 import com.lyrismet.incadent.feature.combat.domain.round.isTracked
 import com.lyrismet.incadent.feature.combat.domain.round.queueSlots
 import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.class_level_template
 import incadent.shared.generated.resources.combat_panel_rx_attacked
 import incadent.shared.generated.resources.combat_panel_rx_available
 import incadent.shared.generated.resources.combat_panel_rx_spent
@@ -58,8 +60,11 @@ internal fun roleOf(
     val own = sources.party.firstOrNull { it.id == member.partyMemberId }
     val npc = sources.npcs.firstOrNull { it.id == member.npcId }
     val species = sources.speciesOf[member.id]
+    val levelTemplate = stringResource(Res.string.class_level_template)
     val parts =
         when {
+            own != null && own.classes.size >= 2 ->
+                RoleParts(own.race, own.classes.classesLine(levelTemplate))
             own != null -> RoleParts(own.race, own.characterClass, own.subclass)
             npc != null -> RoleParts(species?.name ?: npc.race, npc.characterClass, npc.subclass)
             species != null -> RoleParts(kind = species.name)

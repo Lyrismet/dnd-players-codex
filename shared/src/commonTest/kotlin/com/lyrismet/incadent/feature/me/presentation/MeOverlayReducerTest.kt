@@ -2,6 +2,7 @@ package com.lyrismet.incadent.feature.me.presentation
 
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSheet
+import com.lyrismet.incadent.feature.codex.domain.model.PartyClass
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
 import com.lyrismet.incadent.feature.codex.domain.model.Skill
 import kotlin.test.Test
@@ -112,5 +113,49 @@ class MeOverlayReducerTest {
         assertEquals("Rage", changed.name)
         assertEquals(3, changed.max)
         assertEquals(1, changed.current)
+    }
+
+    private val cleric = PartyClass("Жрец", "Домен Света", 3)
+    private val fighter = PartyClass("Воин", "", 2)
+
+    @Test
+    fun `a class list in the fill sets the class fields from the first class and the level sum`() {
+        val fill = FillDraft().reduce(OverlayEvent.ClassesChanged(listOf(cleric, fighter)))
+        assertEquals("Жрец", fill.characterClass)
+        assertEquals("Домен Света", fill.subclass)
+        assertEquals(5, fill.level)
+        assertEquals(2, fill.classes.size)
+    }
+
+    @Test
+    fun `one class left in the edit goes back to the plain fields`() {
+        val draft =
+            CharacterDraft("Лира", "", "", 1, "", "", "", 0, null, 0)
+        val edit =
+            MeOverlay
+                .EditCharacter(
+                    draft,
+                ).reduce(OverlayEvent.ClassesChanged(listOf(fighter))) as MeOverlay.EditCharacter
+        assertEquals(emptyList(), edit.draft.classes)
+        assertEquals("Воин", edit.draft.characterClass)
+        assertEquals(2, edit.draft.level)
+    }
+
+    @Test
+    fun `the levels of a level up stop at the top level across all classes`() {
+        val up =
+            MeOverlay.LevelUp(
+                15,
+                0,
+                0,
+                true,
+                listOf(PartyClass("a", "", 10), PartyClass("b", "", 5)),
+                listOf(0, 0),
+            )
+        val first = up.reduce(OverlayEvent.ClassLevelsStepped(0, 4)) as MeOverlay.LevelUp
+        val second = first.reduce(OverlayEvent.ClassLevelsStepped(1, 4)) as MeOverlay.LevelUp
+        assertEquals(listOf(4, 1), second.added)
+        assertEquals(5, second.levels)
+        assertEquals(listOf(4, 0), (second.reduce(OverlayEvent.ClassLevelsStepped(1, -3)) as MeOverlay.LevelUp).added)
     }
 }

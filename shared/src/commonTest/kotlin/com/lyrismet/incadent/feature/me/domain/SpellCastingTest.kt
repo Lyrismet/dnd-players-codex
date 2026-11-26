@@ -83,9 +83,13 @@ class SpellCastingTest {
         }
 
     @Test
-    fun `levels with slots or spells get a tile in order`() {
-        val list = listOf(spell(0), spell(5))
-        assertEquals(listOf(0, 1, 3, 5), spellLevels(list, columns))
+    fun `only cantrips and levels with slots get a tile`() {
+        assertEquals(listOf(0, 1, 3), spellLevels(columns))
+    }
+
+    @Test
+    fun `the spell list has the levels the spells are in`() {
+        assertEquals(listOf(0, 5), spellListLevels(listOf(spell(5), spell(0), spell(5))))
     }
 }
 

@@ -51,6 +51,7 @@ class LiveFightExchangeTest {
             "lira",
             "",
             null,
+            "",
         )
         val lira = database.partyMemberQueries.lastInsertRowId().executeAsOne()
         database.combatQueries.insert(null, startedAt, campaignId, fightOrigin)

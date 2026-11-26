@@ -15,6 +15,7 @@ import com.lyrismet.incadent.feature.mention.domain.MentionIndex
 import com.lyrismet.incadent.feature.session.domain.model.SessionEntry
 import com.lyrismet.incadent.feature.session.domain.model.SessionNote
 import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.class_level_template
 import incadent.shared.generated.resources.entity_sheet_party_you_label
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -52,6 +53,7 @@ fun entityLookupOf(
         species = species,
         facts = facts,
         items = items,
+        classLevelTemplate = stringResource(Res.string.class_level_template),
     )
 
 /** the shared "resolve whatever's tapped" used by every screen that owns a nullable [EntityRef] selection */

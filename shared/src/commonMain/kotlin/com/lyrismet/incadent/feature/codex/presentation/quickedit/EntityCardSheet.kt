@@ -6,6 +6,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.presentation.form.ClassListSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.ClassSelectSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.CreatureTypeSelectSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.CreatureTypeSheetActions
@@ -64,6 +65,13 @@ fun EntityCardSheet(
             onChosen = { characterClass, subclass ->
                 onQuickEvent(QuickEditUiEvent.ClassChosen(characterClass, subclass))
             },
+            onDismiss = { onQuickEvent(QuickEditUiEvent.EditCancelled) },
+        )
+    }
+    quick.classList?.let { classes ->
+        ClassListSheet(
+            classes = classes,
+            onChange = { onQuickEvent(QuickEditUiEvent.ClassesChosen(it)) },
             onDismiss = { onQuickEvent(QuickEditUiEvent.EditCancelled) },
         )
     }

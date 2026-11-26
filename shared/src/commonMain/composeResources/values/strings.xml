@@ -1679,7 +1679,7 @@
     <string name="me_feats_delete">Удалить черту</string>
     <string name="me_feats_deleted_title">Черта удалена</string>
     <string name="me_features_title">Особенности</string>
-    <string name="me_features_hold_hint">удерживайте, чтобы править</string>
+    <string name="copy_button_description">Скопировать</string>
     <string name="me_about_title">О персонаже</string>
     <string name="me_about_background">Предыстория</string>
     <string name="me_about_alignment">Мировоззрение</string>
@@ -1893,6 +1893,14 @@
     <string name="class_sheet_subclass_example">Например, %1$s</string>
     <string name="class_sheet_srd_source">из SRD 5.1</string>
     <string name="class_sheet_done">Готово</string>
+    <string name="class_sheet_level_label">Уровень</string>
+    <string name="class_sheet_level_less">Меньше</string>
+    <string name="class_sheet_level_more">Больше</string>
+    <string name="class_sheet_remove">Удалить класс</string>
+    <string name="class_list_add">+ Добавить класс</string>
+    <string name="class_list_add_multi">+ Добавить мультикласс</string>
+    <string name="class_list_title">Классы</string>
+    <string name="class_level_template">{level} ур.</string>
 
     <string name="session_text_button">Поделиться сессией</string>
     <string name="session_text_title">Поделиться сессией</string>
@@ -2043,7 +2051,6 @@
     <string name="me_spells_component_m">М</string>
     <string name="me_spells_deleted_title">Заклинание удалено</string>
     <string name="combat_magic_tab">Магия</string>
-    <string name="me_spells_list_empty">В этом круге пока нет заклинаний</string>
     <string name="me_spells_cantrips_panel_sub">без ячеек</string>
     <string name="me_spells_meta_free_long">бесплатно · до долгого отдыха</string>
     <string name="me_spells_card_over">%1$s · %2$s</string>
@@ -2124,6 +2131,7 @@
     <string name="me_spells_growth_mode_steps">Ступени</string>
     <string name="me_spells_growth_every_n">Каждые … круга</string>
     <string name="me_spells_growth_add">Добавить</string>
+    <string name="me_spells_growth_first_rule">+ Добавить правило</string>
     <string name="me_spells_growth_add_rule">+ Ещё правило</string>
     <string name="me_spells_growth_add_step">+ Ступень</string>
     <string name="me_spells_growth_pick_title">Что растёт</string>

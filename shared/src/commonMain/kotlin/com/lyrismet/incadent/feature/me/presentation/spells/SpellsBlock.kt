@@ -47,6 +47,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.CANTRIP_LEVEL
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterResource
 import com.lyrismet.incadent.feature.me.domain.SlotColumn
 import com.lyrismet.incadent.feature.me.domain.spellLevels
+import com.lyrismet.incadent.feature.me.domain.spellListLevels
 import com.lyrismet.incadent.feature.me.domain.spellsOfLevel
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_help_slots_body
@@ -63,7 +64,6 @@ import incadent.shared.generated.resources.me_spells_add
 import incadent.shared.generated.resources.me_spells_cantrips_panel_sub
 import incadent.shared.generated.resources.me_spells_cantrips_sub
 import incadent.shared.generated.resources.me_spells_cantrips_title
-import incadent.shared.generated.resources.me_spells_list_empty
 import incadent.shared.generated.resources.me_spells_slots_title
 import incadent.shared.generated.resources.me_spells_tile_ability
 import incadent.shared.generated.resources.me_spells_tile_attack
@@ -82,7 +82,7 @@ fun SpellsBlock(
     val clock = if (moving) rememberSparkClock() else null
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SpellNumbers(state, send)
-        val levels = remember(state.spells, state.columns) { spellLevels(state.spells, state.columns) }
+        val levels = remember(state.columns) { spellLevels(state.columns) }
         if (levels.isNotEmpty()) {
             SectionCaption(
                 stringResource(Res.string.me_spells_slots_title),
@@ -93,15 +93,7 @@ fun SpellsBlock(
                 levels.chunked(SLOT_TILES_IN_ROW).forEach { SlotRow(it, state, clock, send) }
             }
         }
-        if (!state.readOnly && state.openLevel == null) {
-            SpellAddTile(stringResource(Res.string.me_spells_add)) {
-                send(
-                    SpellsEvent.Add(
-                        levels.firstOrNull { it > CANTRIP_LEVEL } ?: CANTRIP_LEVEL,
-                    ),
-                )
-            }
-        }
+        SpellListSection(state, levels, send)
     }
     SpellSheets(state, send)
 }
@@ -317,7 +309,6 @@ private fun LevelPanel(
     send: (SpellsEvent) -> Unit,
 ) {
     val resource = state.columns.firstOrNull { it.level == level }?.resource
-    val list = remember(state.spells, level) { spellsOfLevel(state.spells, level) }
     // the panel scrolls into view whole when its level opens, in the sheet and in the fight alike
     val requester = remember { BringIntoViewRequester() }
     LaunchedEffect(level) { requester.bringIntoView() }
@@ -345,14 +336,6 @@ private fun LevelPanel(
                 clock = clock,
                 variationSeed = level,
             )
-        }
-        if (list.isEmpty()) {
-            EmptyList()
-        } else {
-            SpellList(list, state.characterLevel, send)
-        }
-        if (!state.readOnly) {
-            SpellAddTile(stringResource(Res.string.me_spells_add)) { send(SpellsEvent.Add(level)) }
         }
     }
 }
@@ -391,14 +374,30 @@ private fun PanelHeader(
     }
 }
 
+/** every spell under the tiles, a caption per level, whether or not that level has slots */
 @Composable
-private fun EmptyList() {
-    Box(Modifier.fillMaxWidth().padding(vertical = 4.dp), contentAlignment = Alignment.Center) {
-        Text(
-            stringResource(Res.string.me_spells_list_empty),
-            style = AppText.footnote,
-            color = AppPalette.TextTertiary,
-            textAlign = TextAlign.Center,
-        )
+private fun SpellListSection(
+    state: SpellsBlockState,
+    tileLevels: List<Int>,
+    send: (SpellsEvent) -> Unit,
+) {
+    val levels = remember(state.spells) { spellListLevels(state.spells) }
+    levels.forEach { level ->
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                if (level == CANTRIP_LEVEL) {
+                    stringResource(Res.string.me_spells_cantrips_title)
+                } else {
+                    stringResource(Res.string.me_slots_level_title, level.toRomanNumeral())
+                }.uppercase(),
+                style = AppText.fieldOverline,
+                color = AppPalette.TextTertiary,
+            )
+            SpellList(spellsOfLevel(state.spells, level), state.characterLevel, send)
+        }
+    }
+    if (!state.readOnly) {
+        val addLevel = state.openLevel ?: tileLevels.firstOrNull { it > CANTRIP_LEVEL } ?: CANTRIP_LEVEL
+        SpellAddTile(stringResource(Res.string.me_spells_add)) { send(SpellsEvent.Add(addLevel)) }
     }
 }

@@ -3,10 +3,14 @@ package com.lyrismet.incadent.feature.codex.presentation.form
 import com.lyrismet.incadent.core.portrait.PhotoCropDraft
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.grouping.classEntriesOf
+import com.lyrismet.incadent.feature.codex.domain.grouping.kept
+import com.lyrismet.incadent.feature.codex.domain.grouping.summary
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.NpcLifeState
 import com.lyrismet.incadent.feature.codex.domain.model.NpcStatus
+import com.lyrismet.incadent.feature.codex.domain.model.PartyClass
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import com.lyrismet.incadent.feature.codex.domain.model.QuestStatus
 import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
@@ -21,6 +25,8 @@ internal data class PartyFormFields(
     val level: Int? = null,
     val hpMax: Int? = null,
     val hpCurrent: Int? = null,
+    // two classes or more with a level each, empty while the member has one class (then [characterClass] holds it)
+    val classes: List<PartyClass> = emptyList(),
 )
 
 /** the form's own editable-in-place fields - kept separate from [CodexEntryFormState] so typing survives rebuilds */
@@ -89,4 +95,18 @@ internal data class CodexEntryFormFields(
             npcLocationIds = npcLocationIds.sorted(),
             locationChildIds = locationChildIds.sorted(),
         )
+}
+
+/** the classes the form lists: the stored list, else the one class of the fields, else none */
+internal fun CodexEntryFormFields.classEntries(): List<PartyClass> =
+    classEntriesOf(party.classes, characterClass, subclass, party.level)
+
+/** the form after the class list changed, the class, subclass and level fields follow the list */
+internal fun CodexEntryFormFields.withClassList(list: List<PartyClass>): CodexEntryFormFields {
+    val summary = list.summary()
+    return copy(
+        characterClass = summary?.characterClass.orEmpty(),
+        subclass = summary?.subclass.orEmpty(),
+        party = party.copy(classes = list.kept(), level = summary?.level ?: party.level),
+    )
 }

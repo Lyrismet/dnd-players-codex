@@ -33,16 +33,20 @@ import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppButton
+import com.lyrismet.incadent.core.designsystem.component.AppCopyButton
 import com.lyrismet.incadent.core.designsystem.component.AppSectionTitleHint
 import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.core.designsystem.component.FormFieldLabel
 import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.feature.codex.domain.model.Ability
 import com.lyrismet.incadent.feature.codex.presentation.summary.NpcVulnerabilitySection
+import com.lyrismet.incadent.feature.codex.presentation.summary.asText
+import com.lyrismet.incadent.feature.codex.presentation.summary.damageStateLabels
+import com.lyrismet.incadent.feature.codex.presentation.summary.damageTypeLabels
 import com.lyrismet.incadent.feature.me.domain.AbilityStrip
 import com.lyrismet.incadent.feature.me.domain.isDown
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.me_features_hold_hint
+import incadent.shared.generated.resources.entity_sheet_npc_facts_label
 import incadent.shared.generated.resources.me_features_title
 import incadent.shared.generated.resources.me_fill_banner_action
 import incadent.shared.generated.resources.me_fill_banner_text
@@ -218,12 +222,14 @@ private fun FillBanner(onClick: () -> Unit) {
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            stringResource(Res.string.me_fill_banner_title),
-            style = MaterialTheme.typography.titleSmall,
-            color = AppPalette.TextHeading,
-        )
-        Text(stringResource(Res.string.me_fill_banner_text), style = AppText.footnote, color = AppPalette.TextMuted)
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                stringResource(Res.string.me_fill_banner_title),
+                style = MaterialTheme.typography.titleSmall,
+                color = AppPalette.TextHeading,
+            )
+            Text(stringResource(Res.string.me_fill_banner_text), style = AppText.footnote, color = AppPalette.TextMuted)
+        }
         AppButton(
             text = stringResource(Res.string.me_fill_banner_action),
             onClick = onClick,
@@ -299,13 +305,14 @@ private fun FeaturesBlock(
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             FormFieldLabel(stringResource(Res.string.me_features_title), modifier = Modifier.weight(1f))
-            if (!readOnly) {
-                Text(
-                    stringResource(Res.string.me_features_hold_hint),
-                    style = AppText.footnote,
-                    color = AppPalette.TextTertiary,
-                )
-            }
+            val typeLabels = damageTypeLabels()
+            val stateLabels = damageStateLabels()
+            val factsLabel = stringResource(Res.string.entity_sheet_npc_facts_label)
+            val text =
+                remember(sheet.shields, typeLabels, stateLabels, factsLabel) {
+                    sheet.shields.asText(typeLabels, stateLabels, factsLabel)
+                }
+            if (text.isNotEmpty()) AppCopyButton(text)
         }
         NpcVulnerabilitySection(
             vulnerabilities = sheet.shields,

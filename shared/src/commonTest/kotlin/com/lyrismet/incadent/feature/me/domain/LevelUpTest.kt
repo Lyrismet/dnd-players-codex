@@ -1,5 +1,7 @@
 package com.lyrismet.incadent.feature.me.domain
 
+import com.lyrismet.incadent.feature.codex.domain.grouping.withClasses
+import com.lyrismet.incadent.feature.codex.domain.model.PartyClass
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.PartyPresence
 import kotlin.test.Test
@@ -55,5 +57,25 @@ class LevelUpTest {
     fun `the top level cannot go higher`() {
         assertFalse(member(level = 20).canLevelUp)
         assertNull(member(level = 20).leveledUp(5))
+    }
+
+    private val cleric = PartyClass("Жрец", "Домен Света", 3)
+    private val fighter = PartyClass("Воин", "", 2)
+
+    @Test
+    fun `levels of a multiclass character go to the classes the player chose`() {
+        val two = member(level = 5).withClasses(listOf(cleric, fighter))
+        val after = checkNotNull(two.leveledUp(6, levels = 3, perClass = listOf(1, 2)))
+        assertEquals(listOf(PartyClass("Жрец", "Домен Света", 4), PartyClass("Воин", "", 4)), after.classes)
+        assertEquals(8, after.level)
+        assertEquals(42, after.hpMax)
+    }
+
+    @Test
+    fun `a split that does not add up to the levels taken is ignored`() {
+        val two = member(level = 5).withClasses(listOf(cleric, fighter))
+        val after = checkNotNull(two.leveledUp(6, levels = 2, perClass = listOf(1, 2)))
+        assertEquals(listOf(cleric, fighter), after.classes)
+        assertEquals(7, after.level)
     }
 }

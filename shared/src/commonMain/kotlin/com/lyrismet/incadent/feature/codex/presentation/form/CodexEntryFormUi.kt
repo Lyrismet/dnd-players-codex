@@ -179,7 +179,7 @@ private fun PartyIdentityFields(
             placeholder = stringResource(Res.string.codex_entry_placeholder_party_player),
         )
     }
-    ClassPickField(form, eventSink)
+    PartyClassFields(form, eventSink)
     FormPickField(
         label = stringResource(Res.string.codex_entry_label_race),
         placeholder = stringResource(Res.string.codex_species_pick_hint),
@@ -194,20 +194,23 @@ private fun PartyStatFields(
     form: CodexEntryFormState,
     eventSink: (CodexEntryFormEvent) -> Unit,
 ) {
-    CodexEntryNumberField(
-        label = stringResource(Res.string.codex_entry_label_level),
-        value = form.partyLevel,
-        range = PartyStatRanges.level,
-        field = CodexEntryNumberField.PARTY_LEVEL,
-        eventSink = eventSink,
-        action =
-            form.partyLevelFromPlayer?.let {
-                FormFieldAction(
-                    label = stringResource(Res.string.codex_entry_party_level_from_player),
-                    onClick = { eventSink(CodexEntryFormEvent.EntryPartyLevelFromPlayerClicked) },
-                )
-            },
-    )
+    // the level is the sum of the classes while there are several, so it is not typed
+    if (form.partyClasses.size < 2) {
+        CodexEntryNumberField(
+            label = stringResource(Res.string.codex_entry_label_level),
+            value = form.partyLevel,
+            range = PartyStatRanges.level,
+            field = CodexEntryNumberField.PARTY_LEVEL,
+            eventSink = eventSink,
+            action =
+                form.partyLevelFromPlayer?.let {
+                    FormFieldAction(
+                        label = stringResource(Res.string.codex_entry_party_level_from_player),
+                        onClick = { eventSink(CodexEntryFormEvent.EntryPartyLevelFromPlayerClicked) },
+                    )
+                },
+        )
+    }
     CodexEntryNumberField(
         label = stringResource(Res.string.codex_entry_label_hp_max),
         value = form.partyHpMax,

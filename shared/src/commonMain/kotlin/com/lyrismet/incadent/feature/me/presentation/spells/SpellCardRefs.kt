@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -331,18 +332,22 @@ private fun SpendChip(
         if (chip.counter != null) {
             Text(chip.counter, style = AppText.footnote, color = AppPalette.TextSecondary)
         } else {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+            // rows of fixed size, a wrapping row inside the chip lost its second line to the intrinsic height
+            Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
-                maxItemsInEachRow = PIPS_IN_ROW,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                repeat(chip.max.coerceAtLeast(1)) { index ->
-                    val lit = index < chip.free
-                    Dot(
-                        size = 8.dp,
-                        color = if (lit) AppPalette.Arcane else Color.Transparent,
-                        borderColor = if (lit) null else AppPalette.TextTertiary,
-                    )
+                remember(chip.max) { List(chip.max.coerceAtLeast(1)) { it }.chunked(PIPS_IN_ROW) }.forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        row.forEach { index ->
+                            val lit = index < chip.free
+                            Dot(
+                                size = 8.dp,
+                                color = if (lit) AppPalette.Arcane else Color.Transparent,
+                                borderColor = if (lit) null else AppPalette.TextTertiary,
+                            )
+                        }
+                    }
                 }
             }
         }

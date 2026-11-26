@@ -26,6 +26,21 @@ class SlotColumnTest {
     }
 
     @Test
+    fun `a level stored twice is one column with the bigger maximum`() {
+        val columns =
+            slotColumns(listOf(slot(5, 2, id = 1), slot(5, 4, id = 2), slot(6, 1, id = 3), slot(6, 1, id = 4)))
+        assertEquals(listOf(5, 6), columns.map { it.level })
+        assertEquals(4, columns.first().resource.max)
+        assertEquals(1, columns.last().resource.max)
+    }
+
+    @Test
+    fun `the extra rows of a level are the ones with the smaller maximum`() {
+        val extra = duplicateSlotRows(listOf(slot(5, 2, id = 1), slot(5, 4, id = 2), slot(6, 1, id = 3), feature(9, 0)))
+        assertEquals(listOf(1L), extra.map { it.id })
+    }
+
+    @Test
     fun `no slots give no columns`() {
         assertTrue(slotColumns(listOf(feature(1, 0))).isEmpty())
     }

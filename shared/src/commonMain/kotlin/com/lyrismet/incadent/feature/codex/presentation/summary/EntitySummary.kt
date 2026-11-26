@@ -7,7 +7,9 @@ import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.codex.domain.grouping.PlaceTree
+import com.lyrismet.incadent.feature.codex.domain.grouping.classFact
 import com.lyrismet.incadent.feature.codex.domain.grouping.classLine
+import com.lyrismet.incadent.feature.codex.domain.grouping.classOverline
 import com.lyrismet.incadent.feature.codex.domain.model.Item
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
@@ -204,7 +206,7 @@ private fun buildPartySummary(
     return EntitySummaryItem.PartySummary(
         ref = EntityRef.Party(member.id),
         name = member.name,
-        overlineValue = joinWithDot(member.characterClass, if (member.isPlayerCharacter) lookup.partyYouLabel else ""),
+        overlineValue = joinWithDot(member.classOverline(), if (member.isPlayerCharacter) lookup.partyYouLabel else ""),
         subtitle = member.race,
         description = member.description,
         descriptionSegments = noteSegments(member.description, lookup),
@@ -229,14 +231,15 @@ private fun buildPartySummary(
                 ),
                 FactRow(
                     Res.string.entity_sheet_party_class_label,
-                    FactValue.Text(classLine(member.characterClass, member.subclass)),
+                    FactValue.Text(member.classFact(lookup.classLevelTemplate)),
                     QuickEditField.CHARACTER_CLASS,
                 ),
                 FactRow(Res.string.entity_sheet_npc_race_label, FactValue.Text(member.race), QuickEditField.RACE),
                 FactRow(
                     Res.string.entity_sheet_party_level_label,
                     FactValue.Text(member.level.orDash()),
-                    QuickEditField.LEVEL,
+                    // the level is the sum of the classes while there are several
+                    QuickEditField.LEVEL.takeIf { member.classes.size < 2 },
                 ),
                 FactRow(
                     Res.string.entity_sheet_party_hp_label,

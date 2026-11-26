@@ -40,6 +40,7 @@ import incadent.shared.generated.resources.me_spells_growth_dice
 import incadent.shared.generated.resources.me_spells_growth_dice_hint
 import incadent.shared.generated.resources.me_spells_growth_duration
 import incadent.shared.generated.resources.me_spells_growth_duration_hint
+import incadent.shared.generated.resources.me_spells_growth_first_rule
 import incadent.shared.generated.resources.me_spells_growth_pick_title
 import incadent.shared.generated.resources.me_spells_growth_projectiles
 import incadent.shared.generated.resources.me_spells_growth_projectiles_hint
@@ -126,15 +127,11 @@ internal fun GrowthFields(
     }
 }
 
-// turning it on gives a first rule the spell can use, so the block is not an empty list
 private fun toggled(
     spell: CharacterSpell,
     on: Boolean,
 ) = if (spell.isCantrip) {
     spell.growth.copy(cantrip = if (on) CantripGrowth.DICE else CantripGrowth.NONE)
-} else if (on && spell.growth.rules.isEmpty()) {
-    val target = if (spell.damage.isNotEmpty()) GrowthTarget.DICE else GrowthTarget.DURATION
-    spell.growth.copy(enabled = true, rules = listOf(GrowthRule(target)))
 } else {
     spell.growth.copy(enabled = on)
 }
@@ -177,7 +174,11 @@ private fun RulesBody(
         )
     }
     if (rules.size < MAX_GROWTH_RULES) {
-        SpellAddTile(stringResource(Res.string.me_spells_growth_add_rule)) { picking = true }
+        SpellAddTile(
+            stringResource(
+                if (rules.isEmpty()) Res.string.me_spells_growth_first_rule else Res.string.me_spells_growth_add_rule,
+            ),
+        ) { picking = true }
     }
     if (rules.isNotEmpty()) GrowthPreview(spell, characterLevel, maxCircle)
     if (picking) {

@@ -33,11 +33,12 @@ fun defaultPay(
     columns: List<SlotColumn>,
 ): SpellPay? = payOptions(spell, columns).firstOrNull()
 
-/** the levels that get a tile: cantrips always first, then every level with slots or spells */
-fun spellLevels(
-    spells: List<CharacterSpell>,
-    columns: List<SlotColumn>,
-): List<Int> = (listOf(CANTRIP_LEVEL) + columns.map { it.level } + spells.map { it.level }).distinct().sorted()
+/** the levels that get a tile: cantrips always first, then every level with slots */
+fun spellLevels(columns: List<SlotColumn>): List<Int> =
+    (listOf(CANTRIP_LEVEL) + columns.map { it.level }).distinct().sorted()
+
+/** the levels that have spells, in order, for the list under the tiles */
+fun spellListLevels(spells: List<CharacterSpell>): List<Int> = spells.map { it.level }.distinct().sorted()
 
 fun spellsOfLevel(
     spells: List<CharacterSpell>,

@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.portrait.CropRect
 import com.lyrismet.incadent.core.portrait.PhotoSlot
 import com.lyrismet.incadent.domain.model.Photo
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.PartyClass
 import com.lyrismet.incadent.feature.codex.domain.model.SpeciesType
 
 /** the field whose editor is open and what it currently holds - at most one editor is open at a time */
@@ -46,6 +47,11 @@ sealed interface QuickEditUiEvent {
     data class ClassChosen(
         val characterClass: String,
         val subclass: String,
+    ) : QuickEditUiEvent
+
+    /** the class list of a party member with several classes, changed in the list sheet */
+    data class ClassesChosen(
+        val classes: List<PartyClass>,
     ) : QuickEditUiEvent
 
     /** a type made in the creature type sheet, the card's species takes it */

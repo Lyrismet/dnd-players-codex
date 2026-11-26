@@ -58,6 +58,7 @@ internal fun buildMeCharacter(
         characterClass = member.characterClass,
         subclass = member.subclass,
         level = member.level,
+        classes = member.classes,
         race = member.race,
         fallen = member.fallen,
         vitals = vitals,
@@ -102,7 +103,7 @@ private fun spellsState(
     undo: UndoAction?,
 ): SpellsBlockState {
     val columns = slotColumns(resources)
-    val levels = spellLevels(spells, columns)
+    val levels = spellLevels(columns)
     return SpellsBlockState(
         ability = sheet.spellAbility,
         saveDc = FifthEditionRules.spellSaveDc(sheet, level),

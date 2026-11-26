@@ -182,6 +182,7 @@ class CodexEntryFormController private constructor(
             CodexEntryFormEvent.EntryClassSelectOpened -> setClassSelect(true)
             CodexEntryFormEvent.EntryClassSelectClosed -> setClassSelect(false)
             is CodexEntryFormEvent.EntryClassChosen -> onClassChosen(event.characterClass, event.subclass)
+            is CodexEntryFormEvent.EntryClassesChanged -> fields.value = fields.value?.withClassList(event.classes)
             CodexEntryFormEvent.EntryCreatureTypeSelectOpened -> creatureTypes.onSelectToggled(true)
             CodexEntryFormEvent.EntryCreatureTypeSelectClosed -> creatureTypes.onSelectToggled(false)
             is CodexEntryFormEvent.EntryCustomTypeCreated -> creatureTypes.onCreated(scope, event.name)
@@ -751,6 +752,7 @@ class CodexEntryFormController private constructor(
                     FormChipOption(false, stringResource(Res.string.codex_entry_owner_other), !party.isPlayerCharacter),
                 ),
             partyLevel = party.level,
+            partyClasses = current.classEntries(),
             partyHpMax = party.hpMax,
             // offered only for a member that is not the player character, and only when it would change the level
             partyLevelFromPlayer =

@@ -641,4 +641,24 @@ class SchemaMigrationTest {
         driver.close()
         file.delete()
     }
+
+    @Test
+    fun `migrating the twenty seventh schema adds an empty class list and keeps the party`() {
+        val file = File.createTempFile("schema-v27", ".db")
+        File("src/commonMain/sqldelight/databases/27.db").copyTo(file, overwrite = true)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        listOf(
+            "INSERT INTO campaign(id, name, created_at, last_opened_at) VALUES ('c', 'One', 1, 1)",
+            "INSERT INTO party_member(name, character_class, subclass, level, campaign_id) VALUES ('Lira', 'Жрец', 'Домен жизни', 3, 'c')",
+        ).forEach { driver.execute(null, it, 0) }
+
+        AppDatabase.Schema.migrate(driver, 27, AppDatabase.Schema.version)
+
+        assertEquals("Lira", driver.single("SELECT name FROM party_member"))
+        assertEquals("Жрец", driver.single("SELECT character_class FROM party_member"))
+        assertEquals("3", driver.single("SELECT level FROM party_member"))
+        assertEquals("", driver.single("SELECT classes FROM party_member"))
+        driver.close()
+        file.delete()
+    }
 }

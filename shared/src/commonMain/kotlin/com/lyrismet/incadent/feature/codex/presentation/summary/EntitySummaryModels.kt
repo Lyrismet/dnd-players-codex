@@ -274,6 +274,8 @@ data class EntityLookup(
     val species: List<Species> = emptyList(),
     val facts: CombatFacts = CombatFacts.EMPTY,
     val items: List<Item> = emptyList(),
+    // "{level} ур." with the number left to fill, the class line of a character with several classes uses it
+    val classLevelTemplate: String = "{level}",
 )
 
 /** what an npc has of its own and what its species gives it, the card shows both and tells them apart */

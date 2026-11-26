@@ -1,6 +1,7 @@
 package com.lyrismet.incadent.feature.codex.presentation.quickedit
 
 import com.lyrismet.incadent.core.format.capitalizeFirst
+import com.lyrismet.incadent.feature.codex.domain.grouping.withClasses
 import com.lyrismet.incadent.feature.codex.domain.model.Location
 import com.lyrismet.incadent.feature.codex.domain.model.Npc
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -92,8 +93,10 @@ private fun PartyMember.withPartyOnlyQuickEdit(
 ): PartyMember? =
     when (field) {
         QuickEditField.CHARACTER_CLASS ->
-            (value as? QuickEditValue.ClassPick)?.let {
-                copy(characterClass = it.characterClass, subclass = it.subclass)
+            when (value) {
+                is QuickEditValue.ClassPick -> copy(characterClass = value.characterClass, subclass = value.subclass)
+                is QuickEditValue.Classes -> withClasses(value.classes)
+                else -> null
             }
         QuickEditField.PLAYER_NAME -> value.name?.let { copy(playerName = it) }
         QuickEditField.LEVEL -> value.number()?.let { copy(level = it.number) }

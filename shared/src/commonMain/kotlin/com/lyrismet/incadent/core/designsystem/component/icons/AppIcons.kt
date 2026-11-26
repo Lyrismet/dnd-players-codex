@@ -51,6 +51,24 @@ private fun deleteIcon(): ImageVector =
             fill = SolidColor(Color.Black),
         ).build()
 
+// two sheets of paper, the front one over the back one
+private fun copyIcon(): ImageVector =
+    ImageVector
+        .Builder(
+            name = "Copy",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = ICON_VIEWPORT,
+            viewportHeight = ICON_VIEWPORT,
+        ).addPath(
+            pathData =
+                addPathNodes(
+                    "M16,1H4C2.9,1 2,1.9 2,3v14h2V3h12V1zM19,5H8C6.9,5 6,5.9 6,7v14c0,1.1 0.9,2 2,2h11" +
+                        "c1.1,0 2,-0.9 2,-2V7C21,5.9 20.1,5 19,5zM19,21H8V7h11V21z",
+                ),
+            fill = SolidColor(Color.Black),
+        ).build()
+
 // the check mark, a short stroke into a long one
 private fun checkIcon(): ImageVector =
     ImageVector
@@ -107,5 +125,6 @@ object AppIcons {
     val Pencil: ImageVector = pencilIcon()
     val Delete: ImageVector = deleteIcon()
     val Check: ImageVector = checkIcon()
+    val Copy: ImageVector = copyIcon()
     val Close: ImageVector = closeIcon()
 }

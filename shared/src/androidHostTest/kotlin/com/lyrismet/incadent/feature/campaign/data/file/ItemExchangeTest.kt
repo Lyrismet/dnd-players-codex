@@ -99,6 +99,7 @@ class ItemExchangeTest {
             "hero",
             "",
             null,
+            "",
         )
         return database.partyMemberQueries.lastInsertRowId().executeAsOne()
     }

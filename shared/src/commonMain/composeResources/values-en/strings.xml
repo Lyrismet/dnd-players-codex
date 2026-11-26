@@ -1603,7 +1603,7 @@
     <string name="me_feats_delete">Delete feat</string>
     <string name="me_feats_deleted_title">Feat deleted</string>
     <string name="me_features_title">Features</string>
-    <string name="me_features_hold_hint">hold to edit</string>
+    <string name="copy_button_description">Copy</string>
     <string name="me_about_title">About the character</string>
     <string name="me_about_background">Background</string>
     <string name="me_about_alignment">Alignment</string>
@@ -1809,6 +1809,14 @@
     <string name="class_sheet_subclass_example">For example, %1$s</string>
     <string name="class_sheet_srd_source">from SRD 5.1</string>
     <string name="class_sheet_done">Done</string>
+    <string name="class_sheet_level_label">Level</string>
+    <string name="class_sheet_level_less">Less</string>
+    <string name="class_sheet_level_more">More</string>
+    <string name="class_sheet_remove">Remove class</string>
+    <string name="class_list_add">+ Add class</string>
+    <string name="class_list_add_multi">+ Add multiclass</string>
+    <string name="class_list_title">Classes</string>
+    <string name="class_level_template">lvl {level}</string>
 
     <string name="session_text_button">Share session</string>
     <string name="session_text_title">Share session</string>
@@ -1957,7 +1965,6 @@
     <string name="me_spells_component_m">M</string>
     <string name="me_spells_deleted_title">Spell deleted</string>
     <string name="combat_magic_tab">Magic</string>
-    <string name="me_spells_list_empty">No spells in this level yet</string>
     <string name="me_spells_cantrips_panel_sub">no slots</string>
     <string name="me_spells_meta_free_long">free · until a long rest</string>
     <string name="me_spells_card_over">%1$s · %2$s</string>
@@ -2036,6 +2043,7 @@
     <string name="me_spells_growth_mode_steps">Steps</string>
     <string name="me_spells_growth_every_n">Every … circles</string>
     <string name="me_spells_growth_add">Add</string>
+    <string name="me_spells_growth_first_rule">+ Add a rule</string>
     <string name="me_spells_growth_add_rule">+ Another rule</string>
     <string name="me_spells_growth_add_step">+ Step</string>
     <string name="me_spells_growth_pick_title">What grows</string>

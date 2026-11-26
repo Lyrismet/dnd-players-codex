@@ -113,6 +113,7 @@ private fun MeOverlay.EditCharacter.reduceEdit(event: OverlayEvent): MeOverlay =
         is OverlayEvent.BonusStepped ->
             copy(draft = draft.copy(hpBonusPerLevel = draft.hpBonusPerLevel.stepped(event.delta, HP_BONUS_RANGE)))
         OverlayEvent.CatchUpToggled -> copy(draft = draft.copy(applyCatchUp = !draft.applyCatchUp))
+        is OverlayEvent.ClassesChanged -> copy(draft = draft.withClassList(event.classes))
         else -> this
     }
 
@@ -133,6 +134,7 @@ private fun FillDraft.reduceValues(event: OverlayEvent): FillDraft =
                 OverlayField.SUBCLASS -> copy(subclass = event.value)
                 else -> this
             }
+        is OverlayEvent.ClassesChanged -> withClassList(event.classes)
         is OverlayEvent.FillAbilityStepped -> {
             val score = (abilities[event.ability] ?: DEFAULT_SCORE).stepped(event.delta, SheetRanges.ability)
             copy(abilities = abilities + (event.ability to score))

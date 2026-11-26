@@ -107,6 +107,7 @@ class CampaignExchangeTest {
             "hero-origin",
             "",
             null,
+            "",
         )
         database.tagQueries.insert("fight", source)
         database.phraseSnippetQueries.insert("Roll for it", source)

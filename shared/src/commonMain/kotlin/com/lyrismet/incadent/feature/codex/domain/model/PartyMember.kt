@@ -28,6 +28,15 @@ data class PartyMember(
     val hpBonusPerLevel: Int = 0,
     // what the last level up added, offered again as the next one
     val lastLevelGain: Int? = null,
+    // two or more classes with a level each, empty while the character has one class (the summary fields then hold it)
+    val classes: List<PartyClass> = emptyList(),
+)
+
+/** one class of a character that has several, the subclass may be empty */
+data class PartyClass(
+    val characterClass: String,
+    val subclass: String,
+    val level: Int,
 )
 
 enum class PartyPresence {
