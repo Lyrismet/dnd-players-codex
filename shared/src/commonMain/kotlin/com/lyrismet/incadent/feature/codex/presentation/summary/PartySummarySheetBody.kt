@@ -72,7 +72,6 @@ private fun PartyBody(
     val actions =
         if (party.viewOnly) {
             shown.copy(
-                onEditClicked = null,
                 quickEdit = null,
                 onPartyLevelRaised = null,
                 onPartyVulnerabilityChanged = null,
@@ -86,7 +85,6 @@ private fun PartyBody(
         title = party.name,
         subtitle = party.subtitle,
         strikeThrough = fall != null,
-        showEditHint = actions.onEditClicked != null,
         quick = actions.quickEdit,
     )
     if (party.viewOnly) {

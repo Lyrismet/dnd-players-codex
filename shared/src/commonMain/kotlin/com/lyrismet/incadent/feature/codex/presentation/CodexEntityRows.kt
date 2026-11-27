@@ -3,26 +3,17 @@ package com.lyrismet.incadent.feature.codex.presentation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.lyrismet.incadent.core.designsystem.component.NoPeek
-import com.lyrismet.incadent.core.designsystem.component.SwipeEditAction
 import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
-import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntityRef
 import com.lyrismet.incadent.feature.codex.presentation.summary.EntitySheetEvent
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.action_edit
 import incadent.shared.generated.resources.codex_delete_content_description
-import incadent.shared.generated.resources.swipe_release_label
 import org.jetbrains.compose.resources.stringResource
-
-// a right swipe opens the form, so it is only offered in form mode - quick mode keeps rows delete-only
-internal val CodexState.swipeEditEnabled: Boolean
-    get() = editMode == EntityEditMode.FORM
 
 @Composable
 internal fun CodexDeletableRow(
     ref: EntityRef,
     eventSink: (CodexEvent) -> Unit,
-    swipeEditEnabled: Boolean,
     modifier: Modifier = Modifier,
     peekOffsetPx: () -> Float = NoPeek,
     content: @Composable () -> Unit,
@@ -31,7 +22,6 @@ internal fun CodexDeletableRow(
         onDeleteRequested = { eventSink(CodexEvent.EntityDeleteRequested(ref)) },
         modifier = modifier,
         deleteContentDescription = stringResource(Res.string.codex_delete_content_description),
-        editAction = if (swipeEditEnabled) swipeEditAction(ref, eventSink) else null,
         peekOffsetPx = peekOffsetPx,
         content = content,
     )
@@ -42,13 +32,11 @@ internal fun CodexDeletableRow(
 internal fun PartyRow(
     member: PartyCodexItem,
     eventSink: (CodexEvent) -> Unit,
-    swipeEditEnabled: Boolean,
     peekOffsetPx: () -> Float = NoPeek,
 ) {
     CodexDeletableRow(
         ref = EntityRef.Party(member.id),
         eventSink = eventSink,
-        swipeEditEnabled = swipeEditEnabled,
         peekOffsetPx = peekOffsetPx,
     ) {
         PartyCodexCard(item = member, onClick = {
@@ -61,13 +49,11 @@ internal fun PartyRow(
 internal fun NpcRow(
     npc: NpcCodexItem,
     eventSink: (CodexEvent) -> Unit,
-    swipeEditEnabled: Boolean,
     peekOffsetPx: () -> Float = NoPeek,
 ) {
     CodexDeletableRow(
         ref = EntityRef.Npc(npc.id),
         eventSink = eventSink,
-        swipeEditEnabled = swipeEditEnabled,
         peekOffsetPx = peekOffsetPx,
     ) {
         NpcCodexCard(item = npc, onClick = {
@@ -80,13 +66,11 @@ internal fun NpcRow(
 internal fun QuestRow(
     quest: QuestCodexItem,
     eventSink: (CodexEvent) -> Unit,
-    swipeEditEnabled: Boolean,
     peekOffsetPx: () -> Float = NoPeek,
 ) {
     CodexDeletableRow(
         ref = EntityRef.Quest(quest.id),
         eventSink = eventSink,
-        swipeEditEnabled = swipeEditEnabled,
         peekOffsetPx = peekOffsetPx,
     ) {
         QuestCodexCard(
@@ -101,13 +85,11 @@ internal fun QuestRow(
 internal fun LocationRow(
     location: LocationCodexItem,
     eventSink: (CodexEvent) -> Unit,
-    swipeEditEnabled: Boolean,
     peekOffsetPx: () -> Float = NoPeek,
 ) {
     CodexDeletableRow(
         ref = EntityRef.Location(location.id),
         eventSink = eventSink,
-        swipeEditEnabled = swipeEditEnabled,
         peekOffsetPx = peekOffsetPx,
     ) {
         LocationCodexCard(
@@ -121,18 +103,6 @@ internal fun LocationRow(
     }
 }
 
-// the swipe-right "Изменить" of a row - only offered in form mode, see [swipeEditEnabled]
-@Composable
-private fun swipeEditAction(
-    ref: EntityRef,
-    eventSink: (CodexEvent) -> Unit,
-): SwipeEditAction =
-    SwipeEditAction(
-        label = stringResource(Res.string.action_edit),
-        releaseLabel = stringResource(Res.string.swipe_release_label),
-        onEdit = { eventSink(CodexEvent.EditEntryRequested(ref)) },
-    )
-
 // the four rows as the lists build them - the swipe state and the peek of the hinted row come from the screen state
 @Composable
 internal fun CodexPartyEntry(
@@ -142,7 +112,6 @@ internal fun CodexPartyEntry(
 ) = PartyRow(
     member = member,
     eventSink = state.eventSink,
-    swipeEditEnabled = state.swipeEditEnabled && !member.viewOnly,
     peekOffsetPx = state.peekOffsetPxFor(EntityRef.Party(member.id), hintPeekOffsetPx),
 )
 
@@ -154,7 +123,6 @@ internal fun CodexNpcEntry(
 ) = NpcRow(
     npc = npc,
     eventSink = state.eventSink,
-    swipeEditEnabled = state.swipeEditEnabled,
     peekOffsetPx = state.peekOffsetPxFor(EntityRef.Npc(npc.id), hintPeekOffsetPx),
 )
 
@@ -166,7 +134,6 @@ internal fun CodexQuestEntry(
 ) = QuestRow(
     quest = quest,
     eventSink = state.eventSink,
-    swipeEditEnabled = state.swipeEditEnabled,
     peekOffsetPx = state.peekOffsetPxFor(EntityRef.Quest(quest.id), hintPeekOffsetPx),
 )
 
@@ -178,7 +145,6 @@ internal fun CodexLocationEntry(
 ) = LocationRow(
     location = location,
     eventSink = state.eventSink,
-    swipeEditEnabled = state.swipeEditEnabled,
     peekOffsetPx = state.peekOffsetPxFor(EntityRef.Location(location.id), hintPeekOffsetPx),
 )
 

@@ -238,8 +238,7 @@ private fun buildPartySummary(
                 FactRow(
                     Res.string.entity_sheet_party_level_label,
                     FactValue.Text(member.level.orDash()),
-                    // the level is the sum of the classes while there are several
-                    QuickEditField.LEVEL.takeIf { member.classes.size < 2 },
+                    QuickEditField.LEVEL,
                 ),
                 FactRow(
                     Res.string.entity_sheet_party_hp_label,

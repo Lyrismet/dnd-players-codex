@@ -26,7 +26,7 @@ class PartyClassesPersistenceTest {
             race = "",
             level = 3,
             playerName = "",
-            isPlayerCharacter = false,
+            isPlayerCharacter = true,
             presence = PartyPresence.IN,
             hpMax = null,
             hpCurrent = null,

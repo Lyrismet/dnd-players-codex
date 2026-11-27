@@ -73,25 +73,24 @@ fun List<PartyClass>.summary(): ClassSummary? =
 fun List<PartyClass>.kept(): List<PartyClass> = if (size >= 2) this else emptyList()
 
 /**
- * the member holding [entries]: two or more are kept as the list with the summary fields set from the first class and
- * the level sum, one class goes back to the summary fields alone, none clears the class
+ * the member holding [entries]: two or more are kept as the list with the summary fields set from the first class,
+ * one class goes back to the summary fields alone, none clears the class. The player's own character takes the level
+ * sum, any other member keeps its level and its classes carry no level of their own
  */
 fun PartyMember.withClasses(entries: List<PartyClass>): PartyMember {
     val summary = entries.summary() ?: ClassSummary("", "", level)
     return copy(
-        classes = entries.kept(),
+        classes = if (isPlayerCharacter) entries.kept() else entries.map { it.copy(level = 1) }.kept(),
         characterClass = summary.characterClass,
         subclass = summary.subclass,
-        level = summary.level,
+        level = if (isPlayerCharacter || entries.isEmpty()) summary.level else level,
     )
 }
 
 /** the member with its summary fields in step with a stored list, what a write runs through */
 fun PartyMember.withClassSummary(): PartyMember =
-    if (classes.size >=
-        2
-    ) {
-        withClasses(classes)
-    } else {
-        copy(classes = emptyList())
+    when {
+        classes.size < 2 -> copy(classes = emptyList())
+        isPlayerCharacter -> withClasses(classes)
+        else -> this
     }

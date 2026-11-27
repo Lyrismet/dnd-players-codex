@@ -21,7 +21,6 @@ internal fun CodexEvent.writesCampaignData(): Boolean =
         is CodexEvent.QuickEdit,
         CodexEvent.AddEntryClicked,
         is CodexEvent.EmptyActionClicked,
-        is CodexEvent.EditEntryRequested,
         is CodexEvent.EntityDeleteRequested,
         CodexEvent.EntityDeleteConfirmed,
         is CodexEvent.EntryForm,

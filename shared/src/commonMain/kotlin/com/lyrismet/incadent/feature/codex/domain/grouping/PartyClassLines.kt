@@ -21,6 +21,10 @@ fun List<PartyClass>.classNamesLine(): String = joinToString(" / ") { it.charact
 /** the class names over a card, all of them while the member has several */
 fun PartyMember.classOverline(): String = if (classes.size >= 2) classes.classNamesLine() else characterClass
 
-/** the class row of a card, every class with its level while the member has several */
+/** the class row of a card, every class while the member has several, with its level only for the own character */
 fun PartyMember.classFact(levelTemplate: String): String =
-    if (classes.size >= 2) classes.classesLine(levelTemplate) else classLine(characterClass, subclass)
+    when {
+        classes.size < 2 -> classLine(characterClass, subclass)
+        isPlayerCharacter -> classes.classesLine(levelTemplate)
+        else -> classes.joinToString(" / ") { partyClassLine(it.characterClass, it.subclass) }
+    }

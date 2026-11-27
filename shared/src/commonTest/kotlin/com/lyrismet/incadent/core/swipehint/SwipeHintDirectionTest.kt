@@ -1,19 +1,11 @@
 package com.lyrismet.incadent.core.swipehint
 
-import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.preferences.SwipeHintState
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SwipeHintDirectionTest {
-    @Test
-    fun `codex hint is delete-only in quick mode and edit-and-delete in form mode`() {
-        assertEquals(SwipeHintDirection.DELETE_ONLY, codexSwipeHintDirection(EntityEditMode.QUICK))
-        assertEquals(SwipeHintDirection.EDIT_AND_DELETE, codexSwipeHintDirection(EntityEditMode.FORM))
-    }
-
     @Test
     fun `hint starts when pending with a first item and nothing blocking it`() {
         assertTrue(shouldStartSwipeHint(SwipeHintState.PENDING, hasFirstItem = true, isBlocked = false))

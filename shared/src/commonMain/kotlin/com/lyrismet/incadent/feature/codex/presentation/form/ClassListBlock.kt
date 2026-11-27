@@ -44,12 +44,18 @@ fun ClassListBlock(
     addLabel: String,
     onChange: (List<PartyClass>) -> Unit,
     modifier: Modifier = Modifier,
+    alwaysRows: Boolean = false,
+    withLevels: Boolean = true,
 ) {
     // the index of the row being edited, entries.size for a new class, null while the sheet is closed
     var editing by remember { mutableStateOf<Int?>(null) }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (entries.size >= 2) entries.forEachIndexed { index, entry -> ClassRow(entry) { editing = index } }
-        if (entries.levelRoom() > 0) {
+        if (alwaysRows ||
+            entries.size >= 2
+        ) {
+            entries.forEachIndexed { index, entry -> ClassRow(entry, withLevels) { editing = index } }
+        }
+        if (!withLevels || entries.levelRoom() > 0) {
             AppDashedTile(
                 onClick = { editing = entries.size },
                 modifier = Modifier.fillMaxWidth(),
@@ -60,55 +66,66 @@ fun ClassListBlock(
             }
         }
     }
-    editing?.let { index ->
-        val current = entries.getOrNull(index)
-        val others = entries.filterIndexed { i, _ -> i != index }
-        ClassSelectSheet(
-            select =
-                ClassSelectState(
-                    characterClass = current?.characterClass.orEmpty(),
-                    subclass = current?.subclass.orEmpty(),
-                    level =
-                        ClassLevelState(
-                            level =
-                                (current?.level ?: 1).coerceAtMost(
-                                    entries.levelRoom(index.takeIf { current != null }),
-                                ),
-                            max =
-                                entries
-                                    .levelRoom(
-                                        index.takeIf { current != null },
-                                    ).coerceAtLeast(PartyStatRanges.level.first),
-                            taken = others.map { it.characterClass },
-                            canRemove = current != null && entries.size > 1,
-                        ),
-                ),
-            onChosen = { _, _ -> },
-            onChosenWithLevel = { characterClass, subclass, level ->
-                val entry = PartyClass(characterClass, subclass, level)
-                onChange(
-                    if (current ==
-                        null
-                    ) {
-                        entries + entry
-                    } else {
-                        entries.mapIndexed { i, old -> if (i == index) entry else old }
-                    },
-                )
-                editing = null
-            },
-            onRemove = {
-                onChange(entries.filterIndexed { i, _ -> i != index })
-                editing = null
-            },
-            onDismiss = { editing = null },
-        )
-    }
+    editing?.let { index -> ClassEntrySheet(entries, index, withLevels, onChange) { editing = null } }
+}
+
+@Composable
+private fun ClassEntrySheet(
+    entries: List<PartyClass>,
+    index: Int,
+    withLevels: Boolean,
+    onChange: (List<PartyClass>) -> Unit,
+    onClose: () -> Unit,
+) {
+    val current = entries.getOrNull(index)
+    val others = entries.filterIndexed { i, _ -> i != index }
+    ClassSelectSheet(
+        select =
+            ClassSelectState(
+                characterClass = current?.characterClass.orEmpty(),
+                subclass = current?.subclass.orEmpty(),
+                level =
+                    ClassLevelState(
+                        level =
+                            (current?.level ?: 1).coerceAtMost(
+                                entries.levelRoom(index.takeIf { current != null }),
+                            ),
+                        max =
+                            entries
+                                .levelRoom(
+                                    index.takeIf { current != null },
+                                ).coerceAtLeast(PartyStatRanges.level.first),
+                        taken = others.map { it.characterClass },
+                        canRemove = current != null && entries.size > 1,
+                        showLevel = withLevels,
+                    ),
+            ),
+        onChosen = { _, _ -> },
+        onChosenWithLevel = { characterClass, subclass, level ->
+            val entry = PartyClass(characterClass, subclass, level)
+            onChange(
+                if (current ==
+                    null
+                ) {
+                    entries + entry
+                } else {
+                    entries.mapIndexed { i, old -> if (i == index) entry else old }
+                },
+            )
+            onClose()
+        },
+        onRemove = {
+            onChange(entries.filterIndexed { i, _ -> i != index })
+            onClose()
+        },
+        onDismiss = { onClose() },
+    )
 }
 
 @Composable
 private fun ClassRow(
     entry: PartyClass,
+    withLevel: Boolean,
     onClick: () -> Unit,
 ) {
     Row(
@@ -127,20 +144,23 @@ private fun ClassRow(
             color = AppPalette.TextPrimary,
             fontSize = AppFontSize.Body,
         )
-        Text(
-            stringResource(Res.string.campaign_player_level_format, entry.level),
-            color = AppPalette.TextSecondary,
-            fontSize = AppFontSize.Body,
-        )
+        if (withLevel) {
+            Text(
+                stringResource(Res.string.campaign_player_level_format, entry.level),
+                color = AppPalette.TextSecondary,
+                fontSize = AppFontSize.Body,
+            )
+        }
     }
 }
 
-/** the sheet over a card that lists the classes of a party member who has several, a change closes it */
+/** the sheet over a card that lists the classes of a party member, a change closes it */
 @Composable
 fun ClassListSheet(
     classes: List<PartyClass>,
     onChange: (List<PartyClass>) -> Unit,
     onDismiss: () -> Unit,
+    withLevels: Boolean = true,
 ) {
     AppBottomSheet(onDismissRequest = onDismiss) {
         AppSheetColumn(
@@ -153,7 +173,13 @@ fun ClassListSheet(
                 )
             },
         ) {
-            ClassListBlock(classes, stringResource(Res.string.class_list_add), onChange)
+            ClassListBlock(
+                classes,
+                stringResource(Res.string.class_list_add),
+                onChange,
+                alwaysRows = true,
+                withLevels = withLevels,
+            )
         }
     }
 }

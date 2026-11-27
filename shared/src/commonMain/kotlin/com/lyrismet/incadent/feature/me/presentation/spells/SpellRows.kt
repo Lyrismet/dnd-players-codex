@@ -167,8 +167,9 @@ private fun DetailLine(
 private fun StatesChip(states: List<SpellEffect.Condition>) {
     if (states.isEmpty()) return
     SpellEffectGlyph(states.first(), size = 12.dp)
+    val names = states.map { effectLabel(it) }
     Text(
-        states.joinToString(", ") { effectLabel(it) },
+        names.joinToString(", "),
         style = AppText.caption,
         color = AppPalette.TextSecondary,
         maxLines = 1,

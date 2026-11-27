@@ -13,4 +13,5 @@ data class ClassLevelState(
     val max: Int,
     val taken: List<String> = emptyList(),
     val canRemove: Boolean = false,
+    val showLevel: Boolean = true,
 )

@@ -216,7 +216,7 @@ internal fun CodexAllList(
             CodexNpcEntry(state, it, hintPeekOffsetPx)
         }
         codexSection(speciesTitle, state.species, speciesFirst, key = { "species_${it.id}" }) { species ->
-            SpeciesRow(species, state.eventSink, state.swipeEditEnabled)
+            SpeciesRow(species, state.eventSink)
         }
         codexSection(questTitle, quests, questFirst, key = { "quest_${it.id}" }) {
             CodexQuestEntry(state, it, hintPeekOffsetPx)

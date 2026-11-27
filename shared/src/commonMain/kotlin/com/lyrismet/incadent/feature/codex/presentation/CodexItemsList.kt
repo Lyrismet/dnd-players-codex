@@ -107,7 +107,6 @@ private fun ItemRow(
     CodexDeletableRow(
         ref = ref,
         eventSink = state.eventSink,
-        swipeEditEnabled = state.swipeEditEnabled && !state.readOnly,
     ) {
         ItemCodexCard(
             item = item,

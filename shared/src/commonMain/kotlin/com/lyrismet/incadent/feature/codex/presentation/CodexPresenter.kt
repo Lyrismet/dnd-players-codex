@@ -15,12 +15,10 @@ import com.lyrismet.incadent.core.errors.rememberGuardedScope
 import com.lyrismet.incadent.core.navigation.LocalTabSelected
 import com.lyrismet.incadent.core.portrait.ImageCompressor
 import com.lyrismet.incadent.core.preferences.AppPreferencesRepository
-import com.lyrismet.incadent.core.preferences.EntityEditMode
 import com.lyrismet.incadent.core.preferences.HoldHintState
 import com.lyrismet.incadent.core.preferences.SessionNumbering
 import com.lyrismet.incadent.core.preferences.SwipeHintState
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
-import com.lyrismet.incadent.core.swipehint.codexSwipeHintDirection
 import com.lyrismet.incadent.core.swipehint.rememberSwipeHintTarget
 import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.core.toast.autoDismiss
@@ -192,8 +190,6 @@ class CodexPresenter(
         val numbering by appPreferencesRepository
             .observeSessionNumbering()
             .collectAsState(initial = SessionNumbering.ROMAN)
-        // the form mode was removed on purpose as unfinished, whether it comes back is open
-        val editMode = EntityEditMode.QUICK
         val holdHint by appPreferencesRepository.observeHoldHintState().collectAsState(initial = HoldHintState.SEEN)
         val undoAction by undoController.current.collectAsState()
         val failure = remember { mutableStateOf<Throwable?>(null) }
@@ -253,7 +249,7 @@ class CodexPresenter(
             scope,
             query,
             loadedParties == null || loadedNpcs == null,
-            CodexEditContext(editMode, holdHint, undoAction, swipeHintTarget, mention),
+            CodexEditContext(holdHint, undoAction, swipeHintTarget, mention),
         )
     }
 
@@ -543,17 +539,14 @@ class CodexPresenter(
             groupOptions = grouped.groupOptions,
             emptyState = codexEmptyState(emptyKind, activeTab),
             activeSheet = codexActiveSheet(formState, selectedEntity, fields.selectedEntityRef.value != null),
-            editMode = context.editMode,
             quick =
                 fields.quickEdit.state(
                     records,
-                    holdTipAllowed =
-                        context.editMode == EntityEditMode.QUICK && context.holdHint == HoldHintState.PENDING,
+                    holdTipAllowed = context.holdHint == HoldHintState.PENDING,
                     undoAction = context.undoAction,
                     mention = context.mention,
                 ),
             swipeHintTarget = context.swipeHintTarget,
-            swipeHintDirection = codexSwipeHintDirection(context.editMode),
             toast = fields.toast.value,
             deleteWarning = deleteWarning(fields.pendingDelete.value, records, labels),
             playerBannerVisible = playerBannerVisible(campaign?.id, activeTab, readOnly, records.parties),
@@ -635,7 +628,6 @@ class CodexPresenter(
 
 /** the edit preferences and the undo toast the screen state is assembled from */
 private data class CodexEditContext(
-    val editMode: EntityEditMode,
     val holdHint: HoldHintState,
     val undoAction: UndoAction?,
     val swipeHintTarget: SwipeHintTarget<EntityRef>?,

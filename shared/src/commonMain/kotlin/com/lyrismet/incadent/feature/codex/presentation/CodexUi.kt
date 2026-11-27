@@ -25,8 +25,6 @@ import com.lyrismet.incadent.core.designsystem.component.SegmentedTab
 import com.lyrismet.incadent.core.designsystem.component.SwipeHintBanner
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
-import com.lyrismet.incadent.core.preferences.EntityEditMode
-import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.feature.codex.presentation.form.CodexEntryFormSheet
 import com.lyrismet.incadent.feature.codex.presentation.item.ItemEvent
 import com.lyrismet.incadent.feature.codex.presentation.party.PlayerCharacterPickSheet
@@ -53,8 +51,6 @@ import incadent.shared.generated.resources.codex_tab_quest
 import incadent.shared.generated.resources.codex_title
 import incadent.shared.generated.resources.mention_count_in_sessions
 import incadent.shared.generated.resources.mention_count_mentions
-import incadent.shared.generated.resources.swipe_hint_codex_both_subtitle
-import incadent.shared.generated.resources.swipe_hint_codex_both_title
 import incadent.shared.generated.resources.swipe_hint_codex_quick_subtitle
 import incadent.shared.generated.resources.swipe_hint_delete_only_title
 import incadent.shared.generated.resources.swipe_hint_dismiss
@@ -67,7 +63,7 @@ fun CodexUi(
     modifier: Modifier = Modifier,
 ) {
     val tabItems = codexTabItems(state)
-    val swipeHint = rememberSwipeHintPlayback(state.swipeHintTarget, state.swipeHintDirection)
+    val swipeHint = rememberSwipeHintPlayback(state.swipeHintTarget)
 
     // the tab bar already sits above the navigation bar, so this scaffold must not reserve it again
     val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
@@ -110,9 +106,8 @@ fun CodexUi(
             }
             SwipeHintBanner(
                 visible = swipeHint.bannerVisible,
-                direction = state.swipeHintDirection,
-                title = codexSwipeHintTitle(state.swipeHintDirection),
-                subtitle = codexSwipeHintSubtitle(state.swipeHintDirection),
+                title = stringResource(Res.string.swipe_hint_delete_only_title),
+                subtitle = stringResource(Res.string.swipe_hint_codex_quick_subtitle),
                 dismissLabel = stringResource(Res.string.swipe_hint_dismiss),
                 onDismiss = swipeHint::dismiss,
                 modifier = floatingBarAnchor(),
@@ -148,20 +143,6 @@ private fun CodexActiveSheet(state: CodexState) {
         null -> Unit
     }
 }
-
-@Composable
-private fun codexSwipeHintTitle(direction: SwipeHintDirection): String =
-    when (direction) {
-        SwipeHintDirection.EDIT_AND_DELETE -> stringResource(Res.string.swipe_hint_codex_both_title)
-        SwipeHintDirection.DELETE_ONLY -> stringResource(Res.string.swipe_hint_delete_only_title)
-    }
-
-@Composable
-private fun codexSwipeHintSubtitle(direction: SwipeHintDirection): String =
-    when (direction) {
-        SwipeHintDirection.EDIT_AND_DELETE -> stringResource(Res.string.swipe_hint_codex_both_subtitle)
-        SwipeHintDirection.DELETE_ONLY -> stringResource(Res.string.swipe_hint_codex_quick_subtitle)
-    }
 
 @Composable
 private fun CodexActiveList(
@@ -222,14 +203,11 @@ private fun CodexEntitySheet(
     )
 }
 
-// quick mode edits in place and keeps the pen out of the header, form mode is read-only and offers the pen instead
-private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
-    val isQuick = state.editMode == EntityEditMode.QUICK
-    return entitySheetActions(
+private fun entitySheetActions(state: CodexState): EntitySummarySheetActions =
+    entitySheetActions(
         partyPresence = true,
         speciesVulnerabilityEdit = !state.readOnly,
         npcVulnerabilityEdit = !state.readOnly,
-        onEditClicked = if (isQuick) null else { ref -> state.eventSink(CodexEvent.EditEntryRequested(ref)) },
         // the swipe stays the quick way, an archived campaign has nothing to delete
         onDeleteClicked =
             if (state.readOnly) {
@@ -244,11 +222,9 @@ private fun entitySheetActions(state: CodexState): EntitySummarySheetActions {
             state.eventSink(CodexEvent.EntitySheet(EntitySheetEvent.Dismissed))
             state.eventSink(CodexEvent.Items(ItemEvent.Opened(ref.id)))
         },
-        statusesReadOnly = !isQuick,
         linkOffers = state.linkOffers,
-        quickEdit = if (isQuick) state.quick.asSheet { state.eventSink(CodexEvent.QuickEdit(it)) } else null,
+        quickEdit = state.quick.asSheet { state.eventSink(CodexEvent.QuickEdit(it)) },
     ) { state.eventSink(CodexEvent.EntitySheet(it)) }
-}
 
 @Composable
 private fun codexTabItems(state: CodexState): List<SegmentedTab<CodexTab>> =

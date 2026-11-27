@@ -6,6 +6,7 @@ import com.lyrismet.incadent.core.designsystem.component.AppBottomSheet
 import com.lyrismet.incadent.core.designsystem.component.UndoToast
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.feature.codex.domain.model.CreatureType
+import com.lyrismet.incadent.feature.codex.domain.model.PartyClass
 import com.lyrismet.incadent.feature.codex.presentation.form.ClassListSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.ClassSelectSheet
 import com.lyrismet.incadent.feature.codex.presentation.form.CreatureTypeSelectSheet
@@ -68,13 +69,7 @@ fun EntityCardSheet(
             onDismiss = { onQuickEvent(QuickEditUiEvent.EditCancelled) },
         )
     }
-    quick.classList?.let { classes ->
-        ClassListSheet(
-            classes = classes,
-            onChange = { onQuickEvent(QuickEditUiEvent.ClassesChosen(it)) },
-            onDismiss = { onQuickEvent(QuickEditUiEvent.EditCancelled) },
-        )
-    }
+    quick.classList?.let { PartyClassListSheet(it, onQuickEvent) }
     quick.speciesSelect?.let { select ->
         SpeciesSelectSheet(
             select = select,
@@ -84,4 +79,17 @@ fun EntityCardSheet(
             onDismiss = { onQuickEvent(QuickEditUiEvent.EditCancelled) },
         )
     }
+}
+
+@Composable
+private fun PartyClassListSheet(
+    classes: List<PartyClass>,
+    onQuickEvent: (QuickEditUiEvent) -> Unit,
+) {
+    ClassListSheet(
+        classes = classes,
+        onChange = { onQuickEvent(QuickEditUiEvent.ClassesChosen(it)) },
+        onDismiss = { onQuickEvent(QuickEditUiEvent.EditCancelled) },
+        withLevels = false,
+    )
 }

@@ -14,14 +14,6 @@ enum class MentionStyle(
     UNDERLINE("underline"),
 }
 
-/** how a codex card is edited, [FORM] is removed on purpose as unfinished and may come back or go for good */
-enum class EntityEditMode(
-    val tag: String,
-) {
-    QUICK("quick"),
-    FORM("form"),
-}
-
 /** whether the "hold a field to edit it" hint still has to be shown in a codex card */
 enum class HoldHintState(
     val tag: String,

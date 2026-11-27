@@ -24,7 +24,7 @@ data class QuickEditState(
     val creatureTypeSelect: CreatureTypeSelectState? = null,
     // the class sheet of the class field being edited on a party or an npc card
     val classSelect: ClassSelectState? = null,
-    // the classes of a party member with several, listed in a sheet before one is opened
+    // the classes of a party member, listed in a sheet before one is opened
     val classList: List<PartyClass>? = null,
     val holdTipVisible: Boolean = false,
     // the bar the card carries itself, the sheet covers the app-level one

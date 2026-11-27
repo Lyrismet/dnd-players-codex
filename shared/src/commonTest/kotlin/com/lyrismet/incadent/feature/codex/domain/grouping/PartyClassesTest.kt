@@ -16,6 +16,7 @@ class PartyClassesTest {
         characterClass: String = "",
         subclass: String = "",
         level: Int? = null,
+        own: Boolean = false,
     ) = PartyMember(
         id = 1,
         name = "Лира",
@@ -23,7 +24,7 @@ class PartyClassesTest {
         race = "",
         level = level,
         playerName = "",
-        isPlayerCharacter = false,
+        isPlayerCharacter = own,
         presence = PartyPresence.IN,
         hpMax = null,
         hpCurrent = null,
@@ -69,7 +70,7 @@ class PartyClassesTest {
 
     @Test
     fun `two classes set the summary from the first class and the level sum`() {
-        val result = member().withClasses(listOf(cleric, fighter))
+        val result = member(own = true).withClasses(listOf(cleric, fighter))
         assertEquals("Жрец", result.characterClass)
         assertEquals("Домен Света", result.subclass)
         assertEquals(5, result.level)
@@ -78,10 +79,20 @@ class PartyClassesTest {
 
     @Test
     fun `one class goes back to the summary fields alone`() {
-        val result = member().withClasses(listOf(cleric, fighter)).withClasses(listOf(fighter))
+        val result = member(own = true).withClasses(listOf(cleric, fighter)).withClasses(listOf(fighter))
         assertEquals(emptyList(), result.classes)
         assertEquals("Воин", result.characterClass)
         assertEquals(2, result.level)
+    }
+
+    @Test
+    fun `another member keeps its level and its classes carry none`() {
+        val result = member("Воин", level = 7).withClasses(listOf(cleric, fighter))
+        assertEquals(7, result.level)
+        assertEquals("Жрец", result.characterClass)
+        assertEquals(listOf(1, 1), result.classes.map { it.level })
+        assertEquals("Жрец - Домен Света / Воин", result.classFact("{level} ур."))
+        assertEquals(result, result.withClassSummary())
     }
 
     @Test

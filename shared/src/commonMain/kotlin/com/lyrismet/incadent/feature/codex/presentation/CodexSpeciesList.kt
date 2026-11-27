@@ -58,12 +58,10 @@ internal fun CodexNpcModeSwitch(
 internal fun SpeciesRow(
     species: SpeciesCodexItem,
     eventSink: (CodexEvent) -> Unit,
-    swipeEditEnabled: Boolean,
 ) {
     CodexDeletableRow(
         ref = EntityRef.Species(species.id),
         eventSink = eventSink,
-        swipeEditEnabled = swipeEditEnabled,
     ) {
         SpeciesCodexCard(
             item = species,
@@ -83,7 +81,7 @@ internal fun CodexSpeciesList(
         state.species.isNotEmpty() ->
             CodexLazyColumn(modifier) {
                 items(state.species, key = { it.id }) { species ->
-                    SpeciesRow(species, state.eventSink, state.swipeEditEnabled)
+                    SpeciesRow(species, state.eventSink)
                 }
             }
         state.tabCounts.species == 0 ->

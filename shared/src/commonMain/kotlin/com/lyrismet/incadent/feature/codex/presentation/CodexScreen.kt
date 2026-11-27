@@ -1,8 +1,6 @@
 package com.lyrismet.incadent.feature.codex.presentation
 
 import com.lyrismet.incadent.core.designsystem.StatusColor
-import com.lyrismet.incadent.core.preferences.EntityEditMode
-import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.core.swipehint.SwipeHintTarget
 import com.lyrismet.incadent.core.toast.ToastMessage
 import com.lyrismet.incadent.domain.model.EntityKind
@@ -216,14 +214,12 @@ data class CodexState(
     val activeSheet: CodexSheet? = null,
     // the records have not arrived yet, so the lists must not claim they are empty
     val isLoading: Boolean = true,
-    val editMode: EntityEditMode = EntityEditMode.QUICK,
-    // the in-place editing of the open card, quick mode only
+    // the in-place editing of the open card
     val quick: QuickEditState = QuickEditState(),
     // what the open card's notes mention that its fields could take, empty in an archived campaign
     val linkOffers: List<LinkOffer> = emptyList(),
     // the row the one-time swipe hint peeks on, and the direction captured when it started - see core/swipehint
     val swipeHintTarget: SwipeHintTarget<EntityRef>? = null,
-    val swipeHintDirection: SwipeHintDirection = SwipeHintDirection.DELETE_ONLY,
     val toast: ToastMessage? = null,
     // set while a delete waits on the "notes still mention this record" warning
     val deleteWarning: CodexDeleteWarning? = null,
@@ -278,10 +274,6 @@ sealed interface CodexEvent : CircuitUiEvent {
     data class EmptyActionClicked(
         val entryType: EntityKind,
         val name: String,
-    ) : CodexEvent
-
-    data class EditEntryRequested(
-        val ref: EntityRef,
     ) : CodexEvent
 
     data object EntityDeleteConfirmed : CodexEvent

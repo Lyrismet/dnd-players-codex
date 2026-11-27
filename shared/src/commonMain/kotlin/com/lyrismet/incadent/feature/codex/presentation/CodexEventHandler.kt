@@ -116,12 +116,6 @@ internal class CodexEventHandler(
                     formController.onAddEntryClicked(type)
                 }
             is CodexEvent.EmptyActionClicked -> formController.onAddEntryClicked(event.entryType, event.name)
-            is CodexEvent.EditEntryRequested ->
-                if (event.ref is EntityRef.Item) {
-                    fields.items.open(event.ref.id, records)
-                } else {
-                    formController.onEditEntryRequested(event.ref, scope)
-                }
             is CodexEvent.PlaceSectionToggled -> {
                 val folded = fields.collapsedPlaceIds.value
                 fields.collapsedPlaceIds.value =

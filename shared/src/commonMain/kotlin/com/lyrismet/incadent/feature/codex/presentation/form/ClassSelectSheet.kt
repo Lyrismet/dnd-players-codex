@@ -90,7 +90,7 @@ fun ClassSelectSheet(
                 if (it.isBlank()) subclass = ""
             }
             if (picked.isNotBlank()) SubclassField(picked, subclass) { subclass = it }
-            select.level?.let { step -> LevelStep(level, step.max) { level = it } }
+            select.level?.takeIf { it.showLevel }?.let { step -> LevelStep(level, step.max) { level = it } }
             FormPrimaryButton(
                 text = stringResource(Res.string.class_sheet_done),
                 enabled = select.level == null || picked.isNotBlank(),

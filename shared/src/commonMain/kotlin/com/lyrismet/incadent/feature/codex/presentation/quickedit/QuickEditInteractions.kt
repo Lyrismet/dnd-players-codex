@@ -18,6 +18,7 @@ import com.lyrismet.incadent.core.preferences.AppLanguage
 import com.lyrismet.incadent.core.undo.UndoAction
 import com.lyrismet.incadent.core.undo.UndoController
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.grouping.classEntriesOf
 import com.lyrismet.incadent.feature.codex.domain.grouping.withRecentPlaces
 import com.lyrismet.incadent.feature.codex.domain.model.CodexRecords
 import com.lyrismet.incadent.feature.codex.domain.model.Location
@@ -79,13 +80,15 @@ private fun classSelectOf(
                 }?.let { ClassSelectState(it.characterClass, it.subclass) }
         is EntityRef.Party ->
             records.parties
-                .firstOrNull { it.id == ref.id && it.classes.size < 2 }
-                ?.let { ClassSelectState(it.characterClass, it.subclass) }
+                .firstOrNull {
+                    it.id == ref.id &&
+                        classEntriesOf(it.classes, it.characterClass, it.subclass, it.level).isEmpty()
+                }?.let { ClassSelectState(it.characterClass, it.subclass) }
         else -> null
     }
 }
 
-// the classes of a party member who has several, null for everyone else
+// the classes of a party member who has any, so a second one can be added from the list
 private fun classListOf(
     edit: InlineEdit?,
     ref: EntityRef?,
@@ -94,8 +97,8 @@ private fun classListOf(
     if (edit?.field != QuickEditField.CHARACTER_CLASS || ref !is EntityRef.Party) return null
     return records.parties
         .firstOrNull { it.id == ref.id }
-        ?.classes
-        ?.takeIf { it.size >= 2 }
+        ?.let { classEntriesOf(it.classes, it.characterClass, it.subclass, it.level) }
+        ?.takeIf { it.isNotEmpty() }
 }
 
 /** the open-editor flow every card that supports quick edits delegates to - the presenter owns the state */
