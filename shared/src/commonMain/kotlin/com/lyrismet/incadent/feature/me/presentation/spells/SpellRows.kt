@@ -11,14 +11,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppDivider
 import com.lyrismet.incadent.core.designsystem.component.appCard
+import com.lyrismet.incadent.core.format.toRomanNumeral
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
-import com.lyrismet.incadent.feature.codex.domain.model.atRank
+import com.lyrismet.incadent.feature.codex.domain.model.SpellEffect
+import com.lyrismet.incadent.feature.codex.domain.model.atShown
+import com.lyrismet.incadent.feature.codex.domain.model.pinnedCircle
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_spells_row_free
 import org.jetbrains.compose.resources.stringResource
@@ -73,7 +77,31 @@ private fun SpellRow(
             }
             DetailLine(spell, characterLevel)
         }
+        if (!spell.isCantrip) CircleMark(spell)
         Text("›", style = MaterialTheme.typography.titleMedium, color = AppPalette.TextTertiary)
+    }
+}
+
+/** the circle of the spell in big letters, a pinned one shows its own circle small, an arrow and the pinned one lit */
+@Composable
+private fun CircleMark(spell: CharacterSpell) {
+    val pinned = spell.pinnedCircle
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        if (pinned == null) {
+            Text(
+                spell.level.toRomanNumeral(),
+                style = MaterialTheme.typography.titleMedium,
+                color = AppPalette.TextSecondary,
+            )
+        } else {
+            Text(spell.level.toRomanNumeral(), style = AppText.caption, color = AppPalette.TextTertiary)
+            Text("→", style = AppText.caption, color = AppPalette.TextTertiary)
+            Text(
+                pinned.toRomanNumeral(),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = AppPalette.GoldBright,
+            )
+        }
     }
 }
 
@@ -84,7 +112,7 @@ private fun DetailLine(
     characterLevel: Int,
 ) {
     val range = spell.range.trim()
-    val at = spell.atRank(characterLevel)
+    val at = spell.atShown(characterLevel)
     if (spell.hasFreeCasts) {
         val free = stringResource(Res.string.me_spells_row_free, spell.freeLeft, spell.freeMax)
         Text(
@@ -94,10 +122,17 @@ private fun DetailLine(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-    } else if (at.damage.any { it.dice.isNotBlank() }) {
+    } else if (at.damage.any { it.dice.isNotBlank() || it.effect is SpellEffect.Condition }) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DamageLine(at.damage, at.projectiles, AppText.caption)
-            if (spell.growsWithLevel) Text("↑", style = AppText.caption, color = AppPalette.Arcane)
+            StatesChip(at.damage.mapNotNull { it.effect as? SpellEffect.Condition })
+            if (spell.growsWithLevel) {
+                Text(
+                    "↑" + (spell.pinnedCircle?.toRomanNumeral().orEmpty()),
+                    style = AppText.caption,
+                    color = AppPalette.Arcane,
+                )
+            }
             if (range.isNotEmpty()) {
                 Text(
                     "· $range",
@@ -126,4 +161,18 @@ private fun DetailLine(
             )
         }
     }
+}
+
+@Composable
+private fun StatesChip(states: List<SpellEffect.Condition>) {
+    if (states.isEmpty()) return
+    SpellEffectGlyph(states.first(), size = 12.dp)
+    val names = states.map { effectLabel(it) }
+    Text(
+        names.joinToString(", "),
+        style = AppText.caption,
+        color = AppPalette.TextSecondary,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
 }

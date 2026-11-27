@@ -28,7 +28,8 @@ CREATE TABLE party_member (
     photo_source BLOB,
     hp_max_approx INTEGER AS Boolean NOT NULL DEFAULT 0,
     hp_bonus_per_level INTEGER NOT NULL DEFAULT 0,
-    last_level_gain INTEGER
+    last_level_gain INTEGER,
+    classes TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX party_member_campaign_id ON party_member(campaign_id);
@@ -39,7 +40,7 @@ CREATE INDEX party_member_fell_combat_id ON party_member(fell_combat_id);
 selectAll:
 SELECT id, name, character_class, subclass, race, level, player_name, is_player_character, presence, hp_max, hp_current,
     description, fallen, fell_combat_id, portrait_thumb, origin_id, vulnerabilities, hp_max_approx,
-    hp_bonus_per_level, last_level_gain
+    hp_bonus_per_level, last_level_gain, classes
 FROM party_member
 WHERE campaign_id = ?
 ORDER BY name;
@@ -47,24 +48,24 @@ ORDER BY name;
 selectById:
 SELECT id, name, character_class, subclass, race, level, player_name, is_player_character, presence, hp_max, hp_current,
     description, fallen, fell_combat_id, portrait_thumb, portrait, origin_id, vulnerabilities, photo_source, hp_max_approx,
-    hp_bonus_per_level, last_level_gain
+    hp_bonus_per_level, last_level_gain, classes
 FROM party_member
 WHERE id = ?;
 
 insert:
-INSERT INTO party_member(name, character_class, subclass, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, portrait, portrait_thumb, campaign_id, origin_id, vulnerabilities, photo_source)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO party_member(name, character_class, subclass, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, portrait, portrait_thumb, campaign_id, origin_id, vulnerabilities, photo_source, classes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- puts a deleted record back under its old id, so the "@" tokens in notes find it again
 insertWithId:
-INSERT INTO party_member(id, name, character_class, subclass, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, fallen, fell_combat_id, portrait, portrait_thumb, campaign_id, origin_id, vulnerabilities, photo_source)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO party_member(id, name, character_class, subclass, race, level, player_name, is_player_character, presence, hp_max, hp_current, description, fallen, fell_combat_id, portrait, portrait_thumb, campaign_id, origin_id, vulnerabilities, photo_source, classes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- the photo is written on its own, so saving a list-level model never touches it
 update:
 UPDATE party_member
 SET name = ?, character_class = ?, subclass = ?, race = ?, level = ?, player_name = ?, is_player_character = ?, presence = ?,
-    hp_max = ?, hp_current = ?, description = ?
+    hp_max = ?, hp_current = ?, description = ?, classes = ?
 WHERE id = ?;
 
 -- the fall is written on its own, so saving the form of a character never brings them back

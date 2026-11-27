@@ -117,6 +117,7 @@ class MergeExchangeTest {
             originId,
             "",
             null,
+            "",
         )
         return database.partyMemberQueries.lastInsertRowId().executeAsOne()
     }

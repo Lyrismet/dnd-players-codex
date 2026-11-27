@@ -137,6 +137,8 @@ sealed interface FileRecord {
         val armorClassFrom: String = "",
         val deathSuccesses: Int = 0,
         val deathFailures: Int = 0,
+        // the classes of a multiclass character as the column stores them, empty for a single class
+        val classes: String = "",
     ) : FileRecord
 
     /** the sheet of a party member of a personal copy, the wallet is part of it */

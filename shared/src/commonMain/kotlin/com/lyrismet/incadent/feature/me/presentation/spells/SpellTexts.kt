@@ -13,21 +13,41 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.feature.codex.domain.model.CastKind
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
 import com.lyrismet.incadent.feature.codex.domain.model.DurationUnit
+import com.lyrismet.incadent.feature.codex.domain.model.SpellCondition
 import com.lyrismet.incadent.feature.codex.domain.model.SpellDamage
 import com.lyrismet.incadent.feature.codex.domain.model.SpellEffect
 import com.lyrismet.incadent.feature.codex.presentation.summary.damageTypeLabels
 import incadent.shared.generated.resources.Res
+import incadent.shared.generated.resources.me_spells_condition_advantage
+import incadent.shared.generated.resources.me_spells_condition_blinded
+import incadent.shared.generated.resources.me_spells_condition_charmed
+import incadent.shared.generated.resources.me_spells_condition_deafened
+import incadent.shared.generated.resources.me_spells_condition_disadvantage
+import incadent.shared.generated.resources.me_spells_condition_exhaustion
+import incadent.shared.generated.resources.me_spells_condition_frightened
+import incadent.shared.generated.resources.me_spells_condition_grappled
+import incadent.shared.generated.resources.me_spells_condition_incapacitated
+import incadent.shared.generated.resources.me_spells_condition_invisible
+import incadent.shared.generated.resources.me_spells_condition_paralyzed
+import incadent.shared.generated.resources.me_spells_condition_petrified
+import incadent.shared.generated.resources.me_spells_condition_poisoned
+import incadent.shared.generated.resources.me_spells_condition_prone
+import incadent.shared.generated.resources.me_spells_condition_restrained
+import incadent.shared.generated.resources.me_spells_condition_stunned
+import incadent.shared.generated.resources.me_spells_condition_unconscious
 import incadent.shared.generated.resources.me_spells_dur_day
 import incadent.shared.generated.resources.me_spells_dur_hour
 import incadent.shared.generated.resources.me_spells_dur_min
 import incadent.shared.generated.resources.me_spells_dur_rounds
 import incadent.shared.generated.resources.me_spells_duration_instant
 import incadent.shared.generated.resources.me_spells_effect_healing
+import incadent.shared.generated.resources.me_spells_effect_reduction
 import incadent.shared.generated.resources.me_spells_effect_temp_hp
 import incadent.shared.generated.resources.me_spells_kind_action
 import incadent.shared.generated.resources.me_spells_kind_bonus
 import incadent.shared.generated.resources.me_spells_kind_long
 import incadent.shared.generated.resources.me_spells_kind_reaction
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -77,6 +97,8 @@ internal fun effectLabel(effect: SpellEffect?): String =
         null -> ""
         SpellEffect.Healing -> stringResource(Res.string.me_spells_effect_healing)
         SpellEffect.TempHp -> stringResource(Res.string.me_spells_effect_temp_hp)
+        SpellEffect.Reduction -> stringResource(Res.string.me_spells_effect_reduction)
+        is SpellEffect.Condition -> stringResource(effect.kind.label())
         is SpellEffect.Damage -> damageTypeLabels()[effect.type].orEmpty()
     }
 
@@ -105,3 +127,26 @@ internal fun DamageLine(
 /** the name of the effect with a capital, for a field and a pick list where it stands alone */
 @Composable
 internal fun effectTitle(effect: SpellEffect?): String = effectLabel(effect).replaceFirstChar { it.uppercase() }
+
+private val ConditionLabels: Map<SpellCondition, StringResource> =
+    mapOf(
+        SpellCondition.ADVANTAGE to Res.string.me_spells_condition_advantage,
+        SpellCondition.DISADVANTAGE to Res.string.me_spells_condition_disadvantage,
+        SpellCondition.BLINDED to Res.string.me_spells_condition_blinded,
+        SpellCondition.CHARMED to Res.string.me_spells_condition_charmed,
+        SpellCondition.DEAFENED to Res.string.me_spells_condition_deafened,
+        SpellCondition.EXHAUSTION to Res.string.me_spells_condition_exhaustion,
+        SpellCondition.FRIGHTENED to Res.string.me_spells_condition_frightened,
+        SpellCondition.GRAPPLED to Res.string.me_spells_condition_grappled,
+        SpellCondition.INCAPACITATED to Res.string.me_spells_condition_incapacitated,
+        SpellCondition.INVISIBLE to Res.string.me_spells_condition_invisible,
+        SpellCondition.PARALYZED to Res.string.me_spells_condition_paralyzed,
+        SpellCondition.PETRIFIED to Res.string.me_spells_condition_petrified,
+        SpellCondition.POISONED to Res.string.me_spells_condition_poisoned,
+        SpellCondition.PRONE to Res.string.me_spells_condition_prone,
+        SpellCondition.RESTRAINED to Res.string.me_spells_condition_restrained,
+        SpellCondition.STUNNED to Res.string.me_spells_condition_stunned,
+        SpellCondition.UNCONSCIOUS to Res.string.me_spells_condition_unconscious,
+    )
+
+private fun SpellCondition.label(): StringResource = ConditionLabels.getValue(this)

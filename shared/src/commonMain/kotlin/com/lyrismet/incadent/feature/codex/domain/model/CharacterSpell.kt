@@ -91,6 +91,35 @@ sealed interface SpellEffect {
     data object Healing : SpellEffect
 
     data object TempHp : SpellEffect
+
+    /** dice that lower the damage the caster takes, as in a reaction that soaks a hit */
+    data object Reduction : SpellEffect
+
+    /** a state or an edge the spell puts on a target, it carries no dice */
+    data class Condition(
+        val kind: SpellCondition,
+    ) : SpellEffect
+}
+
+/** the states and edges a spell can put on a target */
+enum class SpellCondition {
+    ADVANTAGE,
+    DISADVANTAGE,
+    BLINDED,
+    CHARMED,
+    DEAFENED,
+    EXHAUSTION,
+    FRIGHTENED,
+    GRAPPLED,
+    INCAPACITATED,
+    INVISIBLE,
+    PARALYZED,
+    PETRIFIED,
+    POISONED,
+    PRONE,
+    RESTRAINED,
+    STUNNED,
+    UNCONSCIOUS,
 }
 
 /** one row of a spell's damage, the type may be left out */

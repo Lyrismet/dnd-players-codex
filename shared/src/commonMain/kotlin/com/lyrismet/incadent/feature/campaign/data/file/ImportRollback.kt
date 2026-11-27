@@ -5,6 +5,7 @@ import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.db.importJournal.SelectByCampaign
 import com.lyrismet.incadent.domain.model.EntityKind
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeKind
+import com.lyrismet.incadent.feature.codex.domain.grouping.normalizedClassesText
 import com.lyrismet.incadent.persistence.creatureTypeIdIn
 import kotlinx.serialization.builtins.ListSerializer
 import kotlin.io.encoding.Base64
@@ -82,6 +83,7 @@ internal class ImportRollback(
             row.hp_max,
             row.hp_current,
             row.description,
+            row.classes,
             previousId,
         )
     }
@@ -100,6 +102,7 @@ internal class ImportRollback(
             record.hpMax?.toLong(),
             record.hpCurrent?.toLong(),
             record.description,
+            normalizedClassesText(record.classes),
             record.id,
         )
         queries.setVitals(

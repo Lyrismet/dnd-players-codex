@@ -264,12 +264,25 @@ internal class MeEventHandler(
         when (action) {
             MenuAction.EDIT -> ui.edit = MeOverlay.EditCharacter(characterDraft(member, character.sheet.source))
             MenuAction.LEVEL_UP ->
-                ui.edit = MeOverlay.LevelUp(member.level ?: 0, 1, member.lastLevelGain ?: 0, member.hpMax != null)
+                ui.edit = levelUpOf(member)
             MenuAction.FILL -> ui.edit = MeOverlay.Fill(fillDraft(member, character))
             MenuAction.TOGGLE_SPELLS -> counters.setSpellsHidden(member, !character.spellsHidden)
             MenuAction.NOT_MINE -> actions.releaseMark(member)
         }
     }
+}
+
+// one class takes the levels at once, several ones let the player say how many each takes
+private fun levelUpOf(member: PartyMember): MeOverlay.LevelUp {
+    val several = member.classes.size >= 2
+    return MeOverlay.LevelUp(
+        from = member.level ?: 0,
+        levels = if (several) 0 else 1,
+        gain = member.lastLevelGain ?: 0,
+        hasMax = member.hpMax != null,
+        classes = member.classes,
+        added = member.classes.map { 0 },
+    )
 }
 
 private const val DEFAULT_ARMOR_CLASS = 10
@@ -294,6 +307,7 @@ private fun fillDraft(
         characterClass = member.characterClass,
         subclass = member.subclass,
         level = (member.level ?: 1).coerceIn(PartyStatRanges.level),
+        classes = member.classes,
         abilities = FillDraft().abilities + sheet.abilities,
         saves = sheet.saves,
         marks = sheet.skillMarks,
@@ -318,6 +332,7 @@ private fun characterDraft(
         hpBonusPerLevel = member.hpBonusPerLevel,
         hpMax = member.hpMax,
         storedBonus = member.hpBonusPerLevel,
+        classes = member.classes,
     )
 
 /** true for the presses that change stored data, the others only move what the screen shows */

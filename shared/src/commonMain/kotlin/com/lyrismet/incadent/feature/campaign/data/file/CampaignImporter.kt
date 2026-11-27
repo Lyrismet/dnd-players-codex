@@ -18,6 +18,7 @@ import com.lyrismet.incadent.feature.campaign.domain.model.ImportResult
 import com.lyrismet.incadent.feature.campaign.domain.model.ImportTarget
 import com.lyrismet.incadent.feature.campaign.domain.model.RecordField
 import com.lyrismet.incadent.feature.campaign.domain.model.Resolution
+import com.lyrismet.incadent.feature.codex.domain.grouping.normalizedClassesText
 import com.lyrismet.incadent.feature.codex.domain.model.SheetRanges
 import com.lyrismet.incadent.feature.mention.domain.remapMentionTokens
 import com.lyrismet.incadent.persistence.creatureTypeIdIn
@@ -423,6 +424,7 @@ internal class CampaignImporter(
                                 it.description,
                                 it.fallen,
                                 subclass = it.subclass,
+                                classes = it.classes,
                             ).withVitals(id)
                     }
                 ExchangeKind.ITEM ->
@@ -727,6 +729,7 @@ internal class CampaignImporter(
                 origin,
                 record.vulnerabilities,
                 null,
+                normalizedClassesText(record.classes),
             )
             partyAdded++
             val id = queries.lastInsertRowId().executeAsOne()
@@ -842,6 +845,7 @@ internal class CampaignImporter(
                 row.hp_max,
                 row.hp_current,
                 row.description,
+                row.classes,
                 id,
             )
             if (previous != 0L) journal.label(previous)
@@ -955,9 +959,12 @@ internal class CampaignImporter(
             val current = existingPartyById.getValue(id)
             partyJournaled += id
             takeExtras(id, record)
+            val pickedClass = pick.text(RecordField.CHARACTER_CLASS, current.character_class, record.characterClass)
+            // the list follows the class, taken from the file with it and kept when the player kept their own class
+            val takeClasses = pickedClass == record.characterClass && record.classes.isNotEmpty()
             database.partyMemberQueries.update(
                 pick.text(RecordField.NAME, current.name, record.name),
-                pick.text(RecordField.CHARACTER_CLASS, current.character_class, record.characterClass),
+                pickedClass,
                 pick.text(RecordField.SUBCLASS, current.subclass, record.subclass),
                 pick.text(RecordField.RACE, current.race, record.race),
                 pick.number(RecordField.LEVEL, current.level?.toInt(), record.level)?.toLong(),
@@ -973,6 +980,7 @@ internal class CampaignImporter(
                 } else {
                     current.description
                 },
+                if (takeClasses) normalizedClassesText(record.classes) else current.classes,
                 id,
             )
             database.partyMemberQueries.setVulnerabilities(

@@ -45,7 +45,6 @@ internal fun PinnedOverline(
         color = parts.emblem.color.foreground,
         onEditClicked =
             (if (item is EntitySummaryItem.ItemSummary) actions.onItemEditClicked else null)
-                .let { it ?: actions.onEditClicked }
                 ?.let { edit -> { edit(parts.ref) } },
         onClose = onClose,
     )

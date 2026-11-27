@@ -23,7 +23,6 @@ import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppText
 import com.lyrismet.incadent.core.designsystem.component.AppStepper
 import com.lyrismet.incadent.core.designsystem.component.FormNumberField
-import com.lyrismet.incadent.core.designsystem.component.FormTextField
 import com.lyrismet.incadent.core.designsystem.component.PillFill
 import com.lyrismet.incadent.core.designsystem.component.SectionOverline
 import com.lyrismet.incadent.core.designsystem.component.SelectablePill
@@ -38,17 +37,12 @@ import com.lyrismet.incadent.feature.me.domain.headerNumbers
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_ac_title
 import incadent.shared.generated.resources.me_fill_abilities_hint
-import incadent.shared.generated.resources.me_fill_class_label
-import incadent.shared.generated.resources.me_fill_class_placeholder
 import incadent.shared.generated.resources.me_fill_hp_max_label
-import incadent.shared.generated.resources.me_fill_level_label
 import incadent.shared.generated.resources.me_fill_proficiency_hint
 import incadent.shared.generated.resources.me_fill_proficiency_label
 import incadent.shared.generated.resources.me_fill_saves_label
 import incadent.shared.generated.resources.me_fill_skills_label
 import incadent.shared.generated.resources.me_fill_step4_hint
-import incadent.shared.generated.resources.me_fill_subclass_label
-import incadent.shared.generated.resources.me_fill_subclass_placeholder
 import incadent.shared.generated.resources.me_speed_title
 import incadent.shared.generated.resources.me_step_less
 import incadent.shared.generated.resources.me_step_more
@@ -61,20 +55,7 @@ internal fun StepClass(
     draft: FillDraft,
     send: (OverlayEvent) -> Unit,
 ) {
-    FormTextField(
-        label = stringResource(Res.string.me_fill_class_label),
-        value = draft.characterClass,
-        onChange = { send(OverlayEvent.TextChanged(OverlayField.CLASS, it)) },
-        placeholder = stringResource(Res.string.me_fill_class_placeholder),
-    )
-    FormTextField(
-        label = stringResource(Res.string.me_fill_subclass_label),
-        value = draft.subclass,
-        onChange = { send(OverlayEvent.TextChanged(OverlayField.SUBCLASS, it)) },
-        placeholder = stringResource(Res.string.me_fill_subclass_placeholder),
-    )
-    SectionOverline(stringResource(Res.string.me_fill_level_label), color = AppPalette.TextTertiary)
-    NumberRow(draft.level, send)
+    MeClassFields(draft.characterClass, draft.subclass, draft.level, draft.classes, send, placeholders = true)
 }
 
 @Composable

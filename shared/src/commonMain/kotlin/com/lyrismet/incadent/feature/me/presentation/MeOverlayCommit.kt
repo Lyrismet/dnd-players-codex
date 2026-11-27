@@ -35,7 +35,7 @@ internal fun MeActions.commit(
         is MeOverlay.Adjustment -> sheet(id) { it.withAdjustment(overlay.target, overlay.value, overlay.note) }
         is MeOverlay.Fill -> commitFill(member, overlay.draft)
         is MeOverlay.EditCharacter -> commitEdit(id, overlay.draft)
-        is MeOverlay.LevelUp -> levelUp(member, overlay.gain, overlay.levels)
+        is MeOverlay.LevelUp -> levelUp(member, overlay.gain, overlay.levels, overlay.added)
         is MeOverlay.HitPoints,
         is MeOverlay.Slots,
         is MeOverlay.Resource,
@@ -62,6 +62,7 @@ private fun MeActions.commitEdit(
                     subclass = draft.subclass.trim(),
                     race = draft.race.trim(),
                     level = draft.level,
+                    classes = draft.classes,
                     hpMax = newMax,
                     hpCurrent =
                         it.hpCurrent?.let { now ->
@@ -100,6 +101,7 @@ private fun MeActions.commitFill(
                         characterClass = draft.characterClass.trim().ifBlank { it.characterClass },
                         subclass = draft.subclass.trim(),
                         level = draft.level,
+                        classes = draft.classes,
                     ),
                 )
             }

@@ -30,6 +30,7 @@ internal fun CodexEntryFormFields.toPartyMember(): PartyMember {
         hpCurrent = party.hpCurrent ?: party.hpMax,
         description = description.trim(),
         portrait = portrait,
+        classes = party.classes,
     )
 }
 
@@ -71,6 +72,7 @@ internal fun PartyMember.toFields(ref: EntityRef.Party) =
                 level = level,
                 hpMax = hpMax,
                 hpCurrent = hpCurrent,
+                classes = classes,
             ),
     )
 

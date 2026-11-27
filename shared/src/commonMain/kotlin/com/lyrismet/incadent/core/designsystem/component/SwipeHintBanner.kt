@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.sp
 import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.AppShapes
-import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -44,9 +43,6 @@ import kotlinx.coroutines.launch
 
 // the mockup's showHint/maybeHint choreography (lines ~1339-1357) - all times are absolute from the trigger
 private const val PEEK_SHOW_DELAY_MS = 700L
-private const val BOTH_FIRST_LEG_MS = 700L // 700 -> 1400
-private const val BOTH_GAP_MS = 600L // 1400 -> 2000
-private const val BOTH_SECOND_LEG_MS = 700L // 2000 -> 2700
 private const val ONE_LEG_MS = 800L // 700 -> 1500
 private const val BANNER_TOTAL_MS = 9000L
 
@@ -79,10 +75,7 @@ class SwipeHintPlayback internal constructor(
  * launched alongside (not awaited by) the next delay so the schedule itself is untouched
  */
 @Composable
-fun rememberSwipeHintPlayback(
-    targetKey: Any?,
-    direction: SwipeHintDirection,
-): SwipeHintPlayback {
+fun rememberSwipeHintPlayback(targetKey: Any?): SwipeHintPlayback {
     val scope = rememberCoroutineScope()
     val playback = remember { SwipeHintPlayback(scope) }
     val density = LocalDensity.current
@@ -98,33 +91,20 @@ fun rememberSwipeHintPlayback(
 
                 delay(PEEK_SHOW_DELAY_MS)
                 playback.bannerVisible = true
-                val firstTarget =
-                    if (direction == SwipeHintDirection.EDIT_AND_DELETE) peekDistancePx else -peekDistancePx
-                animateTo(firstTarget)
-                if (direction == SwipeHintDirection.EDIT_AND_DELETE) {
-                    delay(BOTH_FIRST_LEG_MS)
-                    animateTo(0f)
-                    delay(BOTH_GAP_MS)
-                    animateTo(-peekDistancePx)
-                    delay(BOTH_SECOND_LEG_MS)
-                    animateTo(0f)
-                    delay(BANNER_TOTAL_MS - PEEK_SHOW_DELAY_MS - BOTH_FIRST_LEG_MS - BOTH_GAP_MS - BOTH_SECOND_LEG_MS)
-                } else {
-                    delay(ONE_LEG_MS)
-                    animateTo(0f)
-                    delay(BANNER_TOTAL_MS - PEEK_SHOW_DELAY_MS - ONE_LEG_MS)
-                }
+                animateTo(-peekDistancePx)
+                delay(ONE_LEG_MS)
+                animateTo(0f)
+                delay(BANNER_TOTAL_MS - PEEK_SHOW_DELAY_MS - ONE_LEG_MS)
                 playback.bannerVisible = false
             }
     }
     return playback
 }
 
-/** the floating "swipe to..." teaching banner above the bottom nav - gold/maroon badges match [direction] */
+/** the floating "swipe to..." teaching banner above the bottom nav */
 @Composable
 fun SwipeHintBanner(
     visible: Boolean,
-    direction: SwipeHintDirection,
     title: String,
     subtitle: String,
     dismissLabel: String,
@@ -141,7 +121,13 @@ fun SwipeHintBanner(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SwipeHintBadges(direction)
+            SwipeHintArrowBadge(
+                symbol = "‹‹",
+                width = 40.dp,
+                background = AppPalette.Maroon,
+                textColor = Color.White,
+                letterSpacing = (-2).sp,
+            )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     title,
@@ -167,37 +153,6 @@ fun SwipeHintBanner(
                 )
             }
         }
-    }
-}
-
-// the mockup draws plain arrow glyphs on a colored plate here, not the quill/bin icons the real swipe uses
-@Composable
-private fun SwipeHintBadges(direction: SwipeHintDirection) {
-    when (direction) {
-        SwipeHintDirection.EDIT_AND_DELETE ->
-            Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                SwipeHintArrowBadge(
-                    symbol = "→",
-                    width = 30.dp,
-                    background = AppPalette.GoldDim,
-                    textColor = AppPalette.Background,
-                )
-                SwipeHintArrowBadge(
-                    symbol = "←",
-                    width = 30.dp,
-                    background = AppPalette.Maroon,
-                    textColor = Color.White,
-                )
-            }
-
-        SwipeHintDirection.DELETE_ONLY ->
-            SwipeHintArrowBadge(
-                symbol = "‹‹",
-                width = 40.dp,
-                background = AppPalette.Maroon,
-                textColor = Color.White,
-                letterSpacing = (-2).sp,
-            )
     }
 }
 

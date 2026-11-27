@@ -12,6 +12,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.CoinPurseChange
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.FifthEditionRules
+import com.lyrismet.incadent.feature.codex.domain.model.PartyClass
 import com.lyrismet.incadent.feature.codex.domain.model.Proficiency
 import com.lyrismet.incadent.feature.codex.domain.model.ResourceTemplate
 import com.lyrismet.incadent.feature.codex.domain.model.RestSummary
@@ -75,6 +76,8 @@ data class MeCharacter(
     val characterClass: String,
     val subclass: String,
     val level: Int?,
+    // two classes or more, empty while the character has one
+    val classes: List<PartyClass> = emptyList(),
     val race: String,
     val fallen: Boolean,
     val vitals: CharacterVitals,
@@ -205,6 +208,9 @@ sealed interface MeOverlay {
         val levels: Int,
         val gain: Int,
         val hasMax: Boolean,
+        // the classes of a character with several and the levels each takes, [levels] is their sum
+        val classes: List<PartyClass> = emptyList(),
+        val added: List<Int> = emptyList(),
     ) : MeOverlay
 
     /** the slots per level, 0 for none */
@@ -257,6 +263,8 @@ data class FillDraft(
     val speed: Int = 30,
     // the steps the player left with "skip", they write nothing
     val skipped: Set<Int> = emptySet(),
+    // two classes or more with a level each, empty while the character has one class
+    val classes: List<PartyClass> = emptyList(),
 ) {
     companion object {
         const val STEP_CLASS = 1
@@ -280,6 +288,8 @@ data class CharacterDraft(
     val hpMax: Int?,
     val storedBonus: Int,
     val applyCatchUp: Boolean = false,
+    // two classes or more with a level each, empty while the character has one class
+    val classes: List<PartyClass> = emptyList(),
 ) {
     val catchUp: Int? get() = hpMax?.let { (hpBonusPerLevel - storedBonus) * level }?.takeIf { it != 0 }
 
@@ -503,6 +513,16 @@ sealed interface OverlayEvent {
 
     data class LevelsStepped(
         val delta: Int,
+    ) : OverlayEvent
+
+    data class ClassLevelsStepped(
+        val index: Int,
+        val delta: Int,
+    ) : OverlayEvent
+
+    /** the whole class list changed in the class sheet, the class, subclass and level fields follow it */
+    data class ClassesChanged(
+        val classes: List<PartyClass>,
     ) : OverlayEvent
 
     data class TextChanged(

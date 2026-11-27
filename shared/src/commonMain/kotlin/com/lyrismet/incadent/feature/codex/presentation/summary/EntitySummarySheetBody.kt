@@ -138,7 +138,6 @@ private fun NpcSummaryBody(
         emblem = npc.emblem,
         title = npc.name,
         subtitle = npc.subtitle,
-        showEditHint = actions.onEditClicked != null,
         strikeThrough = npc.isDead,
         quick = actions.quickEdit,
     )
@@ -196,14 +195,12 @@ private fun LocationSummaryBody(
             cover = location.cover,
             title = location.name,
             quick = actions.quickEdit,
-            showEditHint = actions.onEditClicked != null,
         )
     }
     EntityHeader(
         emblem = location.emblem,
         title = location.name,
         subtitle = location.subtitle,
-        showEditHint = actions.onEditClicked != null,
         quick = actions.quickEdit,
         cover = if (hasCover) coverSlot else null,
     )
@@ -231,7 +228,6 @@ private fun QuestSummaryBody(
         emblem = quest.emblem,
         title = quest.title,
         subtitle = quest.subtitle,
-        showEditHint = actions.onEditClicked != null,
         quick = actions.quickEdit,
     )
     val statusTitle = stringResource(Res.string.entity_sheet_status_label)
@@ -264,7 +260,6 @@ internal fun EntityHeader(
     subtitle: String,
     modifier: Modifier = Modifier,
     strikeThrough: Boolean = false,
-    showEditHint: Boolean = false,
     quick: QuickEditSheet? = null,
     // a place's cover - sits between the overline row and the emblem, like the mockup's `sh.hasCover`
     cover: (@Composable () -> Unit)? = null,
@@ -288,7 +283,7 @@ internal fun EntityHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (emblem.hasPortraitSlot) {
-                EntityPortraitSlot(emblem, title, quick, showEditHint = showEditHint)
+                EntityPortraitSlot(emblem, title, quick)
             } else {
                 EntityEmblemBox(emblem)
             }

@@ -253,6 +253,7 @@ class CampaignExporter(
                         name = it.name,
                         characterClass = it.character_class,
                         subclass = it.subclass,
+                        classes = it.classes,
                         vulnerabilities = it.vulnerabilities,
                         race = it.race,
                         level = it.level?.toInt(),

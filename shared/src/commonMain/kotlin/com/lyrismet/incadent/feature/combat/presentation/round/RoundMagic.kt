@@ -114,7 +114,7 @@ internal fun rememberRoundMagic(
             characterLevel = level,
             columns = columns,
             spells = spells,
-            openLevel = ui.openLevel?.takeIf { it in spellLevels(spells, columns) },
+            openLevel = ui.openLevel?.takeIf { it in spellLevels(columns) },
             card = spells.firstOrNull { it.id == ui.cardId },
             draft = ui.draft,
             block = ui.block,

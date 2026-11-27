@@ -58,7 +58,9 @@ fun encodeGrowth(growth: SpellGrowth): String {
             listOf(rule.target.name, rule.mode.name, rule.damageIndex, rule.every, escape(rule.add), steps)
                 .joinToString(FIELD_SEPARATOR.toString())
         }
-    return listOf(if (growth.enabled) "1" else "0", growth.cantrip.name, rules).joinToString(PART_SEPARATOR.toString())
+    val parts = listOf(if (growth.enabled) "1" else "0", growth.cantrip.name, rules)
+    // the pinned circle is written only when there is one, so a spell without it keeps its old text
+    return (if (growth.shownCircle > 0) parts + growth.shownCircle else parts).joinToString(PART_SEPARATOR.toString())
 }
 
 fun decodeGrowth(text: String): SpellGrowth {
@@ -73,6 +75,7 @@ fun decodeGrowth(text: String): SpellGrowth {
                 ?.split(RULE_SEPARATOR)
                 ?.mapNotNull { decodeRule(it) }
                 .orEmpty(),
+        shownCircle = parts.getOrNull(PART_COUNT + 1)?.toIntOrNull() ?: 0,
     )
 }
 

@@ -87,10 +87,11 @@ internal class MeActions(
         member: PartyMember,
         gain: Int,
         levels: Int,
+        perClass: List<Int> = emptyList(),
     ) {
         scope.launch {
             val before = party.getById(member.id) ?: return@launch
-            val after = before.leveledUp(gain, levels) ?: return@launch
+            val after = before.leveledUp(gain, levels, perClass) ?: return@launch
             val followers = if (followsPartyLevel()) party.followersOf(before, after) else emptyList()
             party.saveLevelUp(after, followers.map { it.copy(level = after.level) })
             val title = getString(Res.string.me_level_up_toast, before.name, after.level ?: 0)

@@ -20,23 +20,38 @@ import com.lyrismet.incadent.core.designsystem.AppFontSize
 import com.lyrismet.incadent.core.designsystem.AppPalette
 import com.lyrismet.incadent.core.designsystem.component.icons.AppIcons
 
-/** the pen and the word "Edit" with no frame, the way into an edit mode (the queue of a fight, the session list) */
+/**
+ * the pen and the word "Edit" with no frame, the way into an edit mode (the queue of a fight, the session list).
+ * [compact] is the small one for the end of a section caption, [withPen] false leaves the pen out (a "+ Add" word).
+ */
 @Composable
 fun AppEditButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
+    withPen: Boolean = true,
 ) {
     Row(
-        modifier = modifier.clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier =
+            modifier
+                .clickable(onClick = onClick)
+                .padding(horizontal = if (compact) 6.dp else 8.dp, vertical = if (compact) 4.dp else 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(if (compact) 5.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(AppIcons.Pencil, contentDescription = null, tint = AppPalette.Gold, modifier = Modifier.size(16.dp))
+        if (withPen) {
+            Icon(
+                AppIcons.Pencil,
+                contentDescription = null,
+                tint = AppPalette.Gold,
+                modifier = Modifier.size(if (compact) 12.dp else 16.dp),
+            )
+        }
         Text(
             text = text,
             color = AppPalette.Gold,
-            fontSize = AppFontSize.MediumPlus,
+            fontSize = if (compact) AppFontSize.Small else AppFontSize.MediumPlus,
             fontWeight = FontWeight.SemiBold,
         )
     }

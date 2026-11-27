@@ -49,6 +49,7 @@ class PersonalCopyExchangeTest {
             originId,
             "",
             null,
+            "",
         )
         return database.partyMemberQueries.lastInsertRowId().executeAsOne()
     }

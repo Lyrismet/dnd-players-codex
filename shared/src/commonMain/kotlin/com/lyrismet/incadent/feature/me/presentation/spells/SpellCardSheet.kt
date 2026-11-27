@@ -90,7 +90,12 @@ internal fun SpellCardSheet(
                 DamageBlock(spell, state.characterLevel, if (editable) hold else null)
                 CardGrid(spell, if (editable) hold else null)
                 CardDescription(spell, state, send)
-                GrowthReference(spell, state, if (editable) hold else null)
+                GrowthReference(
+                    spell,
+                    state,
+                    if (editable) hold else null,
+                    onPin = if (editable) ({ send(SpellsEvent.CircleShown(spell.id, it)) }) else null,
+                )
                 if (editable) SpendChips(spell, state.columns, send)
             }
             UndoToast(

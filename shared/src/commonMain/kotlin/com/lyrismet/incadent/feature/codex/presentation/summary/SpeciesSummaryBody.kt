@@ -18,7 +18,6 @@ internal fun SpeciesSummaryBody(
         emblem = species.emblem,
         title = species.name,
         subtitle = seen,
-        showEditHint = actions.onEditClicked != null,
         quick = actions.quickEdit,
     )
     species.noteQuantity?.let { SpeciesNoteQuantityRow(it, actions.onSpeciesNoteQuantityStep) }

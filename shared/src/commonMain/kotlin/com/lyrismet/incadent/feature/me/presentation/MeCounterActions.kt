@@ -6,6 +6,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
 import com.lyrismet.incadent.feature.codex.domain.model.SPELL_LEVELS
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterResourceRepository
 import com.lyrismet.incadent.feature.codex.domain.repository.CharacterSheetRepository
+import com.lyrismet.incadent.feature.me.domain.duplicateSlotRows
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_resource_deleted_title
 import incadent.shared.generated.resources.me_slot_name
@@ -58,11 +59,14 @@ internal class MeCounterActions(
     ) {
         scope.launch {
             // read fresh, a slot row with no max is not a column but still counts as the level's row
+            val all = resources.observe(memberId).first()
+            // a level stored twice by a double press keeps one row
+            val extra = duplicateSlotRows(all)
+            extra.forEach { resources.delete(it.id) }
+            val dropped = extra.map { it.id }.toSet()
             val stored =
-                resources
-                    .observe(memberId)
-                    .first()
-                    .filter { it.isSpellSlot }
+                all
+                    .filter { it.isSpellSlot && it.id !in dropped }
                     .associateBy { it.slotLevel }
             SPELL_LEVELS.forEach { level ->
                 val max = maxima[level] ?: 0

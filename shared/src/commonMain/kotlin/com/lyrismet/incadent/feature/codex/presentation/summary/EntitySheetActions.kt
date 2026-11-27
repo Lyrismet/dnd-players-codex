@@ -18,7 +18,6 @@ data class EntitySummarySheetActions(
     val onNpcLifeSelected: (npcId: Long, lifeState: NpcLifeState) -> Unit,
     val onQuestStatusSelected: (questId: Long, status: QuestStatus) -> Unit,
     val onRelatedNoteClicked: (sessionNoteId: Long, entryId: Long) -> Unit,
-    val onEditClicked: ((EntityRef) -> Unit)? = null,
     // null hides the delete button - only an editable codex card offers it
     val onDeleteClicked: ((EntityRef) -> Unit)? = null,
     // null hides the presence picker - only the codex manages party membership

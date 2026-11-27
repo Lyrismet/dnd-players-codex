@@ -44,7 +44,6 @@ internal fun ItemSummaryBody(
         emblem = item.emblem,
         title = item.name,
         subtitle = "",
-        showEditHint = false,
     )
     Column(
         modifier = Modifier.fillMaxWidth().appCard(shape = AppShapes.Card, background = AppPalette.Background),

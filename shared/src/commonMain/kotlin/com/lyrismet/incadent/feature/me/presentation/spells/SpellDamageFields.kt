@@ -38,6 +38,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.MAX_DAMAGE_ROWS
 import com.lyrismet.incadent.feature.codex.domain.model.PROJECTILES_RANGE
+import com.lyrismet.incadent.feature.codex.domain.model.SpellCondition
 import com.lyrismet.incadent.feature.codex.domain.model.SpellDamage
 import com.lyrismet.incadent.feature.codex.domain.model.SpellEffect
 import com.lyrismet.incadent.feature.codex.domain.model.isValidDice
@@ -45,7 +46,9 @@ import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_spells_damage_add
 import incadent.shared.generated.resources.me_spells_damage_dice_hint
 import incadent.shared.generated.resources.me_spells_damage_more
+import incadent.shared.generated.resources.me_spells_damage_type_conditions
 import incadent.shared.generated.resources.me_spells_damage_type_hint
+import incadent.shared.generated.resources.me_spells_damage_type_reduction_short
 import incadent.shared.generated.resources.me_spells_damage_type_restore
 import incadent.shared.generated.resources.me_spells_damage_type_row
 import incadent.shared.generated.resources.me_spells_damage_type_taken
@@ -61,9 +64,9 @@ import org.jetbrains.compose.resources.stringResource
 private val DiceWidth = 96.dp
 private val ROW_HEIGHT = 46.dp
 
-// healing and temporary hit points sit on top of the thirteen damage types
-private val Effects: List<SpellEffect> =
-    listOf(SpellEffect.Healing, SpellEffect.TempHp) + DamageType.entries.map { SpellEffect.Damage(it) }
+private val RestoreEffects: List<SpellEffect> = listOf(SpellEffect.Healing, SpellEffect.TempHp, SpellEffect.Reduction)
+private val DamageEffects: List<SpellEffect> = DamageType.entries.map { SpellEffect.Damage(it) }
+private val ConditionEffects: List<SpellEffect> = SpellCondition.entries.map { SpellEffect.Condition(it) }
 
 /** the damage rows of the form, each one dice and a type, and the projectile count that multiplies them all */
 @Composable
@@ -221,13 +224,22 @@ private fun EffectSheet(
         ) {
             EffectSection(
                 stringResource(Res.string.me_spells_damage_type_restore),
-                Effects.take(RESTORE_COUNT),
+                RestoreEffects,
                 chosen,
                 index,
                 rows,
                 onPick,
             )
-            EffectSection(title, Effects.drop(RESTORE_COUNT), chosen, index, rows, onPick)
+            EffectSection(title, DamageEffects, chosen, index, rows, onPick)
+            EffectSection(
+                stringResource(Res.string.me_spells_damage_type_conditions),
+                ConditionEffects,
+                chosen,
+                index,
+                rows,
+                onPick,
+                perRow = CONDITIONS_PER_ROW,
+            )
         }
     }
 }
@@ -240,10 +252,11 @@ private fun EffectSection(
     index: Int,
     rows: List<SpellDamage>,
     onPick: (SpellEffect?) -> Unit,
+    perRow: Int = TILES_PER_ROW,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionOverline(title.uppercase(), color = AppPalette.TextTertiary)
-        effects.chunked(TILES_PER_ROW).forEach { line ->
+        effects.chunked(perRow).forEach { line ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 line.forEach { effect ->
                     val taken = rows.indexOfFirst { it.effect == effect }.takeIf { it >= 0 && it != index }
@@ -259,7 +272,7 @@ private fun EffectSection(
                         )
                     }
                 }
-                repeat(TILES_PER_ROW - line.size) { Spacer(Modifier.weight(1f)) }
+                repeat(perRow - line.size) { Spacer(Modifier.weight(1f)) }
             }
         }
     }
@@ -289,10 +302,10 @@ private fun EffectTile(
         SpellEffectGlyph(effect, size = 17.dp)
         Column {
             Text(
-                if (effect == SpellEffect.TempHp) {
-                    stringResource(Res.string.me_spells_damage_type_temp_short)
-                } else {
-                    effectLabel(effect).lowercase()
+                when (effect) {
+                    SpellEffect.TempHp -> stringResource(Res.string.me_spells_damage_type_temp_short)
+                    SpellEffect.Reduction -> stringResource(Res.string.me_spells_damage_type_reduction_short)
+                    else -> effectLabel(effect).lowercase()
                 },
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
                 color = AppPalette.TextPrimary,
@@ -310,7 +323,7 @@ private fun EffectTile(
     }
 }
 
-private const val RESTORE_COUNT = 2
 private const val TILES_PER_ROW = 3
+private const val CONDITIONS_PER_ROW = 2
 private const val TAKEN_ALPHA = 0.5f
 private val EFFECT_TILE_HEIGHT = 48.dp

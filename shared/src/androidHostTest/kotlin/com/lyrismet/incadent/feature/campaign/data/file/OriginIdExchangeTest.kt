@@ -78,6 +78,7 @@ class OriginIdExchangeTest {
             "hero-origin",
             "",
             null,
+            "",
         )
         database.sessionNoteQueries.insert("Day one", date, date, 5L, source, "session-origin")
         val session = database.sessionNoteQueries.lastInsertRowId().executeAsOne()

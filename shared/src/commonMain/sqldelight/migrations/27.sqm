@@ -1,0 +1,1 @@
+ALTER TABLE party_member ADD COLUMN classes TEXT NOT NULL DEFAULT '';

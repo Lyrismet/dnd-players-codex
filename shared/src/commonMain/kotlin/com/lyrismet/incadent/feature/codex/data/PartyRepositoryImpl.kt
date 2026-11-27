@@ -8,9 +8,12 @@ import com.lyrismet.incadent.core.coroutines.DatabaseDispatcher
 import com.lyrismet.incadent.core.identity.orNewOriginId
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.domain.model.Photo
+import com.lyrismet.incadent.feature.codex.domain.grouping.decodeClasses
 import com.lyrismet.incadent.feature.codex.domain.grouping.decodeVulnerabilities
+import com.lyrismet.incadent.feature.codex.domain.grouping.encodeClasses
 import com.lyrismet.incadent.feature.codex.domain.grouping.encodeVulnerabilities
 import com.lyrismet.incadent.feature.codex.domain.grouping.with
+import com.lyrismet.incadent.feature.codex.domain.grouping.withClassSummary
 import com.lyrismet.incadent.feature.codex.domain.model.DamageState
 import com.lyrismet.incadent.feature.codex.domain.model.DamageType
 import com.lyrismet.incadent.feature.codex.domain.model.PartyMember
@@ -123,7 +126,8 @@ class PartyRepositoryImpl(
     override suspend fun upsert(entity: PartyMember): Long =
         withContext(DatabaseDispatcher) { database.transactionWithResult { upsertRow(entity) } }
 
-    private fun upsertRow(entity: PartyMember): Long {
+    private fun upsertRow(member: PartyMember): Long {
+        val entity = member.withClassSummary()
         val stored =
             if (entity.id == 0L) null else queries.selectById(entity.id, ::toDomainFull).executeAsOneOrNull()
         val id =
@@ -140,6 +144,7 @@ class PartyRepositoryImpl(
                     hp_max = entity.hpMax?.toLong(),
                     hp_current = entity.hpCurrent?.toLong(),
                     description = entity.description,
+                    classes = entity.classes.encodeClasses(),
                     id = entity.id,
                 )
                 queries.setHpMaxApprox(hpMaxApproxAfter(stored, entity), entity.id)
@@ -180,6 +185,7 @@ class PartyRepositoryImpl(
                 origin_id = member.originId.orNewOriginId(),
                 vulnerabilities = member.vulnerabilities.encodeVulnerabilities(),
                 photo_source = member.portrait?.source,
+                classes = member.classes.encodeClasses(),
             )
             return member.id
         }
@@ -201,6 +207,7 @@ class PartyRepositoryImpl(
             origin_id = member.originId.orNewOriginId(),
             vulnerabilities = member.vulnerabilities.encodeVulnerabilities(),
             photo_source = member.portrait?.source,
+            classes = member.classes.encodeClasses(),
         )
         return queries.lastInsertRowId().executeAsOne()
     }
@@ -234,6 +241,7 @@ class PartyRepositoryImpl(
         hpMaxApprox: Boolean,
         hpBonusPerLevel: Long,
         lastLevelGain: Long?,
+        classes: String,
     ) = PartyMember(
         id = id,
         name = name,
@@ -255,6 +263,7 @@ class PartyRepositoryImpl(
         hpMaxApprox = hpMaxApprox,
         hpBonusPerLevel = hpBonusPerLevel.toInt(),
         lastLevelGain = lastLevelGain?.toInt(),
+        classes = decodeClasses(classes),
     )
 
     // the by-id row also carries the full jpeg
@@ -282,6 +291,7 @@ class PartyRepositoryImpl(
         hpMaxApprox: Boolean,
         hpBonusPerLevel: Long,
         lastLevelGain: Long?,
+        classes: String,
     ) = toDomain(
         id,
         name,
@@ -303,6 +313,7 @@ class PartyRepositoryImpl(
         hpMaxApprox,
         hpBonusPerLevel,
         lastLevelGain,
+        classes,
     ).copy(portrait = portraitThumb?.let { Photo(it, portrait, photoSource) })
 }
 

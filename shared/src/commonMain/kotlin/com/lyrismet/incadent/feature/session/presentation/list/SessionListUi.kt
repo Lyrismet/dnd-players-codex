@@ -36,7 +36,6 @@ import com.lyrismet.incadent.core.designsystem.component.SwipeToDeleteRow
 import com.lyrismet.incadent.core.designsystem.component.floatingBarAnchor
 import com.lyrismet.incadent.core.designsystem.component.rememberSwipeHintPlayback
 import com.lyrismet.incadent.core.designsystem.component.scrollEdgeFade
-import com.lyrismet.incadent.core.swipehint.SwipeHintDirection
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.AppArchiveBanner
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheetEvent
 import com.lyrismet.incadent.feature.campaign.presentation.sheet.CampaignSheets
@@ -79,7 +78,7 @@ fun SessionListUi(
     state: SessionListState,
     modifier: Modifier = Modifier,
 ) {
-    val swipeHint = rememberSwipeHintPlayback(state.swipeHintTarget, SwipeHintDirection.DELETE_ONLY)
+    val swipeHint = rememberSwipeHintPlayback(state.swipeHintTarget)
     // the tab bar already sits above the navigation bar, so the floating hints must not add its inset again
     val contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     Scaffold(modifier = modifier, contentWindowInsets = contentWindowInsets) { contentPadding ->
@@ -92,7 +91,6 @@ fun SessionListUi(
             SwipeHintBanner(
                 // the campaign-rename toast shares this anchor, so the hint yields to it instead of stacking
                 visible = swipeHint.bannerVisible && state.toast == null,
-                direction = SwipeHintDirection.DELETE_ONLY,
                 title = stringResource(Res.string.swipe_hint_delete_only_title),
                 subtitle = stringResource(Res.string.swipe_hint_sessions_subtitle),
                 dismissLabel = stringResource(Res.string.swipe_hint_dismiss),

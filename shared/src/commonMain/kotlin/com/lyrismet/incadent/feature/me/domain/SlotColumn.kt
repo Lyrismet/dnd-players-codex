@@ -11,11 +11,19 @@ data class SlotColumn(
     val resource: CharacterResource,
 )
 
-/** the columns of levels 1-9 in order, a level without slots is left out */
+/** the columns of levels 1-9 in order, a level without slots is left out and a level stored twice counts once */
 fun slotColumns(resources: List<CharacterResource>): List<SlotColumn> =
-    resources
+    (resources - duplicateSlotRows(resources).toSet())
         .mapNotNull { resource -> resource.slotLevel?.takeIf { resource.max > 0 }?.let { SlotColumn(it, resource) } }
         .sortedBy { it.level }
+
+/** the rows of a level that are stored more than once, the one with the biggest maximum stays and the rest go */
+fun duplicateSlotRows(resources: List<CharacterResource>): List<CharacterResource> =
+    resources
+        .filter { it.isSpellSlot }
+        .groupBy { it.slotLevel }
+        .values
+        .flatMap { same -> same.sortedByDescending { it.max }.drop(1) }
 
 /** the resources that are plain counters, in the order the player keeps them */
 fun featureResources(resources: List<CharacterResource>): List<CharacterResource> =

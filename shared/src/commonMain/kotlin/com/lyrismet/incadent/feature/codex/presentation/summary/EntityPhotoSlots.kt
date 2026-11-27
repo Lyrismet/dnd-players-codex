@@ -43,7 +43,6 @@ internal fun EntityPortraitSlot(
     emblem: EntityEmblem,
     title: String,
     quick: QuickEditSheet?,
-    showEditHint: Boolean,
 ) {
     AppPhotoSlot(
         photo = emblem.portrait,
@@ -51,7 +50,7 @@ internal fun EntityPortraitSlot(
         title = title,
         monochrome = emblem.isMonochrome,
         actions = quickPhotoActions(quick, PhotoSlot.PORTRAIT, emblem.portrait),
-        showEditHint = showEditHint,
+        showEditHint = false,
     ) { onClick ->
         PortraitArch(
             portrait = emblem.portrait,
@@ -69,7 +68,6 @@ internal fun EntityCoverSlot(
     cover: Photo?,
     title: String,
     quick: QuickEditSheet?,
-    showEditHint: Boolean,
 ) {
     // a read-only card has nothing to show, and nothing to invite a tap to, while there is no cover
     if (cover == null && quick == null) return
@@ -79,7 +77,7 @@ internal fun EntityCoverSlot(
         title = title,
         monochrome = false,
         actions = quickPhotoActions(quick, PhotoSlot.COVER, cover),
-        showEditHint = showEditHint,
+        showEditHint = false,
     ) { onClick ->
         if (cover != null) {
             AppCoverFrame(cover = cover, onClick = onClick)

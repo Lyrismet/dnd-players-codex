@@ -3,6 +3,10 @@ package com.lyrismet.incadent.feature.codex.domain.model
 const val MAX_GROWTH_RULES = 6
 const val MAX_GROWTH_STEPS = 9
 const val MAX_GROWTH_TEXT = 60
+const val MAX_CUSTOM_TEXT = 140
+
+/** the place in a custom rule text that the circle of the slot takes */
+const val CIRCLE_PLACEHOLDER = "{круг}"
 val GROWTH_EVERY_RANGE = 2..9
 
 /** the character levels at which a cantrip gets stronger */
@@ -33,14 +37,14 @@ data class GrowthRule(
     val steps: List<GrowthStep> = emptyList(),
 ) {
     /** a range and a free note have no amount to add, only a table */
-    val stepsOnly: Boolean get() = target == GrowthTarget.RANGE || target == GrowthTarget.CUSTOM
+    val stepsOnly: Boolean get() = target == GrowthTarget.RANGE
 
     fun clamped(): GrowthRule =
         copy(
             mode = if (stepsOnly) GrowthMode.STEPS else mode,
             damageIndex = damageIndex.coerceAtLeast(0),
             every = every.coerceIn(GROWTH_EVERY_RANGE),
-            add = add.take(MAX_GROWTH_TEXT),
+            add = add.take(if (target == GrowthTarget.CUSTOM) MAX_CUSTOM_TEXT else MAX_GROWTH_TEXT),
             steps =
                 steps
                     .map { GrowthStep(it.from.coerceIn(SPELL_LEVELS), it.value.take(MAX_GROWTH_TEXT)) }
@@ -54,8 +58,14 @@ data class SpellGrowth(
     val enabled: Boolean = false,
     val cantrip: CantripGrowth = CantripGrowth.NONE,
     val rules: List<GrowthRule> = emptyList(),
+    /** the circle the spell list shows the spell on, 0 is its own circle */
+    val shownCircle: Int = 0,
 ) {
-    fun clamped(): SpellGrowth = copy(rules = rules.take(MAX_GROWTH_RULES).map { it.clamped() })
+    fun clamped(): SpellGrowth =
+        copy(
+            rules = rules.take(MAX_GROWTH_RULES).map { it.clamped() },
+            shownCircle = shownCircle.coerceIn(0, SPELL_LEVELS.last),
+        )
 }
 
 /** the "HOUR:8" text of a duration step */

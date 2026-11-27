@@ -85,6 +85,12 @@ sealed interface SpellsEvent {
         val pay: SpellPay? = null,
     ) : SpellsEvent
 
+    /** pins the circle the list shows the spell on, 0 or the spell's own circle takes the pin off */
+    data class CircleShown(
+        val id: Long,
+        val circle: Int,
+    ) : SpellsEvent
+
     data class CardOpened(
         val id: Long,
     ) : SpellsEvent

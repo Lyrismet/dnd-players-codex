@@ -41,9 +41,11 @@ import com.lyrismet.incadent.core.designsystem.numeral
 import com.lyrismet.incadent.core.format.joinWithDot
 import com.lyrismet.incadent.core.format.orDash
 import com.lyrismet.incadent.feature.codex.domain.grouping.classLine
+import com.lyrismet.incadent.feature.codex.domain.grouping.classesLine
 import com.lyrismet.incadent.feature.me.domain.isDown
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.campaign_player_level_format
+import incadent.shared.generated.resources.class_level_template
 import incadent.shared.generated.resources.me_fallen_line
 import incadent.shared.generated.resources.me_hp_label
 import incadent.shared.generated.resources.me_hp_of_format
@@ -118,6 +120,11 @@ internal fun MeNameRow(
 
 @Composable
 private fun characterLine(character: MeCharacter): String {
+    // several classes carry their own levels, so the sum is not written again
+    if (character.classes.size >= 2) {
+        val template = stringResource(Res.string.class_level_template)
+        return joinWithDot(character.race, character.classes.classesLine(template))
+    }
     val level = character.level?.let { stringResource(Res.string.campaign_player_level_format, it) }
     return joinWithDot(character.race, classLine(character.characterClass, character.subclass), level.orEmpty())
 }

@@ -43,6 +43,9 @@ import incadent.shared.generated.resources.combat_round_me
 import org.jetbrains.compose.resources.stringResource
 
 private val ROLE_INDENT = 12.dp
+
+// a character with several classes has a long line, two lines are shown before it is cut
+private const val ROLE_MAX_LINES = 2
 private val NAME_GAP = 6.dp
 private val BATTLE_ONLY_PADDING = 5.dp
 private val BATTLE_ONLY_DOT = 9.dp
@@ -191,7 +194,7 @@ private fun RowRoleLine(
         fontStyle = if (row.roleHint != null) FontStyle.Italic else FontStyle.Normal,
         fontSize = AppFontSize.Small,
         lineHeight = AppLineHeight.Row,
-        maxLines = 1,
+        maxLines = ROLE_MAX_LINES,
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier.padding(start = ROLE_INDENT),
     )

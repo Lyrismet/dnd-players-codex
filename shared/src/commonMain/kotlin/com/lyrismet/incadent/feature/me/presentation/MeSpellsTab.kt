@@ -19,7 +19,6 @@ import com.lyrismet.incadent.core.designsystem.component.ButtonVariant
 import com.lyrismet.incadent.feature.me.domain.isDown
 import com.lyrismet.incadent.feature.me.presentation.spells.SpellsBlock
 import incadent.shared.generated.resources.Res
-import incadent.shared.generated.resources.me_spells_edit_slots
 import incadent.shared.generated.resources.me_spells_empty_action
 import incadent.shared.generated.resources.me_spells_empty_body
 import incadent.shared.generated.resources.me_spells_empty_title
@@ -44,23 +43,19 @@ internal fun MeSpellsTab(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (character.vitals.isDown) item { MeDeathSaves(character, onEvent) }
-        item { SpellsBlock(spells, { onEvent(MeEvent.Spells(it)) }) }
+        item {
+            SpellsBlock(
+                spells,
+                { onEvent(MeEvent.Spells(it)) },
+                onEditSlots = if (character.readOnly) null else ({ send(CounterEvent.SlotsRequested) }),
+            )
+        }
         if (spells.columns.isEmpty()) {
             item {
                 EmptySlots(
                     character.readOnly,
                     onEdit = { send(CounterEvent.SlotsRequested) },
                     onHide = { send(CounterEvent.SpellsHidden) },
-                )
-            }
-        } else if (!character.readOnly) {
-            item {
-                AppButton(
-                    text = stringResource(Res.string.me_spells_edit_slots),
-                    onClick = { send(CounterEvent.SlotsRequested) },
-                    modifier = Modifier.fillMaxWidth(),
-                    tone = ButtonTone.Neutral,
-                    height = 48.dp,
                 )
             }
         }
