@@ -179,6 +179,10 @@ private fun AmountField(
     spell: CharacterSpell,
     onAdd: (String) -> Unit,
 ) {
+    if (rule.target == GrowthTarget.CUSTOM) {
+        CustomText(rule.add, onAdd)
+        return
+    }
     val label = stringResource(Res.string.me_spells_growth_add)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(label, Modifier.weight(1f), style = AppText.footnote, color = AppPalette.TextSecondary)

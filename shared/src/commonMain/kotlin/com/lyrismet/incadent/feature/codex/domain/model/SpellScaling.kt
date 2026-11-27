@@ -60,7 +60,7 @@ private fun GrowthRule.apply(
         GrowthTarget.DURATION -> durationAt(at, times, amount, step)
         GrowthTarget.TARGETS -> at.copy(extraTargets = numberAt(at.extraTargets, amount * times, step))
         GrowthTarget.RANGE -> if (step == null) at else at.copy(range = step)
-        GrowthTarget.CUSTOM -> if (step == null) at else at.copy(notes = at.notes + step)
+        GrowthTarget.CUSTOM -> customNote(times, step, circle)?.let { at.copy(notes = at.notes + it) } ?: at
     }
 }
 

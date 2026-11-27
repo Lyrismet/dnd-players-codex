@@ -1,8 +1,9 @@
 package com.lyrismet.incadent.feature.me.presentation.spells
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,12 +20,14 @@ import com.lyrismet.incadent.core.designsystem.component.AppHelpHint
 @Composable
 internal fun SectionCaption(
     title: String,
-    helpTitle: String,
-    helpBody: String,
+    help: Pair<String, String>? = null,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
-    Row(Modifier.height(12.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(title.uppercase(), style = AppText.fieldOverline, color = AppPalette.TextTertiary)
-        AppHelpHint(helpTitle, helpBody, Modifier.requiredSize(28.dp))
+        help?.let { AppHelpHint(it.first, it.second, Modifier.requiredSize(28.dp)) }
+        Spacer(Modifier.weight(1f))
+        trailing?.invoke()
     }
 }
 

@@ -1,5 +1,6 @@
 package com.lyrismet.incadent.feature.me.presentation.spells
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -39,6 +40,7 @@ import com.lyrismet.incadent.feature.codex.domain.model.SpellAt
 import com.lyrismet.incadent.feature.codex.domain.model.atCharacterLevel
 import com.lyrismet.incadent.feature.codex.domain.model.atCircle
 import com.lyrismet.incadent.feature.codex.domain.model.cantripTier
+import com.lyrismet.incadent.feature.codex.domain.model.pinnedCircle
 import com.lyrismet.incadent.feature.me.domain.SlotColumn
 import com.lyrismet.incadent.feature.me.domain.SpellPay
 import incadent.shared.generated.resources.Res
@@ -48,6 +50,8 @@ import incadent.shared.generated.resources.me_spells_card_ref_circle
 import incadent.shared.generated.resources.me_spells_card_ref_level
 import incadent.shared.generated.resources.me_spells_card_ref_none
 import incadent.shared.generated.resources.me_spells_card_ref_now
+import incadent.shared.generated.resources.me_spells_card_ref_pin_hint
+import incadent.shared.generated.resources.me_spells_card_ref_pinned
 import incadent.shared.generated.resources.me_spells_card_spend_free
 import incadent.shared.generated.resources.me_spells_card_spend_free_count
 import incadent.shared.generated.resources.me_spells_card_spend_free_note
@@ -65,6 +69,7 @@ private const val DIMMED = 0.45f
 private const val CHIPS_IN_ROW = 3
 private const val PIPS_IN_ROW = 2
 private val ReferenceKey = 40.dp
+private val CantripKey = 44.dp
 
 /** one line of the reference with what the spell comes to on a circle or a level range, [changed] is lit gold */
 private class RefRow(
@@ -73,8 +78,10 @@ private class RefRow(
     val changed: Boolean,
     val dimmed: Boolean,
     val note: String?,
-    val keyWidth: Dp,
-)
+    val circle: Int = 0,
+) {
+    val keyWidth: Dp get() = if (circle > 0) ReferenceKey else CantripKey
+}
 
 // a cantrip with growth by level or a spell that grows with the slot and is not paid with its own uses
 private val CharacterSpell.hasReference: Boolean
@@ -86,6 +93,7 @@ internal fun GrowthReference(
     spell: CharacterSpell,
     state: SpellsBlockState,
     onHold: ((SpellBlock) -> Unit)?,
+    onPin: ((Int) -> Unit)? = null,
 ) {
     val cantrip = spell.isCantrip
     if (!spell.hasReference) return
@@ -100,9 +108,16 @@ internal fun GrowthReference(
                     ),
                     color = AppPalette.TextTertiary,
                 )
+                if (!cantrip && onPin != null) {
+                    Text(
+                        stringResource(Res.string.me_spells_card_ref_pin_hint),
+                        style = AppText.footnote,
+                        color = AppPalette.TextTertiary,
+                    )
+                }
                 rows.forEachIndexed { index, row ->
                     if (index > 0) AppDivider()
-                    ReferenceLine(spell, row)
+                    ReferenceLine(spell, row, if (cantrip) null else onPin)
                 }
             }
         }
@@ -127,7 +142,7 @@ private fun cantripRows(
             } else {
                 stringResource(Res.string.me_spells_growth_tier_range, from, tiers[index + 1] - 1)
             }
-        RefRow(key, spell.atCharacterLevel(from), index == current, false, now.takeIf { index == current }, 44.dp)
+        RefRow(key, spell.atCharacterLevel(from), index == current, false, now.takeIf { index == current })
     }
 }
 
@@ -139,6 +154,7 @@ private fun circleRows(
     val top = columns.filter { it.resource.max > 0 }.maxOfOrNull { it.level } ?: 0
     val last = maxOf(spell.level + 1, top + 1).coerceAtMost(MAX_CIRCLE)
     val none = stringResource(Res.string.me_spells_card_ref_none)
+    val pinned = stringResource(Res.string.me_spells_card_ref_pinned)
     var before: SpellAt? = null
     return (spell.level..last).map { circle ->
         val at = spell.atCircle(circle)
@@ -149,8 +165,8 @@ private fun circleRows(
                 at,
                 before != null && at != before,
                 !has,
-                none.takeIf { !has },
-                ReferenceKey,
+                if (spell.pinnedCircle == circle) pinned else none.takeIf { !has },
+                circle,
             )
         before = at
         row
@@ -161,18 +177,17 @@ private fun circleRows(
 private fun ReferenceLine(
     spell: CharacterSpell,
     row: RefRow,
+    onPin: ((Int) -> Unit)?,
 ) {
-    val color =
-        if (row.changed ||
-            row.note != null &&
-            spell.isCantrip
-        ) {
-            AppPalette.GoldBright
-        } else {
-            AppPalette.TextPrimary
-        }
+    val pinned = spell.pinnedCircle == row.circle
+    val lit = row.changed || pinned || (row.note != null && spell.isCantrip)
+    val color = if (lit) AppPalette.GoldBright else AppPalette.TextPrimary
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 34.dp).alpha(if (row.dimmed) DIMMED else 1f),
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 34.dp)
+            .alpha(if (row.dimmed && !pinned) DIMMED else 1f)
+            .then(if (onPin != null) Modifier.clickable { onPin(if (pinned) 0 else row.circle) } else Modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {

@@ -89,6 +89,16 @@ class SpellsHandler(
             is SpellsEvent.CellPressed -> scope.launch { resources.pressCell(event.id, event.index) }
             is SpellsEvent.Cast ->
                 context.find(event.spellId)?.let { cast(it, event.pay, context) }
+            is SpellsEvent.CircleShown ->
+                context.find(event.id)?.let {
+                    val circle = event.circle.takeIf { c -> c > it.level } ?: 0
+                    scope.launch {
+                        spells.upsert(
+                            context.memberId,
+                            it.copy(growth = it.growth.copy(shownCircle = circle)),
+                        )
+                    }
+                }
             is SpellsEvent.Add ->
                 ui.draft =
                     CharacterSpell(

@@ -54,4 +54,20 @@ class SpellDamageCodecTest {
         assertNull(rounds(DurationUnit.INSTANT, 0))
         assertNull(rounds(DurationUnit.NONE, 0))
     }
+
+    @Test
+    fun `a reduction row keeps its type`() {
+        val rows = listOf(SpellDamage("4d6", SpellEffect.Reduction))
+        assertEquals(rows, decodeDamage(encodeDamage(rows)))
+    }
+
+    @Test
+    fun `a state row has no dice and keeps its kind`() {
+        val rows =
+            listOf(
+                SpellDamage("", SpellEffect.Condition(SpellCondition.DISADVANTAGE)),
+                SpellDamage("2d6", SpellEffect.Damage(DamageType.FIRE)),
+            )
+        assertEquals(rows, decodeDamage(encodeDamage(rows)))
+    }
 }

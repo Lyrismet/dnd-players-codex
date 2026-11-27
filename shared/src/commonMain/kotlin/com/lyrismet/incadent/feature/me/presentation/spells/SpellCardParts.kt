@@ -38,6 +38,7 @@ import com.lyrismet.incadent.core.designsystem.component.appCard
 import com.lyrismet.incadent.core.format.capitalizeFirst
 import com.lyrismet.incadent.feature.codex.domain.model.CharacterSpell
 import com.lyrismet.incadent.feature.codex.domain.model.SpellDamage
+import com.lyrismet.incadent.feature.codex.domain.model.SpellEffect
 import com.lyrismet.incadent.feature.codex.domain.model.atRank
 import incadent.shared.generated.resources.Res
 import incadent.shared.generated.resources.me_spells_card_components
@@ -200,7 +201,7 @@ internal fun DamageBlock(
     onHold: ((SpellBlock) -> Unit)?,
 ) {
     val at = spell.atRank(characterLevel)
-    if (at.damage.none { it.dice.isNotBlank() }) return
+    if (at.damage.none { it.shown() }) return
     Column(Modifier.fillMaxWidth().appCard(AppShapes.Card, AppPalette.Background, AppPalette.BorderSubtle)) {
         Held(SpellBlock.DAMAGE, onHold, DamageFrame) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -210,6 +211,9 @@ internal fun DamageBlock(
         }
     }
 }
+
+// a state has no dice, so it is told by its name
+private fun SpellDamage.shown() = dice.isNotBlank() || effect is SpellEffect.Condition
 
 private val DamageFrame = HoldFrame(0.dp, 0.dp, 14.dp, 12.dp, 0.dp, fillWidth = true)
 
@@ -234,7 +238,7 @@ private fun DamageRows(
     damage: List<SpellDamage>,
     projectiles: Int,
 ) {
-    val rows = damage.filter { it.dice.isNotBlank() }
+    val rows = damage.filter { it.shown() }
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -244,13 +248,15 @@ private fun DamageRows(
             if (index > 0) Text("+", style = MaterialTheme.typography.bodyLarge, color = AppPalette.TextTertiary)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 SpellEffectGlyph(row.effect, size = 17.dp)
-                val dice = if (index == 0 && projectiles > 1) "$projectiles × ${row.dice}" else row.dice
-                Text(
-                    dice,
-                    style = semiBold(MaterialTheme.typography.bodyLarge),
-                    color = AppPalette.TextHeading,
-                )
-                Text(effectLabel(row.effect), style = AppText.footnote, color = AppPalette.TextSecondary)
+                val isState = row.effect is SpellEffect.Condition
+                val head =
+                    when {
+                        isState -> effectTitle(row.effect)
+                        index == 0 && projectiles > 1 -> "$projectiles × ${row.dice}"
+                        else -> row.dice
+                    }
+                Text(head, style = semiBold(MaterialTheme.typography.bodyLarge), color = AppPalette.TextHeading)
+                if (!isState) Text(effectLabel(row.effect), style = AppText.footnote, color = AppPalette.TextSecondary)
             }
         }
     }

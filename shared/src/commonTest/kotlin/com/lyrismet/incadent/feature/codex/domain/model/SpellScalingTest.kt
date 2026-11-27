@@ -181,4 +181,27 @@ class SpellScalingTest {
         assertEquals(10, s.atCircle(1).combatRounds)
         assertEquals(100, s.atCircle(3).combatRounds)
     }
+
+    @Test
+    fun `a custom text takes the circle of the slot`() {
+        val rule = GrowthRule(GrowthTarget.CUSTOM, add = "ends effects up to $CIRCLE_PLACEHOLDER")
+        val s = spell(3, SpellGrowth(true, rules = listOf(rule)))
+        assertEquals(emptyList(), s.atCircle(3).notes)
+        assertEquals(listOf("ends effects up to V"), s.atCircle(5).notes)
+    }
+
+    @Test
+    fun `the circle pinned in the card is what the list shows`() {
+        val rule = GrowthRule(GrowthTarget.PROJECTILES, add = "1")
+        val s = spell(1, SpellGrowth(true, rules = listOf(rule), shownCircle = 3))
+        assertEquals(3, s.atShown(5).projectiles)
+        assertEquals(1, s.copy(growth = s.growth.copy(shownCircle = 0)).atShown(5).projectiles)
+    }
+
+    @Test
+    fun `a pinned circle survives the column text`() {
+        val growth = SpellGrowth(true, rules = listOf(GrowthRule(GrowthTarget.TARGETS)), shownCircle = 4)
+        assertEquals(growth, decodeGrowth(encodeGrowth(growth)))
+        assertEquals(SpellGrowth(), decodeGrowth(""))
+    }
 }

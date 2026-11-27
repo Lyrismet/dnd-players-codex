@@ -23,6 +23,9 @@ private val BonusColor = Color(0xFFE8A15A)
 private val ReactionColor = AppPalette.Azure
 private val HealingColor = Color(0xFF8DE0A8)
 private val TempHpColor = Color(0xFF7DB8FF)
+private val ReductionColor = Color(0xFFC9A6FF)
+private val ConditionColor = Color(0xFFE8A15A)
+private const val DIAMOND_PATH = "M12 3l9 9-9 9-9-9z"
 private const val GRID = 14f
 private const val HEART_PATH =
     "M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z M12 9.5v5 M9.5 12h5"
@@ -33,6 +36,8 @@ internal fun SpellEffect.color(): Color =
     when (this) {
         SpellEffect.Healing -> HealingColor
         SpellEffect.TempHp -> TempHpColor
+        SpellEffect.Reduction -> ReductionColor
+        is SpellEffect.Condition -> ConditionColor
         is SpellEffect.Damage -> type.shieldColor()
     }
 
@@ -103,6 +108,8 @@ internal fun SpellEffectGlyph(
         null -> Unit
         SpellEffect.Healing -> AppDamageGlyph(HEART_PATH, HealingColor, modifier, size)
         SpellEffect.TempHp -> AppDamageGlyph(SHIELD_PATH, TempHpColor, modifier, size)
+        SpellEffect.Reduction -> AppDamageGlyph(SHIELD_PATH, ReductionColor, modifier, size)
+        is SpellEffect.Condition -> AppDamageGlyph(DIAMOND_PATH, ConditionColor, modifier, size)
         is SpellEffect.Damage -> AppDamageGlyph(effect.type.shieldIconPath(), effect.type.shieldColor(), modifier, size)
     }
 }
