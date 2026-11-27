@@ -59,7 +59,7 @@ android {
             libs.versions.android.targetSdk
                 .get()
                 .toInt()
-        versionName = "0.9.1.1"
+        versionName = "0.9.1.2"
         // 0.8 -> 80000, 1.2.3 -> 1020300, 0.9.0.1 -> 90001, so every new versionName installs over the one before it
         versionCode = versionCodeOf(versionName.orEmpty())
     }
