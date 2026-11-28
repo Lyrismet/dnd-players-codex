@@ -11,6 +11,7 @@ internal object JournalAction {
     const val LABEL = "LABEL"
     const val COMBAT = "COMBAT"
     const val SHEET = "SHEET"
+    const val DOWNTIME = "DOWNTIME"
 }
 
 /** collects what an import changes, so the last import into a campaign can be taken back */
@@ -57,6 +58,8 @@ internal class ImportJournal(
     fun entry(id: Long) = add(JournalAction.ENTRY, "ENTRY", id)
 
     fun combat(id: Long) = add(JournalAction.COMBAT, "COMBAT", id)
+
+    fun downtime(id: Long) = add(JournalAction.DOWNTIME, "DOWNTIME", id)
 
     fun alias(
         kind: String,

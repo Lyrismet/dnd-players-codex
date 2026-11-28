@@ -1025,7 +1025,7 @@
     <string name="campaign_delete_export_hint">You can export to a file first: it keeps the entries and notes of this campaign.</string>
     <string name="campaign_delete_export_button">Export to a file</string>
     <string name="settings_section_data">DATA</string>
-    <string name="settings_data_export_title">Campaign backup</string>
+    <string name="settings_data_export_title">Export campaign</string>
     <string name="settings_data_export_hint">A file with the campaign: keep it as a backup or send it to a friend</string>
     <string name="settings_data_import_title">Import from a file</string>
     <string name="settings_data_import_hint">Or open a file from Telegram</string>
@@ -1833,25 +1833,7 @@
     <string name="session_text_actors_species">Species</string>
     <string name="session_text_actors_party">Party</string>
     <string name="session_text_actors_items">Items</string>
-    <string-array name="session_text_intros_named"><item>{name} unrolls a scroll: here is the truth about the trip.</item>
-        <item>{name} swears this is exactly how it goes.</item>
-        <item>A tavern tale. Author — {name}. Any resemblance to reality is a coincidence.</item>
-        <item>A chronicle by candlelight. Author — {name}.</item>
-        <item>{name} dictates the chronicle, the ink still wet.</item>
-        <item>{name} opens the journal and pretends to remember everything.</item>
-        <item>The campaign chronicle. {name} holds the quill, the party does not argue.</item>
-        <item>{name} takes up the quill, the dice are waiting.</item>
-    </string-array>
-    <string-array name="session_text_intros_plain"><item>A tavern tale. Any resemblance to reality is a coincidence.</item>
-        <item>A chronicle by candlelight.</item>
-        <item>The campaign chronicle, the ink still wet.</item>
-        <item>The party is back in action, the game master smiles suspiciously.</item>
-        <item>The dice roll, the quill scratches, the party moves on.</item>
-        <item>The scroll unrolls, the candles burn.</item>
-        <item>The record is kept as it is. Well, almost as it is.</item>
-        <item>The game master is silent, the party writes it down.</item>
-    </string-array>
-    <string name="combat_role_placeholder">Class and subclass</string>
+    <string-array name="session_text_intros_named"><item>{name} unrolls a scroll: here is the truth about the trip.</item> <item>{name} swears this is exactly how it goes.</item> <item>A tavern tale. Author — {name}. Any resemblance to reality is a coincidence.</item> <item>A chronicle by candlelight. Author — {name}.</item> <item>{name} dictates the chronicle, the ink still wet.</item> <item>{name} opens the journal and pretends to remember everything.</item> <item>The campaign chronicle. {name} holds the quill, the party does not argue.</item> <item>{name} takes up the quill, the dice are waiting.</item> </string-array> <string-array name="session_text_intros_plain"><item>A tavern tale. Any resemblance to reality is a coincidence.</item> <item>A chronicle by candlelight.</item> <item>The campaign chronicle, the ink still wet.</item> <item>The party is back in action, the game master smiles suspiciously.</item> <item>The dice roll, the quill scratches, the party moves on.</item> <item>The scroll unrolls, the candles burn.</item> <item>The record is kept as it is. Well, almost as it is.</item> <item>The game master is silent, the party writes it down.</item> </string-array> <string name="combat_role_placeholder">Class and subclass</string>
     <string name="combat_link_npc">NPC</string>
     <string name="combat_link_same_kind">NPC of the same kind</string>
     <string name="combat_link_busy">already in this fight</string>

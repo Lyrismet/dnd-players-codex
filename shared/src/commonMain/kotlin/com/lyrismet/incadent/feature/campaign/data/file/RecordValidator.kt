@@ -27,6 +27,7 @@ class RecordValidator {
     private val items = mutableSetOf<Long>()
     private val sheets = mutableSetOf<Long>()
     private val sessions = mutableSetOf<Long>()
+    private val downtimeSessions = mutableSetOf<Long>()
     private val fights = FightRules(species, npcs, party, sessions)
 
     @Suppress("CyclomaticComplexMethod")
@@ -50,9 +51,10 @@ class RecordValidator {
             is FileRecord.Item -> checkItem(record)
             is FileRecord.Session -> must(sessions.add(record.id))
             is FileRecord.Entry -> must(record.sessionId in sessions)
+            is FileRecord.Downtime -> checkDowntime(record)
             is FightRecord -> must(fights.accept(record))
             is FileRecord.Photo -> must(record.ownerId in owners(record.owner))
-            is FileRecord.Tag, is FileRecord.Phrase -> Unit
+            is FileRecord.Tag, is FileRecord.Phrase, is FileRecord.Condition -> Unit
         }
         // set last, a record that is left out of a newer file must not move the order on
         rank = next
@@ -62,6 +64,14 @@ class RecordValidator {
         must(record.speciesId == null || record.speciesId in species)
         must(record.placeIds.all { it in places })
         must(npcs.add(record.id))
+    }
+
+    // one downtime per session, a link to the sheet points at a character and an item that came before it
+    private fun checkDowntime(record: FileRecord.Downtime) {
+        must(record.sessionId in sessions && downtimeSessions.add(record.sessionId))
+        must(record.appliedPartyId == null || record.appliedPartyId in party)
+        must(record.loot.size <= MAX_LINKS)
+        must(record.loot.all { it.quantity in ITEM_QUANTITY_RANGE && (it.itemId == null || it.itemId in items) })
     }
 
     private fun checkItem(record: FileRecord.Item) {
@@ -115,6 +125,10 @@ class RecordValidator {
                         fits(MAX_LONG_CHARS, record.text, record.growth)
                 is FileRecord.Item -> fits(MAX_SHORT_CHARS, record.name) && fits(MAX_LONG_CHARS, record.notes)
                 is FileRecord.Tag -> fits(MAX_SHORT_CHARS, record.name)
+                is FileRecord.Condition -> fits(MAX_SHORT_CHARS, record.name)
+                is FileRecord.Downtime ->
+                    fits(MAX_LONG_CHARS, record.shortText, record.longText, record.gainedText) &&
+                        record.loot.all { it.name.length <= MAX_SHORT_CHARS }
                 is FileRecord.Phrase -> fits(MAX_LONG_CHARS, record.text)
                 is FileRecord.Session -> record.fits()
                 is FileRecord.Entry -> fits(MAX_LONG_CHARS, record.body) && record.body.hasReadableTokens()
@@ -151,6 +165,7 @@ private enum class Section {
     PHRASE,
     SESSION,
     ENTRY,
+    DOWNTIME,
     FIGHT,
     PHOTO,
 }
@@ -172,6 +187,8 @@ private fun FileRecord.rank(): Int =
         is FileRecord.Phrase -> Section.PHRASE
         is FileRecord.Session -> Section.SESSION
         is FileRecord.Entry -> Section.ENTRY
+        is FileRecord.Downtime -> Section.DOWNTIME
+        is FileRecord.Condition -> Section.FIGHT
         is FightRecord -> Section.FIGHT
         is FileRecord.Photo -> Section.PHOTO
     }.ordinal

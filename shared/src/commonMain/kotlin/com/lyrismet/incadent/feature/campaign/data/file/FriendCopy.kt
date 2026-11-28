@@ -17,6 +17,9 @@ internal fun FileRecord.Party.forMode(selection: RecordSelection): FileRecord.Pa
             armorClassFrom = "",
             deathSuccesses = 0,
             deathFailures = 0,
+            hpMaxApprox = false,
+            hpBonusPerLevel = 0,
+            lastLevelGain = null,
             description = if (selection.partyNotes) description else "",
         )
     }
