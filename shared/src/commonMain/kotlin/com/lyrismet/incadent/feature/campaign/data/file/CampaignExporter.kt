@@ -4,6 +4,7 @@ import com.lyrismet.incadent.core.file.FileSink
 import com.lyrismet.incadent.db.AppDatabase
 import com.lyrismet.incadent.db.Combat_event
 import com.lyrismet.incadent.db.Combatant
+import com.lyrismet.incadent.db.Combatant_mark
 import com.lyrismet.incadent.db.SelectAllWithLocations
 import com.lyrismet.incadent.feature.campaign.domain.exchange.resolve
 import com.lyrismet.incadent.feature.campaign.domain.model.ExchangeCatalog
@@ -131,6 +132,8 @@ class CampaignExporter(
             )
             writeEntities(snapshot, selection, scope, ids, writer)
             writeSessions(snapshot, scope, ids, writer)
+            readDowntimes(database, snapshot.campaignId, scope, ids, selection.mode == ExportMode.SELF)
+                .forEach(writer::write)
             writeCombats(snapshot.campaignId, selection, scope, ids, writer)
             if (selection.photos) writePhotos(scope, ids, writer)
         } finally {
@@ -270,6 +273,9 @@ class CampaignExporter(
                         armorClassFrom = vitals.armor_class_from,
                         deathSuccesses = vitals.death_saves_success.toInt(),
                         deathFailures = vitals.death_saves_failure.toInt(),
+                        hpMaxApprox = it.hp_max_approx,
+                        hpBonusPerLevel = it.hp_bonus_per_level.toInt(),
+                        lastLevelGain = it.last_level_gain?.toInt(),
                     ).forMode(selection),
             )
         }
@@ -360,20 +366,9 @@ class CampaignExporter(
         ids: FileIds,
         writer: CampaignFileWriter,
     ) {
-        val all = database.combatQueries.selectAll(campaignId).executeAsList()
-        val live = all.liveRow()?.id?.takeIf { selection.liveFight }
-        val combats =
-            all
-                .filter {
-                    if (it.phase ==
-                        CombatPhase.FINISHED
-                    ) {
-                        it.session_note_id in scope.sessions
-                    } else {
-                        it.id == live
-                    }
-                }.sortedBy { it.id }
+        val combats = exportedCombats(campaignId, selection, scope)
         if (combats.isEmpty()) return
+        writeConditions(campaignId, writer)
         val fighters =
             database.combatantQueries
                 .selectByCampaign(campaignId)
@@ -389,6 +384,11 @@ class CampaignExporter(
                 .selectByCampaign(campaignId)
                 .executeAsList()
                 .groupBy { it.combat_id }
+        val marks =
+            database.combatantMarkQueries
+                .selectByCampaign(campaignId)
+                .executeAsList()
+                .groupBy { it.combatant_id }
         val numbers = combats.withIndex().associate { (index, row) -> row.id to index + 1L }
         combats.forEach { row ->
             val session = row.session_note_id?.takeIf { it in scope.sessions }?.let(ids::session)
@@ -400,6 +400,9 @@ class CampaignExporter(
                 val fighter = it.toFighter(numbers.getValue(row.id), members, scope, ids)
                 // a fight under way goes whole to a friend, the hit points are what it is made of
                 writer.write(if (row.phase == CombatPhase.FINISHED) fighter.forMode(selection) else fighter)
+                marks[it.id].orEmpty().forEach { mark ->
+                    writer.write(mark.toFileRecord(numbers.getValue(row.id), fighter.id))
+                }
             }
             events[row.id].orEmpty().forEach { event ->
                 members[event.target_id]?.let { writer.write(event.toBlow(numbers.getValue(row.id), it, members)) }
@@ -415,6 +418,26 @@ class CampaignExporter(
                 )
             }
         }
+    }
+
+    // a finished fight goes with its session, the one under way only when asked
+    private fun exportedCombats(
+        campaignId: String,
+        selection: RecordSelection,
+        scope: RecordScope,
+    ): List<CombatRow> {
+        val all = database.combatQueries.selectAll(campaignId).executeAsList()
+        val live = all.liveRow()?.id?.takeIf { selection.liveFight }
+        return all
+            .filter { if (it.phase == CombatPhase.FINISHED) it.session_note_id in scope.sessions else it.id == live }
+            .sortedBy { it.id }
+    }
+
+    private fun writeConditions(
+        campaignId: String,
+        writer: CampaignFileWriter,
+    ) = database.customConditionQueries.selectByCampaign(campaignId).executeAsList().forEach {
+        writer.write(FileRecord.Condition(it.name))
     }
 
     // one photo at a time, so memory never holds more than the biggest jpeg and its base64 text
@@ -487,6 +510,8 @@ private fun Combatant.toFighter(
     reactionAvailable = reaction_available != 0L,
     role = role,
     isLabel = is_label != 0L,
+    vulnerabilities = vulnerabilities,
+    facts = facts,
 )
 
 private fun Combat_event.toBlow(
@@ -524,3 +549,8 @@ private fun CombatRow.toFileRecord(
     turn = turn.toInt(),
     originId = origin_id,
 )
+
+private fun Combatant_mark.toFileRecord(
+    combat: Long,
+    fighter: Long,
+) = FileRecord.Mark(combat, fighter, kind, text, rounds_left?.toInt(), started_round.toInt())

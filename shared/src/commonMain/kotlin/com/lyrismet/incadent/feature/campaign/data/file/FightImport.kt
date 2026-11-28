@@ -22,6 +22,11 @@ internal class FightImport(
             .executeAsList()
             .map { it.origin_id }
     private val origins = OriginSet(known)
+    private val conditions =
+        database.customConditionQueries
+            .selectByCampaign(campaignId)
+            .executeAsList()
+            .mapTo(mutableSetOf()) { it.name.lowercase() }
     private val combatMap = mutableMapOf<Long, Long>()
     private val fighterMap = mutableMapOf<Pair<Long, Long>, Long>()
 
@@ -40,7 +45,13 @@ internal class FightImport(
             is FileRecord.Fighter -> addFighter(record)
             is FileRecord.Blow -> addBlow(record)
             is FileRecord.Observation -> addObservation(record)
+            is FileRecord.Mark -> addMark(record)
         }
+    }
+
+    /** a made up state the campaign does not offer yet */
+    fun addCondition(record: FileRecord.Condition) {
+        if (conditions.add(record.name.lowercase())) database.customConditionQueries.insert(campaignId, record.name)
     }
 
     private fun addCombat(record: FileRecord.Combat) {
@@ -114,7 +125,27 @@ internal class FightImport(
             role = record.role,
             is_label = if (record.isLabel) 1L else 0L,
         )
-        fighterMap[record.combatId to record.id] = database.combatantQueries.lastInsertRowId().executeAsOne()
+        val id = database.combatantQueries.lastInsertRowId().executeAsOne()
+        fighterMap[record.combatId to record.id] = id
+        // the insert has no columns for these two, a fighter without them keeps the empty defaults
+        if (record.vulnerabilities.isNotEmpty()) {
+            database.combatantQueries.updateVulnerabilities(
+                record.vulnerabilities,
+                id,
+            )
+        }
+        if (record.facts.isNotEmpty()) database.combatantQueries.updateFacts(record.facts, id)
+    }
+
+    private fun addMark(record: FileRecord.Mark) {
+        val fighter = fighterMap[record.combatId to record.fighterId] ?: return
+        database.combatantMarkQueries.insert(
+            fighter,
+            record.kind,
+            record.text,
+            record.roundsLeft?.toLong(),
+            record.startedRound.toLong(),
+        )
     }
 
     private fun addBlow(record: FileRecord.Blow) {

@@ -21,6 +21,7 @@ import com.lyrismet.incadent.feature.combat.domain.model.CombatSide
 import com.lyrismet.incadent.feature.combat.domain.model.CombatStance
 import com.lyrismet.incadent.feature.combat.domain.model.CombatState
 import com.lyrismet.incadent.feature.combat.domain.model.HitEffect
+import com.lyrismet.incadent.feature.combat.domain.model.MarkKind
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -32,7 +33,9 @@ const val FILE_FORMAT = "incadent"
 // 2 added the saved fights, 3 the origin ids, 4 the export mode, a file of an older version reads as a friend copy
 // 5 added the items, 6 the character sheet, the counters and the vitals of a personal copy
 // 7 added the fight that is under way
-const val FILE_VERSION = 7
+// 8 added the downtimes, the made up conditions, the marks of a fighter and its vulnerabilities and facts
+// and the level up hit point numbers of a character
+const val FILE_VERSION = 8
 
 /** the first line of a file, what the preview shows is read from here before anything else */
 @Serializable
@@ -137,6 +140,10 @@ sealed interface FileRecord {
         val armorClassFrom: String = "",
         val deathSuccesses: Int = 0,
         val deathFailures: Int = 0,
+        // the maximum is a guess after a level up, and the hit points a level adds on top of the die
+        val hpMaxApprox: Boolean = false,
+        val hpBonusPerLevel: Int = 0,
+        val lastLevelGain: Int? = null,
         // the classes of a multiclass character as the column stores them, empty for a single class
         val classes: String = "",
     ) : FileRecord
@@ -281,6 +288,35 @@ sealed interface FileRecord {
         val originId: String? = null,
     ) : FileRecord
 
+    /** what the party did after [sessionId], the sheet links stay only in a personal copy that took the sheet */
+    @Serializable
+    @SerialName("downtime")
+    data class Downtime(
+        val sessionId: Long,
+        val shortText: String = "",
+        val longText: String = "",
+        val gainedText: String = "",
+        val goldDelta: Int = 0,
+        val loot: List<Loot> = emptyList(),
+        val appliedPartyId: Long? = null,
+        val appliedGold: Int = 0,
+        val originId: String? = null,
+    ) : FileRecord {
+        @Serializable
+        data class Loot(
+            val name: String,
+            val quantity: Int = 1,
+            val itemId: Long? = null,
+        )
+    }
+
+    /** a state the master made up, every fight of the campaign offers it */
+    @Serializable
+    @SerialName("condition")
+    data class Condition(
+        val name: String,
+    ) : FileRecord
+
     /**
      * a fight saved to [sessionId], its fighters, blows and species observations follow below the notes.
      * A fight that is not over has no outcome to speak of and may have no session yet.
@@ -327,6 +363,20 @@ sealed interface FileRecord {
         val reactionAvailable: Boolean = true,
         val role: String = "",
         val isLabel: Boolean = false,
+        val vulnerabilities: String = "",
+        val facts: String = "",
+    ) : FightRecord
+
+    /** a lasting spell, a fact or a made up state on a fighter, [fighterId] is its number in that fight */
+    @Serializable
+    @SerialName("mark")
+    data class Mark(
+        val combatId: Long,
+        val fighterId: Long,
+        val kind: MarkKind,
+        val text: String,
+        val roundsLeft: Int? = null,
+        val startedRound: Int = 1,
     ) : FightRecord
 
     /** one event of a fight, the source and the target are fighter numbers of that fight */

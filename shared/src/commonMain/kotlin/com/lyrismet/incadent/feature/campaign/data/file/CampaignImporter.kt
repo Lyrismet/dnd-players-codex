@@ -160,6 +160,8 @@ internal class CampaignImporter(
         private val fights =
             FightImport(database, campaignId, sessionMap, speciesMap, npcMap, partyMap, journal, dedupe = !copies)
 
+        private val downtimes = DowntimeImport(database, campaignId, sessionMap, partyMap, itemMap, sheetTaken, journal)
+
         private val locals = CampaignLocals(database, campaignId)
         private val existingSpecies = locals.species
         private val existingSpeciesById = existingSpecies.associateBy { it.id }
@@ -218,6 +220,8 @@ internal class CampaignImporter(
                 is FileRecord.Phrase -> database.phraseSnippetQueries.insert(record.text, campaignId)
                 is FileRecord.Session -> addSession(record)
                 is FileRecord.Entry -> addEntry(record)
+                is FileRecord.Downtime -> downtimes.add(record)
+                is FileRecord.Condition -> fights.addCondition(record)
                 is FightRecord -> fights.accept(record)
                 is FileRecord.Photo -> photos.add(record)
             }
@@ -241,7 +245,8 @@ internal class CampaignImporter(
                 is FileRecord.Tag -> request.selection?.tags != false
                 is FileRecord.Phrase -> request.selection?.phrases != false
                 is FileRecord.Photo -> fileHasPhotos && request.selection?.photos != false
-                is FileRecord.Entry -> true
+                is FileRecord.Entry, is FileRecord.Condition -> true
+                is FileRecord.Downtime -> scope?.sessions?.contains(record.sessionId) != false
                 is FightRecord -> fights.isWanted(record, scope)
             }
 
@@ -425,6 +430,9 @@ internal class CampaignImporter(
                                 it.fallen,
                                 subclass = it.subclass,
                                 classes = it.classes,
+                                hpMaxApprox = it.hp_max_approx,
+                                hpBonusPerLevel = it.hp_bonus_per_level.toInt(),
+                                lastLevelGain = it.last_level_gain?.toInt(),
                             ).withVitals(id)
                     }
                 ExchangeKind.ITEM ->
@@ -799,6 +807,13 @@ internal class CampaignImporter(
                 if (record.armorClass != null) record.armorClassFrom else current.armor_class_from,
                 record.deathSuccesses.coerceIn(SheetRanges.deathSaves).toLong(),
                 record.deathFailures.coerceIn(SheetRanges.deathSaves).toLong(),
+                id,
+            )
+            // the numbers of a level up follow the character
+            queries.setHpMaxApprox(record.hpMaxApprox, id)
+            queries.setCharacterExtras(
+                record.hpBonusPerLevel.coerceAtLeast(0).toLong(),
+                record.lastLevelGain?.toLong(),
                 id,
             )
         }

@@ -1061,7 +1061,7 @@
     <string name="campaign_delete_export_hint">Сначала можно сделать экспорт в файл: он сохранит записи и заметки этой кампании.</string>
     <string name="campaign_delete_export_button">Экспорт в файл</string>
     <string name="settings_section_data">ДАННЫЕ</string>
-    <string name="settings_data_export_title">Резервная копия кампании</string>
+    <string name="settings_data_export_title">Экспорт кампании</string>
     <string name="settings_data_export_hint">Файл с кампанией: сохраните про запас или отправьте другу</string>
     <string name="settings_data_import_title">Импорт из файла</string>
     <string name="settings_data_import_hint">Или откройте файл из Telegram</string>
@@ -1917,27 +1917,7 @@
     <string name="session_text_actors_species">Виды</string>
     <string name="session_text_actors_party">Отряд</string>
     <string name="session_text_actors_items">Предметы</string>
-    <string-array name="session_text_intros_named">
-        <item>{name} разворачивает свиток: вот правда о походе.</item>
-        <item>{name} уверяет, что всё именно так и происходит.</item>
-        <item>Трактирная байка. Автор — {name}. Совпадения с реальностью случайны.</item>
-        <item>Летопись при свете свечи. Автор — {name}.</item>
-        <item>{name} диктует хронику, чернила ещё влажные.</item>
-        <item>{name} открывает дневник и делает вид, что всё помнит.</item>
-        <item>Хроника похода. Перо у {name}, отряд не спорит.</item>
-        <item>{name} берёт перо, кубики уже ждут.</item>
-    </string-array>
-    <string-array name="session_text_intros_plain">
-        <item>Трактирная байка. Совпадения с реальностью случайны.</item>
-        <item>Летопись при свете свечи.</item>
-        <item>Хроника похода, чернила ещё влажные.</item>
-        <item>Отряд снова в деле, мастер подозрительно улыбается.</item>
-        <item>Кубики катятся, перо скрипит, отряд идёт дальше.</item>
-        <item>Свиток разворачивается, свечи горят.</item>
-        <item>Запись ведётся как есть. Ну, почти как есть.</item>
-        <item>Мастер молчит, отряд записывает.</item>
-    </string-array>
-    <string name="combat_role_placeholder">Класс и подкласс</string>
+    <string-array name="session_text_intros_named"><item>{name} разворачивает свиток: вот правда о походе.</item> <item>{name} уверяет, что всё именно так и происходит.</item> <item>Трактирная байка. Автор — {name}. Совпадения с реальностью случайны.</item> <item>Летопись при свете свечи. Автор — {name}.</item> <item>{name} диктует хронику, чернила ещё влажные.</item> <item>{name} открывает дневник и делает вид, что всё помнит.</item> <item>Хроника похода. Перо у {name}, отряд не спорит.</item> <item>{name} берёт перо, кубики уже ждут.</item> </string-array> <string-array name="session_text_intros_plain"> <item>Трактирная байка. Совпадения с реальностью случайны.</item> <item>Летопись при свете свечи.</item> <item>Хроника похода, чернила ещё влажные.</item> <item>Отряд снова в деле, мастер подозрительно улыбается.</item> <item>Кубики катятся, перо скрипит, отряд идёт дальше.</item> <item>Свиток разворачивается, свечи горят.</item> <item>Запись ведётся как есть. Ну, почти как есть.</item> <item>Мастер молчит, отряд записывает.</item> </string-array> <string name="combat_role_placeholder">Класс и подкласс</string>
     <string name="combat_link_npc">NPC</string>
     <string name="combat_link_same_kind">NPC того же вида</string>
     <string name="combat_link_busy">уже в этом бою</string>

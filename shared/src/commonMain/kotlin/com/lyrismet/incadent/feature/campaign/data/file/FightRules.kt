@@ -22,6 +22,7 @@ internal class FightRules(
                 (record.combatId to record.targetId) in fighters &&
                     (record.sourceId == null || (record.combatId to record.sourceId) in fighters)
             is FileRecord.Observation -> record.combatId in combats && record.speciesId in species
+            is FileRecord.Mark -> (record.combatId to record.fighterId) in fighters
         }
 
     // a fight that is not over belongs to no session or to one of the file, and there is only one of it
@@ -41,7 +42,12 @@ internal class FightRules(
 
     fun fits(record: FightRecord) =
         when (record) {
-            is FileRecord.Fighter -> record.name.length <= MAX_SHORT_CHARS && record.note.length <= MAX_LONG_CHARS
+            is FileRecord.Fighter ->
+                record.name.length <= MAX_SHORT_CHARS &&
+                    record.note.length <= MAX_LONG_CHARS &&
+                    record.vulnerabilities.length <= MAX_LONG_CHARS &&
+                    record.facts.length <= MAX_LONG_CHARS
+            is FileRecord.Mark -> record.text.length <= MAX_SHORT_CHARS
             is FileRecord.Blow -> (record.detail?.length ?: 0) <= MAX_SHORT_CHARS
             is FileRecord.Combat, is FileRecord.Observation -> true
         }

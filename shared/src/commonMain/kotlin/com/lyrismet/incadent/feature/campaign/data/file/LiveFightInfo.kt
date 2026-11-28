@@ -1,12 +1,9 @@
 package com.lyrismet.incadent.feature.campaign.data.file
 
 import com.lyrismet.incadent.db.AppDatabase
-import com.lyrismet.incadent.feature.campaign.domain.exchange.minutesSince
 import com.lyrismet.incadent.feature.campaign.domain.model.LiveFight
 import com.lyrismet.incadent.feature.combat.domain.model.CombatPhase
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
+import com.lyrismet.incadent.feature.combat.domain.round.gameTime
 import com.lyrismet.incadent.db.Combat as CombatRow
 
 /** the one fight of a campaign that is not over, the one under way before one still being prepared */
@@ -23,11 +20,10 @@ internal fun readLiveFight(
             .selectAll(campaignId)
             .executeAsList()
             .liveRow() ?: return null
-    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
     return LiveFight(
         ongoing = row.phase == CombatPhase.ONGOING,
         round = row.round.toInt(),
-        minutes = minutesSince(row.started_at, now),
+        minutes = gameTime(row.round.toInt()).minutes.takeIf { it > 0 },
         fighters =
             database.combatantQueries
                 .selectByCombat(row.id)

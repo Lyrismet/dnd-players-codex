@@ -33,6 +33,7 @@ internal class ImportRollback(
             JournalAction.ADDED -> removeAdded(campaignId, row)
             JournalAction.ENTRY -> database.sessionEntryQueries.deleteById(row.row_id)
             JournalAction.COMBAT -> database.combatQueries.deleteById(row.row_id, campaignId)
+            JournalAction.DOWNTIME -> database.downtimeQueries.deleteById(row.row_id)
             JournalAction.ALIAS ->
                 database.originAliasQueries.delete(campaignId, ExchangeKind.valueOf(row.kind), row.ref)
             JournalAction.LABEL -> restoreLabel(campaignId, row.row_id)
@@ -114,6 +115,8 @@ internal class ImportRollback(
             record.deathFailures.toLong(),
             record.id,
         )
+        queries.setHpMaxApprox(record.hpMaxApprox, record.id)
+        queries.setCharacterExtras(record.hpBonusPerLevel.toLong(), record.lastLevelGain?.toLong(), record.id)
     }
 
     // a member the import added is gone by now, its sheet went with it

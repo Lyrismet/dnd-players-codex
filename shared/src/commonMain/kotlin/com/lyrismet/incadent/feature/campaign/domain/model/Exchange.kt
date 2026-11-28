@@ -177,7 +177,7 @@ data class ExchangeCatalog(
 data class LiveFight(
     val ongoing: Boolean,
     val round: Int,
-    /** how long it has been going, none for the fight of a file whose clock is not this one */
+    /** minutes in the fiction by the round, none before the first full minute or for the fight of a file */
     val minutes: Int?,
     val fighters: Int,
 )
